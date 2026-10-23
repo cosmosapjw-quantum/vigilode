@@ -605,3 +605,324 @@ pub fn integrate_exchange_implicit_euler(
     }
     Ok(report)
 }
+
+/// Bounded approximate-quotient refinement policy. These are work/selection
+/// limits, not error tolerances. Every returned solution passes the same
+/// original-space residual check. In particular, an unsuccessful refinement
+/// never silently relaxes the requested tolerance.
+#[derive(Clone, Copy, Debug)]
+pub struct PolynomialRefinementPolicy {
+    pub max_corrections: usize,
+    /// Hard budget for polynomial-attempt actions and their residual checks.
+    /// Fallback verification, when requested, costs one additional action.
+    pub max_operator_actions: usize,
+    /// Only a declared full-space relation with eta <= this value is tried.
+    pub maximum_relation_ratio: f64,
+    /// Stop after a correction if residual_new >= this * residual_old.
+    /// This protects against a wrong witness or a floating-point accuracy floor.
+    pub stagnation_ratio: f64,
+}
+impl Default for PolynomialRefinementPolicy {
+    fn default() -> Self {
+        Self {
+            max_corrections: 8,
+            max_operator_actions: 64,
+            maximum_relation_ratio: 0.5,
+            stagnation_ratio: 0.95,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PolynomialRefinementStop {
+    Accepted,
+    RelationTooWeak,
+    ActionBudget,
+    CorrectionBudget,
+    Stagnation,
+    FallbackAccepted,
+    FallbackResidualRejected,
+}
+
+/// Work is accumulated even when a callback fails or only partially writes.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub struct PolynomialRefinementWork {
+    pub polynomial_actions_attempted: u64,
+    pub residual_actions_attempted: u64,
+    pub operator_actions_completed: u64,
+    pub corrections_attempted: u64,
+    pub fallback_calls: u64,
+}
+impl PolynomialRefinementWork {
+    pub fn operator_actions_attempted(&self) -> u64 {
+        self.polynomial_actions_attempted
+            .saturating_add(self.residual_actions_attempted)
+    }
+}
+
+/// Four vectors, allocated once; no allocation occurs during refinement.
+#[derive(Clone, Debug)]
+pub struct PolynomialRefinementWorkspace {
+    candidate: Vec<f64>,
+    residual: Vec<f64>,
+    correction: Vec<f64>,
+    action: Vec<f64>,
+}
+impl PolynomialRefinementWorkspace {
+    pub fn new(dimension: usize) -> Self {
+        Self {
+            candidate: vec![0.0; dimension],
+            residual: vec![0.0; dimension],
+            correction: vec![0.0; dimension],
+            action: vec![0.0; dimension],
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct PolynomialRefinementReport {
+    pub accepted: bool,
+    pub stop: PolynomialRefinementStop,
+    pub corrections: usize,
+    /// None when the relation/work preflight declined without an operator call.
+    pub original_residual_norm: Option<f64>,
+    /// Conditional on the declared full-space relation and arithmetic allowance.
+    /// Arithmetic in this estimate is binary64, not outward rounded.
+    pub conditional_error_estimate: Option<f64>,
+    /// Why a polynomial attempt handed control to the supplied fallback.
+    pub fallback_trigger: Option<PolynomialRefinementStop>,
+}
+
+impl DeclaredPolynomialResolvent {
+    fn polynomial_action<F>(
+        &self,
+        rhs: &[f64],
+        out: &mut [f64],
+        scratch: &mut [f64],
+        apply_b: &mut F,
+        work: &mut PolynomialRefinementWork,
+    ) -> Result<(), PolynomialResolventError>
+    where
+        F: FnMut(&[f64], &mut [f64]) -> Result<(), PolynomialResolventError>,
+    {
+        let last = self.coefficients.len() - 1;
+        for (x, b) in out.iter_mut().zip(rhs) {
+            *x = self.coefficients[last] * b;
+        }
+        if out.iter().any(|x| !x.is_finite()) {
+            return Err(PolynomialResolventError::NonFinite);
+        }
+        for k in (0..last).rev() {
+            scratch.fill(f64::NAN);
+            work.polynomial_actions_attempted = work.polynomial_actions_attempted.saturating_add(1);
+            apply_b(out, scratch)?;
+            if scratch.iter().any(|x| !x.is_finite()) {
+                return Err(PolynomialResolventError::NonFinite);
+            }
+            work.operator_actions_completed = work.operator_actions_completed.saturating_add(1);
+            for ((x, bx), b) in out.iter_mut().zip(scratch.iter()).zip(rhs) {
+                *x = self.coefficients[k].mul_add(*b, *bx);
+            }
+            if out.iter().any(|x| !x.is_finite()) {
+                return Err(PolynomialResolventError::NonFinite);
+            }
+        }
+        Ok(())
+    }
+
+    fn refinement_residual<F>(
+        &self,
+        rhs: &[f64],
+        ws: &mut PolynomialRefinementWorkspace,
+        apply_b: &mut F,
+        work: &mut PolynomialRefinementWork,
+    ) -> Result<f64, PolynomialResolventError>
+    where
+        F: FnMut(&[f64], &mut [f64]) -> Result<(), PolynomialResolventError>,
+    {
+        ws.action.fill(f64::NAN);
+        work.residual_actions_attempted = work.residual_actions_attempted.saturating_add(1);
+        apply_b(&ws.candidate, &mut ws.action)?;
+        if ws.action.iter().any(|x| !x.is_finite()) {
+            return Err(PolynomialResolventError::NonFinite);
+        }
+        work.operator_actions_completed = work.operator_actions_completed.saturating_add(1);
+        let mut norm = 0.0_f64;
+        for i in 0..rhs.len() {
+            ws.residual[i] = (rhs[i] - ws.candidate[i]) + ws.action[i];
+            if !ws.residual[i].is_finite() {
+                return Err(PolynomialResolventError::NonFinite);
+            }
+            norm = norm.max(ws.residual[i].abs());
+        }
+        Ok(norm)
+    }
+
+    /// Solve `(I-B)x=b` by x0=p(B)b, x[k+1]=x[k]+p(B)r[k].
+    /// In exact arithmetic r[k+1]=q(B)r[k]/q(1), hence eta<1 gives geometric
+    /// contraction. The callback is the same immutable linear operator used to
+    /// justify q and its full-space norm witness; sampled-vector fits do not
+    /// establish that contract. The original residual controls every commit.
+    ///
+    /// A declined relation, work budget or stagnating residual returns accepted
+    /// false with output unchanged. Callback/arithmetic failures propagate and
+    /// preserve output too. Counts include all work before either kind of refusal.
+    #[allow(clippy::too_many_arguments)]
+    pub fn apply_refined_checked<F>(
+        &self,
+        rhs: &[f64],
+        output: &mut [f64],
+        ws: &mut PolynomialRefinementWorkspace,
+        policy: PolynomialRefinementPolicy,
+        absolute_residual_tolerance: f64,
+        residual_evaluation_error: f64,
+        mut apply_b: F,
+        work: &mut PolynomialRefinementWork,
+    ) -> Result<PolynomialRefinementReport, PolynomialResolventError>
+    where
+        F: FnMut(&[f64], &mut [f64]) -> Result<(), PolynomialResolventError>,
+    {
+        if rhs.is_empty()
+            || output.len() != rhs.len()
+            || ws.candidate.len() != rhs.len()
+            || rhs.iter().any(|x| !x.is_finite())
+            || !absolute_residual_tolerance.is_finite()
+            || absolute_residual_tolerance < 0.0
+            || !residual_evaluation_error.is_finite()
+            || residual_evaluation_error < 0.0
+            || !policy.maximum_relation_ratio.is_finite()
+            || !(0.0..1.0).contains(&policy.maximum_relation_ratio)
+            || !policy.stagnation_ratio.is_finite()
+            || !(0.0..1.0).contains(&policy.stagnation_ratio)
+            || policy.stagnation_ratio == 0.0
+        {
+            return Err(PolynomialResolventError::InvalidInput);
+        }
+        let mut report = PolynomialRefinementReport {
+            accepted: false,
+            stop: PolynomialRefinementStop::RelationTooWeak,
+            corrections: 0,
+            original_residual_norm: None,
+            conditional_error_estimate: None,
+            fallback_trigger: None,
+        };
+        if self.relation_defect_ratio > policy.maximum_relation_ratio {
+            return Ok(report);
+        }
+        let cost = self.degree(); // d-1 polynomial actions plus one residual.
+        let mut actions_left = policy.max_operator_actions;
+        if actions_left < cost {
+            report.stop = PolynomialRefinementStop::ActionBudget;
+            return Ok(report);
+        }
+        self.polynomial_action(rhs, &mut ws.candidate, &mut ws.action, &mut apply_b, work)?;
+        actions_left -= cost;
+        let mut previous = f64::INFINITY;
+        loop {
+            let residual = self.refinement_residual(rhs, ws, &mut apply_b, work)?;
+            let allowance = residual + residual_evaluation_error;
+            let estimate = self.inverse_norm_estimate * allowance;
+            if !allowance.is_finite() || !estimate.is_finite() {
+                return Err(PolynomialResolventError::NonFinite);
+            }
+            report.original_residual_norm = Some(residual);
+            report.conditional_error_estimate = Some(estimate);
+            if allowance <= absolute_residual_tolerance {
+                output.copy_from_slice(&ws.candidate);
+                report.accepted = true;
+                report.stop = PolynomialRefinementStop::Accepted;
+                return Ok(report);
+            }
+            if report.corrections > 0 && residual >= policy.stagnation_ratio * previous {
+                report.stop = PolynomialRefinementStop::Stagnation;
+                return Ok(report);
+            }
+            if report.corrections >= policy.max_corrections {
+                report.stop = PolynomialRefinementStop::CorrectionBudget;
+                return Ok(report);
+            }
+            if actions_left < cost {
+                report.stop = PolynomialRefinementStop::ActionBudget;
+                return Ok(report);
+            }
+            previous = residual;
+            work.corrections_attempted = work.corrections_attempted.saturating_add(1);
+            self.polynomial_action(
+                &ws.residual,
+                &mut ws.correction,
+                &mut ws.action,
+                &mut apply_b,
+                work,
+            )?;
+            for (x, dx) in ws.candidate.iter_mut().zip(&ws.correction) {
+                *x += dx;
+                if !x.is_finite() {
+                    return Err(PolynomialResolventError::NonFinite);
+                }
+            }
+            report.corrections += 1;
+            actions_left -= cost;
+        }
+    }
+
+    /// Try the bounded quotient route, then a caller-supplied protected solve on
+    /// a numerical/work refusal. Callback and input errors are never hidden by
+    /// fallback. The fallback receives scratch output and must pass the SAME
+    /// original-space residual target before the caller's output is committed.
+    /// Its final residual costs one operator action beyond the polynomial budget;
+    /// the fallback's internal work is the caller's responsibility to record.
+    #[allow(clippy::too_many_arguments)]
+    pub fn apply_refined_or_fallback<F, G>(
+        &self,
+        rhs: &[f64],
+        output: &mut [f64],
+        ws: &mut PolynomialRefinementWorkspace,
+        policy: PolynomialRefinementPolicy,
+        absolute_residual_tolerance: f64,
+        residual_evaluation_error: f64,
+        mut apply_b: F,
+        mut fallback: G,
+        work: &mut PolynomialRefinementWork,
+    ) -> Result<PolynomialRefinementReport, PolynomialResolventError>
+    where
+        F: FnMut(&[f64], &mut [f64]) -> Result<(), PolynomialResolventError>,
+        G: FnMut(&[f64], &mut [f64]) -> Result<(), PolynomialResolventError>,
+    {
+        let mut report = self.apply_refined_checked(
+            rhs,
+            output,
+            ws,
+            policy,
+            absolute_residual_tolerance,
+            residual_evaluation_error,
+            &mut apply_b,
+            work,
+        )?;
+        if report.accepted {
+            return Ok(report);
+        }
+        report.fallback_trigger = Some(report.stop);
+        work.fallback_calls = work.fallback_calls.saturating_add(1);
+        ws.candidate.fill(f64::NAN);
+        fallback(rhs, &mut ws.candidate)?;
+        if ws.candidate.iter().any(|x| !x.is_finite()) {
+            return Err(PolynomialResolventError::NonFinite);
+        }
+        let residual = self.refinement_residual(rhs, ws, &mut apply_b, work)?;
+        let allowance = residual + residual_evaluation_error;
+        let estimate = self.inverse_norm_estimate * allowance;
+        if !allowance.is_finite() || !estimate.is_finite() {
+            return Err(PolynomialResolventError::NonFinite);
+        }
+        report.original_residual_norm = Some(residual);
+        report.conditional_error_estimate = Some(estimate);
+        report.accepted = allowance <= absolute_residual_tolerance;
+        report.stop = if report.accepted {
+            output.copy_from_slice(&ws.candidate);
+            PolynomialRefinementStop::FallbackAccepted
+        } else {
+            PolynomialRefinementStop::FallbackResidualRejected
+        };
+        Ok(report)
+    }
+}

@@ -453,7 +453,7 @@ fn full_check(
         residuals,
     ))
 }
-fn validate(p: &OdeProblem, t: f64, y: &[f64], h: f64, c: &Config, work: &mut Work) -> Result<()> {
+pub(crate) fn validate_inputs(p: &OdeProblem, t: f64, y: &[f64], h: f64, c: &Config) -> Result<()> {
     let input = |s| Failure::new(FailureKind::Input, s);
     if y.len() != p.dimension || y.is_empty() {
         return Err(input("state dimension mismatch"));
@@ -498,6 +498,12 @@ fn validate(p: &OdeProblem, t: f64, y: &[f64], h: f64, c: &Config, work: &mut Wo
     if !c.theta.is_finite() || !(0.0..=1.0).contains(&c.theta) || c.rank_relative_tol >= 1.0 {
         return Err(input("invalid theta or rank tolerance"));
     }
+    Ok(())
+}
+
+fn validate(p: &OdeProblem, t: f64, y: &[f64], h: f64, c: &Config, work: &mut Work) -> Result<()> {
+    validate_inputs(p, t, y, h, c)?;
+    let input = |s| Failure::new(FailureKind::Input, s);
     let n = y.len();
     let m = c.max_basis.min(n);
     let sm = m.checked_mul(S).ok_or_else(|| input("size overflow"))?;

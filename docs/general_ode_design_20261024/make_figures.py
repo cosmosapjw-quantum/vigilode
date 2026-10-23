@@ -22,7 +22,30 @@ axs[1].loglog(t,t**6*(1/3600+.9*np.exp(.9)/5040),'--',label='Complex-error upper
 axs[1].set(xlabel=r'Phase increment $|\omega h|$',ylabel='One-step absolute error',title='B. Normalized linear oscillation');axs[1].legend(fontsize=8,loc='upper left');axs[1].grid(alpha=.2,which='both')
 for ext in ['pdf','svg','png']: fig.savefig(P/'figures'/f'dopri5_stability.{ext}',dpi=180)
 plt.close(fig)
-fig,ax=plt.subplots(figsize=(10.5,4.6));ax.set(xlim=(0,10.5),ylim=(0,4.8));ax.axis('off')
+
+# Exact-arithmetic dependency statement, not measured convergence or timing.
+fig,ax=plt.subplots(figsize=(7.6,3.7),layout='constrained')
+known=np.array([[int(stage<=sweep) for stage in range(8)] for sweep in range(8)])
+from matplotlib.colors import ListedColormap
+ax.imshow(known,cmap=ListedColormap(['#eef0f2','#285d7d']),vmin=0,vmax=1,aspect='auto')
+for sweep in range(8):
+ for stage in range(8):
+  ax.text(stage,sweep,'exact' if known[sweep,stage] else '',ha='center',va='center',color='white',fontsize=8)
+ax.set(xticks=range(8),xticklabels=range(1,9),yticks=range(8),xlabel='Stage index',ylabel='Simultaneous updates',title='Causal propagation from an exact first stage')
+ax.set_xticks(np.arange(-.5,8,1),minor=True);ax.set_yticks(np.arange(-.5,8,1),minor=True)
+ax.grid(which='minor',color='white',linewidth=1.5);ax.tick_params(which='minor',bottom=False,left=False)
+for ext in ['pdf','svg','png']:fig.savefig(P/'figures'/f'causal_finite_propagation.{ext}',dpi=180)
+plt.close(fig)
+
+fig,ax=plt.subplots(figsize=(7.6,3.6),layout='constrained')
+k=np.arange(0,17)
+for eta,color in [(.1,'#285d7d'),(.5,'#ae5b32'),(.9,'#747b48')]:
+ ax.semilogy(k,eta**k,marker='o',markersize=3,color=color,label=rf'$\eta={eta}$')
+ax.set(xlabel='Correction count k',ylabel='Theoretical residual ratio bound',xticks=range(0,17,2),title=r'Approximate quotient: $\|r_k\|/\|r_0\|\leq\eta^k$')
+ax.grid(alpha=.2,which='both');ax.legend(frameon=False)
+for ext in ['pdf','svg','png']:fig.savefig(P/'figures'/f'quotient_defect_contraction.{ext}',dpi=180)
+plt.close(fig)
+fig,ax=plt.subplots(figsize=(10.5,4.6));ax.set(xlim=(0,10.5),ylim=(-.15,4.8));ax.axis('off')
 def box(x,y,w,h,text,color='#e5eff6'):
  ax.add_patch(FancyBboxPatch((x,y),w,h,boxstyle='round,pad=0.07',facecolor=color,edgecolor='#517185',linewidth=1))
  ax.text(x+w/2,y+h/2,text,ha='center',va='center',fontsize=9)
@@ -41,3 +64,5 @@ arrow((3.8,1.35),(2.1,.75));arrow((5.25,1.35),(5.25,.75));arrow((6.6,1.35),(8.4,
 ax.text(.35,4.32,'One selected method per integration',fontsize=9,color='#294c61')
 for ext in ['pdf','svg','png']:fig.savefig(P/'figures'/f'accepted_state_flow.{ext}',dpi=180,bbox_inches='tight')
 plt.close(fig)
+for path in (P/'figures').glob('*.svg'):
+ path.write_text('\n'.join(line.rstrip() for line in path.read_text().splitlines())+'\n')

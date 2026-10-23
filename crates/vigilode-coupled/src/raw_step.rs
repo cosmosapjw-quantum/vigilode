@@ -171,6 +171,8 @@ pub struct RawSelectedStep {
 #[derive(Debug, Default, Serialize)]
 pub struct RawStepAttempt {
     pub selected: Option<RawSelectedStep>,
+    /// True when the protected route was explicitly selected without a candidate trial.
+    pub candidate_skipped: bool,
     pub candidate_attempt: Attempt,
     pub candidate_bound: Option<ConditionalErrorEstimate>,
     pub fallback_attempted: bool,
@@ -246,8 +248,47 @@ impl RawStepSession {
         execution: &ParallelExecution,
         policy: &RootErrorPolicy,
     ) -> RawStepAttempt {
+        self.attempt_dispatch(p, t, y, h, cfg, execution, policy, false)
+    }
+
+    /// Execute the same guarded raw-U solve and original residual/error checks
+    /// directly. This is a selected protected route, not a fabricated candidate
+    /// failure. Candidate budgets do not cap the separately configured GMRES.
+    #[allow(clippy::too_many_arguments)]
+    pub fn attempt_protected(
+        &mut self,
+        p: &OdeProblem,
+        t: f64,
+        y: &[f64],
+        h: f64,
+        cfg: &Config,
+        execution: &ParallelExecution,
+        policy: &RootErrorPolicy,
+    ) -> RawStepAttempt {
+        self.attempt_dispatch(p, t, y, h, cfg, execution, policy, true)
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn attempt_dispatch(
+        &mut self,
+        p: &OdeProblem,
+        t: f64,
+        y: &[f64],
+        h: f64,
+        cfg: &Config,
+        execution: &ParallelExecution,
+        policy: &RootErrorPolicy,
+        skip_candidate: bool,
+    ) -> RawStepAttempt {
         self.pending_fallback = false;
-        let mut out = RawStepAttempt::default();
+        let mut out = RawStepAttempt {
+            candidate_skipped: skip_candidate,
+            ..Default::default()
+        };
+        if let Err(e) = crate::solver::validate_inputs(p, t, y, h, cfg) {
+            out.terminal_failure = Some(e);
+            return out;
+        }
         if p.dimension != self.dimension {
             out.terminal_failure = Some(input("raw session/problem dimensions differ"));
             return out;
@@ -280,66 +321,70 @@ impl RawStepSession {
             return out;
         }
         let epoch = p.model_epoch();
-        out.candidate_attempt = match self.causal_schedule {
-            Some(schedule) => crate::coupled_step_causal(p, t, y, h, cfg, execution, schedule),
-            None => coupled_step_residual_first(p, t, y, h, cfg, execution),
-        };
-        if p.model_epoch() != epoch {
-            out.terminal_failure = Some(Failure::new(
-                FailureKind::ModelChanged,
-                "model changed before raw dispatch",
-            ));
-            return out;
-        }
-        if let Some(c) = out.candidate_attempt.candidate.as_ref() {
-            let scale = scale(y, &c.y_new, cfg);
-            match assess(policy, h, c.full_residual_l2, &scale, c.embedded_wrms) {
-                Ok((effective, bound)) => {
-                    out.candidate_bound = bound.clone();
-                    let root_budget_passes = match (&bound, policy) {
-                        (
-                            Some(b),
-                            RootErrorPolicy::ConditionalL2 {
-                                max_endpoint_wrms, ..
-                            },
-                        ) => b.endpoint_wrms <= *max_endpoint_wrms,
-                        _ => true,
-                    };
-                    if root_budget_passes {
-                        out.selected = Some(RawSelectedStep {
-                            selection: match self.causal_schedule {
-                                Some(crate::CausalSchedule::Forward) => "causal-forward-raw-u",
-                                Some(crate::CausalSchedule::BatchedPicard) => "causal-picard-raw-u",
-                                None => "coupled-raw-u",
-                            },
-                            target_id: crate::TARGET_ID,
-                            y_new: c.y_new.clone(),
-                            error_vector: c.error_vector.clone(),
-                            embedded_wrms: c.embedded_wrms,
-                            effective_error: effective,
-                            full_residual_wrms: c.full_residual_wrms,
-                            conditional_bound: bound,
-                        });
+        if !skip_candidate {
+            out.candidate_attempt = match self.causal_schedule {
+                Some(schedule) => crate::coupled_step_causal(p, t, y, h, cfg, execution, schedule),
+                None => coupled_step_residual_first(p, t, y, h, cfg, execution),
+            };
+            if p.model_epoch() != epoch {
+                out.terminal_failure = Some(Failure::new(
+                    FailureKind::ModelChanged,
+                    "model changed before raw dispatch",
+                ));
+                return out;
+            }
+            if let Some(c) = out.candidate_attempt.candidate.as_ref() {
+                let scale = scale(y, &c.y_new, cfg);
+                match assess(policy, h, c.full_residual_l2, &scale, c.embedded_wrms) {
+                    Ok((effective, bound)) => {
+                        out.candidate_bound = bound.clone();
+                        let root_budget_passes = match (&bound, policy) {
+                            (
+                                Some(b),
+                                RootErrorPolicy::ConditionalL2 {
+                                    max_endpoint_wrms, ..
+                                },
+                            ) => b.endpoint_wrms <= *max_endpoint_wrms,
+                            _ => true,
+                        };
+                        if root_budget_passes {
+                            out.selected = Some(RawSelectedStep {
+                                selection: match self.causal_schedule {
+                                    Some(crate::CausalSchedule::Forward) => "causal-forward-raw-u",
+                                    Some(crate::CausalSchedule::BatchedPicard) => {
+                                        "causal-picard-raw-u"
+                                    }
+                                    None => "coupled-raw-u",
+                                },
+                                target_id: crate::TARGET_ID,
+                                y_new: c.y_new.clone(),
+                                error_vector: c.error_vector.clone(),
+                                embedded_wrms: c.embedded_wrms,
+                                effective_error: effective,
+                                full_residual_wrms: c.full_residual_wrms,
+                                conditional_bound: bound,
+                            });
+                            return out;
+                        }
+                    }
+                    Err(e) if e.kind == FailureKind::Input => {
+                        out.terminal_failure = Some(e);
                         return out;
                     }
+                    Err(_) => {} // Unusable conditional estimate tries the independent raw solve.
                 }
-                Err(e) if e.kind == FailureKind::Input => {
-                    out.terminal_failure = Some(e);
-                    return out;
-                }
-                Err(_) => {} // Unusable conditional estimate tries the independent raw solve.
+            } else if !out.candidate_attempt.failure.as_ref().is_some_and(|e| {
+                matches!(
+                    e.kind,
+                    FailureKind::Budget
+                        | FailureKind::ProjectionLeakage
+                        | FailureKind::ProjectionSingular
+                        | FailureKind::RootIteration
+                )
+            }) {
+                out.terminal_failure = out.candidate_attempt.failure.clone();
+                return out;
             }
-        } else if !out.candidate_attempt.failure.as_ref().is_some_and(|e| {
-            matches!(
-                e.kind,
-                FailureKind::Budget
-                    | FailureKind::ProjectionLeakage
-                    | FailureKind::ProjectionSingular
-                    | FailureKind::RootIteration
-            )
-        }) {
-            out.terminal_failure = out.candidate_attempt.failure.clone();
-            return out;
         }
         out.fallback_attempted = true;
         // Distinguish an error emitted by user code from one emitted by the
@@ -440,7 +485,11 @@ impl RawStepSession {
             }
         };
         out.selected = Some(RawSelectedStep {
-            selection: "sequential-raw-u-fallback",
+            selection: if skip_candidate {
+                "sequential-raw-u-protected"
+            } else {
+                "sequential-raw-u-fallback"
+            },
             target_id: crate::TARGET_ID,
             y_new: yn,
             error_vector: stages[7].clone(),

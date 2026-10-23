@@ -37,6 +37,8 @@ pub struct CoupledTrajectoryAttempt {
     pub fallback_callback_work: Work,
     pub fallback_validation_work: Work,
     pub fallback_attempted: bool,
+    pub candidate_skipped: bool,
+    pub switch_decision: Option<crate::CausalSwitchReceipt>,
     pub candidate_failure: Option<Failure>,
     pub candidate_bound: Option<ConditionalErrorEstimate>,
     pub selected_bound: Option<ConditionalErrorEstimate>,
@@ -114,7 +116,8 @@ pub fn integrate_coupled_observed(
     policy: &RootErrorPolicy,
 ) -> CoreResult<CoupledIntegrationResult> {
     integrate_with_schedule(
-        problem, t_span, y0, adaptive, output, coupled, execution, linear, policy, None,
+        problem, t_span, y0, adaptive, output, coupled, execution, linear, policy, None, None,
+        false,
     )
 }
 
@@ -145,6 +148,60 @@ pub fn integrate_causal_observed(
         linear,
         policy,
         Some(schedule),
+        None,
+        false,
+    )
+}
+
+/// Use an explicitly chosen projected root when its measured work remains
+/// competitive, and bypass it during bounded cooldown intervals. All routes
+/// retain the existing raw-U residual, embedded and optional conditional checks.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_switching_causal_observed(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    coupled: &Config,
+    execution: &ParallelExecution,
+    linear: &LinearSolverConfig,
+    policy: &RootErrorPolicy,
+    switching: &crate::CausalSwitchPolicy,
+) -> CoreResult<CoupledIntegrationResult> {
+    switching.validate()?;
+    integrate_with_schedule(
+        problem,
+        t_span,
+        y0,
+        adaptive,
+        output,
+        coupled,
+        execution,
+        linear,
+        policy,
+        switching.candidate.schedule(),
+        Some(switching),
+        false,
+    )
+}
+
+/// Always select the protected same-target raw-U solve; useful as a controlled
+/// comparator without paying a deliberately unsuccessful projected trial.
+#[allow(clippy::too_many_arguments)]
+pub fn integrate_sequential_raw_observed(
+    problem: &OdeProblem,
+    t_span: (f64, f64),
+    y0: &[f64],
+    adaptive: &AdaptiveStepConfig,
+    output: &OutputSchedule,
+    coupled: &Config,
+    execution: &ParallelExecution,
+    linear: &LinearSolverConfig,
+    policy: &RootErrorPolicy,
+) -> CoreResult<CoupledIntegrationResult> {
+    integrate_with_schedule(
+        problem, t_span, y0, adaptive, output, coupled, execution, linear, policy, None, None, true,
     )
 }
 
@@ -160,6 +217,8 @@ fn integrate_with_schedule(
     linear: &LinearSolverConfig,
     policy: &RootErrorPolicy,
     schedule: Option<crate::CausalSchedule>,
+    switching: Option<&crate::CausalSwitchPolicy>,
+    protected_only: bool,
 ) -> CoreResult<CoupledIntegrationResult> {
     if y0.len() != problem.dimension {
         return Err(CoreError::Dimension(
@@ -182,6 +241,7 @@ fn integrate_with_schedule(
     let mut counters = WorkCounters::default();
     let mut terminal_failure = None;
     let mut accepted_steps = 0usize;
+    let mut switch_state = switching.map(crate::switching::SwitchState::new);
 
     while t < tf && attempts.len() < adaptive.max_attempts {
         let trial = match collector.trial(t, h, &controller) {
@@ -193,7 +253,12 @@ fn integrate_with_schedule(
             }
         };
         let epoch = problem.model_epoch();
-        let mut attempt = session.attempt(problem, t, &y, trial.h, &cfg, execution, policy);
+        let skip = protected_only || switch_state.as_ref().is_some_and(|s| s.skip());
+        let mut attempt = if skip {
+            session.attempt_protected(problem, t, &y, trial.h, &cfg, execution, policy)
+        } else {
+            session.attempt(problem, t, &y, trial.h, &cfg, execution, policy)
+        };
         counters.accumulate(common_work(&attempt.candidate_attempt.work));
         counters.accumulate(common_work(&attempt.fallback_validation_work));
         let mut fallback_work = attempt.fallback_counters;
@@ -224,6 +289,8 @@ fn integrate_with_schedule(
             fallback_callback_work: attempt.fallback_callback_work,
             fallback_validation_work: attempt.fallback_validation_work,
             fallback_attempted: attempt.fallback_attempted,
+            candidate_skipped: attempt.candidate_skipped,
+            switch_decision: None,
             candidate_failure: attempt.candidate_attempt.failure,
             candidate_bound: attempt.candidate_bound,
             selected_bound: selected.as_ref().and_then(|s| s.conditional_bound.clone()),
@@ -267,6 +334,9 @@ fn integrate_with_schedule(
                 ) {
                     Ok(next) => {
                         h = next;
+                        if let Some(state) = &mut switch_state {
+                            record.switch_decision = Some(state.observe(&record));
+                        }
                         attempts.push(record);
                         continue;
                     }
@@ -278,6 +348,9 @@ fn integrate_with_schedule(
                 }
             } else {
                 terminal_failure = Some(failure);
+            }
+            if let Some(state) = &mut switch_state {
+                record.switch_decision = Some(state.observe(&record));
             }
             attempts.push(record);
             break;
@@ -298,6 +371,9 @@ fn integrate_with_schedule(
             terminal_failure = Some(failure);
             counters.rejected_steps = counters.rejected_steps.saturating_add(1);
             counters.nonfinite_step_failures = counters.nonfinite_step_failures.saturating_add(1);
+            if let Some(state) = &mut switch_state {
+                record.switch_decision = Some(state.observe(&record));
+            }
             attempts.push(record);
             break;
         }
@@ -317,6 +393,9 @@ fn integrate_with_schedule(
                 record.terminal_failure = Some(failure.clone());
                 terminal_failure = Some(failure);
                 counters.rejected_steps = counters.rejected_steps.saturating_add(1);
+                if let Some(state) = &mut switch_state {
+                    record.switch_decision = Some(state.observe(&record));
+                }
                 attempts.push(record);
                 break;
             }
@@ -330,6 +409,9 @@ fn integrate_with_schedule(
                 record.terminal_failure = Some(failure.clone());
                 terminal_failure = Some(failure);
                 counters.rejected_steps = counters.rejected_steps.saturating_add(1);
+                if let Some(state) = &mut switch_state {
+                    record.switch_decision = Some(state.observe(&record));
+                }
                 attempts.push(record);
                 break;
             }
@@ -340,6 +422,9 @@ fn integrate_with_schedule(
                 record.terminal_failure = Some(failure.clone());
                 terminal_failure = Some(failure);
                 counters.rejected_steps = counters.rejected_steps.saturating_add(1);
+                if let Some(state) = &mut switch_state {
+                    record.switch_decision = Some(state.observe(&record));
+                }
                 attempts.push(record);
                 break;
             }
@@ -356,6 +441,9 @@ fn integrate_with_schedule(
             counters.rejected_steps = counters.rejected_steps.saturating_add(1);
             counters.local_error_failures = counters.local_error_failures.saturating_add(1);
         }
+        if let Some(state) = &mut switch_state {
+            record.switch_decision = Some(state.observe(&record));
+        }
         attempts.push(record);
         h = next_h;
     }
@@ -369,10 +457,18 @@ fn integrate_with_schedule(
     };
     let observed = collector.finish(success, message, counters, accepted_steps)?;
     Ok(CoupledIntegrationResult {
-        driver: match schedule {
-            Some(crate::CausalSchedule::Forward) => "rodas5p-raw-u-causal-forward-adaptive-v1",
-            Some(crate::CausalSchedule::BatchedPicard) => "rodas5p-raw-u-causal-picard-adaptive-v1",
-            None => COUPLED_ADAPTIVE_DRIVER_ID,
+        driver: if switching.is_some() {
+            "rodas5p-raw-u-work-switch-adaptive-v1"
+        } else if protected_only {
+            "rodas5p-raw-u-protected-adaptive-v1"
+        } else {
+            match schedule {
+                Some(crate::CausalSchedule::Forward) => "rodas5p-raw-u-causal-forward-adaptive-v1",
+                Some(crate::CausalSchedule::BatchedPicard) => {
+                    "rodas5p-raw-u-causal-picard-adaptive-v1"
+                }
+                None => COUPLED_ADAPTIVE_DRIVER_ID,
+            }
         },
         root_error_policy: policy.clone(),
         observed,

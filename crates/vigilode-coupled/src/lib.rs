@@ -9,15 +9,18 @@ mod adaptive;
 mod algebra;
 mod fallback;
 mod solver;
+mod switching;
 pub use adaptive::{
     COUPLED_ADAPTIVE_DRIVER_ID, CoupledIntegrationResult, CoupledTrajectoryAttempt,
-    integrate_causal_observed, integrate_coupled_observed,
+    integrate_causal_observed, integrate_coupled_observed, integrate_sequential_raw_observed,
+    integrate_switching_causal_observed,
 };
 pub use fallback::{
     FallbackResult, SelectedStep, coupled_or_sequential, coupled_or_sequential_budgeted,
 };
 use rodas5p_integrators::{OdeProblem, ParallelExecution};
 use serde::Serialize;
+pub use switching::{CandidateRoute, CausalSwitchPolicy, CausalSwitchReceipt, CausalWorkWeights};
 
 pub const TARGET_ID: &str = "rodas5p-raw-u-coupled-operational-v1";
 

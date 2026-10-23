@@ -1,25 +1,36 @@
 {
-  "schema": "vigilode.document-render-check.v1",
+  "schema": "vigilode.document-render-check.v2",
   "document": "DESIGN.pdf",
-  "pages": 12,
-  "render": "XeLaTeX + Poppler at 1400px",
+  "pages": 20,
+  "render": "pandoc + three XeLaTeX passes; PyMuPDF contact sheets and 1.5x detail pages",
   "visual_review": {
     "all_pages_contact_sheets": true,
     "detail_pages": [
-      4,
-      7
+      5,
+      9,
+      10,
+      11,
+      19,
+      20
     ],
-    "findings_remaining": []
+    "findings_remaining": [],
+    "resolved": [
+      "Long configuration identifier line overflow removed",
+      "Implementation mapping heading kept with table",
+      "Accepted-state flow diagram lower border no longer clipped"
+    ]
   },
   "latex_overfull_boxes": 0,
   "missing_characters": 0,
   "latex_font_warnings": 0,
   "sha256": {
-    "DESIGN_KO.md": "6c0b0c424cba54d76a5c254febe6e00105b38d1903c1a3a739a44f92737d1565",
-    "DESIGN.tex": "5fb3bc38e2c38a6c9653eb7e6ec05f2e8b86d27f4e6a4dadd7b7d98164943cd4",
-    "DESIGN.pdf": "9090f34e81ad8a2d26fb3698516f36c1473cd95cdd0dbb2f18ad30b3c93b8d89",
-    "SPECIFICATION.json": "342e45c0452a8711cee72337e006affac0666faff767fe91c1020c2c2e3e2876"
+    "DESIGN_KO.md": "c8b94a9dc4213e6071f22b088e648d0998b15b9a11222d2a8afbc2366bd30eac",
+    "DISTINCTIVE_ALGORITHMS_KO.md": "3ef1c3fd8d679e9baa428c5f54a78fc46122aa4b89d3f139e167843d8cc10f7a",
+    "DESIGN.tex": "81840a4c2e616087a74565aa343997289b0354fbe537e090a8a3df06545e6793",
+    "DESIGN.pdf": "39da62d4e6de7a52b176ad78f4cfb6aef68037be802c8aeeb14b8101125e5096",
+    "SPECIFICATION.json": "699c517087df5f1913bc127ff2445037a107354de46cb2c48d3dacd174d69e5b",
+    "REFERENCES.bib": "6663c01a0a8d2359eeb48811e531b0822872f1d994d4aa7a8f2fcf25ef421e02"
   },
   "font_source_sha256": "194018e6b2b293a7964f037b25c0249ce1418bc9ab3c971060a03aa57861e252",
-  "note": "Layout review is separate from mathematical verification. Numerical proofs independently checked by math audit agent."
+  "note": "Visual layout review does not establish mathematical correctness or runtime performance. Independent theory review and source mapping are recorded separately."
 }

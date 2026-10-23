@@ -104,7 +104,7 @@
 \IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
 \urlstyle{same}
 \hypersetup{
-  pdftitle={VigilODE: 범용 상미분방정식 적분기의 수학적 설계},
+  pdftitle={VigilODE: 인과적 Rosenbrock와 대수적 연산 축약을 이용한 ODE 설계},
   pdfauthor={기술 설계 문서},
   pdflang={ko-KR},
   colorlinks=true,
@@ -114,14 +114,14 @@
   urlcolor={NavyBlue},
   pdfcreator={LaTeX via pandoc}}
 
-\title{VigilODE: 범용 상미분방정식 적분기의 수학적 설계}
+\title{VigilODE: 인과적 Rosenbrock와 대수적 연산 축약을 이용한 ODE 설계}
 \usepackage{etoolbox}
 \makeatletter
 \providecommand{\subtitle}[1]{% add subtitle to \maketitle
   \apptocmd{\@title}{\par {\large #1 \par}}{}{}
 }
 \makeatother
-\subtitle{명시적 방법과 선형 음시적 방법의 선택, 오차 제어, 실행 계약}
+\subtitle{공유 단계 공간, 유한 전파, 다항식 관계와 조건별 적응 선택}
 \author{기술 설계 문서}
 \date{2026년 10월 24일}
 
@@ -136,23 +136,24 @@
 \hypertarget{uxcd08uxb85d}{%
 \section{초록}\label{uxcd08uxb85d}}
 
-VigilODE의 범용 적분 인터페이스는 초기값 문제의 수학적 성질과 사용자가
-허용한 연산을 함께 고려하여 시간 적분 방법을 선택한다. 비강성 문제와
-강성이 알려지지 않은 문제에는 우변 평가만을 사용하는 Dormand--Prince
-5(4) 방법을 적용한다. 강성 문제에는 도함수 계산이 명시적으로 허용되었을
-때 RODAS5P를 적용한다. 전자는 행렬 구성과 선형 풀이를 요구하지 않으며,
-후자는 한 시간 간격 안에서 같은 선형 연산자를 재사용하여 비선형 Newton
-반복 없이 강성 성분을 처리한다. 두 방법은 성분별 절대 허용오차, 상대
-허용오차, 유한성 검사, 시도 횟수 제한, 마지막으로 수락한 상태의
-보존이라는 공통 실행 계약을 따른다.
+VigilODE는 시간 적분 공식과 그 단계 방정식을 푸는 대수 알고리즘을 함께
+설계한다. 비강성 문제에는 Dormand--Prince 5(4)를 {[}1{]}, 강성 문제의
+공통 기반에는 RODAS5P를 사용한다 {[}2{]}. 그 위에서 여덟 단계의 증분을
+하나의 공유 공간으로 표현하고, 엄밀한 하삼각 의존성을 이용하여 현재
+단계의 미분 평가와 Newton 반복을 제거한다. 같은 단계 목표를 동시
+갱신으로 표현하면 유한 전파 구조에 따른 병렬 평가가 가능하다. 별도로
+낮은 차수의 다항식 관계가 선언된 연산자는 몫 다항식과 잔차 보정으로
+처리하여 일반적인 선형 대수의 비용을 줄인다. 이러한 특수화의 적용 조건과
+실패 비용은 실행 중 선택 알고리즘이 관리한다.
 
-본 문서는 이 두 방법을 중심으로 수학적 정의, 계수, 국소 오차 추정, 보간,
-계산량 및 공개 인터페이스의 의미를 기술한다. 특히 도함수를 사용하지 않는
-계산과 행렬을 명시적으로 구성하지 않는 계산을 구별하고, 국소 허용오차가
-뜻하는 바를 전역 오차와 분리하여 설명한다. 계수의 대수적 성질에서
-도출되는 재사용 원리, 선형 풀이의 잔차가 해에 미치는 영향, 가변 시간
-간격에 대한 조건부 전역 오차 한계를 증명한다. 이는 특정 응용 분야에
-종속되지 않는 상미분방정식 적분기 설계에 대한 기술이다.
+본 문서는 공통 \texttt{GeneralOde} 인터페이스와 조건별로 명시적으로
+호출하는 특수 알고리즘을 구분하여 설명한다. 인과적 제거, 동시 갱신의
+유한 전파, homotopy의 삼각 정칙성, 근사 다항식 관계의 잔차 수축 및 단계
+잔차의 출력 증폭을 직접 유도한다. 이어서 시간 적분 계수, 국소 오차 제어,
+보간과 실패 처리의 전체 맥락을 기술한다. 전체 Jacobian을 구성하지 않는
+것, 도함수를 전혀 사용하지 않는 것 및 Newton 반복을 제거하는 것은 서로
+다른 사양이다. 각 경로에서 실제 사용하는 연산과 필요한 가정을 명시하며,
+국소 허용오차와 전역 오차를 구별한다.
 
 \hypertarget{uxbb38uxc81c-uxc124uxc815uxacfc-uxc124uxacc4uxc758-uxb3d9uxae30}{%
 \section{문제 설정과 설계의
@@ -206,17 +207,18 @@ VigilODE의 범용 적분 인터페이스는 초기값 문제의 수학적 성�
 \section{방법 선택과 공개
 사양}\label{uxbc29uxbc95-uxc120uxd0dduxacfc-uxacf5uxac1c-uxc0acuxc591}}
 
-\hypertarget{uxc120uxc5b8uxc5d0-uxb530uxb978-uxc120uxd0dd}{%
-\subsection{선언에 따른
-선택}\label{uxc120uxc5b8uxc5d0-uxb530uxb978-uxc120uxd0dd}}
+\hypertarget{uxacf5uxd1b5-uxc778uxd130uxd398uxc774uxc2a4uxc758-uxc120uxc5b8uxc5d0-uxb530uxb978-uxc120uxd0dd}{%
+\subsection{공통 인터페이스의 선언에 따른
+선택}\label{uxacf5uxd1b5-uxc778uxd130uxd398uxc774uxc2a4uxc758-uxc120uxc5b8uxc5d0-uxb530uxb978-uxc120uxd0dd}}
 
 일반 진입점은 \texttt{GeneralOde::solve}이다.
 \texttt{GeneralOdePolicy}는 문제 유형을 \texttt{ProblemRegime}으로
 지정하고, \texttt{derivatives:\ DerivativeFallback}으로 도함수 계산 허용
 여부를, \texttt{max\_dense\_dimension}으로 조밀 행렬 사용의 자원 한계를
 명시한다. 기본 선택에서 강성이 알려지지 않은 문제는 명시적 방법으로
-시작한다. 실행 중 수집한 경험적 수치만으로 도함수 계산을 새로 허용하거나
-다른 방법으로 몰래 바꾸지 않는다.
+시작한다. 이 공통 진입점의 방법 선택은 실행 전 선언으로 정해진다. 뒤에서
+설명하는 인과적 단계 알고리즘과 실행 중 선택은 별도의 명시적 진입점을
+가지며, 사용자에게 허용받지 않은 도함수 계산을 새로 부여하지 않는다.
 
 \Needspace{8\baselineskip}
 \begin{longtable}[]{@{}
@@ -266,8 +268,9 @@ VigilODE의 범용 적분 인터페이스는 초기값 문제의 수학적 성�
 권한의 조합을 확인한다. 시간 구간, 초기 상태 및 허용오차의 수치적
 유효성은 \texttt{solve}에서 검사한다.
 
-\hypertarget{uxc9c0uxc6d0-uxbc94uxc704}{%
-\subsection{지원 범위}\label{uxc9c0uxc6d0-uxbc94uxc704}}
+\hypertarget{uxacf5uxd1b5-uxc778uxd130uxd398uxc774uxc2a4uxc758-uxc9c0uxc6d0-uxbc94uxc704}{%
+\subsection{공통 인터페이스의 지원
+범위}\label{uxacf5uxd1b5-uxc778uxd130uxd398uxc774uxc2a4uxc758-uxc9c0uxc6d0-uxbc94uxc704}}
 
 일반 인터페이스는 항등 질량행렬의 ODE와 고정 차원 상태를 다루며 끝점
 결과를 반환한다. \texttt{dense\_output=true}인 요청은 거부하고, 연속
@@ -314,6 +317,643 @@ Newton 비선형 반복 & 없음 & 없음 \\
 경로는 끝점 출력에 한정되며, 성분별 절대 허용오차도, 연속 출력도 해당
 경로에서 지원하지 않는다. 스칼라 절대 허용오차를 사용한 끝점 출력만
 지원한다.
+
+\hypertarget{vigilodeuxc758-uxc778uxacfcuxc801-uxb2e8uxacc4-uxacc4uxc0b0uxacfc-uxb300uxc218uxc801-uxc5f0uxc0b0-uxcd95uxc57d}{%
+\section{VigilODE의 인과적 단계 계산과 대수적 연산
+축약}\label{vigilodeuxc758-uxc778uxacfcuxc801-uxb2e8uxacc4-uxacc4uxc0b0uxacfc-uxb300uxc218uxc801-uxc5f0uxc0b0-uxcd95uxc57d}}
+
+\hypertarget{uxc5f0uxad6cuxc758-uxb3d9uxae30uxc640-uxad6cuxd604uxc758-uxce35uxc704}{%
+\subsection{연구의 동기와 구현의
+층위}\label{uxc5f0uxad6cuxc758-uxb3d9uxae30uxc640-uxad6cuxd604uxc758-uxce35uxc704}}
+
+VigilODE의 수학적 설계는 표준 시간 적분 공식의 선택과 그 공식을 계산하는
+대수 알고리즘의 선택을 함께 다룬다. 전자는 비강성 문제의 명시적 적분과
+강성 문제의 Rosenbrock 적분을 구분한다. 후자는 같은 단계 방정식을 더
+적은 도함수 평가, 더 작은 선형 문제 또는 더 짧은 계산 의존 경로로 풀 수
+있는지를 묻는다. 이 두 선택은 서로 다른 문제이다. \texttt{GeneralOde}가
+보수적인 공통 진입점을 제공한다는 사실만으로, 별도의 명시적 호출로
+사용할 수 있는 인과적 단계 풀이와 대수적 특수화가 사라지는 것은 아니다.
+
+이 장에서는 구현된 알고리즘을 수학적 대상으로 삼는다. 시간 적분의 계수는
+기존 RODAS5P를 사용하고 {[}2{]}, 같은 계수가 정의하는 여덟 단계의 결합
+문제에서 인과성, 공통 선형 연산자 및 낮은 차수의 다항식 관계를 이용한다.
+따라서 새로운 기여를 논할 때에는 시간 적분 공식, 단계 풀이, 구조를
+이용한 연산 축약 및 실행 중 선택을 구분해야 한다. 아래의 직접 유도는
+해당 알고리즘의 정확성 또는 조건부 비용 감소를 설명한다. 기존 문헌
+전체에 대한 최초성 주장은 이로부터 따라오지 않는다.
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 6\tabcolsep) * \real{0.2500}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+구현 층위
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+계산 대상
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+사용하는 정보
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+제공하는 효과
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+공통 시간 적분 & 전체 초기값 문제 & 우변과 허용된 도함수 & 명시적·선형
+음시적 방법의 안전한 선택 \\
+인과적 축소 단계 풀이 & 한 시도의 여덟 단계 & 기준점 JVP와 공유 기저 &
+현재 단계의 도함수와 Newton 반복 제거 \\
+동시 단계 갱신 & 같은 단계 근 & 동일한 이전 반복값의 우변 묶음 & 단계
+평가의 병렬 실행 기회 \\
+다항식 몫 연산 & 선형 resolvent 또는 흐름 & 선언된 연산자 관계와 노름
+상한 & 직교화와 일반 조밀 분해의 대체 \\
+조건별 적응 선택 & 특수화와 보호된 풀이 사이 & 실제 비용, 잔차, 실패
+이력 & 반복되는 부적합 시도의 억제 \\
+\end{longtable}
+
+여기서 \emph{Jacobian-free}는 전체 상태 좌표의 Jacobian 배열을 구성하지
+않는다는 뜻으로 사용한다. \emph{Matrix-free}는 큰 연산자를 작용으로
+다룬다는 뜻이며 작은 투영 행렬까지 금지하는 표현은 아니다.
+\emph{Derivative-free}는 실제로 도함수 또는 JVP를 요구하지 않는 경로에만
+사용한다. \emph{Newton-free}는 비선형 Newton 반복을 하지 않는다는
+뜻이다. 이 구분에 따르면 인과적 투영 경로는 전체 Jacobian을 조립하지
+않고 현재 단계의 미분과 Newton 반복을 제거하지만, 기준점에서 제공된
+JVP와 작은 행렬 분해를 사용한다. 반면 구조가 선언된 회전·감쇠 흐름이나
+다항식 작용은 해당 연산자 관계를 직접 이용하므로 별도의 Jacobian 추정을
+요구하지 않는다.
+
+\hypertarget{uxacf5uxc720-uxae30uxc800uxc5d0uxc11cuxc758-uxc99duxac15-uxb2e8uxacc4-uxbc29uxc815uxc2dd}{%
+\subsection{공유 기저에서의 증강 단계
+방정식}\label{uxacf5uxc720-uxae30uxc800uxc5d0uxc11cuxc758-uxc99duxac15-uxb2e8uxacc4-uxbc29uxc815uxc2dd}}
+
+자율 초기값 문제 \(y'=f(y)\)의 수락 상태를 \(y_n\)이라 하자.
+\(J_0=f'(y_n)\)의 작용을 제공하고, 두 번의 재직교화를 거친 기저를
+\(Q\in\mathbb R^{n\times m}\), \(Q^TQ=I_m\)으로 쓴다. 실제 구현은
+\(Q\)의 열과 \(J_0Q\)를 보관한다. 전체 \(n\times n\) Jacobian을 만들지
+않는다. 이때
+
+\[
+ B=Q^TJ_0Q,\qquad W_m=I_m-h\gamma B,\qquad u_i\approx Qz_i
+ \tag{C1}
+\]
+
+를 정의한다. \(u_i\)는 원래 상태 공간의 단계 증분이고
+\(z_i\in\mathbb R^m\)는 그 축소 좌표이다. 여덟 \(z_i\)를 하나의 벡터로
+모으면 차원 \(8m\)의 증강 미지수를 얻는다. 여기서 증강은 물리적 상태에
+새로운 방정식을 임의로 더한다는 뜻이 아니라, 한 시도의 단계들을 함께
+표현한다는 뜻이다.
+
+RODAS5P의 원래 단계 좌표를 사용하면 투영된 최종 목표는
+
+\[
+ W_m z_i=h\gamma Q^T f\!\left(y_n+Q\sum_{j<i}a_{ij}z_j\right)
+       +\gamma\sum_{j<i}c_{ij}z_j,\qquad i=0,\ldots,7.
+ \tag{C2}
+\]
+
+\(a_{ij}\)와 \(c_{ij}\)는 엄밀한 하삼각 계수이다. 구현은 대각선과
+상삼각에 0이 아닌 항이 있으면 이 인과적 풀이를 거부한다. 수학적으로 작은
+항이라도 그대로 무시하지 않는다. 이 검사 덕분에 식 (C2)의 우변에는 현재
+미지수 \(z_i\)가 들어가지 않는다.
+
+\textbf{명제 C1 --- 공통 인자를 이용한 인과적 제거.} \(W_m\)이 가역이고
+필요한 단계 상태에서 \(f\)가 정의되면 식 (C2)는 유일한 해를 가지며, 한
+번의 \(W_m\) 분해와 여덟 번의 전진 단계 풀이로 그 해를 구성할 수 있다.
+
+\textbf{증명.} 첫 단계의 우변은 \(h\gamma Q^Tf(y_n)\)로 이미 알려져
+있다. \(W_m\)의 가역성으로 \(z_0\)가 유일하게 정해진다.
+\(z_0,\ldots,z_{i-1}\)가 정해졌다고 가정하면 \(i\)번째 우변도 알려져
+있으므로 \(z_i\)가 유일하게 정해진다. 여덟 단계에 대한 귀납법으로 결론을
+얻는다. \(\square\)
+
+이는 비선형 단계 방정식의 구조를 직접 사용한 연산 제거이다. 각 단계의
+상태에서 새로운 Jacobian이나 JVP를 평가할 이유가 없고, 현재 \(z_i\)에
+대한 Newton 보정도 필요하지 않다. 조밀한 축소 행렬을 사용할 때 공통
+인자분해와 여덟 선형 풀이의 비용은 \(O(m^3+8m^2)\)이다. 단계 결합
+자체에는 \(O(8^2m)\), 승강과 투영에는 \(O(8nm)\)가 추가되며, 기저
+구성·우변·원래 공간 잔차 검사도 따로 계산해야 한다. 따라서 이 식은 전체
+적분 비용이 항상 \(O(m^3)\)이라는 주장이 아니다. 작은 문제에서는
+\(m=n\)일 수도 있다.
+
+공통 기저를 사용하는 이유도 여기에 있다. 매 단계마다 별도의 큰 선형
+풀이를 준비하는 대신, 같은 기준점의 작용을 축소 공간에 모아 여러 단계가
+재사용한다. 반대로 매우 넓은 스펙트럼이나 큰 투영 누출을 가진 문제에서는
+작은 \(m\)으로 원래 단계 방정식을 재현하기 어렵다. 이 경우 기저 확장
+또는 원래 공간의 보호된 풀이가 필요하다.
+
+\hypertarget{uxc720uxd55c-uxc804uxd30cuxc640-uxb2e8uxacc4-uxbcd1uxb82cuxd654}{%
+\subsection{유한 전파와 단계
+병렬화}\label{uxc720uxd55c-uxc804uxd30cuxc640-uxb2e8uxacc4-uxbcd1uxb82cuxd654}}
+
+단계들을 같은 이전 반복값에서 동시에 평가하려면 비선형 나머지를
+
+\[
+ N_i(z)=Q^T\!\left[f\!\left(y_n+Q\sum_{j<i}a_{ij}z_j\right)
+              -f(y_n)-J_0Q\sum_{j<i}a_{ij}z_j\right]
+ \tag{C3}
+\]
+
+로 분리한다. 공통 대각 블록 \(W_m\)을 가진 하삼각 선형 행렬을 \(L\)이라
+쓰면 최종 목표는 \(Lz=g+h\gamma N(z)\)가 된다. 동시 갱신은
+
+\[
+ z^{(k+1)}=L^{-1}\{g+h\gamma N(z^{(k)})\}
+ \tag{C4}
+\]
+
+이다. 모든 \(N_i\)는 같은 \(z^{(k)}\)를 읽으므로 우변 평가들을 병렬로
+실행할 수 있다. 단계 하나의 쓰기 결과를 다른 단계가 같은 묶음 안에서
+읽는 방식과 구별된다.
+
+\textbf{명제 C2 --- 인과적 유한 전파.} 정확한 산술에서, 식 (C4)의
+시작값이 첫 단계를 정확히 만족하면 일곱 번의 갱신 뒤에는 여덟 단계 모두
+식 (C2)의 해와 일치한다. 이 명제에는 전역 수축 상수 \(\|T'\|<1\)이
+필요하지 않다.
+
+\textbf{증명.} \(N_i\)는 \(z_0,\ldots,z_{i-1}\)에만 의존하고
+\(L^{-1}\)도 하삼각이다. 따라서 갱신 사상 \(T_i\)는 이전 반복의
+\(z_0,\ldots,z_{i-1}\)에만 의존한다. 첫 단계가 정확하면 다음 갱신에서 두
+번째 단계가 정확해진다. 첫 \(k+1\)단계가 정확하면 다음 갱신에서 첫
+\(k+2\)단계가 정확해진다. 선형 시작값 \(L^{-1}g\)는 첫 단계를 정확히
+만족하므로 일곱 번을 적용하면 충분하다. \(\square\)
+
+이 성질은 단계 방향의 엄밀한 정보 전파에 관한 것이다. 배정밀도에서는
+반올림과 선형 풀이 오차가 남으므로 구현은 실제 잔차를 확인하고 유한 횟수
+안에서 종료한다. 또한 벽시계 시간은 별도 문제이다. 순차 인과적 풀이가 새
+우변을 일곱 번 평가한다면, 동시 반복은 각 갱신에 앞선 잔차 평가와 마지막
+성공 확인을 포함한다. \(k\)번 갱신 뒤 성공하면 평가 묶음 수는
+\(b=k+1\)이며, 새 우변은 \(7b\)번 필요하다. 일곱 작업을 \(p\)개 작업자에
+배분하는 단순 비용 모델에서
+
+\[
+ b\left\lceil\frac7p\right\rceil C_f+bC_{\rm sync}+C_{\rm small}
+       <7C_f+C_{\rm forward}
+ \tag{C5}
+\]
+
+일 때 병렬 실행의 이득을 기대할 수 있다. \(C_f\)는 한 우변의 시간이고
+나머지 항은 동기화와 축소 선형 대수의 시간이다. 두 경로 모두 원래
+공간에서 수행하는 최종 잔차 검사는 이 간단한 비교식에서 공통 비용으로
+분리하였다. 식 (C5)는 해당 비용 모델에서의 교차 조건이다. 실제 선택에는
+초기 준비, 검증 및 실패 후 대체 비용을 포함한 측정이 필요하다. 저렴한
+우변에서 관측된 손해는 비싼 우변의 가능성을 배제하지 않지만, 작업자
+수만으로 가속을 보장하지도 않는다.
+
+\begin{figure}
+\centering
+\includegraphics{figures/causal_finite_propagation.pdf}
+\caption{인과적 반복의 정확성 전파. 음영은 정확한 산술에서 이미 최종
+단계 값과 일치하는 성분이다. 첫 단계를 만족하는 시작값 이후 한 갱신마다
+최소 한 단계가 추가로 확정된다. 이 도식은 실행 시간 측정이 아니다.}
+\end{figure}
+
+\hypertarget{homotopyuxc758-uxc5eduxd560uxacfc-uxc0bcuxac01-uxad6cuxc870uxc758-uxc815uxce59uxc131}{%
+\subsection{Homotopy의 역할과 삼각 구조의
+정칙성}\label{homotopyuxc758-uxc5eduxd560uxacfc-uxc0bcuxac01-uxad6cuxc870uxc758-uxc815uxce59uxc131}}
+
+선형 시작 문제와 비선형 단계 목표를 연결하는 homotopy는
+
+\[
+ H_\lambda(z)=L_{\eta(\lambda)}z-g-\lambda h\gamma N(z)=0,
+ \qquad \eta(\lambda)=\theta+\lambda(1-\theta),\quad0\le\lambda\le1
+ \tag{C6}
+\]
+
+로 표현된다. 구현은 \(\lambda=1\)의 직접 보정을 먼저 시도하고, 필요할
+때만 구간을 세분한다. 일반 보정 경로는 현재 단계 도함수와 Newton 보정을
+사용할 수 있다. 따라서 저장소의 모든 homotopy 구현을 하나의 Newton-free
+방법으로 부르는 것은 정확하지 않다.
+
+\textbf{명제 C3 --- 인과적 homotopy의 정칙성.} \(f\)가 관련 영역에서
+\(C^1\)이고 \(W_m\)이 가역이라고 하자. 식 (C6)의 해가 그 영역 안에
+머무르면, 모든 \(\lambda\)에서 \(\partial_zH_\lambda\)는 대각 블록이
+\(W_m\)인 하삼각 행렬이고
+
+\[
+ \det(\partial_zH_\lambda)=\det(W_m)^8\ne0.
+ \tag{C7}
+\]
+
+따라서 이 영역의 경로에는 단계 결합 자체에서 생기는 Jacobian 특이점이
+없다.
+
+\textbf{증명.} \(N_i\)의 현재 단계 및 후속 단계에 대한 편미분은 0이다.
+\(\eta\)가 바꾸는 선형 결합도 엄밀한 하삼각 부분에만 위치한다. 모든 대각
+블록은 \(W_m\)으로 유지되므로 블록 삼각 행렬의 행렬식 공식이 식 (C7)을
+준다. 해의 국소 \(C^1\) 의존성은 음함수 정리로 얻는다. 각 \(\lambda\)의
+해 자체는 명제 C1과 같은 전진 구성으로 정해진다. 영역 밖으로 나가는
+문제는 이 정칙성 가정에 포함되지 않는다. \(\square\)
+
+이 결과는 homotopy를 이용한 연구가 인과적 직접 풀이로 이어지는 수학적
+이유를 보여 준다. 삼각 구조가 유지되는 목표에서는 연속 경로를 추적하는
+반복을 전진 제거로 대체할 수 있다. 반대로 단계 간 양방향 결합, 경계
+조건, 여러 시간 구간을 함께 맞추는 문제에서는 식 (C7)의 구조가 사라질 수
+있으므로 continuation과 근 검증이 다시 독립적인 역할을 갖는다.
+
+여러 시간 구간의 affine 사상 \(y_{j+1}=A_jy_j+b_j\)를 합성할 때에는
+결합법칙에 따라 prefix 계산을 병렬화할 수 있다. 합성은
+\((A_2,b_2)\circ(A_1,b_1)=(A_2A_1,A_2b_1+b_2)\)이다. 비선형 시간 전파가
+곧바로 affine 사상으로 바뀌지는 않는다. 저장소의 별도 nonlinear window
+구현은 선언된 모델의 부분 흐름과 보정, 독립 오차 검증을 사용한다. 이러한
+모델 전용 계산과 임의의 우변을 받는 범용 적분은 서로 다른 호출 계약이다.
+
+\hypertarget{uxb2e4uxd56duxc2dd-uxbaab-uxacf5uxac04uxc5d0uxc11cuxc758-uxc120uxd615-uxd480uxc774}{%
+\subsection{다항식 몫 공간에서의 선형
+풀이}\label{uxb2e4uxd56duxc2dd-uxbaab-uxacf5uxac04uxc5d0uxc11cuxc758-uxc120uxd615-uxd480uxc774}}
+
+시간 간격과 선형 계수를 포함한 연산자를 \(B\)라 하고 \(C=I-B\)를 풀어야
+한다고 하자. 낮은 차수의 관계 \(q(B)=0\)가 알려져 있으면, 계산은
+형식적인 다항식환 \(\mathbb R[z]/(q)\)에서 낮은 차수의 대표원으로
+옮겨진다. 여기서 핵심은 추상적 명칭이 아니라 실제로 필요한 연산자 작용의
+수가 줄어든다는 것이다.
+
+\textbf{명제 C4 --- 몫 다항식 resolvent.} \(q\)가 차수 \(d\ge1\)인 실수
+다항식이고 \(q(1)\ne0\)라고 하자. 다항식
+
+\[
+ p(z)=\frac{q(1)-q(z)}{q(1)(1-z)}
+ \tag{C8}
+\]
+
+는 차수가 최대 \(d-1\)이고, \(q(B)=0\)이면 \((I-B)^{-1}=p(B)\)이다.
+
+\textbf{증명.} 분자는 \(z=1\)에서 0이므로 \((1-z)\)로 나누어떨어진다. 식
+(C8)에 \(1-z\)를 곱하고 \(z=B\)를 대입하면
+\((I-B)p(B)=I-q(B)/q(1)=I\)이다. 유한 차원에서 오른쪽 역행렬은
+역행렬이므로 결론을 얻는다. \(\square\)
+
+Horner 계산은 최대 \(d-1\)회의 \(B\) 작용으로 \(p(B)b\)를 구성한다. 원래
+공간의 잔차 확인에는 한 번의 작용이 추가된다. 이는 \(d\)가 작고 관계가
+실제 연산자 전체에 대해 성립할 때 유용하다. 몇 개 벡터에서 관측한
+일치만으로 전체 연산자 관계를 증명할 수는 없다.
+
+인수분해나 고유벡터 구성이 이 공식의 선행 조건은 아니다. 중근을 가진
+\(q\)에도 같은 증명이 적용된다. 예를 들어 \(B=\mu I+N\), \(N^d=0\)이면
+
+\[
+ (I-B)^{-1}=\frac1{1-\mu}\sum_{j=0}^{d-1}
+                   \left(\frac{N}{1-\mu}\right)^j,\qquad\mu\ne1.
+ \tag{C9}
+\]
+
+비정규 행렬도 포함하는 유한 급수이다. \(\|N\|\)이 크거나 \(\mu\)가 1에
+가까우면 역연산의 크기와 반올림 민감도가 커질 수 있으므로, 유한한
+차수만으로 수치 안정성을 판단하지 않는다. 구현은 \(q(1)\)의 크기를 계수
+절댓값 합과 비교하고, 원래 좌표의 잔차를 확인한다.
+
+\hypertarget{uxadfcuxc0ac-uxad00uxacc4uxb97c-uxc794uxcc28-uxbcf4uxc815uxc73cuxb85c-uxd65cuxc6a9}{%
+\subsubsection{근사 관계를 잔차 보정으로
+활용}\label{uxadfcuxc0ac-uxad00uxacc4uxb97c-uxc794uxcc28-uxbcf4uxc815uxc73cuxb85c-uxd65cuxc6a9}}
+
+정확한 관계가 약간 깨진 경우에도 식 (C8)은 유용할 수 있다.
+\(D=q(B)/q(1)\)라 두면 항상
+
+\[
+ Cp(B)=I-D.
+ \tag{C10}
+\]
+
+\textbf{명제 C5 --- 근사 몫 다항식의 잔차 수축.} 어떤 유도 행렬 노름에서
+\(\|D\|\le\eta<1\)이고, 정확한 산술로
+
+\[
+ r_k=b-Cx_k,\qquad x_{k+1}=x_k+p(B)r_k
+ \tag{C11}
+\]
+
+를 계산하면 \(r_{k+1}=Dr_k\)이고 \(\|r_k\|\le\eta^k\|r_0\|\)이다. 또한
+
+\[
+ \|C^{-1}\|\le\frac{\|p(B)\|}{1-\eta}.
+ \tag{C12}
+\]
+
+\textbf{증명.} 식 (C10)을 식 (C11)의 새 잔차에 대입하면
+\(r_{k+1}=r_k-Cp(B)r_k=Dr_k\)이다. 노름의 곱셈 부등식을 반복 적용하면
+수축 한계를 얻는다. \(\|D\|<1\)이므로 \(I-D\)의 Neumann 급수가 수렴하며,
+\(C^{-1}=p(B)(I-D)^{-1}\)에서 식 (C12)가 따른다. \(\square\)
+
+\textbf{계산량에 대한 따름정리.} \(B=-\alpha I+E\), \(\alpha\ge0\)이고
+\(\|E\|/(1+\alpha)\le\eta_*<1\)인 상한이 차원 \(n\)과 무관하게
+유지된다고 하자. \(q(z)=z+\alpha\)를 택하면 \(p(B)=I/(1+\alpha)\)이고
+결함은 \(E/(1+\alpha)\)이다. 상대 잔차 목표 \(0<\varepsilon<1\)에 필요한
+보정 수는 \(O(\log(1/\varepsilon))\)이며 \(n\)에 의존하지 않는다. 한
+연산자 작용이 \(O(n^2)\)이면 전체 비용은
+\(O(n^2\log(1/\varepsilon))\)로, 매번 새 조밀 LU 분해를 구성하는
+\(O(n^3)\) 비용을 줄인다. 이미 분해한 LU를 재사용하는 풀이도 우변당
+\(O(n^2)\)이므로 그 경우에는 점근적 우위를 주장할 수 없으며 실제 반복
+수와 준비 비용을 비교해야 한다.
+
+이 명제는 원래 \(B\)가 수축해야 한다고 요구하지 않는다. 필요한 것은 낮은
+차수 다항식이 남긴 결함 \(D\)의 수축이다. 따라서 큰 감쇠 또는 일부
+비정규 연산자를 \(B\) 자체의 무조건적인 Neumann 반복에서 제외했더라도,
+별도의 몫 다항식 전처리 뒤에는 잔차 보정이 가능하다. 정확히 확인한 관계,
+분모 여유 및 결함 상한이 실제 사용 조건이다.
+
+배정밀도 구현에서는 매 보정 뒤 원래 잔차를 다시 계산한다. 주어진
+허용오차를 통과한 결과만 외부 출력에 기록하고, 비유한 값·콜백 오류·비용
+한도 소진·관측된 정체를 구분한다. 조건부 오차 추정은 잔차 평가의 산술
+오차까지 포함한 상한을 입력으로 필요로 한다. 상한 계산을 일반
+부동소수점으로 평가한 결과와 바깥쪽 반올림 구간 증명은 구별한다.
+
+\begin{figure}
+\centering
+\includegraphics{figures/quotient_defect_contraction.pdf}
+\caption{근사 다항식 관계가 주는 이론적 잔차 한계. 곡선은
+\(\|r_k\|/\|r_0\|\le\eta^k\)를 서로 다른 결함 상한에 대해 그린 것이며,
+실제 실행의 오차 또는 속도 자료가 아니다.}
+\end{figure}
+
+\hypertarget{uxace0uxc720uxac12-uxad70uxc9d1-uxbd88uxbcc0-uxbd80uxbd84uxacf5uxac04uxacfc-uxc120uxc5b8uxb41c-uxd750uxb984}{%
+\subsubsection{고유값 군집, 불변 부분공간과 선언된
+흐름}\label{uxace0uxc720uxac12-uxad70uxc9d1-uxbd88uxbcc0-uxbd80uxbd84uxacf5uxac04uxacfc-uxc120uxc5b8uxb41c-uxd750uxb984}}
+
+다항식 \(q=q_1\cdots q_g\)의 인수들이 서로소이면 중국인의 나머지 정리로
+각 인수에 대응하는 다항식 사영을 구성할 수 있다. 구체적으로 \(q/q_j\)의
+\(q_j\)에 대한 역원을 \(s_j\)라 하고 \(e_j=s_jq/q_j\)를 \(q\)로 나눈
+나머지를 취하면 \(e_j\equiv1\pmod{q_j}\), \(e_j\equiv0\pmod{q_k}\)
+(\(k\ne j\))이다. 따라서 \(q(B)=0\)일 때 \(P_j=e_j(B)\)는 \(P_j^2=P_j\),
+\(P_iP_j=0\), \(\sum_jP_j=I\)를 만족한다. 서로 다른 완화 시간이나
+진동군을 분리하여 각 부분공간에 짧은 다항식 또는 정확한 흐름을 적용할 수
+있다. 이 구성의 비용에는 사영 작용과 그 조건수가 포함된다.
+
+현재의 선언된 감쇠 회전 흐름은 이 원리의 단순한 실현이다. 블록
+\(A=-dI+\omega R\), \(R^2=-I\), \(d\ge0\)에 대해
+
+\[
+ e^{tA}=e^{-dt}\{\cos(\omega t)I+\sin(\omega t)R\}
+ \tag{C13}
+\]
+
+이고, 연산은 원소별 곱과 합으로 끝난다. 같은 블록들은 삼각함수 계수를
+공유한다. 추가 비선형 나머지 \(N(t,y)\)가 있는 \(y'=Ay+N(t,y)\)에는
+구현된 Lawson형 적분이 이 흐름을 사용한다. 이때 빠른 선형 진동을 정확한
+대수식으로 처리하는 이점과 비선형 나머지의 시간 해상도는 분리해서
+판단한다. 고정 \(A\)와 매끄러운 나머지에서의 고전적 차수는 강성 한계
+전체에서 균일한 차수 보장과 같지 않다.
+
+일반적인 다항식 사영의 자동 구성, 부분공간의 온라인 추적 및 매개변수
+공간 전체의 역연산 상한 재사용은 추가 구현 대상으로 남아 있다. 각 구성은
+실행되는 연산자와 식별값, 관계식, 노름 상한 및 비용으로 연결되어야 한다.
+선언된 회전 블록의 존재만으로 임의의 입력 우변을 이 구조로 자동 분해하지
+않는다.
+
+중복근이 있는 인수 \((z-\lambda)^r\)를 사용하는 경우에는 함수의 값만으로
+충분하지 않고 \(r-1\)차까지의 도함수 정보가 필요하다. 이는 행렬 함수의
+Jordan 및 Hermite 표현과 연결되는 기존 원리이다 {[}3{]}. 가까운 서로
+다른 근에 대한 사영의 노름이 커지면, 근을 따로 나누는 표현 대신 군집
+전체의 다항식과 도함수 정보를 유지하는 표현을 선택할 수 있다. 이러한
+구조는 저장소의 shared-shift 및 complex-shift jet 연산과 연결된다.
+다항식 전처리와 적응적 선택 자체도 선행 연구가 있는 방법이며 {[}4{]},
+현재 구현의 대상은 선언된 낮은 차수 관계, 원래 잔차 및 실패 처리의
+결합이다.
+
+\hypertarget{uxd655uxc7a5-uxac00uxb2a5uxd55c-homotopyuxc640-uxbd88uxbcc0-uxad00uxacc4}{%
+\subsubsection{확장 가능한 homotopy와 불변
+관계}\label{uxd655uxc7a5-uxac00uxb2a5uxd55c-homotopyuxc640-uxbd88uxbcc0-uxad00uxacc4}}
+
+후속 확장을 위한 두 가지 구성을 명시한다. 첫째, 현재 선형 단계 연산자
+\(M(\vartheta)\)가 준비 지점의 \(M(\vartheta_0)\)에서 변할 때, 저장한
+근사 역연산자 \(P_0\)의 오른쪽 결함은
+
+\[
+ I-M(\vartheta)P_0=E_0-[M(\vartheta)-M(\vartheta_0)]P_0,
+ \qquad E_0=I-M(\vartheta_0)P_0.
+ \tag{C14}
+\]
+
+따라서 어떤 매개변수 셀 전체에서 오른쪽의 노름이 1보다 작다는 상한을
+확보하면, 같은 \(P_0\)로 현재 방정식의 잔차를 줄일 수 있다. 현재
+잔차에는 반드시 현재 \(M(\vartheta)\)를 사용한다. 이전 시도의 잔차
+자체를 재사용하는 것은 이 항등식과 다르다. Homotopy를 통한 역연산자
+재사용과 잔차 보정은 선행 연구와도 연결된다 {[}5{]}. 새 준비 비용의
+절감이 셀 확인, 추가 보정 및 실패 비용보다 클 때 전체 비용이 감소한다.
+
+비선형 근 \(F(x,\lambda)=0\)에도 구체적인 충분조건을 줄 수 있다. 닫힌 볼
+\(\mathcal B(x_c,r)\)에서 \(F\)가 \(x\)에 대해 \(C^1\)이고, 고정된 정방
+선형 연산자 \(P\)가
+
+\[
+ \sup_{x\in\mathcal B,\lambda}\|I-P\partial_xF(x,\lambda)\|\le q<1,
+ \qquad \sup_\lambda\|PF(x_c,\lambda)\|\le(1-q)r
+ \tag{C15}
+\]
+
+를 만족한다고 하자. 그러면 \(T_\lambda(x)=x-PF(x,\lambda)\)는 볼을 자기
+자신으로 보내는 \(q\)-수축이다. 평균값 정리로 첫 조건이 수축을 주고,
+중심에서의 이동량과 삼각 부등식으로 두 번째 조건이 자기 사상을 준다.
+Banach 고정점 정리에 따라 반복은 각 \(\lambda\)의 유일한 근으로
+수렴한다. 첫 조건은 \(P\partial_xF\)와 \(P\)의 가역성도 보장하므로
+고정점은 실제 \(F=0\)의 근이다. 구조를 아는 다항식 모델에서 식 (C15)의
+상한을 사전에 확보하면 온라인 보정은 \(F\)의 값과 \(P\)의 작용만으로
+수행할 수 있다. 현재의 일반 우변 인터페이스가 이러한 상한을 자동
+생성하는 것은 아니며, 이 구성은 명시적인 다음 구현 계약이다.
+
+둘째, 다항식 제약 \(g(y)=0\)에 대해 \(Dg(y)f(y)=C(y)g(y)\)가 성립하면,
+초기 \(g(y_0)=0\)인 해는 그 제약 위에 머문다. 합성함수 \(g(y(t))\)가 영
+초기값의 동차 선형 방정식을 만족하기 때문이다. 추가로 사상 \(\pi\)가
+
+\[
+ D\pi(y)f(y)=\phi(\pi(y))+R(y)g(y)
+ \tag{C16}
+\]
+
+를 만족하면 \(z=\pi(y)\)는 제약 위에서 정확히 \(z'=\phi(z)\)를 따른다.
+이는 불변 ideal에 대한 계산이 실제 ODE 차원 축약으로 연결되는 조건이다.
+
+예를 들어 \(y'=Ay+U\psi(V^Ty)\)이고 \(q(A)=0\)인 monic 다항식의 차수가
+\(d\)이면, \(m_k=V^TA^ky\) (\(k=0,\ldots,d-1\))에 대해
+
+\[
+ m_k'=m_{k+1}+V^TA^kU\psi(m_0)
+ \tag{C17}
+\]
+
+이다. 마지막 \(m_d\)는 \(q\)의 계수로 앞선 모멘트들의 선형 결합이 된다.
+따라서 \(V\)의 열 수가 \(r\)일 때 \(rd\)개의 모멘트로 닫힌 비선형 문제를
+얻는다. 필요한 출력이 이 모멘트들이면 원래 차원 \(n\)의 비선형 적분을
+줄일 수 있다. 전체 상태가 필요하면 초기의 나머지 성분과 재구성 비용을
+보존해야 한다. 이 일반 모멘트 provider와 자동 전환은 후속 구현 대상이며,
+저랭크 구조의 기존 특수 코드가 임의의 우변에 대한 자동 차원 축약을
+제공한다고 해석하지 않는다.
+
+\hypertarget{uxc794uxcc28-uxc2dcuxac04-uxc624uxcc28-uxbc0f-uxc870uxac74uxbcc4-uxc120uxd0dd}{%
+\subsection{잔차, 시간 오차 및 조건별
+선택}\label{uxc794uxcc28-uxc2dcuxac04-uxc624uxcc28-uxbc0f-uxc870uxac74uxbcc4-uxc120uxd0dd}}
+
+작은 투영 잔차는 원래 공간의 단계 오차와 같지 않다. 투영 공간 밖의
+성분은 \(Q^T\)에서 사라질 수 있으므로, 후보는 원래 \(n\)차원 단계
+방정식에 다시 대입된다. 이 검사와 시간 오차에 대한 내장 추정은 별개의
+판단이다. 원래 단계 잔차를 통과해도 내장 시간 오차가 크면 시간 간격을
+줄이고 다시 시도한다.
+
+\textbf{명제 C6 --- 인과적 잔차의 단계별 증폭.} 원래 단계 연산자
+\(W=I-h\gamma J_0\)에 대해 \(\|W^{-1}\|\le\kappa\)이고, 정확한 단계와
+후보 단계 사이의 관련 영역에서 \(f\)가 Lipschitz 상수 \(L\)을 가진다고
+하자. 원래 좌표에서의 후보 잔차를 \(r_i\), 단계 오차를 \(e_i\)라 하면
+
+\[
+ \|e_i\|\le\kappa\left(\|r_i\|+
+      \sum_{j<i}\bigl(|h\gamma|L|a_{ij}|+|\gamma c_{ij}|\bigr)\|e_j\|\right).
+ \tag{C18}
+\]
+
+\textbf{증명.} 정확한 단계 방정식과 후보 방정식을 빼고 \(W^{-1}\)을
+적용한다. 우변의 두 \(f\) 값의 차이는 \(L\sum_{j<i}|a_{ij}|\|e_j\|\)로
+제한된다. 삼각 부등식을 적용하면 식 (C18)를 얻는다. \(\square\)
+
+따라서 출력 가중치가 \(b_i^{\rm u}\)이면 단계 풀이가 만드는 끝점 섭동은
+\(\sum_i|b_i^{\rm u}|\|e_i\|\)로 제한된다. 이 계산에는 실제 역노름과
+영역의 Lipschitz 상한이 필요하다. 큰 인과적 증폭이 발생하면 작은
+잔차라도 요구된 출력 오차를 만족하지 못할 수 있으며, 그때에는 잔차
+목표를 강화하거나 보호된 풀이와 더 작은 시간 간격을 사용해야 한다.
+
+조건별 선택은 이러한 정확성 검사를 바꾸지 않고 계산 경로만 바꾼다.
+구조를 가진 후보가 실패하거나 비용이 반복해서 커질 때에는 다음 시도들을
+보호된 경로로 보내고, 제한된 횟수의 재탐색만 허용한다. 전환 근거에는
+후보가 성공한 비용뿐 아니라 기저 구성, 거절한 후보, 잔차 검사와 대체
+풀이의 비용을 포함한다. 모델 변경과 치명적인 콜백 오류는 수치 알고리즘을
+바꿔 숨기지 않고 실행을 종료한다.
+
+\hypertarget{uxc2e4uxd589-uxc911-uxc120uxd0dduxc758-uxad6cuxccb4uxc801-uxc808uxcc28}{%
+\subsubsection{실행 중 선택의 구체적
+절차}\label{uxc2e4uxd589-uxc911-uxc120uxd0dduxc758-uxad6cuxccb4uxc801-uxc808uxcc28}}
+
+\texttt{integrate\_switching\_causal\_observed}는 같은 원래 단계
+방정식을 푸는 보호된 경로와 하나의 지정된 후보를 선택한다. 후보는 순차
+인과적 풀이, 동시 Picard 또는 잔차 우선 보정 중 하나이다. 적분 중에 다른
+후보를 임의로 만들어 넣거나 새로운 도함수 권한을 부여하지 않는다. 비교용
+\texttt{integrate\_sequential\_raw\_observed}는 같은 좌표의 목표와 출력
+계약을 사용한다.
+
+선택 비용은 우변, JVP, 직교화 내적, 작은 인자분해 및 작은 선형 풀이의
+시도 횟수에 사용자가 정한 가중치를 곱한 값이다. 기본값은 우변과 JVP의
+횟수만 같은 가중치로 센다. 따라서 기본 비용은 벽시계 시간이 아니며, 작은
+행렬 대수와 할당이 지배적인 문제에서는 실제 측정에 맞게 가중치를
+지정해야 한다. 다음 절차가 구현된다.
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  보호된 경로가 한 번의 시간 간격을 수락하면 그 비용으로 비교 기준을
+  초기화한다.
+\item
+  후보가 원래 잔차와 내장 오차 검사를 통과하면 비용을 비교한다. 기본
+  유지 한계는 최근 보호된 비용의 1.25배이다.
+\item
+  후보 단계 풀이가 실패하면 실제 탐색 비용에 따라 다음 재탐색까지의 대기
+  길이를 정한다. 아래 식의 기본 추가 비용 목표는 0.25이고, 대기 길이는
+  보호된 수락 간격 1개 이상 64개 이하이다. 정확성 검사는 통과했지만 비용
+  유지 한계를 넘은 후보에는 별도로 4개부터 시작하여 두 배로 늘리는
+  대기를 사용한다.
+\item
+  재진입에는 더 엄격한 비용 비율 1.0을 사용한다. 실제 보호된 수락 비용이
+  추가되면 기준은 이전 값 0.75, 새 값 0.25의 가중 평균으로 갱신된다.
+\item
+  단순한 내장 오차 거절은 시간 간격을 줄여 같은 경로로 재시도한다. 대기
+  횟수는 거절된 시도가 아니라 보호된 경로가 실제 수락한 간격만으로 센다.
+\end{enumerate}
+
+기본 비율들은 정책의 구성값이다. 후보를 유지할 수 있는 허용 손실과
+빈번한 전환을 막는 이력 효과를 정하며, 수학적으로 최적인 상수로 주장하지
+않는다. 비교 기준은 다른 시간 간격의 과거 비용이므로, 급변하는 문제에서
+동일 상태의 반사실적 비용을 정확히 안다고 가정하지 않는다. 단계마다 모든
+풀이를 중복 실행하는 비용을 피하는 대신 이 지연을 허용한다.
+
+실패한 후보의 비용을 \(C\), 보호된 풀이의 비용을 \(P>0\), 허용 탐색
+비율을 \(\varepsilon\)이라 하자. 비용에 따른 재탐색 정책의 기본값은
+\(\varepsilon=0.25\)이며, 이때 대기 횟수는
+
+\[
+ L=\min\!\left(L_{\max},\;\max\!\left(1,\left\lceil
+                       \frac{C}{\varepsilon P}\right\rceil-1\right)\right)
+ \tag{C19}
+\]
+
+개의 보호된 수락 간격 뒤 재탐색한다. 같은 시도의 보호된 풀이가
+성공했으면 그 비용을 \(P\)로 쓰고, 그렇지 않으면 마지막으로 성공한 유한
+양의 비용을 사용한다. 이러한 기준이 없거나 비용 계산이 유한하지 않으면
+기존의 지수적 대기를 유지한다. 정책을 \texttt{None}으로 설정하면
+처음부터 지수적 대기만 사용한다.
+
+모든 실패한 재탐색 뒤 보호된 풀이가 그 물리적 시도를 수락하고, 비용
+\(C,P\)가 동일하게 대표성을 유지하는 정상 영역을 가정하자. 상한
+\(L_{\max}\)에 잘리지 않고 정확한 산술로 식 (C19)를 계산하면
+\(C/((L+1)P)\le\varepsilon\)이다. \(L\)개의 보호된 수락 간격과 한 번의
+실패한 재탐색 뒤 보호된 수락으로 이루어진 주기를 세면 이 부등식이 탐색의
+평균 추가 비용을 제한한다. 보호된 재시도도 거절되어 과거 \(P\)를
+사용하는 경우에는 이 비율을 기록된 비용에 근거한 예측으로만 사용한다.
+저렴한 탐색은 짧게 기다리므로 이후 유리해진 영역으로 복귀할 기회를 더
+자주 얻는다. 실제 구현은 배정밀도 비용과 올림 연산을 사용하며, 상한에
+잘렸는지와 예측 비율을 결과에 기록한다. 이 값은 실행 시간 또는 바깥쪽
+반올림으로 인증된 비용 상한이 아니라 선택 정책의 비용 예측이다.
+
+지속적으로 부적합한 후보에 대한 재탐색 횟수도 제한된다. 각 재탐색의 비용
+한도가 \(P_{\max}\)이고 최소 대기 길이가 \(c_0\)이면, \(N\)개의 보호된
+수락 간격 동안 후보 재탐색 비용은 \(P_{\max}(1+\lfloor N/c_0\rfloor)\)
+이하이다. 이는 각 재탐색 사이에 적어도 \(c_0\)개의 보호된 수락 간격이
+필요하다는 사실에서 따른다. 비용에 따른 대기를 쓰는 기본 설정에서는
+\(c_0=1\)이며, 지수적 대기만 사용하는 설정에서는 초기 대기 길이가 이
+역할을 한다. 이 명제는 재탐색 비용만을 제한하며 보호된 풀이 자체의
+비용이나 총 실행 시간의 우위를 보장하는 식으로 해석하지 않는다.
+
+다항식 경로의 선택은 다른 지표를 사용한다.
+\texttt{apply\_refined\_checked}는 선언된 결함 비율, 최대 보정 횟수,
+연산자 작용 예산과 실제 잔차 감소를 함께 확인한다. 기본 결함 비율 한계는
+0.5이고, 한 보정 뒤 잔차가 이전 값의 0.95배 이상이면 정체로 처리한다.
+\texttt{apply\_refined\_or\_fallback}은 이러한 수치적 중단 뒤 호출자가
+제공한 대체 풀이를 사용할 수 있다. 대체 결과도 같은 원래 잔차 허용오차를
+통과해야 한다. 이 경로는 네 개의 상태 벡터를 준비한 뒤 보정 중 추가 할당
+없이 실행되며, 현재는 선형 작용 수준의 특수화이다. 임의의 비선형 ODE
+단계에 자동 삽입되는 경로로 기술하지 않는다.
+
+\hypertarget{uxc218uxd559uxc801-uxacb0uxacfcuxc640-uxc2e4uxd589-uxcf54uxb4dcuxc758-uxb300uxc751}{%
+\Needspace{12\baselineskip}
+\subsection{수학적 결과와 실행 코드의
+대응}\label{uxc218uxd559uxc801-uxacb0uxacfcuxc640-uxc2e4uxd589-uxcf54uxb4dcuxc758-uxb300uxc751}}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 4\tabcolsep) * \real{0.3333}}@{}}
+\toprule\noalign{}
+\begin{minipage}[b]{\linewidth}\raggedright
+수학적 대상
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+실행 위치
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedright
+현재 의미
+\end{minipage} \\
+\midrule\noalign{}
+\endhead
+\bottomrule\noalign{}
+\endlastfoot
+식 (C2)의 순차 인과적 제거 & \texttt{vigilode-coupled/src/causal.rs} &
+제공된 기준점 JVP를 쓰는 Newton-free 단계 풀이 \\
+식 (C4)의 동시 반복 & 같은 파일의 Picard 경로 & 공통 반복값에서의 단계
+묶음 평가 \\
+식 (C6)의 homotopy & \texttt{vigilode-coupled/src/solver.rs} & 직접
+보정과 제한된 continuation \\
+식 (C8)의 다항식 작용 &
+\texttt{rodas5p-integrators/src/polynomial\_resolvent.rs} & 선언된 전체
+공간 관계와 원래 잔차 검사 \\
+식 (C13)의 정확한 선형 흐름 &
+\texttt{rodas5p-integrators/src/quotient\_flow.rs} & 회전·감쇠 구조의
+직접 작용 \\
+물리적 시간 수락과 대체 풀이 & \texttt{vigilode-coupled/src/adaptive.rs}
+& 단계 잔차와 내장 시간 오차를 분리한 상태 갱신 \\
+\end{longtable}
+
+저장소 경로는 모두 \texttt{crates/} 아래에 있다. 미분을 사용하지 않는
+경로와 JVP가 필요한 경로의 호출 계약은 분리되어 있다. 현재의 공통
+진입점은 임의의 강성 문제에 먼저 완전 무미분 방법을 시도한 뒤 측정
+결과에 따라 JVP를 허용하는 전역 정책을 구현하지 않는다. 그러한 정책에는
+사용자 권한, 구조 검증, 총비용 측정과 되돌림 계약을 함께 갖춘 추가
+설계가 필요하다. 여기서 구체화한 선택은 그중 조건이 확인된 특수 경로의
+활용과 반복 실패 비용의 제한을 담당한다.
 
 \hypertarget{uxba85uxc2dcuxc801-dormandprince-54-uxbc29uxbc95}{%
 \section{명시적 Dormand--Prince 5(4)
@@ -822,7 +1462,7 @@ Jacobian 근사 오차, 우변 계산 오차 및 반올림은 별도 섭동으�
 같은 출력 시간을 주더라도 연산 경로와 오차가 다를 수 있다.
 
 DOPRI5의 표본 출력은 Shampine 계열의 4차 다항식 연속 확장을 사용한다
-{[}3{]}. \(\theta=(t-t_n)/h\in[0,1]\)라 하면
+{[}6{]}. \(\theta=(t-t_n)/h\in[0,1]\)라 하면
 
 \[
  P_n(\theta)=y_n+h\sum_{j=1}^7 k_j
@@ -888,9 +1528,9 @@ RODAS5P는 여덟 단계의 선형 결합 \(d_q=\sum_{j=1}^8 H_{qj}u_j\)
 \begin{figure}
 \centering
 \includegraphics{figures/accepted_state_flow.pdf}
-\caption{수락 상태를 중심으로 한 시간 적분. 한 실행에서 선택한 방법의
-단계 계산을 수행한 뒤 오차를 검사한다. 거절과 수치 실패는 확정 상태를
-덮어쓰지 않는다.}
+\caption{공통 \texttt{GeneralOde} 인터페이스의 시간 적분. 실행 전에
+선택한 방법으로 단계와 오차를 계산한다. 별도의 인과적 선택 인터페이스도
+같은 수락 상태 보존 원칙을 따른다.}
 \end{figure}
 
 \hypertarget{uxba85uxc2dcuxc801-uxc801uxbd84-uxc138uxc158}{%
@@ -953,6 +1593,10 @@ DOPRI5 & 최초 \(7C_f\), 정상 연속 시도 \(6C_f\) 및 \(O(n)\) 벡터 연�
 고정 폭 대역 RODAS5P & \(C_J+8C_f+O(nb^2)+8O(nb)\) & \(O(nb)\) \\
 제공 JVP를 쓰는 선형 반복 풀이 & 반복 수에 따른 JVP 및 직교화 비용 &
 기저 저장 \(O(nm)\) \\
+공유 기저의 인과적 풀이 & 준비·검증 외 \(7C_f+O(m^3+8m^2+8nm)\) &
+기저·저장된 작용 \(O(nm)\)와 축소 배열 \\
+몫 다항식 잔차 보정 & \(a\)회 다항식 적용·잔차 확인에 \(ad\)회의 연산자
+작용 & 새 작업공간의 벡터 네 개, \(O(n)\) \\
 \end{longtable}
 
 RODAS5P의 \(8C_f\)는 단계의 우변 비용이다. Jacobian을 유한차분으로
@@ -1015,10 +1659,12 @@ RODAS5P의 \(8C_f\)는 단계의 우변 비용이다. Jacobian을 유한차분�
   안정한 계산과 충분히 정확한 계산은 서로 다른 성질이다.
 \end{enumerate}
 
-이 설계는 비강성 문제에서 불필요한 선형 대수를 생략하고, 강성 문제에서는
-공유 선형 연산자를 통해 한 단계의 비용을 통제한다. 두 경우에 동일하게
-중요한 것은 수치 방법의 이름보다 실제로 허용한 연산, 사용한 오차 척도,
-출력의 의미 및 실패 이후 상태의 해석을 명확하게 유지하는 것이다.
+이 설계는 비강성 문제의 우변 전용 적분과 강성 문제의 공유 연산자 풀이를
+공통 기반으로 둔다. 추가로 단계의 인과성을 이용하여 현재 단계의 Newton
+반복을 제거하고, 선언된 대수 관계가 있는 영역에서는 다항식 작용과 잔차
+보정으로 계산을 축약한다. 실행 중 선택은 이러한 특수화의 비용과 적용
+범위를 관리하면서 원래 잔차와 시간 오차 검사를 유지한다. 실제로 허용한
+연산, 출력의 의미 및 실패 이후 상태의 해석은 모든 경로의 공통 계약이다.
 
 \hypertarget{uxcc38uxace0uxbb38uxd5cc}{%
 \section{참고문헌}\label{uxcc38uxace0uxbb38uxd5cc}}
@@ -1033,9 +1679,26 @@ Rodas5P and numerical benchmarks within the Julia Differential Equations
 package. \emph{BIT Numerical Mathematics}, \textbf{63}, Article 27. DOI:
 \href{https://doi.org/10.1007/s10543-023-00967-x}{10.1007/s10543-023-00967-x}.
 
-{[}3{]} Shampine, L. F. (1986). Some practical Runge-Kutta formulas.
+{[}3{]} Higham, N. J. and Lin, L. (2013). \emph{Matrix Functions: A
+Short Course}. MIMS EPrint 2013.73.
+\href{https://eprints.maths.manchester.ac.uk/2067/1/paper.pdf}{저자 기관
+원고}.
+
+{[}4{]} Joubert, W. (1994). A robust GMRES-based adaptive polynomial
+preconditioning algorithm for nonsymmetric linear systems. \emph{SIAM
+Journal on Scientific Computing}, \textbf{15}, 427--439. DOI:
+\href{https://doi.org/10.1137/0915029}{10.1137/0915029}.
+
+{[}5{]} Pan, V. Y., Kunin, I. A., Rosholt, R. E. and Kodal, A. (2006).
+Homotopic residual correction processes. \emph{Mathematics of
+Computation}, \textbf{75}, 345--368. DOI:
+\href{https://doi.org/10.1090/S0025-5718-05-01771-0}{10.1090/S0025-5718-05-01771-0}.
+
+{[}6{]} Shampine, L. F. (1986). Some practical Runge-Kutta formulas.
 \emph{Mathematics of Computation}, \textbf{46}(173), 135--150. DOI:
 \href{https://doi.org/10.1090/S0025-5718-1986-0815836-3}{10.1090/S0025-5718-1986-0815836-3}.
+
+\Needspace{20\baselineskip}
 
 \hypertarget{uxbd80uxb85d-uxacc4uxc218uxc640-uxad6cuxd604uxc758-uxb300uxc751}{%
 \section{부록: 계수와 구현의
@@ -1071,6 +1734,16 @@ RODAS5P의 \(\gamma,A,C,c,b^{\rm u},H\) &
 적응형 제어 & \texttt{crates/rodas5p-integrators/src/adaptive.rs} \\
 일반 방법 선택 & \texttt{crates/vigilode/src/selection.rs} \\
 명시적 세션 & \texttt{crates/vigilode/src/session.rs} \\
+공유 기저와 공통 작은 인자 &
+\texttt{crates/vigilode-coupled/src/algebra.rs} \\
+인과적 제거 및 유한 전파 반복 &
+\texttt{crates/vigilode-coupled/src/causal.rs} \\
+조건별 실행 중 선택 &
+\texttt{crates/vigilode-coupled/src/switching.rs} \\
+몫 다항식 및 잔차 보정 &
+\texttt{crates/rodas5p-integrators/src/polynomial\_resolvent.rs} \\
+선언된 회전·감쇠 흐름 &
+\texttt{crates/rodas5p-integrators/src/quotient\_flow.rs} \\
 \end{longtable}
 
 RODAS5P 계수 파일은 8행 8열의 \(A,C\), 여덟 개의 시간 절점 및 출력

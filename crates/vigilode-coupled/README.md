@@ -48,3 +48,58 @@ Actual native tests:19passed. Benchmark:80accuracy rows,800fresh timing processe
 The new path supports autonomous, identity-mass ODEs with a supplied JVP. Unsupported problems are refused. Real callback errors and model-epoch changes stop with partial outputs. Numerical solve failures can trigger step reduction; no callback error is silently relabelled as a successful fallback. Current memory use includes fresh basis and stage buffers per candidate plus compact per-attempt receipts; zero allocation and production-wide speedups are not claimed.
 
 Reproduction and new evidence: [coupled-stage adoption](../../research/coupled_stage_adoption_20261022/REPORT_KO.md). Earlier step-only results above remain historical evidence for their exact source versions.
+
+## Adaptive reconsideration of projected roots
+
+`integrate_switching_causal_observed` adds an opt-in controller around the existing
+raw-U trajectory. `CausalSwitchPolicy::candidate` names the hypothesis to test:
+`CandidateRoute::Forward`, `Picard`, or `ResidualFirst`. It does not infer an
+undeclared operator structure or evaluate the state Jacobian. Every route still
+requires a supplied frozen-base JVP; `ResidualFirst` can also request stage JVPs
+and Newton updates. The causal routes retain their Newton-free projected solve.
+
+The first accepted protected step calibrates a work estimate. The default estimate
+counts RHS and JVP attempts equally; caller-supplied nonnegative weights can price
+orthogonalization, small factorizations and back-solves. This estimate is a cost
+proxy, not wall-clock time. A successful candidate remains selected while its
+score is at most 1.25 times the protected estimate. A failed projected root invokes
+the ordinary guarded fallback immediately and starts a cooldown. An expensive
+accepted candidate also starts a cooldown, after committing its valid result.
+
+On a failed projected root, the default policy prices repeated exploration.
+For measured candidate cost `C`, protected cost `P` and
+`exploration_overhead_fraction = Some(0.25)`, it uses
+`L = clamp(ceil(C/(0.25 P)) - 1, 1, max_cooldown)` accepted protected steps.
+A successful same-attempt protected cost is preferred; otherwise the last
+successful protected reference is used. With representative stationary costs, a successful protected endpoint on the
+failed-probe attempt, and no upper clipping, the predicted exploration overhead
+per resulting accepted-step cycle is at most 25% in these proxy units. A rejected
+protected trial contributes no accepted step; its receipt is a cost prediction
+using the last successful reference, not a bound on realized accepted progress. The receipt reports upper clipping and the predicted ratio;
+this is not a wall-clock guarantee. `None` preserves the original exponential
+4-to-64-step failure cooldown for reproduction of earlier experiments.
+
+Accepted but expensive candidates retain the exponential cooldown. Re-entry uses
+the stricter ratio 1.0; success restores the candidate and resets its backoff.
+Local truncation-error rejections shrink `h` without treating that rejection as
+a root-solver defect. A protected failure from user code remains terminal.
+Each original residual, embedded estimator and optional conditional error check
+is unchanged. Calibration requires a successful protected step, so this wrapper
+does not rescue an initial failure of the protected method.
+
+The protected estimate is an exponentially weighted average of successful
+protected work, with old/new weights 0.75/0.25. It can come from a different state
+or step size, so its comparison is a routing heuristic. Neither the default
+weights nor these ratios prove a runtime crossover. The receipt records the
+reference score, actual candidate/protected scores, phase and decision, allowing
+a workload-specific assessment. Overflowed proxy scores are nullable with an
+explicit `work_scores_finite = false` flag and cannot justify candidate retention.
+The ordinary fixed-route APIs remain unchanged.
+
+`integrate_sequential_raw_observed` exposes the same guarded protected target as
+a direct comparator. It skips candidate execution without fabricating a budget
+failure. Its receipt has `candidate_skipped = true` and zero candidate work;
+`fallback_attempted` still identifies use of the protected workspace for backward
+compatibility. Callback counts include every unsuccessful probe, fallback and
+original-space validation. Candidate allocation budgets remain separate from the
+protected GMRES workspace, whose limits come from `LinearSolverConfig`.

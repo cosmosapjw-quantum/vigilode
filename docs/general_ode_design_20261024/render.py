@@ -36,7 +36,10 @@ header=r'''\usepackage{fontspec}
 subprocess.run(['pandoc','DESIGN_KO.md','-s','--top-level-division=section','-H','header.tex','-V','documentclass=article','-V','classoption=dvipsnames','-o','DESIGN.tex'],cwd=P,check=True)
 t=(P/'DESIGN.tex').read_text()
 t=t.replace(r'\begin{longtable}',r'\Needspace{8\baselineskip}'+'\n'+r'\begin{longtable}',1)
-t=t.replace('figures/dopri5_stability.png','figures/dopri5_stability.pdf').replace('figures/accepted_state_flow.png','figures/accepted_state_flow.pdf')
+for name in ['dopri5_stability','accepted_state_flow','causal_finite_propagation','quotient_defect_contraction']:
+ t=t.replace(f'figures/{name}.png',f'figures/{name}.pdf')
+# Keep the implementation mapping heading with its table.
+t=t.replace(r'\subsection{수학적 결과와 실행 코드의',r'\Needspace{12\baselineskip}'+'\n'+r'\subsection{수학적 결과와 실행 코드의')
 # Scale the complete rational tableau as a unit, retaining its equation label.
 pattern = r"\\\[\s*(\\renewcommand\{\\arraystretch\}.*?\\end\{array\})\s*\\tag\{4\}\s*\\\]"
 def tableau(match):
@@ -44,7 +47,7 @@ def tableau(match):
 t, count = re.subn(pattern, tableau, t, flags=re.S)
 if count != 1: raise SystemExit('Expected exactly one DOPRI5 tableau')
 (P/'DESIGN.tex').write_text(t)
-for _ in range(2):
+for _ in range(3):
  r=subprocess.run(['xelatex','-interaction=nonstopmode','-halt-on-error','DESIGN.tex'],cwd=P,capture_output=True,text=True)
  if r.returncode: print(r.stdout[-6000:]);raise SystemExit(r.returncode)
 print(P/'DESIGN.pdf')
