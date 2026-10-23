@@ -41,3 +41,12 @@ The user's explicit theory-plus-code request authorizes symbolic checks needed t
 ## Results
 
 To be appended after execution; see source-specific evidence and report.
+
+Executed-source results: `5913fe062706c820e768b9e150e5cd1c274f7bf9`.
+67 Rust and 7 Python tests passed; 72 configurations / 288 solver runs passed
+independent saved-state replay; 576 raw hashes and24 density pairs passed.
+Exact continuous-order and affine-metric checks passed.22 same-error-cap
+comparisons were available:20 medians favored dense sampling and2 landing;
+2 strict-cap comparisons remained insufficient. Broad production remains HOLD.
+All negative comparisons and environment restoration diagnostics are retained.
+See REPORT_KO.md and the append-only ledger rows L-0167 through L-0169.
