@@ -144,6 +144,16 @@ impl Graph {
         if steps == 0 {
             return Err(Error::InvalidInput);
         }
+        // Preserve finite exact identities without entering a recurrence whose
+        // intermediate coefficients can overflow for very large finite states.
+        if self.q == 0. || t == 0. {
+            out.copy_from_slice(y);
+            return Ok(Work {
+                actions: 0,
+                macrosteps: 0,
+                relative_truncation_bound: 0.,
+            });
+        }
         let theta = t / steps as f64 * self.q;
         if theta > 1. {
             return Err(Error::Stability);
@@ -176,6 +186,16 @@ impl Graph {
         self.validate(y, out, t, ws)?;
         if steps == 0 {
             return Err(Error::InvalidInput);
+        }
+        // Preserve finite exact identities without entering a recurrence whose
+        // intermediate coefficients can overflow for very large finite states.
+        if self.q == 0. || t == 0. {
+            out.copy_from_slice(y);
+            return Ok(Work {
+                actions: 0,
+                macrosteps: 0,
+                relative_truncation_bound: 0.,
+            });
         }
         let h = t / steps as f64;
         let z = h * (2. * self.q);
@@ -458,5 +478,47 @@ mod tests {
             0
         );
         assert_eq!(out, [2., 3.]);
+    }
+    #[test]
+    fn zero_graph_identity_avoids_intermediate_overflow() {
+        let g = Graph::new(vec![1., 2.], vec![]).unwrap();
+        let y = [1.5e308, -1.5e308];
+        let mut out = [42., 42.];
+        let mut ws = Workspace::new(2);
+        assert_eq!(g.rkl2(&y, &mut out, 1., 1, &mut ws).unwrap().actions, 0);
+        assert_eq!(out, y);
+        assert_eq!(g.euler(&y, &mut out, 1., 1, &mut ws).unwrap().actions, 0);
+        assert_eq!(out, y);
+        assert_eq!(
+            g.uniformization(&y, &mut out, 1., 1e-10, &mut ws)
+                .unwrap()
+                .actions,
+            0
+        );
+        assert_eq!(out, y);
+        out = [42., 42.];
+        assert_eq!(
+            g.rkl2(&y, &mut out, 1., 0, &mut ws).unwrap_err(),
+            Error::InvalidInput
+        );
+        assert_eq!(out, [42., 42.]);
+    }
+    #[test]
+    fn zero_time_identity_avoids_intermediate_overflow() {
+        let g = Graph::new(vec![1., 2.], vec![(0, 1, 3.)]).unwrap();
+        let y = [1.5e308, -1.5e308];
+        let mut out = [42., 42.];
+        let mut ws = Workspace::new(2);
+        assert_eq!(g.rkl2(&y, &mut out, 0., 1, &mut ws).unwrap().actions, 0);
+        assert_eq!(out, y);
+        assert_eq!(g.euler(&y, &mut out, 0., 1, &mut ws).unwrap().actions, 0);
+        assert_eq!(out, y);
+        assert_eq!(
+            g.uniformization(&y, &mut out, 0., 1e-10, &mut ws)
+                .unwrap()
+                .actions,
+            0
+        );
+        assert_eq!(out, y);
     }
 }
