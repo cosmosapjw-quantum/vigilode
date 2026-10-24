@@ -1,0 +1,94 @@
+{
+  "nodes": [
+    {
+      "id": "D2",
+      "status": "COMPLETE_REUSED",
+      "local": "4/4"
+    },
+    {
+      "id": "D3",
+      "status": "COMPLETE_REUSED",
+      "local": "4/4"
+    },
+    {
+      "id": "S0",
+      "status": "COMPLETE",
+      "commit": "ae792351dd442d6d1a3518b19b2d89d138d4aa41"
+    },
+    {
+      "id": "S1",
+      "status": "COMPLETE",
+      "commit": "555a93e5bffbed4b488ee0496e73d8095b08eab4"
+    },
+    {
+      "id": "S2",
+      "status": "COMPLETE",
+      "commit": "8dc905eb56682be5fd59ee50971704abd5a150f0"
+    },
+    {
+      "id": "S3",
+      "status": "COMPLETE_SCOPED",
+      "commit": "c6630c1c412d41eb47adf013d23b385192971798",
+      "backup": "Library/Drive/Dropbox provider ACK confirmed"
+    },
+    {
+      "id": "NATIVE_INPUT",
+      "status": "UNRESOLVED_INPUT_DEPENDENCY"
+    },
+    {
+      "id": "PRODUCTION",
+      "status": "HOLD"
+    }
+  ],
+  "edges": [
+    [
+      "D2",
+      "D3"
+    ],
+    [
+      "D3",
+      "S0"
+    ],
+    [
+      "S0",
+      "S1"
+    ],
+    [
+      "S1",
+      "S2"
+    ],
+    [
+      "S2",
+      "S3"
+    ],
+    [
+      "S3",
+      "PRODUCTION"
+    ],
+    [
+      "NATIVE_INPUT",
+      "PRODUCTION"
+    ]
+  ],
+  "global_completion_percent": null,
+  "D4_local_complete": 4,
+  "D4_local_total": 4,
+  "production": "HOLD",
+  "production_other_gates": [
+    "actual BASS",
+    "general callback/Jacobian correctness",
+    "general dense-domain",
+    "nonreturning callbacks",
+    "durable sink/outbox/crash restore",
+    "production FP provider",
+    "inherited authority references"
+  ],
+  "authority_ci": {
+    "status": "FAIL",
+    "S3_run": 40138539924,
+    "inherited_distinct_missing": 32,
+    "D4_verified_foreign_objects_flagged": 6,
+    "checker_and_allowlist": "UNCHANGED",
+    "final_metadata_ci": "NOT_RUN"
+  }
+}

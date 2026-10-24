@@ -1,0 +1,219 @@
+{
+  "unit": "D4-owned-effects-and-delivery",
+  "cap_seconds": 120,
+  "entries": [
+    {
+      "name": "toolchain_restore",
+      "cmd": [
+        "python3",
+        "restore_toolchain.py"
+      ],
+      "started_utc": "2026-10-24T22:11:31.515603+00:00",
+      "seconds": 17.87925230100518,
+      "exit": 0,
+      "timeout_seconds": 90.0,
+      "log": "evidence/toolchain_restore.log",
+      "sha256": "18a41ba8c7a97d5ab73cda01fb42e1914cb50d5e15c1352806e12e14736ee39f",
+      "reason": null
+    },
+    {
+      "name": "rustc_version",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--version",
+        "--verbose"
+      ],
+      "started_utc": "2026-10-24T22:13:15.332684+00:00",
+      "seconds": 0.006819797003117856,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/rustc_version.log",
+      "sha256": "a834181975ab3494d51a1a01e4a9d4321fecd674a52e3db3cf93b3b84b6fc2c1",
+      "reason": null
+    },
+    {
+      "name": "fixture_compile",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--edition=2024",
+        "--crate-type=rlib",
+        "source/fixture.rs",
+        "-o",
+        "bin/libd3_fixture.rlib"
+      ],
+      "started_utc": "2026-10-24T22:13:15.679240+00:00",
+      "seconds": 0.13254223300464218,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/fixture_compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reason": null
+    },
+    {
+      "name": "safe_wrapper_compile",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--edition=2024",
+        "--crate-type=rlib",
+        "-F",
+        "unsafe-code",
+        "source/driver.rs",
+        "--extern",
+        "d3_fixture=bin/libd3_fixture.rlib",
+        "-o",
+        "bin/libd4_effects.rlib"
+      ],
+      "started_utc": "2026-10-24T22:13:16.069519+00:00",
+      "seconds": 0.07575546499720076,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/safe_wrapper_compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reason": null
+    },
+    {
+      "name": "contracts_compile",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--edition=2024",
+        "--test",
+        "-F",
+        "unsafe-code",
+        "source/tests.rs",
+        "--extern",
+        "d3_fixture=bin/libd3_fixture.rlib",
+        "--extern",
+        "d4_effects=bin/libd4_effects.rlib",
+        "-L",
+        "dependency=bin",
+        "-o",
+        "bin/d4_contracts"
+      ],
+      "started_utc": "2026-10-24T22:13:16.405661+00:00",
+      "seconds": 0.2380614659996354,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/contracts_compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reason": null
+    },
+    {
+      "name": "new_contracts",
+      "cmd": [
+        "bin/d4_contracts",
+        "--nocapture"
+      ],
+      "started_utc": "2026-10-24T22:13:16.901247+00:00",
+      "seconds": 0.0034473420018912293,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/new_contracts.log",
+      "sha256": "564def04935c31f36954295375e068e8e4340ce09f2a4e1e7892671d2574c862",
+      "reason": null
+    },
+    {
+      "name": "inherited_unsafe_boundary_expected_failure",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--edition=2024",
+        "--crate-type=rlib",
+        "--emit=metadata",
+        "-F",
+        "unsafe-code",
+        "source/fixture.rs",
+        "-o",
+        "bin/forbidden_fixture.rmeta"
+      ],
+      "started_utc": "2026-10-24T22:13:25.641402+00:00",
+      "seconds": 0.09615170799952466,
+      "exit": 1,
+      "timeout_seconds": 45,
+      "log": "evidence/inherited_unsafe_boundary_expected_failure.log",
+      "sha256": "c1c13e6f126e42c05e93f5cca16228c508444156e3fc36ab44b06675566f5054",
+      "reason": null
+    },
+    {
+      "name": "trace_compile",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--edition=2024",
+        "-O",
+        "-F",
+        "unsafe-code",
+        "source/trace_corpus.rs",
+        "--extern",
+        "d3_fixture=bin/libd3_fixture.rlib",
+        "--extern",
+        "d4_effects=bin/libd4_effects.rlib",
+        "-L",
+        "dependency=bin",
+        "-o",
+        "bin/d4_trace_corpus"
+      ],
+      "started_utc": "2026-10-24T22:13:26.007534+00:00",
+      "seconds": 0.33925517500028946,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/trace_compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reason": null
+    },
+    {
+      "name": "frozen_new_trace_corpus",
+      "cmd": [
+        "bin/d4_trace_corpus",
+        "evidence/traces.jsonl"
+      ],
+      "started_utc": "2026-10-24T22:13:26.607870+00:00",
+      "seconds": 0.2951628910013824,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/frozen_new_trace_corpus.log",
+      "sha256": "0dc82c7ac9fca4602030cbe4ee58356140694bc0a2884695069eb476c3cff068",
+      "reason": null
+    },
+    {
+      "name": "independent_saved_trace_oracle",
+      "cmd": [
+        "python3",
+        "review_traces.py",
+        "evidence/traces.jsonl",
+        "REVIEW.json"
+      ],
+      "started_utc": "2026-10-24T22:13:27.164772+00:00",
+      "seconds": 4.260760863995529,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/independent_saved_trace_oracle.log",
+      "sha256": "4ddaad3e0d4e8bbe0de40cf89dfd25a2b47d578746fbf2c0a700cdc30a944f82",
+      "reason": null
+    },
+    {
+      "name": "saved_trace_figures",
+      "cmd": [
+        "python3",
+        "plot_saved.py"
+      ],
+      "started_utc": "2026-10-24T22:14:27.232832+00:00",
+      "seconds": 2.578879216001951,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/saved_trace_figures.log",
+      "sha256": "d8ee04ded233a1002464275b174df15f056472bcbedc24f150243aa8b96df58b",
+      "reason": null
+    }
+  ],
+  "total_seconds": 25.906088458010345,
+  "closed": true,
+  "prior_D3_closed_seconds": 35.897308696992695,
+  "prior_D2_closed_seconds": 25.104395919000012,
+  "prior_pre_D2_known_seconds": 83.29566578299983,
+  "historical_S0_text_seconds": "108.40006170199984",
+  "separate_native_compile_boundary_closed_seconds": 14.951735806986107,
+  "older_remaining": null,
+  "reset": false,
+  "scope": "New local subprocesses only; retrieval/drafting/storage/external CAS separate.",
+  "closed_utc": "2026-10-24T22:16:07.896220+00:00",
+  "close_reason": "New fixed D4 protocol/source verification complete; no further scientific execution in this ledger",
+  "unused_local_cap_seconds": 94.09391154198966
+}

@@ -1,0 +1,73 @@
+{
+  "status": "VERIFIED_EXTERNAL_REPOSITORY_OBJECTS",
+  "scope": "Six initial S3 citation failures plus one newer central head; not VigilODE commit authority",
+  "objects": [
+    {
+      "repo": "cosmosapjw-quantum/rei_bianchi",
+      "kind": "commit",
+      "sha": "407381b302d8b98f251b54d277823997bc4fca9f",
+      "evidence": "compare with current PR222 head: ahead4, behind0, merge base equals this commit",
+      "canonical_url": "https://github.com/cosmosapjw-quantum/rei_bianchi/commit/407381b302d8b98f251b54d277823997bc4fca9f"
+    },
+    {
+      "repo": "cosmosapjw-quantum/rei_bianchi",
+      "kind": "blob",
+      "sha": "4eab1bd2ee3561fe07beda4301f082321522c611",
+      "path": "research/orchestration_longterm_20261023/assembly/HANDOFF_vigilode_KO.md",
+      "evidence": "fetch_file at the preceding exact commit returned this blob SHA",
+      "canonical_url": "https://github.com/cosmosapjw-quantum/rei_bianchi/blob/407381b302d8b98f251b54d277823997bc4fca9f/research/orchestration_longterm_20261023/assembly/HANDOFF_vigilode_KO.md"
+    },
+    {
+      "repo": "cosmosapjw-quantum/bass",
+      "kind": "commit",
+      "sha": "0a088e1f8fca6618107525e687f930406ca32d18",
+      "evidence": "PR187 actual head; research/bass-b3b2-locked-cell-bridge-20261024",
+      "canonical_url": "https://github.com/cosmosapjw-quantum/bass/commit/0a088e1f8fca6618107525e687f930406ca32d18"
+    },
+    {
+      "repo": "cosmosapjw-quantum/rei_bianchi",
+      "kind": "commit",
+      "sha": "54a65d4d84d3cb7a8dc05a2d69c6910690b30bff",
+      "evidence": "PR226 actual head",
+      "canonical_url": "https://github.com/cosmosapjw-quantum/rei_bianchi/commit/54a65d4d84d3cb7a8dc05a2d69c6910690b30bff"
+    },
+    {
+      "repo": "cosmosapjw-quantum/rec_bianchi",
+      "kind": "commit",
+      "sha": "277572a17b27c09246dbeaa707a1fa82f89cffcd",
+      "evidence": "compare with PR134 final head: ahead2, behind0, merge base equals this commit",
+      "canonical_url": "https://github.com/cosmosapjw-quantum/rec_bianchi/commit/277572a17b27c09246dbeaa707a1fa82f89cffcd"
+    },
+    {
+      "repo": "cosmosapjw-quantum/rec_bianchi",
+      "kind": "commit",
+      "sha": "ccf2bd088972e952fbe8e7e6eb21ccc8a7275447",
+      "evidence": "PR134 actual head; research/rec-history-response-20261024",
+      "canonical_url": "https://github.com/cosmosapjw-quantum/rec_bianchi/commit/ccf2bd088972e952fbe8e7e6eb21ccc8a7275447"
+    },
+    {
+      "repo": "cosmosapjw-quantum/rei_bianchi",
+      "kind": "commit",
+      "sha": "2354d6e995fde736fffbcad2d0e40473218cb8c4",
+      "evidence": "Latest closeout readback of PR222 actual head; research/orchestration-sandbox-20261022",
+      "canonical_url": "https://github.com/cosmosapjw-quantum/rei_bianchi/commit/2354d6e995fde736fffbcad2d0e40473218cb8c4"
+    }
+  ],
+  "central_delta": {
+    "before": "407381b302d8b98f251b54d277823997bc4fca9f",
+    "after": "2354d6e995fde736fffbcad2d0e40473218cb8c4",
+    "commits": 4,
+    "vigilode_owner_handoff_changed": false,
+    "changed_groups": [
+      "HE backup receipt",
+      "CR neutral-elastic return",
+      "HI native atom delivery"
+    ],
+    "effect_on_D4": "No new native owner/source/reservation/live dirty/completion receipt; original dependency remains unresolved"
+  },
+  "central_comments_observed": 8,
+  "last_vigilode_comment_before_D4": 6384170816,
+  "checker_unchanged": true,
+  "allowlist_unchanged": true,
+  "resolution": "Bind repository and object type without importing foreign repository history or granting a broad exception. The local-only checker limitation remains an explicit CI finding."
+}

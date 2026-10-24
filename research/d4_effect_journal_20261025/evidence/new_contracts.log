@@ -1,0 +1,34 @@
+
+running 22 tests
+test d4_accept_stages_owned_payload_and_commits_one_scientific_prefix ... ok
+
+thread 'd4_delivery_unwind_retains_pending_payload_and_prior_external_write' (10) panicked at source/tests.rs:295:9:
+intentional delivery unwind after external write
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test d4_delivery_failure_before_write_preserves_batch_and_blocks_production ... ok
+test d4_after_write_failure_retries_same_id_with_explicit_sink_deduplication ... ok
+test d4_clone_alias_counterexample_keeps_external_capture_changes_on_refusal ... ok
+test d4_delivery_without_pending_batch_never_enters_sink ... ok
+test d4_exact_journal_limits_preserve_order_and_complete_payloads ... ok
+test d4_domain_refusal_discards_trial_events_after_norm_acceptance ... ok
+test d4_duplicate_last_ack_is_idempotent_while_new_batch_remains_pending ... ok
+test d4_fatal_callback_does_not_reset_attempt_accounting_or_publish_events ... ok
+test d4_ignored_event_limit_error_poison_blocks_mathematical_acceptance ... ok
+test d4_existing_d2_stage_callback_failure_drops_two_owned_rhs_events ... ok
+test d4_inherited_attempt_cap_bounds_producers_without_budget_reset ... ok
+test d4_nonfinite_candidate_halts_with_no_published_events ... ok
+test d4_existing_d2_stage_success_publishes_eight_rhs_records_after_admission ... ok
+
+thread 'd4_producer_unwind_discards_journal_and_stops_further_attempts' (24) panicked at source/tests.rs:312:9:
+intentional producer unwind after journal emission
+test d4_final_time_pending_delivery_precedes_finished_and_empty_batch_needs_ack ... ok
+test d4_delivery_unwind_retains_pending_payload_and_prior_external_write ... ok
+test d4_norm_refusal_discards_trial_events_without_state_change ... ok
+test d4_payload_limit_poison_discards_earlier_owned_records ... ok
+test d4_represented_clock_failure_prevents_callback_entry ... ok
+test d4_producer_unwind_discards_journal_and_stops_further_attempts ... ok
+test d4_wrong_ack_cannot_delete_pending_batch ... ok
+test d4_recoverable_callback_discards_events_keeps_work_and_reuses_session ... ok
+
+test result: ok. 22 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

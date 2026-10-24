@@ -1,0 +1,204 @@
+{
+  "schema": "vigilode.d4.result.v1",
+  "status": "PASS_SCOPED_OWNED_EFFECT_JOURNAL",
+  "executed_source_commit": "555a93e5bffbed4b488ee0496e73d8095b08eab4",
+  "tests": {
+    "new_passed": 22,
+    "new_failed": 0,
+    "prior_tests_replayed": 0
+  },
+  "new_stage_hook_integration": {
+    "trials": 2,
+    "rhs": 10,
+    "solves": 9,
+    "stage_checks": 10,
+    "full_trajectory_campaigns": 0
+  },
+  "trace_corpus": {
+    "cases": 16384,
+    "rows": 65536,
+    "alphabet": "ARFBLSKW",
+    "sequence_length": 4,
+    "caps": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "cases_per_cap": {
+      "0": 4096,
+      "1": 4096,
+      "2": 4096,
+      "3": 4096
+    },
+    "action_counts": {
+      "A": 8192,
+      "R": 8192,
+      "F": 8192,
+      "B": 8192,
+      "L": 8192,
+      "S": 8192,
+      "K": 8192,
+      "W": 8192
+    },
+    "result_counts": {
+      "budget": 7206,
+      "no_pending": 21996,
+      "no_pending_ack": 14580,
+      "accepted": 3984,
+      "waiting": 2580,
+      "delivery_error": 1720,
+      "delivered": 860,
+      "acknowledged": 860,
+      "wrong_ack": 860,
+      "already_acknowledged": 84,
+      "recoverable": 3984,
+      "fatal": 6822
+    },
+    "final_terminal_counts": {
+      "budget": 4281,
+      "none": 8119,
+      "fatal": 3984
+    }
+  },
+  "independent_checks": {
+    "field_comparisons": 3407872,
+    "scientific_prefix_preservation_rows": 61552,
+    "accepted_clock_progress_rows": 3984,
+    "attempt_ledger_identity_rows": 65536,
+    "pending_admission_barrier_rows": 2580,
+    "delivery_retained_identity_rows": 2580,
+    "published_batches_bound_to_accepted_history": true
+  },
+  "aggregate_final_case_counters": {
+    "attempts": 11952,
+    "accepted": 3984,
+    "rejected": 3984,
+    "producer": 11952,
+    "deliverycalls": 2580,
+    "deliveryerrors": 1720,
+    "deliverysuccesses": 860,
+    "published": 1412,
+    "dedup_hits": 308,
+    "acknowledged": 860,
+    "ack_duplicates": 84,
+    "ack_errors": 15440,
+    "acks_without_sink_effect": 706,
+    "acks_without_success": 780
+  },
+  "semantic_mutants": {
+    "clear_pending_on_delivery_error": {
+      "differing_rows": 2692,
+      "first_witness": {
+        "case_id": 4099,
+        "cap": 1,
+        "sequence": "AAAB",
+        "step": 3,
+        "action": "B",
+        "fields": [
+          "pending_run_id",
+          "pending_attempt",
+          "pending_epoch",
+          "pending_payload",
+          "pending_events",
+          "pending_bytes"
+        ],
+        "observed": {
+          "pending_run_id": 4100,
+          "pending_attempt": 1,
+          "pending_epoch": 1,
+          "pending_payload": 4100,
+          "pending_events": 1,
+          "pending_bytes": 8
+        },
+        "mutant": {
+          "pending_run_id": null,
+          "pending_attempt": null,
+          "pending_epoch": null,
+          "pending_payload": null,
+          "pending_events": 0,
+          "pending_bytes": 0
+        }
+      },
+      "cases_detected": 1412,
+      "detected": true
+    },
+    "advance_while_pending": {
+      "differing_rows": 3751,
+      "first_witness": {
+        "case_id": 4096,
+        "cap": 1,
+        "sequence": "AAAA",
+        "step": 1,
+        "action": "A",
+        "fields": [
+          "result",
+          "terminalkind"
+        ],
+        "observed": {
+          "result": "waiting",
+          "terminalkind": "none"
+        },
+        "mutant": {
+          "result": "budget",
+          "terminalkind": "budget"
+        }
+      },
+      "cases_detected": 1914,
+      "detected": true
+    },
+    "non_idempotent_receiver": {
+      "differing_rows": 380,
+      "first_witness": {
+        "case_id": 4132,
+        "cap": 1,
+        "sequence": "AALL",
+        "step": 3,
+        "action": "L",
+        "fields": [
+          "published",
+          "dedup_hits"
+        ],
+        "observed": {
+          "published": 1,
+          "dedup_hits": 1
+        },
+        "mutant": {
+          "published": 2,
+          "dedup_hits": 0
+        }
+      },
+      "cases_detected": 284,
+      "detected": true
+    }
+  },
+  "safe_boundary": {
+    "wrapper_forbid_unsafe": "PASS",
+    "direct_inherited_fixture_forbid": "EXPECTED_FAILURE_AT_MXCSR",
+    "production_modified": false
+  },
+  "wolfram": {
+    "reachable_states": 23,
+    "edges": 51,
+    "invariants": true,
+    "pending_admission_edges": 0,
+    "atomic_set_dedup": true,
+    "initial_non_boolean_conjunction": "PRESERVED_AND_CORRECTED",
+    "corrected_reduce_warning": "PRESERVED_NO_SOLUTION_FOR_VIOLATION"
+  },
+  "closed_new_subprocess_seconds": 25.906088458010345,
+  "new_subprocess_entries": 11,
+  "old_D2_D3_science_replays": 0,
+  "old_benchmark_NCP_V3_harmonic_replays": 0,
+  "Desktop_Commander_calls": 0,
+  "native_owner_reservation_dirty_completion": "UNRESOLVED_INPUT_DEPENDENCY",
+  "production": "HOLD",
+  "global_completion": null,
+  "raw_trace": {
+    "file": "evidence/traces.jsonl",
+    "bytes": 68074488,
+    "sha256": "3f9948f68c3da234859519788b34806145ee1f95dc69aa3302e74ba17fc9273b",
+    "location": "complete immutable phase archive"
+  },
+  "review_sha256": "58fca41ed1df8d8144d1ae330f750e2bdf0d42a781c87477436df1d9ac7b5964"
+}
