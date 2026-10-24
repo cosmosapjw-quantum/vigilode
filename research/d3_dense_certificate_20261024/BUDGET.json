@@ -148,9 +148,44 @@
       "exit": 0,
       "log": "evidence/frozen_eight_new_d3_cases.log",
       "sha256": "8f4789774ec335d547ba4c6afa2d83af237e0b72e8085923f71a510195b8f367"
+    },
+    {
+      "name": "independent_saved_review",
+      "cmd": [
+        "python3",
+        "review_dense.py",
+        "evidence/segments.jsonl",
+        "--summary",
+        "evidence/SUMMARY.json",
+        "--output",
+        "REVIEW.json",
+        "--coefficients",
+        "all",
+        "--precision",
+        "80"
+      ],
+      "started_utc": "2026-10-24T12:05:43.056740+00:00",
+      "seconds": 10.280914869999833,
+      "timeout_seconds": 85.0,
+      "exit": 0,
+      "log": "evidence/independent_saved_review.log",
+      "sha256": "5ea663e11f8a08141e94d2e037e3d090d3f7f0cc8659dfad3f129ad4b9703392"
+    },
+    {
+      "name": "saved_refusal_audit_and_figures",
+      "cmd": [
+        "python3",
+        "plot_saved.py"
+      ],
+      "started_utc": "2026-10-24T12:07:05.113715+00:00",
+      "seconds": 4.595714589002455,
+      "timeout_seconds": 45.0,
+      "exit": 0,
+      "log": "evidence/saved_refusal_audit_and_figures.log",
+      "sha256": "31539d918cfcd04258cb6d2d78950524aa08a8ad44c10292005dfa75ddfc44eb"
     }
   ],
-  "closed": false,
+  "closed": true,
   "prior_known_seconds_at_S0": 108.40006170199985,
   "prior_D2_closed_seconds": 25.104395919000012,
   "prior_pre_D2_known_seconds": 83.29566578299983,
@@ -158,5 +193,9 @@
   "older_remaining": null,
   "reset": false,
   "scope": "Only new local subprocess commands through this runner; retrieval/drafting/storage/external CAS separate.",
-  "total_seconds": 21.020679237990407
+  "total_seconds": 35.897308696992695,
+  "closed_utc": "2026-10-24T12:15:49.344179+00:00",
+  "close_reason": "Frozen D3 scope completed; 8 new cases, exact saved review and figures finished",
+  "unused_local_cap_seconds": 84.1026913030073,
+  "no_more_science_execution_authorized_by_this_closed_ledger": true
 }

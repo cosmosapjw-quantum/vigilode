@@ -32,7 +32,7 @@ Summary is a list or `{runs:[...]}` of eight objects. Each object must include `
 ## Command
 
 ```sh
-python3 review_dense.py evidence/SEGMENTS.jsonl --summary evidence/SUMMARY.json --output REVIEW.json --coefficients all --precision 80
+python3 review_dense.py evidence/segments.jsonl --summary evidence/SUMMARY.json --output REVIEW.json --coefficients all --precision 80
 ```
 
 `--coefficients all` is the default. The alternative `representative` checks exact residual coefficients for each run's first, last, and maximum-rho segment. All domain/carry/interval-supremum/contraction/query/reference checks still run. The selected mode, exact coefficient/segment counts, and a restricted status label are recorded; representative mode must not be presented as a full exact-coefficient audit. Cached identical component control tuples reduce duplicate exact arithmetic without changing coverage.

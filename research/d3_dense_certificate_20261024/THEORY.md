@@ -97,3 +97,11 @@ Validation uses focused new Rust contracts, an independent Fraction power-basis 
 ## R10: limits and next dependency
 
 Claims are conditional mathematical derivation plus scoped implementation verification for this fixed model, curve construction, environment and frozen corpus. Degree-elevation, interval arithmetic and dissipative defect transport are established prior methods, reused here. No novelty or strong no-go claim is submitted. Actual BASS, native owner clearance/integration, general callback/Jacobian domain, external callback side effects and general finite retry termination remain independent gates. The current D3 branch is a research continuation, not a takeover of the reserved native checkout.
+
+## Primary sources and actual verification
+
+- Arnold Neumaier, *Global, rigorous and realistic bounds for the solution of dissipative differential equations. Part I: Theory*, Computing 52 (1994), 315–336, DOI [10.1007/BF02276880](https://doi.org/10.1007/BF02276880), [author text](https://arnold-neumaier.at/ms/ode.pdf). Sections2.6–2.9 and3.3–3.5 support contraction and inherited residual-error transport; the scalar quadratic identity above is derived directly here.
+- Jürgen Garloff, *The Bernstein Algorithm*, Interval Computations2 (1993), 154–168, [primary text](https://interval.louisiana.edu/reliable-computing-journal/1993/interval-computations-1993-2-pp-154-168.pdf). The nonnegative partition of unity and coefficient enclosures support the whole-interval range argument.
+- The broader source comparison, including existing native implementations, is in INDEPENDENT_THEORY_REVIEW.md and REUSE_MAP_KO.md. Raw third-party full texts are not redistributed.
+
+The frozen eight new cases have now completed. The independent saved-output audit checked all285120 defect coefficients over1188 segments, all35400 inherited component transitions and all1484 queries. Exact Fraction checks have no numerical slack. Decimal80 comparisons with the analytic Riccati trajectory are a numerical audit with reported slack1e-68, and do not replace the conditional interval proof. See REVIEW.json in the archive, its public REVIEW_SUMMARY.json, and INDEPENDENT_REVIEW.md.

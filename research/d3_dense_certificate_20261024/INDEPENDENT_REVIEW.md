@@ -9,8 +9,8 @@ compiler, benchmark, NCP, or Desktop Commander execution by this reviewer.
 
 Status: PASS_SCOPED_SOURCE_AND_MATH_REVIEW.
 The actual driver source has been reviewed and all material source findings
-are closed. The root's campaign and saved-output audit receipts remain
-separate execution evidence to be attached after they are available.
+are closed. The root's completed campaign and saved-output audit receipts
+were read and are attached below as separate execution evidence.
 This is not native production qualification.
 
 ## Skill context used
@@ -43,6 +43,18 @@ only material finding corrections and the newly completed driver.
 Inherited admission.rs, stage_safe.rs, trajectory.rs and the saved-output
 review_dense.py were also read for dependency/context; their previous
 scientific validation is reused rather than re-executed.
+
+### Final reviewed driver and finding-correction snapshot
+
+The core and theory identities above remain unchanged. The final source
+review additionally binds the completed driver and the two material
+finding corrections to the following exact files:
+
+| File | SHA-256 |
+|---|---|
+| source/campaign_dense.rs | f7d5b5fa7feb5ef3220adb5bfa539496ced6b726e5cda92302fbf06ec060a942 |
+| source/test_dense.rs | cf734b7f65c67c6aa3aa2d2cc00420a4ab9506d9bea182a78977a14324f85245 |
+| review_dense.py | 80cefa9ba52948f235b7af9c8d42f698583f4378e3f327dfdaba621c5c43eeb1 |
 
 ## Independent mathematical checks
 
@@ -136,8 +148,11 @@ Root's measured evidence/green_contracts.log records 15/15 PASS, exit0,
 with SHA-256 dfbd10b1e29cec901253bd5bc526a273427bd7553b0bd9cfdf404c949f95c6d1.
 The revised test_dense.rs SHA-256 is
 cf734b7f65c67c6aa3aa2d2cc00420a4ab9506d9bea182a78977a14324f85245.
-The current review_dense.py SHA-256 is
-d3c9779f3617c3b733a5271f330cb3a1e0b76415be94e18a98f4abae33f7c6fc.
+The final review_dense.py SHA-256 is
+80cefa9ba52948f235b7af9c8d42f698583f4378e3f327dfdaba621c5c43eeb1.
+The preceding counts-only oracle snapshot was
+d3c9779f3617c3b733a5271f330cb3a1e0b76415be94e18a98f4abae33f7c6fc;
+the final identity includes the exact bitwise requested-time corpus checks.
 The root BUDGET entries also record safe_core_forbid_compile exit0 and
 green_compile exit0. Those actual execution receipts were read; this
 reviewer did not rerun them.
@@ -170,7 +185,7 @@ These counts must not be collapsed into a wall-time speedup claim.
 ## Execution and claim limits
 
 This reviewer performed no compile/test/campaign execution. Root's
-measured logs must supply those separate results. A source review PASS
+measured logs supply those separate results. A source review PASS
 does not replace actual test/compiler/scientific evidence.
 
 Exact Fraction residual and query-displacement checks are independent
@@ -184,4 +199,48 @@ callback side effects, arbitrary initial uncertainty, actual BASS,
 native owner/reservation/dirty state, native integration, or the production
 FP boundary. Historical D2 native_subagent/independent_personnel status
 remains unchanged; this is a new scoped independent source/math review.
+
+## Completed root execution receipt readback
+
+This closes the same review pass by reading existing outputs only; this
+reviewer's scientific/compiler/test execution count remains zero. The
+saved-output reviewer and refusal auditor also report zero solver runs;
+the campaign itself consists of the eight new D3 cases authorized in S0.
+No D2 experiment or completed historical campaign was replayed.
+
+The root's frozen_eight_new_d3_cases.log records COMPLETE for all eight
+alpha/degree/budget combinations. REVIEW.json records
+PASS_ALL_SAVED_DEFECTS_BOUNDS_AND_QUERIES with all 285,120 exact defect
+coefficient checks across 1,188 saved segments and 1,484 queries. The
+queries comprise 296 requested queries (37 per run) and 1,188 strict
+interior queries (one per accepted segment). It also records 39,204
+full33 uniform-budget checks and 48,972 query-component checks. The
+maximum Decimal80 query-error/bound ratio is approximately 0.4774119143;
+the maximum endpoint-error/bound ratio is approximately 0.7774548187.
+The exact query-rounding audit's maximum error/bound ratio is 0.875.
+These are results for the frozen manufactured cases. Decimal80 solution
+and contraction comparisons remain numerical audits, not formal interval
+proofs; the source theorem and directed enclosure are the continuous
+certificate argument.
+
+REFUSAL_REVIEW.json records PASS_SAVED_REFUSAL_RECORDS for 1,172 refusal
+records: 24 local-norm and 1,148 certificate refusals. Its recorded checks
+confirm bitwise accepted-state/incoming-radius preservation, cursor/epoch
+preservation, and attempt/rejection count increments. It explicitly makes
+no claim that external side effects are rolled back.
+
+| Receipt read | SHA-256 |
+|---|---|
+| evidence/frozen_eight_new_d3_cases.log | 8f4789774ec335d547ba4c6afa2d83af237e0b72e8085923f71a510195b8f367 |
+| REVIEW.json | 231fb913cf82639a8967e3a2ed91e49001fcd602ae3df6ef2a67ed32577a410e |
+| REFUSAL_REVIEW.json | 8932b007d954a0e5ac71a716a5ab72e7b29277a56fa0f2ced9beffa0a7163949 |
+
+The existing BUDGET ledger records exit 0 for campaign_compile,
+frozen_eight_new_d3_cases, independent_saved_review and
+saved_refusal_audit_and_figures. At this readback its accumulated local
+subprocess time is 35.897308696992695 seconds under the 120-second cap,
+with closed=false pending the root's delivery close. This is execution
+budget accounting, not a wall-time performance comparison. Historical
+closed D2 time, prior known time, older_remaining=null and reset=false
+remain recorded separately and were not reinitialized by this reviewer.
 

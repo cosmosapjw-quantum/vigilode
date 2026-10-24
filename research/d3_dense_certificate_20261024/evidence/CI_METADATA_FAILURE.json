@@ -1,0 +1,25 @@
+{
+  "head": "fc7eb08f62f6d0c25e3f9ff60f7ad4c71f12f17e",
+  "run_id": 40092473251,
+  "job_id": 120867812678,
+  "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40092473251",
+  "conclusion": "failure",
+  "passed_test_suites": [
+    {
+      "name": "research_process_validator",
+      "tests": 16
+    },
+    {
+      "name": "authority_reference_validator",
+      "tests": 8
+    }
+  ],
+  "failure": [
+    "missing canonical PREREGISTRATION.md index for original pre-run CONTRACT.md",
+    "missing covering append-only research/LEDGER.jsonl row"
+  ],
+  "authority_step": "skipped_after_node_failure",
+  "scientific_solver_or_campaign_steps": 0,
+  "interpretation": "Automatic GitHub process CI is separate from the local D3 scientific ledger; it did not rerun D2, D3, benchmarks or NCP.",
+  "repair": "Index actual pre-run S0 contract truthfully without backdating; append one output-hash-bound row; preserve previous166rows byte-for-byte."
+}
