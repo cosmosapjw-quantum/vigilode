@@ -1,0 +1,87 @@
+{
+  "source_commit": "02060cc9dc4551dc5cf6ec86ad9b53b697a2c3ce",
+  "workflow_files_read": 17,
+  "workflow_pins": [
+    {
+      "path": ".github/workflows/a1-inner-tolerance-parity.yml",
+      "git_blob": "7fc396bd14733ada49746edcdbdf4c4f2f2e70de"
+    },
+    {
+      "path": ".github/workflows/a1-two-arm-receipt.yml",
+      "git_blob": "ce01aa27b57acdf3de39cfe4e492386f79d725f4"
+    },
+    {
+      "path": ".github/workflows/a2-a3-gmres-inner-cycle.yml",
+      "git_blob": "769b475c4e7cb9fe13dbe3b394818c4b33c11f50"
+    },
+    {
+      "path": ".github/workflows/audit2-research.yml",
+      "git_blob": "638efc6380ac43eb2e3a763428e409ff8a1bdbec"
+    },
+    {
+      "path": ".github/workflows/audit2-stage-certificate-repair-handoff.yml",
+      "git_blob": "1cefcd9d5326282545301cbba1dbf327e17bdccc"
+    },
+    {
+      "path": ".github/workflows/coupled-closeout-20261020.yml",
+      "git_blob": "90bcc8fac9c873c786d28b1d7b186960a5aecb0b"
+    },
+    {
+      "path": ".github/workflows/coupled-economy-20261020.yml",
+      "git_blob": "0298e5ec0e1eef53dc2c6d89c2eeb18ce38ec44e"
+    },
+    {
+      "path": ".github/workflows/coupled-economy-closeout-20261020.yml",
+      "git_blob": "965ce3491c1c71f2f55a5d13d6e043e0abcf1e20"
+    },
+    {
+      "path": ".github/workflows/coupled-native-20261020.yml",
+      "git_blob": "6d96f4b90eab800b1951db7b4beb758222b73169"
+    },
+    {
+      "path": ".github/workflows/coupled-reference-recovery-20261020.yml",
+      "git_blob": "7b3803944a5d3c3204ac3f3fcde3687ed9eda637"
+    },
+    {
+      "path": ".github/workflows/cumulative-private-transfer-20261020.yml",
+      "git_blob": "f237b7add2d46cb7056b7a27ff055549fba4efed"
+    },
+    {
+      "path": ".github/workflows/e4-fresh-clone-build.yml",
+      "git_blob": "49717a08bf1a58b6bbd7860700e5da36d3f45490"
+    },
+    {
+      "path": ".github/workflows/hybrid-structure-ad-20261020.yml",
+      "git_blob": "11a7041d681ade0103fbf6e051e6158a9af695ac"
+    },
+    {
+      "path": ".github/workflows/ignored-tests.yml",
+      "git_blob": "8aaa30f66b25a776f9a3709f3da77917417a16de"
+    },
+    {
+      "path": ".github/workflows/production.yml",
+      "git_blob": "47de344bbb05c533ba4af32d8c8554201a4a99e4"
+    },
+    {
+      "path": ".github/workflows/research-process.yml",
+      "git_blob": "8e94de5c01d8965c74e8ecda5f7e089b5fbe493f"
+    },
+    {
+      "path": ".github/workflows/rvj-audit-offline-source.yml",
+      "git_blob": "59a8ada9a3697215096d6c6d03a7e36df737ddbd"
+    }
+  ],
+  "changed_path_scope": [
+    "research/d4_effect_journal_20261025/**",
+    "research/LEDGER.jsonl"
+  ],
+  "expected_automatic_workflow": "Research ledger and authority references",
+  "expected_commands": [
+    "python3 tools/test_check_research_node.py -v",
+    "python3 tools/test_check_authority_refs.py -v",
+    "python3 tools/check-research-node.py --base origin/research/d3-dense-certificate-20261024",
+    "python3 tools/check-authority-refs.py"
+  ],
+  "old_solver_test_benchmark_workflows_matched": 0,
+  "workflow_configuration_changed": false
+}

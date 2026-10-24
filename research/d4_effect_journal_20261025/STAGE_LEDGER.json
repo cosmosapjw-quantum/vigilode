@@ -6,58 +6,68 @@
       "status": "COMPLETE_SCOPED",
       "evidence": [
         "CONTRACT.md",
-        "SOURCE_SURVEY_KO.md"
+        "SOURCE_SURVEY_KO.md",
+        "DAG.json"
       ],
-      "checkpoint": "S0"
+      "checkpoint": "S0",
+      "name": "연구 위치·계약",
+      "result": "Latest native/source dependency identified; owned effects and ACK scoped"
     },
     {
       "id": "R2",
       "status": "COMPLETE_SCOPED",
       "evidence": [
-        "CONTRACT.md",
-        "SOURCE_SURVEY_KO.md"
+        "SOURCE_SURVEY_KO.md",
+        "RELATED_REPOS_KO.md",
+        "BACKUP_SURVEY_KO.md",
+        "LITERATURE_KO.md",
+        "REUSED_SOURCE_PINS.json"
       ],
-      "checkpoint": "S0"
+      "checkpoint": "S0",
+      "name": "근거·재사용",
+      "result": "Branches/repos/backups and primary literature mapped; six source bytes reused"
     },
     {
       "id": "R3",
       "status": "COMPLETE_SCOPED",
       "evidence": [
-        "THEORY.md",
-        "source/driver.rs",
-        "INDEPENDENT_REVIEW.md"
+        "THEORY.md"
       ],
-      "checkpoint": "S1"
+      "checkpoint": "S1",
+      "name": "주장·전제 정렬",
+      "result": "Returning-producer, managed-state and conditional sink assumptions separated"
     },
     {
       "id": "R4",
       "status": "COMPLETE_SCOPED",
       "evidence": [
         "THEORY.md",
-        "source/driver.rs",
-        "INDEPENDENT_REVIEW.md"
+        "source/tests.rs"
       ],
-      "checkpoint": "S1"
+      "checkpoint": "S1",
+      "name": "가설·표현 탐색",
+      "result": "Clone-sharing construction compared with owned trial journal and pending batch"
     },
     {
       "id": "R5",
       "status": "COMPLETE_SCOPED",
       "evidence": [
-        "THEORY.md",
-        "source/driver.rs",
-        "INDEPENDENT_REVIEW.md"
+        "THEORY.md"
       ],
-      "checkpoint": "S1"
+      "checkpoint": "S1",
+      "name": "구성적 유도",
+      "result": "L1-L5 proofs and conditional external exactly-once derivation"
     },
     {
       "id": "R6",
       "status": "COMPLETE_SCOPED",
       "evidence": [
-        "THEORY.md",
-        "source/driver.rs",
-        "INDEPENDENT_REVIEW.md"
+        "INDEPENDENT_REVIEW.md",
+        "THEORY.md"
       ],
-      "checkpoint": "S1"
+      "checkpoint": "S1",
+      "name": "독립 검증",
+      "result": "One complementary review pass; F1-F4 closed with source and scope corrections"
     },
     {
       "id": "R7",
@@ -66,35 +76,45 @@
         "evidence/WOLFRAM_INITIAL.json",
         "evidence/WOLFRAM_CORRECTED.json"
       ],
-      "checkpoint": "S1"
+      "checkpoint": "S1",
+      "name": "판별 검증",
+      "result": "Wolfram abstract state model with initial and corrected outputs preserved"
     },
     {
       "id": "R8",
       "status": "COMPLETE_SCOPED",
       "evidence": [
         "S2_RESULT.json",
-        "REVIEW.json",
-        "BUDGET.json",
-        "FIGURE_AUDIT_KO.md"
+        "REVIEW.json"
       ],
-      "checkpoint": "S2"
+      "checkpoint": "S2",
+      "name": "결과 판정",
+      "result": "Finite corpus and conditional scope accepted; production HOLD retained"
     },
     {
       "id": "R9",
       "status": "COMPLETE_SCOPED",
       "evidence": [
-        "S2_RESULT.json",
-        "REVIEW.json",
-        "BUDGET.json",
+        "THEORY.md",
+        "source/driver.rs",
         "FIGURE_AUDIT_KO.md"
       ],
-      "checkpoint": "S2"
+      "checkpoint": "S2",
+      "name": "정식 결과·코딩 연결",
+      "result": "Lemmas mapped to driver and actual trace evidence; figure interpretation"
     },
     {
       "id": "R10",
-      "status": "PENDING",
-      "evidence": [],
-      "checkpoint": null
+      "status": "READY_DELIVERY",
+      "evidence": [
+        "REPORT_KO.md",
+        "REPRODUCE.md",
+        "HANDOFF_KO.md",
+        "FINAL_DELIVERY.json"
+      ],
+      "checkpoint": "S3",
+      "name": "종료·재개",
+      "result": "Phase archive/publication/provider evidence and resume prerequisite"
     },
     {
       "id": "C1",
@@ -103,38 +123,44 @@
         "CONTRACT.md",
         "SOURCE_SURVEY_KO.md"
       ],
-      "checkpoint": "S0"
+      "checkpoint": "S0",
+      "name": "목표·baseline",
+      "result": "D2/D3 exact baseline and current native frontier preserved"
     },
     {
       "id": "C2",
       "status": "COMPLETE_SCOPED",
       "evidence": [
-        "CONTRACT.md",
-        "SOURCE_SURVEY_KO.md"
+        "SOURCE_SURVEY_KO.md",
+        "REUSED_SOURCE_PINS.json",
+        "THEORY.md"
       ],
-      "checkpoint": "S0"
+      "checkpoint": "S0",
+      "name": "식–데이터–코드",
+      "result": "Existing Session, transaction, output and callback hooks reconciled"
     },
     {
       "id": "C3",
       "status": "COMPLETE_SCOPED",
       "evidence": [
-        "source/driver.rs",
-        "source/tests.rs",
-        "source/trace_corpus.rs",
-        "BUDGET.json"
+        "THEORY.md",
+        "source/driver.rs"
       ],
-      "checkpoint": "S1"
+      "checkpoint": "S1",
+      "name": "수치 설계",
+      "result": "Owned bounded journal, poison, pending barrier and exact ACK protocol"
     },
     {
       "id": "C4",
       "status": "COMPLETE_SCOPED",
       "evidence": [
-        "source/driver.rs",
-        "source/tests.rs",
-        "source/trace_corpus.rs",
-        "BUDGET.json"
+        "DAG.json",
+        "BUDGET.json",
+        "CONTRACT.md"
       ],
-      "checkpoint": "S1"
+      "checkpoint": "S1",
+      "name": "실행 DAG·자원",
+      "result": "Three stage-scoped native tasks and new120-second budget; old budgets closed"
     },
     {
       "id": "C5",
@@ -143,55 +169,73 @@
         "source/driver.rs",
         "source/tests.rs",
         "source/trace_corpus.rs",
-        "BUDGET.json"
+        "review_traces.py"
       ],
-      "checkpoint": "S1"
+      "checkpoint": "S1",
+      "name": "구현",
+      "result": "Driver, tests, trace generator and independent state oracle implemented"
     },
     {
       "id": "C6",
       "status": "COMPLETE_SCOPED",
       "evidence": [
-        "S2_RESULT.json",
-        "REVIEW.json",
-        "BUDGET.json",
-        "FIGURE_AUDIT_KO.md"
+        "evidence/new_contracts.log",
+        "evidence/safe_wrapper_compile.log",
+        "evidence/inherited_unsafe_boundary_expected_failure.log"
       ],
-      "checkpoint": "S2"
+      "checkpoint": "S2",
+      "name": "구현 검증",
+      "result": "22 new contracts plus safe wrapper and expected inherited unsafe failure"
     },
     {
       "id": "C7",
       "status": "COMPLETE_SCOPED",
       "evidence": [
         "S2_RESULT.json",
-        "REVIEW.json",
-        "BUDGET.json",
-        "FIGURE_AUDIT_KO.md"
+        "REVIEW.json"
       ],
-      "checkpoint": "S2"
+      "checkpoint": "S2",
+      "name": "과학 검증",
+      "result": "Two new stage routing trials and65536 protocol transitions independently checked"
     },
     {
       "id": "C8",
       "status": "COMPLETE_SCOPED",
       "evidence": [
-        "S2_RESULT.json",
-        "REVIEW.json",
+        "SOURCE_EXECUTION_IDENTITY.json",
+        "REPRODUCE.md",
         "BUDGET.json",
         "FIGURE_AUDIT_KO.md"
       ],
-      "checkpoint": "S2"
+      "checkpoint": "S2",
+      "name": "수치·재현성",
+      "result": "Finite corpus scope, source identity, exact commands, closed budget and saved plots"
     },
     {
       "id": "C9",
-      "status": "PENDING",
-      "evidence": [],
-      "checkpoint": null
+      "status": "COMPLETE_SCOPED",
+      "evidence": [
+        "INDEPENDENT_REVIEW.md",
+        "FIGURE_AUDIT_KO.md"
+      ],
+      "checkpoint": "S3",
+      "name": "독립 검토",
+      "result": "Same single review pass extended by actual execution log readback"
     },
     {
       "id": "C10",
-      "status": "PENDING",
-      "evidence": [],
-      "checkpoint": null
+      "status": "READY_DELIVERY",
+      "evidence": [
+        "REPORT_KO.md",
+        "HANDOFF_KO.md",
+        "FINAL_DELIVERY.json"
+      ],
+      "checkpoint": "S3",
+      "name": "판정·인계",
+      "result": "Scoped result and delivery completion with native input and production gates"
     }
   ],
-  "phase_archiving": "Four consolidated S0-S3 phase checkpoints; individual R/C evidence mappings"
+  "phase_archiving": "Four consolidated S0-S3 phase checkpoints; individual R/C evidence mappings",
+  "workflow_note": "Frozen user-provided1.0.0 stage map preserved; current plugin1.3.0 bounded closeout and evidence/identity rules applied without new science.",
+  "checkpoint_semantics": "Each stage maps to a consolidated immutable phase archive and Git checkpoint. Later execution/readback additions retain their actual publication dates; no claim of20 distinct uploads."
 }

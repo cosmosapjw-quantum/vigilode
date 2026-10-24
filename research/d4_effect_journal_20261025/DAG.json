@@ -22,11 +22,12 @@
     },
     {
       "id": "S2",
-      "status": "READY_PUBLICATION"
+      "status": "COMPLETE",
+      "commit": "8dc905eb56682be5fd59ee50971704abd5a150f0"
     },
     {
       "id": "S3",
-      "status": "PENDING"
+      "status": "SCIENCE_COMPLETE_DELIVERY_PENDING"
     },
     {
       "id": "NATIVE_INPUT",
@@ -38,6 +39,10 @@
     }
   ],
   "edges": [
+    [
+      "D2",
+      "D3"
+    ],
     [
       "D3",
       "S0"
@@ -64,7 +69,16 @@
     ]
   ],
   "global_completion_percent": null,
-  "D4_local_complete": 2,
+  "D4_local_complete": 3,
   "D4_local_total": 4,
-  "production": "HOLD"
+  "production": "HOLD",
+  "production_other_gates": [
+    "actual BASS",
+    "general callback/Jacobian correctness",
+    "general dense-domain",
+    "nonreturning callbacks",
+    "durable sink/outbox/crash restore",
+    "production FP provider",
+    "inherited authority references"
+  ]
 }
