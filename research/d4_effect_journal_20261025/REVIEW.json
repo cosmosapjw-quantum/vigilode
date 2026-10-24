@@ -1,0 +1,187 @@
+{
+  "schema": "d4.independent.protocol.review.v1",
+  "status": "PASS_ALL_FROZEN_PROTOCOL_TRACES",
+  "reference": "Frozen CONTRACT state relation, independent of Rust implementation arithmetic",
+  "input": {
+    "file": "traces.jsonl",
+    "sha256": "3f9948f68c3da234859519788b34806145ee1f95dc69aa3302e74ba17fc9273b",
+    "rows": 65536
+  },
+  "source_sha256": {
+    "review_traces.py": "62638c3def276b9395d1579de30c91bcc2c818e0b701cbdb2324c1a2175332b9",
+    "source/trace_corpus.rs": "02f2b4acee54b58df43b23286efdb43b3419ff74a641b1322b7dc5653f42a05d",
+    "CONTRACT.md": "4c7cd1b8b5b1192d027aa578412f2009cd609a561bf62e081cad790a71f0b6b2"
+  },
+  "coverage": {
+    "cases": 16384,
+    "rows": 65536,
+    "alphabet": "ARFBLSKW",
+    "sequence_length": 4,
+    "caps": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "cases_per_cap": {
+      "0": 4096,
+      "1": 4096,
+      "2": 4096,
+      "3": 4096
+    },
+    "action_counts": {
+      "A": 8192,
+      "R": 8192,
+      "F": 8192,
+      "B": 8192,
+      "L": 8192,
+      "S": 8192,
+      "K": 8192,
+      "W": 8192
+    },
+    "result_counts": {
+      "budget": 7206,
+      "no_pending": 21996,
+      "no_pending_ack": 14580,
+      "accepted": 3984,
+      "waiting": 2580,
+      "delivery_error": 1720,
+      "delivered": 860,
+      "acknowledged": 860,
+      "wrong_ack": 860,
+      "already_acknowledged": 84,
+      "recoverable": 3984,
+      "fatal": 6822
+    },
+    "final_terminal_counts": {
+      "budget": 4281,
+      "none": 8119,
+      "fatal": 3984
+    }
+  },
+  "checks": {
+    "field_comparisons": 3407872,
+    "scientific_prefix_preservation_rows": 61552,
+    "accepted_clock_progress_rows": 3984,
+    "attempt_ledger_identity_rows": 65536,
+    "pending_admission_barrier_rows": 2580,
+    "delivery_retained_identity_rows": 2580,
+    "published_batches_bound_to_accepted_history": true
+  },
+  "aggregate_final_case_counters": {
+    "attempts": 11952,
+    "accepted": 3984,
+    "rejected": 3984,
+    "producer": 11952,
+    "deliverycalls": 2580,
+    "deliveryerrors": 1720,
+    "deliverysuccesses": 860,
+    "published": 1412,
+    "dedup_hits": 308,
+    "acknowledged": 860,
+    "ack_duplicates": 84,
+    "ack_errors": 15440,
+    "acks_without_sink_effect": 706,
+    "acks_without_success": 780
+  },
+  "semantic_mutants": {
+    "clear_pending_on_delivery_error": {
+      "differing_rows": 2692,
+      "first_witness": {
+        "case_id": 4099,
+        "cap": 1,
+        "sequence": "AAAB",
+        "step": 3,
+        "action": "B",
+        "fields": [
+          "pending_run_id",
+          "pending_attempt",
+          "pending_epoch",
+          "pending_payload",
+          "pending_events",
+          "pending_bytes"
+        ],
+        "observed": {
+          "pending_run_id": 4100,
+          "pending_attempt": 1,
+          "pending_epoch": 1,
+          "pending_payload": 4100,
+          "pending_events": 1,
+          "pending_bytes": 8
+        },
+        "mutant": {
+          "pending_run_id": null,
+          "pending_attempt": null,
+          "pending_epoch": null,
+          "pending_payload": null,
+          "pending_events": 0,
+          "pending_bytes": 0
+        }
+      },
+      "cases_detected": 1412,
+      "detected": true
+    },
+    "advance_while_pending": {
+      "differing_rows": 3751,
+      "first_witness": {
+        "case_id": 4096,
+        "cap": 1,
+        "sequence": "AAAA",
+        "step": 1,
+        "action": "A",
+        "fields": [
+          "result",
+          "terminalkind"
+        ],
+        "observed": {
+          "result": "waiting",
+          "terminalkind": "none"
+        },
+        "mutant": {
+          "result": "budget",
+          "terminalkind": "budget"
+        }
+      },
+      "cases_detected": 1914,
+      "detected": true
+    },
+    "non_idempotent_receiver": {
+      "differing_rows": 380,
+      "first_witness": {
+        "case_id": 4132,
+        "cap": 1,
+        "sequence": "AALL",
+        "step": 3,
+        "action": "L",
+        "fields": [
+          "published",
+          "dedup_hits"
+        ],
+        "observed": {
+          "published": 1,
+          "dedup_hits": 1
+        },
+        "mutant": {
+          "published": 2,
+          "dedup_hits": 0
+        }
+      },
+      "cases_detected": 284,
+      "detected": true
+    }
+  },
+  "failure_count": 0,
+  "first_failures": [],
+  "scope": {
+    "finite_trace_corpus": "All words of length4 only; longer-word claims use the theorem",
+    "remote_exactly_once": "Conditional on an atomic durable idempotent sink; this receiver is in-memory",
+    "bare_exact_ack": "Caller assertion can clear pending before delivery and is counted explicitly",
+    "nonreturning_callbacks": "Outside finite invocation-to-return termination contract",
+    "ODE_stage_calls": 0,
+    "D2_D3_prior_experiments_replayed": 0,
+    "native_owner_reservation_dirty": "UNRESOLVED_INPUT_DEPENDENCY",
+    "production": "HOLD",
+    "global_completion": null
+  },
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]"
+}
