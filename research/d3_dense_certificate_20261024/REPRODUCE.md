@@ -76,3 +76,7 @@ The exact Fraction oracle is independent of the Rust Bernstein coefficient imple
 The build/source binding is `SOURCE_EXECUTION_IDENTITY.json`; it captured the frozen scientific source/binaries after the campaign. Later report additions and the runner timeout option are recorded separately. Final payload identities are in the S3 manifest.
 
 For future genuinely changed work, first establish the native source/reservation/dirty/completion input and the exact new acceptance contract. Any separately authorized new computation needs a new linked ledger; never edit this closed ledger to reset time. No automatic next research node is created by this handoff.
+
+## Remote CI disposition
+
+Automatic GitHub process CI ran twice, separately from local scientific execution. The first exposed missing canonical registration/ledger linkage. The second (run40093427748 on science commit96aee1829d72ce1cbd6bcd0c0e48ebf3b1b37455) passed the D3 node/167-row append-only ledger and24 validator tests, then failed the whole-repository authority check on32 pre-existing missing references/143occurrences outside D3. All failed paths are unchanged by PR86. No checker or allowlist was weakened. The final delivery-only metadata commit does not repeat that same global failure; source CI remains explicitly FAIL, and production HOLD persists. See delivery/CI_FINAL_RECEIPT.json.

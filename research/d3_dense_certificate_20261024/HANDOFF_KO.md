@@ -15,7 +15,11 @@ D3 Draft PR86: https://github.com/cosmosapjw-quantum/vigilode/pull/86
 D3 S0 source d702012e06eeafda5ce30b7c017e51b2c9bcbe4c
 D3 S1 source ce2640441495ea2af519fded07bdd5aae32667c8
 D3 S2 source fc7eb08f62f6d0c25e3f9ff60f7ad4c71f12f17e
-최종 S3 science/metadata source와 archive SHA는 PR86 및 delivery receipt에서 읽어 결속하라.
+D3 S3 과학게시 96aee1829d72ce1cbd6bcd0c0e48ebf3b1b37455
+최종 delivery metadata HEAD는 PR86 및 delivery receipt에서 읽어 결속하라.
+S3 archive7722958bytes/79payloads, SHA256a3ced3de5fac812774502b9c5c8ed36e03e691b90ee9b2cc9c5519b4d8cbc188.
+Drive1AtwVgCl0xSIYDI-0PctzRBIEu0iQm7zG, Dropboxid:BSpOijBcT10AAAAAAD_9jw 완료ACK.
+https://chatgpt.com/library?file_id=libfile_b9c10e5e19ec8191a864a8cce6e76292&account_id=personal
 
 먼저 실제 HEAD와 적용 AGENTS를 읽고,
 research/d3_dense_certificate_20261024/의 REPORT_KO.md, THEORY.md,
@@ -64,6 +68,10 @@ Desktop Commander 월간quota 거절 경로를 호출·재시도·우회하지 �
 추가 norm-only 파생노드나 다음연구루프를 자동생성하지 마라.
 
 D2=4/4, 이번D3=4/4, global completion=null, production=HOLD.
+과학S3 CI run40093427748: D3 node/ledger PASS, validator24 PASS.
+전체authority-ref FAIL: 기존32missing references/143발생, D3실패0.
+PR86은D3밖에서LEDGER append만바꿨다. 기존실패를숨기거나allowlist/검사기를완화하지마라.
+최종metadata-only게시에서는같은전역CI실패를재실행하지않는다.
 PR222댓글6379089882, PR84댓글6379094297, PR85복구댓글6379540725는 이미전달완료.
 기존 원본 archive·실패로그·closedBUDGET·D2HEAD를 보존하고 기존댓글을 중복게시하지 마라.
 ```

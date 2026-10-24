@@ -17,7 +17,9 @@
     },
     {
       "id": "S3",
-      "status": "COMPLETE_SAVED_REVIEW_REPORT_HANDOFF"
+      "status": "COMPLETE_SAVED_REVIEW_REPORT_HANDOFF",
+      "commit": "96aee1829d72ce1cbd6bcd0c0e48ebf3b1b37455",
+      "delivery": "COMPLETE_ACKS"
     },
     {
       "id": "NATIVE_INPUT",
@@ -26,6 +28,11 @@
     {
       "id": "PRODUCTION",
       "status": "HOLD"
+    },
+    {
+      "id": "INHERITED_AUTHORITY_REFS",
+      "status": "FAIL32_MISSING_OUTSIDE_D3",
+      "type": "existing_repository_gate_not_new_research_node"
     }
   ],
   "edges": [
@@ -47,6 +54,10 @@
     ],
     [
       "S3",
+      "PRODUCTION"
+    ],
+    [
+      "INHERITED_AUTHORITY_REFS",
       "PRODUCTION"
     ]
   ],

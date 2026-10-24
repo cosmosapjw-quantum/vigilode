@@ -178,3 +178,18 @@ D2 HEAD `1c829f206ab67585191231be7f5135fd0d4c804e` 및 과학 게시 `1ef6c51926
 ## 8. 게시 과정의 실제 CI finding
 
 S2 PR86의 자동 GitHub Actions `Research ledger and authority references` run40092473251에서 process-validator16개와 authority-validator8개 시험이 통과했지만, D3 canonical PREREGISTRATION.md와 covering LEDGER 행 누락으로 게시 검사가 실패했다. 기존 과학 solver/test/benchmark 실행은 이 workflow에 없다. 원래 S0 CONTRACT는 새8조합 실행 전에 이미 게시돼 있으므로, 새 문서에는 그 원문과 시간적 근거를 연결하고 문서 파일을 나중에 추가했다는 사실을 명시했다. 기존 ledger166행을 그대로 두고 실제 source와 numeric output hash를 갖는 L-0170만 append했다. 원래 실패 receipt는 evidence/CI_METADATA_FAILURE.json에 보존한다. 최종 CI 판정은 delivery/CI_FINAL_RECEIPT.json에 연결하며 결과 확인 전 PASS로 주장하지 않는다. 자동 원격 CI의24개 문서 검사 시험은 D3의15개 새 과학 계약 시험 및 local subprocess 원장과 별도다.
+
+최종 과학 게시 `96aee1829d72ce1cbd6bcd0c0e48ebf3b1b37455`의 실제 CI run40093427748에서는 **D3 node/append-only ledger 검사 PASS(167행)**, validator24시험 PASS를 확인했다. 저장소 전체 authority-ref 검사는 여전히 FAIL이며, 기존32개 missing reference의143개 인용 발생이다. D3 경로의 실패는0이고, PR86의71개 변경 파일 중 D3 밖 변경은 LEDGER append뿐이다. 따라서 실패 파일들은 이 PR에서 바뀌지 않은 기존 연구 경로에 있다. 이 부채를 숨기거나 checker/allowlist를 바꾸지 않는다. 전체 CI PASS나 merge-ready를 주장하지 않으며 production HOLD를 유지한다. 완료 과학 실행은 반복하지 않았고, 다음 metadata-only 전달 commit은 같은 전역 실패를 다시 실행하지 않는다는 사실을 명시한다.
+
+## 9. 최종 백업 receipt
+
+| Phase | source commit | Archive bytes / payloads | Drive | Dropbox |
+|---|---|---:|---|---|
+| S0 원본 복원 | d702012e06eeafda5ce30b7c017e51b2c9bcbe4c |26708 /15|[원본](https://drive.google.com/file/d/1DR7qxiC4GxlBTum4aqa8GyJvq8qsb6SY/view)|id:BSpOijBcT10AAAAAAD_9PA|
+| S1 유도·RED |ce2640441495ea2af519fded07bdd5aae32667c8|74374 /38|[S1](https://drive.google.com/file/d/1Z2WCAMvn9aw9eZGL5BrOHCBhosC7TTsn/view)|id:BSpOijBcT10AAAAAAD_9iQ|
+| S2 구현·8run |fc7eb08f62f6d0c25e3f9ff60f7ad4c71f12f17e|6881704 /53|[S2](https://drive.google.com/file/d/1Sh9qsLzJXQqMww4sCseyxC60H1rPd7WQ/view)|id:BSpOijBcT10AAAAAAD_9jQ|
+| S3 전수검산·보고 |96aee1829d72ce1cbd6bcd0c0e48ebf3b1b37455|7722958 /79|[S3](https://drive.google.com/file/d/1AtwVgCl0xSIYDI-0PctzRBIEu0iQm7zG/view)|id:BSpOijBcT10AAAAAAD_9jw|
+
+최종 원본 archive: `VIGILODE_D3_DENSE_S3_20261024_RESUME.zip`, SHA256 `a3ced3de5fac812774502b9c5c8ed36e03e691b90ee9b2cc9c5519b4d8cbc188`. [완전한 결과 묶음](https://chatgpt.com/library?file_id=libfile_b9c10e5e19ec8191a864a8cce6e76292&account_id=personal)에는 실제 raw segment/failure, full REVIEW, source, 모든 과학 로그, 닫힌 예산, PNG/PDF 그림과 handoff가 들어 있다. Local CRC와79payload hash검증 및 두 backup provider의 완료 ACK/size확인을 끝냈다. 이번 새 원격 전체 byte 재다운로드는 수행하지 않았다.
+
+이 immutable archive 뒤에 생성되는 provider ACK·최종 delivery metadata는 외부 receipt로 연결된다. Archive 안의 `delivery/S3_PUBLICATION.json`은 과학 게시96aee182…를 이미 고정하며, 최종 metadata commit은 이 science 결과를 변경하지 않는다.
