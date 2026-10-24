@@ -106,10 +106,12 @@ Input read_input(const std::string& filename) {
 
 int main(int argc, char** argv) {
     try {
-        if (argc != 3) throw std::runtime_error("usage: native_dvode CONTRACT.txt adams|bdf");
+        if (argc != 3 && argc != 4) throw std::runtime_error("usage: native_dvode CONTRACT.txt adams|bdf [max_steps]");
         const Input c = read_input(argv[1]);
         const std::string method = argv[2];
         if (method != "adams" && method != "bdf") throw std::runtime_error("unknown method");
+        const int max_steps = argc == 4 ? std::stoi(argv[3]) : 200000;
+        if (max_steps < 1 || max_steps > 2000000) throw std::runtime_error("invalid max_steps");
         int neq = c.n, itol = 1, itask = 1, istate = 1, iopt = 1, mf = method == "adams" ? 10 : 22;
         int lrw = mf == 10 ? 20 + 16*neq : 22 + 9*neq + 2*neq*neq;
         int liw = mf == 10 ? 30 : 30 + neq;
@@ -120,7 +122,7 @@ int main(int argc, char** argv) {
         const auto started = std::chrono::steady_clock::now();
         std::vector<double> rwork(static_cast<std::size_t>(lrw), 0.0);
         std::vector<int> iwork(static_cast<std::size_t>(liw), 0);
-        iwork[5] = 200000; // IWORK(6): maximum internal steps
+        iwork[5] = max_steps; // IWORK(6): maximum internal steps
         dvode_(native_rhs,&neq,y.data(),&t,&tout,&itol,&rtol,&atol,&itask,&istate,&iopt,
                rwork.data(),&lrw,iwork.data(),&liw,unused_jac,&mf,rpar.data(),ipar.data());
         const double elapsed = std::chrono::duration<double>(std::chrono::steady_clock::now()-started).count();
@@ -131,6 +133,7 @@ int main(int argc, char** argv) {
                   << ",\"method\":\"native-dvode-" << method << "\",\"parallel_layer\":\"serial\",\"threads\":1"
                   << ",\"size\":\"" << c.size << "\",\"elapsed_seconds\":" << elapsed
                   << ",\"solver_success\":" << (ok ? "true":"false") << ",\"istate\":" << istate
+                  << ",\"max_steps\":" << max_steps
                   << ",\"final_time\":" << (std::isfinite(t) ? t : c.t0) << ",\"final_state\":";
         if (finite) {
             std::cout << '[';

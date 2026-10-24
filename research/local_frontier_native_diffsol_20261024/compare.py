@@ -134,9 +134,10 @@ def main():
     a.add_argument('--timeout', type=float, default=90)
     a.add_argument('--budget', type=float, default=7200)
     a.add_argument('--memory-gib', type=float, default=1)
+    a.add_argument('--max-steps', type=int, default=200000)
     a.add_argument('--allow-dirty-smoke', action='store_true')
     args = a.parse_args()
-    if (args.repeats < 1 or len(set(args.cases)) != len(args.cases) or
+    if (args.repeats < 1 or not 1 <= args.max_steps <= 2000000 or len(set(args.cases)) != len(args.cases) or
             any(c not in (1, 10, 15, 16) for c in args.cases) or
             any(not math.isfinite(x) or x <= 0 for x in (args.rtol, args.atol, args.error_limit, args.timeout, args.budget, args.memory_gib))):
         raise ValueError('invalid limits or cases')
@@ -189,6 +190,7 @@ def main():
                 'methods': methods, 'repeats': args.repeats, 'warmup_per_method': 1,
                 'rtol': args.rtol, 'atol': args.atol, 'error_limit': args.error_limit,
                 'timeout': args.timeout, 'budget': args.budget, 'memory_gib': args.memory_gib,
+                'max_steps': args.max_steps,
                 'timing_authority': 'diagnostic_only',
                 'timing_scope': 'internal solver elapsed reported per binary; process wall and /usr/bin/time resource are separate',
                 'native_callback_path': 'compiled C++ -> Fortran DVODE, no Python in timed solve',
@@ -238,14 +240,14 @@ def main():
                 folder = output/'runs'/f'{case}_{args.size}_{repeat}_{method}'
                 if method.startswith('native-dvode'):
                     mode = method.removeprefix('native-dvode-')
-                    cmd = [str(binaries['native']), str(output/f'native_{case}.txt'), mode]
+                    cmd = [str(binaries['native']), str(output/f'native_{case}.txt'), mode, str(args.max_steps)]
                 elif method == 'diffsol-bdf':
                     cmd = [str(binaries['diffsol']), '--contract', str(output/f'model_{case}.json'),
                            '--rtol', str(args.rtol), '--atol', str(args.atol), '--error-limit', str(args.error_limit)]
                 else:
                     cmd = [str(binaries['vigilode']), '--case', str(case), '--size', args.size,
                            '--method', method, '--parallel-layer', 'serial', '--threads', '1',
-                           '--rtol', str(args.rtol), '--atol', str(args.atol), '--max-steps', '200000', '--emit-state']
+                           '--rtol', str(args.rtol), '--atol', str(args.atol), '--max-steps', str(args.max_steps), '--emit-state']
                 raw = run_process(cmd, folder, args.timeout, args.memory_gib, [cpu], env)
                 assessment = assess(raw['result'], d, ex, ref_bound, args.error_limit, raw['execution_status'])
                 receipt = {'case': case, 'size': args.size, 'repeat': repeat, 'warmup': repeat == -1,
