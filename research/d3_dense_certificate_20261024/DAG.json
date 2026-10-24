@@ -1,0 +1,69 @@
+{
+  "schema": "vigilode.d3.dag.v1",
+  "nodes": [
+    {
+      "id": "S0",
+      "status": "REUSED_EXACT_15_PAYLOAD_ARCHIVE"
+    },
+    {
+      "id": "S1",
+      "status": "COMPLETE_DERIVATION_RED_PUBLISHED",
+      "commit": "ce2640441495ea2af519fded07bdd5aae32667c8"
+    },
+    {
+      "id": "S2",
+      "status": "COMPLETE_NEW_IMPLEMENTATION_8_RUNS"
+    },
+    {
+      "id": "S3",
+      "status": "PENDING_SAVED_AUDIT_REPORT_HANDOFF"
+    },
+    {
+      "id": "NATIVE_INPUT",
+      "status": "UNRESOLVED_OWNER_RESERVATION_LIVE_DIRTY_COMPLETION"
+    },
+    {
+      "id": "PRODUCTION",
+      "status": "HOLD"
+    }
+  ],
+  "edges": [
+    [
+      "S0",
+      "S1"
+    ],
+    [
+      "S1",
+      "S2"
+    ],
+    [
+      "S2",
+      "S3"
+    ],
+    [
+      "NATIVE_INPUT",
+      "PRODUCTION"
+    ],
+    [
+      "S3",
+      "PRODUCTION"
+    ]
+  ],
+  "production_other_gates": [
+    "actual BASS",
+    "general callback/Jacobian contract",
+    "general dense-domain beyond this fixed model",
+    "finite retry termination in general consumer",
+    "external callback side effects",
+    "production FP environment provider preserving forbid(unsafe_code)"
+  ],
+  "D3_local": {
+    "complete": 3,
+    "total": 4
+  },
+  "D2_historical": {
+    "complete": 4,
+    "total": 4
+  },
+  "global_completion_percent": null
+}

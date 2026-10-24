@@ -12,6 +12,10 @@ for sub in ['source','evidence','figures']:
 for name in ['REUSED_SOURCE_IDENTITY.json','S0_CONTRACT.md','S0_PLAN.md','D2_BUDGET.json','D2_REVIEW.json','D2_RESULT.json']:
  f=R/'intake'/name
  if f.exists():files.append(f)
+# Prior immutable stage receipts are payloads of later checkpoints.
+# The current archive's own acknowledgement is necessarily written afterwards.
+for f in sorted((R/'delivery').glob('*.json')):
+ if not f.name.startswith(tag+'_'):files.append(f)
 items=[]
 with zipfile.ZipFile(p,'x',zipfile.ZIP_DEFLATED,compresslevel=6) as z:
  for f in files:

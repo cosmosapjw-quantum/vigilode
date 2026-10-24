@@ -75,6 +75,79 @@
       "exit": 101,
       "log": "evidence/red_contracts.log",
       "sha256": "6dc92cd151040abda53fbb5f8dde9210529ed2eee9d3ecfe944131d8952cef5d"
+    },
+    {
+      "name": "safe_core_forbid_compile",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--edition=2021",
+        "--crate-type=lib",
+        "--emit=metadata",
+        "source/safe_core.rs",
+        "-o",
+        "bin/safe_core.rmeta"
+      ],
+      "started_utc": "2026-10-24T11:58:24.551737+00:00",
+      "seconds": 0.17095904399684514,
+      "exit": 0,
+      "log": "evidence/safe_core_forbid_compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "green_compile",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--edition=2021",
+        "--test",
+        "source/test_dense.rs",
+        "-o",
+        "bin/d3_tests"
+      ],
+      "started_utc": "2026-10-24T11:58:25.064721+00:00",
+      "seconds": 0.39734660199974314,
+      "exit": 0,
+      "log": "evidence/green_compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "green_contracts",
+      "cmd": [
+        "bin/d3_tests",
+        "d3_contracts",
+        "--nocapture"
+      ],
+      "started_utc": "2026-10-24T11:58:25.805050+00:00",
+      "seconds": 0.009067427999980282,
+      "exit": 0,
+      "log": "evidence/green_contracts.log",
+      "sha256": "dfbd10b1e29cec901253bd5bc526a273427bd7553b0bd9cfdf404c949f95c6d1"
+    },
+    {
+      "name": "campaign_compile",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--edition=2021",
+        "-O",
+        "source/campaign_dense.rs",
+        "-o",
+        "bin/d3_campaign"
+      ],
+      "started_utc": "2026-10-24T12:03:07.654666+00:00",
+      "seconds": 0.9064156979984546,
+      "exit": 0,
+      "log": "evidence/campaign_compile.log",
+      "sha256": "4d7a61761ad878a45967bcc29962f738a04bfca6710cf849d90fcf1d3f26519f"
+    },
+    {
+      "name": "frozen_eight_new_d3_cases",
+      "cmd": [
+        "bin/d3_campaign"
+      ],
+      "started_utc": "2026-10-24T12:03:13.579346+00:00",
+      "seconds": 0.6709741079976084,
+      "exit": 0,
+      "log": "evidence/frozen_eight_new_d3_cases.log",
+      "sha256": "8f4789774ec335d547ba4c6afa2d83af237e0b72e8085923f71a510195b8f367"
     }
   ],
   "closed": false,
@@ -85,5 +158,5 @@
   "older_remaining": null,
   "reset": false,
   "scope": "Only new local subprocess commands through this runner; retrieval/drafting/storage/external CAS separate.",
-  "total_seconds": 18.865916357997776
+  "total_seconds": 21.020679237990407
 }

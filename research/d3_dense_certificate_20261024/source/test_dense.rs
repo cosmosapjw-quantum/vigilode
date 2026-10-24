@@ -87,4 +87,17 @@ mod stage_safe;
    assert!(c.certify(&radius,1e-30).is_err());s.abort_stage(lease,true).unwrap();assert_eq!(s.snapshot(),initial);assert_eq!(radius,[0.01;30]);}
   assert_eq!(s.attempts(),2);assert_eq!(s.accepted(),0);assert_eq!(s.rejected(),2);assert!(matches!(s.begin(),Err(admission::Fault::Budget)));
  }
+ #[test] fn d3_query_rounding_only_refusal_preserves_transaction(){
+  let z=trajectory::initial();let mut s=admission::Session::new_nonnegative(0.,0.1,z,1e-5,4).unwrap();
+  let before=s.snapshot();let incoming=[0.;30];let cursor=0usize;let history:Vec<f64>=Vec::new();let lease=s.begin().unwrap();
+  let c=dense::Curve::new(&dense::Model::new(0.).unwrap(),3,before.t,lease.next,&before.y,&before.y).unwrap();
+  let d=c.certify(&incoming,1.).unwrap().diagnostics();
+  let dep2=directed::add_up(d.uniform[24],d.uniform[25]).unwrap();
+  let dep3=directed::add_up(directed::add_up(d.uniform[26],d.uniform[27]).unwrap(),d.uniform[28]).unwrap();
+  let peak=d.uniform.iter().copied().fold(0.,f64::max).max(dep2).max(dep3);
+  let tight=c.certify(&incoming,peak).unwrap();
+  assert!(matches!(tight.query(lease.next*0.37),Err(dense::DenseError::Budget{..})));
+  s.abort_stage(lease,true).unwrap();
+  assert_eq!(s.snapshot(),before);assert_eq!(incoming,[0.;30]);assert_eq!(cursor,0);assert!(history.is_empty());assert_eq!(s.attempts(),1);
+ }
 }
