@@ -1,0 +1,1331 @@
+{
+  "schema_version": 1,
+  "document": "local CPU 24-model benchmark scientific contract",
+  "date": "2026-10-24",
+  "scope": "model readiness and short executable verification; not broad production certification or local-host scaling results",
+  "input_proposal": {
+    "file_name": "Pasted text(20261024-002932).txt",
+    "sha256": "032ef39d59a7a07d2e5270b70b28af607e33d3f52779d44f8ddda2756926080e"
+  },
+  "executable": "crates/vigilode/examples/local_bottleneck_suite.rs",
+  "model_source": "crates/vigilode/examples/local_bottleneck_support/models.rs",
+  "model_tests": "crates/vigilode/tests/local_bottleneck_models.rs",
+  "source_identity": {
+    "schema_version": 1,
+    "base_commit": "2f87ac31f52ac031bdd29ce7cbb67728cb01ef6a",
+    "source_files": {
+      "crates/vigilode/examples/local_bottleneck_suite.rs": "994fa3e67c9e92d275dc0763de4a126eeab4eb811a8090760dfd7dd7bc1d67a1",
+      "crates/vigilode/examples/local_bottleneck_support/models.rs": "288cc9c54b9380dc35a59d52185cd0fe8f0b36947fafb08283048020efbdad2d",
+      "crates/vigilode/tests/local_bottleneck_models.rs": "be0792dc4e3db821d5d039151de2a3d6eab5c92d3d3301462be3b8771b42d519"
+    },
+    "binary_sha256": "edf11cef5c5f0484cc326ab127264011352c6f922e4d7559b7e27692ef0f127d",
+    "test_log": "model-final-verification.log",
+    "test_count": 9,
+    "test_status": "PASS"
+  },
+  "methods": [
+    "dopri5",
+    "rodas5p-mf",
+    "rodas5p-dense",
+    "switching"
+  ],
+  "parallel_layers": [
+    "serial",
+    "data",
+    "ensemble"
+  ],
+  "prepared_thread_counts": [
+    1,
+    2,
+    4,
+    8,
+    12
+  ],
+  "dense_dimension_cap": 256,
+  "ensemble_state_element_cap": 16777216,
+  "reference_coverage": {
+    "explicit_semidiscrete_solution": [
+      6,
+      10,
+      15,
+      16,
+      19,
+      22
+    ],
+    "negligible_evolution_bound": {
+      "case": 7,
+      "absolute_bound": 1e-190,
+      "t_domain": [
+        0,
+        10
+      ]
+    },
+    "unvalidated_case_ids": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      8,
+      9,
+      11,
+      12,
+      13,
+      14,
+      17,
+      18,
+      20,
+      21,
+      23,
+      24
+    ],
+    "all_nonfinite_references_rejected": true,
+    "error_semantics": "max absolute endpoint component error across every ensemble member + reference absolute bound; per-member IVP error control",
+    "continuous_phase_certificate": false
+  },
+  "execution": {
+    "unit_tests_passed": 9,
+    "unit_test_failures": 0,
+    "executable_runs": 56,
+    "process_exit_failures": 0,
+    "statuses": {
+      "UNVALIDATED_REFERENCE": 22,
+      "PASS_SCOPED": 33,
+      "REFUSED_DIMENSION": 1
+    },
+    "all_24_have_executed_dopri_smoke": true,
+    "dopri_derivative_callbacks": 0,
+    "largest_measured_scoped_endpoint_error": 4.926662681037364e-06,
+    "measurements_not_speedup_claims": true,
+    "standard_dimension_campaign": "NOT_RUN_HERE",
+    "evidence": [
+      "evidence/model-final-verification.log",
+      "evidence/model-final-verification.exit",
+      "evidence/model-executable-smoke.jsonl",
+      "evidence/model-executable-smoke-receipts.json"
+    ]
+  },
+  "correction_rounds": [
+    {
+      "round": 1,
+      "test_result": "6 PASS, 1 FAIL",
+      "failure": "case5 ft error0.0002678872617173367",
+      "cause": "finite-difference cancellation against large fast-relaxation residual",
+      "retained": "tool output and this factual summary; no full separate raw log was saved in first invocation"
+    },
+    {
+      "round": 2,
+      "change": "finite difference tested on slow manifold with resolved time increment; scalar negligible-evolution reference scoped to t<=10",
+      "test_result": "8 PASS",
+      "evidence": "evidence/model-tests-round2.log"
+    },
+    {
+      "round": 3,
+      "change": "independent review hardening rejects nonfinite and overflowed reference vectors before endpoint comparison",
+      "test_result": "9 PASS",
+      "evidence": "evidence/model-final-verification.log"
+    }
+  ],
+  "primary_sources": [
+    {
+      "url": "https://archimede.uniba.it/~testset/report/testset.pdf",
+      "used_for": "canonical test identities/dimensions; Test Set release2.4"
+    },
+    {
+      "url": "https://docs.sciml.ai/SciMLBenchmarksOutput/stable/StiffODE/Hires/",
+      "used_for": "HIRES executable equations, initial state, endpoint"
+    },
+    {
+      "url": "https://docs.sciml.ai/SciMLBenchmarksOutput/stable/NonStiffODE/Pleiades_wpd/",
+      "used_for": "Pleiades masses, unsoftened RHS, state ordering, initial state, endpoint"
+    }
+  ],
+  "timing_contract": {
+    "pool_startup": "outside solve timing, separately recorded",
+    "callback_profiling": "only with --instrument; overlapping ensemble callback sums are not exclusive wall-time fractions",
+    "clean_speed_ranking": "instrument=false and independent reference accuracy passes",
+    "serial_latency_and_ensemble_throughput_separate": true,
+    "stage_parallelism": "separate coupled experiment; never attributed to these data/ensemble rows"
+  },
+  "deferred_extensions": [
+    {
+      "case": 7,
+      "description": "Separately named corrected slow-fast ignition variant with independent reference; literal original retained as negative control."
+    },
+    {
+      "case": 19,
+      "description": "Nonlinear rotating shallow-water/Rossby-Haurwitz benchmark requires full specified equations, source, IC and geometry."
+    },
+    {
+      "case": 20,
+      "description": "Full coupled photon-baryon closure requires independently documented bath evolution and matching reference."
+    }
+  ],
+  "cases": [
+    {
+      "autonomous": true,
+      "case": 1,
+      "dense_dimension_limit": 256,
+      "dimension": 3,
+      "dimension_smoke": 3,
+      "dimension_standard": 3,
+      "grid": [
+        0,
+        0
+      ],
+      "id": 1,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Robertson",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "k1": 0.04,
+        "k2": 10000.0,
+        "k3": 30000000.0
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        40.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "canonical 3-species; ensemble extension separate",
+      "identity_qualification": "Coefficients and initial data explicitly exported by --describe.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 4,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    },
+    {
+      "autonomous": true,
+      "case": 2,
+      "dense_dimension_limit": 256,
+      "dimension": 8,
+      "dimension_smoke": 8,
+      "dimension_standard": 8,
+      "grid": [
+        0,
+        0
+      ],
+      "id": 2,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "HIRES",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "source": "HIRES test-set equations; initial y8=.0057; no POLLU claim"
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        321.8122
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "8-species alternative explicitly permitted by request, not POLLU",
+      "identity_qualification": "Explicitly permitted canonical HIRES8 alternative; not POLLU20.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 1,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    },
+    {
+      "autonomous": true,
+      "case": 3,
+      "dense_dimension_limit": 256,
+      "dimension": 28,
+      "dimension_smoke": 28,
+      "dimension_standard": 28,
+      "grid": [
+        0,
+        0
+      ],
+      "id": 3,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Pleiades",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "G": 1.0,
+        "masses": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "softening": 0.0
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        3.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "canonical masses and initial conditions; collision unregularized",
+      "identity_qualification": "Coefficients and initial data explicitly exported by --describe.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 1,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    },
+    {
+      "autonomous": true,
+      "case": 4,
+      "dense_dimension_limit": 256,
+      "dimension": 4096,
+      "dimension_smoke": 16,
+      "dimension_standard": 4096,
+      "grid": [
+        4096,
+        0
+      ],
+      "id": 4,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Kuramoto-Sakaguchi",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "alpha": 0.2,
+        "coupling": 1.0,
+        "frequency": "0.5+0.1cos(2pi i/N)",
+        "radius": 32
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        10.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "local periodic coupling, no self term; radius4 smoke/32standard",
+      "identity_qualification": "Self coupling excluded and recorded, unlike inclusive displayed sum.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 3,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    },
+    {
+      "autonomous": false,
+      "case": 5,
+      "dense_dimension_limit": 256,
+      "dimension": 2,
+      "dimension_smoke": 2,
+      "dimension_standard": 2,
+      "grid": [
+        0,
+        0
+      ],
+      "id": 5,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Adiabatic-flash negative control",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "classification": "persistent transverse stiffness negative switch-down control",
+        "epsilon": 1e-06
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        2.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "literal equations; transverse stiffness persists after boundary layer",
+      "identity_qualification": "Transverse fast mode persists: negative switchdown control.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 1,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    },
+    {
+      "autonomous": false,
+      "case": 6,
+      "dense_dimension_limit": 256,
+      "dimension": 1024,
+      "dimension_smoke": 16,
+      "dimension_standard": 1024,
+      "grid": [
+        1024,
+        0
+      ],
+      "id": 6,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Freeze-out transport",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "boundary": "periodic",
+        "gamma0": 100000.0,
+        "gamma_exponent": 4,
+        "tau": 0.05,
+        "velocity": 0.1
+      },
+      "reference_kind": "analytic-semidiscrete-endpoint",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        2.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "periodic upwind, constant velocity, global conservative relaxation, exponent4",
+      "identity_qualification": "Equation exponent4 chosen over overview exponent3.",
+      "reference_independent": true,
+      "default_speed_ranking_status": "SCOPED_ENDPOINT_ELIGIBLE_IF_ACCURACY_PASSES",
+      "executed_smoke_rows": 4,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "independent analytic endpoint available; perform intermediate-time/phase checks and matched external comparisons"
+    },
+    {
+      "autonomous": true,
+      "case": 7,
+      "dense_dimension_limit": 256,
+      "dimension": 1,
+      "dimension_smoke": 1,
+      "dimension_standard": 1,
+      "grid": [
+        0,
+        0
+      ],
+      "id": 7,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Literal ignition negative control",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "classification": "literal attachment equation: no ignition; f'(1)=-1",
+        "epsilon": 0.02,
+        "reference_absolute_bound": 1e-190,
+        "reference_time_max": 10.0
+      },
+      "reference_kind": "analytic-negligible-evolution-bound",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        10.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "literal scalar equation; no thermal ignition occurs",
+      "identity_qualification": "Literal equation cannot validate ignition; fprime(1)=-1. Bound reference only t<=10.",
+      "reference_independent": true,
+      "default_speed_ranking_status": "SCOPED_ENDPOINT_ELIGIBLE_IF_ACCURACY_PASSES",
+      "executed_smoke_rows": 4,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "independent analytic endpoint available; perform intermediate-time/phase checks and matched external comparisons"
+    },
+    {
+      "autonomous": true,
+      "case": 8,
+      "dense_dimension_limit": 256,
+      "dimension": 3,
+      "dimension_smoke": 3,
+      "dimension_standard": 3,
+      "grid": [
+        0,
+        0
+      ],
+      "id": 8,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Oregonator",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "q": 8.375e-06,
+        "s": 77.27,
+        "w": 0.161
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        30.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "specified 3-variable coefficients",
+      "identity_qualification": "Coefficients and initial data explicitly exported by --describe.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 1,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    },
+    {
+      "autonomous": true,
+      "case": 9,
+      "dense_dimension_limit": 256,
+      "dimension": 512,
+      "dimension_smoke": 16,
+      "dimension_standard": 512,
+      "grid": [
+        256,
+        0
+      ],
+      "id": 9,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "FPUT beta chain",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "boundary": "periodic",
+        "quartic": 1.0,
+        "spring": 1000000.0
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        1.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "periodic homogeneous stiff springs plus quartic bonds",
+      "identity_qualification": "Displayed homogeneous-spring equation used, not alternating chain.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 1,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    },
+    {
+      "autonomous": true,
+      "case": 10,
+      "dense_dimension_limit": 256,
+      "dimension": 6,
+      "dimension_smoke": 6,
+      "dimension_standard": 6,
+      "grid": [
+        0,
+        0
+      ],
+      "id": 10,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Uniform-field relativistic gyromotion",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "B": [
+          0,
+          0,
+          1
+        ],
+        "E": [
+          0,
+          0,
+          0
+        ],
+        "c": 1,
+        "initial_momentum": [
+          1,
+          0,
+          0.2
+        ],
+        "omega_c": 500.0
+      },
+      "reference_kind": "analytic-semidiscrete-endpoint",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        1.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "uniform B and zero E exactly solvable subcase; dimensionless",
+      "identity_qualification": "Uniform B, E0 exactly solvable variant, not inhomogeneous-field validation.",
+      "reference_independent": true,
+      "default_speed_ranking_status": "SCOPED_ENDPOINT_ELIGIBLE_IF_ACCURACY_PASSES",
+      "executed_smoke_rows": 4,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "independent analytic endpoint available; perform intermediate-time/phase checks and matched external comparisons"
+    },
+    {
+      "autonomous": true,
+      "case": 11,
+      "dense_dimension_limit": 256,
+      "dimension": 396,
+      "dimension_smoke": 55,
+      "dimension_standard": 396,
+      "grid": [
+        36,
+        10
+      ],
+      "id": 11,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Two-scale Lorenz-96 variant",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "F": 10,
+        "b": 10,
+        "c": 10,
+        "fast_ring": "global periodic ring; stated forward-advection variant",
+        "h": 1
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        5.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "global fast cyclic ring with attachment's forward cyclic advection",
+      "identity_qualification": "Global fast ring and displayed forward advection convention recorded.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 1,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    },
+    {
+      "autonomous": true,
+      "case": 12,
+      "dense_dimension_limit": 256,
+      "dimension": 1024,
+      "dimension_smoke": 16,
+      "dimension_standard": 1024,
+      "grid": [
+        1024,
+        0
+      ],
+      "id": 12,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Kuramoto-Sivashinsky",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "boundary": "periodic",
+        "discretization": "centered D1,D2,D2 squared; RHS=-u D1u-D2u-D2^2u",
+        "length": 100.53096491487338,
+        "nu": 1.0
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        10.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "periodic centered semidiscretization; correct negative RHS signs",
+      "identity_qualification": "Correct RHS signs -uD1u-D2u-D2squared u.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 1,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    },
+    {
+      "autonomous": true,
+      "case": 13,
+      "dense_dimension_limit": 256,
+      "dimension": 3072,
+      "dimension_smoke": 24,
+      "dimension_standard": 3072,
+      "grid": [
+        1024,
+        0
+      ],
+      "id": 13,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Low-Mach primitive acoustic relaxation",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "Mach": 0.001,
+        "boundary": "periodic",
+        "cooling": 1000.0,
+        "gamma": 1.4,
+        "variables": [
+          "rho",
+          "velocity",
+          "pressure"
+        ],
+        "variant": "primitive isentropic acoustic-advection plus pressure relaxation"
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        0.1
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "defined primitive periodic system; not an unspecified IMEX split",
+      "identity_qualification": "Defined primitive periodic acoustic relaxation variant; no unspecified full Euler claim.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 1,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    },
+    {
+      "autonomous": true,
+      "case": 14,
+      "dense_dimension_limit": 256,
+      "dimension": 4096,
+      "dimension_smoke": 16,
+      "dimension_standard": 4096,
+      "grid": [
+        4096,
+        0
+      ],
+      "id": 14,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Advected Cahn-Hilliard",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "boundary": "periodic",
+        "epsilon": 0.02,
+        "length": 6.283185307179586,
+        "velocity": 0.1
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        1.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "periodic 1D centered conservative semidiscretization",
+      "identity_qualification": "Coefficients and initial data explicitly exported by --describe.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 1,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    },
+    {
+      "autonomous": false,
+      "case": 15,
+      "dense_dimension_limit": 256,
+      "dimension": 2,
+      "dimension_smoke": 2,
+      "dimension_standard": 2,
+      "grid": [
+        0,
+        0
+      ],
+      "id": 15,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Exponential chirp",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "beta": 1.2,
+        "gamma": 0.8,
+        "omega0": 1.0
+      },
+      "reference_kind": "analytic-semidiscrete-endpoint",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        8.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "specified analytically solvable nonautonomous second-order system",
+      "identity_qualification": "Coefficients and initial data explicitly exported by --describe.",
+      "reference_independent": true,
+      "default_speed_ranking_status": "SCOPED_ENDPOINT_ELIGIBLE_IF_ACCURACY_PASSES",
+      "executed_smoke_rows": 7,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "independent analytic endpoint available; perform intermediate-time/phase checks and matched external comparisons"
+    },
+    {
+      "autonomous": true,
+      "case": 16,
+      "dense_dimension_limit": 256,
+      "dimension": 2,
+      "dimension_smoke": 2,
+      "dimension_standard": 2,
+      "grid": [
+        0,
+        0
+      ],
+      "id": 16,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Inspiral chirp",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "alpha": 0.1,
+        "collision_time": 2.5,
+        "coordinates": "two Cartesian first-order variables",
+        "omega0": 1.0,
+        "r0": 1.0
+      },
+      "reference_kind": "analytic-semidiscrete-endpoint",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        2.49
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "two Cartesian first-order variables; stop before singularity",
+      "identity_qualification": "Minimal two-component Cartesian first-order system, not redundant four-state version.",
+      "reference_independent": true,
+      "default_speed_ranking_status": "SCOPED_ENDPOINT_ELIGIBLE_IF_ACCURACY_PASSES",
+      "executed_smoke_rows": 4,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "independent analytic endpoint available; perform intermediate-time/phase checks and matched external comparisons"
+    },
+    {
+      "autonomous": true,
+      "case": 17,
+      "dense_dimension_limit": 256,
+      "dimension": 2048,
+      "dimension_smoke": 32,
+      "dimension_standard": 2048,
+      "grid": [
+        32,
+        64
+      ],
+      "id": 17,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Spherical rotation-shear FVM",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "discretization": "first-order conservative upwind equal-mu FVM; zero polar face flux",
+        "rotation_axis": [
+          0.7071067811865476,
+          0.0,
+          0.7071067811865476
+        ],
+        "shear": 0.1
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        1.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "equal-mu first-order conservative FVM; explicit rotation and shear fields",
+      "identity_qualification": "Defined rotation-shear field and equal-mu finite-volume boundary fluxes.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 1,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    },
+    {
+      "autonomous": true,
+      "case": 18,
+      "dense_dimension_limit": 256,
+      "dimension": 4096,
+      "dimension_smoke": 32,
+      "dimension_standard": 4096,
+      "grid": [
+        32,
+        128
+      ],
+      "id": 18,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Spherical diffusion-absorption",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "d_mu": 0.01,
+        "d_phi": "0.1(1+mu^2/2)",
+        "discretization": "conservative equal-mu fluxes, periodic phi",
+        "opacity": "1+1000 I(mu>.5 and cos(phi)>.5)"
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        0.1
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "anisotropic centered fluxes plus fixed angular opacity patch",
+      "identity_qualification": "Coefficients and initial data explicitly exported by --describe.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 1,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    },
+    {
+      "autonomous": true,
+      "case": 19,
+      "dense_dimension_limit": 256,
+      "dimension": 3072,
+      "dimension_smoke": 48,
+      "dimension_standard": 3072,
+      "grid": [
+        32,
+        0
+      ],
+      "id": 19,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Linear spherical modal waves",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "gravity_depth": 1.0,
+        "nu": 0.0001,
+        "variant": "linearized nonrotating spherical modal acoustic pairs, hyperviscosity on all components; not nonlinear SWE"
+      },
+      "reference_kind": "analytic-semidiscrete-endpoint",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        1.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "linearized nonrotating modal acoustic system, not full nonlinear SWE",
+      "identity_qualification": "Linearized nonrotating modal system; does not validate nonlinear SWE/Rossby-Haurwitz waves.",
+      "reference_independent": true,
+      "default_speed_ranking_status": "SCOPED_ENDPOINT_ELIGIBLE_IF_ACCURACY_PASSES",
+      "executed_smoke_rows": 6,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "independent analytic endpoint available; perform intermediate-time/phase checks and matched external comparisons"
+    },
+    {
+      "autonomous": false,
+      "case": 20,
+      "dense_dimension_limit": 256,
+      "dimension": 1024,
+      "dimension_smoke": 16,
+      "dimension_standard": 1024,
+      "grid": [
+        32,
+        0
+      ],
+      "id": 20,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Normalized multipole hierarchy",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "baryon_dipole": 0.0,
+        "gamma0": 10000.0,
+        "gamma_exponent": 4,
+        "k": 1.0,
+        "normalization": "orthonormal fixed-m antisymmetric chains; top moment zero; external fixed matter bath"
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        2.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "fixed matter bath and normalized real chains; no full photon-baryon claim",
+      "identity_qualification": "Normalized real skew streaming with fixed matter bath; not complete photon-baryon coupling.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 1,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    },
+    {
+      "autonomous": true,
+      "case": 21,
+      "dense_dimension_limit": 256,
+      "dimension": 8192,
+      "dimension_smoke": 32,
+      "dimension_standard": 8192,
+      "grid": [
+        64,
+        64
+      ],
+      "id": 21,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Periodic 2D Brusselator",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "A": 1.0,
+        "B": 3.4,
+        "advection_x": 0.1,
+        "boundary": "periodic",
+        "diffusion": 0.01,
+        "variant": "periodic Brusselator; not canonical BRUSS2D forcing/BC"
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        1.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "explicit periodic variant; canonical BRUSS2D source/BC not implied",
+      "identity_qualification": "Periodic variant; not canonical BRUSS2D boundaries and forcing.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 1,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    },
+    {
+      "autonomous": true,
+      "case": 22,
+      "dense_dimension_limit": 256,
+      "dimension": 4096,
+      "dimension_smoke": 16,
+      "dimension_standard": 4096,
+      "grid": [
+        64,
+        64
+      ],
+      "id": 22,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "Anisotropic 2D conduction",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "b": [
+          0.7071067811865476,
+          0.7071067811865476
+        ],
+        "boundary": "periodic",
+        "discretization": "constant tensor 9-point centered stencil",
+        "kappa_parallel": 1.0,
+        "kappa_perp": 1e-06
+      },
+      "reference_kind": "analytic-semidiscrete-endpoint",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        0.1
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "constant oblique tensor9-point stencil, ratio1e6",
+      "identity_qualification": "Coefficients and initial data explicitly exported by --describe.",
+      "reference_independent": true,
+      "default_speed_ranking_status": "SCOPED_ENDPOINT_ELIGIBLE_IF_ACCURACY_PASSES",
+      "executed_smoke_rows": 4,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "independent analytic endpoint available; perform intermediate-time/phase checks and matched external comparisons"
+    },
+    {
+      "autonomous": true,
+      "case": 23,
+      "dense_dimension_limit": 256,
+      "dimension": 27648,
+      "dimension_smoke": 128,
+      "dimension_standard": 27648,
+      "grid": [
+        24,
+        24
+      ],
+      "id": 23,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "3D Barkley reaction-diffusion",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "Du": 0.001,
+        "Dv": 0.0,
+        "a": 0.75,
+        "b": 0.02,
+        "boundary": "periodic",
+        "epsilon": 0.02,
+        "variant": "Barkley kinetics, matching supplied polynomial; not Gray-Scott/Schnakenberg"
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        5.0
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "supplied polynomial is Barkley kinetics, not Gray-Scott/Schnakenberg",
+      "identity_qualification": "Supplied reaction polynomial is Barkley kinetics.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 1,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    },
+    {
+      "autonomous": true,
+      "case": 24,
+      "dense_dimension_limit": 256,
+      "dimension": 32768,
+      "dimension_smoke": 64,
+      "dimension_standard": 32768,
+      "grid": [
+        32,
+        32
+      ],
+      "id": 24,
+      "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+      "name": "3D absorbing-obstacle transport",
+      "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+      "parallel_layers": [
+        "serial",
+        "data",
+        "ensemble"
+      ],
+      "parameters": {
+        "D": 0.01,
+        "boundary": "periodic",
+        "opacity": "1e6 inside central radius .2 ball, 1 outside",
+        "source": "exp(-100*((x-.2)^2+(y-.5)^2+(z-.5)^2))",
+        "velocity": [
+          0.1,
+          0.05,
+          0.02
+        ]
+      },
+      "reference_kind": "external-reference-required",
+      "size": "standard",
+      "supported_methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "t_span": [
+        0.0,
+        0.1
+      ],
+      "units": "dimensionless; normalized variables, not SI physical claims",
+      "variant": "periodic upwind advection, centered diffusion, fixed absorption ball",
+      "identity_qualification": "Fixed absorbing ball, not a remeshed impenetrable obstacle.",
+      "reference_independent": false,
+      "default_speed_ranking_status": "EXCLUDED_PENDING_EXTERNAL_REFERENCE",
+      "executed_smoke_rows": 2,
+      "standard_campaign_status": "NOT_RUN_HERE",
+      "next_reference_work": "add high-precision independent solver or exact/manufactured reference with matching model identity, RHS probes and documented uncertainty"
+    }
+  ]
+}

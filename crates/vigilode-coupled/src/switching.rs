@@ -46,6 +46,28 @@ impl Default for CausalWorkWeights {
     }
 }
 impl CausalWorkWeights {
+    /// Construct a cost proxy from caller-measured *serial* mean seconds per
+    /// event in the order RHS, JVP, dot product, small factorization, small solve.
+    /// Measurements must use the actual callback/provider/dimensions in scope.
+    /// Zero optional entries mean unpriced work; RHS and JVP must be positive.
+    /// These means price attempted events and do not predict parallel wall time.
+    pub fn from_measured_serial_means(seconds: [f64; 5]) -> CoreResult<Self> {
+        if seconds.iter().any(|x| !x.is_finite() || *x < 0.0)
+            || seconds[0] <= 0.0
+            || seconds[1] <= 0.0
+        {
+            return Err(CoreError::InvalidInput(
+                "invalid measured causal event means".into(),
+            ));
+        }
+        Ok(Self {
+            rhs: seconds[0],
+            jvp: seconds[1],
+            orthogonalization_dot: seconds[2],
+            small_factorization: seconds[3],
+            small_block_solve: seconds[4],
+        })
+    }
     fn score(&self, w: &Work) -> f64 {
         self.rhs * w.rhs_attempted as f64
             + self.jvp * w.jvp_attempted as f64
@@ -67,6 +89,33 @@ impl CausalWorkWeights {
     }
 }
 
+/// Optional locality conditions for reusing a protected cost reference.
+/// These are routing heuristics, not stiffness or accuracy certificates. The
+/// normalized state distance is max_i |y_i-y_ref_i|/(absolute + relative*max
+/// (|y_i|,|y_ref_i|)). A distance at most one is admitted. Tests must price the
+/// O(n) comparison and state copy; no additional RHS/JVP calls are used.
+#[derive(Clone, Debug, Serialize)]
+pub struct CausalReferenceGuard {
+    /// Symmetric maximum ratio between actual attempted step sizes, >= 1.
+    pub max_step_ratio: f64,
+    /// Positive state scale in the client's state units.
+    pub state_absolute_scale: f64,
+    /// Nonnegative relative state scale.
+    pub state_relative_scale: f64,
+    /// Accepted steps since the reference before forcing a fresh calibration.
+    pub max_accepted_age: usize,
+}
+impl Default for CausalReferenceGuard {
+    fn default() -> Self {
+        Self {
+            max_step_ratio: 4.0,
+            state_absolute_scale: 1e-6,
+            state_relative_scale: 0.5,
+            max_accepted_age: 32,
+        }
+    }
+}
+
 /// Opt-in bounded-exploration policy. One accepted protected step calibrates the
 /// proxy. A candidate is retained at `retain_ratio` and re-enters after cooldown
 /// only at the stricter `reentry_ratio`. Failed projected roots cool down
@@ -84,6 +133,10 @@ pub struct CausalSwitchPolicy {
     /// stationary scores. None preserves the original exponential cooldown.
     /// A finite maximum L can prevent meeting this proxy target; receipts say so.
     pub exploration_overhead_fraction: Option<f64>,
+    /// None preserves historical h/state transfer. Model-epoch changes always
+    /// discard a reference. Some makes the cost reference local to actual h,
+    /// state and accepted-step age and uses fresh (not averaged) scores.
+    pub reference_guard: Option<CausalReferenceGuard>,
 }
 impl Default for CausalSwitchPolicy {
     fn default() -> Self {
@@ -95,12 +148,26 @@ impl Default for CausalSwitchPolicy {
             initial_cooldown: 4,
             max_cooldown: 64,
             exploration_overhead_fraction: Some(0.25),
+            reference_guard: None,
         }
     }
 }
 impl CausalSwitchPolicy {
     pub(crate) fn validate(&self) -> CoreResult<()> {
         let w = &self.weights;
+        if self.reference_guard.as_ref().is_some_and(|g| {
+            !g.max_step_ratio.is_finite()
+                || g.max_step_ratio < 1.0
+                || !g.state_absolute_scale.is_finite()
+                || g.state_absolute_scale <= 0.0
+                || !g.state_relative_scale.is_finite()
+                || g.state_relative_scale < 0.0
+                || g.max_accepted_age == 0
+        }) {
+            return Err(CoreError::InvalidInput(
+                "invalid causal reference guard".into(),
+            ));
+        }
         if [
             w.rhs,
             w.jvp,
@@ -135,6 +202,18 @@ pub struct CausalSwitchReceipt {
     pub phase: &'static str,
     pub candidate: CandidateRoute,
     pub protected_work_reference: Option<f64>,
+    /// Reference admission observed before this attempt. Resetting a reference
+    /// changes routing only; the physical acceptance checks remain mandatory.
+    pub reference_status: &'static str,
+    pub reference_age_accepted_steps: Option<usize>,
+    pub reference_step_ratio: Option<f64>,
+    pub reference_state_distance: Option<f64>,
+    pub reference_model_epoch: Option<u64>,
+    pub current_model_epoch: Option<u64>,
+    /// Maximum state coordinates inspected/copied by prepare, charged even
+    /// when the physical attempt is rejected. Neither is a callback count.
+    pub reference_state_coordinates_inspected: usize,
+    pub reference_state_coordinates_copied: usize,
     pub candidate_work_units: Option<f64>,
     pub protected_work_units: Option<f64>,
     /// False makes an overflowed work score explicit in machine-readable output.
@@ -154,6 +233,21 @@ pub(crate) struct SwitchState {
     cooldown: usize,
     next_cooldown: usize,
     reentry: bool,
+    accepted_clock: usize,
+    baseline_clock: usize,
+    baseline_h: Option<f64>,
+    baseline_state: Vec<f64>,
+    baseline_epoch: Option<Option<u64>>,
+    pending_h: Option<f64>,
+    pending_state: Vec<f64>,
+    pending_epoch: Option<u64>,
+    reference_status: &'static str,
+    reference_age: Option<usize>,
+    reference_step_ratio: Option<f64>,
+    reference_state_distance: Option<f64>,
+    reference_epoch: Option<u64>,
+    coordinates_inspected: usize,
+    coordinates_copied: usize,
 }
 impl SwitchState {
     pub(crate) fn new(policy: &CausalSwitchPolicy) -> Self {
@@ -164,6 +258,97 @@ impl SwitchState {
             cooldown: 0,
             next_cooldown: policy.initial_cooldown,
             reentry: false,
+            accepted_clock: 0,
+            baseline_clock: 0,
+            baseline_h: None,
+            baseline_state: Vec::new(),
+            baseline_epoch: None,
+            pending_h: None,
+            pending_state: Vec::new(),
+            pending_epoch: None,
+            reference_status: "unprepared",
+            reference_age: None,
+            reference_step_ratio: None,
+            reference_state_distance: None,
+            reference_epoch: None,
+            coordinates_inspected: 0,
+            coordinates_copied: 0,
+        }
+    }
+    /// Called once before any callbacks at an attempt's accepted start state.
+    pub(crate) fn prepare(&mut self, h: f64, y: &[f64], epoch: Option<u64>) {
+        self.pending_h = Some(h);
+        self.pending_epoch = epoch;
+        self.reference_epoch = self.baseline_epoch.flatten();
+        self.reference_age = self
+            .baseline
+            .map(|_| self.accepted_clock.saturating_sub(self.baseline_clock));
+        self.reference_step_ratio = None;
+        self.reference_state_distance = None;
+        self.coordinates_inspected = 0;
+        self.coordinates_copied = 0;
+        let mut status = if self.baseline.is_some() {
+            "legacy-transfer"
+        } else {
+            "uncalibrated"
+        };
+        let mut invalidate = false;
+        if self.baseline.is_some() && self.baseline_epoch.is_some_and(|old| old != epoch) {
+            status = "model-epoch-changed";
+            invalidate = true;
+        } else if self.baseline.is_some() {
+            if let Some(g) = &self.policy.reference_guard {
+                status = "local-reference-admitted";
+                let ratio = self.baseline_h.map(|old| (h / old).max(old / h));
+                self.reference_step_ratio = ratio.filter(|x| x.is_finite());
+                if ratio.is_none_or(|x| !x.is_finite() || x > g.max_step_ratio) {
+                    status = "step-ratio-changed";
+                    invalidate = true;
+                } else if self
+                    .reference_age
+                    .is_some_and(|age| age >= g.max_accepted_age)
+                {
+                    status = "reference-age-expired";
+                    invalidate = true;
+                } else if self.baseline_state.len() != y.len() {
+                    status = "state-dimension-changed";
+                    invalidate = true;
+                } else {
+                    let mut distance = 0.0_f64;
+                    for (&now, &old) in y.iter().zip(&self.baseline_state) {
+                        self.coordinates_inspected += 1;
+                        let scale = g.state_absolute_scale
+                            + g.state_relative_scale * now.abs().max(old.abs());
+                        let delta = (now - old).abs() / scale;
+                        if !scale.is_finite() || !delta.is_finite() {
+                            distance = f64::INFINITY;
+                            break;
+                        }
+                        distance = distance.max(delta);
+                    }
+                    self.reference_state_distance = distance.is_finite().then_some(distance);
+                    if !distance.is_finite() || distance > 1.0 {
+                        status = "state-displacement-changed";
+                        invalidate = true;
+                    }
+                }
+            }
+        }
+        if invalidate {
+            self.baseline = None;
+            self.baseline_h = None;
+            self.baseline_epoch = None;
+            self.calibration = true;
+            self.cooldown = 0;
+            self.next_cooldown = self.policy.initial_cooldown;
+            self.reentry = false;
+        }
+        self.reference_status = status;
+        if self.policy.reference_guard.is_some() {
+            // Reuse capacity: only initial/growing dimensions can allocate.
+            self.pending_state.clear();
+            self.pending_state.extend_from_slice(y);
+            self.coordinates_copied = y.len();
         }
     }
     pub(crate) fn skip(&self) -> bool {
@@ -188,15 +373,30 @@ impl SwitchState {
             "candidate"
         };
         let reference = self.baseline;
+        if r.accepted {
+            self.accepted_clock = self.accepted_clock.saturating_add(1);
+        }
         let candidate = self.policy.weights.candidate_score(r);
         let protected = self.policy.weights.protected_score(r);
         // Only successful protected endpoints update the moving cost estimate.
         // Saturating/overflowed scores trigger conservative selection below.
         if r.accepted && r.fallback_attempted && protected.is_finite() && protected > 0.0 {
-            self.baseline = Some(match self.baseline {
-                Some(old) => 0.75 * old + 0.25 * protected,
-                None => protected,
-            });
+            self.baseline = Some(
+                match (self.baseline, self.policy.reference_guard.is_some()) {
+                    (Some(old), false) => 0.75 * old + 0.25 * protected,
+                    _ => protected,
+                },
+            );
+            self.baseline_clock = self.accepted_clock;
+            self.baseline_h = self.pending_h;
+            self.baseline_epoch = Some(self.pending_epoch);
+            if self.policy.reference_guard.is_some() {
+                self.baseline_state.clear();
+                self.baseline_state.extend_from_slice(&self.pending_state);
+                self.coordinates_copied = self
+                    .coordinates_copied
+                    .saturating_add(self.pending_state.len());
+            }
         }
         let decision;
         let mut cooldown_rule = "not-updated";
@@ -274,6 +474,14 @@ impl SwitchState {
             phase,
             candidate: self.policy.candidate,
             protected_work_reference: reference,
+            reference_status: self.reference_status,
+            reference_age_accepted_steps: self.reference_age,
+            reference_step_ratio: self.reference_step_ratio,
+            reference_state_distance: self.reference_state_distance,
+            reference_model_epoch: self.reference_epoch,
+            current_model_epoch: self.pending_epoch,
+            reference_state_coordinates_inspected: self.coordinates_inspected,
+            reference_state_coordinates_copied: self.coordinates_copied,
             candidate_work_units: candidate.is_finite().then_some(candidate),
             protected_work_units: protected.is_finite().then_some(protected),
             work_scores_finite: candidate.is_finite() && protected.is_finite(),
@@ -476,6 +684,138 @@ mod tests {
                 .validate()
                 .is_err()
             );
+        }
+    }
+    #[test]
+    fn guard_recalibrates_step_state_age_and_epoch_without_sampling_callbacks() {
+        let policy = CausalSwitchPolicy {
+            reference_guard: Some(CausalReferenceGuard {
+                max_step_ratio: 2.0,
+                state_absolute_scale: 0.1,
+                state_relative_scale: 0.0,
+                max_accepted_age: 2,
+            }),
+            ..Default::default()
+        };
+        let mut s = SwitchState::new(&policy);
+        s.prepare(0.1, &[1.0, 2.0], Some(7));
+        s.observe(&record(true, true, true, 0, 100));
+        s.prepare(0.2, &[1.05, 2.0], Some(7));
+        assert!(!s.skip());
+        let r = s.observe(&record(false, false, true, 90, 0));
+        assert_eq!(r.reference_status, "local-reference-admitted");
+        assert_eq!(r.reference_state_coordinates_inspected, 2);
+        assert_eq!(r.reference_state_coordinates_copied, 2);
+        s.prepare(0.201, &[1.05, 2.0], Some(7));
+        assert!(s.skip());
+        let r = s.observe(&record(true, true, true, 0, 200));
+        assert_eq!(r.reference_status, "step-ratio-changed");
+        assert_eq!(r.protected_work_reference, None);
+        assert_eq!(s.baseline, Some(200.0));
+        s.prepare(0.201, &[1.16, 2.0], Some(7));
+        assert!(s.skip());
+        assert_eq!(s.reference_status, "state-displacement-changed");
+        s.observe(&record(true, true, true, 0, 70));
+        s.prepare(0.201, &[1.16, 2.0], Some(8));
+        assert!(s.skip());
+        assert_eq!(s.reference_status, "model-epoch-changed");
+        s.observe(&record(true, true, true, 0, 70));
+        for _ in 0..2 {
+            s.prepare(0.201, &[1.16, 2.0], Some(8));
+            s.observe(&record(false, false, true, 20, 0));
+        }
+        s.prepare(0.201, &[1.16, 2.0], Some(8));
+        assert!(s.skip());
+        assert_eq!(s.reference_status, "reference-age-expired");
+    }
+
+    #[test]
+    fn rejected_calibration_does_not_create_a_cost_reference() {
+        let mut s = SwitchState::new(&CausalSwitchPolicy {
+            reference_guard: Some(CausalReferenceGuard::default()),
+            ..Default::default()
+        });
+        s.prepare(0.1, &[1.0], Some(1));
+        s.observe(&record(true, true, false, 0, 100));
+        assert!(s.baseline.is_none());
+        assert!(s.skip());
+        s.prepare(0.01, &[1.0], Some(1));
+        let r = s.observe(&record(true, true, true, 0, 80));
+        assert_eq!(r.reference_status, "uncalibrated");
+        assert_eq!(s.baseline_h, Some(0.01));
+        assert_eq!(s.baseline, Some(80.0));
+    }
+
+    #[test]
+    fn epoch_invalidation_also_applies_without_locality_guard() {
+        let mut s = SwitchState::new(&CausalSwitchPolicy::default());
+        s.prepare(0.1, &[1.0], Some(4));
+        s.observe(&record(true, true, true, 0, 100));
+        s.prepare(100.0, &[100.0], Some(4));
+        assert!(!s.skip()); // legacy h/state transfer explicitly retained
+        assert_eq!(s.reference_status, "legacy-transfer");
+        s.prepare(100.0, &[100.0], Some(5));
+        assert!(s.skip());
+        assert_eq!(s.reference_status, "model-epoch-changed");
+        assert!(s.baseline.is_none());
+    }
+
+    #[test]
+    fn guarded_reference_is_fresh_and_nonfinite_state_scale_declines_reuse() {
+        let mut s = SwitchState::new(&CausalSwitchPolicy {
+            reference_guard: Some(CausalReferenceGuard {
+                state_absolute_scale: 1.0,
+                state_relative_scale: f64::MAX,
+                ..Default::default()
+            }),
+            ..Default::default()
+        });
+        s.prepare(0.1, &[2.0], None);
+        s.observe(&record(true, true, true, 0, 100));
+        s.prepare(0.1, &[2.0], None);
+        assert!(s.skip());
+        let r = s.observe(&record(true, true, true, 0, 200));
+        assert_eq!(r.reference_status, "state-displacement-changed");
+        assert!(r.reference_state_distance.is_none());
+        assert_eq!(s.baseline, Some(200.0));
+    }
+
+    #[test]
+    fn invalid_guard_and_measured_costs_are_rejected() {
+        for g in [
+            CausalReferenceGuard {
+                max_step_ratio: 0.9,
+                ..Default::default()
+            },
+            CausalReferenceGuard {
+                state_absolute_scale: 0.0,
+                ..Default::default()
+            },
+            CausalReferenceGuard {
+                state_relative_scale: f64::NAN,
+                ..Default::default()
+            },
+            CausalReferenceGuard {
+                max_accepted_age: 0,
+                ..Default::default()
+            },
+        ] {
+            assert!(
+                CausalSwitchPolicy {
+                    reference_guard: Some(g),
+                    ..Default::default()
+                }
+                .validate()
+                .is_err()
+            );
+        }
+        assert!(CausalWorkWeights::from_measured_serial_means([1e-6, 2e-6, 0.0, 0.0, 0.0]).is_ok());
+        for bad in [
+            [0.0, 1.0, 0.0, 0.0, 0.0],
+            [1.0, f64::INFINITY, 0.0, 0.0, 0.0],
+            [1.0, 1.0, -1.0, 0.0, 0.0],
+        ] {
+            assert!(CausalWorkWeights::from_measured_serial_means(bad).is_err());
         }
     }
 }

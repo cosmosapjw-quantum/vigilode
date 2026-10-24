@@ -295,3 +295,62 @@ fn direct_protected_route_is_independent_of_candidate_storage_budget() {
             .all(|a| a.candidate_skipped && a.candidate_failure.is_none())
     );
 }
+
+#[test]
+fn strict_state_guard_recalibrates_on_the_real_accepted_state_and_keeps_raw_solution() {
+    let p = problem(
+        Arc::new(AtomicU64::new(0)),
+        Arc::new(AtomicU64::new(0)),
+        false,
+    );
+    let c = Config::default();
+    let execution = ParallelExecution::sequential();
+    let raw = integrate_sequential_raw_observed(
+        &p,
+        (0., 0.032),
+        &[1., 1.],
+        &adaptive(),
+        &output(),
+        &c,
+        &execution,
+        &linear(),
+        &RootErrorPolicy::Operational,
+    )
+    .unwrap();
+    let switched = integrate_switching_causal_observed(
+        &p,
+        (0., 0.032),
+        &[1., 1.],
+        &adaptive(),
+        &output(),
+        &c,
+        &execution,
+        &linear(),
+        &RootErrorPolicy::Operational,
+        &CausalSwitchPolicy {
+            reference_guard: Some(vigilode_coupled::CausalReferenceGuard {
+                state_absolute_scale: 1e-12,
+                state_relative_scale: 0.0,
+                ..Default::default()
+            }),
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    assert!(switched.observed.success && raw.observed.success);
+    assert_eq!(switched.observed.y, raw.observed.y);
+    assert!(switched.attempts.iter().all(|a| a.candidate_skipped));
+    assert!(switched.attempts.iter().skip(1).all(|a| {
+        a.switch_decision
+            .as_ref()
+            .is_some_and(|s| s.reference_status == "state-displacement-changed")
+    }));
+    assert_eq!(
+        switched.observed.counters.rhs_calls,
+        raw.observed.counters.rhs_calls
+    );
+    assert_eq!(
+        switched.observed.counters.jvp_calls,
+        raw.observed.counters.jvp_calls
+    );
+}

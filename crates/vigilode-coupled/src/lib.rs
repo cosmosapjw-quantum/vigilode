@@ -20,7 +20,7 @@ pub use fallback::{
 };
 use rodas5p_integrators::{OdeProblem, ParallelExecution};
 use serde::Serialize;
-pub use switching::{CandidateRoute, CausalSwitchPolicy, CausalSwitchReceipt, CausalWorkWeights};
+pub use switching::{CandidateRoute, CausalReferenceGuard, CausalSwitchPolicy, CausalSwitchReceipt, CausalWorkWeights};
 
 pub const TARGET_ID: &str = "rodas5p-raw-u-coupled-operational-v1";
 

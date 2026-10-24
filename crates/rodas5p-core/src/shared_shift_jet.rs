@@ -212,7 +212,9 @@ pub(crate) fn dissipativity_rows(j: &DenseMatrix) -> CoreResult<Vec<f64>> {
     Ok(rows)
 }
 
-fn residual_certificate(
+/// Crate-internal reuse requires validated dimensions/finite inputs and a
+/// dissipativity bound tied to the exact same immutable matrix `j`.
+pub(crate) fn residual_certificate(
     j: &DenseMatrix,
     h: f64,
     gamma: f64,

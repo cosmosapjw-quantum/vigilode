@@ -44,6 +44,8 @@ mod dopri5_dense;
 mod quotient_flow;
 pub use quotient_flow::{DampedRotationAffineWorkspace, DampedRotationBlock, DampedRotationFlow, QuotientWork, LawsonDopri5Workspace, LawsonDopri5Result, integrate_lawson_dopri5_observed, integrate_lawson_dopri5_observed_with_norm, integrate_affine_lawson_dopri5_observed, integrate_affine_lawson_dopri5_observed_with_norm};
 pub mod polynomial_resolvent;
+pub mod conditioned_polynomial;
+pub mod fixed_point_continuation;
 mod exponential;
 pub mod fourier_path_candidate;
 pub mod fourier_path_certificate;

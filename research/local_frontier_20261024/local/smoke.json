@@ -1,0 +1,16 @@
+{
+  "size": "smoke",
+  "cases": [1, 4, 15, 16, 21, 24],
+  "threads": [1],
+  "methods": ["dopri5", "rodas5p-mf", "switching"],
+  "rtol": 1e-6,
+  "atol": 1e-9,
+  "repeats": 1,
+  "max_steps": 5000,
+  "ensemble_count": 4,
+  "per_run_seconds": 15,
+  "campaign_seconds": 600,
+  "memory_gib": 4,
+  "profiling": "callbacks",
+  "emit_state": false
+}

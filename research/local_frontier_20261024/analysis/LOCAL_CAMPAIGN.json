@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-24",
+  "status": "LOCAL_CAMPAIGN_PREPARED_FULL_LOCAL_RUN_NOT_RUN",
+  "ncp_used": false,
+  "requested_host": "Ryzen 5900X / 64 GiB / Ubuntu 24.04; must detect actual host",
+  "catalog_cases": 24,
+  "standard_plan_on_at_least_12_physical_cores": {
+    "nominal_case_thread_settings": 120,
+    "processes": 1539,
+    "planned_method_skips": 15,
+    "per_run_timeout_worst_seconds": 92340,
+    "accounted_budget_seconds": 7200,
+    "completion_within_budget_guaranteed": false,
+    "cardinality_only_not_execution": true
+  },
+  "correctness_controls": [
+    "exact commit/tree/clean checkout",
+    "successful build source/binary hash receipt",
+    "host/physical-affinity resume identity",
+    "cyclic independent process repeats",
+    "separate callback/perf profiling",
+    "strict same-model descriptor and RHS probes for external baselines",
+    "reference-free results excluded from rankings",
+    "interrupted/timeout/failed raw preserved",
+    "dense dimension cap"
+  ],
+  "validation": {
+    "python_tests": 42,
+    "controller_real_smoke_processes": 18,
+    "external_real_smoke_processes": 20,
+    "external_matched_cases": [
+      1,
+      10,
+      15,
+      16
+    ],
+    "external_PASS_SCOPED": 15,
+    "external_UNVALIDATED_REFERENCE": 5,
+    "source_scope": "exploratory dirty workspace; not promotion or local CPU performance evidence",
+    "Julia": "NOT_RUN; script provided, existing pinned project required",
+    "diffsol": "NOT_RUN; matched current-model adapter pending",
+    "primary_controller_external_tests": 30,
+    "conditional_wrapper_tests": 12,
+    "controller_final_binary_sha256": "edf11cef5c5f0484cc326ab127264011352c6f922e4d7559b7e27692ef0f127d"
+  },
+  "remaining_work": [
+    {
+      "id": "LOCAL-1",
+      "action": "Run pinned clean local smoke then full plan; preserve environment and raw failures",
+      "acceptance": "source/build identity, every task accounted, complete independent repeats before ratios"
+    },
+    {
+      "id": "LOCAL-2",
+      "action": "Provide independent converged references for 17 unvalidated model slots",
+      "acceptance": "fixed parameters/initial values/output times/error norm, independent reference convergence evidence"
+    },
+    {
+      "id": "LOCAL-3",
+      "action": "Port matched current models into pinned diffsol adapter",
+      "acceptance": "descriptor/RHS probes match and actual executed results; no reuse of old fixture times"
+    },
+    {
+      "id": "LOCAL-4",
+      "action": "Validate Julia adapter on installed project without package mutation",
+      "acceptance": "Project/Manifest hashes, exact package versions, compilation warmup and actual errors recorded"
+    },
+    {
+      "id": "LOCAL-5",
+      "action": "Instrument projection/factorization/allocation separately only when profile shows material cost",
+      "acceptance": "separate diagnostic run; clean timing ratios unaffected"
+    }
+  ],
+  "limits": [
+    "Endpoint error is not global phase or dense-output certification",
+    "Ensemble replicates identical IVPs, not heterogeneous parameters",
+    "Standard 2h, accuracy 1h, stage 30m, external 15m are separate budgets; not a combined 2h promise",
+    "Counters have overhead even without callback clocks",
+    "Full broad production qualification is not inferred from this campaign"
+  ],
+  "conditional_campaign": "See local/CONDITIONAL_CAMPAIGN_KO.md; four supplemental kernel/root experiments, distinct from whole ODE ranking",
+  "dedicated_profile_plan": {
+    "config": "local/profiling.json",
+    "order": "after smoke, before long timing campaign",
+    "processes": 81,
+    "budget_seconds": 1800,
+    "evidence": "evidence/PROFILE_PLAN_CHECK.json",
+    "no_solver_execution_in_this_check": true
+  }
+}

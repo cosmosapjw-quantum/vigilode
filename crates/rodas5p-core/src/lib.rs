@@ -8,6 +8,7 @@ pub mod damped_moments;
 pub mod directed;
 mod error;
 mod hash;
+pub mod invariant_module;
 pub mod laguerre_adjoint;
 pub mod leja_action;
 pub mod leja_setup_work;

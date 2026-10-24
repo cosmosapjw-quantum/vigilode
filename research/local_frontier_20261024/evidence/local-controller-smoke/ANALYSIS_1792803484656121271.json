@@ -1,0 +1,267 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-24T00:58:04.656106+00:00",
+  "groups": [
+    {
+      "case": 15,
+      "method": "dopri5",
+      "parallel_layer": "ensemble",
+      "threads": 1,
+      "samples": 1,
+      "expected_samples": 1,
+      "eligible_samples": 0,
+      "complete_eligible_group": false,
+      "seconds_median": null,
+      "seconds_min": null,
+      "seconds_max": null,
+      "execution_statuses": {
+        "COMPLETED": 1
+      },
+      "scientific_statuses": {
+        "PASS_SCOPED": 1
+      },
+      "receipts": [
+        "runs/453cb04cdafa98fe/attempt_001/RECEIPT.json"
+      ],
+      "same_layer_speedup": null,
+      "parallel_efficiency": null
+    },
+    {
+      "case": 15,
+      "method": "dopri5",
+      "parallel_layer": "serial",
+      "threads": 1,
+      "samples": 1,
+      "expected_samples": 1,
+      "eligible_samples": 0,
+      "complete_eligible_group": false,
+      "seconds_median": null,
+      "seconds_min": null,
+      "seconds_max": null,
+      "execution_statuses": {
+        "COMPLETED": 1
+      },
+      "scientific_statuses": {
+        "PASS_SCOPED": 1
+      },
+      "receipts": [
+        "runs/4202ff778f886009/attempt_001/RECEIPT.json"
+      ],
+      "same_layer_speedup": null,
+      "parallel_efficiency": null
+    },
+    {
+      "case": 15,
+      "method": "rodas5p-mf",
+      "parallel_layer": "ensemble",
+      "threads": 1,
+      "samples": 1,
+      "expected_samples": 1,
+      "eligible_samples": 0,
+      "complete_eligible_group": false,
+      "seconds_median": null,
+      "seconds_min": null,
+      "seconds_max": null,
+      "execution_statuses": {
+        "COMPLETED": 1
+      },
+      "scientific_statuses": {
+        "PASS_SCOPED": 1
+      },
+      "receipts": [
+        "runs/29d0c748a3f73e90/attempt_001/RECEIPT.json"
+      ],
+      "same_layer_speedup": null,
+      "parallel_efficiency": null
+    },
+    {
+      "case": 15,
+      "method": "rodas5p-mf",
+      "parallel_layer": "serial",
+      "threads": 1,
+      "samples": 1,
+      "expected_samples": 1,
+      "eligible_samples": 0,
+      "complete_eligible_group": false,
+      "seconds_median": null,
+      "seconds_min": null,
+      "seconds_max": null,
+      "execution_statuses": {
+        "COMPLETED": 1
+      },
+      "scientific_statuses": {
+        "PASS_SCOPED": 1
+      },
+      "receipts": [
+        "runs/ab37767ac4d028f1/attempt_001/RECEIPT.json"
+      ],
+      "same_layer_speedup": null,
+      "parallel_efficiency": null
+    },
+    {
+      "case": 15,
+      "method": "switching",
+      "parallel_layer": "ensemble",
+      "threads": 1,
+      "samples": 1,
+      "expected_samples": 1,
+      "eligible_samples": 0,
+      "complete_eligible_group": false,
+      "seconds_median": null,
+      "seconds_min": null,
+      "seconds_max": null,
+      "execution_statuses": {
+        "COMPLETED": 1
+      },
+      "scientific_statuses": {
+        "PASS_SCOPED": 1
+      },
+      "receipts": [
+        "runs/9a2f9558bef4b9c2/attempt_001/RECEIPT.json"
+      ],
+      "same_layer_speedup": null,
+      "parallel_efficiency": null
+    },
+    {
+      "case": 15,
+      "method": "switching",
+      "parallel_layer": "serial",
+      "threads": 1,
+      "samples": 1,
+      "expected_samples": 1,
+      "eligible_samples": 0,
+      "complete_eligible_group": false,
+      "seconds_median": null,
+      "seconds_min": null,
+      "seconds_max": null,
+      "execution_statuses": {
+        "COMPLETED": 1
+      },
+      "scientific_statuses": {
+        "PASS_SCOPED": 1
+      },
+      "receipts": [
+        "runs/b1abbd05d8e96a81/attempt_001/RECEIPT.json"
+      ],
+      "same_layer_speedup": null,
+      "parallel_efficiency": null
+    }
+  ],
+  "profiles": [
+    {
+      "task": {
+        "case": 15,
+        "method": "rodas5p-mf",
+        "parallel_layer": "serial",
+        "threads": 1,
+        "repeat": 0,
+        "instrumented": true,
+        "cpus": [
+          0
+        ],
+        "id": "40fc7474dad6dc89"
+      },
+      "receipt": "runs/40fc7474dad6dc89/attempt_001/RECEIPT.json",
+      "profile": {
+        "requested": "callbacks",
+        "status": "CALLBACK_INSTRUMENTATION"
+      },
+      "phase_seconds": {
+        "dense_jacobian": 0.0,
+        "jvp": 8.935e-06,
+        "rhs": 8.580000000000001e-06,
+        "semantics": "sum of callback wall durations; includes data-parallel scheduling. Across ensemble members these overlap and are not exclusive wall-time fractions.",
+        "time_derivative": 3.9e-07
+      },
+      "counters": {
+        "dense_jacobian_callbacks": 0,
+        "dense_jacobian_columns": 0,
+        "jvp_callbacks": 180,
+        "rhs_callbacks": 48,
+        "time_derivative_callbacks": 6
+      },
+      "inference": "instrumented diagnostic; callback times may overlap, so do not subtract blindly from total"
+    },
+    {
+      "task": {
+        "case": 15,
+        "method": "dopri5",
+        "parallel_layer": "serial",
+        "threads": 1,
+        "repeat": 0,
+        "instrumented": true,
+        "cpus": [
+          0
+        ],
+        "id": "67298cbbb37b58e6"
+      },
+      "receipt": "runs/67298cbbb37b58e6/attempt_001/RECEIPT.json",
+      "profile": {
+        "requested": "callbacks",
+        "status": "CALLBACK_INSTRUMENTATION"
+      },
+      "phase_seconds": {
+        "dense_jacobian": 0.0,
+        "jvp": 0.0,
+        "rhs": 7.209000000000001e-06,
+        "semantics": "sum of callback wall durations; includes data-parallel scheduling. Across ensemble members these overlap and are not exclusive wall-time fractions.",
+        "time_derivative": 0.0
+      },
+      "counters": {
+        "dense_jacobian_callbacks": 0,
+        "dense_jacobian_columns": 0,
+        "jvp_callbacks": 0,
+        "rhs_callbacks": 37,
+        "time_derivative_callbacks": 0
+      },
+      "inference": "instrumented diagnostic; callback times may overlap, so do not subtract blindly from total"
+    },
+    {
+      "task": {
+        "case": 15,
+        "method": "switching",
+        "parallel_layer": "serial",
+        "threads": 1,
+        "repeat": 0,
+        "instrumented": true,
+        "cpus": [
+          0
+        ],
+        "id": "d590d542e3886e9e"
+      },
+      "receipt": "runs/d590d542e3886e9e/attempt_001/RECEIPT.json",
+      "profile": {
+        "requested": "callbacks",
+        "status": "CALLBACK_INSTRUMENTATION"
+      },
+      "phase_seconds": {
+        "dense_jacobian": 0.0,
+        "jvp": 0.0,
+        "rhs": 2.5748e-05,
+        "semantics": "sum of callback wall durations; includes data-parallel scheduling. Across ensemble members these overlap and are not exclusive wall-time fractions.",
+        "time_derivative": 0.0
+      },
+      "counters": {
+        "dense_jacobian_callbacks": 0,
+        "dense_jacobian_columns": 0,
+        "jvp_callbacks": 0,
+        "rhs_callbacks": 400,
+        "time_derivative_callbacks": 0
+      },
+      "inference": "instrumented diagnostic; callback times may overlap, so do not subtract blindly from total"
+    }
+  ],
+  "accuracy_probes": [],
+  "retained_failure_receipts": [],
+  "ranking_scope": "same case, actual-error criterion, work quantity, output contract and parallel layer only",
+  "accuracy_scope": "endpoint/reference sampling; accuracy probes are separate cold solves, not one trajectory or a continuous-time certificate; wrapped endpoint phase cannot exclude missed cycles",
+  "bottleneck_questions": [
+    "RHS/JVP fraction",
+    "linear solves/projections/factorization work",
+    "rejected/pilot/fallback work",
+    "memory/cache pressure",
+    "pool setup and synchronization",
+    "unattributed controller/output work"
+  ],
+  "broad_production": "UNRESOLVED_BY_THIS_CAMPAIGN_ALONE"
+}

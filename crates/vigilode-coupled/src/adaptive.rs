@@ -253,6 +253,9 @@ fn integrate_with_schedule(
             }
         };
         let epoch = problem.model_epoch();
+        if let Some(state) = &mut switch_state {
+            state.prepare(trial.h, &y, epoch);
+        }
         let skip = protected_only || switch_state.as_ref().is_some_and(|s| s.skip());
         let mut attempt = if skip {
             session.attempt_protected(problem, t, &y, trial.h, &cfg, execution, policy)

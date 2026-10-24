@@ -1,0 +1,1426 @@
+{
+  "schema_version": 1,
+  "study": "conditional_fixed_p_continuation",
+  "status": "COMPLETE_SCOPED",
+  "default_dispatch_changed": false,
+  "production_promotion": false,
+  "correction_rounds": 3,
+  "source_file": "crates/rodas5p-integrators/examples/conditional_continuation_sweep.rs",
+  "source_sha256": "d31c7d20296d33906ca0098cb92d67a9af1aafebb1026b4ce5708689eeeb0f06",
+  "binary_sha256": "5c4bb4ff4ccb43759c8bbc20ad818e8c45da853261799dba93d2910a204f99b0",
+  "tests": {
+    "count": 5,
+    "status": "PASS",
+    "stdout": "evidence/conditional-continuation/round3-tests.stdout"
+  },
+  "execution": {
+    "repeats": 31,
+    "numeric_cases": 16,
+    "methods_per_case": 3,
+    "timed_solves": 1488,
+    "branch_guard_cases": 1,
+    "all_assertions_passed": true,
+    "raw_receipt": "evidence/conditional-continuation/round3-sweep.receipt.json",
+    "raw_jsonl": "evidence/conditional-continuation/round3-sweep.jsonl"
+  },
+  "runtime_interface": {
+    "args": [
+      "--repeats N",
+      "--case ID",
+      "--list"
+    ],
+    "thread_layer": "serial",
+    "kind_values": [
+      "header",
+      "result",
+      "guard"
+    ]
+  },
+  "timing": {
+    "final_round": 3,
+    "revision1_superseded_reason": "asymmetric diagnostic/JSON construction inside timers; all diagnostic construction excluded in revision2",
+    "comparison_scope": "root continuation lambda0 and lambda1 versus final-only separable monotone bisection",
+    "method_setup_excluded": true,
+    "solve_allocations_and_policy_guards_included": true,
+    "independent_process_repetition_required": true,
+    "revision3_change": "bind inverse identity to p bits and test mismatched provider refusal before callbacks",
+    "eligibility_scope": "speed_comparison_eligible qualifies raw-versus-conditional only; bisection comparison additionally requires bisection_final_only.success and disclosed final-only semantics"
+  },
+  "theory": {
+    "exact_root_error": "q^k e0",
+    "inexact_root_error": "q^k e0 + eta_bar (1-q^k)/(1-q)",
+    "eta_bar": "eP + normP*eF + update_rounding",
+    "perturbed_ball_sufficient_condition": "beta+q*r+eta_bar <= r",
+    "acceptance_sufficient_condition": "normPinv*(1+q)*(q^k*e0+eta_bar/(1-q))+2*epsilonF <= tau",
+    "actual_root_error_bound": "(norm(dhat)+eP+normP*eF)/(1-q)",
+    "known_uniform_reported_error_lower_bound_refusal": "tau < eF_min",
+    "warning": "failure of a sufficient work/error-floor inequality is not impossibility; arbitrary callback bounds not certified by this study"
+  },
+  "decisions": [
+    {
+      "option": "floor_preflight",
+      "decision": "KEEP_SCOPED_ROBUSTNESS_OPTION",
+      "evidence_case": "uncertain_evaluation_impossible",
+      "raw_F_calls": 33,
+      "conditional_F_calls": 0,
+      "reason": "Known fixture-wide reported lower error bound exceeds tolerance; avoids futile correction, no mathematical no-go claim"
+    },
+    {
+      "option": "initial_patch_center_fallback",
+      "decision": "KEEP_SCOPED_ROBUSTNESS_OPTION",
+      "evidence_case": "outside_seed_center_fallback",
+      "conditional_F_calls": 9,
+      "reason": "Recovers an invalid initial iterate using the already declared first-patch unique-root ball; not permitted across failed branch overlap"
+    },
+    {
+      "option": "root_error_refinement",
+      "decision": "ENABLE_ONLY_ON_EXPLICIT_ROOT_TOLERANCE",
+      "evidence_case": "root_budget_refinement",
+      "raw_root_bound": 1.276388851652108e-07,
+      "conditional_root_bound": 2.3723964505099906e-12,
+      "work_ratio": 1.625,
+      "time_ratio_observed": 1.6262937062937062,
+      "reason": "Achieves tighter requested root error; measured cost is about63% larger here, so not a universal low-overhead option"
+    },
+    {
+      "option": "well_conditioned_P_identity_vector",
+      "decision": "SPECIALIZED_CANDIDATE_LOCAL_CONFIRMATION_REQUIRED",
+      "bisection_over_fixed_time_at_1e_6": 1.2916377756205795,
+      "bisection_over_fixed_time_at_1e_10": 1.4878912071535022,
+      "reason": "Vector fixture showed practical advantage; P quality is a mathematical provider condition"
+    },
+    {
+      "option": "fixed_P_scalar",
+      "decision": "PREFER_BISECTION_FOR_THIS_MONOTONE_SCALAR_FIXTURE",
+      "reason": "Strong scalar-specific comparator is faster; general coupled continuation is outside this comparison"
+    },
+    {
+      "option": "near_q_one_inverse",
+      "decision": "OPTIMIZE_PROVIDER_OR_USE_OTHER_METHOD",
+      "reason": "339/621 vector F calls versus8/12 with independently valid P=I; repeated correction is costly even though convergence remains possible"
+    },
+    {
+      "option": "two_regular_patches",
+      "decision": "SPECIALIZED_DOMAIN_BRANCH_NEED_ONLY",
+      "reason": "Adds an extra station,12 versus8 Fcalls in corresponding vector case; no speed advantage observed"
+    },
+    {
+      "option": "finite_caps_and_branch_overlap",
+      "decision": "KEEP_GUARDS",
+      "reason": "Expected cap and disjoint-branch refusals leave output unchanged; matching IDs are not branch proof"
+    }
+  ],
+  "cases": [
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 8.59367439431935e-08,
+        "f_calls": 16,
+        "residual_upper": 8.816401630973241e-08,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.43201376936316693,
+      "case_id": "n1_p1_tol0.000001",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.0846974696221423e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.1128101706780946e-07,
+        "root_bound": 1.1675385397278371e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.112810064096692e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 7,
+          "residual_calls": 7,
+          "state_updates": 5
+        }
+      },
+      "conditional_over_raw_time": 1.0941619585687383,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "n1_p1_tol0.000001",
+        "iterations": 768,
+        "n": 1,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.7705327186153317e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.687538997430238e-14,
+        "iterations_planning_upper": 7,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 4.695697382840826e-14,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.0846974696221423e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.1128101706780946e-07,
+        "root_bound": 1.1675385397278371e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.112810064096692e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 7,
+          "residual_calls": 7,
+          "state_updates": 5
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 2.51e-07,
+        "conditional": 5.81e-07,
+        "raw": 5.31e-07
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 2.2236434915612335e-11,
+        "f_calls": 32,
+        "residual_upper": 2.2824742096361044e-11,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.4258443465491923,
+      "case_id": "n1_p1_tol0.0000000001",
+      "conditional": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": 7.285938519174806e-11,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 7.475964292069595e-11,
+        "root_bound": 7.843634667089412e-11,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 7.474898477966008e-11,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 11,
+          "residual_calls": 11,
+          "state_updates": 9
+        }
+      },
+      "conditional_over_raw_time": 1.0,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "n1_p1_tol0.0000000001",
+        "iterations": 768,
+        "n": 1,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-10
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.7705327186153317e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.687538997430238e-14,
+        "iterations_planning_upper": 10,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 4.695697382840826e-14,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": 7.285938519174806e-11,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 7.475964292069595e-11,
+        "root_bound": 7.843634667089412e-11,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 7.474898477966008e-11,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 11,
+          "residual_calls": 11,
+          "state_updates": 9
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 2.9e-07,
+        "conditional": 6.81e-07,
+        "raw": 6.81e-07
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 8.59367439431935e-08,
+        "f_calls": 16,
+        "residual_upper": 8.816401630973241e-08,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.014030711668875205,
+      "case_id": "n1_p0.0625_tol0.000001",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 9.404553533709503e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 9.648295333786127e-07,
+        "root_bound": 9.64829533378613e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 9.648295227204784e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 286,
+          "residual_calls": 286,
+          "state_updates": 284
+        }
+      },
+      "conditional_over_raw_time": 1.0,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "n1_p0.0625_tol0.000001",
+        "iterations": 768,
+        "n": 1,
+        "p": 0.0625,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 3.019806626980426e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.1102230246251565e-16,
+        "iterate_perturbation_upper": 1.887379141862766e-15,
+        "iterations_planning_upper": 270,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.9375,
+        "self_map_margin": 0.014374999999999999,
+        "sufficient_acceptance_floor": 9.64561763794336e-13,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 9.404553533709503e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 9.648295333786127e-07,
+        "root_bound": 9.64829533378613e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 9.648295227204784e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 286,
+          "residual_calls": 286,
+          "state_updates": 284
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 1.8e-07,
+        "conditional": 1.2829e-05,
+        "raw": 1.2829e-05
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 2.2236434915612335e-11,
+        "f_calls": 32,
+        "residual_upper": 2.2824742096361044e-11,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.011806840096028965,
+      "case_id": "n1_p0.0625_tol0.0000000001",
+      "conditional": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": 9.396072808698364e-11,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 9.640788167786173e-11,
+        "root_bound": 9.640788167786177e-11,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 9.6397223536826e-11,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 568,
+          "residual_calls": 568,
+          "state_updates": 566
+        }
+      },
+      "conditional_over_raw_time": 1.0012215304594532,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "n1_p0.0625_tol0.0000000001",
+        "iterations": 768,
+        "n": 1,
+        "p": 0.0625,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-10
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 3.019806626980426e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.1102230246251565e-16,
+        "iterate_perturbation_upper": 1.887379141862766e-15,
+        "iterations_planning_upper": 413,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.9375,
+        "self_map_margin": 0.014374999999999999,
+        "sufficient_acceptance_floor": 9.64561763794336e-13,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": 9.396072808698364e-11,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 9.640788167786173e-11,
+        "root_bound": 9.640788167786177e-11,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 9.6397223536826e-11,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 568,
+          "residual_calls": 568,
+          "state_updates": 566
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 3e-07,
+        "conditional": 2.5409e-05,
+        "raw": 2.5378e-05
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 9.509136571494992e-07,
+        "f_calls": 20,
+        "residual_upper": 9.75578672068012e-07,
+        "success": true
+      },
+      "bisection_over_conditional_time": 1.2916377756205795,
+      "case_id": "n128_p1_tol0.000001",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.1852130565870311e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.2165581242309152e-07,
+        "root_bound": 1.276388851652108e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.216558016547964e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 8,
+          "residual_calls": 8,
+          "state_updates": 6
+        }
+      },
+      "conditional_over_raw_time": 1.0055780225909916,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "n128_p1_tol0.000001",
+        "iterations": 768,
+        "n": 128,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.7705327186153317e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.687538997430238e-14,
+        "iterations_planning_upper": 7,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 4.695697382840826e-14,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.1852130565870311e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.2165581242309152e-07,
+        "root_bound": 1.276388851652108e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.216558016547964e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 8,
+          "residual_calls": 8,
+          "state_updates": 6
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 9.314e-06,
+        "conditional": 7.211e-06,
+        "raw": 7.171e-06
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 5.796074731279077e-11,
+        "f_calls": 34,
+        "residual_upper": 5.947964256541845e-11,
+        "success": true
+      },
+      "bisection_over_conditional_time": 1.4878912071535022,
+      "case_id": "n128_p1_tol0.0000000001",
+      "conditional": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": 8.289657849047671e-11,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 8.510014828239039e-11,
+        "root_bound": 8.928540147660632e-11,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 8.508937998641386e-11,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 12,
+          "residual_calls": 12,
+          "state_updates": 10
+        }
+      },
+      "conditional_over_raw_time": 1.004585009825021,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "n128_p1_tol0.0000000001",
+        "iterations": 768,
+        "n": 128,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-10
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.7705327186153317e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.687538997430238e-14,
+        "iterations_planning_upper": 10,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 4.695697382840826e-14,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": 8.289657849047671e-11,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 8.510014828239039e-11,
+        "root_bound": 8.928540147660632e-11,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 8.508937998641386e-11,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 12,
+          "residual_calls": 12,
+          "state_updates": 10
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 1.5974e-05,
+        "conditional": 1.0736e-05,
+        "raw": 1.0687e-05
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 9.509136571494992e-07,
+        "f_calls": 20,
+        "residual_upper": 9.75578672068012e-07,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.025988715255206844,
+      "case_id": "n128_p0.0625_tol0.000001",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 9.404572098858921e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 9.648314363000095e-07,
+        "root_bound": 9.6483143630001e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 9.648314255317203e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 339,
+          "residual_calls": 339,
+          "state_updates": 337
+        }
+      },
+      "conditional_over_raw_time": 1.0299623462113219,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "n128_p0.0625_tol0.000001",
+        "iterations": 768,
+        "n": 128,
+        "p": 0.0625,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 3.019806626980426e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.1102230246251565e-16,
+        "iterate_perturbation_upper": 1.887379141862766e-15,
+        "iterations_planning_upper": 270,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.9375,
+        "self_map_margin": 0.014374999999999999,
+        "sufficient_acceptance_floor": 9.64561763794336e-13,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 9.404572098858921e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 9.648314363000095e-07,
+        "root_bound": 9.6483143630001e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 9.648314255317203e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 339,
+          "residual_calls": 339,
+          "state_updates": 337
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 9.995e-06,
+        "conditional": 0.00038459,
+        "raw": 0.000373402
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 5.796074731279077e-11,
+        "f_calls": 34,
+        "residual_upper": 5.947964256541845e-11,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.025171787457204265,
+      "case_id": "n128_p0.0625_tol0.0000000001",
+      "conditional": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": 9.396250444382304e-11,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 9.640799183280246e-11,
+        "root_bound": 9.64079918328025e-11,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 9.6397223536826e-11,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 621,
+          "residual_calls": 621,
+          "state_updates": 619
+        }
+      },
+      "conditional_over_raw_time": 1.0323682904409066,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "n128_p0.0625_tol0.0000000001",
+        "iterations": 768,
+        "n": 128,
+        "p": 0.0625,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-10
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 3.019806626980426e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.1102230246251565e-16,
+        "iterate_perturbation_upper": 1.887379141862766e-15,
+        "iterations_planning_upper": 413,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.9375,
+        "self_map_margin": 0.014374999999999999,
+        "sufficient_acceptance_floor": 9.64561763794336e-13,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": 9.396250444382304e-11,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 9.640799183280246e-11,
+        "root_bound": 9.64079918328025e-11,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 9.6397223536826e-11,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 621,
+          "residual_calls": 621,
+          "state_updates": 619
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 1.7697e-05,
+        "conditional": 0.000703049,
+        "raw": 0.000681006
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 8.59367439431935e-08,
+        "f_calls": 16,
+        "residual_upper": 8.816401630973241e-08,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.19736842105263158,
+      "case_id": "near_contraction_iteration_cap",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": null,
+        "output_unchanged_on_failure": true,
+        "residual_upper": null,
+        "root_bound": null,
+        "seed_policy": "supplied",
+        "status": "ITERATION_CAP",
+        "true_residual_max": null,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 0,
+          "inverse_calls": 17,
+          "residual_calls": 17,
+          "state_updates": 16
+        }
+      },
+      "conditional_over_raw_time": 1.0122086570477247,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "near_contraction_iteration_cap",
+        "iterations": 16,
+        "n": 1,
+        "p": 0.0625,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 3.019806626980426e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.1102230246251565e-16,
+        "iterate_perturbation_upper": 1.887379141862766e-15,
+        "iterations_planning_upper": 270,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.9375,
+        "self_map_margin": 0.014374999999999999,
+        "sufficient_acceptance_floor": 9.64561763794336e-13,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": null,
+        "output_unchanged_on_failure": true,
+        "residual_upper": null,
+        "root_bound": null,
+        "seed_policy": "supplied",
+        "status": "ITERATION_CAP",
+        "true_residual_max": null,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 0,
+          "inverse_calls": 17,
+          "residual_calls": 17,
+          "state_updates": 16
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 1.8e-07,
+        "conditional": 9.12e-07,
+        "raw": 9.01e-07
+      },
+      "speed_comparison_eligible": false,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 0.11857613574143144,
+        "f_calls": 3,
+        "residual_upper": 0.1211853027343848,
+        "success": false
+      },
+      "bisection_over_conditional_time": 0.30927835051546393,
+      "case_id": "finite_cumulative_work_cap",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": null,
+        "output_unchanged_on_failure": true,
+        "residual_upper": null,
+        "root_bound": null,
+        "seed_policy": "supplied",
+        "status": "WORK_CAP",
+        "true_residual_max": null,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 0,
+          "inverse_calls": 3,
+          "residual_calls": 3,
+          "state_updates": 3
+        }
+      },
+      "conditional_over_raw_time": 1.0738007380073802,
+      "config": {
+        "calls": 3,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "finite_cumulative_work_cap",
+        "iterations": 768,
+        "n": 1,
+        "p": 0.0625,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 3.019806626980426e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.1102230246251565e-16,
+        "iterate_perturbation_upper": 1.887379141862766e-15,
+        "iterations_planning_upper": 270,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.9375,
+        "self_map_margin": 0.014374999999999999,
+        "sufficient_acceptance_floor": 9.64561763794336e-13,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": null,
+        "output_unchanged_on_failure": true,
+        "residual_upper": null,
+        "root_bound": null,
+        "seed_policy": "supplied",
+        "status": "WORK_CAP",
+        "true_residual_max": null,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 0,
+          "inverse_calls": 3,
+          "residual_calls": 3,
+          "state_updates": 3
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 9e-08,
+        "conditional": 2.91e-07,
+        "raw": 2.71e-07
+      },
+      "speed_comparison_eligible": false,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 9.509136571494992e-07,
+        "f_calls": 20,
+        "residual_upper": 9.75578672068012e-07,
+        "success": true
+      },
+      "bisection_over_conditional_time": 1.1659611553784859,
+      "case_id": "outside_seed_center_fallback",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.1852130255007864e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.2165580920344475e-07,
+        "root_bound": 1.2763888178722074e-07,
+        "seed_policy": "declared_patch_center_fallback",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.2165579843514962e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 9,
+          "residual_calls": 9,
+          "state_updates": 7
+        }
+      },
+      "conditional_over_raw_time": 23.55425219941349,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "outside_seed_center_fallback",
+        "iterations": 768,
+        "n": 128,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 2.0,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.7705327186153317e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.687538997430238e-14,
+        "iterations_planning_upper": 7,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 4.695697382840826e-14,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": null,
+        "output_unchanged_on_failure": true,
+        "residual_upper": null,
+        "root_bound": null,
+        "seed_policy": "supplied",
+        "status": "OUTSIDE_PATCH",
+        "true_residual_max": null,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 0,
+          "inverse_calls": 0,
+          "residual_calls": 0,
+          "state_updates": 0
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 9.365e-06,
+        "conditional": 8.032e-06,
+        "raw": 3.41e-07
+      },
+      "speed_comparison_eligible": false,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 9.509136571494992e-07,
+        "f_calls": 20,
+        "residual_upper": 9.75578672068012e-07,
+        "success": true
+      },
+      "bisection_over_conditional_time": 1.163959010247438,
+      "case_id": "center_initial_iterate",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.1852130255007864e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.2165580920344475e-07,
+        "root_bound": 1.2763888178722074e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.2165579843514962e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 9,
+          "residual_calls": 9,
+          "state_updates": 7
+        }
+      },
+      "conditional_over_raw_time": 1.0062877263581491,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "center_initial_iterate",
+        "iterations": 768,
+        "n": 128,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 0.5,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.7705327186153317e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.687538997430238e-14,
+        "iterations_planning_upper": 7,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 4.695697382840826e-14,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.1852130255007864e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.2165580920344475e-07,
+        "root_bound": 1.2763888178722074e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.2165579843514962e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 9,
+          "residual_calls": 9,
+          "state_updates": 7
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 9.314e-06,
+        "conditional": 8.002e-06,
+        "raw": 7.952e-06
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 9.228619237688918e-07,
+        "f_calls": 20,
+        "residual_upper": 9.518797355074672e-07,
+        "success": true
+      },
+      "bisection_over_conditional_time": 1.3110489510489511,
+      "case_id": "uncertain_evaluation_feasible",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.233924725729807e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.3165580550932145e-07,
+        "root_bound": 1.3813068119010777e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.2665579474102628e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 8,
+          "residual_calls": 8,
+          "state_updates": 6
+        }
+      },
+      "conditional_over_raw_time": 1.0111723942865225,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 1e-08,
+        "id": "uncertain_evaluation_feasible",
+        "iterations": 768,
+        "n": 128,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.049182098401571e-08,
+        "evaluation_error_upper": 1.0000014210854715e-08,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.0000016875389975e-08,
+        "iterations_planning_upper": 7,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 3.098365351435088e-08,
+        "unavoidable_reported_error_floor": 1e-08,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.233924725729807e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.3165580550932145e-07,
+        "root_bound": 1.3813068119010777e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.2665579474102628e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 8,
+          "residual_calls": 8,
+          "state_updates": 6
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 9.374e-06,
+        "conditional": 7.15e-06,
+        "raw": 7.071e-06
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 1.453367737269673e-08,
+        "f_calls": 128,
+        "residual_upper": 1.9960676646369272e-08,
+        "success": false
+      },
+      "bisection_over_conditional_time": 865.1714285714285,
+      "case_id": "uncertain_evaluation_impossible",
+      "conditional": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": null,
+        "output_unchanged_on_failure": true,
+        "residual_upper": null,
+        "root_bound": null,
+        "seed_policy": "supplied",
+        "status": "REFUSED_EVALUATION_FLOOR",
+        "true_residual_max": null,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 0,
+          "inverse_calls": 0,
+          "residual_calls": 0,
+          "state_updates": 0
+        }
+      },
+      "conditional_over_raw_time": 0.0024151255865304997,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 1e-08,
+        "id": "uncertain_evaluation_impossible",
+        "iterations": 32,
+        "n": 128,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-10
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.049182098401571e-08,
+        "evaluation_error_upper": 1.0000014210854715e-08,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.0000016875389975e-08,
+        "iterations_planning_upper": null,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 3.098365351435088e-08,
+        "unavoidable_reported_error_floor": 1e-08,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": null,
+        "output_unchanged_on_failure": true,
+        "residual_upper": null,
+        "root_bound": null,
+        "seed_policy": "supplied",
+        "status": "ITERATION_CAP",
+        "true_residual_max": null,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 0,
+          "inverse_calls": 33,
+          "residual_calls": 33,
+          "state_updates": 32
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 6.0562e-05,
+        "conditional": 7e-08,
+        "raw": 2.8984e-05
+      },
+      "speed_comparison_eligible": false,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 9.509136571494992e-07,
+        "f_calls": 20,
+        "residual_upper": 9.75578672068012e-07,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.8035775713794291,
+      "case_id": "root_budget_refinement",
+      "conditional": {
+        "effective_tolerance": 4.765625e-11,
+        "error_to_reference": 2.1928014959371467e-12,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 2.2611903668923345e-12,
+        "root_bound": 2.3723964505099906e-12,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 2.2504220709151923e-12,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 13,
+          "residual_calls": 13,
+          "state_updates": 11
+        }
+      },
+      "conditional_over_raw_time": 1.6262937062937062,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "root_budget_refinement",
+        "iterations": 768,
+        "n": 128,
+        "p": 1.0,
+        "root_tolerance": 1e-10,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.7705327186153317e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.687538997430238e-14,
+        "iterations_planning_upper": 7,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 4.695697382840826e-14,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": null,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.2165581242309152e-07,
+        "root_bound": 1.276388851652108e-07,
+        "seed_policy": "supplied",
+        "status": "ROOT_BUDGET_NOT_MET",
+        "true_residual_max": null,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 8,
+          "residual_calls": 8,
+          "state_updates": 6
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 9.344e-06,
+        "conditional": 1.1628e-05,
+        "raw": 7.15e-06
+      },
+      "speed_comparison_eligible": false,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 9.509136571494992e-07,
+        "f_calls": 20,
+        "residual_upper": 9.75578672068012e-07,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.7390925647319662,
+      "case_id": "two_regular_patches",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 8.560807207569354e-08,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 8.787213301355367e-08,
+        "root_bound": 9.219371332569566e-08,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 8.787212224525831e-08,
+        "work": {
+          "branch_overlap_checks": 1,
+          "completed_stations": 3,
+          "inverse_calls": 12,
+          "residual_calls": 12,
+          "state_updates": 9
+        }
+      },
+      "conditional_over_raw_time": 1.0031773770752246,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "two_regular_patches",
+        "iterations": 768,
+        "n": 128,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": true,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.7332396523255403e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.687538997430238e-14,
+        "iterations_planning_upper": 6,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.0263671875,
+        "self_map_margin": 0.1851123046875,
+        "sufficient_acceptance_floor": 4.6211112502612434e-14,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 8.560807207569354e-08,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 8.787213301355367e-08,
+        "root_bound": 9.219371332569566e-08,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 8.787212224525831e-08,
+        "work": {
+          "branch_overlap_checks": 1,
+          "completed_stations": 3,
+          "inverse_calls": 12,
+          "residual_calls": 12,
+          "state_updates": 9
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 9.334e-06,
+        "conditional": 1.2629e-05,
+        "raw": 1.2589e-05
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    }
+  ],
+  "guard": {
+    "case_id": "disjoint_branch_refusal",
+    "expected_refusal": true,
+    "guard_pass": true,
+    "kind": "guard",
+    "output_unchanged": true,
+    "status": "fixed-P continuation cannot transport the previous root enclosure into patch 2",
+    "work": {
+      "branch_overlap_checks": 1,
+      "completed_stations": 2,
+      "inverse_calls": 10,
+      "residual_calls": 10,
+      "state_updates": 8
+    }
+  }
+}
