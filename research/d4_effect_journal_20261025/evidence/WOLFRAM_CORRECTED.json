@@ -1,0 +1,13 @@
+{
+  "code": "ClearAll[next, ok, cap]; cap=3;\nnext[s_List] := Module[{a=s[[1]], n=s[[2]], p=s[[3]], q=s[[4]], h=s[[5]], r={s}},\n If[p==1, AppendTo[r,{a,n,0,q+1,h}]];\n If[p==0 && h==0,\n  If[a<cap, r=Join[r,{{a+1,n,0,q,0},{a+1,n+1,1,q,0},{a+1,n,0,q,1}}], AppendTo[r,{a,n,0,q,1}]]];\n r];\nok[s_List] := 0<=s[[2]]<=s[[1]]<=cap && MemberQ[{0,1},s[[3]]] && s[[4]]==s[[2]]-s[[3]] && 0<=s[[4]]<=s[[2]];\nstates=FixedPoint[Union[Join[#,Flatten[next /@ #,1]]]&,{{0,0,0,0,0}}];\nedges=Flatten[Table[({s,#}& /@ next[s]),{s,states}],1];\npendingAdvance=Select[edges,#[[1,3]]==1 && #[[2,1]]!=#[[1,1]]&];\ndedup=And@@Flatten[Table[Union[Union[d,{id}],{id}]==Union[d,{id}],{d,Subsets[Range[3]]},{id,Range[3]}]];\nbadDrop={1,1,0,0,0};\n<|\"cap\"->cap,\"reachableStates\"->Length[states],\"edgesIncludingStutter\"->Length[edges],\"allInvariants\"->And@@(ok/@states),\"pendingAdvanceEdges\"->Length[pendingAdvance],\"atomicSetDedupIdempotent\"->dedup,\"dropPendingOnDeliveryErrorViolatesInvariant\"->Not[ok[badDrop]],\"countsAreProducerCallsNotInnerRHS\"->True,\"attemptIncrementViolation\"->Reduce[Element[{a,m},Integers] && 0<=a<m && Not[a+1<=m],{a,m},Integers]|>",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "LinearProgramming::lpsnf: No solution can be found that satisfies the constraints.\nGeneral::messages: Messages were generated which may indicate errors.\n\nOut[1]= <|\"cap\" -> 3, \"reachableStates\" -> 23, \"edgesIncludingStutter\" -> 51, \"allInvariants\" -> True, \"pendingAdvanceEdges\" -> 0, \"atomicSetDedupIdempotent\" -> True, \"dropPendingOnDeliveryErrorViolatesInvariant\" -> True, \"countsAreProducerCallsNotInnerRHS\" -> True, \"attemptIncrementViolation\" -> False|>"
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  }
+}
