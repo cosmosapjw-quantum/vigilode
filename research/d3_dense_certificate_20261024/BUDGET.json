@@ -1,0 +1,89 @@
+{
+  "unit": "D3-dense-certificate-resume",
+  "cap_seconds": 120,
+  "entries": [
+    {
+      "name": "toolchain_restore",
+      "cmd": [
+        "python3",
+        "extract_rust.py"
+      ],
+      "started_utc": "2026-10-24T11:23:05.855510+00:00",
+      "seconds": 18.384770192998985,
+      "exit": 0,
+      "log": "evidence/toolchain_restore.log",
+      "sha256": "85920a285db1ee0622c10544a4c574baa586e85d390485e1a25a67f8f975c7ce"
+    },
+    {
+      "name": "rustc_version",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--version",
+        "--verbose"
+      ],
+      "started_utc": "2026-10-24T11:23:33.312541+00:00",
+      "seconds": 0.005919358998653479,
+      "exit": 0,
+      "log": "evidence/rustc_version.log",
+      "sha256": "a834181975ab3494d51a1a01e4a9d4321fecd674a52e3db3cf93b3b84b6fc2c1"
+    },
+    {
+      "name": "red_compile",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--edition=2021",
+        "--test",
+        "--cfg",
+        "d3_red",
+        "source/test_dense.rs",
+        "-o",
+        "bin/d3_red"
+      ],
+      "started_utc": "2026-10-24T11:26:12.362315+00:00",
+      "seconds": 0.17629218900037813,
+      "exit": 1,
+      "log": "evidence/red_compile.log",
+      "sha256": "2e928df827ad106e1a49921f0e5798ef03f92d29c54fec3cf1fdb706ae5a5fbf"
+    },
+    {
+      "name": "red_compile_after_output_dir_fix",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--edition=2021",
+        "--test",
+        "--cfg",
+        "d3_red",
+        "source/test_dense.rs",
+        "-o",
+        "bin/d3_red"
+      ],
+      "started_utc": "2026-10-24T11:26:23.436537+00:00",
+      "seconds": 0.2962965259976045,
+      "exit": 0,
+      "log": "evidence/red_compile_after_output_dir_fix.log",
+      "sha256": "47d59ea696aaac7a4915128d4930efe741e1ff9361132cc808fe11448899d103"
+    },
+    {
+      "name": "red_contracts",
+      "cmd": [
+        "bin/d3_red",
+        "d3_contracts",
+        "--nocapture"
+      ],
+      "started_utc": "2026-10-24T11:26:24.074439+00:00",
+      "seconds": 0.002638091002154397,
+      "exit": 101,
+      "log": "evidence/red_contracts.log",
+      "sha256": "6dc92cd151040abda53fbb5f8dde9210529ed2eee9d3ecfe944131d8952cef5d"
+    }
+  ],
+  "closed": false,
+  "prior_known_seconds_at_S0": 108.40006170199985,
+  "prior_D2_closed_seconds": 25.104395919000012,
+  "prior_pre_D2_known_seconds": 83.29566578299983,
+  "separate_native_compile_boundary_closed_seconds": 14.951735806986107,
+  "older_remaining": null,
+  "reset": false,
+  "scope": "Only new local subprocess commands through this runner; retrieval/drafting/storage/external CAS separate.",
+  "total_seconds": 18.865916357997776
+}

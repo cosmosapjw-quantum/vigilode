@@ -1,0 +1,11 @@
+warning: value assigned to `copy` is never read
+  --> source/test_dense.rs:36:29
+   |
+36 |   let mut copy=c.controls();copy[0][0]=123.;assert_eq!(c.controls(),before);
+   |                             ^^^^^^^^^^^^^^^
+   |
+   = help: maybe it is overwritten before being read?
+   = note: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+
+warning: 1 warning emitted
+

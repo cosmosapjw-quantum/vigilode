@@ -1,0 +1,80 @@
+
+running 14 tests
+
+thread 'd3_contracts::d3_endpoint_binding_and_immutability' (9) panicked at source/test_dense.rs:17:44:
+called `Result::unwrap()` on an `Err` value: NotImplemented
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'd3_contracts::d3_exact_duration_uses_stored_endpoints' (10) panicked at source/test_dense.rs:68:31:
+called `Result::unwrap()` on an `Err` value: NotImplemented
+
+thread 'd3_contracts::d3_degree_and_clock_validation' (6) panicked at source/test_dense.rs:29:31:
+called `Result::unwrap()` on an `Err` value: NotImplemented
+
+thread 'd3_contracts::d3_dependent_control_domain_refused' (8) panicked at source/test_dense.rs:60:31:
+called `Result::unwrap()` on an `Err` value: NotImplemented
+
+thread 'd3_contracts::d3_full33_radius_uses_affine_sums' (11) panicked at source/test_dense.rs:17:44:
+called `Result::unwrap()` on an `Err` value: NotImplemented
+
+thread 'd3_contracts::d3_invalid_incoming_and_budget_refused' (13) panicked at source/test_dense.rs:17:44:
+called `Result::unwrap()` on an `Err` value: NotImplemented
+
+thread 'd3_contracts::d3_dense_refusal_preserves_accepted_prefix_and_budget' (7) panicked at source/test_dense.rs:86:94:
+called `Result::unwrap()` on an `Err` value: NotImplemented
+test d3_contracts::d3_endpoint_binding_and_immutability ... FAILED
+test d3_contracts::d3_dependent_control_domain_refused ... FAILED
+
+thread 'd3_contracts::d3_incoming_radius_is_preserved' (12) panicked at source/test_dense.rs:17:44:
+called `Result::unwrap()` on an `Err` value: NotImplemented
+test d3_contracts::d3_full33_radius_uses_affine_sums ... FAILED
+
+thread 'd3_contracts::d3_model_binding_changes_defect' (14) panicked at source/test_dense.rs:80:60:
+called `Result::unwrap()` on an `Err` value: NotImplemented
+
+thread 'd3_contracts::d3_model_rejects_unsupported_parameters' (15) panicked at source/test_dense.rs:21:3:
+assertion failed: dense::Model::new(0.).is_ok()
+test d3_contracts::d3_degree_and_clock_validation ... FAILED
+test d3_contracts::d3_exact_duration_uses_stored_endpoints ... FAILED
+test d3_contracts::d3_invalid_incoming_and_budget_refused ... 
+thread 'd3_contracts::d3_query_outside_span_refused' (17) panicked at source/test_dense.rs:17:44:
+called `Result::unwrap()` on an `Err` value: NotImplemented
+FAILED
+
+thread 'd3_contracts::d3_sampling_trap_rejected_continuously' (18) panicked at source/test_dense.rs:53:31:
+called `Result::unwrap()` on an `Err` value: NotImplemented
+test d3_contracts::d3_dense_refusal_preserves_accepted_prefix_and_budget ... FAILED
+test d3_contracts::d3_incoming_radius_is_preserved ... FAILED
+test d3_contracts::d3_model_binding_changes_defect ... FAILED
+test d3_contracts::d3_model_rejects_unsupported_parameters ... FAILED
+test d3_contracts::d3_query_outside_span_refused ... FAILED
+
+thread 'd3_contracts::d3_nonfinite_controls_refused' (16) panicked at source/test_dense.rs:64:31:
+called `Result::unwrap()` on an `Err` value: NotImplemented
+
+thread 'd3_contracts::d3_valid_cubic_and_quintic_queries' (19) panicked at source/test_dense.rs:17:44:
+called `Result::unwrap()` on an `Err` value: NotImplemented
+test d3_contracts::d3_sampling_trap_rejected_continuously ... FAILED
+test d3_contracts::d3_nonfinite_controls_refused ... FAILED
+test d3_contracts::d3_valid_cubic_and_quintic_queries ... FAILED
+
+failures:
+
+failures:
+    d3_contracts::d3_degree_and_clock_validation
+    d3_contracts::d3_dense_refusal_preserves_accepted_prefix_and_budget
+    d3_contracts::d3_dependent_control_domain_refused
+    d3_contracts::d3_endpoint_binding_and_immutability
+    d3_contracts::d3_exact_duration_uses_stored_endpoints
+    d3_contracts::d3_full33_radius_uses_affine_sums
+    d3_contracts::d3_incoming_radius_is_preserved
+    d3_contracts::d3_invalid_incoming_and_budget_refused
+    d3_contracts::d3_model_binding_changes_defect
+    d3_contracts::d3_model_rejects_unsupported_parameters
+    d3_contracts::d3_nonfinite_controls_refused
+    d3_contracts::d3_query_outside_span_refused
+    d3_contracts::d3_sampling_trap_rejected_continuously
+    d3_contracts::d3_valid_cubic_and_quintic_queries
+
+test result: FAILED. 0 passed; 14 failed; 0 ignored; 0 measured; 1 filtered out; finished in 0.00s
+
