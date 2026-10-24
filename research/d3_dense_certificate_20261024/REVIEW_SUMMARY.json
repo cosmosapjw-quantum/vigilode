@@ -1,0 +1,192 @@
+{
+  "schema": "vigilode.d3.saved-independent-oracle.v1",
+  "status": "PASS_ALL_SAVED_DEFECTS_BOUNDS_AND_QUERIES",
+  "scope": "new D3 stored Riccati curves only; no solver execution; no D2 replay",
+  "methods": {
+    "defect": "Fraction Bernstein-to-power, derivative / exact(t1-t0), polynomial convolution, power-to-Bernstein",
+    "domain": "Exact Fraction affine lift of every Bernstein control",
+    "query_rounding": "Exact Fraction Horner evaluation at exact query time and affine lift",
+    "analytic_reference": "Python Decimal with 80 significant digits, exp and Riccati formula",
+    "contraction": "Decimal80 numerical audit of exp(-lambda*delta) E0 + (1-exp(-lambda*delta)) rho/lambda",
+    "decimal_audit_slack": "1E-68",
+    "decimal_is_formal_interval_proof": false,
+    "inheritance": "Bitwise incoming E0 == preceding stored endpoint E1, all segments",
+    "full33_budget": "All query radii include exact component sums and separate recorded rounding bound"
+  },
+  "coefficient_scope": "all",
+  "counts": {
+    "full33_uniform_budget_checks": 39204,
+    "domain_control_components": 176418,
+    "stored_defect_interval_checks": 285120,
+    "exact_defect_coefficient_checks": 285120,
+    "contraction_component_checks": 35640,
+    "analytic_endpoint_components": 35640,
+    "query_components": 48972,
+    "queries": 1484,
+    "segments": 1188,
+    "exact_coefficient_segments": 1188,
+    "inherited_component_bit_checks": 35400
+  },
+  "query_kinds": {
+    "interior": 1188,
+    "requested": 296
+  },
+  "runs": [
+    {
+      "run": "0",
+      "alpha": 0.0,
+      "degree": 3,
+      "curve_budget": 2e-06,
+      "queries": 129,
+      "segments": 92,
+      "exact_coefficient_segments": 92,
+      "query_kinds": {
+        "interior": 92,
+        "requested": 37
+      },
+      "max_absolute_query_error": "2.877245873812721401814130376214219767999587805063959064622411570393971027983E-7",
+      "max_query_error_over_bound": "0.30006378912173916941065359594718708480721715220747893158346726964362875911482123",
+      "max_endpoint_error_over_bound": "0.50596810603170448720478712704120330817436085563387438189035155041428204400156513",
+      "max_returned_radius": "0.0000019942882199842974395311533120089819703935063444077968597412109375"
+    },
+    {
+      "run": "1",
+      "alpha": 0.0,
+      "degree": 3,
+      "curve_budget": 2e-08,
+      "queries": 387,
+      "segments": 350,
+      "exact_coefficient_segments": 350,
+      "query_kinds": {
+        "interior": 350,
+        "requested": 37
+      },
+      "max_absolute_query_error": "2.601275669308025957381039766592965585931288730310556541090072187404554337532E-9",
+      "max_query_error_over_bound": "0.47741191433177353015605084619012138777210340826530686021540313204537229343602622",
+      "max_endpoint_error_over_bound": "0.72800300205846383785571255981138702105980561292255080656795573948048196375741431",
+      "max_returned_radius": "1.9987926536528469335938495705755346687482187917339615523815155029296875E-8"
+    },
+    {
+      "run": "2",
+      "alpha": 0.0,
+      "degree": 5,
+      "curve_budget": 2e-06,
+      "queries": 94,
+      "segments": 57,
+      "exact_coefficient_segments": 57,
+      "query_kinds": {
+        "interior": 57,
+        "requested": 37
+      },
+      "max_absolute_query_error": "7.442947096807125898946691887623621725858728009829398642628642245428589059E-8",
+      "max_query_error_over_bound": "0.37090551692409034670301270831877049787539682579805196938178909606858011550847903",
+      "max_endpoint_error_over_bound": "0.47462510682492574382484724295903637981570955918276391011773640550364218717204880",
+      "max_returned_radius": "6.055845289837546142571768348350502719767973758280277252197265625E-7"
+    },
+    {
+      "run": "3",
+      "alpha": 0.0,
+      "degree": 5,
+      "curve_budget": 2e-08,
+      "queries": 128,
+      "segments": 91,
+      "exact_coefficient_segments": 91,
+      "query_kinds": {
+        "interior": 91,
+        "requested": 37
+      },
+      "max_absolute_query_error": "4.202590623735676117913433896110828622659199800266304264818427553169188E-10",
+      "max_query_error_over_bound": "0.34645605351882435759182400399713927430034405666895789116249548400061077865124932",
+      "max_endpoint_error_over_bound": "0.33681301064417799908740355105560235895784059427609248432393317832245394338213653",
+      "max_returned_radius": "6.20317378304503348287579538923065813893487074892618693411350250244140625E-9"
+    },
+    {
+      "run": "4",
+      "alpha": 4.0,
+      "degree": 3,
+      "curve_budget": 2e-06,
+      "queries": 131,
+      "segments": 94,
+      "exact_coefficient_segments": 94,
+      "query_kinds": {
+        "interior": 94,
+        "requested": 37
+      },
+      "max_absolute_query_error": "2.709865102495228258781703235346005277692723023578770797256254359856678599943E-7",
+      "max_query_error_over_bound": "0.20463814017976333815759724408101583286700657655759933257539111194671432497547353",
+      "max_endpoint_error_over_bound": "0.11853061299775329310702425782795655399808083568667468061404800835428959974112109",
+      "max_returned_radius": "0.00000197334270392758262901533421185273908804447273723781108856201171875"
+    },
+    {
+      "run": "5",
+      "alpha": 4.0,
+      "degree": 3,
+      "curve_budget": 2e-08,
+      "queries": 392,
+      "segments": 355,
+      "exact_coefficient_segments": 355,
+      "query_kinds": {
+        "interior": 355,
+        "requested": 37
+      },
+      "max_absolute_query_error": "2.583705664455021157356506304085640591761266784705269236814003546335947384429E-9",
+      "max_query_error_over_bound": "0.39218694374098481685619001591873709513617289601867444387215576268752551125817920",
+      "max_endpoint_error_over_bound": "0.77745481869025028909706747871155346199547493372008786448868811069739363053867622",
+      "max_returned_radius": "1.9999646399727384628651241887768719163176456277142278850078582763671875E-8"
+    },
+    {
+      "run": "6",
+      "alpha": 4.0,
+      "degree": 5,
+      "curve_budget": 2e-06,
+      "queries": 94,
+      "segments": 57,
+      "exact_coefficient_segments": 57,
+      "query_kinds": {
+        "interior": 57,
+        "requested": 37
+      },
+      "max_absolute_query_error": "1.3428247461964990692992433243283916489590585283472679423708590818494905000E-7",
+      "max_query_error_over_bound": "0.36354924477893057848150653782900004877730596838697475385495921192786422184747955",
+      "max_endpoint_error_over_bound": "0.54558703631602722053201944215895437566959042496170043627473893476550729206114514",
+      "max_returned_radius": "7.59019049968190019880604109403510193487818469293415546417236328125E-7"
+    },
+    {
+      "run": "7",
+      "alpha": 4.0,
+      "degree": 5,
+      "curve_budget": 2e-08,
+      "queries": 129,
+      "segments": 92,
+      "exact_coefficient_segments": 92,
+      "query_kinds": {
+        "interior": 92,
+        "requested": 37
+      },
+      "max_absolute_query_error": "6.1376882111541861641314617186297110477611272428804382344853068992819395E-10",
+      "max_query_error_over_bound": "0.45204770942691507818567705712911793670718868521827739790880618885214547884309679",
+      "max_endpoint_error_over_bound": "0.35237646332768482144426109029854545136330761974295488123453364114327326277784942",
+      "max_returned_radius": "6.05558593680064435227509547017728241957712498333421535789966583251953125E-9"
+    }
+  ],
+  "max_absolute_query_error": "2.877245873812721401814130376214219767999587805063959064622411570393971027983E-7",
+  "max_query_error_over_bound": "0.47741191433177353015605084619012138777210340826530686021540313204537229343602622",
+  "max_endpoint_error_over_bound": "0.77745481869025028909706747871155346199547493372008786448868811069739363053867622",
+  "max_query_rounding_error_over_bound": "0.875",
+  "minimum_exact_domain_control": "6251971911548565/46768052394588893382517914646921056628989841375232",
+  "input_sha256": {
+    "evidence/segments.jsonl": "d3dc90a3bd11fbb25eca198881eb5f8cf8cc95a05a3ba5ec5cc582e5a96028a3",
+    "evidence/SUMMARY.json": "8a7a0799a28560dbf89eddc3edc313df5313f0401022f785d0a6144244613547",
+    "/workspace/scratch/6a9ff47f24f5/d3_resume/review_dense.py": "80cefa9ba52948f235b7af9c8d42f698583f4378e3f327dfdaba621c5c43eeb1"
+  },
+  "new_solver_runs": 0,
+  "old_campaign_replays": 0,
+  "elapsed_seconds": 10.160943563998444,
+  "complete_review_artifact": {
+    "path": "REVIEW.json",
+    "bytes": 638531,
+    "sha256": "231fb913cf82639a8967e3a2ed91e49001fcd602ae3df6ef2a67ed32577a410e",
+    "query_audit_rows": 1484,
+    "location": "immutable S3 archive"
+  }
+}

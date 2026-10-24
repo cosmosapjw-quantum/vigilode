@@ -1,0 +1,38 @@
+{
+  "source_commit": "96aee1829d72ce1cbd6bcd0c0e48ebf3b1b37455",
+  "run_id": 40093427748,
+  "job_id": 120870633664,
+  "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40093427748",
+  "status": "completed",
+  "overall_conclusion": "failure",
+  "research_node_and_append_only_ledger": "PASS_167_ROWS",
+  "validator_test_counts": {
+    "research": 16,
+    "authority": 8
+  },
+  "authority_refs": {
+    "status": "FAIL_INHERITED_OUTSIDE_D3",
+    "citations": 7787,
+    "distinct_objects": 732,
+    "missing_not_allowlisted": 32,
+    "missing_allowlisted": 27,
+    "non_commit": 206,
+    "reachable": 467,
+    "failure_occurrences": 143,
+    "D3_failure_occurrences": 0
+  },
+  "PR_change_scope": {
+    "changed_files": 71,
+    "non_D3_paths": [
+      "research/LEDGER.jsonl"
+    ]
+  },
+  "inherited_failure_evidence": "Every failed path is outside D3 and unchanged by PR86; only non-D3 change is append-only research/LEDGER.jsonl. No checker/allowlist/history rewriting.",
+  "scientific_solver_or_campaign_steps": 0,
+  "next_action": "Retain global authority-reference HOLD; native/source owners must publish or properly bind original missing source objects. No replay of completed science.",
+  "saved_log_excerpt": {
+    "path": "evidence/CI_AUTHORITY_FAILURE_EXCERPT.log",
+    "sha256": "4dc40d1e39f19a9acfd525cd2ea40cde54419e521068cee7871cb624b74c57de",
+    "selection": "all failure lines plus validator counts and checker summaries; full log available from exact GitHub job"
+  }
+}

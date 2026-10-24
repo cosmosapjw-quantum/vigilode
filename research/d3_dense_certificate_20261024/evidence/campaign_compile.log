@@ -1,0 +1,224 @@
+warning: function `sqrt_up` is never used
+   --> source/directed.rs:124:8
+    |
+124 | pub fn sqrt_up(x: f64) -> CoreResult<f64> {
+    |        ^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `sqrt_down` is never used
+   --> source/directed.rs:145:8
+    |
+145 | pub fn sqrt_down(x: f64) -> CoreResult<f64> {
+    |        ^^^^^^^^^
+
+warning: function `sum_up` is never used
+   --> source/directed.rs:166:8
+    |
+166 | pub fn sum_up(values: impl IntoIterator<Item = f64>) -> CoreResult<f64> {
+    |        ^^^^^^
+
+warning: associated items `exact_sum`, `mig`, and `dot` are never used
+   --> source/directed.rs:193:12
+    |
+177 | impl Interval {
+    | ------------- associated items in this implementation
+...
+193 |     pub fn exact_sum(a: f64, b: f64) -> CoreResult<Self> {
+    |            ^^^^^^^^^
+...
+211 |     pub fn mig(&self) -> f64 {
+    |            ^^^
+...
+281 |     pub fn dot(a: &[Interval], b: &[Interval]) -> CoreResult<Self> {
+    |            ^^^
+
+warning: struct `PowerOfTwo` is never constructed
+   --> source/directed.rs:355:12
+    |
+355 | pub struct PowerOfTwo {
+    |            ^^^^^^^^^^
+
+warning: associated items `new` and `inverse` are never used
+   --> source/directed.rs:361:18
+    |
+359 | impl PowerOfTwo {
+    | --------------- associated items in this implementation
+360 |     #[inline]
+361 |     pub const fn new(exponent: i64) -> Self {
+    |                  ^^^
+...
+366 |     pub const fn inverse(self) -> Self {
+    |                  ^^^^^^^
+
+warning: function `scale_pow2_is_exact` is never used
+   --> source/directed.rs:379:8
+    |
+379 | pub fn scale_pow2_is_exact(x: f64, e: i64) -> bool {
+    |        ^^^^^^^^^^^^^^^^^^^
+
+warning: function `scale_pow2_nearest_counted` is never used
+   --> source/directed.rs:416:8
+    |
+416 | pub fn scale_pow2_nearest_counted(x: f64, e: i64) -> (f64, u64) {
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `scale_pow2_nearest` is never used
+   --> source/directed.rs:481:8
+    |
+481 | pub fn scale_pow2_nearest(x: f64, e: i64) -> f64 {
+    |        ^^^^^^^^^^^^^^^^^^
+
+warning: function `scale_pow2_up` is never used
+   --> source/directed.rs:490:8
+    |
+490 | pub fn scale_pow2_up(x: f64, e: i64) -> CoreResult<f64> {
+    |        ^^^^^^^^^^^^^
+
+warning: function `scale_pow2_down` is never used
+   --> source/directed.rs:510:8
+    |
+510 | pub fn scale_pow2_down(x: f64, e: i64) -> CoreResult<f64> {
+    |        ^^^^^^^^^^^^^^^
+
+warning: fields `proposal_norm` and `scales` are never read
+  --> source/admission.rs:66:6
+   |
+62 | pub struct Outcome {
+   |            ------- fields in this struct
+...
+66 |  pub proposal_norm:f64,
+   |      ^^^^^^^^^^^^^
+67 |  pub scales:Scales,
+   |      ^^^^^^
+   |
+   = note: `Outcome` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: function `retained` is never used
+ --> source/trajectory.rs:4:8
+  |
+4 | pub fn retained(j:usize)->usize{match j{0..=22=>j,23=>24,24..=25=>j+2,26..=28=>j+3,_=>32}}
+  |        ^^^^^^^^
+
+warning: function `exact` is never used
+ --> source/trajectory.rs:7:8
+  |
+7 | pub fn exact(z0:&[f64;30],t:f64,alpha:f64)->[f64;30]{std::array::from_fn(|j|{let l=rate(j);let e=(-l*t).exp();z0[j]*e/(1.+alpha*z0[j]...
+  |        ^^^^^
+
+warning: function `reduced_step` is never used
+ --> source/trajectory.rs:8:8
+  |
+8 | pub fn reduced_step(z:&[f64;30],h:f64,alpha:f64)->([f64;30],[f64;30]){
+  |        ^^^^^^^^^^^^
+
+warning: function `full_step` is never used
+  --> source/trajectory.rs:20:8
+   |
+20 | pub fn full_step(y:&[f64;33],h:f64,alpha:f64)->([f64;33],[f64;33]){
+   |        ^^^^^^^^^
+
+warning: constant `GAMMA` is never used
+ --> source/table.rs:2:11
+  |
+2 | pub const GAMMA:f64=0.21193756319429014;
+  |           ^^^^^
+
+warning: constant `A` is never used
+ --> source/table.rs:3:11
+  |
+3 | pub const A:[[f64;8];8]=[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],[3.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],[2.849394379747939,0.45842242204463923,0...
+  |           ^
+
+warning: constant `C` is never used
+ --> source/table.rs:4:11
+  |
+4 | pub const C:[[f64;8];8]=[[0.0,0.0,0.0,0.0,0.0,0.0,0.0,0.0],[-14.155112264123755,0.0,0.0,0.0,0.0,0.0,0.0,0.0],[-17.97296035885952,-2.8...
+  |           ^
+
+warning: constant `B` is never used
+ --> source/table.rs:5:11
+  |
+5 | pub const B:[f64;8]=[-7.502846399306121,2.561846144803919,-11.627539656261098,-0.18268767659942256,0.030198172008377946,1.0,1.0,1.0];
+  |           ^
+
+warning: variants `Recoverable` and `Fatal` are never constructed
+ --> source/stage_safe.rs:8:64
+  |
+8 | #[derive(Debug,Clone,Copy,PartialEq,Eq)]pub enum CallbackFault{Recoverable,Fatal}
+  |                                                  ------------- ^^^^^^^^^^^ ^^^^^
+  |                                                  |
+  |                                                  variants in this enum
+  |
+  = note: `CallbackFault` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: field `stage` is never read
+  --> source/stage_safe.rs:11:72
+   |
+11 | #[derive(Debug,Clone,Copy)]pub struct Failure{pub kind:FailureKind,pub stage:usize,pub work:Work}
+   |                                       ------- field in this struct     ^^^^^
+   |
+   = note: `Failure` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis
+
+warning: field `0` is never read
+  --> source/dense.rs:24:13
+   |
+24 |     Invalid(&'static str),
+   |     ------- ^^^^^^^^^^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `DenseError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+24 -     Invalid(&'static str),
+24 +     Invalid(()),
+   |
+
+warning: field `0` is never read
+  --> source/dense.rs:25:16
+   |
+25 |     Arithmetic(CoreError),
+   |     ---------- ^^^^^^^^^
+   |     |
+   |     field in this variant
+   |
+   = note: `DenseError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+help: consider changing the field to be of unit type to suppress this warning while preserving the field numbering, or remove the field
+   |
+25 -     Arithmetic(CoreError),
+25 +     Arithmetic(()),
+   |
+
+warning: fields `control`, `row`, and `lower` are never read
+  --> source/dense.rs:28:26
+   |
+28 |     DomainNotCertified { control: usize, row: usize, lower: f64 },
+   |     ------------------   ^^^^^^^         ^^^         ^^^^^
+   |     |
+   |     fields in this variant
+   |
+   = note: `DenseError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: fields `index` and `value` are never read
+  --> source/dense.rs:30:21
+   |
+30 |     InvalidRadius { index: usize, value: f64 },
+   |     -------------   ^^^^^         ^^^^^
+   |     |
+   |     fields in this variant
+   |
+   = note: `DenseError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: fields `row`, `radius`, and `budget` are never read
+  --> source/dense.rs:31:14
+   |
+31 |     Budget { row: usize, radius: f64, budget: f64 },
+   |     ------   ^^^         ^^^^^^       ^^^^^^
+   |     |
+   |     fields in this variant
+   |
+   = note: `DenseError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: 27 warnings emitted
+
