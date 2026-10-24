@@ -37,3 +37,5 @@ Research node CI runs only metadata validators and authority-reference checks. E
 ## New work resume prerequisite
 
 Current native owner exact source/reservation/dirty/completion input remains UNRESOLVED_INPUT_DEPENDENCY. Production HOLD/global completion null. Reuse its existing Transaction/Session/output hooks and integrate only an identified missing behavior. New mathematical/producer/sink extensions need their own scoped contract; do not create another norm-only child automatically.
+
+Actual S3 metadata CI: run40138539924, validator24 PASS and node/append-only ledger168 PASS. Authority FAIL38distinct/152occurrences = inherited32/143 plus D4 external repository objects6/9. All six external identities are bound to their actual repositories in EXTERNAL_SOURCE_BINDINGS.json. Checker/allowlist unchanged; no claim of CI green. Delivery-only final metadata commit skips repeat CI and retains this exact failure.

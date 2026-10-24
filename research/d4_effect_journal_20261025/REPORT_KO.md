@@ -4,7 +4,7 @@
 
 D3 이후 실제로 남은 managed-effect 계약을 구현하고 검증했다. 기존 Session의 attempt cap·clock·수용 판정을 재사용하면서, trial에 소유된 journal과 수용 후 pending batch, 명시적인 ACK 경계를 추가했다. **새 계약22/22,16,384개 protocol case의65,536전이와 독립 oracle3,407,872개 필드 비교가 통과했다.** 일반 callback·실제 BASS·생산 FP provider 및 현재 native 담당 연결은 각각 별도 의무다.
 
-이 결과는 [Draft PR87](https://github.com/cosmosapjw-quantum/vigilode/pull/87)에 게시한다. 단위의 과학·코딩 검증은 완료했으며 단계별 저장 완료 여부는 delivery/의 실제 receipt를 따른다. 전체 VigilODE 완성도는 null, production은 HOLD다.
+이 결과는 [Draft PR87](https://github.com/cosmosapjw-quantum/vigilode/pull/87)에 게시했다. 단위의 과학·코딩 검증과 S0–S3 게시·백업을 완료했으며 실제 receipt는 delivery/에 있다. 전체 VigilODE 완성도는 null, production은 HOLD다.
 
 ## 1. 최신 자료를 종합한 연구 위치
 
@@ -119,3 +119,24 @@ Wolfram은 작은 abstract model23states/51edges에서 invariant와 pending barr
 현재 native 담당 source/예약/live dirty/완료 receipt 연결이 생산 이식의 다음 첫 행동이다. 그 receipt를 받으면 기존 hook과 D4 경계의 실제 diff만 이식한다. 실제 BASS, 일반 RHS/Jacobian 일치, 일반 dense-domain, callback return 통제, durable external sink/crash recovery, production FP provider 및 기존 authority-reference 부채는 별도 gate다. Global completion=null, production=HOLD. 다음 연구 node를 자동 생성하지 않는다.
 
 D2의15새시험+31회귀/12궤적/15,182stage/2,212trial/Bernstein과 D3의8run/15tests/1,188segments/1,484queries는 재사용했다. D2endpoint-only 금지RHS507, 두guard경로0, 반감1,032attempts/5,323RHS와cap602/4,816RHS는 그대로다. Scalar-linear[0,2] 인증과 nonlinear heuristic cap을 구분하며, 이 수치들을 wall-time speedup으로 해석하지 않는다.
+
+## 9. S3 전달 완료와 실제 CI
+
+D4의 이론 R1–R10=10/10, 코딩 C1–C10=10/10, local S0–S3=4/4를 완료했다. S3 과학·보고 게시 commit은 c6630c1c412d41eb47adf013d23b385192971798이며, 실제 실행 소스는 S1 555a93e5bffbed4b488ee0496e73d8095b08eab4다. 이후 변경은 전달 문서·백업 ACK·CI 근거이며 과학 소스, 결과, 닫힌 BUDGET, 원장 출력 hash를 변경하지 않는다.
+
+| Phase | Git 게시 | archive bytes / payloads | 백업 확인 |
+| --- | --- | --- | --- |
+| S0 | ae792351dd442d6d1a3518b19b2d89d138d4aa41 | 19,343 / 11 | Library, Drive, Dropbox ACK |
+| S1 | 555a93e5bffbed4b488ee0496e73d8095b08eab4 | 77,115 / 39 | Library, Drive, Dropbox ACK |
+| S2 | 8dc905eb56682be5fd59ee50971704abd5a150f0 | 1,159,261 / 60 | Library, Drive, Dropbox ACK |
+| S3 | c6630c1c412d41eb47adf013d23b385192971798 | 1,190,543 / 72 | Library, Drive, Dropbox ACK |
+
+S3 archive SHA256 b3b00db7ffd77851ed7b92ca37d3c09ab7e91c63c5c2af2f8704952e4883062f. [최종 archive](https://chatgpt.com/library?file_id=libfile_64718c86fa3c819196969537517cd157&account_id=personal), [Drive](https://drive.google.com/file/d/15Sw7zc7mLG6gddBIL0sJ7XCgaFZAwb7m/view), Dropbox id:BSpOijBcT10AAAAAAD_9sw. 로컬 CRC/모든72payload hash와 provider ACK/size를 확인했고 원격 전체 byte 재다운로드는 NOT_RUN이다. 모든 이전 archive는 보존했다.
+
+[실제 S3 CI run40138539924](https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40138539924)는 metadata validator24개와 new D4 node/append-only ledger168행 검사에서 PASS다. Authority 검사는 **FAIL:38개 distinct object/152개 occurrence**다. 기존32개/143개에 D4가 인용한 외부 저장소6개/9개가 더해졌다. 이6개는 REI/BASS/REC에 실제 게시된 commit 또는 blob이며 repository·type·PR head/ancestor/파일 blob 근거를 EXTERNAL_SOURCE_BINDINGS.json에 연결했다. 검사기가 VigilODE 내부 object database만 검색하는 한계가 확인됐다. 이 provenance 교정으로 CI가 통과했다고 주장하지 않으며 checker/allowlist는 변경하지 않았다. 원문 실패 로그는 evidence/S3_RESEARCH_PROCESS_CI.log에 있다. 최종 전달 문서 commit의 CI는 NOT_RUN(skip ci)이며 S3 실패를 대체하지 않는다.
+
+종료 시 중앙 PR222 HEAD는2354d6e995fde736fffbcad2d0e40473218cb8c4로 갱신됐다. 조사 당시407381b302d8b98f251b54d277823997bc4fca9f에서4commit 전진했고, 변경 경로는 HE backup·CR return·HI native atom delivery 계열이다. 원래 HANDOFF_vigilode_KO.md는 그 diff에서 변경되지 않았으며 댓글8개 중 기존 최신 VigilODE 수신은6384170816이었다. 현재 native owner/source/reservation/live dirty/completion 입력은 여전히 미해결이다.
+
+최종 반환 댓글은 delivery/RETURN_COMMENTS.json의 실제 ID를 따른다. 보고서·handoff 자체를 포함하는 마지막 Git commit은 자기 hash를 내부에 미리 넣지 않는다. PR87의 실제 HEAD와 별도로 저장한 최종 companion receipt가 최종 HEAD를 결속한다. 과학 단위의 완료와 전체 production HOLD/global completion=null은 구분한다.
+
+중앙 PR222 반환 댓글 [6390359885](https://github.com/cosmosapjw-quantum/rei_bianchi/pull/222#issuecomment-6390359885)와 부모 PR86 댓글 [6390360097](https://github.com/cosmosapjw-quantum/vigilode/pull/86#issuecomment-6390360097)을 실제 게시했다. 과거 D2/D3 전달 댓글은 재게시하지 않았다.

@@ -1,5 +1,9 @@
 # VigilODE D4 전달 및 최소 재개 메모
 
+> **최종 전달 갱신:** D4 R1–R10=10/10, C1–C10=10/10, S0–S3=4/4. S3 science `c6630c1c412d41eb47adf013d23b385192971798`; 실행 source `555a93e5bffbed4b488ee0496e73d8095b08eab4`. S3 archive72payload/1,190,543bytes, SHA256 `b3b00db7ffd77851ed7b92ca37d3c09ab7e91c63c5c2af2f8704952e4883062f`; Library `libfile_64718c86fa3c819196969537517cd157`, Drive `15Sw7zc7mLG6gddBIL0sJ7XCgaFZAwb7m`, Dropbox `id:BSpOijBcT10AAAAAAD_9sw` ACK 완료. 아래 S2 작성 시점 문단은 보존된 시간별 snapshot이며 이 갱신과 FINAL_DELIVERY.json이 현재 전달 상태다.
+>
+> 실제 S3 CI: validator24 및 node/원장168 PASS; authority FAIL38distinct/152occurrences(기존32/143 + D4의 외부 객체6/9). 외부6개는 각각 해당 저장소에서 실제 확인했고 EXTERNAL_SOURCE_BINDINGS.json에 repo/type/게시근거를 연결했다. Checker/allowlist는 변경하지 않았다. 최종 전달 metadata CI는 NOT_RUN(skip ci)이며 CI green을 주장하지 않는다. 전체 completion=null, production=HOLD, native owner 입력 미해결. 최종 HEAD와 반환 댓글은 PR87 및 최종 companion receipt를 참조한다.
+
 ## 1. 전달 시점과 기준 소스
 
 이 문서는 D4의 기존 결과와 S0–S2 게시·백업 receipt를 전사한 R10/C10 전달 산출물이다. 이 문서를 작성하면서 새 기술 재검토, 계산, 시험, 웹조회, 게시 또는 백업을 실행하지 않았다. 적용 범위는 physmath-research-loop 1.3.0의 R10/C10 전달 지침이며, 실제 수행된 연구 단계의 기록과 예산을 소급 변경하지 않는다.
@@ -152,7 +156,9 @@ $physmath-research-loop로 VigilODE 전달 상태를 먼저 읽어라. 새 loop�
 repo: cosmosapjw-quantum/vigilode
 branch: research/d4-effect-journal-20261025
 Draft PR: #87
-이 메모 작성 시점 S2 HEAD: 8dc905eb56682be5fd59ee50971704abd5a150f0
+보존된 S2 HEAD: 8dc905eb56682be5fd59ee50971704abd5a150f0
+완료된 S3 science: c6630c1c412d41eb47adf013d23b385192971798
+최종 전달 HEAD는 PR87 actual HEAD와 companion receipt를 먼저 확인하라.
 실제 실행 source(S1): 555a93e5bffbed4b488ee0496e73d8095b08eab4
 parent D3 HEAD: 02060cc9dc4551dc5cf6ec86ad9b53b697a2c3ce
 먼저 실제 HEAD·해당 AGENTS와 REPORT_KO.md, THEORY.md, CONTRACT.md,
@@ -183,7 +189,12 @@ D2 endpoint-only 금지 RHS507회, guard 두 경로0회;
 이는 작업량 비교이며 wall-time speedup이 아니다.
 Scalar-linear [0,2] 인증과 비선형 cap heuristic을 구분하라.
 
-S0–S2 게시와 Library/Drive/Dropbox ACK는 각각 완료(3/3 stages).
+S0–S3 게시와 Library/Drive/Dropbox ACK는 각각 완료(4/4 phases).
+D4 R1–R10=10/10, C1–C10=10/10; 전체 목표 completion=null/productionHOLD.
+S3 archive72payload/1,190,543bytes, SHA256 b3b00db7ffd77851ed7b92ca37d3c09ab7e91c63c5c2af2f8704952e4883062f.
+실제 S3 CI validator24/node/168행원장 PASS; authority FAIL38distinct/152occurrences.
+기존32/143와 D4 외부repo객체6/9를 구분하라. 6개는 actual 외부게시를 확인했다.
+Checker/allowlist 변경0; 최종 metadata CI NOT_RUN. 기존 failure를 PASS로 바꾸지 마라.
 각 archive의 원격 전체 바이트 재다운로드 검증은 NOT_RUN.
 원본 archive·실패 로그·closed BUDGET·이전 HEAD를 보존하라.
 Desktop Commander 호출0, 월간 quota 거절 우회 금지.
@@ -208,3 +219,11 @@ S3 게시 commit, 최종 branch HEAD, S3 archive의 이름·bytes·SHA256·paylo
 현재 읽은 `FINAL_DELIVERY.json`은 `science_status=COMPLETE_SCOPED`, `delivery_status=S3_PENDING_PUBLICATION_AND_PROVIDER_ACK`다. 최종 단계 완료 여부는 후속 receipt와 갱신된 `STAGE_LEDGER.json`·`DAG.json`에 근거해 읽는다. immutable archive 안의 이 메모를 최종 핀으로 덮어쓰지 않는다.
 
 후속 전달이 완료되어도 `production=HOLD`, `global_completion=null`, 닫힌 예산과 별도 gate는 해당 문제를 실제로 해결한 새 근거 없이 바꾸지 않는다. 현재 연구 loop의 종료 후 다음 loop를 자동 시작하지 않는다.
+
+## 10. 최종 전달 근거
+
+제9절의 후속 자료는 이제 delivery/S3_PUBLICATION.json, delivery/S3_PROVIDER_ACK.json, delivery/CI_RECEIPT.json, EXTERNAL_SOURCE_BINDINGS.json 및 실제 게시 후 delivery/RETURN_COMMENTS.json으로 연결된다. S3 archive 안의 이전 snapshot은 수정하지 않았다. 최종 HEAD는 외부 companion receipt에서 정확히 고정한다. 이번 loop는 종료하며 다음 loop를 자동 시작하지 않는다.
+
+## 11. 실제 반환 댓글
+
+중앙 PR222: [6390359885](https://github.com/cosmosapjw-quantum/rei_bianchi/pull/222#issuecomment-6390359885). 부모 PR86: [6390360097](https://github.com/cosmosapjw-quantum/vigilode/pull/86#issuecomment-6390360097). 이전 D2/D3 반환 댓글은 중복 게시하지 않았다. 현재 D4의 source/결과/closed 예산은 보존됐다.

@@ -6,8 +6,8 @@
   "branch": "research/d4-effect-journal-20261025",
   "draft_pr": 87,
   "science_status": "COMPLETE_SCOPED",
-  "delivery_status": "S3_PENDING_PUBLICATION_AND_PROVIDER_ACK",
-  "local_phases_completed": 3,
+  "delivery_status": "COMPLETE_SCOPED_S0_S3_BACKUPS_AND_RETURN_COMMENTS",
+  "local_phases_completed": 4,
   "local_phases_total": 4,
   "global_completion": null,
   "production": "HOLD",
@@ -200,6 +200,72 @@
           "status": "completed"
         }
       }
+    },
+    "S3": {
+      "publication": {
+        "phase": "S3",
+        "source_commit": "c6630c1c412d41eb47adf013d23b385192971798",
+        "tree": "7a4d4ace77df26eccdd6820c57121fcdd62041f7",
+        "executed_source_commit": "555a93e5bffbed4b488ee0496e73d8095b08eab4",
+        "parent": "8dc905eb56682be5fd59ee50971704abd5a150f0",
+        "new_ledger_row": "L-0171",
+        "ledger_rows": 168,
+        "publication": "expected-SHA non-force",
+        "science_status": "COMPLETE_SCOPED",
+        "provider_status": "ACK_PENDING",
+        "metadata_CI": "AUTOMATIC_RUN_PENDING",
+        "production": "HOLD",
+        "global_completion": null
+      },
+      "providers": {
+        "phase": "S3",
+        "source_commit": "c6630c1c412d41eb47adf013d23b385192971798",
+        "archive": {
+          "phase": "S3",
+          "path": "/workspace/scratch/6a9ff47f24f5/continuation_20261025/archives/VIGILODE_D4_EFFECTS_S3_20261025.zip",
+          "filename": "VIGILODE_D4_EFFECTS_S3_20261025.zip",
+          "bytes": 1190543,
+          "sha256": "b3b00db7ffd77851ed7b92ca37d3c09ab7e91c63c5c2af2f8704952e4883062f",
+          "payloads": 72,
+          "local_crc_all_payload_hash": "PASS",
+          "remote_whole_byte_restore": "NOT_RUN"
+        },
+        "library_file_id": "libfile_64718c86fa3c819196969537517cd157",
+        "drive": {
+          "accepted_input": "file_uri",
+          "success": true,
+          "id": "15Sw7zc7mLG6gddBIL0sJ7XCgaFZAwb7m",
+          "title": "VIGILODE_D4_EFFECTS_S3_20261025.zip",
+          "file_name": "VIGILODE_D4_EFFECTS_S3_20261025.zip",
+          "mime_type": "application/zip",
+          "url": "https://drive.google.com/file/d/15Sw7zc7mLG6gddBIL0sJ7XCgaFZAwb7m/view?usp=drivesdk",
+          "parent_id": "1zETZ_0uFYQQYL97E2raEhcl83-0jv--T",
+          "structuredContent": {
+            "accepted_input": "file_uri",
+            "success": true,
+            "id": "15Sw7zc7mLG6gddBIL0sJ7XCgaFZAwb7m",
+            "title": "VIGILODE_D4_EFFECTS_S3_20261025.zip",
+            "file_name": "VIGILODE_D4_EFFECTS_S3_20261025.zip",
+            "mime_type": "application/zip",
+            "url": "https://drive.google.com/file/d/15Sw7zc7mLG6gddBIL0sJ7XCgaFZAwb7m/view?usp=drivesdk",
+            "parent_id": "1zETZ_0uFYQQYL97E2raEhcl83-0jv--T"
+          }
+        },
+        "dropbox": {
+          "file": {
+            "file": {
+              "size": 1190543
+            },
+            "file_id": "id:BSpOijBcT10AAAAAAD_9sw",
+            "modified_time": "2026-10-24T22:26:49Z",
+            "name": "VIGILODE_D4_EFFECTS_S3_20261025.zip",
+            "object_type": "file",
+            "path": "ns:183516487//bianchi/research_backups/rei_bianchi/VIGILODE_D4_EFFECTS_S3_20261025.zip",
+            "path_display": "/bianchi/research_backups/rei_bianchi/VIGILODE_D4_EFFECTS_S3_20261025.zip"
+          },
+          "status": "completed"
+        }
+      }
     }
   },
   "result_file": "S2_RESULT.json",
@@ -216,7 +282,33 @@
   "independent_personnel": "NOT_RUN",
   "historical_D2_native_subagent": "NOT_RUN",
   "historical_D2_independent_personnel": "NOT_RUN",
-  "authority_reference_CI": "PENDING_S3_METADATA_ONLY_CI",
+  "authority_reference_CI": {
+    "source_commit": "c6630c1c412d41eb47adf013d23b385192971798",
+    "workflow": "Research ledger and authority references",
+    "run_id": 40138539924,
+    "job_id": 121005158823,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40138539924",
+    "status": "completed",
+    "conclusion": "failure",
+    "metadata_validator_tests_passed": 24,
+    "research_node_and_append_only_ledger": "PASS_168_ROWS",
+    "authority_references": "FAIL",
+    "authority_missing_distinct": 38,
+    "failure_occurrences": 152,
+    "inherited_missing_distinct": 32,
+    "inherited_failure_occurrences": 143,
+    "D4_missing_distinct": 6,
+    "D4_failure_occurrences": 9,
+    "D4_cause": "Published objects in other repositories are looked up only in the VigilODE object database",
+    "D4_provenance_resolution": "All six external objects independently resolved with repository/type/reachable PR or ancestor evidence in EXTERNAL_SOURCE_BINDINGS.json; checker does not understand repository namespaces",
+    "checker_changed": false,
+    "allowlist_changed": false,
+    "whole_ci_green": false,
+    "raw_log": "evidence/S3_RESEARCH_PROCESS_CI.log",
+    "final_delivery_metadata_ci": "NOT_RUN_SKIP_CI",
+    "later_delivery_metadata_claim": "No claim that the final metadata commit has a new passing CI run; scientific source/results/budget/ledger unchanged",
+    "old_scientific_replays": 0
+  },
   "raw_trace": {
     "file": "evidence/traces.jsonl",
     "bytes": 68074488,
@@ -232,5 +324,29 @@
   },
   "external_delivery_claim": "ACK is a caller assertion; durable atomic sink, payload identity binding, unique run namespace and truthful ACK are separate conditions",
   "next_action": "Obtain current native owner exact source/reservation/live dirty/completion receipt; reuse existing hooks and integrate only a confirmed gap",
-  "automatic_next_loop": false
+  "automatic_next_loop": false,
+  "theory_stages_complete": 10,
+  "coding_stages_complete": 10,
+  "S3_science_commit": "c6630c1c412d41eb47adf013d23b385192971798",
+  "return_comments": {
+    "central": {
+      "repo": "cosmosapjw-quantum/rei_bianchi",
+      "pr": 222,
+      "id": 6390359885,
+      "url": "https://github.com/cosmosapjw-quantum/rei_bianchi/pull/222#issuecomment-6390359885"
+    },
+    "parent": {
+      "repo": "cosmosapjw-quantum/vigilode",
+      "pr": 86,
+      "id": 6390360097,
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/86#issuecomment-6390360097"
+    },
+    "status": "POSTED",
+    "S3_science_commit": "c6630c1c412d41eb47adf013d23b385192971798",
+    "prior_D2_D3_comments": "PRESERVED_NOT_REPOSTED",
+    "new_scientific_execution_for_delivery": 0
+  },
+  "external_repository_identity": "EXTERNAL_SOURCE_BINDINGS.json",
+  "latest_central_head": "2354d6e995fde736fffbcad2d0e40473218cb8c4",
+  "final_metadata_commit_CI": "NOT_RUN; skip identical CI on delivery-only files, actual S3 failure preserved"
 }
