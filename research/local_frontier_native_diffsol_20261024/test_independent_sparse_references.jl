@@ -1,7 +1,7 @@
 # Synthetic evidence controls plus one probe-only identity check; no integration.
-# ARGS: SOURCE.jl NEW_EVIDENCE_DIR CASE8_SMOKE_DESCRIPTOR.json
+# ARGS: SOURCE.jl NEW_EVIDENCE_DIR CASE8_DESCRIPTOR.json
 using Test,JSON3,SHA
-length(ARGS)==3 || error("source, new evidence directory, case8 smoke descriptor required")
+length(ARGS)==3 || error("source, new evidence directory, case8 descriptor required")
 source,evidence_dir,descriptor_path=ARGS
 mkdir(evidence_dir)
 include(abspath(source))
@@ -57,6 +57,8 @@ observations=Dict{String,Any}()
     @test all(row.pass for row in control.rhs_probes)
     @test control.jacobian_action.pass
     @test control.callback_allocations.pass
+    @test control.sparse_support_sha256==bytes2hex(sha256(read(joinpath(dirname(abspath(source)),"sparse_jacobian_support.jl"))))
+    @test control.reference_callback_allocations.status=="NOT_APPLICABLE"
     @test Set(readdir(probe))==Set(["PROBE_CONTROL.json"])
     observations["descriptor_sha256"]=expected_sha
 end

@@ -3,6 +3,8 @@
 # the absolute deadline, 12 GiB RSS cap, and exclusive output/process ownership.
 # Usage: julia --project=PINNED independent_sparse_references.jl DESCRIPTOR NEW_DIR probe|solve
 using JSON3, SHA, LinearAlgebra, SciMLBase, OrdinaryDiffEqTsit5, OrdinaryDiffEqRosenbrock
+include(joinpath(@__DIR__,"sparse_jacobian_support.jl"))
+using .SparseJacobianSupport
 BLAS.set_num_threads(1)
 const PROBE_EPS = 128eps(Float64)
 const REF_SCHEMA = "vigilode.local-bottleneck.external-reference.v1"
@@ -379,25 +381,83 @@ function boundary_controls(c)
     end
 end
 
-function solve_level(label,algorithm,rtol,atol,c,outdir)
-    count=Ref(0)
-    function counted!(du,y,p,t)
-        count[]+=1;rhs!(du,y,p,t)
+function counted_reference_rhs!(du,y,p,t)
+    p.counts.rhs[]+=1
+    rhs!(du,y,p.config,t)
+end
+function counted_case20_rhs!(du,y,p,t)
+    p.counts.rhs[]+=1
+    case20_rhs!(du,y,p.support,t)
+end
+function counted_case20_jac!(J,y,p,t)
+    p.counts.jac[]+=1
+    case20_jacobian!(J,y,p.support,t)
+end
+function counted_case20_tgrad!(du,y,p,t)
+    p.counts.tgrad[]+=1
+    case20_tgrad!(du,y,p.support,t)
+end
+
+function reference_problem(c)
+    counts=(rhs=Ref(0),jac=Ref(0),tgrad=Ref(0))
+    if c.id==20
+        support=build_case20_support(c.m)
+        p=(support=support,counts=counts)
+        object=ODEFunction(counted_case20_rhs!;jac=counted_case20_jac!,
+                           tgrad=counted_case20_tgrad!,jac_prototype=copy(support.prototype))
+    else
+        p=(config=c,counts=counts)
+        object=ODEFunction(counted_reference_rhs!)
     end
-    prob=ODEProblem(counted!,copy(c.initial),(0.0,c.tend),c)
+    ODEProblem(object,copy(c.initial),(0.0,c.tend),p),counts
+end
+
+function reference_callback_controls(c)
+    c.id==20 || return Dict("status"=>"NOT_APPLICABLE")
+    prob,counts=reference_problem(c)
+    f=prob.f;p=prob.p;y=prob.u0;du=similar(y);J=copy(f.jac_prototype)
+    for _ in 1:10
+        f(du,y,p,0.73);f.jac(J,y,p,0.73);f.tgrad(du,y,p,0.73)
+    end
+    rhs_alloc=[@allocated f(du,y,p,0.73) for _ in 1:10]
+    jac_alloc=[@allocated f.jac(J,y,p,0.73) for _ in 1:10]
+    tgrad_alloc=[@allocated f.tgrad(du,y,p,0.73) for _ in 1:10]
+    Dict("rhs_bytes"=>rhs_alloc,"jac_bytes"=>jac_alloc,"tgrad_bytes"=>tgrad_alloc,
+         "jacobian_storage"=>"SparseMatrixCSC{Float64,Int}",
+         "pattern"=>case20_pattern_bytes(p.support),
+         "pass"=>maximum(rhs_alloc)==0 && maximum(jac_alloc)==0 && maximum(tgrad_alloc)==0)
+end
+
+function full_endpoint_success(retcode,times,states,n,tend)
+    SciMLBase.successful_retcode(retcode) && !isempty(times) && !isempty(states) &&
+        times[end]==tend && length(states[end])==n && all(isfinite,states[end])
+end
+
+function reference_levels(c)
+    check(c.id==8 || (c.id==20 && c.size=="standard" && c.n==1024 && c.tend==2.0),
+          "only case8 and frozen standard case20 have reviewed reference solve paths")
+    (("tsit5_1e8",Tsit5(),1e-8,1e-10),
+     ("tsit5_1e9",Tsit5(),1e-9,1e-11),
+     ("tsit5_1e10",Tsit5(),1e-10,1e-12),
+     ("rodas5p_1e10",Rodas5P(),1e-10,1e-12))
+end
+
+function solve_level(label,algorithm,rtol,atol,c,outdir)
+    prob,counts=reference_problem(c)
     start=time_ns()
     try
         sol=solve(prob,algorithm;reltol=rtol,abstol=atol,maxiters=2_000_000,
                   save_everystep=false,save_start=false,save_end=true,dense=false)
         state=isempty(sol.u) ? nothing : Float64.(sol.u[end])
-        success=SciMLBase.successful_retcode(sol.retcode) && state!==nothing &&
-                length(state)==c.n && all(isfinite,state) && sol.t[end]==c.tend
+        success=full_endpoint_success(sol.retcode,sol.t,sol.u,c.n,c.tend)
         row=Dict("label"=>label,"algorithm"=>string(typeof(algorithm)),
                  "rtol"=>rtol,"atol"=>atol,"elapsed_seconds"=>(time_ns()-start)*1e-9,
                  "retcode"=>string(sol.retcode),"success"=>success,
                  "final_time"=>isempty(sol.t) ? nothing : sol.t[end],
                  "full_endpoint_state"=>state!==nothing && all(isfinite,state) ? state : nothing,
-                 "rhs_callback_count"=>count[],
+                 "rhs_callback_count"=>counts.rhs[],"jac_callback_count"=>counts.jac[],
+                 "tgrad_callback_count"=>counts.tgrad[],"timing_authority"=>"diagnostic_only",
+                 "jacobian_storage"=>c.id==20 ? "SparseMatrixCSC{Float64,Int}" : "default case8 storage",
                  "stats"=>Dict("naccept"=>sol.stats.naccept,"nreject"=>sol.stats.nreject,
                                "nf"=>sol.stats.nf,"njacs"=>sol.stats.njacs),
                  "invariants"=>success ? invariants(c,state) : nothing)
@@ -406,7 +466,9 @@ function solve_level(label,algorithm,rtol,atol,c,outdir)
     catch err
         preserve_failure(joinpath(outdir,"$(label).json"),Dict("label"=>label,
              "status"=>"FAILED_SOLVE_EXCEPTION","elapsed_seconds"=>(time_ns()-start)*1e-9,
-             "exception"=>sprint(showerror,err),"rhs_callback_count"=>count[]))
+             "exception"=>sprint(showerror,err),"rhs_callback_count"=>counts.rhs[],
+             "jac_callback_count"=>counts.jac[],"tgrad_callback_count"=>counts.tgrad[],
+             "timing_authority"=>"diagnostic_only"))
         rethrow()
     end
 end
@@ -420,32 +482,46 @@ function construct_reference(descriptor_path,outdir,mode)
     probes=probe_controls(desc,c)
     derivative=derivative_controls(c)
     allocations=allocation_controls(c)
+    reference_allocations=reference_callback_controls(c)
     boundary=boundary_controls(c)
     control=Dict("schema"=>"vigilode.independent-sparse-reference-control.v1",
                  "descriptor_sha256"=>descriptor_sha,
                  "source_sha256"=>bytes2hex(sha256(read(@__FILE__))),
+                 "sparse_support_sha256"=>bytes2hex(sha256(read(joinpath(@__DIR__,"sparse_jacobian_support.jl")))),
                  "case_id"=>c.id,"size"=>c.size,"dimension"=>c.n,
                  "rhs_probes"=>probes,"jacobian_action"=>derivative,
                  "boundary_flux"=>boundary,
                  "callback_allocations"=>allocations,"mode"=>mode,
+                 "reference_callback_allocations"=>reference_allocations,
                  "initial_invariants"=>invariants(c,c.initial),
                  "julia_version"=>string(VERSION))
     emit(joinpath(outdir,"PROBE_CONTROL.json"),control)
     check(all(row["pass"] for row in probes),"RHS probe mismatch")
     check(derivative["pass"],"Jacobian action check failed")
     check(allocations["pass"],"warmed callback allocated")
+    check(get(reference_allocations,"pass",true),"warmed sparse reference callback allocated")
     check(get(boundary,"pass",true),"boundary flux check failed")
     mode=="probe" && return
-    check(c.id==8,"large cases require independently reviewed sparse Rodas path")
-    levels=(("tsit5_1e8",Tsit5(),1e-8,1e-10),
-            ("tsit5_1e9",Tsit5(),1e-9,1e-11),
-            ("tsit5_1e10",Tsit5(),1e-10,1e-12),
-            ("rodas5p_1e10",Rodas5P(),1e-10,1e-12))
+    levels=reference_levels(c)
     rows=Any[]
     for (label,alg,rtol,atol) in levels
         row=solve_level(label,alg,rtol,atol,c,outdir)
         push!(rows,row)
         check(row["success"],"$label failed")
+    end
+    complete_reference(desc,descriptor_sha,c,control,rows,outdir)
+end
+
+function complete_reference(desc,descriptor_sha,c,control,rows,outdir)
+    levels=reference_levels(c)
+    check(length(rows)==4,"four full endpoint levels required")
+    for (row,(label,alg,rtol,atol)) in zip(rows,levels)
+        state=get(row,"full_endpoint_state",nothing)
+        check(get(row,"label",nothing)==label && get(row,"rtol",nothing)==rtol &&
+              get(row,"atol",nothing)==atol,"reference level identity or tolerance mismatch")
+        check(get(row,"success",false)===true && get(row,"final_time",nothing)==c.tend &&
+              state!==nothing && length(state)==c.n && all(isfinite,state),
+              "$label requires successful finite full endpoint at frozen t_end")
     end
     states=[row["full_endpoint_state"] for row in rows]
     differences=Dict{String,Float64}()
@@ -459,13 +535,13 @@ function construct_reference(descriptor_path,outdir,mode)
                   "claim_ceiling"=>"empirical full-vector endpoint comparison only")
     evidence_path=joinpath(outdir,"REFERENCE_EVIDENCE.json")
     emit(evidence_path,evidence)
-    check(U<=1e-5,"empirical uncertainty >1e-5")
+    check(isfinite(U) && U<=1e-5,"empirical uncertainty >1e-5 or nonfinite")
     reference=Dict("schema"=>REF_SCHEMA,"model_descriptor"=>desc,
                    "model_descriptor_sha256"=>descriptor_sha,
                    "norm"=>"max_component_absolute","reference_state"=>states[3],
                    "uncertainty"=>U,
-                   "provenance"=>Dict("source"=>"independent Julia Oregonator RHS from frozen equations",
-                                      "method"=>"three Tsit5 tolerances and fine Rodas5P crosscheck",
+                   "provenance"=>Dict("source"=>c.id==20 ? "independent Julia fixed-bath hierarchy RHS from frozen equations" : "independent Julia Oregonator RHS from frozen equations",
+                                      "method"=>c.id==20 ? "three Tsit5 tolerances and fine sparse analytic jac+tgrad Rodas5P crosscheck" : "three Tsit5 tolerances and fine Rodas5P crosscheck",
                                       "evidence_sha256"=>bytes2hex(sha256(read(evidence_path)))))
     emit(joinpath(outdir,"EXTERNAL_REFERENCE.json"),reference)
 end
