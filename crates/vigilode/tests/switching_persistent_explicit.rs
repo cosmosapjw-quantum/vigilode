@@ -180,3 +180,145 @@ fn committed_implicit_route_reconstructs_explicit_fsal_state() {
             .sum::<usize>()
     );
 }
+
+#[test]
+fn accepted_return_probe_at_global_budget_keeps_fully_accounted_checkpoint() {
+    use std::sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    };
+
+    let rhs_calls = Arc::new(AtomicUsize::new(0));
+    let rhs_after_checkpoint = Arc::new(AtomicUsize::new(0));
+    let calls = Arc::clone(&rhs_calls);
+    let late = Arc::clone(&rhs_after_checkpoint);
+    let problem = Problem::new(1, move |t, _, out| {
+        calls.fetch_add(1, Ordering::Relaxed);
+        if t > 0.75 {
+            late.fetch_add(1, Ordering::Relaxed);
+        }
+        out[0] = 0.0;
+        Ok(())
+    })
+    .jacobian(Jacobian::dense(|_, _, out| {
+        out[0] = 0.0;
+        Ok(())
+    }))
+    .autonomous();
+    let config = SwitchingConfig {
+        fallback: DerivativeFallback::ProvidedOnly,
+        window_count: 4,
+        explicit_attempt_budget: 1,
+        pressure_steps: 1,
+        implicit_pilot_attempt_budget: 0,
+        implicit_residence: 1,
+        probe_interval: 1,
+        return_cost_ratio: 0.99,
+        carry_explicit_step: true,
+        ..Default::default()
+    };
+    let opts = Options {
+        h0: 0.25,
+        max_steps: 3,
+        ..options()
+    };
+    let actual = SwitchingSolver::solve(&problem, (0.0, 1.0), &[0.0], &opts, &config).unwrap();
+    assert!(!actual.success);
+    assert_eq!(actual.final_time, 0.75);
+    assert_eq!(actual.final_state, vec![0.0]);
+    assert_eq!(actual.stats.attempts, 3);
+    assert_eq!(actual.stats.switches, 2);
+    assert!(actual.stats.accounting_complete);
+    assert!(actual.message.contains("total attempt budget exhausted"));
+    assert!(actual.stats.segments.iter().any(|s| s.is_probe
+        && s.committed
+        && s.method == SwitchingMethod::Dopri5
+        && s.reached_time == 0.75));
+    assert_eq!(
+        actual.stats.attempts,
+        actual
+            .stats
+            .segments
+            .iter()
+            .map(|s| s.attempts)
+            .sum::<usize>()
+    );
+    assert_eq!(
+        actual.stats.rhs_calls,
+        actual
+            .stats
+            .segments
+            .iter()
+            .map(|s| s.rhs_calls)
+            .sum::<u64>()
+    );
+    assert_eq!(
+        rhs_calls.load(Ordering::Relaxed) as u64,
+        actual.stats.rhs_calls
+    );
+    assert_eq!(rhs_after_checkpoint.load(Ordering::Relaxed), 0);
+}
+
+#[test]
+fn exact_final_time_budget_exhaustion_is_success() {
+    let problem = Problem::new(1, |_, _, out| {
+        out[0] = 0.0;
+        Ok(())
+    })
+    .jacobian(Jacobian::dense(|_, _, out| {
+        out[0] = 0.0;
+        Ok(())
+    }))
+    .autonomous();
+    let config = SwitchingConfig {
+        fallback: DerivativeFallback::ProvidedOnly,
+        window_count: 4,
+        explicit_attempt_budget: 1,
+        pressure_steps: usize::MAX,
+        carry_explicit_step: true,
+        ..Default::default()
+    };
+    let opts = Options {
+        h0: 0.25,
+        max_steps: 4,
+        ..options()
+    };
+    let actual = SwitchingSolver::solve(&problem, (0.0, 1.0), &[0.0], &opts, &config).unwrap();
+    assert!(actual.success, "{}", actual.message);
+    assert_eq!(actual.final_time, 1.0);
+    assert_eq!(actual.stats.attempts, 4);
+    assert!(actual.stats.accounting_complete);
+}
+
+#[test]
+fn zero_span_forbidden_retains_committed_zero_work_driver_record() {
+    use std::sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    };
+    let calls = Arc::new(AtomicUsize::new(0));
+    let observed = Arc::clone(&calls);
+    let problem = Problem::new(1, move |_, _, out| {
+        observed.fetch_add(1, Ordering::Relaxed);
+        out[0] = 0.0;
+        Ok(())
+    });
+    let actual = SwitchingSolver::solve(
+        &problem,
+        (2.0, 2.0),
+        &[3.0],
+        &options(),
+        &SwitchingConfig::default(),
+    )
+    .unwrap();
+    assert!(actual.success);
+    assert_eq!(actual.final_state, vec![3.0]);
+    assert_eq!(actual.stats.attempts, 0);
+    assert_eq!(actual.stats.rhs_calls, 0);
+    assert_eq!(calls.load(Ordering::Relaxed), 0);
+    assert_eq!(actual.stats.segments.len(), 1);
+    let segment = &actual.stats.segments[0];
+    assert!(segment.committed && segment.success);
+    assert_eq!(segment.method, SwitchingMethod::Dopri5);
+    assert_eq!(segment.attempts, 0);
+}

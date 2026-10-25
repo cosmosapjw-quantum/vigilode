@@ -312,16 +312,16 @@ impl SwitchingSolver {
                 ..Default::default()
             },
         };
-        if t0 == t1 {
-            result.success = true;
-            result.message = "reached final time".into();
-            return Ok(result);
-        }
         let fallback = config.fallback != DerivativeFallback::Forbidden;
         if !fallback {
             return Ok(persistent_explicit(
                 problem, t_span, y0, opts, config, result,
             ));
+        }
+        if t0 == t1 {
+            result.success = true;
+            result.message = "reached final time".into();
+            return Ok(result);
         }
         let mut progress = Some(DriveState {
             result,
@@ -335,6 +335,13 @@ impl SwitchingSolver {
             next_window: 1,
         });
         while progress.as_ref().unwrap().next_window <= config.window_count {
+            let current = progress.as_mut().unwrap();
+            if current.result.stats.attempts == opts.max_steps {
+                if current.result.final_time < t1 {
+                    current.result.message = "total attempt budget exhausted".into();
+                }
+                break;
+            }
             if progress.as_ref().unwrap().method == SwitchingMethod::Dopri5
                 && config.carry_explicit_step
             {

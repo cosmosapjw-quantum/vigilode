@@ -5,6 +5,49 @@ use rodas5p_integrators::{
     NativeSessionMethod as Method, OutputSchedule,
 };
 
+use std::{
+    alloc::{GlobalAlloc, Layout, System},
+    cell::Cell,
+};
+
+struct CountingAlloc;
+thread_local! {
+    static TRACK_ALLOCATIONS: Cell<bool> = const { Cell::new(false) };
+    static ALLOCATION_COUNT: Cell<usize> = const { Cell::new(0) };
+}
+fn count_allocation() {
+    if TRACK_ALLOCATIONS.try_with(Cell::get).unwrap_or(false) {
+        let _ = ALLOCATION_COUNT.try_with(|count| count.set(count.get() + 1));
+    }
+}
+unsafe impl GlobalAlloc for CountingAlloc {
+    unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
+        count_allocation();
+        unsafe { System.alloc(layout) }
+    }
+    unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
+        count_allocation();
+        unsafe { System.alloc_zeroed(layout) }
+    }
+    unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, size: usize) -> *mut u8 {
+        count_allocation();
+        unsafe { System.realloc(ptr, layout, size) }
+    }
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+        unsafe { System.dealloc(ptr, layout) }
+    }
+}
+#[global_allocator]
+static ALLOCATOR: CountingAlloc = CountingAlloc;
+
+fn allocation_scope<T>(f: impl FnOnce() -> T) -> (T, usize) {
+    ALLOCATION_COUNT.with(|count| count.set(0));
+    TRACK_ALLOCATIONS.with(|track| track.set(true));
+    let result = f();
+    TRACK_ALLOCATIONS.with(|track| track.set(false));
+    (result, ALLOCATION_COUNT.with(Cell::get))
+}
+
 fn rhs(_: f64, y: &[f64], out: &mut [f64]) -> CoreResult<()> {
     out[0] = -4.0 * y[0];
     Ok(())
@@ -136,4 +179,51 @@ fn represented_step_failure_and_zero_quota_do_not_fabricate_attempts() {
     assert!(session.last_attempt().is_none());
     assert_eq!(session.checkpoint().attempts, 0);
     assert_eq!(session.checkpoint().counters.rhs_calls, 0);
+}
+
+#[test]
+fn enabled_attempt_telemetry_allocates_zero_on_warmed_finite_advance() {
+    let config = Dopri5Config {
+        adaptive: AdaptiveStepConfig {
+            initial_step: 1e-4,
+            max_step: 1e-4,
+            ..Default::default()
+        },
+        ..Default::default()
+    };
+    let schedule = OutputSchedule::new(vec![0.0, 1.0]).unwrap();
+    let id = Identity::new(Method::Dopri5, 1);
+    let mut enabled = Dopri5Session::new(&rhs, (0.0, 1.0), &[1.0], &config, &schedule, id).unwrap();
+    let mut disabled =
+        Dopri5Session::new(&rhs, (0.0, 1.0), &[1.0], &config, &schedule, id).unwrap();
+    enabled.set_attempt_telemetry(true);
+    assert_eq!(enabled.advance_to(1.0, 1, id).unwrap(), Advance::Yield);
+    assert_eq!(disabled.advance_to(1.0, 1, id).unwrap(), Advance::Yield);
+
+    // The measured scope includes only one actual finite trial and its quota
+    // yield. Session/output construction and finish stay outside the scope.
+    let (enabled_result, enabled_allocations) = allocation_scope(|| enabled.advance_to(1.0, 1, id));
+    let (disabled_result, disabled_allocations) =
+        allocation_scope(|| disabled.advance_to(1.0, 1, id));
+    assert_eq!(enabled_result.unwrap(), Advance::Yield);
+    assert_eq!(disabled_result.unwrap(), Advance::Yield);
+    assert_eq!(enabled_allocations, 0);
+    assert_eq!(disabled_allocations, 0);
+    let attempt = enabled.last_attempt().unwrap();
+    assert!(attempt.accepted);
+    assert!(matches!(attempt.error_norm, ErrorNorm::Finite(_)));
+    assert_eq!(enabled.checkpoint().attempts, 2);
+    assert_eq!(
+        enabled.checkpoint().t.to_bits(),
+        disabled.checkpoint().t.to_bits()
+    );
+    assert_eq!(
+        enabled.checkpoint().y[0].to_bits(),
+        disabled.checkpoint().y[0].to_bits()
+    );
+    assert_eq!(
+        enabled.checkpoint().counters,
+        disabled.checkpoint().counters
+    );
+    assert!(disabled.last_attempt().is_none());
 }
