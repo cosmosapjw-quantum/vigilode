@@ -224,10 +224,14 @@ Scientific validity, execution, source identity, backup preservation과 producti
 ## 8. 전달·다음 행동
 
 Draft PR은 [VigilODE88](https://github.com/cosmosapjw-quantum/vigilode/pull/88)이다.
-S0/S1 source 게시와 각 phase의 immutable archive는 실제 receipt로 결속한다.
+S0/S1/S2 게시와 각 phase의 immutable archive는 실제 receipt로 결속한다. S2 commit은
+3107693de084341129c47c592204225c9045aa2e이며95개 Git blob/size를 확인했다.
+S3에서 append-only ledger L-0172를 더해168행을169행으로 늘린다. 기존453,263바이트는
+그대로 prefix로 보존한다. Ledger의 재현 source는 schema 보완을 포함한 S2이고,
+실제 수치 실행 source S1과는 SOURCE_EXECUTION_IDENTITY.json에서 분명히 구별한다.
 S0 Drive upload는920.8초 응답 대기 뒤 제어 대기를 중단했고 ACK/operationID가
 없다. Exact filename/parent 조회1회는0건이었다. 이를 원격 실패나 사용자 취소로
-단정하지 않으며 UNKNOWN_NO_ACK와중복재시도0을 유지한다. Library/Dropbox 등의
+단정하지 않으며 UNKNOWN_NO_ACK와 중복 재시도0을 유지한다. Library/Dropbox 등의
 확인된 ACK와 구분하고 삼중 백업 완료를 추정하지 않는다.
 
 현재 repo authority CI와 D4의 실제 실패는 별도다. 기존 checker/allowlist는
@@ -237,7 +241,7 @@ S0 Drive upload는920.8초 응답 대기 뒤 제어 대기를 중단했고 ACK/o
 다음 대화의 첫 행동은 현재 native 담당 source·예약·live dirty·완료 receipt의
 실제 연결이다. 그 뒤 이번 strict adapter의 opt-in native 연결 위치와 진짜
 미구현분을 확인해야 한다. 일반 callback의 derivative binding/continuous provider,
-actual BASS, 유한 종료, durable restore와production FP는각 gate대로남긴다.
+actual BASS, 유한 종료, durable restore와 production FP는 각 gate대로 남긴다.
 또 다른 norm-only 노드나 다음 연구 루프를 자동 생성하지 않는다.
 
 ## 근거

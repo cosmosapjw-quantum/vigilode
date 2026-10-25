@@ -1,7 +1,7 @@
 {
   "schema": "VIGILODE_D5_PROVIDER_ACK_V1",
   "stage": "S1",
-  "updated_utc": "2026-10-25T02:46:31.062416+00:00",
+  "updated_utc": "2026-10-25T02:57:46.192242+00:00",
   "archive": "VIGILODE_D5_CALLBACK_S1_20261025.zip",
   "archive_bytes": 132856,
   "archive_sha256": "e3ebdf89f8854ee3ea0e99a9fe9d27e9ea49e06a12ca714639b91116eec41f06",
@@ -9,7 +9,7 @@
   "source_commit": "0c73202734a52f30e4214d455be0fa9c47d37e0f",
   "local_archive_identity": "PASS",
   "local_archive_crc_and_payload_hashes": "PASS_REUSED_PARENT_EVIDENCE",
-  "status": "DELIVERY_IN_PROGRESS",
+  "status": "PARTIAL_2_OF_3_DRIVE_UNKNOWN_NO_ACK",
   "providers": {
     "library": {
       "status": "succeeded",
@@ -24,13 +24,39 @@
       "raw_receipt": "intake/backups/private_delivery/S1_LIBRARY_UPLOAD_RESULT.json"
     },
     "drive": {
-      "status": "NOT_RUN"
+      "status": "UNKNOWN_NO_ACK",
+      "operation": "google_drive_upload_file",
+      "args": {
+        "file_uri": "/workspace/scratch/6a9ff47f24f5/next_20261025/archives/VIGILODE_D5_CALLBACK_S1_20261025.zip",
+        "file_name": "VIGILODE_D5_CALLBACK_S1_20261025.zip",
+        "mime_type": "application/zip",
+        "parent_folder_id": "1zETZ_0uFYQQYL97E2raEhcl83-0jv--T"
+      },
+      "call_start_utc": "2026-10-25T02:46:42.298Z",
+      "operation_id": null,
+      "response_received": false,
+      "control_wait_requested_ms": 1000,
+      "control_wait_reported_seconds": 614.1,
+      "reason": "Parent interrupted continuous control wait; no evidence of remote failure, user cancellation, or automatic approval rejection",
+      "duplicate_retry": 0,
+      "readonly_exact_filename_reconciliation": "PENDING_AT_MOST_ONE_QUERY"
     },
     "dropbox": {
-      "status": "NOT_RUN"
+      "status": "completed",
+      "file_id": "id:BSpOijBcT10AAAAAAD_9zA",
+      "filename": "VIGILODE_D5_CALLBACK_S1_20261025.zip",
+      "provider_size_bytes": 132856,
+      "provider_size_verification": "PASS",
+      "path": "/bianchi/research_backups/rei_bianchi/VIGILODE_D5_CALLBACK_S1_20261025.zip",
+      "modified_time": "2026-10-25T02:57:39Z",
+      "operation_id_recorded_private": true,
+      "raw_receipt": "intake/backups/private_delivery/S1_DROPBOX_STATUS_1.json"
     }
   },
   "remote_full_GET_SHA256": "NOT_RUN",
   "science_executions_for_delivery": 0,
-  "budget_mutations": 0
+  "budget_mutations": 0,
+  "delivery_policy_update": "No new Drive upload for S2/S3/final after two unacknowledged calls; confirmed Library and Dropbox delivery continues",
+  "provider_ack_count": 2,
+  "provider_count": 3
 }
