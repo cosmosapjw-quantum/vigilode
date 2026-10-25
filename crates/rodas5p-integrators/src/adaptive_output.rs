@@ -204,6 +204,10 @@ pub struct AdaptiveOutputSession {
 }
 
 impl AdaptiveOutputSession {
+    pub(crate) fn output_clipped_steps(&self) -> usize {
+        self.collector.output_clipped_steps()
+    }
+
     pub fn new(
         adaptive: &AdaptiveStepConfig,
         output: &OutputSchedule,

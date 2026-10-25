@@ -14,8 +14,8 @@ use serde::Serialize;
 
 use crate::explicit::validate;
 use crate::{
-    CallbackError, Dopri5, EXPLICIT_STATS_SCHEMA, ExplicitCallbackFailure, ExplicitCallbackWork,
-    ExplicitErrorControl, ExplicitSolution, ExplicitSolveError, ExplicitStats, Options, Problem,
+    CallbackError, Dopri5, ExplicitCallbackFailure, ExplicitCallbackWork, ExplicitErrorControl,
+    ExplicitSolution, ExplicitSolveError, ExplicitStats, Options, Problem, EXPLICIT_STATS_SCHEMA,
 };
 
 /// Caller-declared versions of the bindings held fixed during a session.
@@ -85,6 +85,15 @@ pub struct SessionCheckpoint<'a> {
     pub counters: &'a WorkCounters,
 }
 
+/// Cumulative native and callback statistics at an accepted checkpoint.
+/// Subtract successive snapshots to report one switching batch's actual work.
+#[derive(Clone, Debug)]
+pub(crate) struct SessionStatistics {
+    pub stats: ExplicitStats,
+    pub stop_reason: Option<rodas5p_integrators::Dopri5StopReason>,
+    pub callback_failure: Option<ExplicitCallbackFailure>,
+}
+
 type SessionRhs<'a> = dyn Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + 'a;
 
 /// A persistent DOPRI5 computation borrowed inside [`Dopri5::with_session`].
@@ -98,6 +107,9 @@ pub struct ExplicitSession<'a> {
     dimension: usize,
     work: &'a Cell<ExplicitCallbackWork>,
     failure: &'a RefCell<Option<ExplicitCallbackFailure>>,
+    options: Options,
+    error_control: ExplicitErrorControl,
+    adaptive: rodas5p_integrators::AdaptiveStepConfig,
 }
 
 impl ExplicitSession<'_> {
@@ -149,6 +161,32 @@ impl ExplicitSession<'_> {
     /// Clone the fatal callback detail, if present.
     pub fn callback_failure(&self) -> Option<ExplicitCallbackFailure> {
         self.failure.borrow().clone()
+    }
+
+    /// Return a cumulative, read-only telemetry snapshot without finalizing.
+    pub(crate) fn statistics(&self) -> SessionStatistics {
+        let checkpoint = self.native.checkpoint();
+        let native = self.native.telemetry();
+        SessionStatistics {
+            stats: ExplicitStats {
+                schema: EXPLICIT_STATS_SCHEMA,
+                method: "dopri5-5(4)-fsal",
+                options: self.options.clone(),
+                error_control: self.error_control.clone(),
+                adaptive: self.adaptive.clone(),
+                observation_mode: "step-landing",
+                counters: *checkpoint.counters,
+                attempts: checkpoint.attempts,
+                accepted_steps: checkpoint.accepted_steps,
+                rejected_steps: checkpoint.rejected_steps,
+                rhs_completed: native.rhs_completed,
+                fsal_reuses: native.fsal_reuses,
+                callback_work: self.work.get(),
+                output_clipped_steps: native.output_clipped_steps,
+            },
+            stop_reason: native.stop_reason,
+            callback_failure: self.failure.borrow().clone(),
+        }
     }
 }
 
@@ -248,6 +286,17 @@ impl Dopri5 {
             dimension: y0.len(),
             work: &work,
             failure: &failure,
+            options: opts.clone(),
+            error_control: ExplicitErrorControl {
+                mode: "state-wrms",
+                dimension: y0.len(),
+                atol: config
+                    .atol
+                    .clone()
+                    .unwrap_or_else(|| vec![config.adaptive.atol]),
+                rtol: config.adaptive.rtol,
+            },
+            adaptive: config.adaptive.clone(),
         };
         let value = driver(&mut session);
         let mut result = session.native.finish().map_err(driver_error)?;

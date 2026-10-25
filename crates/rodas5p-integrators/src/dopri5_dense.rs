@@ -211,6 +211,10 @@ pub(crate) struct Dopri5OutputSession {
 }
 
 impl Dopri5OutputSession {
+    pub(crate) fn output_clipped_steps(&self) -> usize {
+        self.clock.output_clipped_steps()
+    }
+
     pub(crate) fn new(
         adaptive: &AdaptiveStepConfig,
         output: &OutputSchedule,

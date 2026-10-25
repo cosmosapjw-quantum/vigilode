@@ -730,6 +730,10 @@ pub(crate) struct DenseOutputPreparationWork {
 }
 
 impl OutputCollector {
+    pub(crate) fn output_clipped_steps(&self) -> usize {
+        self.clipped_steps
+    }
+
     pub(crate) fn new(
         schedule: &OutputSchedule,
         t_span: (f64, f64),

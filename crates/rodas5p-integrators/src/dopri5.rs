@@ -753,6 +753,40 @@ pub struct NativeSessionCheckpoint<'a> {
     pub counters: &'a WorkCounters,
 }
 
+/// Error estimate available for the most recent instrumented attempt.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum Dopri5AttemptErrorNorm {
+    Finite(f64),
+    /// A nonfinite estimate or retryable failure prevented a finite estimate.
+    NonFinite,
+    /// A fatal failure prevented evaluation of the error norm.
+    Unavailable,
+}
+
+/// Scalar snapshot of one actual trial; `accepted` means state was committed.
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Dopri5Attempt {
+    pub t_before: f64,
+    pub requested_h: f64,
+    pub trial_h: f64,
+    pub error_norm: Dopri5AttemptErrorNorm,
+    pub accepted: bool,
+    pub clipped: bool,
+    pub t_after: f64,
+    /// Attempted RHS calls, including callbacks returning errors.
+    pub rhs_delta: u64,
+}
+
+/// Cumulative native DOPRI5 statistics available without consuming the session.
+/// Combine with [`NativeSessionCheckpoint`] for cumulative work and step counts.
+#[derive(Clone, Copy, Debug)]
+pub struct NativeSessionTelemetry {
+    pub rhs_completed: u64,
+    pub fsal_reuses: u64,
+    pub output_clipped_steps: usize,
+    pub stop_reason: Option<Dopri5StopReason>,
+}
+
 /// Persistent endpoint/landing DOPRI5 session. The full observation schedule,
 /// callback, method, norm and tolerances are frozen at construction. Dense
 /// observations, events and in-place provider replacement are not supported.
@@ -780,6 +814,8 @@ pub struct Dopri5Session<'a, F: ?Sized> {
     fsal_reuses: u64,
     stop_reason: Option<Dopri5StopReason>,
     message: String,
+    attempt_telemetry: bool,
+    last_attempt: Option<Dopri5Attempt>,
 }
 impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Session<'a, F> {
     pub fn new(
@@ -842,9 +878,34 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
             rhs_completed: 0,
             fsal_reuses: 0,
             stop_reason: None,
+            attempt_telemetry: false,
+            last_attempt: None,
             message: String::from("DOPRI5 reached the final time"),
         })
     }
+    /// Opt in to scalar attempt telemetry. Changing this flag clears the snapshot.
+    /// No additional RHS evaluations or changes to controller/work accounting occur.
+    pub fn set_attempt_telemetry(&mut self, enabled: bool) {
+        self.attempt_telemetry = enabled;
+        self.last_attempt = None;
+    }
+
+    /// Most recent actual attempt since enabling telemetry. A quota yield or
+    /// represented-step failure before a trial leaves this snapshot unchanged.
+    pub fn last_attempt(&self) -> Option<Dopri5Attempt> {
+        self.last_attempt
+    }
+
+    /// Read cumulative counters from the same storage used by `finish`.
+    pub fn telemetry(&self) -> NativeSessionTelemetry {
+        NativeSessionTelemetry {
+            rhs_completed: self.rhs_completed,
+            fsal_reuses: self.fsal_reuses,
+            output_clipped_steps: self.output.output_clipped_steps(),
+            stop_reason: self.stop_reason,
+        }
+    }
+
     pub fn checkpoint(&self) -> NativeSessionCheckpoint<'_> {
         NativeSessionCheckpoint {
             t: self.t,
@@ -913,6 +974,19 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
                 }
             };
             self.attempts += 1;
+            let rhs_before = self.counters.rhs_calls;
+            if self.attempt_telemetry {
+                self.last_attempt = Some(Dopri5Attempt {
+                    t_before: self.t,
+                    requested_h: trial.requested_h,
+                    trial_h: trial.h,
+                    error_norm: Dopri5AttemptErrorNorm::Unavailable,
+                    accepted: false,
+                    clipped: trial.clipped,
+                    t_after: self.t,
+                    rhs_delta: 0,
+                });
+            }
             if !self.config.fsal {
                 self.workspace.first_valid = false;
             }
@@ -930,6 +1004,9 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
                 &mut self.rhs_completed,
                 self.config.recover_nonfinite_rhs,
             );
+            if let Some(attempt) = self.last_attempt.as_mut() {
+                attempt.rhs_delta = self.counters.rhs_calls.saturating_sub(rhs_before);
+            }
             let norm = match trial_result {
                 Ok(()) => match error_norm(
                     &self.state,
@@ -950,6 +1027,11 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
                     }
                 },
                 Err(failure) => {
+                    if failure.retryable {
+                        if let Some(attempt) = self.last_attempt.as_mut() {
+                            attempt.error_norm = Dopri5AttemptErrorNorm::NonFinite;
+                        }
+                    }
                     self.rejected_steps += 1;
                     self.counters.rejected_steps = self.counters.rejected_steps.saturating_add(1);
                     if failure.reason == Dopri5StopReason::NonFinite || failure.retryable {
@@ -983,6 +1065,13 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
                     }
                 }
             };
+            if let Some(attempt) = self.last_attempt.as_mut() {
+                attempt.error_norm = if norm.is_finite() {
+                    Dopri5AttemptErrorNorm::Finite(norm)
+                } else {
+                    Dopri5AttemptErrorNorm::NonFinite
+                };
+            }
             let accepted = norm <= 1.0;
             if accepted {
                 if let Err(error) = self.output.accept(
@@ -1011,6 +1100,10 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
                 self.counters.rejected_steps = self.counters.rejected_steps.saturating_add(1);
                 self.counters.local_error_failures =
                     self.counters.local_error_failures.saturating_add(1);
+            }
+            if let Some(attempt) = self.last_attempt.as_mut() {
+                attempt.accepted = accepted;
+                attempt.t_after = self.t;
             }
             if self.t == self.tf {
                 break;
