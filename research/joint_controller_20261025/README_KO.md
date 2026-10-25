@@ -14,3 +14,5 @@
 최초 pilot과 실패한 수정도 보존했다. `switching/native/`는 첫 정책, `validation/transient_repair/`와 `switching/transient_diagnostic/`는 즉시 재비교 수정의 실패, `switching/native_r2/`는 다음 수락 구간으로 비교를 옮긴 최종 정책이다. 서로 다른 버전의 결과를 하나의 표본으로 합치지 않는다.
 
 최종 선택 pilot은 9개 문제, 3개 경로, 각 1회 warmup과 5회 측정으로 구성된다. 모든 경로·스레드 조합을 탐색하지 않았다. execution·causal pilot은 해당 코드가 변하지 않았으므로 검증된 실행을 재사용했다. 이 환경에서 측정했으며 NCP나 사용자 로컬 프로세스에는 접속하지 않았다.
+
+2026-10-26 복구 점검: 직전 게시 완료와 원격 commit/tree를 확인했다. [복구 기록](RECOVERY_INVENTORY_20261026.json)에 임시 작업공간의 손실과 선택적 문서 복원을 남겼다. 독립 검토 당시 이론 문서와 최종 게시 문서의 차이는 행 끝 공백 두 개와 마지막 빈 줄 하나이며, 정확한 해시 복원으로 동등성을 확인해 REVIEW에 연결했다. 코드·수학·측정 결과와 production 판단은 바꾸지 않았다.
