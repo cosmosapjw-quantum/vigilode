@@ -59,6 +59,29 @@ impl AutomaticOde {
         options: &Options,
         policy: &AutomaticOdePolicy,
     ) -> Result<SwitchingSolution, AutomaticOdeError> {
+        Self::solve_with_entry_policy(problem, span, y0, options, policy, false)
+    }
+
+    /// Opt into deterioration-triggered probe renewal and bounded negative
+    /// evidence backoff. The same replay and derivative permissions apply.
+    pub fn solve_adaptive(
+        problem: &Problem,
+        span: (f64, f64),
+        y0: &[f64],
+        options: &Options,
+        policy: &AutomaticOdePolicy,
+    ) -> Result<SwitchingSolution, AutomaticOdeError> {
+        Self::solve_with_entry_policy(problem, span, y0, options, policy, true)
+    }
+
+    fn solve_with_entry_policy(
+        problem: &Problem,
+        span: (f64, f64),
+        y0: &[f64],
+        options: &Options,
+        policy: &AutomaticOdePolicy,
+        adaptive: bool,
+    ) -> Result<SwitchingSolution, AutomaticOdeError> {
         let regime = if policy.derivatives == DerivativeFallback::Forbidden {
             ProblemRegime::Unknown
         } else {
@@ -79,7 +102,11 @@ impl AutomaticOde {
         }
         let config = SwitchingConfig {
             max_dense_dimension: policy.max_dense_dimension,
-            ..SwitchingConfig::evidence_driven(policy.derivatives)
+            ..if adaptive {
+                SwitchingConfig::adaptive_evidence(policy.derivatives)
+            } else {
+                SwitchingConfig::evidence_driven(policy.derivatives)
+            }
         };
         Ok(SwitchingSolver::solve(problem, span, y0, options, &config)?)
     }

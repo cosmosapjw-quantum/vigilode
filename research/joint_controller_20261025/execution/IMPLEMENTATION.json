@@ -1,0 +1,211 @@
+{
+  "schema": "vigilode.joint-execution-research.v1",
+  "base_remote_commit": "4fe67602502440d76aa9dd245c6b1d67558c14bf",
+  "code_status": "implemented_and_scoped_validated",
+  "shared_module": "crates/vigilode/src/selection_evidence.rs",
+  "integrated_consumer": "crates/vigilode/src/execution_policy.rs",
+  "selection_contract": {
+    "formula": "candidate.upper + future_transition_cost / remaining_calls <= (1 - required_fractional_gain) * incumbent.lower",
+    "conditions": [
+      "exact_selection_identity",
+      "same_cost_unit",
+      "both_output_qualified",
+      "finite_ordered_nonnegative_intervals",
+      "remaining_calls_positive",
+      "0 <= gain < 1"
+    ],
+    "future_guarantee": "conditional_on_intervals_enclosing_future_costs_for_the_declared_scope",
+    "observed_timing_status": "empirical_not_a_confidence_interval",
+    "past_calibration_cost": "sunk_for_future_dispatch_retained_in_total_cost"
+  },
+  "identity_fields": [
+    "model_epoch",
+    "provider_epoch",
+    "chart_epoch",
+    "mesh_epoch",
+    "physical_norm_epoch",
+    "tolerance_epoch",
+    "window_epoch",
+    "environment_epoch"
+  ],
+  "drift": {
+    "default": "disabled",
+    "opt_in_constructor": "ExecutionPolicyConfig::monitored",
+    "factor": 2.0,
+    "consecutive_calls": 2,
+    "range": "selected_backend_empirical_calibration_min_max",
+    "action": "expire_evidence_for_next_decision_request_explicit_probe",
+    "implicit_replay": false,
+    "nested_calls_modify_outer_evidence": false,
+    "cannot_detect": [
+      "first_changed_cost_batch_before_execution",
+      "unchosen_backend_only_drift_without_periodic_expiry"
+    ],
+    "maximum_age_preserved": 128
+  },
+  "tests": [
+    {
+      "name": "selection_evidence_contracts",
+      "count": 5,
+      "status_source": "parent_validation",
+      "status": "pass_scoped"
+    },
+    {
+      "name": "execution_identity_drift",
+      "count": 6,
+      "status_source": "parent_validation",
+      "status": "pass_scoped"
+    },
+    {
+      "name": "execution_policy_contracts",
+      "count": 9,
+      "status_source": "parent_validation",
+      "status": "pass_scoped"
+    }
+  ],
+  "pilot": {
+    "example": "joint_execution_pilot",
+    "jobs_per_batch": 64,
+    "equation": "y'=r*y*(1-y); y(0)=0.1; r in [0.5,2)",
+    "method": "DOPRI5",
+    "atol": 1e-11,
+    "rtol": 1e-08,
+    "endpoint_error_cap": 1e-07,
+    "phases": [
+      "calibrated-short",
+      "unannounced-cost-drift",
+      "explicit-epoch-refresh"
+    ],
+    "arms": [
+      "serial",
+      "parallel",
+      "adaptive"
+    ],
+    "repetitions_per_phase_arm": 5,
+    "stress_phase_contract": "deliberately_stale_window_epoch_not_eligible_scientific_reuse",
+    "result_source": "parent_execution_receipts",
+    "status": "completed",
+    "exit_code": 0,
+    "receipt": "native/RECEIPT.json",
+    "raw": "native/stdout.log",
+    "raw_sha256": "2ec7603c571274ea3845e2c4197c90e6c0ffc773d55eab70547db4bfa98890b6",
+    "source_manifest": "native/SOURCE_INPUTS.json",
+    "source_unchanged_during_command": true,
+    "wall_seconds": 0.0640083029975358,
+    "measured_results": [
+      {
+        "phase": "calibrated-short",
+        "warm_median_seconds": {
+          "serial": 0.000124224,
+          "parallel": 9.4389e-05,
+          "adaptive": 7.8506e-05
+        },
+        "phase_total_seconds": {
+          "serial": 0.000905359,
+          "parallel": 0.000701644,
+          "adaptive": 0.0015201720000000002
+        },
+        "adaptive_over_best_direct_total": 2.1665859039626936,
+        "calibration_seconds": 0.00097551,
+        "adaptive_startup_delta_seconds": 0.000144142,
+        "direct_parallel_startup_delta_seconds": 6.3784e-05,
+        "selected_modes": [
+          "Parallel",
+          "Parallel",
+          "Parallel",
+          "Parallel",
+          "Parallel"
+        ],
+        "drift_invalidated_after_repeat": [],
+        "maximum_endpoint_error": 1.1203260541492455e-12,
+        "all_output_parity": true,
+        "deliberately_stale_window_epoch": false
+      },
+      {
+        "phase": "unannounced-cost-drift",
+        "warm_median_seconds": {
+          "serial": 0.00134427,
+          "parallel": 0.000731503,
+          "adaptive": 0.001265359
+        },
+        "phase_total_seconds": {
+          "serial": 0.006627878,
+          "parallel": 0.004302023,
+          "adaptive": 0.005758924
+        },
+        "adaptive_over_best_direct_total": 1.3386548607480713,
+        "calibration_seconds": 0.0,
+        "adaptive_startup_delta_seconds": 0.0,
+        "direct_parallel_startup_delta_seconds": 0.0,
+        "selected_modes": [
+          "Parallel",
+          "Parallel",
+          "Serial",
+          "Serial",
+          "Serial"
+        ],
+        "drift_invalidated_after_repeat": [
+          1
+        ],
+        "maximum_endpoint_error": 9.131704836740084e-09,
+        "all_output_parity": true,
+        "deliberately_stale_window_epoch": true
+      },
+      {
+        "phase": "explicit-epoch-refresh",
+        "warm_median_seconds": {
+          "serial": 0.001394394,
+          "parallel": 0.000742329,
+          "adaptive": 0.001388595
+        },
+        "phase_total_seconds": {
+          "serial": 0.007475906,
+          "parallel": 0.004538588,
+          "adaptive": 0.020544502
+        },
+        "adaptive_over_best_direct_total": 4.526628546146951,
+        "calibration_seconds": 0.012466825,
+        "adaptive_startup_delta_seconds": 0.0,
+        "direct_parallel_startup_delta_seconds": 0.0,
+        "selected_modes": [
+          "Serial",
+          "Serial",
+          "Serial",
+          "Serial",
+          "Serial"
+        ],
+        "drift_invalidated_after_repeat": [],
+        "maximum_endpoint_error": 9.131704836740084e-09,
+        "all_output_parity": true,
+        "deliberately_stale_window_epoch": false
+      }
+    ],
+    "interpretation": "All three phases cost more than the best direct backend when calibration and phase startup deltas are included. Drift invalidation worked after the second changed-cost dispatch, but fallback serial was slower than observed direct parallel; this is a contract/robustness mechanism, not a measured speed gain. Refresh empirical envelope withheld parallel despite faster heldout direct parallel.",
+    "cost_accounting": "calibration_seconds already includes warmup and three paired samples; add only startup cumulative delta once; direct parallel startup delta likewise; no double counting"
+  },
+  "limitations": [
+    "actual_ensemble_integration_only",
+    "large_grid_solver_callback_connection_still_required",
+    "finite_observed_samples_do_not_identify_global_false_positive_rate",
+    "caller_epoch_truthfulness_and_comparator_output_contract_required"
+  ],
+  "next_actions": [
+    {
+      "id": "EX01",
+      "action": "wire_mesh_chart_norm_provider_updates_into_large_grid_rhs_adapter",
+      "acceptance": "same_original_state_output_parity_and_full_solver_cost"
+    },
+    {
+      "id": "EX02",
+      "action": "evaluate_selected_path_plus_one_same_checkpoint_alternative_on_local_raw",
+      "acceptance": "qualified_choice_errors_and_uncertain_windows_separated"
+    },
+    {
+      "id": "EX03",
+      "action": "pre_probe_cost_benefit_test_before_explicit_recalibration",
+      "acceptance": "all_probe_costs_charged_once_without_sunk_cost_lockin"
+    }
+  ],
+  "test_receipt": "../validation/facade_final_r2/RECEIPT.json",
+  "test_scope": "6 identity/drift + 5 common cost + 9 existing execution policy contracts; each counted once within facade suite"
+}

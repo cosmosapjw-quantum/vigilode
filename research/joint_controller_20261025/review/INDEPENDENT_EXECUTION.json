@@ -1,0 +1,32 @@
+{
+  "compile_command": [
+    "/workspace/scratch/0dc1e721cf82/rust/bin/rustc",
+    "--edition=2024",
+    "/workspace/scratch/0dc1e721cf82/vigilode-joint/research/joint_controller_20261025/review/independent_probe.rs",
+    "--extern",
+    "vigilode=/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/libvigilode-ecd99b1f530354aa.rlib",
+    "-L",
+    "dependency=/workspace/scratch/0dc1e721cf82/target-joint/debug/deps",
+    "-C",
+    "debuginfo=0",
+    "-o",
+    "/workspace/scratch/0dc1e721cf82/joint_review_probe"
+  ],
+  "compile_exit": 0,
+  "library": "/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/libvigilode-ecd99b1f530354aa.rlib",
+  "library_sha256": "73c9fb3a09245bcb121506a1bb4184857503748ace390ee62a5bfda08318aec8",
+  "probe_source_sha256": "e4377513a91318180f293ec9b79546a8f8bfc4bb0ab1dfbba3e728e2d1158f56",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "reason_for_revision": "Initial boundary corpus exercised no positive choice; added clear qualified gains while retaining boundary controls.",
+  "run_exit": 0,
+  "check_exit": 0,
+  "binary_sha256": "b4739b16984b998f1b22200ee0291c4ef03763f227602ceee6dc6b50d7ee5c7e",
+  "wall_seconds": 0.2909121509983379,
+  "scoped_dependency_sha256": {
+    "crates/vigilode/src/causal_budget.rs": "410860851964766795b3d8a83abecfdc0001f315cc5620b460e6649ea6245ccf",
+    "crates/vigilode/src/selection_evidence.rs": "4f4fdc05f24a34fd1b3e300a098841c191021d412a1680f83d1030296474421f",
+    "crates/vigilode/src/session.rs": "6ab95daf10203a3e664899652f0a90dc34fb59b055a756b2a8c256a225f80e51",
+    "crates/rodas5p-core/src/directed.rs": "2adadb6a5d77073e0a7d3d60aedfbf37e124d15a586a880d7d5a8c8d5307a814"
+  },
+  "dependency_binding": "Source-input hashes from stable return_r1 build lineage; scoped modules unchanged during subsequent switch-only repairs."
+}

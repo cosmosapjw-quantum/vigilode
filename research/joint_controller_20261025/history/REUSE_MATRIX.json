@@ -1,0 +1,326 @@
+{
+  "schema": "vigilode.joint-history-reuse.v1",
+  "as_of_date": "2026-10-25",
+  "baseline_remote_commit": "4fe67602502440d76aa9dd245c6b1d67558c14bf",
+  "baseline_remote_tree": "8bab954cffcf7abd9cdd0ca528567ece47e43bc7",
+  "latest_local_measurement_source": "d914b4c8a53405ea846f710e07f77fff5f45b16f",
+  "previous_adapter_publication": "5db28c42dccaf57cafcebf3752aec2d50360a8a6",
+  "separate_application_branch": "72836e0290b66d33f4ca1771284b1c8070669a74",
+  "scope": "Read-only source/evidence reuse and fresh constructive integration design. No old science rerun or full PR diff re-audit.",
+  "items": [
+    {
+      "id": "causal_projected",
+      "name_ko": "공유 공간 인과적 Rosenbrock 제거",
+      "implementation_status": "implemented_opt_in",
+      "source_path": "crates/vigilode-coupled/src/causal.rs",
+      "formula": "W_m z_i=hγ Qᵀf(y+QΣ_{j<i}a_ij z_j)+γΣ_{j<i}c_ij z_j",
+      "derivative_and_matrix_contract": "base_JVP_and_small_LU; no current-stage derivative or Newton",
+      "reuse_value": "one common factor plus eight solves; original-space residual mandatory",
+      "prior_evidence_scope": "historical few-mode success does not imply broad-spectrum advantage",
+      "selector_inputs": "h, model/operator epoch, basis dimension/leakage and physical norm",
+      "source_sha256": "5cd8362c91cb13dc654a2305ffeaa1f4923225d21b857dd6d6bd54156add91dc"
+    },
+    {
+      "id": "causal_picard",
+      "name_ko": "유한 전파 동시 단계 갱신",
+      "implementation_status": "implemented_opt_in",
+      "source_path": "crates/vigilode-coupled/src/causal.rs",
+      "formula": "z^{k+1}=L^{-1}(g+hγN(z^k)); first-stage exact seed gives at most seven updates in exact arithmetic",
+      "derivative_and_matrix_contract": "base_JVP_and_small_LU; RHS batches; no current-stage derivative or Newton",
+      "reuse_value": "batch only if measured dependency span saves cost after extra RHS waves",
+      "prior_evidence_scope": "cheap-RHS 1/2-thread results have zero material 1.2x wins; synthetic expensive RHS wins within method but loses to dense baseline",
+      "selector_inputs": "worker availability, nesting, actual RHS cost, number of waves, same accuracy/callback semantics",
+      "source_sha256": "5cd8362c91cb13dc654a2305ffeaa1f4923225d21b857dd6d6bd54156add91dc"
+    },
+    {
+      "id": "homotopy",
+      "name_ko": "원래 단계 목표 homotopy와 잔차 우선 보정",
+      "implementation_status": "implemented_opt_in",
+      "source_path": "crates/vigilode-coupled/src/residual_first.rs",
+      "formula": "Hλ(z)=Lη(λ)z−g−λhγN(z); inspect residual before derivatives",
+      "derivative_and_matrix_contract": "residual-first may invoke current-stage JVP/Newton; causal forward is separate",
+      "reuse_value": "try λ=1 residual first; exploit triangular direct solve whenever applicable",
+      "prior_evidence_scope": "PR74/75 are actual coupled source; homotopy is not uniformly derivative-free",
+      "selector_inputs": "root identity, λ=1 residual, derivative permission, remaining inner work budget",
+      "source_sha256": "765febc8f9ada74165f266ce859daf39104ae7646c21959502ff5e97d0f015b2"
+    },
+    {
+      "id": "polynomial_refinement",
+      "name_ko": "낮은 차수 몫 대수와 결함 반복 보정",
+      "implementation_status": "implemented_kernel",
+      "source_path": "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+      "formula": "(I−B)P=I−D; P=(q(1)−q(B))/(q(1)(I−B)); D=q(B)/q(1)",
+      "derivative_and_matrix_contract": "operator action plus declared full-space relation; not automatic Jacobian-free discovery",
+      "reuse_value": "η=||D||<1 gives residual contraction η^k with four vector buffers",
+      "prior_evidence_scope": "fresh dense LU beat in scoped kernel; strongest reused LU remained faster; actual general RODAS wiring absent",
+      "selector_inputs": "h-dependent relation bound, physical inner error budget, denominator conditioning, operator epoch",
+      "source_sha256": "6c479a18abe4725e3658398519442248f0a25cb5838fcc73504c46f56214851e"
+    },
+    {
+      "id": "rotation_quotient",
+      "name_ko": "회전·감쇠의 이차 관계와 Lawson RK",
+      "implementation_status": "implemented_specialized_solver",
+      "source_path": "crates/rodas5p-integrators/src/quotient_flow.rs",
+      "formula": "A=−dI+ωJ, J²=−I; exp(tA)=exp(−dt)(cos(ωt)I+sin(ωt)J)",
+      "derivative_and_matrix_contract": "RHS-only residual + declared analytic flow; no JVP/Newton",
+      "reuse_value": "O(n) action and shared coefficients for repeated blocks",
+      "prior_evidence_scope": "residual smoothness and full physical norm decide benefit; public general switch does not automatically discover split",
+      "selector_inputs": "declared flow, residual identity, damping/phase scale, output norm, model epoch",
+      "source_sha256": "7227df8c1501967da40fac575d5c8f72f43527c510cfd45d9f48ffbd065104d8"
+    },
+    {
+      "id": "involution_chirp",
+      "name_ko": "Involution 계수 공유와 시간 의존 carrier",
+      "implementation_status": "implemented_specialized_chart",
+      "source_path": "crates/vigilode/src/oscillatory_chart.rs",
+      "formula": "S²=I, SAS=−A; retain both sectors; N(z,zbar)=Σc_pq z^p zbar^q gives transformed phase exp(i(1−p+q)φ)",
+      "derivative_and_matrix_contract": "RHS-only declared residual; one sin_cos for paired sectors",
+      "reuse_value": "equivariant charge p−q=1 removes fast carrier exactly; latest129point chirp common-cap success",
+      "prior_evidence_scope": "local source d914b4c8 has chart error9.04e−9 vs physical5.83e−5 at cap1e−4; different attained accuracy",
+      "selector_inputs": "chart invertibility, physical lift gain, phase uncertainty, charge support, noncommuting negative control",
+      "source_sha256": "45d4873f851b77f6da905bcf3c434ae08588e0a7a16fc96fc8a55bd02a0126d8"
+    },
+    {
+      "id": "cofactor",
+      "name_ko": "불변 ideal/cofactor와 빠른 초기 충격",
+      "implementation_status": "implemented_specialized_chart",
+      "source_path": "crates/vigilode/src/cofactor_chart.rs",
+      "formula": "z=x−cos y, z′=−z/eps; y=v+C(t), C=b eps z0(1−exp(−dt/eps))",
+      "derivative_and_matrix_contract": "RHS-only declared exact cofactor",
+      "reuse_value": "remove stability-limited transverse mode while preserving nonzero fast initial data",
+      "prior_evidence_scope": "case5 source-trace tinyh follows explicit stability limit; generic ideal compiler absent",
+      "selector_inputs": "exact initial transverse amplitude, primitive rounding, physical reconstruction and model epoch",
+      "source_sha256": "701811d7be152fb4c5db335291af77107df00e652d32272cce410cb4a6c97aa4"
+    },
+    {
+      "id": "fourier_candidate",
+      "name_ko": "Fourier–Volterra 비선형 convolution/FFT",
+      "implementation_status": "implemented_specialized_client",
+      "source_path": "crates/rodas5p-integrators/src/fourier_path_candidate.rs",
+      "formula": "coefficients c[k,j]; noncyclic product support3K+S,3P+Q; padding≥2(3K+S)+1 by3P+Q+1",
+      "derivative_and_matrix_contract": "RHS-only polynomial/convolution predictor; separate original-target certificate",
+      "reuse_value": "sparse-vs-FFT crossover changes coefficient arithmetic, not state freedom",
+      "prior_evidence_scope": "PP06 parity differences≈5.3e−16; alias negative control was weak and still accurate; historical FAIL retained",
+      "selector_inputs": "harmonic support, degree, padding, phase binding, setup and certificate costs",
+      "source_sha256": "130d9593f34d93637cd1af7de0b73375a5ac9540ece9910a68c052a2c56efeb3"
+    },
+    {
+      "id": "fourier_certificate",
+      "name_ko": "원래 Fourier 목표 잔차·위상 오차 승인",
+      "implementation_status": "implemented_specialized_certificate",
+      "source_path": "crates/rodas5p-integrators/src/fourier_path_certificate.rs",
+      "formula": "r=p′−hF_{λ=1}(p), noncyclic directed arithmetic; charge start mismatch and phase witness",
+      "derivative_and_matrix_contract": "no derivative evaluation required by this specialized client",
+      "reuse_value": "untrusted FFT/Picard candidates can share independent target admission",
+      "prior_evidence_scope": "PP05 tighter parity cap1.01 missed by1.011159; enclosure checks true in old corpus; not invalid science wholesale",
+      "selector_inputs": "path, state, h, phase, epoch and physical norm binding",
+      "source_sha256": "bfa329099f5503c9472f8d63120db740e54531dff0188dbb55e21b94aa31edb2"
+    },
+    {
+      "id": "laguerre",
+      "name_ko": "Laguerre 부호 보존 adjoint와 quotient 압축",
+      "implementation_status": "implemented_component_plus_research",
+      "source_path": "crates/rodas5p-core/src/laguerre_adjoint.rs",
+      "formula": "Σ c_n(t_hat_n−t_n)=Σ_j z_j(X)δ_j with Bernstein bounds for signed adjoints",
+      "derivative_and_matrix_contract": "operator actions; symmetric spectral-bound assumptions for stated enclosure",
+      "reuse_value": "compress recurrence modulo known q to degree<d instead of degree-m vector recurrence",
+      "prior_evidence_scope": "signed adjoint only bounds recurrence component; source still says total EstimateOnly until total bound",
+      "selector_inputs": "truncation+coefficient+normalization+rounding budget, relation degree, valid spectrum, amortized setup",
+      "source_sha256": "8e69efe8e96829e8963bf68ec98c76e3a87b4a24e55496e83a73d323fbd89f5b"
+    },
+    {
+      "id": "confluent_jets",
+      "name_ko": "중복근·근접근의 jet와 공통 shifted inverse",
+      "implementation_status": "derived_and_scoped_probes",
+      "source_path": "research/rvj_integration_20261004/inputs/loop11_RESEARCH_NOTE_KO.md",
+      "formula": "C[ξ]/(ξ³−s²ξ) remains rank3; exp(a+bξ) via sinhc; Rγ=(I−zT)^{-1}R0",
+      "derivative_and_matrix_contract": "structural coefficients/shared actions; actual center factor may use derivative-based operator",
+      "reuse_value": "common coefficients, cluster jets and common RHS rank reduce duplicated shift work",
+      "prior_evidence_scope": "RODAS has commonγ already, so multi-shift claim creates no extra factor saving there; source 65shift probe1factor36scalar solves vs65/130 reused",
+      "selector_inputs": "genuine distinct shifts, cluster radius, multiplicities, pole margins and common RHS rank",
+      "source_sha256": "a572a2923ec8ae026d1bd2537cebae18fb7a13a41f5c0a2e93df6b69a85815a6"
+    },
+    {
+      "id": "certificate_atlas",
+      "name_ko": "매개변수 셀과 Bernstein inverse witness",
+      "implementation_status": "derived_not_general_compiler",
+      "source_path": "docs/reviews/20261011_promotion_theory/CERTIFICATE_ATLAS_KO.md",
+      "formula": "E(θ)=I−PW(θ)=Σβ_α(θ)E_α, β≥0,Σβ=1; max||E_α||≤q<1",
+      "derivative_and_matrix_contract": "offline structure proof; runtime membership/actions can be derivative-free",
+      "reuse_value": "reuse inverse proof until cell crossing; lower repeated verification cost",
+      "prior_evidence_scope": "finite black-box probes cannot prove whole-cell operator identity",
+      "selector_inputs": "model/operator/metric/preconditioner epoch, θ∈cell, observed current residual",
+      "source_sha256": "aae1c59b50201aa4c2003c5e1c280f8513ea80cc59d0fdcc021a68f63a922d20"
+    },
+    {
+      "id": "low_rank_moments",
+      "name_ko": "불변 affine lift와 폐쇄된 moment packet",
+      "implementation_status": "derived_plus_specialized_clients",
+      "source_path": "docs/general_ode_design_20261024/DESIGN_KO.md",
+      "formula": "y′=Ay+Uψ(Vᵀy), q(A)=0; m_k=VᵀA^k y gives rd-dimensional closed moment system",
+      "derivative_and_matrix_contract": "declared action/closure; may be derivative-free online",
+      "reuse_value": "reduce nonlinear state evolution when low-degree closure and requested output permit",
+      "prior_evidence_scope": "retain transverse initial state/reconstruction; time-dependent nonlinear chart needs extra derivative terms",
+      "selector_inputs": "closure proof, rank/metric epoch, requested observable vs full-state error",
+      "source_sha256": "c8b94a9dc4213e6071f22b088e648d0998b15b9a11222d2a8afbc2366bd30eac"
+    },
+    {
+      "id": "schur_nilpotent",
+      "name_ko": "Band-border Schur 및 nilpotent 전처리",
+      "implementation_status": "derived_and_scoped_kernels",
+      "source_path": "research/candidate_reconsideration_20261024/analysis/CANDIDATE_REASSESSMENT.md",
+      "formula": "P^{-1}W=[[I,A^{-1}B],[0,I]], (P^{-1}W−I)^2=0 for exact block inverse",
+      "derivative_and_matrix_contract": "structured block solves; not generic derivative-free RHS",
+      "reuse_value": "exact2-step Krylov upper bound or direct block elimination; compare strongest direct alternative",
+      "prior_evidence_scope": "approximate block inverses break exact nilpotence; no universal3–5iterations claim",
+      "selector_inputs": "block structure, inexact defect, border size, setup/reuse, output residual",
+      "source_sha256": "9d266673d8ac01dbdaaecb2b3862cb6ea7ae045b14f722df91b268c24a5c776f"
+    }
+  ],
+  "source_manifest": [
+    {
+      "path": "crates/rodas5p-core/src/laguerre_adjoint.rs",
+      "bytes": 16836,
+      "sha256": "8e69efe8e96829e8963bf68ec98c76e3a87b4a24e55496e83a73d323fbd89f5b"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/fourier_path_candidate.rs",
+      "bytes": 10323,
+      "sha256": "130d9593f34d93637cd1af7de0b73375a5ac9540ece9910a68c052a2c56efeb3"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/fourier_path_certificate.rs",
+      "bytes": 38046,
+      "sha256": "bfa329099f5503c9472f8d63120db740e54531dff0188dbb55e21b94aa31edb2"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+      "bytes": 36579,
+      "sha256": "6c479a18abe4725e3658398519442248f0a25cb5838fcc73504c46f56214851e"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/quotient_flow.rs",
+      "bytes": 42256,
+      "sha256": "7227df8c1501967da40fac575d5c8f72f43527c510cfd45d9f48ffbd065104d8"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/causal.rs",
+      "bytes": 9038,
+      "sha256": "5cd8362c91cb13dc654a2305ffeaa1f4923225d21b857dd6d6bd54156add91dc"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/raw_step.rs",
+      "bytes": 24903,
+      "sha256": "60d3d829e4bfdc2aa9719f852c95dc496b47faddada11145d36ec98a981556a3"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/residual_first.rs",
+      "bytes": 7399,
+      "sha256": "765febc8f9ada74165f266ce859daf39104ae7646c21959502ff5e97d0f015b2"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/switching.rs",
+      "bytes": 33628,
+      "sha256": "7f7d372cb0970099db393df68328d610451e744d02b892409e9491717b3de8b4"
+    },
+    {
+      "path": "crates/vigilode/src/automatic.rs",
+      "bytes": 3453,
+      "sha256": "d98dfaa8eccef36228c90fac663d0789ea122f5552532be60c763b00407eb453"
+    },
+    {
+      "path": "crates/vigilode/src/cofactor_chart.rs",
+      "bytes": 5122,
+      "sha256": "701811d7be152fb4c5db335291af77107df00e652d32272cce410cb4a6c97aa4"
+    },
+    {
+      "path": "crates/vigilode/src/oscillatory_chart.rs",
+      "bytes": 7221,
+      "sha256": "45d4873f851b77f6da905bcf3c434ae08588e0a7a16fc96fc8a55bd02a0126d8"
+    },
+    {
+      "path": "docs/general_ode_design_20261024/DESIGN_KO.md",
+      "bytes": 73819,
+      "sha256": "c8b94a9dc4213e6071f22b088e648d0998b15b9a11222d2a8afbc2366bd30eac"
+    },
+    {
+      "path": "docs/reviews/20261011_promotion_theory/CERTIFICATE_ATLAS_KO.md",
+      "bytes": 11909,
+      "sha256": "aae1c59b50201aa4c2003c5e1c280f8513ea80cc59d0fdcc021a68f63a922d20"
+    },
+    {
+      "path": "external_reports/adapter_local_followup_20261025/REPORT_KO.md",
+      "bytes": 10450,
+      "sha256": "31464eb1f4cd9840cd0ed8bc6f942fba06f2bcf0d2ef9b096dcfb9009677a0b6"
+    },
+    {
+      "path": "external_reports/adapter_local_followup_20261025/TRACE_SUMMARY.json",
+      "bytes": 1502,
+      "sha256": "fe7a52c8f83ed8e6feb8119c74bd4f389b413c668a0e36440896319b9192e13b"
+    },
+    {
+      "path": "research/adapter_research_20261025/oscillation/THEORY_AND_PORT_KO.md",
+      "bytes": 12253,
+      "sha256": "7589c38ca6b6f8c56413c1ce41cb95009db8556d2949da7a7f1906fd564ad104"
+    },
+    {
+      "path": "research/adapter_research_20261025/sources/LATEST_EVIDENCE.json",
+      "bytes": 17534,
+      "sha256": "5163e1430e74bf7c1a22409fa6208ee4f7a3c94b7aaed09eee983aeac35f2d17"
+    },
+    {
+      "path": "research/candidate_reconsideration_20261024/analysis/ALGEBRAIC_RESCUE.json",
+      "bytes": 7097,
+      "sha256": "139276f16597ad485033b73c0704b1cfa72d43e72261807495ced50cc95542ce"
+    },
+    {
+      "path": "research/candidate_reconsideration_20261024/analysis/CANDIDATE_REASSESSMENT.md",
+      "bytes": 29972,
+      "sha256": "9d266673d8ac01dbdaaecb2b3862cb6ea7ae045b14f722df91b268c24a5c776f"
+    },
+    {
+      "path": "research/candidate_reconsideration_20261024/analysis/CAUSAL_SWITCH.json",
+      "bytes": 4950,
+      "sha256": "be09b9265f4281e9f97fce40f0c68135e2a448ce291bca4dcaa8714a7ac46fe5"
+    },
+    {
+      "path": "research/candidate_reconsideration_20261024/analysis/ROOT_VARIANTS.json",
+      "bytes": 166660,
+      "sha256": "7e5d4cb96b417a10f5a3104dd095fd67b9fcc54b230c59ea533cfa675f6e0f6d"
+    },
+    {
+      "path": "research/pp05_fourier_client_20261004/RESULTS.json",
+      "bytes": 4683,
+      "sha256": "dd548470d55c3dc46056ba26c94af262c1d5bb30eda4fec4b9f618347997a6fd"
+    },
+    {
+      "path": "research/pp06_fourier_fft_candidate_20261004/RESULTS.json",
+      "bytes": 2208,
+      "sha256": "4c64fad567e22f7617ed11d0ed17c3e0b19df8d8df6614200a84f8a23b66e0a1"
+    },
+    {
+      "path": "research/rvj_integration_20261004/inputs/loop11_RESEARCH_NOTE_KO.md",
+      "bytes": 24695,
+      "sha256": "a572a2923ec8ae026d1bd2537cebae18fb7a13a41f5c0a2e93df6b69a85815a6"
+    }
+  ],
+  "evidence_hierarchy": [
+    "current reachable source implementation",
+    "source-pinned execution with physical reference and measured cost",
+    "existing derived theorem with unchanged assumptions",
+    "proposed generalization requiring new provider/implementation"
+  ],
+  "attachments": {
+    "inspected": [
+      "01-Low-ell-Bianchi-Einstein-Boltzmann-Solver.txt initial50lines",
+      "04-Adaptive-CMB-Code-Development-Protocol.txt initial90lines",
+      "05-Adaptive-CMB-Code-Research-Executor-DAG-Governed-Development-Mandatory-Dual-Audit-Plot-Driven-Adversarial-Loop.txt initial80lines",
+      "18-literatures.zip directory",
+      "19-papers.zip directory",
+      "20-report-1-.pdf metadata and first2pages"
+    ],
+    "applicability": "CMB audit templates provide useful identity/observable preservation principles; current task is general ODE. HTT report and cosmology libraries are not direct sources for a new general ODE theorem. two_step/curved_mirror original files were not present among supplied attachment names or the two inspected ZIP directories; archived source mapping reused instead."
+  },
+  "rerun_old_scientific_experiments": false,
+  "source_manifest_scope": "Hashes bind the reviewed baseline source at remote4fe676/tree8bab954, not evolving new implementation in working tree."
+}

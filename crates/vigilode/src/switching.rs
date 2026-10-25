@@ -3,6 +3,10 @@
 //! This adapter uses observed work, not a stiffness estimate. Its default is
 //! RHS-only. Derivative fallbacks require a separate explicit authorization.
 
+use crate::selection_evidence::{
+    CostComparison, CostEvidence, CostEvidenceKind, CostInterval, CostUnit, SelectionIdentity,
+    compare_qualified_costs,
+};
 use rodas5p_integrators::{AdaptiveStepConfig, Dopri5StopReason};
 use serde::Serialize;
 
@@ -23,6 +27,60 @@ pub enum DerivativeFallback {
     ProvidedOnly,
     /// Also permit the facade's finite-difference Jacobian provider.
     AllowFiniteDifference,
+}
+
+/// Reuse a losing entry comparison only while its observed regime remains
+/// similar. These controls schedule probes; they do not certify stiffness.
+#[derive(Clone, Debug, Serialize)]
+pub struct EntryProbeAdaptation {
+    /// Age in completed explicit batches after which a sentinel is due at the
+    /// next eligible work-pressure batch before the final time.
+    pub max_backoff_batches: usize,
+    /// Renew evidence when work per advanced physical time changes by this
+    /// factor and the carried step changes oppositely by `step_shrink_ratio`.
+    /// Both deterioration and relaxation can invalidate a losing comparison.
+    pub work_rate_growth: f64,
+    /// Joint step-proposal threshold used with work-rate growth.
+    pub step_shrink_ratio: f64,
+    /// A rise in rejection fraction by this amount also renews evidence, after
+    /// at least two rejected attempts. It never directly selects a method.
+    pub rejection_fraction_increase: f64,
+}
+
+impl Default for EntryProbeAdaptation {
+    fn default() -> Self {
+        Self {
+            max_backoff_batches: 64,
+            work_rate_growth: 2.0,
+            step_shrink_ratio: 0.5,
+            rejection_fraction_increase: 0.2,
+        }
+    }
+}
+
+/// Why an optional adaptive entry comparison was executed or deferred.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum EntryProbeReason {
+    /// No prior losing comparison is available in this explicit tenure.
+    InitialComparison,
+    /// Recent negative evidence is retained until deterioration or expiry.
+    StableEvidenceBackoff,
+    /// The increasing retry gap has elapsed.
+    BackoffExpired,
+    /// The maximum evidence age has elapsed.
+    SentinelExpired,
+    /// Physical work rate rose while the native proposal fell.
+    WorkDeteriorated,
+    /// Physical work rate fell while the native proposal rose, indicating
+    /// that the just-completed prefix crossed a regime boundary. Comparison
+    /// is deferred so its next prefix starts at the newly accepted state.
+    WorkRegimeRelaxed,
+    /// A preceding batch requested comparison in the newly reached regime.
+    /// This request persists until an eligible actual pilot is executed.
+    PendingRegimeComparison,
+    /// Rejections rose relative to the last compared batch.
+    RejectionDeteriorated,
 }
 
 /// Controls of the opt-in window adapter; units of work are deterministic.
@@ -52,8 +110,9 @@ pub struct SwitchingConfig {
     /// over the same accepted time interval as an explicit batch. Zero retains
     /// the original pressure-only entry policy. Nonzero enables cost screening.
     pub implicit_pilot_attempt_budget: usize,
-    /// Maximum implicit entry pilots during the entire solve. Exhausting this
-    /// limit keeps the explicit route; it does not grant implicit permission.
+    /// Maximum implicit entry pilots during a legacy solve. Adaptive entry
+    /// scheduling instead uses bounded retry spacing and finite sentinels;
+    /// every attempt remains charged to the common `Options::max_steps` cap.
     pub implicit_pilot_limit: usize,
     /// A successful entry pilot must cost at most this fraction of the explicit
     /// batch's deterministic work units. This is not a wall-clock guarantee.
@@ -66,6 +125,10 @@ pub struct SwitchingConfig {
     /// Explicit batches between implicit entry pilots. Zero preserves legacy
     /// scheduling. This permits later re-evaluation without a pilot every batch.
     pub entry_pilot_cooldown_batches: usize,
+    /// Optional adaptive negative-evidence reuse. None preserves the legacy
+    /// fixed-cooldown/lifetime-count policy exactly. Callbacks must be replay
+    /// safe as for every competitive switching solve.
+    pub entry_probe_adaptation: Option<EntryProbeAdaptation>,
 }
 
 impl Default for SwitchingConfig {
@@ -86,6 +149,7 @@ impl Default for SwitchingConfig {
             entry_cost_ratio: 0.8,
             carry_explicit_step: false,
             entry_pilot_cooldown_batches: 0,
+            entry_probe_adaptation: None,
         }
     }
 }
@@ -102,6 +166,17 @@ impl SwitchingConfig {
             entry_pilot_cooldown_batches: 4,
             carry_explicit_step: true,
             ..Self::default()
+        }
+    }
+
+    /// Opt into adaptive probe backoff with deterioration-triggered renewal
+    /// and finite evidence-age sentinels at eligible work-pressure batches.
+    /// No derivative permission is added by this factory.
+    /// Decisions still require an actual same-checkpoint competitive pilot.
+    pub fn adaptive_evidence(fallback: DerivativeFallback) -> Self {
+        Self {
+            entry_probe_adaptation: Some(EntryProbeAdaptation::default()),
+            ..Self::evidence_driven(fallback)
         }
     }
 }
@@ -124,6 +199,12 @@ pub enum SwitchingEvidence {
     ImplicitPilotIncomplete,
     /// Successful explicit return trial beat the previous implicit work rate.
     ExplicitCheaperThanPreviousWindow,
+    /// Successful explicit return trial beat an actual implicit trial from
+    /// the same physical checkpoint to the identical window endpoint.
+    ExplicitCheaperOnSameWindow,
+    /// A same-window implicit comparison was cheaper and its accepted state
+    /// was committed directly, avoiding a duplicate implicit solve.
+    ImplicitPreferredOnSameWindow,
     /// The bounded explicit return trial did not justify returning.
     ExplicitReturnNotSupported,
     /// An implicit batch completed; its rate is recorded for later comparison.
@@ -199,6 +280,9 @@ pub struct SwitchingSegment {
     /// Pilot work divided by its explicit comparator, when a matched-prefix
     /// comparison was performed. Includes all charged attempts, not just accepts.
     pub comparator_work_ratio: Option<f64>,
+    /// Scheduling evidence for the optional adaptive entry policy. This is
+    /// separate from the actual competitive result in `evidence`.
+    pub entry_probe_reason: Option<EntryProbeReason>,
     /// Driver telemetry for this batch. Persistent explicit work fields are
     /// differences of cumulative native snapshots; its `options` and
     /// `adaptive` describe the fixed tenure-wide native session. The batch
@@ -331,6 +415,7 @@ impl SwitchingSolver {
             implicit_rate: None,
             implicit_pilots: 0,
             batches_since_entry_pilot: usize::MAX,
+            entry_memory: EntryProbeMemory::default(),
             explicit_step: None,
             next_window: 1,
         });
@@ -414,8 +499,123 @@ struct DriveState {
     implicit_rate: Option<f64>,
     implicit_pilots: usize,
     batches_since_entry_pilot: usize,
+    entry_memory: EntryProbeMemory,
     explicit_step: Option<f64>,
     next_window: usize,
+}
+
+#[derive(Default)]
+struct EntryProbeMemory {
+    negative_comparisons: usize,
+    anchor_rate: Option<f64>,
+    anchor_h: Option<f64>,
+    anchor_rejection: f64,
+    pending_renewal: bool,
+}
+
+impl EntryProbeMemory {
+    fn reason(
+        &self,
+        r: &SwitchingSegment,
+        elapsed_batches: usize,
+        c: &SwitchingConfig,
+        a: &EntryProbeAdaptation,
+    ) -> EntryProbeReason {
+        if self.pending_renewal {
+            return EntryProbeReason::PendingRegimeComparison;
+        }
+        let Some(anchor_rate) = self.anchor_rate else {
+            return EntryProbeReason::InitialComparison;
+        };
+        // Very short observation-clipped tails are poor rate comparators.
+        // A meaningful accepted sample and a carried controller proposal are
+        // required for this early invalidation; expiry remains unconditional.
+        let dt = r.reached_time - r.start_time;
+        if r.accepted_steps >= 4 && dt > 0.0 {
+            let rate = r.work_units / dt;
+            if rate.is_finite()
+                && rate >= a.work_rate_growth * anchor_rate
+                && self
+                    .anchor_h
+                    .zip(r.proposed_next_step)
+                    .is_some_and(|(old, new)| new <= a.step_shrink_ratio * old)
+            {
+                return EntryProbeReason::WorkDeteriorated;
+            }
+            if rate.is_finite()
+                && rate <= anchor_rate / a.work_rate_growth
+                && self
+                    .anchor_h
+                    .zip(r.proposed_next_step)
+                    .is_some_and(|(old, new)| new >= old / a.step_shrink_ratio)
+            {
+                return EntryProbeReason::WorkRegimeRelaxed;
+            }
+        }
+        let rejected_fraction = r.rejected_steps as f64 / r.attempts.max(1) as f64;
+        if r.rejected_steps >= 2
+            && rejected_fraction >= self.anchor_rejection + a.rejection_fraction_increase
+        {
+            return EntryProbeReason::RejectionDeteriorated;
+        }
+        if elapsed_batches >= a.max_backoff_batches {
+            return EntryProbeReason::SentinelExpired;
+        }
+        let multiplier = 1usize
+            .checked_shl(self.negative_comparisons.min(usize::BITS as usize - 1) as u32)
+            .unwrap_or(usize::MAX);
+        let cooldown = c
+            .entry_pilot_cooldown_batches
+            .max(1)
+            .saturating_mul(multiplier)
+            .min(a.max_backoff_batches);
+        if elapsed_batches >= cooldown {
+            EntryProbeReason::BackoffExpired
+        } else {
+            EntryProbeReason::StableEvidenceBackoff
+        }
+    }
+
+    fn schedule(
+        &mut self,
+        r: &SwitchingSegment,
+        elapsed_batches: usize,
+        c: &SwitchingConfig,
+        a: &EntryProbeAdaptation,
+    ) -> (EntryProbeReason, bool) {
+        let reason = self.reason(r, elapsed_batches, c, a);
+        match reason {
+            EntryProbeReason::WorkRegimeRelaxed => {
+                // The endpoint proposal describes the new regime; replaying
+                // this just-ended prefix would still include the transient.
+                // Keep the request until a later eligible prefix is compared.
+                self.negative_comparisons = 0;
+                self.pending_renewal = true;
+                (reason, false)
+            }
+            EntryProbeReason::WorkDeteriorated | EntryProbeReason::RejectionDeteriorated => {
+                self.negative_comparisons = 0;
+                (reason, true)
+            }
+            EntryProbeReason::StableEvidenceBackoff => (reason, false),
+            _ => (reason, true),
+        }
+    }
+
+    fn compared(&mut self, r: &SwitchingSegment, entered: bool) {
+        self.pending_renewal = false;
+        if entered {
+            *self = Self::default();
+            return;
+        }
+        self.negative_comparisons = self.negative_comparisons.saturating_add(1);
+        let dt = r.reached_time - r.start_time;
+        self.anchor_rate = (dt > 0.0)
+            .then_some(r.work_units / dt)
+            .filter(|rate| rate.is_finite() && *rate > 0.0);
+        self.anchor_h = r.proposed_next_step;
+        self.anchor_rejection = r.rejected_steps as f64 / r.attempts.max(1) as f64;
+    }
 }
 
 fn window_target((t0, t1): (f64, f64), window: usize, count: usize) -> f64 {
@@ -424,6 +624,36 @@ fn window_target((t0, t1): (f64, f64), window: usize, count: usize) -> f64 {
     } else {
         t0 + (t1 - t0) * (window as f64 / count as f64)
     }
+}
+
+fn qualified_work_preferred(
+    incumbent: &SwitchingSegment,
+    candidate: &SwitchingSegment,
+    incumbent_admissible: bool,
+    ratio: f64,
+    window_epoch: u64,
+) -> bool {
+    let identity = SelectionIdentity {
+        window_epoch,
+        ..Default::default()
+    };
+    let evidence = |work, admissible| CostEvidence {
+        identity,
+        cost: CostInterval {
+            lower: work,
+            upper: work,
+        },
+        unit: CostUnit::Work,
+        kind: CostEvidenceKind::ObservedWork,
+        admissible,
+    };
+    compare_qualified_costs(
+        &evidence(incumbent.work_units, incumbent_admissible),
+        &evidence(candidate.work_units, candidate.success),
+        0.0,
+        1,
+        1.0 - ratio,
+    ) == CostComparison::PreferCandidate
 }
 
 fn drive_windows(
@@ -442,6 +672,7 @@ fn drive_windows(
         mut implicit_rate,
         mut implicit_pilots,
         mut batches_since_entry_pilot,
+        mut entry_memory,
         mut explicit_step,
         next_window,
     } = progress;
@@ -478,6 +709,7 @@ fn drive_windows(
                     implicit_rate,
                     implicit_pilots,
                     batches_since_entry_pilot,
+                    entry_memory,
                     explicit_step,
                     next_window: window,
                 };
@@ -493,8 +725,9 @@ fn drive_windows(
             // candidate, and every discarded trial is charged.
             let pilot_initial = if config.implicit_pilot_attempt_budget > 0
                 && method == SwitchingMethod::Dopri5
-                && implicit_pilots < config.implicit_pilot_limit
-                && batches_since_entry_pilot >= config.entry_pilot_cooldown_batches
+                && (config.entry_probe_adaptation.is_some()
+                    || (implicit_pilots < config.implicit_pilot_limit
+                        && batches_since_entry_pilot >= config.entry_pilot_cooldown_batches))
             {
                 Some(result.final_state.clone())
             } else {
@@ -562,15 +795,88 @@ fn drive_windows(
             if probe {
                 since_probe = 0;
                 let rate = record.work_units / (target - start);
-                let economical = record.success
+                let mut economical = record.success
                     && implicit_rate.is_some_and(|old| rate <= config.return_cost_ratio * old);
+                let mut return_comparator = None;
+                if economical && config.entry_probe_adaptation.is_some() {
+                    // A previous-window rate is only a cheap trigger. The new
+                    // route is selected using a replay of the same physical
+                    // window, with every comparator attempt charged.
+                    let remaining = opts.max_steps - result.stats.attempts;
+                    economical = false;
+                    if remaining > 0 {
+                        let mut replay_opts = opts.clone();
+                        replay_opts.h0 = opts.h0.min(target - start);
+                        replay_opts.max_steps = remaining.min(config.implicit_pilot_attempt_budget);
+                        match run(
+                            problem,
+                            start,
+                            target,
+                            &result.final_state,
+                            &replay_opts,
+                            SwitchingMethod::Rodas5p,
+                            true,
+                            false,
+                            t1,
+                        ) {
+                            Ok(mut replay) => {
+                                charge(&mut result.stats, &replay.record);
+                                if replay.fatal {
+                                    // Retain the last committed checkpoint. The
+                                    // completed explicit probe is deliberately
+                                    // not published after a fatal comparator.
+                                    record.decision = "fatal same-window implicit comparator; retain committed checkpoint".into();
+                                    replay.record.decision = record.decision.clone();
+                                    result.message = record.decision.clone();
+                                    result.stats.segments.push(record);
+                                    result.stats.segments.push(replay.record);
+                                    break 'windows;
+                                }
+                                economical = qualified_work_preferred(
+                                    &replay.record,
+                                    &record,
+                                    replay.record.success,
+                                    config.return_cost_ratio,
+                                    result.stats.segments.len() as u64,
+                                );
+                                record.comparator_work_ratio = (replay.record.work_units > 0.0)
+                                    .then_some(record.work_units / replay.record.work_units);
+                                replay.record.decision = if !replay.record.success {
+                                    "same-window implicit comparator incomplete; retain implicit route"
+                                } else if economical {
+                                    "same-window implicit comparator discarded after qualified explicit win"
+                                } else {
+                                    "same-window implicit comparator retained as productive implicit advance"
+                                }.into();
+                                return_comparator = Some(replay);
+                            }
+                            Err(message) => {
+                                result.stats.accounting_complete = false;
+                                record.decision = "same-window implicit comparator failed without work record; stop".into();
+                                result.message = message;
+                                result.stats.segments.push(record);
+                                break 'windows;
+                            }
+                        }
+                    }
+                }
                 if economical {
-                    record.decision =
-                        "explicit probe completed within return work-rate hysteresis".into();
-                    record.evidence = SwitchingEvidence::ExplicitCheaperThanPreviousWindow;
+                    record.decision = if return_comparator.is_some() {
+                        "explicit return passed actual same-window work comparison"
+                    } else {
+                        "explicit probe completed within return work-rate hysteresis"
+                    }
+                    .into();
+                    record.evidence = if return_comparator.is_some() {
+                        SwitchingEvidence::ExplicitCheaperOnSameWindow
+                    } else {
+                        SwitchingEvidence::ExplicitCheaperThanPreviousWindow
+                    };
                     explicit_step = record.proposed_next_step;
                     commit(&mut result, &mut record, state);
                     method = SwitchingMethod::Dopri5;
+                    entry_memory = EntryProbeMemory::default();
+                    batches_since_entry_pilot = usize::MAX;
                     result.stats.switches += 1;
                     implicit_windows = 0;
                 } else if fatal {
@@ -585,6 +891,17 @@ fn drive_windows(
                     record.evidence = SwitchingEvidence::ExplicitReturnNotSupported;
                 }
                 result.stats.segments.push(record);
+                if let Some(mut replay) = return_comparator {
+                    if !economical && replay.record.success {
+                        replay.record.evidence = SwitchingEvidence::ImplicitPreferredOnSameWindow;
+                        implicit_rate = Some(replay.record.work_units / (target - start));
+                        implicit_windows += 1;
+                        since_probe += 1;
+                        explicit_step = None;
+                        commit(&mut result, &mut replay.record, replay.state);
+                    }
+                    result.stats.segments.push(replay.record);
+                }
                 probe = false;
                 continue;
             }
@@ -607,6 +924,14 @@ fn drive_windows(
                     if pressure {
                         record.evidence = SwitchingEvidence::ExplicitWorkPressure;
                     }
+                    let adaptive_due = if let Some(a) = &config.entry_probe_adaptation {
+                        let (reason, due) =
+                            entry_memory.schedule(&record, batches_since_entry_pilot, config, a);
+                        record.entry_probe_reason = Some(reason);
+                        due
+                    } else {
+                        true
+                    };
                     if fallback
                         && pressure
                         && (record.success || budget_stop)
@@ -615,7 +940,9 @@ fn drive_windows(
                         let mut enter = config.implicit_pilot_attempt_budget == 0;
                         if config.implicit_pilot_attempt_budget > 0 {
                             let remaining = opts.max_steps - result.stats.attempts;
-                            if implicit_pilots < config.implicit_pilot_limit
+                            if (config.entry_probe_adaptation.is_some()
+                                || implicit_pilots < config.implicit_pilot_limit)
+                                && adaptive_due
                                 && pilot_initial.is_some()
                                 && remaining > 0
                                 && record.reached_time > start
@@ -639,15 +966,33 @@ fn drive_windows(
                                 ) {
                                     Ok(mut pilot) => {
                                         charge(&mut result.stats, &pilot.record);
-                                        enter = pilot.record.success
-                                            && pilot.record.work_units
-                                                <= config.entry_cost_ratio * record.work_units;
+                                        enter = if config.entry_probe_adaptation.is_some() {
+                                            // Both records are freshly constructed from the
+                                            // same physical checkpoint and accepted prefix.
+                                            // This is observed local-tolerance work evidence,
+                                            // not a future-time or global-error guarantee.
+                                            qualified_work_preferred(
+                                                &record,
+                                                &pilot.record,
+                                                record.accepted_steps > 0,
+                                                config.entry_cost_ratio,
+                                                result.stats.segments.len() as u64,
+                                            )
+                                        } else {
+                                            pilot.record.success
+                                                && pilot.record.work_units
+                                                    <= config.entry_cost_ratio * record.work_units
+                                        };
                                         pilot.record.comparator_work_ratio =
                                             if record.work_units > 0.0 {
                                                 Some(pilot.record.work_units / record.work_units)
                                             } else {
                                                 None
                                             };
+                                        pilot.record.entry_probe_reason = record.entry_probe_reason;
+                                        if config.entry_probe_adaptation.is_some() {
+                                            entry_memory.compared(&record, enter);
+                                        }
                                         pilot.record.evidence = if !pilot.record.success {
                                             SwitchingEvidence::ImplicitPilotIncomplete
                                         } else if enter {
@@ -740,6 +1085,7 @@ fn drive_windows(
         implicit_rate,
         implicit_pilots,
         batches_since_entry_pilot,
+        entry_memory,
         explicit_step,
         next_window: config.window_count + 1,
     }
@@ -801,6 +1147,7 @@ fn persistent_explicit(
         initial_step: opts.h0,
         proposed_next_step: None,
         comparator_work_ratio: None,
+        entry_probe_reason: None,
         driver: SwitchingDriverStats::Dopri5(Box::new(run.stats)),
     };
     charge(&mut result.stats, &record);
@@ -899,6 +1246,7 @@ fn run_persistent_explicit(
             .then_some(checkpoint.proposed_h)
             .filter(|h| h.is_finite() && *h > 0.0),
             comparator_work_ratio: None,
+            entry_probe_reason: None,
             driver: SwitchingDriverStats::Dopri5(Box::new(driver)),
         },
         state,
@@ -1053,6 +1401,7 @@ fn run(
             initial_step: opts.h0,
             proposed_next_step,
             comparator_work_ratio: None,
+            entry_probe_reason: None,
             driver,
         },
         state,
@@ -1118,6 +1467,21 @@ fn validate(
             "positive bounded window/work controls and hysteresis fractions required",
         ));
     }
+    if let Some(a) = &c.entry_probe_adaptation {
+        if a.max_backoff_batches == 0
+            || a.max_backoff_batches < c.entry_pilot_cooldown_batches.max(1)
+            || !a.work_rate_growth.is_finite()
+            || a.work_rate_growth <= 1.0
+            || !(a.step_shrink_ratio > 0.0 && a.step_shrink_ratio < 1.0)
+            || !(a.rejection_fraction_increase > 0.0 && a.rejection_fraction_increase < 1.0)
+            || c.implicit_pilot_attempt_budget == 0
+            || !c.carry_explicit_step
+        {
+            return Err(bad(
+                "adaptive entry requires finite deterioration thresholds, positive bounded backoff, competitive pilots and persistent explicit sessions",
+            ));
+        }
+    }
     let atol = match &o.atol {
         Atol::Scalar(a) => *a,
         Atol::Vector(v) if v.len() == y.len() && v.iter().all(|a| a.is_finite() && *a >= 0.0) => {
@@ -1174,4 +1538,154 @@ fn validate(
         }
     }
     Ok(())
+}
+
+// Private contract for a productive same-window implicit return comparator.
+// Seed an adversarial stale previous-window rate to exercise the exact branch.
+// This is a routing-state fixture, not an end-to-end performance observation.
+#[cfg(test)]
+mod adaptive_return_productive_contract {
+    use super::*;
+
+    #[test]
+    fn comparison_memory_renews_on_joint_drift_in_either_direction() {
+        let p = Problem::new(1, |_, _, out| {
+            out[0] = 0.0;
+            Ok(())
+        });
+        let opts = Options::default();
+        let config = SwitchingConfig::adaptive_evidence(DerivativeFallback::Forbidden);
+        let mut result = SwitchingSolver::solve(&p, (0.0, 0.0), &[1.0], &opts, &config).unwrap();
+        let mut sample = result.stats.segments.remove(0);
+        // Manufactured decision telemetry: no benchmark or physics claim.
+        sample.start_time = 0.0;
+        sample.reached_time = 1.0;
+        sample.attempts = 4;
+        sample.accepted_steps = 4;
+        sample.rejected_steps = 0;
+        let memory = EntryProbeMemory {
+            negative_comparisons: 1,
+            anchor_rate: Some(100.0),
+            anchor_h: Some(1.0),
+            anchor_rejection: 0.0,
+            pending_renewal: false,
+        };
+        let adapt = config.entry_probe_adaptation.as_ref().unwrap();
+        for (rate, h, expected) in [
+            (220.0, 0.4, EntryProbeReason::WorkDeteriorated),
+            (40.0, 3.0, EntryProbeReason::WorkRegimeRelaxed),
+            (40.0, 0.4, EntryProbeReason::StableEvidenceBackoff),
+            (220.0, 3.0, EntryProbeReason::StableEvidenceBackoff),
+            (100.0, 3.0, EntryProbeReason::StableEvidenceBackoff),
+            (40.0, 1.0, EntryProbeReason::StableEvidenceBackoff),
+        ] {
+            sample.work_units = rate;
+            sample.proposed_next_step = Some(h);
+            assert_eq!(memory.reason(&sample, 1, &config, adapt), expected);
+        }
+        sample.work_units = 40.0;
+        sample.proposed_next_step = Some(3.0);
+        sample.accepted_steps = 3;
+        assert_eq!(
+            memory.reason(&sample, 1, &config, adapt),
+            EntryProbeReason::StableEvidenceBackoff
+        );
+        let mut pending = memory;
+        sample.accepted_steps = 4;
+        assert_eq!(
+            pending.schedule(&sample, 1, &config, adapt),
+            (EntryProbeReason::WorkRegimeRelaxed, false)
+        );
+        assert!(pending.pending_renewal);
+        // Scheduling alone does not consume the request: an ineligible batch
+        // must leave it available for the next actual comparison.
+        for elapsed in [2, 3] {
+            assert_eq!(
+                pending.schedule(&sample, elapsed, &config, adapt),
+                (EntryProbeReason::PendingRegimeComparison, true)
+            );
+            assert!(pending.pending_renewal);
+        }
+        pending.compared(&sample, false);
+        assert!(!pending.pending_renewal);
+        assert_eq!(
+            pending.schedule(&sample, 1, &config, adapt),
+            (EntryProbeReason::StableEvidenceBackoff, false)
+        );
+    }
+
+    #[test]
+    fn stale_old_rate_cannot_replace_a_cheaper_same_window_implicit_candidate() {
+        let p = Problem::new(1, |t, y, out| {
+            out[0] = -10000.0 * (y[0] - t.cos()) - t.sin();
+            Ok(())
+        })
+        .jacobian(Jacobian::dense(|_, _, j| {
+            j[0] = -10000.0;
+            Ok(())
+        }))
+        .time_derivative(|t, _, out| {
+            out[0] = -10000.0 * t.sin() - t.cos();
+            Ok(())
+        });
+        let opts = Options {
+            rtol: 1e-7,
+            atol: Atol::Scalar(1e-10),
+            h0: 1e-4,
+            max_steps: 1000,
+            ..Default::default()
+        };
+        let config = SwitchingConfig {
+            window_count: 1,
+            implicit_residence: 1,
+            probe_interval: 1,
+            probe_attempt_budget: 64,
+            return_cost_ratio: 0.99,
+            ..SwitchingConfig::adaptive_evidence(DerivativeFallback::ProvidedOnly)
+        };
+        // Build only a finite initial result; zero-span invokes no stage.
+        let mut result = SwitchingSolver::solve(&p, (0.0, 0.0), &[1.0], &opts, &config).unwrap();
+        result.success = false;
+        result.message.clear();
+        let state = DriveState {
+            result,
+            method: SwitchingMethod::Rodas5p,
+            implicit_windows: 1,
+            since_probe: 1,
+            implicit_rate: Some(1e12),
+            implicit_pilots: 0,
+            batches_since_entry_pilot: 0,
+            entry_memory: EntryProbeMemory::default(),
+            explicit_step: None,
+            next_window: 1,
+        };
+        let after = drive_windows(&p, (0.0, 0.01), &opts, &config, state, None);
+        let r = after.result;
+        assert_eq!(r.final_time, 0.01);
+        assert!((r.final_state[0] - 0.01_f64.cos()).abs() < 1e-6);
+        assert_eq!(r.stats.segments.len(), 2);
+        let explicit = &r.stats.segments[0];
+        let implicit = &r.stats.segments[1];
+        assert!(explicit.is_probe && explicit.success && !explicit.committed);
+        assert!(implicit.is_probe && implicit.success && implicit.committed);
+        assert_eq!(
+            implicit.evidence,
+            SwitchingEvidence::ImplicitPreferredOnSameWindow
+        );
+        assert_eq!(explicit.start_time, implicit.start_time);
+        assert_eq!(explicit.target_time, implicit.target_time);
+        assert!(implicit.work_units < explicit.work_units);
+        assert_eq!(r.stats.switches, 0);
+        assert_eq!(after.method, SwitchingMethod::Rodas5p);
+        assert_eq!(after.since_probe, 1);
+        assert_eq!(after.implicit_windows, 2);
+        assert_eq!(
+            r.stats.attempts,
+            r.stats.segments.iter().map(|s| s.attempts).sum::<usize>()
+        );
+        assert_eq!(
+            r.stats.rhs_calls,
+            r.stats.segments.iter().map(|s| s.rhs_calls).sum::<u64>()
+        );
+    }
 }

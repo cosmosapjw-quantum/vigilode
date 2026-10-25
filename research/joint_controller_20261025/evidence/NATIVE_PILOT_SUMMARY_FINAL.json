@@ -1,0 +1,1570 @@
+{
+  "schema": "vigilode.joint-controller.native-pilot-summary.v1",
+  "inputs": {
+    "switching": {
+      "path": "research/joint_controller_20261025/switching/native_r2/pilot.jsonl",
+      "sha256": "e037133fdaa5fecff1fcadbebccbf49dc60df5dd70c676999b9ff4958c801175"
+    },
+    "execution": {
+      "path": "research/joint_controller_20261025/execution/native/stdout.log",
+      "sha256": "2ec7603c571274ea3845e2c4197c90e6c0ffc773d55eab70547db4bfa98890b6"
+    },
+    "causal": {
+      "path": "research/joint_controller_20261025/causal/native/stdout.log",
+      "sha256": "e5786155a8167f615df05c90603d7f534be757fae4794f7a2daf94f85bccce57"
+    }
+  },
+  "identity_scope": "input source/binary identity is supplied by the parent execution receipts; this summary validates reported numbers and within-fixture comparisons",
+  "switching": {
+    "status": "MEASURED_SCOPED",
+    "all_rows_including_warmup": 162,
+    "timed_rows": 135,
+    "cases": [
+      {
+        "case": "case5",
+        "policies": {
+          "evidence": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.000369166,
+            "median_rhs": 1887,
+            "median_attempts": 288,
+            "median_rodas_probe_batches": 2,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 286,
+            "maximum_endpoint_error": 7.119811851197255e-09,
+            "physical_cap": 0.0001,
+            "median_implicit_committed_time": 1.9995046338659637,
+            "max_switches": 1
+          },
+          "rodas": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.000169771,
+            "median_rhs": 427,
+            "median_attempts": 54,
+            "median_rodas_probe_batches": 0,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 0,
+            "maximum_endpoint_error": 1.3888623473512496e-08,
+            "physical_cap": 0.0001,
+            "median_implicit_committed_time": 2.0,
+            "max_switches": 0
+          },
+          "adaptive": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.000369637,
+            "median_rhs": 1311,
+            "median_attempts": 192,
+            "median_rodas_probe_batches": 2,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 286,
+            "maximum_endpoint_error": 7.170790738975086e-09,
+            "physical_cap": 0.0001,
+            "median_implicit_committed_time": 1.9998155538860158,
+            "max_switches": 1
+          }
+        },
+        "paired_comparisons": [
+          {
+            "repetition": 1,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.1555804163980432,
+            "adaptive_over_alternative_rhs": 0.6947535771065183
+          },
+          {
+            "repetition": 1,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 2.5128025398919718,
+            "adaptive_over_alternative_rhs": 3.070257611241218
+          },
+          {
+            "repetition": 2,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.5667062728534086,
+            "adaptive_over_alternative_rhs": 0.6947535771065183
+          },
+          {
+            "repetition": 2,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 2.233267276484165,
+            "adaptive_over_alternative_rhs": 3.070257611241218
+          },
+          {
+            "repetition": 3,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.0687717783465418,
+            "adaptive_over_alternative_rhs": 0.6947535771065183
+          },
+          {
+            "repetition": 3,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 2.088708899816797,
+            "adaptive_over_alternative_rhs": 3.070257611241218
+          },
+          {
+            "repetition": 4,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.7308164836304042,
+            "adaptive_over_alternative_rhs": 0.6947535771065183
+          },
+          {
+            "repetition": 4,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.3807471922988768,
+            "adaptive_over_alternative_rhs": 3.070257611241218
+          },
+          {
+            "repetition": 5,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.5565588438494555,
+            "adaptive_over_alternative_rhs": 0.6947535771065183
+          },
+          {
+            "repetition": 5,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 2.9954773568147512,
+            "adaptive_over_alternative_rhs": 3.070257611241218
+          }
+        ]
+      },
+      {
+        "case": "decay",
+        "policies": {
+          "evidence": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 4.5928e-05,
+            "median_rhs": 79,
+            "median_attempts": 13,
+            "median_rodas_probe_batches": 0,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 0,
+            "maximum_endpoint_error": 3.3718316472253207e-09,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": -0.0,
+            "max_switches": 0
+          },
+          "dopri": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 2.9484e-05,
+            "median_rhs": 73,
+            "median_attempts": 12,
+            "median_rodas_probe_batches": 0,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 0,
+            "maximum_endpoint_error": 8.019027775141296e-09,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": 0.0,
+            "max_switches": 0
+          },
+          "adaptive": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 4.754e-05,
+            "median_rhs": 79,
+            "median_attempts": 13,
+            "median_rodas_probe_batches": 0,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 0,
+            "maximum_endpoint_error": 3.3718316472253207e-09,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": -0.0,
+            "max_switches": 0
+          }
+        },
+        "paired_comparisons": [
+          {
+            "repetition": 1,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.9500522557045812,
+            "adaptive_over_alternative_rhs": 1.0
+          },
+          {
+            "repetition": 1,
+            "alternative": "dopri",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.6130868761552681,
+            "adaptive_over_alternative_rhs": 1.082191780821918
+          },
+          {
+            "repetition": 2,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 2.9696116090482287,
+            "adaptive_over_alternative_rhs": 1.0
+          },
+          {
+            "repetition": 2,
+            "alternative": "dopri",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 2.5627255985267037,
+            "adaptive_over_alternative_rhs": 1.082191780821918
+          },
+          {
+            "repetition": 3,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.5687625957275292,
+            "adaptive_over_alternative_rhs": 1.0
+          },
+          {
+            "repetition": 3,
+            "alternative": "dopri",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.3832053586015356,
+            "adaptive_over_alternative_rhs": 1.082191780821918
+          },
+          {
+            "repetition": 4,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.0516070520052203,
+            "adaptive_over_alternative_rhs": 1.0
+          },
+          {
+            "repetition": 4,
+            "alternative": "dopri",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.6380112324707992,
+            "adaptive_over_alternative_rhs": 1.082191780821918
+          },
+          {
+            "repetition": 5,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 2.385043540712811,
+            "adaptive_over_alternative_rhs": 1.0
+          },
+          {
+            "repetition": 5,
+            "alternative": "dopri",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 3.604259937593271,
+            "adaptive_over_alternative_rhs": 1.082191780821918
+          }
+        ]
+      },
+      {
+        "case": "relaxation",
+        "policies": {
+          "evidence": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.000300274,
+            "median_rhs": 749,
+            "median_attempts": 104,
+            "median_rodas_probe_batches": 1,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 32,
+            "maximum_endpoint_error": 4.360898420152637e-09,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": 0.4904538993749652,
+            "max_switches": 2
+          },
+          "rodas": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.000180407,
+            "median_rhs": 462,
+            "median_attempts": 59,
+            "median_rodas_probe_batches": 0,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 0,
+            "maximum_endpoint_error": 9.17396314470409e-09,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": 1.0,
+            "max_switches": 0
+          },
+          "adaptive": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.000262428,
+            "median_rhs": 813,
+            "median_attempts": 112,
+            "median_rodas_probe_batches": 2,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 96,
+            "maximum_endpoint_error": 4.360898420152637e-09,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": 0.4904538993749652,
+            "max_switches": 2
+          }
+        },
+        "paired_comparisons": [
+          {
+            "repetition": 1,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.7304254886843445,
+            "adaptive_over_alternative_rhs": 1.0854472630173564
+          },
+          {
+            "repetition": 1,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.5514513745196572,
+            "adaptive_over_alternative_rhs": 1.7597402597402598
+          },
+          {
+            "repetition": 2,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.0789115821907784,
+            "adaptive_over_alternative_rhs": 1.0854472630173564
+          },
+          {
+            "repetition": 2,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.3875354201717878,
+            "adaptive_over_alternative_rhs": 1.7597402597402598
+          },
+          {
+            "repetition": 3,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.3574576573943262,
+            "adaptive_over_alternative_rhs": 1.0854472630173564
+          },
+          {
+            "repetition": 3,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 2.3659324921742773,
+            "adaptive_over_alternative_rhs": 1.7597402597402598
+          },
+          {
+            "repetition": 4,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.9402645583700221,
+            "adaptive_over_alternative_rhs": 1.0854472630173564
+          },
+          {
+            "repetition": 4,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.5650002494359976,
+            "adaptive_over_alternative_rhs": 1.7597402597402598
+          },
+          {
+            "repetition": 5,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.9428405580001872,
+            "adaptive_over_alternative_rhs": 1.0854472630173564
+          },
+          {
+            "repetition": 5,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.0588824118235882,
+            "adaptive_over_alternative_rhs": 1.7597402597402598
+          }
+        ]
+      },
+      {
+        "case": "rotation",
+        "policies": {
+          "evidence": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.00251449,
+            "median_rhs": 6395,
+            "median_attempts": 1020,
+            "median_rodas_probe_batches": 6,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 1150,
+            "maximum_endpoint_error": 9.254595551011491e-07,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": -0.0,
+            "max_switches": 0
+          },
+          "dopri": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.000282027,
+            "median_rhs": 5227,
+            "median_attempts": 871,
+            "median_rodas_probe_batches": 0,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 0,
+            "maximum_endpoint_error": 9.272037038154934e-07,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": 0.0,
+            "max_switches": 0
+          },
+          "adaptive": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.001420512,
+            "median_rhs": 5804,
+            "median_attempts": 945,
+            "median_rodas_probe_batches": 3,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 559,
+            "maximum_endpoint_error": 9.254595551011491e-07,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": -0.0,
+            "max_switches": 0
+          }
+        },
+        "paired_comparisons": [
+          {
+            "repetition": 1,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.594354993251063,
+            "adaptive_over_alternative_rhs": 0.907584050039093
+          },
+          {
+            "repetition": 1,
+            "alternative": "dopri",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 5.208816594735125,
+            "adaptive_over_alternative_rhs": 1.1103883680887698
+          },
+          {
+            "repetition": 2,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.6488448949886458,
+            "adaptive_over_alternative_rhs": 0.907584050039093
+          },
+          {
+            "repetition": 2,
+            "alternative": "dopri",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 6.162446978481668,
+            "adaptive_over_alternative_rhs": 1.1103883680887698
+          },
+          {
+            "repetition": 3,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.8167116055970256,
+            "adaptive_over_alternative_rhs": 0.907584050039093
+          },
+          {
+            "repetition": 3,
+            "alternative": "dopri",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 8.162395798983784,
+            "adaptive_over_alternative_rhs": 1.1103883680887698
+          },
+          {
+            "repetition": 4,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.5327728663115768,
+            "adaptive_over_alternative_rhs": 0.907584050039093
+          },
+          {
+            "repetition": 4,
+            "alternative": "dopri",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 4.518020146407269,
+            "adaptive_over_alternative_rhs": 1.1103883680887698
+          },
+          {
+            "repetition": 5,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.49527510595547614,
+            "adaptive_over_alternative_rhs": 0.907584050039093
+          },
+          {
+            "repetition": 5,
+            "alternative": "dopri",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 4.258557654115962,
+            "adaptive_over_alternative_rhs": 1.1103883680887698
+          }
+        ]
+      },
+      {
+        "case": "stiff-forced",
+        "policies": {
+          "evidence": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.000241427,
+            "median_rhs": 706,
+            "median_attempts": 100,
+            "median_rodas_probe_batches": 1,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 129,
+            "maximum_endpoint_error": 3.2427505125554035e-11,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": 0.9904538993761732,
+            "max_switches": 1
+          },
+          "rodas": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.0002635,
+            "median_rhs": 80,
+            "median_attempts": 10,
+            "median_rodas_probe_batches": 0,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 0,
+            "maximum_endpoint_error": 1.3635703677294941e-10,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": 1.0,
+            "max_switches": 0
+          },
+          "adaptive": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.000272953,
+            "median_rhs": 706,
+            "median_attempts": 100,
+            "median_rodas_probe_batches": 1,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 129,
+            "maximum_endpoint_error": 3.2427505125554035e-11,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": 0.9904538993761732,
+            "max_switches": 1
+          }
+        },
+        "paired_comparisons": [
+          {
+            "repetition": 1,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.019714132010341,
+            "adaptive_over_alternative_rhs": 1.0
+          },
+          {
+            "repetition": 1,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.937224536724888,
+            "adaptive_over_alternative_rhs": 8.825
+          },
+          {
+            "repetition": 2,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.0346398704370265,
+            "adaptive_over_alternative_rhs": 1.0
+          },
+          {
+            "repetition": 2,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.0000800736677744,
+            "adaptive_over_alternative_rhs": 8.825
+          },
+          {
+            "repetition": 3,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.2527846360121668,
+            "adaptive_over_alternative_rhs": 1.0
+          },
+          {
+            "repetition": 3,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.7431513107939409,
+            "adaptive_over_alternative_rhs": 8.825
+          },
+          {
+            "repetition": 4,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.4693334244948018,
+            "adaptive_over_alternative_rhs": 1.0
+          },
+          {
+            "repetition": 4,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.3049297912713473,
+            "adaptive_over_alternative_rhs": 8.825
+          },
+          {
+            "repetition": 5,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.9110085533629552,
+            "adaptive_over_alternative_rhs": 1.0
+          },
+          {
+            "repetition": 5,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.9678398849508395,
+            "adaptive_over_alternative_rhs": 8.825
+          }
+        ]
+      },
+      {
+        "case": "transition-43",
+        "policies": {
+          "evidence": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.026322405,
+            "median_rhs": 173988,
+            "median_attempts": 28952,
+            "median_rodas_probe_batches": 8,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 1133,
+            "maximum_endpoint_error": 1.796745796589505e-08,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": -0.0,
+            "max_switches": 0
+          },
+          "rodas": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.02118581,
+            "median_rhs": 8802,
+            "median_attempts": 1105,
+            "median_rodas_probe_batches": 0,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 0,
+            "maximum_endpoint_error": 2.9252988920092093e-10,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": 1.0,
+            "max_switches": 0
+          },
+          "adaptive": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.012807808,
+            "median_rhs": 30480,
+            "median_attempts": 4904,
+            "median_rodas_probe_batches": 9,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 1185,
+            "maximum_endpoint_error": 8.108632543191163e-09,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": 0.49480982266129137,
+            "max_switches": 1
+          }
+        },
+        "paired_comparisons": [
+          {
+            "repetition": 1,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.50418378793702,
+            "adaptive_over_alternative_rhs": 0.17518449548244708
+          },
+          {
+            "repetition": 1,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.7333310595464655,
+            "adaptive_over_alternative_rhs": 3.4628493524199047
+          },
+          {
+            "repetition": 2,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.5200070955765134,
+            "adaptive_over_alternative_rhs": 0.17518449548244708
+          },
+          {
+            "repetition": 2,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.6199640488409733,
+            "adaptive_over_alternative_rhs": 3.4628493524199047
+          },
+          {
+            "repetition": 3,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.5101803662849194,
+            "adaptive_over_alternative_rhs": 0.17518449548244708
+          },
+          {
+            "repetition": 3,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.6351535438554907,
+            "adaptive_over_alternative_rhs": 3.4628493524199047
+          },
+          {
+            "repetition": 4,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.5638325221422587,
+            "adaptive_over_alternative_rhs": 0.17518449548244708
+          },
+          {
+            "repetition": 4,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.6735357068009034,
+            "adaptive_over_alternative_rhs": 3.4628493524199047
+          },
+          {
+            "repetition": 5,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.4811951793048106,
+            "adaptive_over_alternative_rhs": 0.17518449548244708
+          },
+          {
+            "repetition": 5,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.6045465337412165,
+            "adaptive_over_alternative_rhs": 3.4628493524199047
+          }
+        ]
+      },
+      {
+        "case": "transition-47",
+        "policies": {
+          "evidence": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.019611755,
+            "median_rhs": 162308,
+            "median_attempts": 27006,
+            "median_rodas_probe_batches": 8,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 1111,
+            "maximum_endpoint_error": 1.8021282688351903e-08,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": -0.0,
+            "max_switches": 0
+          },
+          "rodas": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.016475402,
+            "median_rhs": 8758,
+            "median_attempts": 1100,
+            "median_rodas_probe_batches": 0,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 0,
+            "maximum_endpoint_error": 4.627307426119387e-09,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": 1.0,
+            "max_switches": 0
+          },
+          "adaptive": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.011760439,
+            "median_rhs": 31122,
+            "median_attempts": 5028,
+            "median_rodas_probe_batches": 9,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 1027,
+            "maximum_endpoint_error": 9.924183697052058e-10,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": 0.45189926349681286,
+            "max_switches": 1
+          }
+        },
+        "paired_comparisons": [
+          {
+            "repetition": 1,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.5856130491466033,
+            "adaptive_over_alternative_rhs": 0.19174655593069967
+          },
+          {
+            "repetition": 1,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.6251618002416433,
+            "adaptive_over_alternative_rhs": 3.5535510390500114
+          },
+          {
+            "repetition": 2,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.5550220065561887,
+            "adaptive_over_alternative_rhs": 0.19174655593069967
+          },
+          {
+            "repetition": 2,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.7264237203575674,
+            "adaptive_over_alternative_rhs": 3.5535510390500114
+          },
+          {
+            "repetition": 3,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.5782638524701129,
+            "adaptive_over_alternative_rhs": 0.19174655593069967
+          },
+          {
+            "repetition": 3,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.6883455104767702,
+            "adaptive_over_alternative_rhs": 3.5535510390500114
+          },
+          {
+            "repetition": 4,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.767281408275657,
+            "adaptive_over_alternative_rhs": 0.19174655593069967
+          },
+          {
+            "repetition": 4,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.8517309160929659,
+            "adaptive_over_alternative_rhs": 3.5535510390500114
+          },
+          {
+            "repetition": 5,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.577233764416725,
+            "adaptive_over_alternative_rhs": 0.19174655593069967
+          },
+          {
+            "repetition": 5,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.7298148286243731,
+            "adaptive_over_alternative_rhs": 3.5535510390500114
+          }
+        ]
+      },
+      {
+        "case": "transition-87",
+        "policies": {
+          "evidence": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.00774087,
+            "median_rhs": 46270,
+            "median_attempts": 7652,
+            "median_rodas_probe_batches": 8,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 1473,
+            "maximum_endpoint_error": 1.6113961831543122e-08,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": -0.0,
+            "max_switches": 0
+          },
+          "rodas": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.016857033,
+            "median_rhs": 8351,
+            "median_attempts": 1054,
+            "median_rodas_probe_batches": 0,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 0,
+            "maximum_endpoint_error": 7.45899353393753e-09,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": 1.0,
+            "max_switches": 0
+          },
+          "adaptive": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.006863562,
+            "median_rhs": 30694,
+            "median_attempts": 5048,
+            "median_rodas_probe_batches": 10,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 1303,
+            "maximum_endpoint_error": 7.454328043721148e-09,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": 0.053144096042863076,
+            "max_switches": 1
+          }
+        },
+        "paired_comparisons": [
+          {
+            "repetition": 1,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.808325822818531,
+            "adaptive_over_alternative_rhs": 0.6633671925653771
+          },
+          {
+            "repetition": 1,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.34686946506006366,
+            "adaptive_over_alternative_rhs": 3.675487965513112
+          },
+          {
+            "repetition": 2,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.8794100663103759,
+            "adaptive_over_alternative_rhs": 0.6633671925653771
+          },
+          {
+            "repetition": 2,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.3226548286254416,
+            "adaptive_over_alternative_rhs": 3.675487965513112
+          },
+          {
+            "repetition": 3,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.87338204186238,
+            "adaptive_over_alternative_rhs": 0.6633671925653771
+          },
+          {
+            "repetition": 3,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.4225975985299124,
+            "adaptive_over_alternative_rhs": 3.675487965513112
+          },
+          {
+            "repetition": 4,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.7880543815186699,
+            "adaptive_over_alternative_rhs": 0.6633671925653771
+          },
+          {
+            "repetition": 4,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.4071631110884104,
+            "adaptive_over_alternative_rhs": 3.675487965513112
+          },
+          {
+            "repetition": 5,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.248384121459772,
+            "adaptive_over_alternative_rhs": 0.6633671925653771
+          },
+          {
+            "repetition": 5,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.6320174018386209,
+            "adaptive_over_alternative_rhs": 3.675487965513112
+          }
+        ]
+      },
+      {
+        "case": "transition-91",
+        "policies": {
+          "evidence": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.007601947,
+            "median_rhs": 34749,
+            "median_attempts": 5726,
+            "median_rodas_probe_batches": 8,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 1628,
+            "maximum_endpoint_error": 1.810744743035997e-08,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": -0.0,
+            "max_switches": 0
+          },
+          "rodas": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.015488837,
+            "median_rhs": 8301,
+            "median_attempts": 1048,
+            "median_rodas_probe_batches": 0,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 0,
+            "maximum_endpoint_error": 2.940026000430862e-10,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": 1.0,
+            "max_switches": 0
+          },
+          "adaptive": {
+            "runs": 5,
+            "eligible_runs": 5,
+            "median_inclusive_seconds": 0.006747282,
+            "median_rhs": 30215,
+            "median_attempts": 4975,
+            "median_rodas_probe_batches": 10,
+            "probe_count_semantics": "RODAS entry trials and same-window return comparators, including productive committed comparators; discarded work is counted separately",
+            "median_discarded_probe_rhs": 1366,
+            "maximum_endpoint_error": 9.676819345827425e-10,
+            "physical_cap": 1e-05,
+            "median_implicit_committed_time": 0.014813130356451265,
+            "max_switches": 1
+          }
+        },
+        "paired_comparisons": [
+          {
+            "repetition": 1,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.7838708071918021,
+            "adaptive_over_alternative_rhs": 0.8695214250769806
+          },
+          {
+            "repetition": 1,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.38193480918120365,
+            "adaptive_over_alternative_rhs": 3.6399229008553187
+          },
+          {
+            "repetition": 2,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 1.2098501870639193,
+            "adaptive_over_alternative_rhs": 0.8695214250769806
+          },
+          {
+            "repetition": 2,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.566748305171695,
+            "adaptive_over_alternative_rhs": 3.6399229008553187
+          },
+          {
+            "repetition": 3,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.8285707549220351,
+            "adaptive_over_alternative_rhs": 0.8695214250769806
+          },
+          {
+            "repetition": 3,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.3943541045479221,
+            "adaptive_over_alternative_rhs": 3.6399229008553187
+          },
+          {
+            "repetition": 4,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.8486740186898235,
+            "adaptive_over_alternative_rhs": 0.8695214250769806
+          },
+          {
+            "repetition": 4,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.4409132848386228,
+            "adaptive_over_alternative_rhs": 3.6399229008553187
+          },
+          {
+            "repetition": 5,
+            "alternative": "evidence",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.7900333926339166,
+            "adaptive_over_alternative_rhs": 0.8695214250769806
+          },
+          {
+            "repetition": 5,
+            "alternative": "rodas",
+            "status": "COMPARABLE",
+            "adaptive_over_alternative_seconds": 0.39233595882929306,
+            "adaptive_over_alternative_rhs": 3.6399229008553187
+          }
+        ]
+      }
+    ],
+    "comparison_unit": "whole trajectory, same physical endpoint cap and supplied fixture",
+    "per_decision_false_positive_rate": null,
+    "rate_limitation": "pilot segments identify trigger and commitment, but complete-trajectory alternatives do not supply same-checkpoint truth labels for every decision"
+  },
+  "execution": {
+    "status": "MEASURED_SCOPED",
+    "phases": [
+      {
+        "phase": "calibrated-short",
+        "physical_span": [
+          0.0,
+          0.05
+        ],
+        "deliberately_stale_window_epoch": false,
+        "evaluated_batches_per_arm": 5,
+        "median_dispatch_seconds": {
+          "serial": 0.000124224,
+          "parallel": 9.4389e-05,
+          "adaptive": 7.8506e-05
+        },
+        "sum_dispatch_seconds": {
+          "serial": 0.000905359,
+          "parallel": 0.00063786,
+          "adaptive": 0.00040052
+        },
+        "calibration_seconds_including_warmup": 0.00097551,
+        "adaptive_pool_startup_delta_seconds": 0.000144142,
+        "adaptive_total_including_calibration_and_pool": 0.0015201719999999998,
+        "direct_parallel_pool_startup_delta_seconds": 6.3784e-05,
+        "direct_parallel_total_including_pool": 0.000701644,
+        "cost_scope": "dispatch sums are warmed backend comparisons; adaptive full total separately charges calibration and lazy-pool startup once",
+        "maximum_endpoint_error": 1.1203260541492455e-12,
+        "all_ordered_outputs_equal": true,
+        "paired_dispatches": [
+          {
+            "repeat": 0,
+            "adaptive_over_best_direct_seconds": 0.6904684191585696,
+            "best_observed_direct": "serial",
+            "decision": {
+              "estimated_cost_recovery_calls": 47.53351729993632,
+              "evidence_invalidated_after_dispatch": false,
+              "horizon_recovers_calibration": false,
+              "mode": "Parallel",
+              "observed_dispatch_seconds": 8.1771e-05,
+              "parallel_upper_seconds": 9.4289e-05,
+              "probe_due": false,
+              "reason": "MeasuredGain",
+              "serial_lower_seconds": 0.000117844
+            }
+          },
+          {
+            "repeat": 1,
+            "adaptive_over_best_direct_seconds": 0.6135851365275631,
+            "best_observed_direct": "serial",
+            "decision": {
+              "estimated_cost_recovery_calls": 47.53351729993632,
+              "evidence_invalidated_after_dispatch": false,
+              "horizon_recovers_calibration": false,
+              "mode": "Parallel",
+              "observed_dispatch_seconds": 7.6052e-05,
+              "parallel_upper_seconds": 9.4289e-05,
+              "probe_due": false,
+              "reason": "HysteresisRetained",
+              "serial_lower_seconds": 0.000117844
+            }
+          },
+          {
+            "repeat": 2,
+            "adaptive_over_best_direct_seconds": 0.8984627445994767,
+            "best_observed_direct": "parallel",
+            "decision": {
+              "estimated_cost_recovery_calls": 47.53351729993632,
+              "evidence_invalidated_after_dispatch": false,
+              "horizon_recovers_calibration": false,
+              "mode": "Parallel",
+              "observed_dispatch_seconds": 8.4555e-05,
+              "parallel_upper_seconds": 9.4289e-05,
+              "probe_due": false,
+              "reason": "HysteresisRetained",
+              "serial_lower_seconds": 0.000117844
+            }
+          },
+          {
+            "repeat": 3,
+            "adaptive_over_best_direct_seconds": 0.9071627541408047,
+            "best_observed_direct": "parallel",
+            "decision": {
+              "estimated_cost_recovery_calls": 47.53351729993632,
+              "evidence_invalidated_after_dispatch": false,
+              "horizon_recovers_calibration": false,
+              "mode": "Parallel",
+              "observed_dispatch_seconds": 7.8315e-05,
+              "parallel_upper_seconds": 9.4289e-05,
+              "probe_due": false,
+              "reason": "HysteresisRetained",
+              "serial_lower_seconds": 0.000117844
+            }
+          },
+          {
+            "repeat": 4,
+            "adaptive_over_best_direct_seconds": 1.0002548225161176,
+            "best_observed_direct": "parallel",
+            "decision": {
+              "estimated_cost_recovery_calls": 47.53351729993632,
+              "evidence_invalidated_after_dispatch": false,
+              "horizon_recovers_calibration": false,
+              "mode": "Parallel",
+              "observed_dispatch_seconds": 7.8346e-05,
+              "parallel_upper_seconds": 9.4289e-05,
+              "probe_due": false,
+              "reason": "HysteresisRetained",
+              "serial_lower_seconds": 0.000117844
+            }
+          }
+        ],
+        "calibration_samples_last": [
+          {
+            "parallel_seconds": 8.4435e-05,
+            "serial_first": false,
+            "serial_seconds": 0.000117844
+          },
+          {
+            "parallel_seconds": 9.1145e-05,
+            "serial_first": true,
+            "serial_seconds": 0.000119927
+          },
+          {
+            "parallel_seconds": 9.4289e-05,
+            "serial_first": false,
+            "serial_seconds": 0.000117884
+          }
+        ],
+        "telemetry_cumulative": {
+          "calibration_pairs": 3,
+          "decisions": 5,
+          "drift_invalidations": 0,
+          "invalid_calibrations": 0,
+          "nested_fallbacks": 0,
+          "observed_dispatches": 5,
+          "parallel_calls": 5,
+          "serial_calls": 0,
+          "switches": 1
+        }
+      },
+      {
+        "phase": "unannounced-cost-drift",
+        "physical_span": [
+          0.0,
+          32.0
+        ],
+        "deliberately_stale_window_epoch": true,
+        "evaluated_batches_per_arm": 5,
+        "median_dispatch_seconds": {
+          "serial": 0.00134427,
+          "parallel": 0.000731503,
+          "adaptive": 0.001265359
+        },
+        "sum_dispatch_seconds": {
+          "serial": 0.006627878,
+          "parallel": 0.004302023,
+          "adaptive": 0.005758924
+        },
+        "calibration_seconds_including_warmup": 0.0,
+        "adaptive_pool_startup_delta_seconds": 0.0,
+        "adaptive_total_including_calibration_and_pool": 0.005758924,
+        "direct_parallel_pool_startup_delta_seconds": 0.0,
+        "direct_parallel_total_including_pool": 0.004302023,
+        "cost_scope": "dispatch sums are warmed backend comparisons; adaptive full total separately charges calibration and lazy-pool startup once",
+        "maximum_endpoint_error": 9.131704836740084e-09,
+        "all_ordered_outputs_equal": true,
+        "paired_dispatches": [
+          {
+            "repeat": 0,
+            "adaptive_over_best_direct_seconds": 1.0700147732529508,
+            "best_observed_direct": "parallel",
+            "decision": {
+              "estimated_cost_recovery_calls": 47.53351729993632,
+              "evidence_invalidated_after_dispatch": false,
+              "horizon_recovers_calibration": false,
+              "mode": "Parallel",
+              "observed_dispatch_seconds": 0.000716759,
+              "parallel_upper_seconds": 9.4289e-05,
+              "probe_due": false,
+              "reason": "HysteresisRetained",
+              "serial_lower_seconds": 0.000117844
+            }
+          },
+          {
+            "repeat": 1,
+            "adaptive_over_best_direct_seconds": 1.0836838231760828,
+            "best_observed_direct": "parallel",
+            "decision": {
+              "estimated_cost_recovery_calls": 47.53351729993632,
+              "evidence_invalidated_after_dispatch": true,
+              "horizon_recovers_calibration": false,
+              "mode": "Parallel",
+              "observed_dispatch_seconds": 0.000856675,
+              "parallel_upper_seconds": 9.4289e-05,
+              "probe_due": true,
+              "reason": "HysteresisRetained",
+              "serial_lower_seconds": 0.000117844
+            }
+          },
+          {
+            "repeat": 2,
+            "adaptive_over_best_direct_seconds": 1.729806986437513,
+            "best_observed_direct": "parallel",
+            "decision": {
+              "estimated_cost_recovery_calls": null,
+              "evidence_invalidated_after_dispatch": false,
+              "horizon_recovers_calibration": false,
+              "mode": "Serial",
+              "observed_dispatch_seconds": 0.001265078,
+              "parallel_upper_seconds": null,
+              "probe_due": true,
+              "reason": "ObservedCostDrift",
+              "serial_lower_seconds": null
+            }
+          },
+          {
+            "repeat": 3,
+            "adaptive_over_best_direct_seconds": 2.188027578830133,
+            "best_observed_direct": "parallel",
+            "decision": {
+              "estimated_cost_recovery_calls": null,
+              "evidence_invalidated_after_dispatch": false,
+              "horizon_recovers_calibration": false,
+              "mode": "Serial",
+              "observed_dispatch_seconds": 0.001587029,
+              "parallel_upper_seconds": null,
+              "probe_due": true,
+              "reason": "ObservedCostDrift",
+              "serial_lower_seconds": null
+            }
+          },
+          {
+            "repeat": 4,
+            "adaptive_over_best_direct_seconds": 0.9624696916714591,
+            "best_observed_direct": "parallel",
+            "decision": {
+              "estimated_cost_recovery_calls": null,
+              "evidence_invalidated_after_dispatch": false,
+              "horizon_recovers_calibration": false,
+              "mode": "Serial",
+              "observed_dispatch_seconds": 0.001331781,
+              "parallel_upper_seconds": null,
+              "probe_due": true,
+              "reason": "ObservedCostDrift",
+              "serial_lower_seconds": null
+            }
+          }
+        ],
+        "calibration_samples_last": [
+          {
+            "parallel_seconds": 8.4435e-05,
+            "serial_first": false,
+            "serial_seconds": 0.000117844
+          },
+          {
+            "parallel_seconds": 9.1145e-05,
+            "serial_first": true,
+            "serial_seconds": 0.000119927
+          },
+          {
+            "parallel_seconds": 9.4289e-05,
+            "serial_first": false,
+            "serial_seconds": 0.000117884
+          }
+        ],
+        "telemetry_cumulative": {
+          "calibration_pairs": 3,
+          "decisions": 10,
+          "drift_invalidations": 1,
+          "invalid_calibrations": 0,
+          "nested_fallbacks": 0,
+          "observed_dispatches": 7,
+          "parallel_calls": 7,
+          "serial_calls": 3,
+          "switches": 2
+        }
+      },
+      {
+        "phase": "explicit-epoch-refresh",
+        "physical_span": [
+          0.0,
+          32.0
+        ],
+        "deliberately_stale_window_epoch": false,
+        "evaluated_batches_per_arm": 5,
+        "median_dispatch_seconds": {
+          "serial": 0.001394394,
+          "parallel": 0.000742329,
+          "adaptive": 0.001388595
+        },
+        "sum_dispatch_seconds": {
+          "serial": 0.007475906,
+          "parallel": 0.004538588,
+          "adaptive": 0.008077677
+        },
+        "calibration_seconds_including_warmup": 0.012466825,
+        "adaptive_pool_startup_delta_seconds": 0.0,
+        "adaptive_total_including_calibration_and_pool": 0.020544502,
+        "direct_parallel_pool_startup_delta_seconds": 0.0,
+        "direct_parallel_total_including_pool": 0.004538588,
+        "cost_scope": "dispatch sums are warmed backend comparisons; adaptive full total separately charges calibration and lazy-pool startup once",
+        "maximum_endpoint_error": 9.131704836740084e-09,
+        "all_ordered_outputs_equal": true,
+        "paired_dispatches": [
+          {
+            "repeat": 0,
+            "adaptive_over_best_direct_seconds": 1.9811297578537295,
+            "best_observed_direct": "serial",
+            "decision": {
+              "estimated_cost_recovery_calls": 546.5444656323111,
+              "evidence_invalidated_after_dispatch": false,
+              "horizon_recovers_calibration": false,
+              "mode": "Serial",
+              "observed_dispatch_seconds": 0.002660568,
+              "parallel_upper_seconds": 0.001402186,
+              "probe_due": false,
+              "reason": "NoMeasuredGain",
+              "serial_lower_seconds": 0.00142526
+            }
+          },
+          {
+            "repeat": 1,
+            "adaptive_over_best_direct_seconds": 1.844389778704004,
+            "best_observed_direct": "parallel",
+            "decision": {
+              "estimated_cost_recovery_calls": 546.5444656323111,
+              "evidence_invalidated_after_dispatch": false,
+              "horizon_recovers_calibration": false,
+              "mode": "Serial",
+              "observed_dispatch_seconds": 0.0014524,
+              "parallel_upper_seconds": 0.001402186,
+              "probe_due": false,
+              "reason": "NoMeasuredGain",
+              "serial_lower_seconds": 0.00142526
+            }
+          },
+          {
+            "repeat": 2,
+            "adaptive_over_best_direct_seconds": 2.0006930266534306,
+            "best_observed_direct": "parallel",
+            "decision": {
+              "estimated_cost_recovery_calls": 546.5444656323111,
+              "evidence_invalidated_after_dispatch": false,
+              "horizon_recovers_calibration": false,
+              "mode": "Serial",
+              "observed_dispatch_seconds": 0.001388235,
+              "parallel_upper_seconds": 0.001402186,
+              "probe_due": false,
+              "reason": "NoMeasuredGain",
+              "serial_lower_seconds": 0.00142526
+            }
+          },
+          {
+            "repeat": 3,
+            "adaptive_over_best_direct_seconds": 1.7216921338112885,
+            "best_observed_direct": "parallel",
+            "decision": {
+              "estimated_cost_recovery_calls": 546.5444656323111,
+              "evidence_invalidated_after_dispatch": false,
+              "horizon_recovers_calibration": false,
+              "mode": "Serial",
+              "observed_dispatch_seconds": 0.001277551,
+              "parallel_upper_seconds": 0.001402186,
+              "probe_due": false,
+              "reason": "NoMeasuredGain",
+              "serial_lower_seconds": 0.00142526
+            }
+          },
+          {
+            "repeat": 4,
+            "adaptive_over_best_direct_seconds": 1.7504249295664691,
+            "best_observed_direct": "parallel",
+            "decision": {
+              "estimated_cost_recovery_calls": 546.5444656323111,
+              "evidence_invalidated_after_dispatch": false,
+              "horizon_recovers_calibration": false,
+              "mode": "Serial",
+              "observed_dispatch_seconds": 0.001277812,
+              "parallel_upper_seconds": 0.001402186,
+              "probe_due": false,
+              "reason": "NoMeasuredGain",
+              "serial_lower_seconds": 0.00142526
+            }
+          }
+        ],
+        "calibration_samples_last": [
+          {
+            "parallel_seconds": 0.000766755,
+            "serial_first": false,
+            "serial_seconds": 0.002030947
+          },
+          {
+            "parallel_seconds": 0.001367715,
+            "serial_first": true,
+            "serial_seconds": 0.002456686
+          },
+          {
+            "parallel_seconds": 0.001402186,
+            "serial_first": false,
+            "serial_seconds": 0.00142526
+          }
+        ],
+        "telemetry_cumulative": {
+          "calibration_pairs": 6,
+          "decisions": 15,
+          "drift_invalidations": 1,
+          "invalid_calibrations": 0,
+          "nested_fallbacks": 0,
+          "observed_dispatches": 12,
+          "parallel_calls": 7,
+          "serial_calls": 8,
+          "switches": 2
+        }
+      }
+    ],
+    "comparison_unit": "same-horizon 64-item logistic ODE batches within each phase",
+    "future_cost_coverage": "unmeasured; empirical min/max timing envelope is not a confidence interval",
+    "drift_stress_semantics": "the intentionally unchanged window epoch is an invalid evidence-reuse case used to test observed-cost invalidation"
+  },
+  "causal": {
+    "status": "MEASURED_SCOPED",
+    "selected": {
+      "analytic_endpoint": 0.5773502691896258,
+      "candidate_rhs": 4990,
+      "combined_rhs_and_verifier_evaluations": 10513,
+      "comparison_scope": "stage root work at same fixed mesh; not wall-time or global-error certificate",
+      "correction_rounds": 533,
+      "embedded_plus_inner_limit": 1e-08,
+      "endpoint": 0.5773502671580247,
+      "endpoint_absolute_error": 2.0316011095644626e-09,
+      "equation": "y'=-y^3; y(0)=1; t in [0,1]",
+      "fallback_steps": 0,
+      "h": 0.00390625,
+      "inner_output_budget": 1e-09,
+      "interval_verifier_rhs": 5523,
+      "maximum_actual_vs_native_step": 1.3054912706422783e-10,
+      "maximum_correction_rounds": 3,
+      "maximum_embedded_plus_bound": 9.845501954279709e-10,
+      "maximum_output_error_upper": 9.845491477634116e-10,
+      "mode": "physical-budget-original-residual",
+      "parallel_execution": "serial emulation; rounds describe candidate critical depth only",
+      "sequential_native_oracle_rhs": 1792,
+      "steps": 256
+    },
+    "blanket": {
+      "analytic_endpoint": 0.5773502691896258,
+      "candidate_rhs": 7900,
+      "combined_rhs_and_verifier_evaluations": 16818,
+      "comparison_scope": "stage root work at same fixed mesh; not wall-time or global-error certificate",
+      "correction_rounds": 1018,
+      "embedded_plus_inner_limit": 1e-08,
+      "endpoint": 0.5773502691896312,
+      "endpoint_absolute_error": 5.329070518200751e-15,
+      "equation": "y'=-y^3; y(0)=1; t in [0,1]",
+      "fallback_steps": 0,
+      "h": 0.00390625,
+      "inner_output_budget": 1e-09,
+      "interval_verifier_rhs": 8918,
+      "maximum_actual_vs_native_step": 1.6653345369377348e-15,
+      "maximum_correction_rounds": 5,
+      "maximum_embedded_plus_bound": 3.8221249544977554e-14,
+      "maximum_output_error_upper": 5.711442674864272e-15,
+      "mode": "blanket-original-residual-1e-14",
+      "parallel_execution": "serial emulation; rounds describe candidate critical depth only",
+      "sequential_native_oracle_rhs": 1792,
+      "steps": 256
+    },
+    "combined_work_ratio": 0.6251040551789749,
+    "correction_rounds_ratio": 0.5235756385068763,
+    "scope": "same fixed mesh derivative-free stage-root correction with original-target output-budget admission; no measured parallel speedup or global-error certificate"
+  }
+}

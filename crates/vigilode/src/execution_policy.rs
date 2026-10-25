@@ -3,6 +3,10 @@
 //! The calibration key is exact: callers must change its epochs when the method,
 //! callback, affinity, pool topology, or cost regime changes. Timing observations
 //! are empirical, not confidence bounds. No callbacks are replayed by `map_ordered`.
+use crate::selection_evidence::{
+    compare_qualified_costs, CostComparison, CostEvidence, CostEvidenceKind, CostInterval,
+    CostUnit, SelectionIdentity,
+};
 use rodas5p_core::{CoreError, CoreResult};
 use rodas5p_integrators::ParallelExecution;
 use serde::Serialize;
@@ -34,6 +38,23 @@ pub struct WorkloadKey {
     /// Change for pool, affinity, hardware, or external-load policy changes.
     pub environment_epoch: u64,
 }
+/// Full identity for callers composing physical charts, meshes and tolerances.
+/// Legacy methods use a zero-valued `comparison`; zero is an exact identity.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub struct ExecutionIdentity {
+    /// Work shape, numerical method and executor identity.
+    pub workload: WorkloadKey,
+    /// Physical chart, tolerance, output and provider identity.
+    pub comparison: SelectionIdentity,
+}
+impl From<WorkloadKey> for ExecutionIdentity {
+    fn from(workload: WorkloadKey) -> Self {
+        Self {
+            workload,
+            comparison: SelectionIdentity::default(),
+        }
+    }
+}
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
 /// Selected execution backend.
 pub enum ExecutionMode {
@@ -61,6 +82,8 @@ pub enum ExecutionReason {
     SingleWorker,
     /// Keep the current path for the configured minimum residence.
     Residency,
+    /// Consecutive actual dispatches left the declared timing validity envelope.
+    ObservedCostDrift,
 }
 #[derive(Clone, Copy, Debug, Serialize)]
 /// Mode, explanation, and empirical cost envelope for one dispatch.
@@ -79,6 +102,28 @@ pub struct ExecutionDecision {
     pub estimated_cost_recovery_calls: Option<f64>,
     /// Whether the declared horizon would recover the calibration cost at observed costs.
     pub horizon_recovers_calibration: bool,
+    /// Actual backend dispatch cost, when monitoring is explicitly enabled.
+    /// It excludes lazy pool construction, recorded by `startup_seconds`.
+    pub observed_dispatch_seconds: Option<f64>,
+    /// This dispatch revealed stale evidence; its result is preserved and the
+    /// *next* decision requires fresh evidence. No job is implicitly replayed.
+    pub evidence_invalidated_after_dispatch: bool,
+}
+/// Optional change detector for the empirical cost regime.
+#[derive(Clone, Copy, Debug)]
+pub struct ExecutionDriftConfig {
+    /// Excursion beyond max*factor or min/factor counts as a changed regime.
+    pub factor: f64,
+    /// Consecutive excursions required before invalidation.
+    pub consecutive_calls: usize,
+}
+impl Default for ExecutionDriftConfig {
+    fn default() -> Self {
+        Self {
+            factor: 2.0,
+            consecutive_calls: 2,
+        }
+    }
 }
 #[derive(Clone, Copy, Debug)]
 /// Conservative entry, hysteresis, and evidence-expiry settings.
@@ -91,6 +136,8 @@ pub struct ExecutionPolicyConfig {
     pub min_resident_calls: usize,
     /// Maximum non-nested decisions using one calibration.
     pub max_calibration_age: usize,
+    /// Monitor actual dispatch costs; disabled for the original timing-free API.
+    pub drift: Option<ExecutionDriftConfig>,
 }
 impl Default for ExecutionPolicyConfig {
     fn default() -> Self {
@@ -99,6 +146,16 @@ impl Default for ExecutionPolicyConfig {
             exit_margin: 0.02,
             min_resident_calls: 8,
             max_calibration_age: 128,
+            drift: None,
+        }
+    }
+}
+impl ExecutionPolicyConfig {
+    /// Same conservative paired comparison, with bounded cost-drift detection.
+    pub fn monitored() -> Self {
+        Self {
+            drift: Some(ExecutionDriftConfig::default()),
+            ..Self::default()
         }
     }
 }
@@ -119,6 +176,10 @@ pub struct ExecutionTelemetry {
     pub invalid_calibrations: u64,
     /// Number of non-nested incumbent changes.
     pub switches: u64,
+    /// Completed non-nested dispatches checked against calibration.
+    pub observed_dispatches: u64,
+    /// Cost-regime changes which invalidated evidence for future choices.
+    pub drift_invalidations: u64,
 }
 /// Small controller with three paired observations per exact workload.
 /// Calibration must include dispatch, callback, and ordered-result costs.
@@ -129,6 +190,7 @@ pub struct ExecutionSelector {
     config: ExecutionPolicyConfig,
     workers: usize,
     key: Option<WorkloadKey>,
+    comparison: SelectionIdentity,
     serial: [f64; 3],
     parallel: [f64; 3],
     pairs: usize,
@@ -137,6 +199,8 @@ pub struct ExecutionSelector {
     incumbent: ExecutionMode,
     resident_calls: usize,
     telemetry: ExecutionTelemetry,
+    drift_streak: usize,
+    drift_invalidated: bool,
 }
 impl ExecutionSelector {
     /// Validate policy settings and start with no cost evidence.
@@ -149,6 +213,9 @@ impl ExecutionSelector {
             || config.exit_margin < 0.0
             || config.enter_margin <= config.exit_margin
             || config.max_calibration_age == 0
+            || config.drift.is_some_and(|d| {
+                !d.factor.is_finite() || d.factor <= 1.0 || d.consecutive_calls == 0
+            })
         {
             return Err("invalid execution policy");
         }
@@ -156,6 +223,7 @@ impl ExecutionSelector {
             config,
             workers,
             key: None,
+            comparison: SelectionIdentity::default(),
             serial: [0.0; 3],
             parallel: [0.0; 3],
             pairs: 0,
@@ -164,6 +232,8 @@ impl ExecutionSelector {
             incumbent: ExecutionMode::Serial,
             resident_calls: config.min_resident_calls,
             telemetry: ExecutionTelemetry::default(),
+            drift_streak: 0,
+            drift_invalidated: false,
         })
     }
     /// Return a copy of the cumulative counters.
@@ -176,11 +246,23 @@ impl ExecutionSelector {
         key: WorkloadKey,
         overhead_seconds: f64,
     ) -> Result<(), &'static str> {
+        self.begin_calibration_for(key.into(), overhead_seconds)
+    }
+    /// Start a new transaction for the full physical/execution identity.
+    pub fn begin_calibration_for(
+        &mut self,
+        identity: ExecutionIdentity,
+        overhead_seconds: f64,
+    ) -> Result<(), &'static str> {
+        let key = identity.workload;
         self.key = None;
+        self.comparison = identity.comparison;
         self.pairs = 0;
         self.incumbent = ExecutionMode::Serial;
         self.age = 0;
         self.resident_calls = self.config.min_resident_calls;
+        self.drift_streak = 0;
+        self.drift_invalidated = false;
         if key.dimension == 0
             || key.batch_len == 0
             || !overhead_seconds.is_finite()
@@ -201,7 +283,18 @@ impl ExecutionSelector {
         parallel_seconds: f64,
         equivalent: bool,
     ) -> Result<(), &'static str> {
-        if self.key != Some(key)
+        self.record_pair_for(key.into(), serial_seconds, parallel_seconds, equivalent)
+    }
+    /// Record one pair only for the exact same physical/execution identity.
+    pub fn record_pair_for(
+        &mut self,
+        identity: ExecutionIdentity,
+        serial_seconds: f64,
+        parallel_seconds: f64,
+        equivalent: bool,
+    ) -> Result<(), &'static str> {
+        if self.key != Some(identity.workload)
+            || self.comparison != identity.comparison
             || self.pairs == 3
             || !equivalent
             || !serial_seconds.is_finite()
@@ -228,8 +321,28 @@ impl ExecutionSelector {
         remaining_calls: usize,
         nested: bool,
     ) -> ExecutionDecision {
+        self.decide_for(key.into(), remaining_calls, nested)
+    }
+    /// Select with explicit chart, mesh, norm, provider and physical-window epochs.
+    pub fn decide_for(
+        &mut self,
+        identity: ExecutionIdentity,
+        remaining_calls: usize,
+        nested: bool,
+    ) -> ExecutionDecision {
+        let key = identity.workload;
         self.telemetry.decisions += 1;
-        let calibrated = self.key == Some(key) && self.pairs == 3;
+        // A changed numerical contract ends this calibration's lifetime. Do not
+        // revive old evidence if a caller later switches back to its old epoch.
+        // Nested decisions must leave the enclosing workload untouched.
+        if !nested && (self.key != Some(key) || self.comparison != identity.comparison) {
+            self.key = None;
+            self.pairs = 0;
+            self.drift_streak = 0;
+            self.drift_invalidated = false;
+        }
+        let calibrated =
+            self.key == Some(key) && self.comparison == identity.comparison && self.pairs == 3;
         let s = calibrated.then(|| self.serial.iter().copied().fold(f64::INFINITY, f64::min));
         let p = calibrated.then(|| self.parallel.iter().copied().fold(0.0, f64::max));
         let mut decision = ExecutionDecision {
@@ -240,6 +353,8 @@ impl ExecutionSelector {
             parallel_upper_seconds: p,
             estimated_cost_recovery_calls: None,
             horizon_recovers_calibration: false,
+            observed_dispatch_seconds: None,
+            evidence_invalidated_after_dispatch: false,
         };
         if nested {
             decision.reason = ExecutionReason::NestedParallelism;
@@ -250,6 +365,12 @@ impl ExecutionSelector {
             decision.probe_due = false;
         } else if calibrated && self.age >= self.config.max_calibration_age {
             decision.reason = ExecutionReason::ExpiredCalibration;
+            decision.probe_due = true;
+        } else if self.drift_invalidated
+            && self.key == Some(key)
+            && self.comparison == identity.comparison
+        {
+            decision.reason = ExecutionReason::ObservedCostDrift;
             decision.probe_due = true;
         } else if let (Some(s), Some(p)) = (s, p) {
             let saving = s - p;
@@ -265,7 +386,32 @@ impl ExecutionSelector {
             {
                 decision.mode = ExecutionMode::Parallel;
                 decision.reason = ExecutionReason::HysteresisRetained;
-            } else if p < s / (1.0 + self.config.enter_margin) {
+            } else if compare_qualified_costs(
+                &CostEvidence {
+                    identity: identity.comparison,
+                    cost: CostInterval {
+                        lower: s,
+                        upper: self.serial.iter().copied().fold(0.0, f64::max),
+                    },
+                    unit: CostUnit::Seconds,
+                    kind: CostEvidenceKind::EmpiricalTiming,
+                    admissible: true,
+                },
+                &CostEvidence {
+                    identity: identity.comparison,
+                    cost: CostInterval {
+                        lower: self.parallel.iter().copied().fold(f64::INFINITY, f64::min),
+                        upper: p,
+                    },
+                    unit: CostUnit::Seconds,
+                    kind: CostEvidenceKind::EmpiricalTiming,
+                    admissible: true,
+                },
+                0.0,
+                1,
+                self.config.enter_margin / (1.0 + self.config.enter_margin),
+            ) == CostComparison::PreferCandidate
+            {
                 if self.resident_calls >= self.config.min_resident_calls {
                     decision.mode = ExecutionMode::Parallel;
                     decision.reason = ExecutionReason::MeasuredGain;
@@ -293,6 +439,52 @@ impl ExecutionSelector {
             self.telemetry.serial_calls += 1;
         }
         decision
+    }
+    /// Observe exactly one completed backend dispatch without replay. Returns
+    /// true when evidence is invalidated for the next decision. This detector
+    /// cannot foresee a first changed-cost batch and is not an accuracy test.
+    pub fn observe_dispatch_cost(
+        &mut self,
+        identity: ExecutionIdentity,
+        mode: ExecutionMode,
+        elapsed_seconds: f64,
+        nested: bool,
+    ) -> bool {
+        let Some(config) = self.config.drift else {
+            return false;
+        };
+        if nested
+            || self.key != Some(identity.workload)
+            || self.comparison != identity.comparison
+            || self.pairs != 3
+        {
+            return false;
+        }
+        self.telemetry.observed_dispatches += 1;
+        let samples = if mode == ExecutionMode::Parallel {
+            &self.parallel
+        } else {
+            &self.serial
+        };
+        let lower = samples.iter().copied().fold(f64::INFINITY, f64::min);
+        let upper = samples.iter().copied().fold(0.0, f64::max);
+        let outside = !elapsed_seconds.is_finite()
+            || elapsed_seconds <= 0.0
+            || elapsed_seconds / config.factor > upper
+            || elapsed_seconds < lower / config.factor;
+        self.drift_streak = if outside {
+            self.drift_streak.saturating_add(1)
+        } else {
+            0
+        };
+        if self.drift_streak >= config.consecutive_calls {
+            self.pairs = 0;
+            self.drift_invalidated = true;
+            self.telemetry.drift_invalidations += 1;
+            true
+        } else {
+            false
+        }
     }
 }
 thread_local! { static ADAPTIVE_DEPTH: Cell<usize> = const { Cell::new(0) }; }
@@ -379,13 +571,30 @@ impl AdaptiveBatchExecutor {
         F: Fn(&T) -> CoreResult<U> + Send + Sync,
         V: Fn(&[U], &[U]) -> bool,
     {
+        self.calibrate_replay_safe_for(key.into(), items, operation, equivalent)
+    }
+    /// Explicit replay with the full chart/norm/mesh/provider identity.
+    pub fn calibrate_replay_safe_for<T, U, F, V>(
+        &mut self,
+        identity: ExecutionIdentity,
+        items: &[T],
+        operation: F,
+        equivalent: V,
+    ) -> CoreResult<f64>
+    where
+        T: Sync,
+        U: Send,
+        F: Fn(&T) -> CoreResult<U> + Send + Sync,
+        V: Fn(&[U], &[U]) -> bool,
+    {
+        let key = identity.workload;
         if key.batch_len != items.len() || ADAPTIVE_DEPTH.with(|d| d.get() > 0) {
             return Err(CoreError::InvalidInput(
                 "calibration shape mismatch or nested context".into(),
             ));
         }
         self.selector
-            .begin_calibration(key, 0.0)
+            .begin_calibration_for(identity, 0.0)
             .map_err(|e| CoreError::InvalidInput(e.into()))?;
         self.calibration_samples.clear();
         self.warmup_seconds = 0.0;
@@ -423,7 +632,7 @@ impl AdaptiveBatchExecutor {
                 self.warmup_seconds = pair_start.elapsed().as_secs_f64();
             } else {
                 self.selector
-                    .record_pair(key, serial.1, parallel.1, equal)
+                    .record_pair_for(identity, serial.1, parallel.1, equal)
                     .map_err(|e| CoreError::InvalidInput(e.into()))?;
                 self.calibration_samples.push(CalibrationSample {
                     serial_first: pair % 2 == 0,
@@ -450,13 +659,36 @@ impl AdaptiveBatchExecutor {
         U: Send,
         F: Fn(&T) -> CoreResult<U> + Send + Sync,
     {
+        self.map_ordered_for(
+            key.into(),
+            remaining_calls,
+            external_parallel_context,
+            items,
+            operation,
+        )
+    }
+    /// Execute once with full physical identity; optionally monitor actual cost.
+    pub fn map_ordered_for<T, U, F>(
+        &mut self,
+        identity: ExecutionIdentity,
+        remaining_calls: usize,
+        external_parallel_context: bool,
+        items: &[T],
+        operation: F,
+    ) -> CoreResult<(Vec<U>, ExecutionDecision)>
+    where
+        T: Sync,
+        U: Send,
+        F: Fn(&T) -> CoreResult<U> + Send + Sync,
+    {
+        let key = identity.workload;
         if key.dimension == 0 || key.batch_len != items.len() {
             return Err(CoreError::Dimension(
                 "execution workload batch length mismatch".into(),
             ));
         }
         let nested = external_parallel_context || ADAPTIVE_DEPTH.with(|d| d.get() > 0);
-        let decision = self.selector.decide(key, remaining_calls, nested);
+        let mut decision = self.selector.decide_for(identity, remaining_calls, nested);
         if decision.mode == ExecutionMode::Parallel {
             self.ensure_pool()?;
         }
@@ -465,10 +697,19 @@ impl AdaptiveBatchExecutor {
         } else {
             &self.serial
         };
+        let started = self.selector.config.drift.is_some().then(Instant::now);
         let output = backend.map_ordered(items, |x| {
             let _guard = DepthGuard::enter();
             operation(x)
         })?;
+        if let Some(started) = started {
+            let seconds = started.elapsed().as_secs_f64();
+            decision.observed_dispatch_seconds = Some(seconds);
+            decision.evidence_invalidated_after_dispatch =
+                self.selector
+                    .observe_dispatch_cost(identity, decision.mode, seconds, nested);
+            decision.probe_due |= decision.evidence_invalidated_after_dispatch;
+        }
         Ok((output, decision))
     }
 }

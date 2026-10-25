@@ -1,0 +1,221 @@
+{
+  "schema": "vigilode.joint-decisions.v1",
+  "broad_production": "HOLD",
+  "default_solver_changed": false,
+  "new_policy_opt_in": true,
+  "new_branch": "research/joint-controller-20261025",
+  "findings": [
+    {
+      "id": "F01",
+      "title": "Repeated negative implicit probes",
+      "status": "improved_scoped",
+      "evidence": "switching/native_r2",
+      "result": {
+        "rotation_old_rhs": 6395,
+        "rotation_new_rhs": 5804,
+        "discarded_probe_rhs_old": 1150,
+        "discarded_probe_rhs_new": 559,
+        "probe_batches_old": 6,
+        "probe_batches_new": 3
+      },
+      "remaining": "Wrapper still costs more than direct DOPRI; limit exploration before paying for it.",
+      "next": [
+        "J04"
+      ]
+    },
+    {
+      "id": "F02",
+      "title": "Initial transient evidence used beyond its cost regime",
+      "status": "fixed_scoped",
+      "evidence": "switching/DESIGN_KO.md",
+      "result": {
+        "case5_old_rhs": 1887,
+        "first_attempt_rhs": 2463,
+        "immediate_renewal_rhs": 2763,
+        "final_rhs": 1311,
+        "wall_speedup_claim": false
+      },
+      "mechanism": "Endpoint relaxation reserves the next eligible same-checkpoint prefix; immediate replay of the previous mixed-regime prefix is avoided.",
+      "next": [
+        "J04"
+      ]
+    },
+    {
+      "id": "F03",
+      "title": "Lifetime probe cap suppresses late stiffness entry",
+      "status": "improved_scoped",
+      "evidence": "evidence/NATIVE_PILOT_SUMMARY_FINAL.json",
+      "result": {
+        "fresh_transition_positions": [
+          0.43,
+          0.87
+        ],
+        "same_family_only": true
+      },
+      "remaining": "Finite batch eligibility is not a bounded physical detection delay.",
+      "next": [
+        "J04",
+        "J07"
+      ]
+    },
+    {
+      "id": "F04",
+      "title": "Return direction compared against unmatched old costs",
+      "status": "fixed_scoped",
+      "evidence": "crates/vigilode/tests/adaptive_entry_contracts.rs",
+      "result": "Same-window implicit replay must support return; a cheaper valid implicit comparator is committed productively. All attempts/fatal paths remain charged.",
+      "cost": {
+        "relaxation_old_rhs": 749,
+        "relaxation_new_rhs": 813
+      },
+      "next": [
+        "J01",
+        "J04"
+      ]
+    },
+    {
+      "id": "F05",
+      "title": "Method/execution decisions need shared physical identity and units",
+      "status": "implemented_contract",
+      "evidence": "crates/vigilode/src/selection_evidence.rs",
+      "result": "Exact model/provider/chart/mesh/norm/tolerance/window/environment versions, qualification and cost units are checked before a conservative arithmetic decision.",
+      "remaining": "Caller-maintained epochs and supplied cost bounds must be valid; empirical extrema do not certify future costs.",
+      "next": [
+        "J03",
+        "J04"
+      ]
+    },
+    {
+      "id": "F06",
+      "title": "Uniform inner-root precision wastes work",
+      "status": "specialized_for_specific_cases_only",
+      "evidence": "causal/PILOT_SUMMARY.json",
+      "result": {
+        "blanket_evaluations": 16818,
+        "budget_evaluations": 10513,
+        "sequential_rk_evaluations": 1792,
+        "budget_endpoint_error": 2.0316011095644626e-09,
+        "actual_parallel_speed_measured": false
+      },
+      "remaining": "Need real expensive callbacks, settled-prefix reuse and valid provider enclosures; the scalar selects sequential RK.",
+      "next": [
+        "J02",
+        "J06"
+      ]
+    },
+    {
+      "id": "F07",
+      "title": "Implicit window restart overhead",
+      "status": "open",
+      "severity": "high",
+      "evidence": "crates/vigilode/src/switching.rs",
+      "next": [
+        "J01"
+      ]
+    },
+    {
+      "id": "F08",
+      "title": "Algebraic/causal/Fourier providers not integrated into one general selector",
+      "status": "open",
+      "severity": "high",
+      "evidence": "history/REUSE_MATRIX.json",
+      "next": [
+        "J03",
+        "J05"
+      ]
+    },
+    {
+      "id": "F09",
+      "title": "Execution calibration cannot be recovered on short horizons",
+      "status": "optimization_possible",
+      "severity": "high",
+      "evidence": "execution/native/stdout.log",
+      "result": "All three calibration-inclusive phases exceed the strongest directly configured execution alternative. Drift detection and parity pass.",
+      "next": [
+        "J04",
+        "J06"
+      ]
+    },
+    {
+      "id": "F10",
+      "title": "General physical output/error coverage remains incomplete",
+      "status": "open",
+      "severity": "high",
+      "evidence": "NEXT_STEPS.json",
+      "result": "New pilots assess full-state endpoints, not broad continuous-output, event, nonnormal, mass-matrix or global-error qualification.",
+      "next": [
+        "J05",
+        "J07",
+        "J08"
+      ]
+    },
+    {
+      "id": "F11",
+      "title": "Unavailable optional implicit provider can reject a valid explicit problem",
+      "status": "open",
+      "severity": "medium",
+      "evidence": "crates/vigilode/src/automatic.rs",
+      "next": [
+        "J03"
+      ]
+    },
+    {
+      "id": "F12",
+      "title": "Measured work score is not provider-independent elapsed cost",
+      "status": "open",
+      "severity": "high",
+      "evidence": "switching/IMPLEMENTATION.json",
+      "result": "RHS/JVP/solve work weighting and empirical time envelopes require declared scope. No measured statistical false-positive-rate reduction is asserted.",
+      "next": [
+        "J04",
+        "J07"
+      ]
+    },
+    {
+      "id": "F13",
+      "title": "Public Rust configuration and enum additions require downstream migration",
+      "status": "open_release_compatibility",
+      "severity": "medium",
+      "result": "Default numerical behaviour is unchanged; external exhaustive struct literals and enum matches may require new fields or arms. Repository callers use struct-update/factory forms; external downstream compilation was not performed.",
+      "next": [
+        "J08"
+      ]
+    }
+  ],
+  "components": [
+    {
+      "component": "adaptive_evidence method selector",
+      "decision": "conditional_opt_in",
+      "reason": "Reduces several observed losses and restores late comparisons; direct alternatives and some extra verification costs remain."
+    },
+    {
+      "component": "common qualified comparison",
+      "decision": "adopt_contract",
+      "reason": "Meaningful scope/unit/arithmetic tests; guarantees conditional on supplied bounds and qualification."
+    },
+    {
+      "component": "causal output budget",
+      "decision": "specialized_for_specific_cases_only",
+      "reason": "Constructive original-target bounds; less over-solving but no scalar sequential-RK advantage."
+    },
+    {
+      "component": "monitored execution selection",
+      "decision": "hold_default_optimization_possible",
+      "reason": "Epoch/drift behaviour validated; measured full-cost economic benefit not established."
+    },
+    {
+      "component": "unified algebraic provider registry",
+      "decision": "planned",
+      "reason": "Existing historical kernels survive; automatic eligibility and original-space error transport need integration."
+    }
+  ],
+  "false_decision_metrics": {
+    "invalid_scope_comparison": "contract-tested",
+    "poor_committed_switch": "scoped same-window comparisons; not population FPR",
+    "unproductive_probe": "measured by discarded cost separately",
+    "whole_run_overhead": "measured paired trajectories",
+    "statistical_FPR_bound": null
+  },
+  "next_development": "NEXT_STEPS.json",
+  "report": "REPORT_KO.md"
+}
