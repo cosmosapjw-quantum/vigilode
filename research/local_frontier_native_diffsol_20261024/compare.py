@@ -93,6 +93,15 @@ def high_precision_reference(d):
         return [float(v) for v in result]
 
 
+def finite_real(value):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return False
+    try:
+        return math.isfinite(value)
+    except OverflowError:
+        return False
+
+
 def assess(result, d, exact, ref_bound, cap, execution):
     answer = {'execution_status': execution, 'reference_kind': d['model_contract']['reference_kind'],
               'reference_uncertainty_bound': ref_bound,
@@ -108,8 +117,8 @@ def assess(result, d, exact, ref_bound, cap, execution):
     state = result.get('final_state')
     t = result.get('final_time')
     if (not isinstance(state, list) or len(state) != len(d['initial_state']) or
-            any(not isinstance(v, (int, float)) or not math.isfinite(v) for v in state) or
-            not isinstance(t, (int, float)) or abs(t-d['t_end']) > 1e-10*max(1, abs(d['t_end']))):
+            any(not finite_real(v) for v in state) or
+            not finite_real(t) or abs(t-d['t_end']) > 1e-10*max(1, abs(d['t_end']))):
         answer['status'] = 'OUTPUT_CONTRACT_FAILURE'
         return answer
     if exact is None:

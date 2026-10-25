@@ -1,0 +1,162 @@
+{
+  "schema_version": 1,
+  "workflow_version": "1.0.0",
+  "task": "both",
+  "unit_id": "independent_benchmark_review_20261025",
+  "objective": "External Korean benchmark report, plots, source-grounded additional analysis and noninterfering local handoff",
+  "stages": [
+    {
+      "id": "R1",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "R2",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "R3",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "R4",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "R5",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "R6",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "R7",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "R8",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "R9",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "R10",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "C1",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "C2",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "C3",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "C4",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "C5",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "C6",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "C7",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "C8",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "C9",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    },
+    {
+      "id": "C10",
+      "status": "complete",
+      "scope": "Published-data reanalysis, report and small postprocessing/validation changes; no new solver timing campaign"
+    }
+  ],
+  "evidence": [
+    "analysis/whole_solver_summary.json",
+    "analysis/conditional_summary.json",
+    "analysis/HISTORICAL_CORRECTION.json",
+    "reviews/diagnostics_review.json",
+    "reviews/exporter_independent_review.json",
+    "reviews/native_comparison_review.json",
+    "reviews/report_data_review.json",
+    "reviews/report_conditional_review.json"
+  ],
+  "reused": "Existing published solver runs, exact theory and source identities; no redundant solver reruns.",
+  "new_work": [
+    "Reclassify task IDs to separate81instrumented samples",
+    "Correct historical rotation prose and timer boundaries",
+    "Phase/amortization/error interval derivations",
+    "Read-only local raw export",
+    "Finite output validation regression fix",
+    "Formal report and eight figures"
+  ],
+  "executions": [
+    {
+      "name": "root final Python validations",
+      "commands": [
+        "unittest discover tools/test_export_local_measurements.py",
+        "unittest discover reviews/test_exporter_adversarial.py",
+        "unittest discover analysis/test_diagnostics.py",
+        "unittest discover research/local_frontier_native_diffsol_20261024/test_compare.py"
+      ],
+      "test_counts": [
+        15,
+        9,
+        7,
+        8
+      ],
+      "exit_codes": [
+        0,
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "published data aggregation",
+      "solver_launches": 0,
+      "scope": "1,539 task identities;60 Robertson timing rows;280 historical timing rows;17 conditional input files"
+    }
+  ],
+  "open_obligations": [
+    "User-host completed raw timing export",
+    "New accuracy cohorts on independently matched references",
+    "Whole-trajectory phase validation and grid bottleneck diagnosis"
+  ],
+  "status": "complete_in_requested_scope"
+}

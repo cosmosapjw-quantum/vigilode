@@ -1,0 +1,101 @@
+{
+  "schema_version": 1,
+  "reviewer": "whole_solver_figures agent, self visual QA; not independent scientific review",
+  "scope": "Reaggregation assertions plus rendering inspection of four scientific figures",
+  "executions": [
+    {
+      "command": "python3 external_reports/benchmark_review_20261025/analysis/whole_solver_analysis.py",
+      "exit_code": 0,
+      "solver_runs": 0
+    },
+    {
+      "command": "python3 external_reports/benchmark_review_20261025/analysis/reproduce_historical_correction.py",
+      "exit_code": 0,
+      "solver_runs": 0
+    }
+  ],
+  "checks": {
+    "unique_task_ids": 1539,
+    "task_instrumentation_unique_recovered": 1539,
+    "uninstrumented": 1458,
+    "instrumented": 81,
+    "robertson_measured": 60,
+    "history_measured": 280,
+    "historical_decay_passes": 77,
+    "historical_rotation_passes": 7
+  },
+  "visual_review": {
+    "inspected_pngs": [
+      "whole_local_outcomes.png",
+      "whole_local_coverage.png",
+      "whole_robertson_error_cost.png",
+      "whole_historical_work_precision.png"
+    ],
+    "issues_corrected": [
+      "Adjacent panel 100% and 0% labels overlapped in first matrix render; widened interpanel spacing and shortened x-axis labels."
+    ],
+    "final": "Legible labels and legends; no observed clipping or overlap; axes and marker meanings checked against plotted rows."
+  },
+  "figure_files": [
+    {
+      "path": "external_reports/benchmark_review_20261025/figures/whole_historical_work_precision.pdf",
+      "sha256": "554553d38fbcafe16d512463dbe35badc4bd72ae6e33083147d5a299f3ded717",
+      "bytes": 23567
+    },
+    {
+      "path": "external_reports/benchmark_review_20261025/figures/whole_historical_work_precision.png",
+      "sha256": "af7680350f7b916baad29ca85772822751abc058d842e281ea2edfdddf4c7bd5",
+      "bytes": 189181
+    },
+    {
+      "path": "external_reports/benchmark_review_20261025/figures/whole_historical_work_precision.svg",
+      "sha256": "dbe964ad14b3524a0a2da52b911087de53809094d02ed7d7f4952e5adf5de33b",
+      "bytes": 84162
+    },
+    {
+      "path": "external_reports/benchmark_review_20261025/figures/whole_local_coverage.pdf",
+      "sha256": "2634ea5aec7de5a2ada96f24658fe2ff5bc737e8c1e2b4af854cbe3bc34e6324",
+      "bytes": 15557
+    },
+    {
+      "path": "external_reports/benchmark_review_20261025/figures/whole_local_coverage.png",
+      "sha256": "14f15b4e049a0ae13cb8a2976014d497965e59d67d0c3d3f8431e8177391d3a9",
+      "bytes": 117711
+    },
+    {
+      "path": "external_reports/benchmark_review_20261025/figures/whole_local_coverage.svg",
+      "sha256": "2f254e26f7aee4d2ff503691e5c433411acce3cb411cdb4b314298ea04d1a296",
+      "bytes": 19811
+    },
+    {
+      "path": "external_reports/benchmark_review_20261025/figures/whole_local_outcomes.pdf",
+      "sha256": "0c779ad64ccc275a3767fcb2963dc4a79b8789b36323c5b056236299af7ab87a",
+      "bytes": 21141
+    },
+    {
+      "path": "external_reports/benchmark_review_20261025/figures/whole_local_outcomes.png",
+      "sha256": "a8ca658f8cb528573001a4ae91203c2fc8bc0d2c15a7630b497ccaf7df06c1b5",
+      "bytes": 322665
+    },
+    {
+      "path": "external_reports/benchmark_review_20261025/figures/whole_local_outcomes.svg",
+      "sha256": "b898648a24412e0fd39c2a637ed9dced50cf36c33a5988bd0f95dad5ab807c56",
+      "bytes": 83461
+    },
+    {
+      "path": "external_reports/benchmark_review_20261025/figures/whole_robertson_error_cost.pdf",
+      "sha256": "f7d3c1f9eb3ac09c5e368bbdcb1d57122325e1df99ea5467f13b04688c4a9bac",
+      "bytes": 21714
+    },
+    {
+      "path": "external_reports/benchmark_review_20261025/figures/whole_robertson_error_cost.png",
+      "sha256": "299c2a98876fe9ccf80af0ca623c9de63d852fc1a1534b37f2981d58ba2eca82",
+      "bytes": 116705
+    },
+    {
+      "path": "external_reports/benchmark_review_20261025/figures/whole_robertson_error_cost.svg",
+      "sha256": "98b3c74526ce6504a4c5a4d4151f748277d379e306d12302c527c8c99cfbc97f",
+      "bytes": 57411
+    }
+  ]
+}

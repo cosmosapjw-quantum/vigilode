@@ -1,0 +1,94 @@
+{
+  "schema_version": 1,
+  "basis_date": "2026-10-25",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "baseline_commit": "2a4bf90d1445b67542bdac5030b4c5d10da20445",
+  "measured_solver_commit": "aaf1f834d4c589e734ca7851a56c11bb44f7047a",
+  "new_ode_benchmark_runs": 0,
+  "local_active_campaign_modified": false,
+  "production_assessment": {
+    "general_default_recommended": false,
+    "reason": [
+      "Endpoint errors in gyromotion and exponential chirp under recorded criterion",
+      "Large grid timeouts and sustained small steps",
+      "Automatic switching overhead in Robertson",
+      "Incomplete reference coverage"
+    ],
+    "scoped_advantages": [
+      "Low-degree polynomial actions under declared structure",
+      "Strong-contraction fixed-P vector root solving",
+      "Sparse original-residual checking compared with dense checking",
+      "Matrix-free implicit route compared with explicit route in the recorded stiff Robertson interval"
+    ]
+  },
+  "local_tasks": {
+    "uninstrumented": {
+      "total": 1458,
+      "endpoint_pass": 306,
+      "endpoint_fail": 138,
+      "solver_fail": 54,
+      "timeout": 199,
+      "reference_missing": 761
+    },
+    "instrumented": {
+      "total": 81,
+      "endpoint_pass": 17,
+      "endpoint_fail": 8,
+      "solver_fail": 3,
+      "timeout": 9,
+      "reference_missing": 44
+    },
+    "accuracy_threshold": 0.0001,
+    "rtol": 1e-06,
+    "atol": 1e-09,
+    "interpretation": "designed task counts, not probability of success on arbitrary problems"
+  },
+  "robertson_t40": {
+    "timed_repetitions": 5,
+    "warmups_excluded": 1,
+    "common_endpoint_threshold": 0.0001,
+    "reference_uncertainty_estimate": 1e-12,
+    "seconds_median": {
+      "native_dvode_bdf": 0.000139534,
+      "diffsol_bdf": 0.000211389,
+      "vigilode_mf": 0.000622867,
+      "vigilode_dopri5": 0.01681717,
+      "native_dvode_adams": 0.021946212,
+      "vigilode_switching": 0.040000129
+    },
+    "comparison_scope": "fixed settings, unequal attained errors and implementation timing boundaries"
+  },
+  "historical_corrections": {
+    "rotation_pass_count": 7,
+    "rotation_timed_rows": 140,
+    "original_prose_pass_count": 0,
+    "native_solve_median_seconds": 0.001515231,
+    "native_process_median_seconds": 0.005559548,
+    "evidence": "analysis/HISTORICAL_CORRECTION.json"
+  },
+  "conditional_evidence": "analysis/conditional_summary.json",
+  "whole_evidence": "analysis/whole_solver_summary.json",
+  "code_changes": [
+    {
+      "path": "research/local_frontier_native_diffsol_20261024/compare.py",
+      "change": "Reject nonfinite or malformed final times and states",
+      "activation": "new comparison cohort only",
+      "tests": 8,
+      "finite_parity_cases": 200
+    },
+    {
+      "path": "tools/export_local_measurements.py",
+      "change": "Read-only scalar export of terminal raw receipts; no solver launch",
+      "tests": 24,
+      "actual_published_failure_exports": 6
+    },
+    {
+      "path": "analysis/diagnostics.py",
+      "change": "Bounded endpoint phase diagnostics, outward error intervals and cost models",
+      "tests": 7
+    }
+  ],
+  "solver_crates_modified": false,
+  "tests_total": 39,
+  "handoff": "LOCAL_CODEX_HANDOFF_KO.md"
+}

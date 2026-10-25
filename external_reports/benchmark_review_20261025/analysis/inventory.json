@@ -1,0 +1,2808 @@
+{
+  "schema_version": 1,
+  "source_commit": "2a4bf90d1445b67542bdac5030b4c5d10da20445",
+  "baseline_commit": "aaf1f834d4c589e734ca7851a56c11bb44f7047a",
+  "analysis": "published status/endpoint-data reanalysis; no solver launched",
+  "sources": [
+    {
+      "path": "research/local_frontier_native_diffsol_20261024/audit_packet_20261025/AUDIT_INDEX.json",
+      "sha256": "bb7ed93d4dd582e680d586cf42f17b087c191e1b470e227ec4e8c005d67bdcd7"
+    },
+    {
+      "path": "research/local_frontier_native_diffsol_20261024/audit_packet_20261025/LEGACY_STANDARD_1539_STATUS_INDEX.json",
+      "sha256": "c681c1a183ccf915bfff25f076246d69a77f8994f041d386d10f87d514052b71"
+    },
+    {
+      "path": "research/local_frontier_native_diffsol_20261024/audit_packet_20261025/evidence/references/case01/REASSESSMENT_V2.json",
+      "sha256": "15a377923a660be0ab7295e3eabc9ddd716ab599b97ac2483fe9036dcd282de1"
+    },
+    {
+      "path": "research/local_frontier_native_diffsol_20261024/audit_packet_20261025/evidence/timeout/TIMEOUT_FAMILY_TRIAGE.json",
+      "sha256": "910c4871ee473cc4a5f9429b9f7e2a4bbcfa0d4ad4f64f1c51f1f537121b79b0"
+    },
+    {
+      "path": "research/local_frontier_20261024/local/campaign.py",
+      "sha256": "04bd3382c4aacdddeca6cb1f700e5ab211d0ad998efcb44f431f23dce1d04f77"
+    },
+    {
+      "path": "research/local_frontier_20261024/local/standard.json",
+      "sha256": "036bd91cb12b184b0f8d344633220b508affd002738c76986cedc9bb908dad62"
+    }
+  ],
+  "task_instrumentation_reconstruction": "Exact SHA256 task id match with both bool alternatives; unique match for all 1539 rows.",
+  "cohorts": {
+    "all": {
+      "n": 1539,
+      "science": {
+        "ACCURACY_FAILED": 146,
+        "NO_RESULT": 208,
+        "PASS_SCOPED": 323,
+        "SOLVER_FAILED": 57,
+        "UNVALIDATED_REFERENCE": 805
+      },
+      "execution": {
+        "COMPLETED": 1331,
+        "TIMEOUT": 208
+      },
+      "by_case": [
+        {
+          "value": 1,
+          "n": 76,
+          "science": {
+            "UNVALIDATED_REFERENCE": 76
+          },
+          "execution": {
+            "COMPLETED": 76
+          }
+        },
+        {
+          "value": 2,
+          "n": 76,
+          "science": {
+            "UNVALIDATED_REFERENCE": 76
+          },
+          "execution": {
+            "COMPLETED": 76
+          }
+        },
+        {
+          "value": 3,
+          "n": 76,
+          "science": {
+            "NO_RESULT": 3,
+            "UNVALIDATED_REFERENCE": 73
+          },
+          "execution": {
+            "COMPLETED": 73,
+            "TIMEOUT": 3
+          }
+        },
+        {
+          "value": 4,
+          "n": 57,
+          "science": {
+            "UNVALIDATED_REFERENCE": 57
+          },
+          "execution": {
+            "COMPLETED": 57
+          }
+        },
+        {
+          "value": 5,
+          "n": 76,
+          "science": {
+            "SOLVER_FAILED": 19,
+            "UNVALIDATED_REFERENCE": 57
+          },
+          "execution": {
+            "COMPLETED": 76
+          }
+        },
+        {
+          "value": 6,
+          "n": 57,
+          "science": {
+            "PASS_SCOPED": 57
+          },
+          "execution": {
+            "COMPLETED": 57
+          }
+        },
+        {
+          "value": 7,
+          "n": 76,
+          "science": {
+            "PASS_SCOPED": 76
+          },
+          "execution": {
+            "COMPLETED": 76
+          }
+        },
+        {
+          "value": 8,
+          "n": 76,
+          "science": {
+            "NO_RESULT": 15,
+            "UNVALIDATED_REFERENCE": 61
+          },
+          "execution": {
+            "COMPLETED": 61,
+            "TIMEOUT": 15
+          }
+        },
+        {
+          "value": 9,
+          "n": 57,
+          "science": {
+            "NO_RESULT": 13,
+            "UNVALIDATED_REFERENCE": 44
+          },
+          "execution": {
+            "COMPLETED": 44,
+            "TIMEOUT": 13
+          }
+        },
+        {
+          "value": 10,
+          "n": 76,
+          "science": {
+            "ACCURACY_FAILED": 76
+          },
+          "execution": {
+            "COMPLETED": 76
+          }
+        },
+        {
+          "value": 11,
+          "n": 57,
+          "science": {
+            "UNVALIDATED_REFERENCE": 57
+          },
+          "execution": {
+            "COMPLETED": 57
+          }
+        },
+        {
+          "value": 12,
+          "n": 57,
+          "science": {
+            "NO_RESULT": 19,
+            "SOLVER_FAILED": 38
+          },
+          "execution": {
+            "COMPLETED": 38,
+            "TIMEOUT": 19
+          }
+        },
+        {
+          "value": 13,
+          "n": 57,
+          "science": {
+            "NO_RESULT": 19,
+            "UNVALIDATED_REFERENCE": 38
+          },
+          "execution": {
+            "COMPLETED": 38,
+            "TIMEOUT": 19
+          }
+        },
+        {
+          "value": 14,
+          "n": 57,
+          "science": {
+            "NO_RESULT": 57
+          },
+          "execution": {
+            "TIMEOUT": 57
+          }
+        },
+        {
+          "value": 15,
+          "n": 76,
+          "science": {
+            "ACCURACY_FAILED": 70,
+            "NO_RESULT": 6
+          },
+          "execution": {
+            "COMPLETED": 70,
+            "TIMEOUT": 6
+          }
+        },
+        {
+          "value": 16,
+          "n": 76,
+          "science": {
+            "PASS_SCOPED": 76
+          },
+          "execution": {
+            "COMPLETED": 76
+          }
+        },
+        {
+          "value": 17,
+          "n": 57,
+          "science": {
+            "UNVALIDATED_REFERENCE": 57
+          },
+          "execution": {
+            "COMPLETED": 57
+          }
+        },
+        {
+          "value": 18,
+          "n": 57,
+          "science": {
+            "UNVALIDATED_REFERENCE": 57
+          },
+          "execution": {
+            "COMPLETED": 57
+          }
+        },
+        {
+          "value": 19,
+          "n": 57,
+          "science": {
+            "PASS_SCOPED": 57
+          },
+          "execution": {
+            "COMPLETED": 57
+          }
+        },
+        {
+          "value": 20,
+          "n": 57,
+          "science": {
+            "UNVALIDATED_REFERENCE": 57
+          },
+          "execution": {
+            "COMPLETED": 57
+          }
+        },
+        {
+          "value": 21,
+          "n": 57,
+          "science": {
+            "UNVALIDATED_REFERENCE": 57
+          },
+          "execution": {
+            "COMPLETED": 57
+          }
+        },
+        {
+          "value": 22,
+          "n": 57,
+          "science": {
+            "PASS_SCOPED": 57
+          },
+          "execution": {
+            "COMPLETED": 57
+          }
+        },
+        {
+          "value": 23,
+          "n": 57,
+          "science": {
+            "NO_RESULT": 38,
+            "UNVALIDATED_REFERENCE": 19
+          },
+          "execution": {
+            "COMPLETED": 19,
+            "TIMEOUT": 38
+          }
+        },
+        {
+          "value": 24,
+          "n": 57,
+          "science": {
+            "NO_RESULT": 38,
+            "UNVALIDATED_REFERENCE": 19
+          },
+          "execution": {
+            "COMPLETED": 19,
+            "TIMEOUT": 38
+          }
+        }
+      ],
+      "by_method": [
+        {
+          "value": "dopri5",
+          "n": 456,
+          "science": {
+            "ACCURACY_FAILED": 38,
+            "NO_RESULT": 38,
+            "PASS_SCOPED": 95,
+            "SOLVER_FAILED": 38,
+            "UNVALIDATED_REFERENCE": 247
+          },
+          "execution": {
+            "COMPLETED": 418,
+            "TIMEOUT": 38
+          }
+        },
+        {
+          "value": "rodas5p-dense",
+          "n": 171,
+          "science": {
+            "ACCURACY_FAILED": 38,
+            "PASS_SCOPED": 38,
+            "UNVALIDATED_REFERENCE": 95
+          },
+          "execution": {
+            "COMPLETED": 171
+          }
+        },
+        {
+          "value": "rodas5p-mf",
+          "n": 456,
+          "science": {
+            "ACCURACY_FAILED": 32,
+            "NO_RESULT": 98,
+            "PASS_SCOPED": 95,
+            "UNVALIDATED_REFERENCE": 231
+          },
+          "execution": {
+            "COMPLETED": 358,
+            "TIMEOUT": 98
+          }
+        },
+        {
+          "value": "switching",
+          "n": 456,
+          "science": {
+            "ACCURACY_FAILED": 38,
+            "NO_RESULT": 72,
+            "PASS_SCOPED": 95,
+            "SOLVER_FAILED": 19,
+            "UNVALIDATED_REFERENCE": 232
+          },
+          "execution": {
+            "COMPLETED": 384,
+            "TIMEOUT": 72
+          }
+        }
+      ],
+      "by_layer": [
+        {
+          "value": "data",
+          "n": 675,
+          "science": {
+            "NO_RESULT": 148,
+            "PASS_SCOPED": 135,
+            "SOLVER_FAILED": 30,
+            "UNVALIDATED_REFERENCE": 362
+          },
+          "execution": {
+            "COMPLETED": 527,
+            "TIMEOUT": 148
+          }
+        },
+        {
+          "value": "ensemble",
+          "n": 540,
+          "science": {
+            "ACCURACY_FAILED": 114,
+            "NO_RESULT": 24,
+            "PASS_SCOPED": 120,
+            "SOLVER_FAILED": 15,
+            "UNVALIDATED_REFERENCE": 267
+          },
+          "execution": {
+            "COMPLETED": 516,
+            "TIMEOUT": 24
+          }
+        },
+        {
+          "value": "serial",
+          "n": 324,
+          "science": {
+            "ACCURACY_FAILED": 32,
+            "NO_RESULT": 36,
+            "PASS_SCOPED": 68,
+            "SOLVER_FAILED": 12,
+            "UNVALIDATED_REFERENCE": 176
+          },
+          "execution": {
+            "COMPLETED": 288,
+            "TIMEOUT": 36
+          }
+        }
+      ]
+    },
+    "uninstrumented": {
+      "n": 1458,
+      "science": {
+        "ACCURACY_FAILED": 138,
+        "NO_RESULT": 199,
+        "PASS_SCOPED": 306,
+        "SOLVER_FAILED": 54,
+        "UNVALIDATED_REFERENCE": 761
+      },
+      "execution": {
+        "COMPLETED": 1259,
+        "TIMEOUT": 199
+      },
+      "by_case": [
+        {
+          "value": 1,
+          "n": 72,
+          "science": {
+            "UNVALIDATED_REFERENCE": 72
+          },
+          "execution": {
+            "COMPLETED": 72
+          }
+        },
+        {
+          "value": 2,
+          "n": 72,
+          "science": {
+            "UNVALIDATED_REFERENCE": 72
+          },
+          "execution": {
+            "COMPLETED": 72
+          }
+        },
+        {
+          "value": 3,
+          "n": 72,
+          "science": {
+            "NO_RESULT": 3,
+            "UNVALIDATED_REFERENCE": 69
+          },
+          "execution": {
+            "COMPLETED": 69,
+            "TIMEOUT": 3
+          }
+        },
+        {
+          "value": 4,
+          "n": 54,
+          "science": {
+            "UNVALIDATED_REFERENCE": 54
+          },
+          "execution": {
+            "COMPLETED": 54
+          }
+        },
+        {
+          "value": 5,
+          "n": 72,
+          "science": {
+            "SOLVER_FAILED": 18,
+            "UNVALIDATED_REFERENCE": 54
+          },
+          "execution": {
+            "COMPLETED": 72
+          }
+        },
+        {
+          "value": 6,
+          "n": 54,
+          "science": {
+            "PASS_SCOPED": 54
+          },
+          "execution": {
+            "COMPLETED": 54
+          }
+        },
+        {
+          "value": 7,
+          "n": 72,
+          "science": {
+            "PASS_SCOPED": 72
+          },
+          "execution": {
+            "COMPLETED": 72
+          }
+        },
+        {
+          "value": 8,
+          "n": 72,
+          "science": {
+            "NO_RESULT": 15,
+            "UNVALIDATED_REFERENCE": 57
+          },
+          "execution": {
+            "COMPLETED": 57,
+            "TIMEOUT": 15
+          }
+        },
+        {
+          "value": 9,
+          "n": 54,
+          "science": {
+            "NO_RESULT": 13,
+            "UNVALIDATED_REFERENCE": 41
+          },
+          "execution": {
+            "COMPLETED": 41,
+            "TIMEOUT": 13
+          }
+        },
+        {
+          "value": 10,
+          "n": 72,
+          "science": {
+            "ACCURACY_FAILED": 72
+          },
+          "execution": {
+            "COMPLETED": 72
+          }
+        },
+        {
+          "value": 11,
+          "n": 54,
+          "science": {
+            "UNVALIDATED_REFERENCE": 54
+          },
+          "execution": {
+            "COMPLETED": 54
+          }
+        },
+        {
+          "value": 12,
+          "n": 54,
+          "science": {
+            "NO_RESULT": 18,
+            "SOLVER_FAILED": 36
+          },
+          "execution": {
+            "COMPLETED": 36,
+            "TIMEOUT": 18
+          }
+        },
+        {
+          "value": 13,
+          "n": 54,
+          "science": {
+            "NO_RESULT": 18,
+            "UNVALIDATED_REFERENCE": 36
+          },
+          "execution": {
+            "COMPLETED": 36,
+            "TIMEOUT": 18
+          }
+        },
+        {
+          "value": 14,
+          "n": 54,
+          "science": {
+            "NO_RESULT": 54
+          },
+          "execution": {
+            "TIMEOUT": 54
+          }
+        },
+        {
+          "value": 15,
+          "n": 72,
+          "science": {
+            "ACCURACY_FAILED": 66,
+            "NO_RESULT": 6
+          },
+          "execution": {
+            "COMPLETED": 66,
+            "TIMEOUT": 6
+          }
+        },
+        {
+          "value": 16,
+          "n": 72,
+          "science": {
+            "PASS_SCOPED": 72
+          },
+          "execution": {
+            "COMPLETED": 72
+          }
+        },
+        {
+          "value": 17,
+          "n": 54,
+          "science": {
+            "UNVALIDATED_REFERENCE": 54
+          },
+          "execution": {
+            "COMPLETED": 54
+          }
+        },
+        {
+          "value": 18,
+          "n": 54,
+          "science": {
+            "UNVALIDATED_REFERENCE": 54
+          },
+          "execution": {
+            "COMPLETED": 54
+          }
+        },
+        {
+          "value": 19,
+          "n": 54,
+          "science": {
+            "PASS_SCOPED": 54
+          },
+          "execution": {
+            "COMPLETED": 54
+          }
+        },
+        {
+          "value": 20,
+          "n": 54,
+          "science": {
+            "UNVALIDATED_REFERENCE": 54
+          },
+          "execution": {
+            "COMPLETED": 54
+          }
+        },
+        {
+          "value": 21,
+          "n": 54,
+          "science": {
+            "UNVALIDATED_REFERENCE": 54
+          },
+          "execution": {
+            "COMPLETED": 54
+          }
+        },
+        {
+          "value": 22,
+          "n": 54,
+          "science": {
+            "PASS_SCOPED": 54
+          },
+          "execution": {
+            "COMPLETED": 54
+          }
+        },
+        {
+          "value": 23,
+          "n": 54,
+          "science": {
+            "NO_RESULT": 36,
+            "UNVALIDATED_REFERENCE": 18
+          },
+          "execution": {
+            "COMPLETED": 18,
+            "TIMEOUT": 36
+          }
+        },
+        {
+          "value": 24,
+          "n": 54,
+          "science": {
+            "NO_RESULT": 36,
+            "UNVALIDATED_REFERENCE": 18
+          },
+          "execution": {
+            "COMPLETED": 18,
+            "TIMEOUT": 36
+          }
+        }
+      ],
+      "by_method": [
+        {
+          "value": "dopri5",
+          "n": 432,
+          "science": {
+            "ACCURACY_FAILED": 36,
+            "NO_RESULT": 36,
+            "PASS_SCOPED": 90,
+            "SOLVER_FAILED": 36,
+            "UNVALIDATED_REFERENCE": 234
+          },
+          "execution": {
+            "COMPLETED": 396,
+            "TIMEOUT": 36
+          }
+        },
+        {
+          "value": "rodas5p-dense",
+          "n": 162,
+          "science": {
+            "ACCURACY_FAILED": 36,
+            "PASS_SCOPED": 36,
+            "UNVALIDATED_REFERENCE": 90
+          },
+          "execution": {
+            "COMPLETED": 162
+          }
+        },
+        {
+          "value": "rodas5p-mf",
+          "n": 432,
+          "science": {
+            "ACCURACY_FAILED": 30,
+            "NO_RESULT": 94,
+            "PASS_SCOPED": 90,
+            "UNVALIDATED_REFERENCE": 218
+          },
+          "execution": {
+            "COMPLETED": 338,
+            "TIMEOUT": 94
+          }
+        },
+        {
+          "value": "switching",
+          "n": 432,
+          "science": {
+            "ACCURACY_FAILED": 36,
+            "NO_RESULT": 69,
+            "PASS_SCOPED": 90,
+            "SOLVER_FAILED": 18,
+            "UNVALIDATED_REFERENCE": 219
+          },
+          "execution": {
+            "COMPLETED": 363,
+            "TIMEOUT": 69
+          }
+        }
+      ],
+      "by_layer": [
+        {
+          "value": "data",
+          "n": 675,
+          "science": {
+            "NO_RESULT": 148,
+            "PASS_SCOPED": 135,
+            "SOLVER_FAILED": 30,
+            "UNVALIDATED_REFERENCE": 362
+          },
+          "execution": {
+            "COMPLETED": 527,
+            "TIMEOUT": 148
+          }
+        },
+        {
+          "value": "ensemble",
+          "n": 540,
+          "science": {
+            "ACCURACY_FAILED": 114,
+            "NO_RESULT": 24,
+            "PASS_SCOPED": 120,
+            "SOLVER_FAILED": 15,
+            "UNVALIDATED_REFERENCE": 267
+          },
+          "execution": {
+            "COMPLETED": 516,
+            "TIMEOUT": 24
+          }
+        },
+        {
+          "value": "serial",
+          "n": 243,
+          "science": {
+            "ACCURACY_FAILED": 24,
+            "NO_RESULT": 27,
+            "PASS_SCOPED": 51,
+            "SOLVER_FAILED": 9,
+            "UNVALIDATED_REFERENCE": 132
+          },
+          "execution": {
+            "COMPLETED": 216,
+            "TIMEOUT": 27
+          }
+        }
+      ]
+    },
+    "instrumented": {
+      "n": 81,
+      "science": {
+        "ACCURACY_FAILED": 8,
+        "NO_RESULT": 9,
+        "PASS_SCOPED": 17,
+        "SOLVER_FAILED": 3,
+        "UNVALIDATED_REFERENCE": 44
+      },
+      "execution": {
+        "COMPLETED": 72,
+        "TIMEOUT": 9
+      },
+      "by_case": [
+        {
+          "value": 1,
+          "n": 4,
+          "science": {
+            "UNVALIDATED_REFERENCE": 4
+          },
+          "execution": {
+            "COMPLETED": 4
+          }
+        },
+        {
+          "value": 2,
+          "n": 4,
+          "science": {
+            "UNVALIDATED_REFERENCE": 4
+          },
+          "execution": {
+            "COMPLETED": 4
+          }
+        },
+        {
+          "value": 3,
+          "n": 4,
+          "science": {
+            "UNVALIDATED_REFERENCE": 4
+          },
+          "execution": {
+            "COMPLETED": 4
+          }
+        },
+        {
+          "value": 4,
+          "n": 3,
+          "science": {
+            "UNVALIDATED_REFERENCE": 3
+          },
+          "execution": {
+            "COMPLETED": 3
+          }
+        },
+        {
+          "value": 5,
+          "n": 4,
+          "science": {
+            "SOLVER_FAILED": 1,
+            "UNVALIDATED_REFERENCE": 3
+          },
+          "execution": {
+            "COMPLETED": 4
+          }
+        },
+        {
+          "value": 6,
+          "n": 3,
+          "science": {
+            "PASS_SCOPED": 3
+          },
+          "execution": {
+            "COMPLETED": 3
+          }
+        },
+        {
+          "value": 7,
+          "n": 4,
+          "science": {
+            "PASS_SCOPED": 4
+          },
+          "execution": {
+            "COMPLETED": 4
+          }
+        },
+        {
+          "value": 8,
+          "n": 4,
+          "science": {
+            "UNVALIDATED_REFERENCE": 4
+          },
+          "execution": {
+            "COMPLETED": 4
+          }
+        },
+        {
+          "value": 9,
+          "n": 3,
+          "science": {
+            "UNVALIDATED_REFERENCE": 3
+          },
+          "execution": {
+            "COMPLETED": 3
+          }
+        },
+        {
+          "value": 10,
+          "n": 4,
+          "science": {
+            "ACCURACY_FAILED": 4
+          },
+          "execution": {
+            "COMPLETED": 4
+          }
+        },
+        {
+          "value": 11,
+          "n": 3,
+          "science": {
+            "UNVALIDATED_REFERENCE": 3
+          },
+          "execution": {
+            "COMPLETED": 3
+          }
+        },
+        {
+          "value": 12,
+          "n": 3,
+          "science": {
+            "NO_RESULT": 1,
+            "SOLVER_FAILED": 2
+          },
+          "execution": {
+            "COMPLETED": 2,
+            "TIMEOUT": 1
+          }
+        },
+        {
+          "value": 13,
+          "n": 3,
+          "science": {
+            "NO_RESULT": 1,
+            "UNVALIDATED_REFERENCE": 2
+          },
+          "execution": {
+            "COMPLETED": 2,
+            "TIMEOUT": 1
+          }
+        },
+        {
+          "value": 14,
+          "n": 3,
+          "science": {
+            "NO_RESULT": 3
+          },
+          "execution": {
+            "TIMEOUT": 3
+          }
+        },
+        {
+          "value": 15,
+          "n": 4,
+          "science": {
+            "ACCURACY_FAILED": 4
+          },
+          "execution": {
+            "COMPLETED": 4
+          }
+        },
+        {
+          "value": 16,
+          "n": 4,
+          "science": {
+            "PASS_SCOPED": 4
+          },
+          "execution": {
+            "COMPLETED": 4
+          }
+        },
+        {
+          "value": 17,
+          "n": 3,
+          "science": {
+            "UNVALIDATED_REFERENCE": 3
+          },
+          "execution": {
+            "COMPLETED": 3
+          }
+        },
+        {
+          "value": 18,
+          "n": 3,
+          "science": {
+            "UNVALIDATED_REFERENCE": 3
+          },
+          "execution": {
+            "COMPLETED": 3
+          }
+        },
+        {
+          "value": 19,
+          "n": 3,
+          "science": {
+            "PASS_SCOPED": 3
+          },
+          "execution": {
+            "COMPLETED": 3
+          }
+        },
+        {
+          "value": 20,
+          "n": 3,
+          "science": {
+            "UNVALIDATED_REFERENCE": 3
+          },
+          "execution": {
+            "COMPLETED": 3
+          }
+        },
+        {
+          "value": 21,
+          "n": 3,
+          "science": {
+            "UNVALIDATED_REFERENCE": 3
+          },
+          "execution": {
+            "COMPLETED": 3
+          }
+        },
+        {
+          "value": 22,
+          "n": 3,
+          "science": {
+            "PASS_SCOPED": 3
+          },
+          "execution": {
+            "COMPLETED": 3
+          }
+        },
+        {
+          "value": 23,
+          "n": 3,
+          "science": {
+            "NO_RESULT": 2,
+            "UNVALIDATED_REFERENCE": 1
+          },
+          "execution": {
+            "COMPLETED": 1,
+            "TIMEOUT": 2
+          }
+        },
+        {
+          "value": 24,
+          "n": 3,
+          "science": {
+            "NO_RESULT": 2,
+            "UNVALIDATED_REFERENCE": 1
+          },
+          "execution": {
+            "COMPLETED": 1,
+            "TIMEOUT": 2
+          }
+        }
+      ],
+      "by_method": [
+        {
+          "value": "dopri5",
+          "n": 24,
+          "science": {
+            "ACCURACY_FAILED": 2,
+            "NO_RESULT": 2,
+            "PASS_SCOPED": 5,
+            "SOLVER_FAILED": 2,
+            "UNVALIDATED_REFERENCE": 13
+          },
+          "execution": {
+            "COMPLETED": 22,
+            "TIMEOUT": 2
+          }
+        },
+        {
+          "value": "rodas5p-dense",
+          "n": 9,
+          "science": {
+            "ACCURACY_FAILED": 2,
+            "PASS_SCOPED": 2,
+            "UNVALIDATED_REFERENCE": 5
+          },
+          "execution": {
+            "COMPLETED": 9
+          }
+        },
+        {
+          "value": "rodas5p-mf",
+          "n": 24,
+          "science": {
+            "ACCURACY_FAILED": 2,
+            "NO_RESULT": 4,
+            "PASS_SCOPED": 5,
+            "UNVALIDATED_REFERENCE": 13
+          },
+          "execution": {
+            "COMPLETED": 20,
+            "TIMEOUT": 4
+          }
+        },
+        {
+          "value": "switching",
+          "n": 24,
+          "science": {
+            "ACCURACY_FAILED": 2,
+            "NO_RESULT": 3,
+            "PASS_SCOPED": 5,
+            "SOLVER_FAILED": 1,
+            "UNVALIDATED_REFERENCE": 13
+          },
+          "execution": {
+            "COMPLETED": 21,
+            "TIMEOUT": 3
+          }
+        }
+      ],
+      "by_layer": [
+        {
+          "value": "serial",
+          "n": 81,
+          "science": {
+            "ACCURACY_FAILED": 8,
+            "NO_RESULT": 9,
+            "PASS_SCOPED": 17,
+            "SOLVER_FAILED": 3,
+            "UNVALIDATED_REFERENCE": 44
+          },
+          "execution": {
+            "COMPLETED": 72,
+            "TIMEOUT": 9
+          }
+        }
+      ]
+    }
+  },
+  "robertson": {
+    "smoke": {
+      "t_end": 0.01,
+      "cap": 0.0001,
+      "norm": "max component absolute endpoint error",
+      "methods": {
+        "diffsol-bdf": {
+          "max_actual_error": 3.379222541301545e-11,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.000135436,
+            "median": 0.000132159,
+            "min": 0.000116069
+          },
+          "raw_timed": [
+            {
+              "actual_endpoint_error_max_component": 3.379222541301545e-11,
+              "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826885642,
+                3.645044508621701e-05,
+                0.0003628668663501724
+              ],
+              "method": "diffsol-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_0_diffsol-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "038cce68c6965f37c05de85c9f13bc9e0853a2b12a66d8e20e58a769fd9e14a8",
+              "repeat": 0,
+              "solve_seconds": 0.000132159,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 3.379222541301545e-11,
+              "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826885642,
+                3.645044508621701e-05,
+                0.0003628668663501724
+              ],
+              "method": "diffsol-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_1_diffsol-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "08f6b5739e403edb0ffc21d0cd37ca98f3bb9b1154a29ba93ac28f23b219cbb1",
+              "repeat": 1,
+              "solve_seconds": 0.000133963,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 3.379222541301545e-11,
+              "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826885642,
+                3.645044508621701e-05,
+                0.0003628668663501724
+              ],
+              "method": "diffsol-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_2_diffsol-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "6df51b63cc0da4fdcafb002639534ae3fd066f79e168a3e2a238423ed4b2d1c3",
+              "repeat": 2,
+              "solve_seconds": 0.000116069,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 3.379222541301545e-11,
+              "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826885642,
+                3.645044508621701e-05,
+                0.0003628668663501724
+              ],
+              "method": "diffsol-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_3_diffsol-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "4c9923c1d11629db2deefbda901ac6a1019c785bec5c5f6a6746ed7ef785683a",
+              "repeat": 3,
+              "solve_seconds": 0.000135436,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 3.379222541301545e-11,
+              "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826885642,
+                3.645044508621701e-05,
+                0.0003628668663501724
+              ],
+              "method": "diffsol-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_4_diffsol-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "056fbed6d6070dee573950fac882fd3c4c5a6f818ec13ab7aa009af07166c74f",
+              "repeat": 4,
+              "solve_seconds": 0.000129575,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            }
+          ]
+        },
+        "dopri5": {
+          "max_actual_error": 1.131045899645277e-09,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 8.2456e-05,
+            "median": 6.2177e-05,
+            "min": 5.9512e-05
+          },
+          "raw_timed": [
+            {
+              "actual_endpoint_error_max_component": 1.131045899645277e-09,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826903602,
+                3.644934783254278e-05,
+                0.0003628679618068552
+              ],
+              "method": "dopri5",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_0_dopri5/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "17170b0c8755829e7e73ce92d10f8d07d13b3900681ff9222efd8a171ba73594",
+              "repeat": 0,
+              "solve_seconds": 8.2456e-05,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 1.131045899645277e-09,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826903602,
+                3.644934783254278e-05,
+                0.0003628679618068552
+              ],
+              "method": "dopri5",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_1_dopri5/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "c82b78cefb8499b783ac968d48f31b342c6ab51da69b12b02f7d66759f25c457",
+              "repeat": 1,
+              "solve_seconds": 5.9512e-05,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 1.131045899645277e-09,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826903602,
+                3.644934783254278e-05,
+                0.0003628679618068552
+              ],
+              "method": "dopri5",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_2_dopri5/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "72094f3436c6f7af193cdde46e1c9a494360419b601a611f9132b7faada9da76",
+              "repeat": 2,
+              "solve_seconds": 6.4201e-05,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 1.131045899645277e-09,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826903602,
+                3.644934783254278e-05,
+                0.0003628679618068552
+              ],
+              "method": "dopri5",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_3_dopri5/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "d41cd692a002c89b6b2231e3581c030e956b0063abe82cca8f9a0cfc23336758",
+              "repeat": 3,
+              "solve_seconds": 6.0104e-05,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 1.131045899645277e-09,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826903602,
+                3.644934783254278e-05,
+                0.0003628679618068552
+              ],
+              "method": "dopri5",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_4_dopri5/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "c7c1571ec159f995bbe5deeaf1e2a79c2f0f992490036e6342a69a0da282d0d2",
+              "repeat": 4,
+              "solve_seconds": 6.2177e-05,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            }
+          ]
+        },
+        "native-dvode-adams": {
+          "max_actual_error": 1.4512397268065177e-10,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 3.5958e-05,
+            "median": 3.0768e-05,
+            "min": 2.7843e-05
+          },
+          "raw_timed": [
+            {
+              "actual_endpoint_error_max_component": 1.4512397268065177e-10,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826890417,
+                3.645062325436348e-05,
+                0.0003628666877043839
+              ],
+              "method": "native-dvode-adams",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_0_native-dvode-adams/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "e5af551dde040a47e1de85c6c74c7cc9026dc740549d05f6f7a611cc14d67c31",
+              "repeat": 0,
+              "solve_seconds": 3.0077e-05,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 1.4512397268065177e-10,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826890417,
+                3.645062325436348e-05,
+                0.0003628666877043839
+              ],
+              "method": "native-dvode-adams",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_1_native-dvode-adams/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "9a6cf42b89a116f29d14377dd15188d117911a9ff466659db362d6652e22588a",
+              "repeat": 1,
+              "solve_seconds": 3.5958e-05,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 1.4512397268065177e-10,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826890417,
+                3.645062325436348e-05,
+                0.0003628666877043839
+              ],
+              "method": "native-dvode-adams",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_2_native-dvode-adams/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "ee12bb9ef3e36bd99fa1da4a7500e8fba4748451030481101c3dd3db73b404f7",
+              "repeat": 2,
+              "solve_seconds": 2.7843e-05,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 1.4512397268065177e-10,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826890417,
+                3.645062325436348e-05,
+                0.0003628666877043839
+              ],
+              "method": "native-dvode-adams",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_3_native-dvode-adams/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "969b9d55bffd4aea88e078d22d1bb9b68946e9e8aa27873ff4e9e71063c9e6f6",
+              "repeat": 3,
+              "solve_seconds": 3.1289e-05,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 1.4512397268065177e-10,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826890417,
+                3.645062325436348e-05,
+                0.0003628666877043839
+              ],
+              "method": "native-dvode-adams",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_4_native-dvode-adams/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "90cbb416d60774c1756c89b1f9a36772c5418c928dea5e6f2bf3a08b71814c78",
+              "repeat": 4,
+              "solve_seconds": 3.0768e-05,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            }
+          ]
+        },
+        "native-dvode-bdf": {
+          "max_actual_error": 1.642640783052103e-10,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 4.5816e-05,
+            "median": 3.4515e-05,
+            "min": 3.0257e-05
+          },
+          "raw_timed": [
+            {
+              "actual_endpoint_error_max_component": 1.642640783052103e-10,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826834337,
+                3.645031947387606e-05,
+                0.00036286699709243487
+              ],
+              "method": "native-dvode-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_0_native-dvode-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "6b10874e81ce2e712427b7f78d96ce3cdbfcae53bedaef6f41935b184098d9e4",
+              "repeat": 0,
+              "solve_seconds": 4.5816e-05,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 1.642640783052103e-10,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826834337,
+                3.645031947387606e-05,
+                0.00036286699709243487
+              ],
+              "method": "native-dvode-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_1_native-dvode-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "f5878687c588c413dc9a06c9803e09a1438c30f5b23695f622fcf998e7e0b9e6",
+              "repeat": 1,
+              "solve_seconds": 3.4645e-05,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 1.642640783052103e-10,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826834337,
+                3.645031947387606e-05,
+                0.00036286699709243487
+              ],
+              "method": "native-dvode-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_2_native-dvode-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "ebf1d476b83b4216a989a7fa53a6f434b3992c828f956bf14902a6920a908e45",
+              "repeat": 2,
+              "solve_seconds": 3.0257e-05,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 1.642640783052103e-10,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826834337,
+                3.645031947387606e-05,
+                0.00036286699709243487
+              ],
+              "method": "native-dvode-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_3_native-dvode-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "30c40113b30cba27a849677b6660336c0222b5db0bfd3f747c92943373826346",
+              "repeat": 3,
+              "solve_seconds": 3.3162e-05,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 1.642640783052103e-10,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826834337,
+                3.645031947387606e-05,
+                0.00036286699709243487
+              ],
+              "method": "native-dvode-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_4_native-dvode-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "514f8cc6dd3607fd5f1227f593f762f89da576fcd5890d8e4ca400efd54f7b4c",
+              "repeat": 4,
+              "solve_seconds": 3.4515e-05,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            }
+          ]
+        },
+        "rodas5p-mf": {
+          "max_actual_error": 7.537312855560203e-13,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.000760458,
+            "median": 0.000359489,
+            "min": 0.000336496
+          },
+          "raw_timed": [
+            {
+              "actual_endpoint_error_max_component": 7.537312855560203e-13,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.999600682687671,
+                3.645047963217371e-05,
+                0.000362866832697365
+              ],
+              "method": "rodas5p-mf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_0_rodas5p-mf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "9d33553c4d5f22991d4ea85d57578b6b4ad3cd302ecc04e80d256cb6fb74675a",
+              "repeat": 0,
+              "solve_seconds": 0.000760458,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 7.537312855560203e-13,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.999600682687671,
+                3.645047963217371e-05,
+                0.000362866832697365
+              ],
+              "method": "rodas5p-mf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_1_rodas5p-mf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "70ca4d020b50d8381a6ae3cc1f90970cbe01b3966d6578c86e9c9aaaa810970c",
+              "repeat": 1,
+              "solve_seconds": 0.000360491,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 7.537312855560203e-13,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.999600682687671,
+                3.645047963217371e-05,
+                0.000362866832697365
+              ],
+              "method": "rodas5p-mf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_2_rodas5p-mf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "54677f63345578941f1eada749807ca93dc14f96178929d09503720d9d583b92",
+              "repeat": 2,
+              "solve_seconds": 0.000336496,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 7.537312855560203e-13,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.999600682687671,
+                3.645047963217371e-05,
+                0.000362866832697365
+              ],
+              "method": "rodas5p-mf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_3_rodas5p-mf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "c5e103ad9e8e830c45b8cce23319ed2dcc2f93960f02f9d78296bc2027862c3c",
+              "repeat": 3,
+              "solve_seconds": 0.000359489,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 7.537312855560203e-13,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.999600682687671,
+                3.645047963217371e-05,
+                0.000362866832697365
+              ],
+              "method": "rodas5p-mf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_4_rodas5p-mf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "3f24563804dc019f24af992793f9057273bb5e8dc3e4973456ea7d765af38f41",
+              "repeat": 4,
+              "solve_seconds": 0.000347887,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            }
+          ]
+        },
+        "switching": {
+          "max_actual_error": 2.2670754162845697e-13,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.000348619,
+            "median": 0.000324914,
+            "min": 0.00030689
+          },
+          "raw_timed": [
+            {
+              "actual_endpoint_error_max_component": 2.2670754162845697e-13,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826885199,
+                3.645047887806846e-05,
+                0.0003628668326017449
+              ],
+              "method": "switching",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_0_switching/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "645cf3c0afd48ba45fa288617be46e793df33726823773e10e4e726b8f6a56ed",
+              "repeat": 0,
+              "solve_seconds": 0.000334342,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 2.2670754162845697e-13,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826885199,
+                3.645047887806846e-05,
+                0.0003628668326017449
+              ],
+              "method": "switching",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_1_switching/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "457a5db948b83b357f8f84efa86857df804a69593f0b03ef14c68e32e16f19ce",
+              "repeat": 1,
+              "solve_seconds": 0.000348619,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 2.2670754162845697e-13,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826885199,
+                3.645047887806846e-05,
+                0.0003628668326017449
+              ],
+              "method": "switching",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_2_switching/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "55e3f8b65a3848436b9fe8cf217fd74a20f1538755447fc6e24d8cae0519771a",
+              "repeat": 2,
+              "solve_seconds": 0.000324914,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 2.2670754162845697e-13,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826885199,
+                3.645047887806846e-05,
+                0.0003628668326017449
+              ],
+              "method": "switching",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_3_switching/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "e8698440b8ac42573043f9d0eb82415c7ff16b4166c49a39210ebe86890ecdb0",
+              "repeat": 3,
+              "solve_seconds": 0.000308162,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 2.2670754162845697e-13,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.9996006826885199,
+                3.645047887806846e-05,
+                0.0003628668326017449
+              ],
+              "method": "switching",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_4_switching/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "9ee2db477339c2acd712bedaf48944315d8ff46e8db82535dcd5ae05fb462864",
+              "repeat": 4,
+              "solve_seconds": 0.00030689,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            }
+          ]
+        }
+      },
+      "time_ratio_to_dvode_bdf": {
+        "diffsol-bdf": 3.8290308561495,
+        "dopri5": 1.8014486455164422,
+        "native-dvode-adams": 0.8914385049978272,
+        "native-dvode-bdf": 1.0,
+        "rodas5p-mf": 10.415442561205273,
+        "switching": 9.413704186585543
+      },
+      "time_ratio_to_vigilode_mf": {
+        "diffsol-bdf": 0.3676301639271299,
+        "dopri5": 0.17295939514143688,
+        "native-dvode-adams": 0.0855881542967935,
+        "native-dvode-bdf": 0.09601128268180667,
+        "rodas5p-mf": 1.0,
+        "switching": 0.9038218137411714
+      },
+      "source": {
+        "commit": "9b31da59b6d30a092af52357d3bc257b13ce043f",
+        "status": "",
+        "tree": "38d350b73ab2d809c1b6a0deb6abb7173810b45b"
+      },
+      "binary_sha256": {
+        "diffsol": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+        "native": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+        "vigilode": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2"
+      },
+      "same_error_cap_but_not_same_achieved_error": true,
+      "publication_status": "published numerical reassessment; endpoint comparison only; timing scopes differ by implementation"
+    },
+    "standard": {
+      "t_end": 40.0,
+      "cap": 0.0001,
+      "norm": "max component absolute endpoint error",
+      "methods": {
+        "diffsol-bdf": {
+          "max_actual_error": 2.946990079744083e-08,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.000293084,
+            "median": 0.000211389,
+            "min": 0.000170703
+          },
+          "raw_timed": [
+            {
+              "actual_endpoint_error_max_component": 2.946990079744083e-08,
+              "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158270392571028,
+                9.18552716974699e-06,
+                0.28416377521573116
+              ],
+              "method": "diffsol-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_0_diffsol-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "b55028725ed80416d50b1a5487c362781f6fddd5c2c07a476759e1b625b769fc",
+              "repeat": 0,
+              "solve_seconds": 0.000293084,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 2.946990079744083e-08,
+              "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158270392571028,
+                9.18552716974699e-06,
+                0.28416377521573116
+              ],
+              "method": "diffsol-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_1_diffsol-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "c0e375af21cf656f1ce28a8471b2dcd29c6bb8215bebacb36919779bdacdec11",
+              "repeat": 1,
+              "solve_seconds": 0.000247648,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 2.946990079744083e-08,
+              "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158270392571028,
+                9.18552716974699e-06,
+                0.28416377521573116
+              ],
+              "method": "diffsol-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_2_diffsol-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "8b13572e988f94078552e85b8a2b20d16cbe9b827a60b9db6c1f39c0218cc69e",
+              "repeat": 2,
+              "solve_seconds": 0.000211389,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 2.946990079744083e-08,
+              "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158270392571028,
+                9.18552716974699e-06,
+                0.28416377521573116
+              ],
+              "method": "diffsol-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_3_diffsol-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "6e93915a993bf92e9cd95f83c050a63b6792e02054bd1fbd7e728b1a20379b3b",
+              "repeat": 3,
+              "solve_seconds": 0.000189949,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 2.946990079744083e-08,
+              "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158270392571028,
+                9.18552716974699e-06,
+                0.28416377521573116
+              ],
+              "method": "diffsol-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_4_diffsol-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "3004c8cefd0731c57d23cba2312883a3ee54b7ee80e01f90689ae31e0404d489",
+              "repeat": 4,
+              "solve_seconds": 0.000170703,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            }
+          ]
+        },
+        "dopri5": {
+          "max_actual_error": 5.424384275087846e-09,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.024629863,
+            "median": 0.01681717,
+            "min": 0.013925445
+          },
+          "raw_timed": [
+            {
+              "actual_endpoint_error_max_component": 5.424384275087846e-09,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158270741437893,
+                9.185317365301867e-06,
+                0.2841637405388743
+              ],
+              "method": "dopri5",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_0_dopri5/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "908d4c3855d80ab0eead657a90a5851cb1453fd1d9ab138503d5ccaeaefd6f12",
+              "repeat": 0,
+              "solve_seconds": 0.020752826,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 5.424384275087846e-09,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158270741437893,
+                9.185317365301867e-06,
+                0.2841637405388743
+              ],
+              "method": "dopri5",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_1_dopri5/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "902e02918bce2f154fc3cd40c44726fb89368e7da6ca10c8d245173cb0bc9649",
+              "repeat": 1,
+              "solve_seconds": 0.014897932,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 5.424384275087846e-09,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158270741437893,
+                9.185317365301867e-06,
+                0.2841637405388743
+              ],
+              "method": "dopri5",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_2_dopri5/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "0fa65e2d5b5bdd2ef983f9fb0c5d338b35ac5251e062b9bdfcc613c6283b2b2c",
+              "repeat": 2,
+              "solve_seconds": 0.013925445,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 5.424384275087846e-09,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158270741437893,
+                9.185317365301867e-06,
+                0.2841637405388743
+              ],
+              "method": "dopri5",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_3_dopri5/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "c5c6496aaef518e4971a4681e41b4704ca9c70076af9243b289ca4fecb21d943",
+              "repeat": 3,
+              "solve_seconds": 0.024629863,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 5.424384275087846e-09,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158270741437893,
+                9.185317365301867e-06,
+                0.2841637405388743
+              ],
+              "method": "dopri5",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_4_dopri5/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "202af0110d12acf9e2ee9dbf2b7825efa5d4a3a2b9fef6d3467776b061de47a2",
+              "repeat": 4,
+              "solve_seconds": 0.01681717,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            }
+          ]
+        },
+        "native-dvode-adams": {
+          "max_actual_error": 1.2304320904932275e-06,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.027767262,
+            "median": 0.021946212,
+            "min": 0.02057987
+          },
+          "raw_timed": [
+            {
+              "actual_endpoint_error_max_component": 1.2304320904932275e-06,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158282990551659,
+                9.185631127160308e-06,
+                0.28416251531373987
+              ],
+              "method": "native-dvode-adams",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_0_native-dvode-adams/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "0b68a62e4703a27915a2df5cfebc6a91d5f0ebf61b5249cbf2706f809e2d3b08",
+              "repeat": 0,
+              "solve_seconds": 0.027767262,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 1.2304320904932275e-06,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158282990551659,
+                9.185631127160308e-06,
+                0.28416251531373987
+              ],
+              "method": "native-dvode-adams",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_1_native-dvode-adams/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "4a3623081df3877a696541ce6c64015e546c1400f01b6967a88bb1b0140ae0f3",
+              "repeat": 1,
+              "solve_seconds": 0.026084272,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 1.2304320904932275e-06,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158282990551659,
+                9.185631127160308e-06,
+                0.28416251531373987
+              ],
+              "method": "native-dvode-adams",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_2_native-dvode-adams/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "fb4bc376c4e0579c3262763c9f8f25a144d6d91573ff8ede4d18ae3a4f4686e2",
+              "repeat": 2,
+              "solve_seconds": 0.021155889,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 1.2304320904932275e-06,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158282990551659,
+                9.185631127160308e-06,
+                0.28416251531373987
+              ],
+              "method": "native-dvode-adams",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_3_native-dvode-adams/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "0bd24592d22ac00d593a953df660f7d2202ef32117190f222ee48931caf9f05a",
+              "repeat": 3,
+              "solve_seconds": 0.021946212,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 1.2304320904932275e-06,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158282990551659,
+                9.185631127160308e-06,
+                0.28416251531373987
+              ],
+              "method": "native-dvode-adams",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_4_native-dvode-adams/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "97bdede8fd8c7ab4c7c3040b1ba1e4952710337dc698ff8a892f1814d75b9144",
+              "repeat": 4,
+              "solve_seconds": 0.02057987,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            }
+          ]
+        },
+        "native-dvode-bdf": {
+          "max_actual_error": 8.957898744998971e-07,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.000157217,
+            "median": 0.000139534,
+            "min": 8.468e-05
+          },
+          "raw_timed": [
+            {
+              "actual_endpoint_error_max_component": 8.957898744998971e-07,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158261729295305,
+                9.185556841947192e-06,
+                0.2841646415136184
+              ],
+              "method": "native-dvode-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_0_native-dvode-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "edd7c9659b5b401626bc6f2ad6b68d0186dc599d662605f44ca55338d1fc19ff",
+              "repeat": 0,
+              "solve_seconds": 0.000152398,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 8.957898744998971e-07,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158261729295305,
+                9.185556841947192e-06,
+                0.2841646415136184
+              ],
+              "method": "native-dvode-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_1_native-dvode-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "f357393f67dc950e2fe4278ff701bd4af4ee097c3e8882e71b1f905e41f32cc7",
+              "repeat": 1,
+              "solve_seconds": 0.000139534,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 8.957898744998971e-07,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158261729295305,
+                9.185556841947192e-06,
+                0.2841646415136184
+              ],
+              "method": "native-dvode-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_2_native-dvode-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "042fac5475cc4145dc7dc2e3ff65c11ab83618ecb2e2746baf6bf241d09b56f8",
+              "repeat": 2,
+              "solve_seconds": 0.000138211,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 8.957898744998971e-07,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158261729295305,
+                9.185556841947192e-06,
+                0.2841646415136184
+              ],
+              "method": "native-dvode-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_3_native-dvode-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "fdb4902d53c8944b4b7a809a898c12be71559ca9673e401da14a6588c41f6a90",
+              "repeat": 3,
+              "solve_seconds": 0.000157217,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 8.957898744998971e-07,
+              "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158261729295305,
+                9.185556841947192e-06,
+                0.2841646415136184
+              ],
+              "method": "native-dvode-bdf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_4_native-dvode-bdf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "03e3dd4274a71d56cc10f30d367c2ffeaa567b5c91aa427208426b29b2859fa6",
+              "repeat": 4,
+              "solve_seconds": 8.468e-05,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            }
+          ]
+        },
+        "rodas5p-mf": {
+          "max_actual_error": 4.5498489575912515e-07,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.001046578,
+            "median": 0.000622867,
+            "min": 0.000615073
+          },
+          "raw_timed": [
+            {
+              "actual_endpoint_error_max_component": 4.5498489575912515e-07,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158266137511768,
+                9.185518098250497e-06,
+                0.2841642007307261
+              ],
+              "method": "rodas5p-mf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_0_rodas5p-mf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "53eb1dd472a4b67c3a36cb858ee9571bc0c4fcbb214d3c8db05ff2a6d497ec41",
+              "repeat": 0,
+              "solve_seconds": 0.001046578,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 4.5498489575912515e-07,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158266137511768,
+                9.185518098250497e-06,
+                0.2841642007307261
+              ],
+              "method": "rodas5p-mf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_1_rodas5p-mf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "44e2eb18c258e7f8020cbc7d84e5f587e323836e8f3dc4fe9dfa1998a7cfd2e9",
+              "repeat": 1,
+              "solve_seconds": 0.000621084,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 4.5498489575912515e-07,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158266137511768,
+                9.185518098250497e-06,
+                0.2841642007307261
+              ],
+              "method": "rodas5p-mf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_2_rodas5p-mf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "ae08e71bd7958524483ccfa34d6b8488c8cef5fbe35ed809cca2786b0844a1d8",
+              "repeat": 2,
+              "solve_seconds": 0.000615073,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 4.5498489575912515e-07,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158266137511768,
+                9.185518098250497e-06,
+                0.2841642007307261
+              ],
+              "method": "rodas5p-mf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_3_rodas5p-mf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "6c3e255955cd3b20d9e78f7ce2711c3cedc80ade6064444c4bd518cf3adc8c3d",
+              "repeat": 3,
+              "solve_seconds": 0.000622867,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 4.5498489575912515e-07,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158266137511768,
+                9.185518098250497e-06,
+                0.2841642007307261
+              ],
+              "method": "rodas5p-mf",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_4_rodas5p-mf/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "a3c76a6474a84ea76c98536fc6287cc1dd6cb006c47a3f83023db1d6f9336303",
+              "repeat": 4,
+              "solve_seconds": 0.000633276,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            }
+          ]
+        },
+        "switching": {
+          "max_actual_error": 4.992795288316643e-09,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.049331051,
+            "median": 0.040000129,
+            "min": 0.03780444
+          },
+          "raw_timed": [
+            {
+              "actual_endpoint_error_max_component": 4.992795288316643e-09,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158270737122003,
+                9.185276143913865e-06,
+                0.2841637410116524
+              ],
+              "method": "switching",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_0_switching/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "d6f916a48a78ed173ba43a6cc4cbe3ffeafc7fcc0373b766c3c92d0223735b0d",
+              "repeat": 0,
+              "solve_seconds": 0.040000129,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 4.992795288316643e-09,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158270737122003,
+                9.185276143913865e-06,
+                0.2841637410116524
+              ],
+              "method": "switching",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_1_switching/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "778a03960101d4018d36cd2a961282a9b7758cb7a518cdfe30b3034c0b2c832a",
+              "repeat": 1,
+              "solve_seconds": 0.047475785,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 4.992795288316643e-09,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158270737122003,
+                9.185276143913865e-06,
+                0.2841637410116524
+              ],
+              "method": "switching",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_2_switching/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "ecfbcfe13a66fa0ea1b2dbfe864cb55b7cef7eaa0c1276cfe3a3657d6eaf4f4e",
+              "repeat": 2,
+              "solve_seconds": 0.03780444,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 4.992795288316643e-09,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158270737122003,
+                9.185276143913865e-06,
+                0.2841637410116524
+              ],
+              "method": "switching",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_3_switching/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "34e61e8a45f25c86d0314390711cfd9343734a6cc6cdcd542e742fc46958a5a2",
+              "repeat": 3,
+              "solve_seconds": 0.049331051,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            },
+            {
+              "actual_endpoint_error_max_component": 4.992795288316643e-09,
+              "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+              "execution_status": "COMPLETED",
+              "final_state": [
+                0.7158270737122003,
+                9.185276143913865e-06,
+                0.2841637410116524
+              ],
+              "method": "switching",
+              "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_4_switching/COMPARISON_RECEIPT.json",
+              "raw_receipt_sha256": "8ddb78d93d82758c10b30653cc7d76a2ae84dbf898434635a80623fa33195dd2",
+              "repeat": 4,
+              "solve_seconds": 0.039878228,
+              "status": "PASS_SCOPED",
+              "warmup": false
+            }
+          ]
+        }
+      },
+      "time_ratio_to_dvode_bdf": {
+        "diffsol-bdf": 1.5149640947726004,
+        "dopri5": 120.52381498416156,
+        "native-dvode-adams": 157.28218212048677,
+        "native-dvode-bdf": 1.0,
+        "rodas5p-mf": 4.463908438086775,
+        "switching": 286.66940673957606
+      },
+      "time_ratio_to_vigilode_mf": {
+        "diffsol-bdf": 0.33938063824219294,
+        "dopri5": 26.999616290476133,
+        "native-dvode-adams": 35.23418643145326,
+        "native-dvode-bdf": 0.2240189318104828,
+        "rodas5p-mf": 1.0,
+        "switching": 64.21937428054464
+      },
+      "source": {
+        "commit": "9b31da59b6d30a092af52357d3bc257b13ce043f",
+        "status": "",
+        "tree": "38d350b73ab2d809c1b6a0deb6abb7173810b45b"
+      },
+      "binary_sha256": {
+        "diffsol": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+        "native": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+        "vigilode": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2"
+      },
+      "same_error_cap_but_not_same_achieved_error": true,
+      "publication_status": "published numerical reassessment; endpoint comparison only; timing scopes differ by implementation"
+    }
+  },
+  "step_budget_failures": [
+    {
+      "case": 5,
+      "method": "dopri5",
+      "layer": "ensemble",
+      "threads": 1,
+      "n": 3,
+      "median_process_seconds": 24.273046653019264,
+      "accepted_steps": [
+        195112
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        4888
+      ],
+      "final_time": [
+        0.645495998875149
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 5,
+      "method": "dopri5",
+      "layer": "ensemble",
+      "threads": 2,
+      "n": 3,
+      "median_process_seconds": 15.513128265971318,
+      "accepted_steps": [
+        195112
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        4888
+      ],
+      "final_time": [
+        0.645495998875149
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 5,
+      "method": "dopri5",
+      "layer": "ensemble",
+      "threads": 4,
+      "n": 3,
+      "median_process_seconds": 8.187789335846901,
+      "accepted_steps": [
+        195112
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        4888
+      ],
+      "final_time": [
+        0.645495998875149
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 5,
+      "method": "dopri5",
+      "layer": "ensemble",
+      "threads": 8,
+      "n": 3,
+      "median_process_seconds": 8.503145693102852,
+      "accepted_steps": [
+        195112
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        4888
+      ],
+      "final_time": [
+        0.645495998875149
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 5,
+      "method": "dopri5",
+      "layer": "ensemble",
+      "threads": 12,
+      "n": 3,
+      "median_process_seconds": 7.117680392926559,
+      "accepted_steps": [
+        195112
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        4888
+      ],
+      "final_time": [
+        0.645495998875149
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 5,
+      "method": "dopri5",
+      "layer": "serial",
+      "threads": 1,
+      "n": 3,
+      "median_process_seconds": 0.11914897686801851,
+      "accepted_steps": [
+        195112
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        4888
+      ],
+      "final_time": [
+        0.645495998875149
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 12,
+      "method": "dopri5",
+      "layer": "data",
+      "threads": 1,
+      "n": 3,
+      "median_process_seconds": 36.43988909898326,
+      "accepted_steps": [
+        195117
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        4883
+      ],
+      "final_time": [
+        3.757461472896645
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 12,
+      "method": "dopri5",
+      "layer": "data",
+      "threads": 2,
+      "n": 3,
+      "median_process_seconds": 24.658821346005425,
+      "accepted_steps": [
+        195117
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        4883
+      ],
+      "final_time": [
+        3.757461472896645
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 12,
+      "method": "dopri5",
+      "layer": "data",
+      "threads": 4,
+      "n": 3,
+      "median_process_seconds": 22.2633508478757,
+      "accepted_steps": [
+        195117
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        4883
+      ],
+      "final_time": [
+        3.757461472896645
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 12,
+      "method": "dopri5",
+      "layer": "data",
+      "threads": 8,
+      "n": 3,
+      "median_process_seconds": 32.85811796714552,
+      "accepted_steps": [
+        195117
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        4883
+      ],
+      "final_time": [
+        3.757461472896645
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 12,
+      "method": "dopri5",
+      "layer": "data",
+      "threads": 12,
+      "n": 3,
+      "median_process_seconds": 37.232275107875466,
+      "accepted_steps": [
+        195117
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        4883
+      ],
+      "final_time": [
+        3.757461472896645
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 12,
+      "method": "dopri5",
+      "layer": "serial",
+      "threads": 1,
+      "n": 3,
+      "median_process_seconds": 23.752371466020122,
+      "accepted_steps": [
+        195117
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        4883
+      ],
+      "final_time": [
+        3.757461472896645
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 12,
+      "method": "switching",
+      "layer": "data",
+      "threads": 1,
+      "n": 3,
+      "median_process_seconds": 41.94508693390526,
+      "accepted_steps": [
+        191964
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        8036
+      ],
+      "final_time": [
+        3.6958786369398413
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 12,
+      "method": "switching",
+      "layer": "data",
+      "threads": 2,
+      "n": 3,
+      "median_process_seconds": 25.968198337126523,
+      "accepted_steps": [
+        191964
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        8036
+      ],
+      "final_time": [
+        3.6958786369398413
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 12,
+      "method": "switching",
+      "layer": "data",
+      "threads": 4,
+      "n": 3,
+      "median_process_seconds": 24.625351617811248,
+      "accepted_steps": [
+        191964
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        8036
+      ],
+      "final_time": [
+        3.6958786369398413
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 12,
+      "method": "switching",
+      "layer": "data",
+      "threads": 8,
+      "n": 3,
+      "median_process_seconds": 35.22460169577971,
+      "accepted_steps": [
+        191964
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        8036
+      ],
+      "final_time": [
+        3.6958786369398413
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 12,
+      "method": "switching",
+      "layer": "data",
+      "threads": 12,
+      "n": 3,
+      "median_process_seconds": 40.283398075029254,
+      "accepted_steps": [
+        191964
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        8036
+      ],
+      "final_time": [
+        3.6958786369398413
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    },
+    {
+      "case": 12,
+      "method": "switching",
+      "layer": "serial",
+      "threads": 1,
+      "n": 3,
+      "median_process_seconds": 24.075702101923525,
+      "accepted_steps": [
+        191964
+      ],
+      "attempts": [
+        200000
+      ],
+      "rejected_steps": [
+        8036
+      ],
+      "final_time": [
+        3.6958786369398413
+      ],
+      "interpretation": "failed computations; elapsed time is not time-to-solution"
+    }
+  ],
+  "timeout_hotspots": {
+    "case_14": 54,
+    "case_23": 36,
+    "case_24": 36,
+    "combined": 126,
+    "denominator": 199
+  },
+  "scope": {
+    "case_count": 24,
+    "source_task_count": 1539,
+    "independent_replicates_per_clean_configuration": 3,
+    "ensemble_count_per_small_case_task": 256,
+    "raw_availability": "42 compact copies and status summaries; most whole campaign raw remains local",
+    "unavailable_speed_comparisons": "No scalar solver elapsed times for the whole 1539 status index; no comprehensive timing ranking can be derived from it.",
+    "julia_comparison_execution": "NOT_RUN",
+    "accuracy_cohort_execution": "NOT_RUN"
+  },
+  "local_followup": {
+    "active_benchmark": "preserve running checkout/binary/results; apply no in-place change",
+    "next_scientific_priorities": [
+      "Achieved error vs cost for gyromotion and exponential chirp, with phase and amplitude error separately.",
+      "Diagnose persistent explicit-step-size limitation in boundary-layer and KS cases before raising attempt caps.",
+      "Use accepted physical time and step counters in separate timeout pilots; original header-only timeouts do not establish progress.",
+      "Export raw full states and timing samples for independent-reference comparisons; historical emit_state=false rows cannot be retroactively validated.",
+      "Use interleaved per-cell u,v layout for cases21 and23 external ports."
+    ]
+  }
+}

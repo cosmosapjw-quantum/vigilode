@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "decision": "PASS_SCOPED_FINITE_OUTPUT_ASSESSMENT",
+  "reviewer": "benchmark_inventory independent agent",
+  "scope": "finite final_time/final_state validation in native benchmark comparison; no solver execution",
+  "source_commit_before_patch": "2a4bf90d1445b67542bdac5030b4c5d10da20445",
+  "old_source_sha256": "7a33fcf1fee360c914e2e753f2211706ae7d7692d7368814f6ad6f93ad8621ac",
+  "source_sha256": "d74c2732d70871349574c3c84fdbf5637e459fe59a50df66a4f0179c85065396",
+  "test_sha256": "900a66d8596d41365fb81b0e662c2876a9d869a0433f8fcf486eb5517ffa7cbf",
+  "test_command": [
+    "python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "research/local_frontier_native_diffsol_20261024",
+    "-p",
+    "test_compare.py",
+    "-v"
+  ],
+  "test_exit_code": 0,
+  "test_stdout": "",
+  "test_stderr": "test_endpoint_tolerance_unchanged (test_compare.AssessmentTests.test_endpoint_tolerance_unchanged) ... ok\ntest_external_model_match_requirement_preserved (test_compare.AssessmentTests.test_external_model_match_requirement_preserved) ... ok\ntest_finite_endpoint_accepts_and_preserves_inputs (test_compare.AssessmentTests.test_finite_endpoint_accepts_and_preserves_inputs) ... ok\ntest_invalid_state_rejected (test_compare.AssessmentTests.test_invalid_state_rejected) ... ok\ntest_nonfinite_endpoint_rejected_before_accuracy (test_compare.AssessmentTests.test_nonfinite_endpoint_rejected_before_accuracy) ... ok\ntest_process_and_solver_failures_preserved (test_compare.AssessmentTests.test_process_and_solver_failures_preserved) ... ok\ntest_reference_and_error_cap_semantics_unchanged (test_compare.AssessmentTests.test_reference_and_error_cap_semantics_unchanged) ... ok\ntest_wrong_numeric_endpoint_types_rejected (test_compare.AssessmentTests.test_wrong_numeric_endpoint_types_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 0.001s\n\nOK\n",
+  "independent_checks": {
+    "original_nan_final_time_false_acceptance_reproduced": true,
+    "corrected_nan_rejected": true,
+    "finite_case_old_new_parity": 200,
+    "malformed_time_and_state_checks": 16,
+    "seed": 20261025,
+    "solver_launches": 0
+  },
+  "assessment": "The NaN comparison formerly made abs(t-t_end)>threshold false; an explicit finite predicate now rejects it before accuracy assessment. Boolean and oversized-integer values are rejected. The endpoint time threshold, common error cap, reference uncertainty and solver/model status checks are unchanged.",
+  "findings": [],
+  "active_user_run_changed": false,
+  "historical_data_reclassified": false
+}

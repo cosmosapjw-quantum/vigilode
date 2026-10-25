@@ -1,0 +1,50 @@
+{
+  "scope": "reaggregation and visualization only, not solver reruns",
+  "checks": [
+    {
+      "check": "source_hashes",
+      "count": 17,
+      "result": "pass"
+    },
+    {
+      "check": "polynomial_medians_against_published_aggregation",
+      "count": 18,
+      "result": "pass"
+    },
+    {
+      "check": "invariant_module_medians_against_published_aggregation",
+      "count": 15,
+      "result": "pass"
+    },
+    {
+      "check": "stage_parallelism_ratios_against_published_aggregation",
+      "count": 8,
+      "result": "pass"
+    },
+    {
+      "check": "all_outcomes_and_trajectory_counts_preserved",
+      "result": "pass"
+    }
+  ],
+  "visual_review": {
+    "method": "opened generated PNG images using view_image",
+    "figures": 4,
+    "corrected": [
+      "polynomial panel B legend overlapped a data annotation; moved legend",
+      "invariant module log minor labels overlapped explicit n ticks; disabled minor labels"
+    ],
+    "final_result": "legible; all labels and uncertainty ranges visible",
+    "width_inches": 7.1,
+    "minimum_text_points": 8
+  },
+  "outputs": {
+    "external_reports/benchmark_review_20261025/figures/conditional_adaptation.png": "3dcc78c2d30d320ab837f7993d6f7bc616d55fa1d1cc1861f0626b198f0869ad",
+    "external_reports/benchmark_review_20261025/figures/conditional_adaptation.svg": "c3b34c04d8bf547975ceb68a11773d8a8938fa52d67ca3962593754ed288febe",
+    "external_reports/benchmark_review_20261025/figures/conditional_certification.png": "b8b9f6e6a166ddfc45a2ebaceb4a1ce9c56a58e90cc7c7547e95f39db685e994",
+    "external_reports/benchmark_review_20261025/figures/conditional_certification.svg": "ee4fb4a6f9a26b4d9a89b84a9139a040d4fbf8b0a931cc719a78547707fda78c",
+    "external_reports/benchmark_review_20261025/figures/conditional_continuation.png": "ba7aab4209d0cf80046f4f1cb719912a21b32c781478f6bbc55e4065804c1767",
+    "external_reports/benchmark_review_20261025/figures/conditional_continuation.svg": "6878eb8b47f4288f51f86b1edfe68f2dfcc183f939f42d948cb1687138d46e1e",
+    "external_reports/benchmark_review_20261025/figures/conditional_polynomial.png": "09a15bb7b2202b3d5be7c66ec135694e8c3e17938d683a1af229b4bbf6531720",
+    "external_reports/benchmark_review_20261025/figures/conditional_polynomial.svg": "25853a93cdb4f708d85fb0543d765aa19cb4cfc8de7ee9e21f51be9459597da9"
+  }
+}

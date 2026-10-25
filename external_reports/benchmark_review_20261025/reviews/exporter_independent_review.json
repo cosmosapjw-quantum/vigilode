@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "reviewer": "independent benchmark_inventory agent",
+  "decision": "PASS_SCOPED_READ_ONLY_SCALAR_EXPORT",
+  "source_sha256": "c1a782023055fc82b4c09de12a99b05d783779419d8587e41b1470e75cc86990",
+  "author_test_sha256": "04a1981cf8f18bb7aa91931ede73ca4d5c14fba65f8baf4662beb4ff0d96f97c",
+  "independent_test_sha256": "ff4c3354e362886ed9eb446e7a3cb2d22389afb36b40bd5161ee8a43a301f7d1",
+  "solver_launches": 0,
+  "scope": [
+    "terminal receipt and stream integrity",
+    "active-read failure handling",
+    "task-index identity pairing",
+    "malformed numeric handling",
+    "new external output directory",
+    "duplicates and timing-scope interpretation"
+  ],
+  "tests": [
+    {
+      "command": "python3 -B -m unittest discover -s external_reports/benchmark_review_20261025/tools -p test_export_local_measurements.py -v",
+      "count": 15,
+      "exit_code": 0
+    },
+    {
+      "command": "python3 -B -m unittest discover -s external_reports/benchmark_review_20261025/reviews -p test_exporter_adversarial.py -v",
+      "count": 9,
+      "exit_code": 0,
+      "log": "reviews/exporter_round1_green.log",
+      "log_sha256": "877ddcfab91da25ca79727f51366064a07cccb212d6a6a40d02b0cd55fdee651"
+    }
+  ],
+  "correction_rounds": 1,
+  "findings": [
+    {
+      "id": "E1",
+      "severity": "high",
+      "observation": "A terminal receipt reread exception left timing_reanalysis_candidate true even after evidence_status became READ_OR_FORMAT_ERROR.",
+      "fix": "Every caught read/format exception clears timing candidacy; final reread repeats root-boundary check.",
+      "verification": "test_reread_disappearance_never_leaves_timing_candidate; author disappearance regression",
+      "status": "closed"
+    },
+    {
+      "id": "E2",
+      "severity": "medium",
+      "observation": "Task index identity fields could be null; matching hash without matching task ID could link another task.",
+      "fix": "Validate nonempty task ID and lowercase SHA256; match (task ID,receipt hash), distinguish receipt-task conflict.",
+      "verification": "test_null_index_identity_cannot_match_missing_identity; test_task_index_hash_cannot_bind_another_task",
+      "status": "closed"
+    },
+    {
+      "id": "E3",
+      "severity": "medium",
+      "observation": "A JSON integer 10**400 in elapsed_seconds caused uncaught OverflowError.",
+      "fix": "finite_number rejects overflowing numeric conversion and row-level handler preserves malformed evidence.",
+      "verification": "test_extreme_json_integer_remains_record_level_failure; author huge-integer regression",
+      "status": "closed"
+    }
+  ],
+  "open_material_findings": [],
+  "usage_contract": [
+    "Export is a per-file snapshot, not an atomic snapshot of the whole running directory. Terminal files created after path enumeration appear in a later export.",
+    "A complete export has parseable EXPORT_SUMMARY.json and a matching measurements_sha256. Partial directories from interrupted exports must not be consumed or reused.",
+    "Rows for wrapper and underlying receipt share raw_evidence_key and are not independent repetitions.",
+    "Timing candidacy requires later source/host/model/output-scope matching and does not create a new scientific pass.",
+    "Result vectors are intentionally omitted; independent-reference reassessment requires original local vectors."
+  ],
+  "initial_failure_observation": {
+    "test_count": 9,
+    "failures": 3,
+    "errors": 1,
+    "passes": 5,
+    "preservation": "observed in tool response; before-change source hash was not captured because author corrected concurrently. The saved green log is labelled after correction."
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "scope": "Native comparison endpoint assessment only; no solver runs, no historical row reclassification",
+  "change": "Reject nonfinite, boolean, and oversized integer final time/state before endpoint accuracy assessment. Preserve original time tolerance and reference/error-cap logic.",
+  "applies_to": "New comparison cohorts after source-pinned checkout update; active local source and processes unchanged",
+  "command": [
+    "python3",
+    "-B",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "research/local_frontier_native_diffsol_20261024",
+    "-p",
+    "test_compare.py",
+    "-v"
+  ],
+  "exit_code": 0,
+  "stdout": "",
+  "stderr": "test_endpoint_tolerance_unchanged (test_compare.AssessmentTests.test_endpoint_tolerance_unchanged) ... ok\ntest_external_model_match_requirement_preserved (test_compare.AssessmentTests.test_external_model_match_requirement_preserved) ... ok\ntest_finite_endpoint_accepts_and_preserves_inputs (test_compare.AssessmentTests.test_finite_endpoint_accepts_and_preserves_inputs) ... ok\ntest_invalid_state_rejected (test_compare.AssessmentTests.test_invalid_state_rejected) ... ok\ntest_nonfinite_endpoint_rejected_before_accuracy (test_compare.AssessmentTests.test_nonfinite_endpoint_rejected_before_accuracy) ... ok\ntest_process_and_solver_failures_preserved (test_compare.AssessmentTests.test_process_and_solver_failures_preserved) ... ok\ntest_reference_and_error_cap_semantics_unchanged (test_compare.AssessmentTests.test_reference_and_error_cap_semantics_unchanged) ... ok\ntest_wrong_numeric_endpoint_types_rejected (test_compare.AssessmentTests.test_wrong_numeric_endpoint_types_rejected) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 0.001s\n\nOK\n",
+  "source_sha256": {
+    "research/local_frontier_native_diffsol_20261024/compare.py": "d74c2732d70871349574c3c84fdbf5637e459fe59a50df66a4f0179c85065396",
+    "research/local_frontier_native_diffsol_20261024/test_compare.py": "900a66d8596d41365fb81b0e662c2876a9d869a0433f8fcf486eb5517ffa7cbf"
+  },
+  "manifest_impact": "Historical audit packet copied_sources does not include compare.py. Existing evidence hashes remain historical. Future compare.py records runner_sha256 automatically."
+}

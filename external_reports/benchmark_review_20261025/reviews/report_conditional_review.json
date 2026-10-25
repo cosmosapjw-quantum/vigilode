@@ -1,0 +1,111 @@
+{
+  "schema_version": 1,
+  "reviewer": "conditional_figures subagent",
+  "review_scope": "Report abstract and sections1,6-11, conditional scientific figure captions, global narrative register",
+  "independence": "Separate from report drafting; reviewer prepared conditional reaggregation and figures, so not independent of data-preparation code. Math arguments derived anew and D2/D3 source reports read directly.",
+  "checks": [
+    {
+      "item": "polynomial exact identity",
+      "result": "pass",
+      "reason": "A=s(alpha I-C), q(alpha)-q(C)=(alpha I-C)r(C); q(C)=0 and q(alpha)!=0 give A p(C)=I. Finite square-operator setting assumed."
+    },
+    {
+      "item": "residual contraction",
+      "result": "pass with CR3 wording",
+      "reason": "r_plus=(I-A p_hat(C))r, hence ||r_plus||<=delta||r|| in induced norm."
+    },
+    {
+      "item": "conditional numeric values",
+      "result": "pass",
+      "reason": "Numbers for polynomial ratios, refinement upper errors, continuation timing/calls and 53801.7-fold bound reduction, sparse certificate range, module amortization and stage-speed ratios match conditional_summary.json recomputed from raw."
+    },
+    {
+      "item": "Bernstein / stage-domain statements",
+      "result": "pass",
+      "reason": "Read remote_D2_REPORT_KO.md and remote_D3_REPORT_KO.md. 507 forbidden calls, 1032->602 attempts,5323->4816 RHS and 1188 segments,1484 queries,48972 components,0.4774119 ratio agree. Report restricts to manufactured models; work reduction not equated with wall time."
+    },
+    {
+      "item": "phase identity",
+      "result": "pass",
+      "reason": "Expansion r²+R²-2rR cos(delta) and 1-cos(delta)=2sin²(delta/2). Principal phase and near-zero radius limitations are explicit."
+    },
+    {
+      "item": "amortization formula",
+      "result": "pass",
+      "reason": "With DeltaS>=0 and DeltaT>0, DeltaS-mDeltaT<0 iff m>DeltaS/DeltaT. 161 is explicitly a median-based projection; current report retains overlap caveat."
+    },
+    {
+      "item": "overall prose",
+      "result": "pass after limited terminology corrections",
+      "reason": "Direct Korean academic prose; equation definitions followed by interpretation. Conditions generally stated once near result. No claim-gate/DAG labels in human scientific narrative."
+    }
+  ],
+  "findings": [
+    {
+      "id": "CR1",
+      "severity": "medium",
+      "location": "abstract first sentence; section1 architecture",
+      "issue": "Wording can imply the automatic dispatcher already selects polynomial, fixed-P continuation, and invariant-module routes. Published code keeps these as opt-in APIs/prototypes.",
+      "requested_change": "Describe basic DOPRI/RODAS integration and separately implemented optional structural methods without asserting automatic integration.",
+      "status": "closed",
+      "resolution": "Revised report directly inspected: requested assumptions/status/rounding distinctions are present."
+    },
+    {
+      "id": "CR2",
+      "severity": "high",
+      "location": "section7 first paragraph",
+      "issue": "Banach theorem needs a complete preserved domain, and P must be invertible to identify fixed points with zeros of F. Current paragraph says only fixed P and a domain.",
+      "requested_change": "State fixed invertible P and a closed ball in finite-dimensional normed space preserved by T, with q<1 throughout that ball.",
+      "status": "closed",
+      "resolution": "Revised report directly inspected: requested assumptions/status/rounding distinctions are present."
+    },
+    {
+      "id": "CR3",
+      "severity": "medium",
+      "location": "section6 approximate relation",
+      "issue": "The code validates an upper enclosure of the norm defect, rather than evaluating the exact induced operator norm.",
+      "requested_change": "Use ||I-A p_hat(C)|| <= delta < 1 with delta a verified upper bound, not delta equal to exact norm.",
+      "status": "closed",
+      "resolution": "Revised report directly inspected: requested assumptions/status/rounding distinctions are present."
+    },
+    {
+      "id": "CR4",
+      "severity": "medium",
+      "location": "section7 last sentence",
+      "issue": "Reported evaluation-error floor establishes inability to certify the target under the chosen error model; it is not a lower bound on actual root error.",
+      "requested_change": "Replace unattainable target wording by target that the present evaluation-error model cannot certify.",
+      "status": "closed",
+      "resolution": "Revised report directly inspected: requested assumptions/status/rounding distinctions are present."
+    },
+    {
+      "id": "CR5",
+      "severity": "medium",
+      "location": "section11.1 reference error interval",
+      "issue": "Outward sum/difference encloses arithmetic on supplied binary64 d,u. If d was itself computed approximately, its uncertainty must also be enclosed for a bound on true error.",
+      "requested_change": "Define d as the exact norm difference or add a bound for d-computation rounding to u; distinguish numerical estimates from rigorous supplied bounds.",
+      "status": "closed",
+      "resolution": "Revised report directly inspected: requested assumptions/status/rounding distinctions are present."
+    },
+    {
+      "id": "CR6",
+      "severity": "low",
+      "location": "section8 first paragraph",
+      "issue": "Reduced inverse formula presupposes nonsingular I-aH. Error-certificate interpretation is clearer with the actual dissipativity hypothesis.",
+      "requested_change": "State I-aH invertible; optionally add that symmetric part(B)<=0 and a>=0 imply ||(I-aB)^-1||_2<=1, giving error <= original residual norm.",
+      "status": "closed",
+      "resolution": "Revised report directly inspected: requested assumptions/status/rounding distinctions are present."
+    },
+    {
+      "id": "CR7",
+      "severity": "low",
+      "location": "section9 prose; figure5 caption",
+      "issue": "fixture is an unnecessary development-register word; error bars appear in figure5 upper panel only.",
+      "requested_change": "Use 시험 문제 and specify upper-panel error bars.",
+      "status": "closed_with_nonblocking_editorial_suggestion",
+      "resolution": "fixture replaced by 시험 문제; figure5 upper-panel-only errorbar wording separately recommended to root."
+    }
+  ],
+  "overall": "pass_scoped; numerical values and mathematical conditions match the reviewed source; no blocking finding remains",
+  "rereviewed_report_sha256": "6e57c2187e3f117fe39fdc7c9be920ebd962c5225098d048c7b873fbaed248e8",
+  "initial_review_identity_note": "Initial findings arose while the report author was editing concurrently; the initial read was not frozen before edits. The re-review hash identifies the corrected bytes actually checked."
+}

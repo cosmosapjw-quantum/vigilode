@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "reviewer": "whole_solver_figures subagent; independent from report drafter, author of the whole-solver reaggregation and figures",
+  "review_scope": "Report numerical consistency, original-source comparisons, mathematical assumptions and external-reader interpretation; no new benchmark execution",
+  "report_path": "external_reports/benchmark_review_20261025/REPORT_KO.md",
+  "report_sha256": "6e57c2187e3f117fe39fdc7c9be920ebd962c5225098d048c7b873fbaed248e8",
+  "findings": [
+    {
+      "id": "R1",
+      "severity": "material",
+      "target": "section2 accuracy definition",
+      "issue": "Original draft listed integration rtol/atol but omitted the separate absolute endpoint acceptance threshold used for reported passes.",
+      "evidence": [
+        "crates/vigilode/examples/local_bottleneck_suite.rs assess_members/main",
+        "research/local_frontier_20261024/local/campaign.py task_command"
+      ],
+      "correction": "Now states E=max|y-y_ref|+u<=1e-4 and distinguishes step-control tolerances.",
+      "status": "closed"
+    },
+    {
+      "id": "R2",
+      "severity": "scope",
+      "target": "abstract and section4",
+      "issue": "Abstract could imply an automatic production selector for all structural experiments; switching prose suggested an unmeasured runtime cause.",
+      "correction": "Explicitly selected structural implementations and diagnostic hypotheses replace those implications.",
+      "status": "closed"
+    },
+    {
+      "id": "R3",
+      "severity": "mathematical",
+      "target": "section7 fixed-P contraction statement",
+      "issue": "Fixed-point uniqueness alone does not imply F=0 when P is singular; contraction theorem also requires a complete invariant domain.",
+      "correction": "States invertible fixed P and self-map of a closed ball in a complete normed space; the residual bound applies to x in that ball.",
+      "status": "closed"
+    }
+  ],
+  "checks": [
+    {
+      "id": "latest_counts",
+      "result": "pass",
+      "details": {
+        "all": {
+          "NO_RESULT": 208,
+          "UNVALIDATED_REFERENCE": 805,
+          "ACCURACY_FAILED": 146,
+          "SOLVER_FAILED": 57,
+          "PASS_SCOPED": 323
+        },
+        "uninstrumented": {
+          "NO_RESULT": 199,
+          "UNVALIDATED_REFERENCE": 761,
+          "ACCURACY_FAILED": 138,
+          "SOLVER_FAILED": 54,
+          "PASS_SCOPED": 306
+        },
+        "instrumented": {
+          "ACCURACY_FAILED": 8,
+          "NO_RESULT": 9,
+          "UNVALIDATED_REFERENCE": 44,
+          "PASS_SCOPED": 17,
+          "SOLVER_FAILED": 3
+        }
+      },
+      "source": "analysis/whole_solver_summary.json"
+    },
+    {
+      "id": "robertson_table",
+      "result": "pass",
+      "details": "All 12 method-endpoint groups have 5 timed records with identical endpoint errors within each group. Warmup errors equal timed maximum, so published max errors and timed-only table match. Ratios recomputed: DOPRI/MF26.9996162905, MF/DVODE-BDF4.4639084381, MF/diffsol2.9465440491, switching/MF64.2193742805.",
+      "source": "research/local_frontier_native_diffsol_20261024/audit_packet_20261025/evidence/references/case01/REASSESSMENT_V2.json"
+    },
+    {
+      "id": "historical_correction",
+      "result": "pass",
+      "details": "7/140 pass,133/140 fail; seven tight-tolerance native endpoints checked against analytic cos/sin. Native solve median1.515231ms and subprocess5.559548ms preserved as different scopes.",
+      "source": "analysis/HISTORICAL_CORRECTION.json"
+    },
+    {
+      "id": "conditional_numbers",
+      "result": "pass_scoped",
+      "details": "Matched reported polynomial ratios,1.273546 refinement cost,root-bound factor53801.667566,time ratio1.6262937063,dimension64 additive crossover161,and observed guard ratios0.957374–2.211551 to the conditional reaggregation. This checks report transcription and stated measurement scope rather than re-proving each archived experiment.",
+      "source": "analysis/conditional_summary.json"
+    },
+    {
+      "id": "separate_branch_counts",
+      "result": "pass_scoped",
+      "details": "D2 totals507 forbidden calls,1032/602attempts,5323/4816RHS and D3 totals1188segments,1484queries,48972components,maxqueryerror/bound0.4774119143 match fetched branch reports and review summary. They are reported as work/validation results, not measured wall-time acceleration.",
+      "source": [
+        "/workspace/scratch/0dc1e721cf82/report_work/notes/remote_D2_REPORT_KO.md",
+        "/workspace/scratch/0dc1e721cf82/report_work/notes/remote_D3_REPORT_KO.md",
+        "/workspace/scratch/0dc1e721cf82/report_work/notes/remote_D3_REVIEW_SUMMARY.json"
+      ]
+    },
+    {
+      "id": "figure_links",
+      "result": "pass",
+      "count": 8,
+      "details": "All embedded figure targets exist. Whole-solver4 figures were visually inspected by this agent; conditional4 figures were checked against their summary data here."
+    }
+  ],
+  "mathematical_review": {
+    "polynomial_identity": "For A=s(alpha I-C), q(C)=0 and q(alpha)!=0, A r(C)/(s q(alpha))=I; residual contraction follows from r+= (I-A p_hat)r.",
+    "fixed_point": "Banach contraction on the stated complete invariant ball; invertibility of P identifies fixed point with F=0; d/(1-q) follows from residual distance inequality.",
+    "invariant_subspace": "(I-aB)V=V(I-aH), so x=Vz solves for b=Vc whenever reduced solve exists.",
+    "new_cost_and_phase_formulas": "Exact arithmetic identities and explicit common-cost assumptions are consistent with the report."
+  },
+  "open_material_findings": 0,
+  "solver_runs": 0,
+  "decision": "Report consistent within its stated source and measurement scopes after the three corrections."
+}

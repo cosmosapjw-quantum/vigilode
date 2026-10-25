@@ -1,0 +1,84 @@
+{
+  "source_commit": "2a4bf90d1445b67542bdac5030b4c5d10da20445",
+  "scope": "read-only independent audit of local evidence and new exporter; no solver run",
+  "sources": [
+    {
+      "path": "research/local_frontier_native_diffsol_20261024/compare.py",
+      "sha256": "7a33fcf1fee360c914e2e753f2211706ae7d7692d7368814f6ad6f93ad8621ac"
+    },
+    {
+      "path": "research/local_frontier_native_diffsol_20261024/audit_packet_20261025/README.md",
+      "sha256": "922e74cab5cd7aeec1d84e2eeff725639f33006e84a7940bc6b46da505d404c3"
+    },
+    {
+      "path": "research/local_frontier_native_diffsol_20261024/audit_packet_20261025/AUDIT_INDEX.json",
+      "sha256": "bb7ed93d4dd582e680d586cf42f17b087c191e1b470e227ec4e8c005d67bdcd7"
+    },
+    {
+      "path": "research/local_frontier_native_diffsol_20261024/audit_packet_20261025/LEGACY_STANDARD_1539_STATUS_INDEX.json",
+      "sha256": "c681c1a183ccf915bfff25f076246d69a77f8994f041d386d10f87d514052b71"
+    },
+    {
+      "path": "research/local_frontier_native_diffsol_20261024/audit_packet_20261025/evidence/failures/case12_step_budget_00dfd4c0fbf8dcd8/RECEIPT.json",
+      "sha256": "d3300d578f497d72d7df3b92a2d601facd5da8200301fff40999f267f1c8a28f"
+    },
+    {
+      "path": "research/local_frontier_native_diffsol_20261024/audit_packet_20261025/evidence/failures/case05_step_budget_09e9da3ca5aa705b/RECEIPT.json",
+      "sha256": "12f92823f906fb8eed3f35a010ecfbd3e849b846840474c0fcfd3b29a29c1fab"
+    }
+  ],
+  "findings": [
+    {
+      "id": "B1",
+      "status": "resolved_by_report_scope",
+      "finding": "The latest compact packet contains final statuses for 1539 historical tasks, not complete scalar timing/error data. Six representative failure raw directories are available; the remaining raw receipts stay on the user host.",
+      "action": "Use status plots from the compact packet and scalar plots only from actual exported evidence; export completed local scalar data with the new read-only helper."
+    },
+    {
+      "id": "B2",
+      "status": "resolved_by_separate_export",
+      "finding": "Archived drivers are not the current launch surface. Current canonical external root remains active and source-locked.",
+      "action": "Do not edit or restart active jobs. Invoke exporter from a new checkout using --run-root; write to a new directory outside that run root."
+    },
+    {
+      "id": "B3",
+      "status": "resolved_by_precise_labels",
+      "finding": "compare.py eligible_speed_ratios_vs_dopri5 is T_method/T_dopri5, where values above 1 mean slower.",
+      "action": "Label ratios as normalized time, or explicitly invert for speedup. No historical result edit."
+    },
+    {
+      "id": "B4",
+      "status": "guard_added_to_exporter",
+      "finding": "Historical assess accepts NaN final_time because abs(NaN-target)>tol is false; synthetic fixture returned PASS_SCOPED. No affected measured row identified.",
+      "action": "New exporter rejects nonfinite JSON and endpoint/timing scalars. Historical runner remains untouched during active source-locked work."
+    },
+    {
+      "id": "B5",
+      "status": "reported_as_measured_bottleneck_clue",
+      "finding": "Case12 data-parallel8 DOPRI failure spends 84.51 system CPU seconds and 135.76 user CPU seconds, with 15412957 involuntary context switches. Case5 ensemble256/2threads spends30.83 user CPU seconds and0 system seconds.",
+      "action": "Separate stiff stability step-limit cost from synchronization/scheduling overhead; use matched serial/data runs for causal attribution."
+    }
+  ],
+  "export_validation": {
+    "tests": 15,
+    "result": "PASS",
+    "receipt": "EXPORTER_VALIDATION.json",
+    "actual_raw_receipts": 6,
+    "raw_verified": 6,
+    "original_receipt_hashes_found_in_1539_index": 6,
+    "solver_launches": 0
+  },
+  "handoff": {
+    "script": "external_reports/benchmark_review_20261025/tools/export_local_measurements.py",
+    "arguments": [
+      "--run-root USER_RUN_ROOT",
+      "--output NEW_DIRECTORY_OUTSIDE_RUN_ROOT",
+      "--task-index research/local_frontier_native_diffsol_20261024/audit_packet_20261025/LEGACY_STANDARD_1539_STATUS_INDEX.json"
+    ],
+    "outputs": [
+      "MEASUREMENTS.jsonl",
+      "EXPORT_SUMMARY.json"
+    ],
+    "note": "For broad user run root, wrappers/direct receipts and replicated files must be deduplicated using raw_evidence_key and receipt hash before repetition statistics; helper never ranks or reclassifies accuracy."
+  }
+}

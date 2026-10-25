@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "checked_on": "2026-10-25",
+  "sources": [
+    {
+      "id": "brown1989vode",
+      "authors": [
+        "Peter N. Brown",
+        "George D. Byrne",
+        "Alan C. Hindmarsh"
+      ],
+      "title": "VODE: A Variable-Coefficient ODE Solver",
+      "year": 1989,
+      "journal": "SIAM Journal on Scientific and Statistical Computing",
+      "volume": 10,
+      "issue": 5,
+      "pages": "1038-1051",
+      "doi": "10.1137/0910062",
+      "url": "https://epubs.siam.org/doi/10.1137/0910062",
+      "primary": true,
+      "read_status": "publisher_full_text_retrieved",
+      "supported_claims": [
+        "Variable-coefficient Adams-Moulton and BDF in Nordsieck form",
+        "Jacobian reuse discussed"
+      ],
+      "date_note": "2006-07-31 is electronic publication, not original journal year"
+    },
+    {
+      "id": "steinebach2023rodas5p",
+      "authors": [
+        "Gerd Steinebach"
+      ],
+      "title": "Construction of Rosenbrock–Wanner method Rodas5P and numerical benchmarks within the Julia Differential Equations package",
+      "year": 2023,
+      "journal": "BIT Numerical Mathematics",
+      "doi": "10.1007/s10543-023-00967-x",
+      "url": "https://link.springer.com/article/10.1007/s10543-023-00967-x",
+      "primary": true,
+      "read_status": "publisher_full_text_retrieved",
+      "supported_claims": [
+        "Rodas5P has eight stages",
+        "Embedded formula uses seven stages and order four",
+        "Main order five with additional stiff order conditions"
+      ],
+      "location": "section 3, equations 3.1-3.3"
+    },
+    {
+      "id": "sciml_benchmark_methodology",
+      "author": "SciML",
+      "title": "SciMLBenchmarks.jl: Benchmarks for Scientific Machine Learning and Equation Solvers",
+      "url": "https://sciml.github.io/SciMLBenchmarks.jl/",
+      "primary": true,
+      "read_status": "official_page_retrieved",
+      "supported_claims": [
+        "Attained error requires sufficiently accurate reference",
+        "Common error plateau can motivate reference re-examination"
+      ]
+    },
+    {
+      "id": "sciml_rosenbrock_docs",
+      "author": "SciML",
+      "title": "Rosenbrock methods",
+      "url": "https://docs.sciml.ai/OrdinaryDiffEq/stable/semiimplicit/Rosenbrock/",
+      "primary": true,
+      "read_status": "official_page_retrieved",
+      "supported_claims": [
+        "Current implementation nomenclature and algorithm choices"
+      ]
+    }
+  ],
+  "analysis": {
+    "id": "amortized_complete_cost",
+    "equation": "speedup(m)=m*B/(S+m*(P+C))",
+    "assumptions": [
+      "B>0",
+      "P>0",
+      "C>=0",
+      "S>0",
+      "m>0",
+      "fixed workload cost",
+      "setup reusable m times"
+    ],
+    "criterion": "B>P+C AND m>S/(B-P-C)",
+    "limit": "B/(P+C)",
+    "basis": "direct_algebra",
+    "symbolic_check": "amortization_wolfram.json",
+    "novelty_claim": false,
+    "measured_inputs": "not yet supplied; parent should derive from matching actual rows"
+  },
+  "statistical_recommendations": {
+    "replication_unit": "independent process, if available",
+    "within_process_samples": "descriptive variation, not independent-process replication",
+    "pairing": "actual experimental block required",
+    "confidence_intervals": "do not manufacture independent sample sizes",
+    "failures": "retain coverage and do not rank failed accuracy"
+  }
+}
