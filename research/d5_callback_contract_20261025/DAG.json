@@ -1,0 +1,90 @@
+{
+  "unit": "D5",
+  "nodes": [
+    {
+      "id": "D2",
+      "status": "COMPLETE_REUSED",
+      "local": "4/4"
+    },
+    {
+      "id": "D3",
+      "status": "COMPLETE_REUSED",
+      "local": "4/4"
+    },
+    {
+      "id": "D4",
+      "status": "COMPLETE_REUSED",
+      "local": "4/4"
+    },
+    {
+      "id": "S0",
+      "status": "PREPARED"
+    },
+    {
+      "id": "S1",
+      "status": "PENDING"
+    },
+    {
+      "id": "S2",
+      "status": "PENDING"
+    },
+    {
+      "id": "S3",
+      "status": "PENDING"
+    },
+    {
+      "id": "NATIVE_INPUT",
+      "status": "UNRESOLVED_INPUT_DEPENDENCY"
+    },
+    {
+      "id": "PRODUCTION",
+      "status": "HOLD"
+    }
+  ],
+  "edges": [
+    [
+      "D2",
+      "D3"
+    ],
+    [
+      "D3",
+      "D4"
+    ],
+    [
+      "D4",
+      "S0"
+    ],
+    [
+      "S0",
+      "S1"
+    ],
+    [
+      "S1",
+      "S2"
+    ],
+    [
+      "S2",
+      "S3"
+    ],
+    [
+      "S3",
+      "PRODUCTION"
+    ],
+    [
+      "NATIVE_INPUT",
+      "PRODUCTION"
+    ]
+  ],
+  "global_completion": null,
+  "production": "HOLD",
+  "open_gates": [
+    "actual BASS",
+    "general callback/Jacobian correctness and provider binding",
+    "general dense-domain",
+    "nonreturning callbacks",
+    "durable sink/outbox/crash restore",
+    "production FP provider",
+    "native source/reservation/live dirty/completion",
+    "inherited authority references"
+  ]
+}
