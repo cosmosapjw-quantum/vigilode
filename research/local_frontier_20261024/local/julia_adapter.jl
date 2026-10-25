@@ -6,14 +6,16 @@ c=JSON3.read(read(ARGS[1],String)); method=ARGS[2]; rtol=parse(Float64,ARGS[3]);
 method in ["julia-tsit5","julia-rodas5p"] || error("unsupported method")
 Int(c.case_id) in [1,10,15,16] || error("unsupported model")
 p=c.parameters
+const CASE10_OMEGA_C = Int(c.case_id)==10 ? Float64(p.omega_c) : 0.0
 function rhs!(du,y,_,t)
     id=Int(c.case_id)
     if id==1
         a=p.k1*y[1]; b=p.k2*y[2]*y[3]; z=p.k3*y[2]^2
         du[1]=-a+b; du[2]=a-b-z; du[3]=z
     elseif id==10
-        g=sqrt(1+sum(abs2,y[4:6])); du[1:3].=y[4:6]./g
-        du[4]=p.omega_c*y[5]/g; du[5]=-p.omega_c*y[4]/g; du[6]=0
+        g=sqrt(1+(abs2(y[4])+abs2(y[5])+abs2(y[6])))
+        du[1]=y[4]/g; du[2]=y[5]/g; du[3]=y[6]/g
+        du[4]=CASE10_OMEGA_C*y[5]/g; du[5]=-CASE10_OMEGA_C*y[4]/g; du[6]=0
     elseif id==15
         du[1]=y[2]; du[2]=-(2*p.gamma-p.beta)*y[2]-(p.omega0^2*exp(2*p.beta*t)+p.gamma^2-p.gamma*p.beta)*y[1]
     else
