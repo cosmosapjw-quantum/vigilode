@@ -2,6 +2,7 @@
 """Receipt-preserving, source-locked selective continuation executor."""
 import argparse
 import datetime as dt
+import fcntl
 import hashlib
 import json
 import os
@@ -14,12 +15,17 @@ import math
 
 DEADLINE = '2026-10-27T08:07:00Z'
 NEW_CAP_SECONDS = 172800.0
+COST_ROOT = Path('/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z')
 POLL_SECONDS = 5.0
 IDLE_SECONDS = 120.0
 DIAGNOSTIC_SECONDS = 300.0
 MAX_SECONDS = 900.0
 MAX_SAMPLES = 180
 ATTEMPT_RESERVE_SECONDS = MAX_SECONDS + 60.0
+THREAD_ENVIRONMENT = {key: '1' for key in (
+    'RAYON_NUM_THREADS', 'OMP_NUM_THREADS', 'OPENBLAS_NUM_THREADS',
+    'MKL_NUM_THREADS', 'VECLIB_MAXIMUM_THREADS', 'NUMEXPR_NUM_THREADS',
+    'BLIS_NUM_THREADS', 'JULIA_NUM_THREADS')}
 
 
 def utc_now():
@@ -65,6 +71,103 @@ def git_identity(repo):
             'status_porcelain': run('status', '--porcelain=v1')}
 
 
+def validate_resources(task, *, check_host=True):
+    original = task.get('original_task', {})
+    cpus = task.get('cpus', original.get('cpus'))
+    threads = task.get('threads', original.get('threads'))
+    if not isinstance(cpus, list) or len(cpus) != 1 or type(cpus[0]) is not int or cpus[0] != 0:
+        raise ValueError('CPU binding must be exactly CPU0')
+    if type(threads) is not int or threads != 1:
+        raise ValueError('configured thread count must be one')
+    if original and (original.get('cpus') != [0] or
+                     any(type(cpu) is not int for cpu in original.get('cpus', [])) or
+                     type(original.get('threads')) is not int or original['threads'] != 1):
+        raise ValueError('original CPU/thread binding mismatch')
+    environment = task.get('environment', {})
+    if not isinstance(environment, dict) or any(
+            key in environment and environment[key] != value
+            for key, value in THREAD_ENVIRONMENT.items()):
+        raise ValueError('thread environment conflicts with one configured thread')
+    command = task.get('command', [])
+    for index, part in enumerate(command):
+        if part in ('--threads', '--thread-count', '-t'):
+            if index + 1 >= len(command) or command[index + 1] != '1':
+                raise ValueError('command thread count must be one')
+        elif any(part.startswith(flag + '=') for flag in ('--threads', '--thread-count', '-t')):
+            if part.split('=', 1)[1] != '1':
+                raise ValueError('command thread count must be one')
+    if check_host:
+        if not all(callable(getattr(os, name, None)) for name in ('sched_setaffinity', 'sched_getaffinity')):
+            raise ValueError('CPU affinity APIs unavailable')
+        try:
+            available = os.sched_getaffinity(0)
+        except OSError as error:
+            raise ValueError('CPU affinity permission unavailable') from error
+        if 0 not in available:
+            raise ValueError('CPU0 is unavailable in controller affinity')
+
+
+def spawn_pinned(task, command, **kwargs):
+    """Pin in the child, then retain its kernel-observed pre-exec resources."""
+    read_fd, write_fd = os.pipe()
+
+    def pin_child():
+        os.sched_setaffinity(0, {0})
+        affinity = sorted(os.sched_getaffinity(0))
+        thread_count = len(list(Path('/proc/self/task').iterdir()))
+        if affinity != [0] or thread_count != 1:
+            raise ValueError('child CPU/thread affinity validation failed')
+        audit = {'pid': os.getpid(), 'cpu_affinity': affinity,
+                 'os_thread_count': thread_count, 'observed_in_child_before_exec': True}
+        os.write(write_fd, json.dumps(audit, sort_keys=True).encode())
+        os.close(write_fd)
+
+    proc = None
+    try:
+        try:
+            proc = subprocess.Popen(command, start_new_session=True, cwd=task.get('cwd'),
+                                    env={**os.environ, **task.get('environment', {}), **THREAD_ENVIRONMENT},
+                                    preexec_fn=pin_child, pass_fds=(write_fd,), **kwargs)
+        finally:
+            os.close(write_fd)
+        audit = json.loads(os.read(read_fd, 4096))
+        if (audit.get('pid') != proc.pid or audit.get('cpu_affinity') != [0] or
+                audit.get('os_thread_count') != 1 or audit.get('observed_in_child_before_exec') is not True):
+            raise ValueError('invalid child affinity evidence')
+        return proc, audit
+    except Exception:
+        if proc is not None:
+            kill_reap_group(proc)
+        raise
+    finally:
+        os.close(read_fd)
+
+
+def process_resources(pid):
+    try:
+        fields = dict(line.split(':', 1) for line in (Path('/proc')/str(pid)/'status').read_text().splitlines()
+                      if ':' in line)
+        cpus = []
+        for item in fields['Cpus_allowed_list'].strip().split(','):
+            bounds = [int(value) for value in item.split('-')]
+            cpus.extend(range(bounds[0], bounds[-1] + 1))
+        return {'pid': pid, 'cpu_affinity': cpus, 'os_thread_count': int(fields['Threads']),
+                'observed_after_exec': True}
+    except (OSError, KeyError, ValueError):
+        return None
+
+
+def validate_cost_root(plan):
+    if not plan.get('cost_root'):
+        raise ValueError('missing new-cost root')
+    root = Path(plan['cost_root']).resolve()
+    if root != COST_ROOT.resolve():
+        raise ValueError('canonical new-cost root identity mismatch')
+    if not root.is_dir():
+        raise ValueError('missing new-cost root')
+    return root
+
+
 def validate_plan(plan):
     if plan.get('schema') != 'vigilode.local-continuation-runner.v1':
         raise ValueError('plan schema mismatch')
@@ -74,9 +177,8 @@ def validate_plan(plan):
         raise ValueError('missing source or tasks')
     if 'retry_authorizations' in plan:
         raise ValueError('retry authorizations must be a separate immutable artifact')
-    if not plan.get('cost_root') or not Path(plan['cost_root']).is_dir():
-        raise ValueError('missing new-cost root')
-    if not (Path(plan['cost_root'])/'COST_EVENTS.jsonl').is_file():
+    cost_root = validate_cost_root(plan)
+    if not (cost_root/'COST_EVENTS.jsonl').is_file():
         raise ValueError('missing append-only external cost events')
     if not plan['tasks'] or len({task.get('id') for task in plan['tasks']}) != len(plan['tasks']):
         raise ValueError('empty or duplicate task ids')
@@ -87,6 +189,7 @@ def validate_plan(plan):
         if actual != {'head': item['head'], 'tree': item['tree'], 'status_porcelain': ''}:
             raise ValueError(f'source identity mismatch: {label}')
     for task in plan['tasks']:
+        validate_resources(task)
         if not isinstance(task.get('id'), str) or not task['id'].isalnum():
             raise ValueError('bad task id')
         if not isinstance(task.get('command'), list) or not task['command'] or not all(isinstance(part, str) for part in task['command']):
@@ -207,8 +310,7 @@ def descriptor_probe(task, folder, label, clock=utc_now):
         raise TimeoutError('hard deadline before descriptor probe')
     command = descriptor_command(task)
     started = time.monotonic()
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                            start_new_session=True, cwd=task.get('cwd'))
+    proc, affinity = spawn_pinned(task, command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     try:
         output, error = proc.communicate(timeout=min(10.0, max(0.001, (deadline_time()-clock()).total_seconds())))
     except subprocess.TimeoutExpired:
@@ -221,6 +323,7 @@ def descriptor_probe(task, folder, label, clock=utc_now):
     (folder/f'{label}.stdout').write_bytes(output)
     (folder/f'{label}.stderr').write_bytes(error)
     receipt = {'command': command, 'status': status, 'exit_code': proc.returncode,
+               'observed_affinity_before_exec': affinity,
                'stdout_sha256': hashlib.sha256(output).hexdigest(),
                'stderr_sha256': hashlib.sha256(error).hexdigest(),
                'elapsed_process_seconds': time.monotonic()-started}
@@ -231,6 +334,7 @@ def descriptor_probe(task, folder, label, clock=utc_now):
 def run_one(task, folder, *, clock=utc_now, monotonic=time.monotonic,
             sleeper=time.sleep, poll_seconds=POLL_SECONDS, plan_sha256=None,
             retry_evidence=None):
+    validate_resources(task)
     folder = Path(folder)
     folder.mkdir(parents=True, exist_ok=False)
     if retry_evidence is not None:
@@ -248,11 +352,14 @@ def run_one(task, folder, *, clock=utc_now, monotonic=time.monotonic,
     write_new(folder/'START.json', {'task_id': task['id'], 'started_utc': started.isoformat(),
               'command': command, 'diagnostic_seconds': DIAGNOSTIC_SECONDS,
               'max_seconds': MAX_SECONDS, 'deadline_utc': DEADLINE,
+              'configured_cpus': [0], 'configured_threads': 1,
+              'thread_environment': THREAD_ENVIRONMENT,
               'plan_sha256': plan_sha256,
               'retry_manifest_sha256': retry_evidence[2] if retry_evidence else None,
               'retry_authorization_sha256': retry_evidence[3] if retry_evidence else None})
     start = monotonic()
     status, exit_code, samples, extended, spawn_error = None, None, [], False, None
+    affinity, observed_resources = None, None
     reference_before = None
     if task.get('reference_json'):
         try:
@@ -280,20 +387,20 @@ def run_one(task, folder, *, clock=utc_now, monotonic=time.monotonic,
                     status = 'FAILED_DEADLINE'
                 proc = None
             else:
-                proc = subprocess.Popen(command, stdout=stdout, stderr=stderr,
-                                    start_new_session=True, cwd=task.get('cwd'),
-                                    env={**os.environ, **task.get('environment', {})})
-        except (OSError, subprocess.SubprocessError) as error:
+                proc, affinity = spawn_pinned(task, command, stdout=stdout, stderr=stderr)
+        except (OSError, ValueError, subprocess.SubprocessError) as error:
             status, spawn_error = 'FAILED_SPAWN', repr(error)
             proc = None
         if proc is not None:
             try:
                 write_new(folder/'PROCESS.json', {'pid': proc.pid, 'pgid': proc.pid,
+                          'observed_affinity_before_exec': affinity,
                           'started_utc': clock().isoformat()})
             except Exception:
                 kill_reap_group(proc)
                 raise
             last_ticks = process_group_cpu_ticks(proc.pid)
+            observed_resources = process_resources(proc.pid) or affinity
             last_bytes = (folder/'stdout.jsonl').stat().st_size
             last_activity = start
             while True:
@@ -327,12 +434,14 @@ def run_one(task, folder, *, clock=utc_now, monotonic=time.monotonic,
                            max(0, (deadline_time()-clock()).total_seconds()))
                 sleeper(wait)
                 ticks = process_group_cpu_ticks(proc.pid)
+                observed_resources = process_resources(proc.pid) or observed_resources
                 size = (folder/'stdout.jsonl').stat().st_size
                 if ticks > last_ticks or size > last_bytes:
                     last_activity = monotonic()
                 last_ticks, last_bytes = ticks, size
                 samples.append({'elapsed_seconds': monotonic()-start, 'cpu_ticks': ticks,
                                 'stdout_bytes': size,
+                                'observed_process_resources': observed_resources,
                                 'physical_progress': progress_snapshot(folder/'stdout.jsonl', task.get('physical_progress_target'))})
             kill_reap_group(proc)
             if exit_code is None:
@@ -380,6 +489,10 @@ def run_one(task, folder, *, clock=utc_now, monotonic=time.monotonic,
                'charged_new_seconds': elapsed, 'started_utc': started.isoformat(),
                'finished_utc': clock().isoformat(), 'diagnostic_extended': extended,
                'physical_progress': progress, 'watchdog_samples': samples,
+               'configured_cpus': [0], 'configured_threads': 1,
+               'thread_environment': THREAD_ENVIRONMENT,
+               'observed_affinity_before_exec': affinity,
+               'observed_process_resources': observed_resources,
                'reference_sha256_before': reference_before,
                'reference_sha256_after': digest_or_none(task['reference_json']) if task.get('reference_json') else None,
                'descriptor_sha256_before': descriptor_before['stdout_sha256'] if descriptor_before else None,
@@ -506,9 +619,30 @@ def check_retry_authorization(plan, manifest, task, last, last_path, next_number
     return Path(binding['path']).read_bytes(), binding['sha256']
 
 
-def run_plan(plan_path, output, retry_failed=False, retry_authorizations=None):
+def run_plan(plan_path, output, retry_failed=False, retry_authorizations=None, *, max_new_attempts=1):
+    if type(max_new_attempts) is not int or max_new_attempts != 1:
+        raise ValueError('invocation permits exactly one new attempt')
     plan_path, output = Path(plan_path), Path(output)
-    plan = json.loads(plan_path.read_text())
+    # Bind the original cumulative cost root before opening any lock or output.
+    # All other preflight and campaign writes remain inside its shared lock.
+    preliminary = json.loads(plan_path.read_text())
+    lock_path = validate_cost_root(preliminary)/'.julia_comparison_campaign.lock'
+    with lock_path.open('a+') as execution_lock:
+        try:
+            fcntl.flock(execution_lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as error:
+            raise RuntimeError(f'shared execution lock is held: {lock_path}') from error
+        try:
+            plan = json.loads(plan_path.read_text())
+            if Path(plan.get('cost_root', '')).resolve() != lock_path.parent:
+                raise ValueError('new-cost root changed before execution lock')
+            return _run_plan_locked(plan_path, output, plan, retry_failed, retry_authorizations, lock_path)
+        finally:
+            fcntl.flock(execution_lock, fcntl.LOCK_UN)
+
+
+def _run_plan_locked(plan_path, output, plan, retry_failed, retry_authorizations, execution_lock_path):
+    plan_path, output = Path(plan_path), Path(output)
     validate_plan(plan)
     plan_sha256 = digest(plan_path)
     manifest, manifest_sha256 = load_retry_manifest(retry_authorizations, plan_sha256)
@@ -536,6 +670,7 @@ def run_plan(plan_path, output, retry_failed=False, retry_authorizations=None):
     started_utc, started_monotonic = utc_now(), time.monotonic()
     write_new(controller/'START.json', {'started_utc': started_utc.isoformat(),
               'plan_sha256': plan_sha256, 'deadline_utc': DEADLINE,
+              'max_new_attempts': 1, 'execution_lock_path': str(execution_lock_path),
               'retry_manifest_sha256': manifest_sha256})
     results = []
     try:
@@ -565,16 +700,21 @@ def run_plan(plan_path, output, retry_failed=False, retry_authorizations=None):
             result = run_one({**task, 'source': plan['source']}, folder,
                              plan_sha256=plan_sha256, retry_evidence=retry_evidence)
             results.append(result)
+            if digest(plan_path) != plan_sha256:
+                raise ValueError('execution plan changed during invocation')
+            break  # One new attempt; later invocations reuse this exact plan/output.
     finally:
         wall = time.monotonic()-started_monotonic
         process = sum(row['charged_new_seconds'] for row in results)
         write_new(controller/'RECEIPT.json', {'started_utc': started_utc.isoformat(),
                   'finished_utc': utc_now().isoformat(), 'wall_seconds': wall,
                   'process_seconds_already_charged': process,
+                  'max_new_attempts': 1, 'execution_lock_path': str(execution_lock_path),
                   'charged_seconds': max(0.0, wall-process)})
     charged = cumulative_new_charge(cost_root)
     write_new(output/f'EXECUTION_{time.time_ns()}.json', {'attempts': results,
               'charged_new_seconds': charged, 'cap_seconds': NEW_CAP_SECONDS,
+              'max_new_attempts': 1, 'execution_lock_path': str(execution_lock_path),
               'deadline_utc': DEADLINE, 'prior_lifetime_cost_excluded_from_new_cap': True})
     return results
 
