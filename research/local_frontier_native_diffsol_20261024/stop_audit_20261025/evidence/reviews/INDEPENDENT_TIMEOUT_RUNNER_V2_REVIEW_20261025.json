@@ -1,0 +1,221 @@
+{
+  "bounded_repair_scope": {
+    "allowed_scope": "The two findings above and their narrowly targeted synthetic regression controls, then rerun v2 and legacy suites and submit exact updated hashes for independent review.",
+    "decision": "ONE_TARGETED_SOURCE_REPAIR_RECOMMENDED_TO_CONTROLLER",
+    "preserve": [
+      "First failures and test logs",
+      "Original task/receipt/source identities",
+      "Consumed bindings and existing campaign output",
+      "Legacy behavior and cumulative cost/deadline",
+      "No solver, build, or launch approval inferred from repair"
+    ]
+  },
+  "claim_ceiling": {
+    "broad_production_admission": "HOLD",
+    "scientific_admission": "HOLD",
+    "solver_launch_approved": false,
+    "source_preparation": "BLOCKED_REPAIR_REQUIRED",
+    "timing_authority": "diagnostic_only"
+  },
+  "created_utc": "2026-10-25T12:06:49.275761+00:00",
+  "decision": "BLOCKED_REPAIR_REQUIRED",
+  "evidence_files": [
+    {
+      "path": "/tmp/vigilode-timeout-runner-v2-tests.pzVfBgfE/HANDOFF.json",
+      "sha256": "17dc69a63fdc62718da7c7e08999175f17999c10eb3aeef0723ae2f6583af56e"
+    },
+    {
+      "path": "/tmp/vigilode-timeout-runner-v2-tests.pzVfBgfE/timeout-runner-v2.patch",
+      "sha256": "b1cd7f838f76ed40767e29c7428d808323752a2cab4fd84654df0db4c48e4c3a"
+    },
+    {
+      "path": "/tmp/vigilode-timeout-runner-v2-tests.pzVfBgfE/V2_FINAL_R2.json",
+      "sha256": "7d93d187164a88d3232b5fbcf9185d5a05ec5be8dfc8642eb137f0c5e4f72059"
+    },
+    {
+      "path": "/tmp/vigilode-timeout-runner-v2-tests.pzVfBgfE/FINAL_CHECKS.json",
+      "sha256": "8502d23e5c56c9d520578acdd63a99b75f7ca4afdef78a9579476c167c0f2671"
+    },
+    {
+      "path": "/tmp/vigilode-timeout-runner-v2-tests.pzVfBgfE/v2-final-r2.log",
+      "sha256": "233e016212881e7a7b7ba89f06842225b78ccf9de2e3c9e511f9e1c357683ef7"
+    },
+    {
+      "path": "/tmp/vigilode-timeout-runner-v2-tests.pzVfBgfE/legacy-final.log",
+      "sha256": "3200038ac16a7d2b155d8fc6dd26df7a4f116e401b008064f36de035c8b9e8f3"
+    },
+    {
+      "path": "/tmp/vigilode-timeout-runner-v2-tests.pzVfBgfE/first-red.log",
+      "sha256": "f43af76c945482f05c241932ba25f2febf87a1b5057539a1f363eb85cdb23edf"
+    },
+    {
+      "path": "/tmp/vigilode-timeout-runner-v2-tests.pzVfBgfE/v2-final.log",
+      "sha256": "cad79c0271a3de91da2296ee97f19a886bf7bb157f6ed481d2d7e3ae24e21a9d"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/TIMEOUT_DIAGNOSTIC_RUNNER_TEMPLATE_V2_20261025.json",
+      "sha256": "e1954a68f0558df75219394e0d4cfd27f7b563902ddffc1c03c5408ef419b4ea"
+    }
+  ],
+  "findings": [
+    {
+      "consequence": "Potential overlap with surviving descendants and uncharged time after the cleanup receipt. This violates whole-group cleanup and cumulative resource/cost continuity.",
+      "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+      "id": "TRV2-F01",
+      "line_end": 1083,
+      "line_start": 1079,
+      "minimal_repair": "Treat v2 missing/unproved/failed cleanup as unresolved for global admission even when RECEIPT.json exists. Require a separate hash-bound reconciliation proving the original group is absent and preserving elapsed or conservative upper cost before any later compute admission. Keep the original receipt and consumed binding immutable.",
+      "observed_behavior": "attempt_terminal immediately accepts any existing RECEIPT.json; cumulative_new_charge checks only the finite nonnegative charge. A different wave-1 original task can pass admission, acquire a new binding and launch after the old lock is released even though group extinction was not proved.",
+      "priority": "P1",
+      "read_only_probe": {
+        "input_receipt": {
+          "charged_new_seconds": 7.0,
+          "cleanup": {
+            "after": {
+              "members": [
+                {
+                  "pid": 12345
+                }
+              ]
+            },
+            "all_reaped": false
+          },
+          "status": "FAILED_CLEANUP"
+        },
+        "method": "Called actual cumulative_new_charge with mocked filesystem/external-cost input; no process launched and no filesystem writes.",
+        "observed_charge": 7.0,
+        "rejected": false
+      },
+      "related_locations": [
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+          "line_end": 989,
+          "line_start": 975
+        },
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+          "line_end": 561,
+          "line_start": 558
+        },
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+          "line_end": 600,
+          "line_start": 592
+        },
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+          "line_end": 1143,
+          "line_start": 1140
+        }
+      ],
+      "required_controls": [
+        "A retained v2 receipt with all_reaped=false blocks a different otherwise-valid wave-1 task before binding/spawn.",
+        "A persistent final-snapshot error has the same blocked behavior.",
+        "Exact reconciliation permits later admission only after process-group absence and cost reconciliation; the failed original task remains consumed."
+      ],
+      "severity": "MAJOR",
+      "title": "Unresolved group cleanup is accepted as a terminal, fully charged attempt for the next diagnostic",
+      "trigger": "cleanup_diagnostic_group exhausts its descendant wait or cannot observe the final group, returning all_reaped=false. run_diagnostic_one writes FAILED_CLEANUP with an ordinary finite charged_new_seconds."
+    },
+    {
+      "consequence": "Exact immutable plan/input provenance is not established. A stable replacement can yield a receipt and consumed binding whose file SHA does not identify the parsed/executed plan; JSON approval/build/predecessor data can also be parsed from bytes other than those hashed. This is an identity validation defect, not a claim of scientific-integrity failure.",
+      "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+      "id": "TRV2-F02",
+      "line_end": 1148,
+      "line_start": 1144,
+      "minimal_repair": "Read each JSON artifact once into immutable bytes, compute SHA and parse from those same bytes. Carry the locked plan snapshot and its original digest into execution, then require the path still matches that snapshot at pre-spawn/post-run checks. Apply the same snapshot rule to bound_json and the original receipt.",
+      "observed_behavior": "plan_sha becomes the digest of replacement plan B, while check_identity validates cached plan A and compares the path to B. If B remains stable, pre/post checks pass and the binding records B together with plan_core(A). bound_json can return replacement JSON B after verifying the digest of A.",
+      "priority": "P1",
+      "read_only_probes": [
+        {
+          "binding_core_equals_A": true,
+          "binding_plan_sha256": "2f72c1f563813ccdf15e25fce98b2e14ab688806e8bee291b7f94356f326e8ce",
+          "cached_plan": "A",
+          "method": "Actual _run_diagnostic_locked with mocked IO, valid-cached-plan validation stub, and a trap before the first durable write; no child or filesystem mutation.",
+          "path_digest": "B",
+          "reached_binding_write": true
+        },
+        {
+          "method": "Actual bound_json with digest(A) and subsequent read_text(B), both mocked.",
+          "returned": {
+            "marker": "replacement_content_B"
+          },
+          "same_bytes_hashed_and_parsed": false
+        }
+      ],
+      "related_locations": [
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+          "line_end": 655,
+          "line_start": 649
+        },
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+          "line_end": 773,
+          "line_start": 767
+        },
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+          "line_end": 857,
+          "line_start": 854
+        }
+      ],
+      "required_controls": [
+        "An atomic plan replacement between locked read and first identity/binding check is rejected before spawn; no A/B mixed binding is emitted.",
+        "Approval/build/predecessor/original-receipt replacement between verification and parse is rejected or consumes only the exact verified snapshot.",
+        "Unchanged plan and artifact snapshots continue to validate without relaxing existing digests or approvals."
+      ],
+      "severity": "MAJOR",
+      "title": "Plan and JSON bindings can hash different bytes from the content they validate",
+      "trigger": "The plan file is atomically replaced once after run_plan parses plan A at line 649 but before _run_diagnostic_locked computes its file digest at line 1144. bound_json and original-receipt validation similarly hash a path and then reopen it to parse."
+    }
+  ],
+  "positive_findings": [
+    "Opt-in v2 selects exactly one fixed-catalog original timeout and validates unchanged command arguments.",
+    "Separate approval binds plan core, source, runner, binary, build, receipt and canonical output.",
+    "Per-original-task exclusive durable binding, shared mutex, no retry and output reuse refusal are present.",
+    "Polling hard stop is 300 seconds with physical progress UNKNOWN and no 900-second extension.",
+    "Process-group resources, terminal snapshot, raw output digests, normal/interrupt descendant cleanup and legacy coexistence have scoped controls."
+  ],
+  "reviewer": {
+    "implemented_reviewed_change": false,
+    "observed_runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+    "requested_model": "gpt-6-astra",
+    "requested_reasoning_effort": "xhigh",
+    "role": "costroute-research-review",
+    "task": "/root/timeout_runner_v2_independent_review"
+  },
+  "schema": "vigilode.timeout-diagnostic-runner-v2-independent-source-review.v1",
+  "scope": {
+    "baseline_head": "b61b694b11b7de78cbb32405eb74ca3f78e72224",
+    "baseline_tree": "faaffd5f7819574469d537c7ea9548ef9ed67866",
+    "checkout": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout",
+    "excluded_existing_changes": [
+      "research/local_frontier_native_diffsol_20261024/compare.py",
+      "research/local_frontier_native_diffsol_20261024/accuracy_cohort_followup/"
+    ],
+    "files_sha256": {
+      "research/local_frontier_native_diffsol_20261024/continuation_runner.py": "c051efd42fbfa706b3baff8a47c894271ae751575da3429d5c430da1535f052a",
+      "research/local_frontier_native_diffsol_20261024/timeout_runner_followup/README.md": "5013a927447eb0e0d92249bb8f857b3ffd0633ef980abe9f9f49f5e987ab0888",
+      "research/local_frontier_native_diffsol_20261024/timeout_runner_followup/test_timeout_runner_v2.py": "a961f413a25f5b7f0fb4394128172fc694cb5b46e4d504fdf705bd8e1d24baa3"
+    },
+    "review_method": "Source and synthetic-test/log inspection plus in-memory mocked-IO control-flow probes; no test suite rerun, build, solver, commit, push, or source edit. This review receipt is the only persistent artifact written by the reviewer."
+  },
+  "worker_test_evidence": {
+    "historical_failures_retained": [
+      "first-red.log: 13 methods, failures=12, errors=4",
+      "v2-final.log: 23 methods, errors=1, synthetic fixture-copy symlink recursion; corrected in final rerun"
+    ],
+    "interpretation": "Observed retained worker logs and receipts only. These are scoped synthetic/regression evidence, not solver execution or launch approval.",
+    "legacy": {
+      "exit_code": 0,
+      "log": "/tmp/vigilode-timeout-runner-v2-tests.pzVfBgfE/legacy-final.log",
+      "tests": 27
+    },
+    "v2": {
+      "exit_code": 0,
+      "log": "/tmp/vigilode-timeout-runner-v2-tests.pzVfBgfE/v2-final-r2.log",
+      "tests": 23
+    }
+  }
+}

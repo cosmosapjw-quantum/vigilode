@@ -1,0 +1,262 @@
+{
+  "claim_ceiling": {
+    "historical_rows_retroactively_promoted": false,
+    "old_source_speed_ratio": "NOT_EVALUABLE",
+    "production": "HOLD",
+    "reference_admission_unchanged": true,
+    "scientific_admission": "HOLD",
+    "synthetic_pass_is_scientific_cohort_success": false,
+    "timing": "diagnostic_only"
+  },
+  "created_utc": "2026-10-25T12:12:51.953272+00:00",
+  "decision": "APPROVED_SOURCE_PREPARATION_ONLY",
+  "findings": [],
+  "launch_approval": false,
+  "next_transition": "Freeze source and prepare a nonlaunchable materialized V3 plan for final independent review under the controller existing authorization. This receipt itself approves no build, solver/cohort launch, publication, broader performance claim or scientific admission.",
+  "observed_runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+  "preserved_contract": {
+    "all_member_endpoint_error_plus_U_cap": 0.0001,
+    "atol": 1e-09,
+    "attempt_timeout_and_reservation_seconds": 180,
+    "attempts": 72,
+    "cases": [
+      2,
+      3,
+      5
+    ],
+    "cohort_cap_seconds": 16200,
+    "controller_reservation_seconds": 3240,
+    "cpu": 0,
+    "deadline_utc": "2026-10-27T08:07:00Z",
+    "ensemble_count": 256,
+    "global_cap_seconds": 172800,
+    "groups": 12,
+    "max_process_group_rss_bytes": 12884901888,
+    "max_steps": 200000,
+    "methods": [
+      "dopri5",
+      "rodas5p-mf",
+      "rodas5p-dense",
+      "switching"
+    ],
+    "reference_U_cap": 1e-05,
+    "rtol": 1e-06,
+    "terminal_commit_allowance_charged_seconds": 20,
+    "threads": 1,
+    "timed_per_group": 5,
+    "warmup_per_group": 1
+  },
+  "prior_findings": [
+    {
+      "driver_lines": [
+        276,
+        349
+      ],
+      "evidence": "Exactly one header/result; frozen descriptor and source/settings identity; finite numeric guards; first-member state difference must not exceed all-member witness; hash-locked compare.py endpoint/state gate is invoked. Actual aggregate error and independently recomputed difference+U must both satisfy 1e-4. U remains <=1e-5 and is not double-counted. Prior missing/NaN time, wrong identity, inconsistent state and huge JSON number probes are now rejected.",
+      "id": "ACD3-01",
+      "status": "CLOSED_SOURCE_SCOPE",
+      "test_lines": [
+        131,
+        151
+      ]
+    },
+    {
+      "driver_lines": [
+        177,
+        238,
+        763,
+        776
+      ],
+      "evidence": "Exact ordered cases2/3/5 x four methods; unique 12 groups and 72 attempts; complete disjoint membership; warmup followed by timed0..4; fixed argv, tolerances, max_steps, ensemble count and resource limits. Empty/partial/duplicate/mismatched groups are rejected. Failed timed receipt prevents group PASS.",
+      "id": "ACD3-02",
+      "status": "CLOSED_SOURCE_SCOPE",
+      "test_lines": [
+        266,
+        283,
+        425,
+        433
+      ]
+    },
+    {
+      "driver_lines": [
+        82,
+        88,
+        500,
+        517,
+        691,
+        697
+      ],
+      "evidence": "Numeric checks catch conversion overflow. Assessment exceptions become typed CONTROLLER_ASSESSMENT_FAILURE with durable terminal raw hashes, elapsed time and cleanup proof, followed by exactly one child TERMINAL cost event and a controller stop. End-to-end malformed-number and injected-exception controls pass; full 72-child approved synthetic execution also passes.",
+      "id": "ACD3-03",
+      "status": "CLOSED_SOURCE_SCOPE",
+      "test_lines": [
+        313,
+        351
+      ]
+    },
+    {
+      "driver_lines": [
+        68,
+        70,
+        91,
+        120,
+        575,
+        604
+      ],
+      "evidence": "Executor/envelope/selection pure preflight occurs before shared cohort locks/output/reservations. Cost helper is loaded lazily only after path/byte identity verification. Rejected executors receive a separate stdlib canonical rejection receipt without cohort output, shared-lock creation or COST_EVENTS mutation.",
+      "id": "ACD3-04",
+      "status": "CLOSED_SOURCE_SCOPE",
+      "test_lines": [
+        353,
+        364
+      ]
+    },
+    {
+      "driver_lines": [
+        529,
+        572,
+        575,
+        608,
+        619,
+        648,
+        717,
+        759
+      ],
+      "evidence": "Invalid approval/executor/lock/cost/cap rejection receives measured-plus-allowance canonical accounting discovered by existing global cumulative_cost and added to cohort charge. Locks are nonblocking. Accepted invocations separately report measured remainder and an explicitly charged 20s terminal commit allowance. Observed allowance overrun produces additional charge and FAILED_BUDGET. Resume-only and interrupted paths retain accounting; existing entries are not reset.",
+      "id": "ACD3-05",
+      "status": "CLOSED_SOURCE_SCOPE",
+      "test_lines": [
+        366,
+        423,
+        534,
+        603
+      ]
+    }
+  ],
+  "required_before_any_launch": [
+    "Freeze exact reviewed source bytes in the intended clean committed source/tree; preserve concurrent nonowned runner work and historical packets.",
+    "Bind the final binary, build receipt, Cargo.lock, saved descriptor evidence and executor/helper/compare hashes to that source.",
+    "Materialize new V3 selection with the enforced 12-group/72-attempt structure and 12GiB process-group RSS cap; preserve V2 as historical planning evidence.",
+    "Bind the complete plan core, canonical output/cost/lock paths, admitted reference hashes and separate independent approval receipt.",
+    "Refresh live process and unresolved receipt/reservation state, current cumulative global/cohort costs, deadline and shared-lock readiness in a final materialized-plan review.",
+    "Retain raw first failures, terminal commit adjustments and prior cost charges; classify source/binary changes or real-run failures separately."
+  ],
+  "review_kind": "Re-review after exactly one bounded lower-tier repair; reviewer did not implement either version.",
+  "reviewed_files": [
+    {
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/accuracy_cohort_followup/accuracy_cohort_driver.py",
+      "sha256": "d6a6ac7c72631cdc749d76f21520f727af2674b34b15b0194394a9e84c068fb4"
+    },
+    {
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/accuracy_cohort_followup/test_accuracy_cohort_driver.py",
+      "sha256": "2f71253f49f2d9f7dfdc1ae07324285df8306e479c8e4548b3f812f58019546f"
+    },
+    {
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/compare.py",
+      "sha256": "d74c2732d70871349574c3c84fdbf5637e459fe59a50df66a4f0179c85065396"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/reference_launch_controller.py",
+      "sha256": "96b59afc9d093fce74c6c892ef85e7c7681358beababa9769a39c566c39523ac"
+    },
+    {
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/crates/vigilode/examples/local_bottleneck_suite.rs",
+      "sha256": "e6f3c33fe857f0b99c857095989a0334a0dea19cf44bee5f7c056d815243ebc7"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/INDEPENDENT_ACCURACY_COHORT_DRIVER_V3_REVIEW_20261025.json",
+      "sha256": "fda22611b9c6fec14191659ffcd61e6f70d6f5f3cf2ad87842985c77b7ad8575"
+    },
+    {
+      "path": "/tmp/vigilode-accuracy-driver-rework1-20261025-k8lxmpc4/REPAIR_REWORK1_RECEIPT.json",
+      "sha256": "d1ebdf8a46572173f46008e5eda45f1474591bb24b4274c5b7d8028b162117b4"
+    },
+    {
+      "path": "/tmp/vigilode-accuracy-driver-rework1-20261025-k8lxmpc4/repair.diff",
+      "sha256": "ce88bd3fadbe29185dcbf0dbecb146efae5d1bceb4ee8d5d23f2ccf5c90adae2"
+    },
+    {
+      "path": "/tmp/vigilode-accuracy-driver-rework1-20261025-k8lxmpc4/green_focused.stderr",
+      "sha256": "3e203d72b595b32e26f8f66671d16b6eef6ebebf8c36fb70cddfc95262390231"
+    },
+    {
+      "path": "/tmp/vigilode-accuracy-driver-rework1-20261025-k8lxmpc4/red.stderr",
+      "sha256": "4744be0b9e8c05d61d0e9c98eef2c2ec8c4b60b05dee28bc9ab4528769ba5479"
+    },
+    {
+      "path": "/tmp/vigilode-accuracy-driver-rework1-20261025-k8lxmpc4/green_initial.stderr",
+      "sha256": "efe8f5ddbd4dbd7647162754cc0d28f37a678aa49c14597f4afaab9294f40eb0"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/ACCURACY_COHORT_SELECTION_TEMPLATE_V2.json",
+      "sha256": "7ba35c033051634e88d3b7429fa020f366ea4c70186400e47d727dfeac247caf"
+    }
+  ],
+  "reviewer": "/root/accuracy_v3_fresh_review",
+  "role": "COSTROUTE01 research-review; read-only independent review",
+  "schema": "vigilode.accuracy-cohort-rework-independent-review.v1",
+  "scientific_admission": "HOLD",
+  "source_identity": {
+    "binding_note": "Approval applies to exact reviewed source bytes below. Baseline HEAD tree does not include untracked followup sources and is not a final execution tree.",
+    "branch": "research/local-frontier-native-diffsol-20261024",
+    "checkout": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout",
+    "head": "b61b694b11b7de78cbb32405eb74ca3f78e72224",
+    "head_tree": "faaffd5f7819574469d537c7ea9548ef9ed67866",
+    "status_porcelain": "M research/local_frontier_native_diffsol_20261024/compare.py\n M research/local_frontier_native_diffsol_20261024/continuation_runner.py\n?? research/local_frontier_native_diffsol_20261024/accuracy_cohort_followup/accuracy_cohort_driver.py\n?? research/local_frontier_native_diffsol_20261024/accuracy_cohort_followup/test_accuracy_cohort_driver.py\n?? research/local_frontier_native_diffsol_20261024/timeout_runner_followup/README.md\n?? research/local_frontier_native_diffsol_20261024/timeout_runner_followup/test_timeout_runner_v2.py"
+  },
+  "source_preparation_approval": true,
+  "verification": {
+    "actual_diff_source_and_tests_inspected": true,
+    "actual_reference_descriptor_compatibility": {
+      "cases": [
+        {
+          "case": 2,
+          "dimension": 8,
+          "endpoint": 321.8122
+        },
+        {
+          "case": 3,
+          "dimension": 28,
+          "endpoint": 3.0
+        },
+        {
+          "case": 5,
+          "dimension": 2,
+          "endpoint": 2.0
+        }
+      ],
+      "checks_passed": 12,
+      "description": "Pure assessment fixtures used the actual immutable admitted descriptor and reference bytes, with synthetic final_state equal to the reference vector. This verifies schema compatibility only.",
+      "methods": [
+        "dopri5",
+        "rodas5p-mf",
+        "rodas5p-dense",
+        "switching"
+      ],
+      "solver_outputs": false,
+      "synthetic_only": true
+    },
+    "canonical_cost_ledger_mutated_by_reviewer": false,
+    "canonical_v3_selection_exists": false,
+    "compare_and_reference_helper_bytes_unchanged": true,
+    "final_live_cost_admission_evaluated": false,
+    "reviewer_test_run": {
+      "argv": [
+        "python3",
+        "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/accuracy_cohort_followup/test_accuracy_cohort_driver.py",
+        "-v"
+      ],
+      "environment": {
+        "PYTHONDONTWRITEBYTECODE": "1"
+      },
+      "exit_code": 0,
+      "scope": "Isolated synthetic Python children/fixtures, including 72-attempt success, malformed numbers, injected assessment failure, resource/signal controls and accounting controls. No solver/build.",
+      "tests_passed": 31,
+      "timing_authority": "diagnostic_only",
+      "unittest_elapsed_seconds": 33.534
+    },
+    "rss_sigterm_and_unresolved_resume_controls": "PASS within synthetic scope",
+    "rust_all_member_source_bytes_unchanged": true,
+    "source_edits_builds_solver_launches_commits_pushes_by_reviewer": 0
+  }
+}

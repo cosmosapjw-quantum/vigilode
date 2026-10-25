@@ -1,0 +1,1085 @@
+{
+  "schema": "vigilode.local-continuation-terminal-matrix.v1",
+  "source_analysis_sha256": "4c8b1d9518dc07f906d7a51d4d9b0391b9224bc1fdd581b5d1b3362ca38a0bca",
+  "notes": [
+    "Standard all_execution_statuses count all 1540 attempts; terminal matrix uninstrumented rows count final receipts only.",
+    "Original standard and accuracy external-reference cases have final_state null; do not retroactively promote."
+  ],
+  "cases": [
+    {
+      "case": 1,
+      "name": "Robertson",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 72
+      },
+      "standard_final_uninstrumented_science": {
+        "UNVALIDATED_REFERENCE": 72
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-dense": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 4
+      }
+    },
+    {
+      "case": 2,
+      "name": "HIRES",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 72
+      },
+      "standard_final_uninstrumented_science": {
+        "UNVALIDATED_REFERENCE": 72
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-dense": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 4
+      }
+    },
+    {
+      "case": 3,
+      "name": "Pleiades",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 69,
+        "TIMEOUT": 3
+      },
+      "standard_final_uninstrumented_science": {
+        "UNVALIDATED_REFERENCE": 69,
+        "NO_RESULT": 3
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-dense": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "TIMEOUT": 3,
+            "COMPLETED": 15
+          },
+          "science": {
+            "NO_RESULT": 3,
+            "UNVALIDATED_REFERENCE": 15
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 4
+      }
+    },
+    {
+      "case": 4,
+      "name": "Kuramoto-Sakaguchi",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 54
+      },
+      "standard_final_uninstrumented_science": {
+        "UNVALIDATED_REFERENCE": 54
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 3
+      }
+    },
+    {
+      "case": 5,
+      "name": "Adiabatic-flash negative control",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 72
+      },
+      "standard_final_uninstrumented_science": {
+        "SOLVER_FAILED": 18,
+        "UNVALIDATED_REFERENCE": 54
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "SOLVER_FAILED": 18
+          }
+        },
+        "rodas5p-dense": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 4
+      }
+    },
+    {
+      "case": 6,
+      "name": "Freeze-out transport",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 54
+      },
+      "standard_final_uninstrumented_science": {
+        "PASS_SCOPED": 54
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 3
+      }
+    },
+    {
+      "case": 7,
+      "name": "Literal ignition negative control",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 72
+      },
+      "standard_final_uninstrumented_science": {
+        "PASS_SCOPED": 72
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        },
+        "rodas5p-dense": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 4
+      }
+    },
+    {
+      "case": 8,
+      "name": "Oregonator",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 57,
+        "TIMEOUT": 15
+      },
+      "standard_final_uninstrumented_science": {
+        "UNVALIDATED_REFERENCE": 57,
+        "NO_RESULT": 15
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-dense": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "TIMEOUT": 15,
+            "COMPLETED": 3
+          },
+          "science": {
+            "NO_RESULT": 15,
+            "UNVALIDATED_REFERENCE": 3
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 4
+      }
+    },
+    {
+      "case": 9,
+      "name": "FPUT beta chain",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 41,
+        "TIMEOUT": 13
+      },
+      "standard_final_uninstrumented_science": {
+        "UNVALIDATED_REFERENCE": 41,
+        "NO_RESULT": 13
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "TIMEOUT": 13,
+            "COMPLETED": 5
+          },
+          "science": {
+            "NO_RESULT": 13,
+            "UNVALIDATED_REFERENCE": 5
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {
+        "UNVALIDATED_REFERENCE": 48
+      },
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 3
+      }
+    },
+    {
+      "case": 10,
+      "name": "Uniform-field relativistic gyromotion",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 72
+      },
+      "standard_final_uninstrumented_science": {
+        "ACCURACY_FAILED": 72
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "ACCURACY_FAILED": 18
+          }
+        },
+        "rodas5p-dense": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "ACCURACY_FAILED": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "ACCURACY_FAILED": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "ACCURACY_FAILED": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {
+        "ACCURACY_FAILED": 47,
+        "PASS_SCOPED": 1
+      },
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 4
+      }
+    },
+    {
+      "case": 11,
+      "name": "Two-scale Lorenz-96 variant",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 54
+      },
+      "standard_final_uninstrumented_science": {
+        "UNVALIDATED_REFERENCE": 54
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 3
+      }
+    },
+    {
+      "case": 12,
+      "name": "Kuramoto-Sivashinsky",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 36,
+        "TIMEOUT": 18
+      },
+      "standard_final_uninstrumented_science": {
+        "SOLVER_FAILED": 36,
+        "NO_RESULT": 18
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "SOLVER_FAILED": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "TIMEOUT": 18
+          },
+          "science": {
+            "NO_RESULT": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "SOLVER_FAILED": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 2,
+        "TIMEOUT": 1
+      }
+    },
+    {
+      "case": 13,
+      "name": "Low-Mach primitive acoustic relaxation",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 36,
+        "TIMEOUT": 18
+      },
+      "standard_final_uninstrumented_science": {
+        "UNVALIDATED_REFERENCE": 36,
+        "NO_RESULT": 18
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "TIMEOUT": 18
+          },
+          "science": {
+            "NO_RESULT": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 2,
+        "TIMEOUT": 1
+      }
+    },
+    {
+      "case": 14,
+      "name": "Advected Cahn-Hilliard",
+      "standard_final_uninstrumented_execution": {
+        "TIMEOUT": 54
+      },
+      "standard_final_uninstrumented_science": {
+        "NO_RESULT": 54
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "TIMEOUT": 18
+          },
+          "science": {
+            "NO_RESULT": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "TIMEOUT": 18
+          },
+          "science": {
+            "NO_RESULT": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "TIMEOUT": 18
+          },
+          "science": {
+            "NO_RESULT": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "TIMEOUT": 3
+      }
+    },
+    {
+      "case": 15,
+      "name": "Exponential chirp",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 66,
+        "TIMEOUT": 6
+      },
+      "standard_final_uninstrumented_science": {
+        "ACCURACY_FAILED": 66,
+        "NO_RESULT": 6
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "ACCURACY_FAILED": 18
+          }
+        },
+        "rodas5p-dense": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "ACCURACY_FAILED": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "TIMEOUT": 6,
+            "COMPLETED": 12
+          },
+          "science": {
+            "NO_RESULT": 6,
+            "ACCURACY_FAILED": 12
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "ACCURACY_FAILED": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {
+        "PASS_SCOPED": 28,
+        "ACCURACY_FAILED": 20
+      },
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 4
+      }
+    },
+    {
+      "case": 16,
+      "name": "Inspiral chirp",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 72
+      },
+      "standard_final_uninstrumented_science": {
+        "PASS_SCOPED": 72
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        },
+        "rodas5p-dense": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {
+        "PASS_SCOPED": 48
+      },
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 4
+      }
+    },
+    {
+      "case": 17,
+      "name": "Spherical rotation-shear FVM",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 54
+      },
+      "standard_final_uninstrumented_science": {
+        "UNVALIDATED_REFERENCE": 54
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 3
+      }
+    },
+    {
+      "case": 18,
+      "name": "Spherical diffusion-absorption",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 54
+      },
+      "standard_final_uninstrumented_science": {
+        "UNVALIDATED_REFERENCE": 54
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 3
+      }
+    },
+    {
+      "case": 19,
+      "name": "Linear spherical modal waves",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 54
+      },
+      "standard_final_uninstrumented_science": {
+        "PASS_SCOPED": 54
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {
+        "PASS_SCOPED": 48
+      },
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 3
+      }
+    },
+    {
+      "case": 20,
+      "name": "Normalized multipole hierarchy",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 54
+      },
+      "standard_final_uninstrumented_science": {
+        "UNVALIDATED_REFERENCE": 54
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {
+        "UNVALIDATED_REFERENCE": 48
+      },
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 3
+      }
+    },
+    {
+      "case": 21,
+      "name": "Periodic 2D Brusselator",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 54
+      },
+      "standard_final_uninstrumented_science": {
+        "UNVALIDATED_REFERENCE": 54
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 3
+      }
+    },
+    {
+      "case": 22,
+      "name": "Anisotropic 2D conduction",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 54
+      },
+      "standard_final_uninstrumented_science": {
+        "PASS_SCOPED": 54
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "PASS_SCOPED": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 3
+      }
+    },
+    {
+      "case": 23,
+      "name": "3D Barkley reaction-diffusion",
+      "standard_final_uninstrumented_execution": {
+        "COMPLETED": 18,
+        "TIMEOUT": 36
+      },
+      "standard_final_uninstrumented_science": {
+        "UNVALIDATED_REFERENCE": 18,
+        "NO_RESULT": 36
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "TIMEOUT": 18
+          },
+          "science": {
+            "NO_RESULT": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "TIMEOUT": 18
+          },
+          "science": {
+            "NO_RESULT": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "COMPLETED": 1,
+        "TIMEOUT": 2
+      }
+    },
+    {
+      "case": 24,
+      "name": "3D absorbing-obstacle transport",
+      "standard_final_uninstrumented_execution": {
+        "TIMEOUT": 36,
+        "COMPLETED": 18
+      },
+      "standard_final_uninstrumented_science": {
+        "NO_RESULT": 36,
+        "UNVALIDATED_REFERENCE": 18
+      },
+      "by_method": {
+        "dopri5": {
+          "execution": {
+            "TIMEOUT": 18
+          },
+          "science": {
+            "NO_RESULT": 18
+          }
+        },
+        "rodas5p-mf": {
+          "execution": {
+            "COMPLETED": 18
+          },
+          "science": {
+            "UNVALIDATED_REFERENCE": 18
+          }
+        },
+        "switching": {
+          "execution": {
+            "TIMEOUT": 18
+          },
+          "science": {
+            "NO_RESULT": 18
+          }
+        }
+      },
+      "accuracy_probe_science": {},
+      "standard_final_instrumented_execution": {
+        "TIMEOUT": 2,
+        "COMPLETED": 1
+      }
+    }
+  ]
+}

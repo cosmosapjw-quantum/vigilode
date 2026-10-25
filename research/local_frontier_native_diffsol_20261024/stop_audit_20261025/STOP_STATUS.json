@@ -1,0 +1,178 @@
+{
+  "accuracy_cohort": {
+    "attempts_executed": 0,
+    "attempts_planned": 72,
+    "candidate_plan_sha256": "f539572b67238102f1f176d67e7b3098a9edeefe08543a3c90417d6624e65aba",
+    "independent_source_review": "APPROVED_SOURCE_PREPARATION_ONLY",
+    "reason": "User stop superseded planned independent plan approval and launch.",
+    "selection_sha256": "eca78405ee936804a5c9487007d6589ed84f0fbc30cd20f5b2b474b89e5a56cf",
+    "source_build": "PASS_LOCKED_OFFLINE_MEASUREMENT_BUILD",
+    "source_driver_contract_tests": "31_OF_31_PASS",
+    "status": "NOT_RUN_APPROVAL_PENDING_AT_STOP"
+  },
+  "cost": {
+    "cumulative_charged_seconds": 4107.27017477592,
+    "event_chain_sha256": "6da7936b798cdceb52b13eb2d57f4ee28a7ff2c6c002d2f6adb7dbfd5fb35ab3",
+    "event_count": 191,
+    "global_cap_seconds": 172800.0,
+    "nested_fixture_charged_seconds": 354.0,
+    "open_reservations": 0,
+    "original_deadline_utc": "2026-10-27T08:07:00Z",
+    "status": "FROZEN_AT_USER_STOP",
+    "terminal_event_charged_seconds": 3753.27017477592
+  },
+  "execution_stop": {
+    "matching_process_lines": [],
+    "new_benchmark_after_stop": "NONE",
+    "shared_lock": "FREE",
+    "status": "STOPPED_NO_ACTIVE_MATCHING_BENCHMARK_PROCESS"
+  },
+  "julia_comparison": {
+    "attempts": 48,
+    "campaign_charged_seconds": 371.7287512780167,
+    "cases": [
+      1,
+      10,
+      15,
+      16
+    ],
+    "group_scoped_passes": 8,
+    "groups": 8,
+    "methods": [
+      "Tsit5",
+      "Rodas5P"
+    ],
+    "status": "PASS_SCOPED_ENDPOINT",
+    "timing_authority": "diagnostic_only"
+  },
+  "legacy_standard": {
+    "attempts": 1540,
+    "final_status_counts": {
+      "ACCURACY_FAILED": 146,
+      "NO_RESULT": 208,
+      "PASS_SCOPED": 323,
+      "SOLVER_FAILED": 57,
+      "UNVALIDATED_REFERENCE": 805
+    },
+    "final_uninstrumented_timeouts": 199,
+    "index_relative_path": "evidence/state/LEGACY_STANDARD_TASK_INDEX.json",
+    "status": "REUSED_NO_RETROACTIVE_RECLASSIFICATION",
+    "tasks": 1539,
+    "typed_step_budget_failures": 54
+  },
+  "local_raw_retention": {
+    "continuation_root": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z",
+    "native_raw_manifest_sha256": "2d02b075da7cb6b3eb0ec54c8f89dd4a9d7fd9e3c67a0d5ba683489b27883e00",
+    "policy": "PRESERVED_IN_PLACE_NO_CLEAN_RESET_OR_RAW_COPY_TO_GIT",
+    "run_root": "/tmp/vigilode-local-run-20261024.geLVCp9Q",
+    "standard_raw_manifest_sha256": "b35e9f0e551222cb75aac128264501f6003452d6c1109de789e55a4dabb451e6"
+  },
+  "observed_asia_seoul": "2026-10-25T21:32:56.873545+09:00",
+  "observed_utc": "2026-10-25T12:32:56.873545+00:00",
+  "production": {
+    "broad_status": "HOLD",
+    "reason": "Required references, accuracy cohort, timeout diagnosis, and independent broad qualification remain incomplete."
+  },
+  "publication": {
+    "report_branch": "report/local-benchmark-stop-20261025",
+    "report_commit": "SELF_COMMIT_CONTAINING_THIS_PACKET",
+    "source_branch_pushed_head": "755885522e7e487e5f0d89085cfa15d972df0ea7"
+  },
+  "references": {
+    "admitted_case_ids": [
+      1,
+      2,
+      3,
+      5,
+      8,
+      9,
+      20
+    ],
+    "case11": "FAILED_REFERENCE",
+    "case20_uncertainty_empirical": 3.5435704834308433e-09,
+    "claim_ceiling": "Numerical U is empirical, not a certified mathematical upper bound.",
+    "pending_case_ids": [
+      4,
+      12,
+      13,
+      14,
+      17,
+      18,
+      21,
+      23,
+      24
+    ]
+  },
+  "report_handoff": {
+    "evidence_issues": 124,
+    "execution_completed": 2315,
+    "execution_missing": 24,
+    "execution_process_failure": 2,
+    "execution_timeout": 224,
+    "fixed_report_commit": "abf9c5683d810a703d818f8f0c8abec54fbe8850",
+    "fixed_report_tree": "df44f97cffdeb9c707bdbea72524bbc8b0902e79",
+    "nonterminal_or_unsupported": 16,
+    "raw_verified": 2417,
+    "read_or_format_errors": 8,
+    "rows": 2565,
+    "status": "READ_ONLY_EXPORT_NO_RECLASSIFICATION"
+  },
+  "schema": "vigilode.local-benchmark-stop-status.v1",
+  "source": {
+    "accuracy_binary_sha256": "e857c738428147a2b1c761f1efdbd96dafcb3db351984e723362e5b27c1e04b6",
+    "accuracy_driver_sha256": "d6a6ac7c72631cdc749d76f21520f727af2674b34b15b0194394a9e84c068fb4",
+    "cargo_lock_sha256": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351",
+    "clean_accuracy_source_checkout": {
+      "branch": "DETACHED",
+      "head": "755885522e7e487e5f0d89085cfa15d972df0ea7",
+      "path": "/tmp/vigilode-accuracy-cohort-source-20261025/checkout",
+      "status_porcelain": "",
+      "tree": "690568fa4d5f7d42dae56a8f257810141bb5b2d0"
+    },
+    "fixed_report_checkout": {
+      "branch": "DETACHED",
+      "head": "abf9c5683d810a703d818f8f0c8abec54fbe8850",
+      "path": "/tmp/vigilode-independent-report.Iavhh9Az/checkout",
+      "status_porcelain": "",
+      "tree": "df44f97cffdeb9c707bdbea72524bbc8b0902e79"
+    },
+    "followup_checkout": {
+      "branch": "research/local-frontier-native-diffsol-20261024",
+      "head": "755885522e7e487e5f0d89085cfa15d972df0ea7",
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout",
+      "status_porcelain": "M research/local_frontier_native_diffsol_20261024/continuation_runner.py\n?? research/local_frontier_native_diffsol_20261024/timeout_runner_followup/",
+      "tree": "690568fa4d5f7d42dae56a8f257810141bb5b2d0"
+    },
+    "frozen_benchmark_checkout": {
+      "branch": "DETACHED",
+      "head": "aaf1f834d4c589e734ca7851a56c11bb44f7047a",
+      "path": "/tmp/vigilode-local-frontier-20261024.QmkngXUi/checkout",
+      "status_porcelain": "",
+      "tree": "03b12c682c688155e0f8b08c52508e04738acb93"
+    },
+    "origin": "https://github.com/cosmosapjw-quantum/vigilode.git",
+    "original_checkout": {
+      "branch": "audit/production-readiness-20261018",
+      "head": "da91553f019e011556ee042975f3cf05fc21a7c7",
+      "path": "/home/cosmosapjw/vigilode",
+      "status_porcelain": "",
+      "tree": "b4bb6fad34b99cd8bdd778e8da053b9b6a5e938a"
+    }
+  },
+  "timeout_diagnostics": {
+    "diagnostic_tasks_executed": 0,
+    "historical_uninstrumented_timeout_tasks": 199,
+    "planned_diagnostic_tasks": 9,
+    "reason": "Independent review found unresolved v2 no-receipt reconciliation lifetime bound; one repair loop exhausted.",
+    "runner_review": "BLOCKED_REPAIR_REQUIRED",
+    "status": "NOT_RUN_IMPLEMENTATION_GATE_BLOCKED_AT_STOP"
+  },
+  "unrun_or_failed_work": [
+    "accuracy V3 cohort NOT_RUN_APPROVAL_PENDING",
+    "timeout diagnostics NOT_RUN_IMPLEMENTATION_GATE_BLOCKED",
+    "nine external references NOT_RUN",
+    "case11 FAILED_REFERENCE",
+    "805 historical rows UNVALIDATED_REFERENCE"
+  ],
+  "user_instruction": "Publish all completed compact audit evidence and stop benchmarking; retain all local raw data."
+}
