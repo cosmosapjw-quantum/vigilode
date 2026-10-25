@@ -1,0 +1,80 @@
+{
+  "schema": "vigilode.d5.c9_review.v1",
+  "reviewer": "/root/d5_code_review",
+  "scope": "one complementary independent source/code and later saved-output review pass",
+  "status": "PASS_SCOPED_PREEXECUTION_SOURCE_EXECUTION_EVIDENCE_PENDING",
+  "reviewer_authored_implementation": false,
+  "source_snapshot": {
+    "source/gateway.rs": "c4ae170271fdae67bab2edfddb16ea149bccfc77f60f59e161347cbcfee697ee",
+    "source/tests.rs": "afc5bbbfccd821351cb737ea6ece43393e1ff60be039a9cb74a2c09ab642abf7",
+    "source/probes.rs": "1775a83dbb02fd986ac9913297f5f8e1f3ed4d67b83d43e2361c7c9b72eb8669",
+    "source/session_tests.rs": "b6f54cedcf623e004e7985e7ba42c96f800b0460a57d677d9d4633745c0ee23c",
+    "source/fixture.rs": "aaf090ebbe504125244d8afcb2f1c959620216dc419a1459c58e466884a86f1a",
+    "source/reused/admission.rs": "7a35b7daf77e2f9c055f6a74a50e1994afd5e398c9bb19379eb9fb7c5b4e66fb"
+  },
+  "findings": [
+    {
+      "id": "C9-FP-CONTRACT",
+      "priority": "P2",
+      "kind": "contract_clarification",
+      "status": "CLOSED_BEFORE_EXECUTION",
+      "target": "BoxDomain::new/check and witness contract",
+      "observation": "floating domain comparison precedes the first generic witness; read-only actual probe is safe in the stated environment, but a probe that repairs FP state could not retroactively validate earlier comparison",
+      "minimal_closure": "State observational probe and stable FP environment/no unobserved changes or ABA assumptions; retain general production FP provider gate",
+      "new_execution": false,
+      "actual_correction": "Root preserved earlier bytes, replaced domain floating ordering with signed-zero-equivalent integer bit keys, added subnormal/signed-zero boundary test, and documented observational/stable-FP assumptions",
+      "closure_review": "Read exact source diff and revised CONTRACT/THEORY; finite bit-key monotonic order verified by case analysis",
+      "preserved_source": "evidence/preexecution_bit_domain_correction/",
+      "scientific_reruns": 0
+    }
+  ],
+  "known_preexecution_correction": {
+    "id": "P1-FD-ENV",
+    "status": "CURRENT_SOURCE_CONFIRMED_FIXED",
+    "origin": "root and implementation author before this review",
+    "new_science_reruns": 0
+  },
+  "predicted_corpus_from_source": {
+    "points": 729,
+    "stencils": 49,
+    "wrong_finite_pairs": 1,
+    "input_refusals": 7,
+    "fd_refusals": 7,
+    "rows_before_summary": 793,
+    "rows_total": 794,
+    "rhs_entries": 828,
+    "jac_entries": 730,
+    "witness_calls": 3168,
+    "forbidden_callback_entries": 0,
+    "status": "DERIVED_FROM_SOURCE_NOT_OBSERVED_EXECUTION"
+  },
+  "implementation_test_declarations": {
+    "gateway": 30,
+    "session_composition": 5
+  },
+  "execution_readback": "PENDING",
+  "oracle_readback": "PENDING",
+  "figure_readback": "PENDING",
+  "reviewer_executions": {
+    "compile": 0,
+    "test": 0,
+    "solver": 0,
+    "benchmark": 0,
+    "ncp": 0,
+    "cas": 0,
+    "Desktop_Commander": 0
+  },
+  "remote_mutations": 0,
+  "independent_personnel": "NOT_RUN",
+  "production": "HOLD",
+  "global_completion": null,
+  "source_snapshot_before_bit_domain_correction": {
+    "source/gateway.rs": "3eef1557d87c4567b412f1c1feae0143ad022d9140ab14fba99e6bde8ba49d0f",
+    "source/tests.rs": "3e0ef8acdb8a36b0e56e2819f3daee5d25c1376144e37484bd9d469ec4cf0b88",
+    "source/probes.rs": "1775a83dbb02fd986ac9913297f5f8e1f3ed4d67b83d43e2361c7c9b72eb8669",
+    "source/session_tests.rs": "b6f54cedcf623e004e7985e7ba42c96f800b0460a57d677d9d4633745c0ee23c",
+    "source/fixture.rs": "aaf090ebbe504125244d8afcb2f1c959620216dc419a1459c58e466884a86f1a",
+    "source/reused/admission.rs": "7a35b7daf77e2f9c055f6a74a50e1994afd5e398c9bb19379eb9fb7c5b4e66fb"
+  },
+  "open_source_findings": 0
+}

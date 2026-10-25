@@ -2,10 +2,95 @@
   "schema": "vigilode.d5.budget.v1",
   "scope": "new D5 children and reported Wolfram kernel only",
   "cap_seconds": 120.0,
-  "total_seconds": 0.0,
-  "subprocess_seconds": 0.0,
-  "wolfram_seconds": 0.0,
-  "entries": [],
+  "total_seconds": 29.858025832988993,
+  "subprocess_seconds": 29.822196832988993,
+  "wolfram_seconds": 0.035829,
+  "entries": [
+    {
+      "name": "new_symbolic_derivation",
+      "kind": "Wolfram kernel",
+      "seconds": 0.035829,
+      "cpu_seconds": 0.03582899999999967,
+      "tool": "wolframlanguageevaluator",
+      "input": "evidence/DERIVATION.wl",
+      "input_sha256": "5d045af0e8ede514c36dabafa09707be1197301db27e1365264460a11b97b98d",
+      "output": "evidence/WOLFRAM_RESULT.json",
+      "output_sha256": "ae9aee06de85128bae42566301a35632ebaf01d671f67e6cf7c8b3f2ca3f5303",
+      "version": "15.0.1 for Linux x86 (64-bit) (July 2, 2026)",
+      "exit": "all12groupszero",
+      "recorded_utc": "2026-10-25T02:34:57.722115+00:00"
+    },
+    {
+      "name": "restore_toolchain",
+      "kind": "toolchain_restore",
+      "cmd": [
+        "python3",
+        "restore_toolchain.py"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:34:58.004705+00:00",
+      "seconds": 14.34848363600031,
+      "cpu_seconds": 14.329284,
+      "exit": 1,
+      "timeout_seconds": 45,
+      "log": "evidence/restore_toolchain.log",
+      "sha256": "872505573dcd453b09142f49cbff1fd0563bf82e79d411b7fd17888ba7cfa380",
+      "reason": null
+    },
+    {
+      "name": "rustc_version",
+      "kind": "toolchain_probe",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--version",
+        "--verbose"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:36:42.998650+00:00",
+      "seconds": 0.0008465249993605539,
+      "cpu_seconds": 0.0007120000000000004,
+      "exit": 127,
+      "timeout_seconds": 45,
+      "log": "evidence/rustc_version.log",
+      "sha256": "34d0dca06ab434614da824043a5b8be527104a2ae87a89c2e32523679971d01b",
+      "reason": null
+    },
+    {
+      "name": "complete_runtime_payloads",
+      "kind": "toolchain_resume",
+      "cmd": [
+        "python3",
+        "resume_toolchain.py"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:37:11.441963+00:00",
+      "seconds": 15.464345196989598,
+      "cpu_seconds": 15.449193,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/complete_runtime_payloads.log",
+      "sha256": "1fc5564b7fc54fbceb0ae1a51de5a90b15722109cc9b4460786ef7635ba9c779",
+      "reason": null
+    },
+    {
+      "name": "rustc_version_restored",
+      "kind": "toolchain_probe",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--version",
+        "--verbose"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:37:57.837734+00:00",
+      "seconds": 0.008521474999724887,
+      "cpu_seconds": 0.0071319999999999995,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/rustc_version_restored.log",
+      "sha256": "a834181975ab3494d51a1a01e4a9d4321fecd674a52e3db3cf93b3b84b6fc2c1",
+      "reason": null
+    }
+  ],
   "closed": false,
   "reset": false,
   "older_remaining": null,

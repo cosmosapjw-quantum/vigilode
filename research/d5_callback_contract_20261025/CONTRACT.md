@@ -37,9 +37,12 @@ attempt cap and continuous model-provider hooks are reused or referenced.
 
 For const dimension N>0, all box endpoints are finite and lower<=upper.
 The query time/state must be finite and inside the box (including its boundary).
+The domain predicate orders finite binary64 bit keys with signed-zero equivalence;
+it does not depend on FP rounding/DAZ for those comparisons.
 The witness reports expected model epoch and the required FP environment before
 and after each callback. Epoch honesty, no ABA, and no unobserved concurrent
-model mutation are assumptions, not conclusions from integer equality.
+model mutation are assumptions, not conclusions from integer equality. The probe
+is read-only, with no unobserved FP changes/FP-state ABA during checked arithmetic.
 The safe fixture probe reads MXCSR through the previously isolated research
 dependency; it does not prove compiler flags or an unsafe-free dependency tree.
 
@@ -48,12 +51,14 @@ fatal callback result, handled panic, failed witness, or counter overflow cannot
 publish a result. Fatal conditions poison the gate. Explicit recoverable callback
 errors and rejected input/stencil requests do not grant output or run an internal
 retry. Each dispatched callback is charged before entry, even on failure.
-The paired result is returned as one owned value only after both callbacks and
+The pair counter counts successful Prepared returns, not caller assignment or
+accepted solver steps. The paired result is returned as one owned value only after both callbacks and
 all witness checks succeed. A previous caller value changes only by assigning
 that successful value. This cannot roll back arbitrary captured external state.
 
-The finite-time statement is conditional on all callback/probe/destructor calls
-returning or unwinding in a catchable way. There is no process-abort, allocation
+The finite-time statement requires callbacks/probes to return or unwind into
+the explicitly guarded calls, and all required destructors/panic-payload drops
+to return normally. There is no process-abort, allocation
 failure or nonreturning-callback termination guarantee. Actual Session::begin,
 abort_stage, snapshot and its original cap are used in the new integration
 contract tests; no Session is restarted to recover a budget.
