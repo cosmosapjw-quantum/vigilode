@@ -1,0 +1,319 @@
+{
+  "adapter_compatible_aliases": {
+    "cohorts": {
+      "standard": {
+        "descriptor_sha256": "e72cc0783bf888b77479b8b2a19a774924642657c70ef650c081fbd8e6c59905",
+        "reference_state": [
+          0.715827068719405,
+          9.185534764557764e-06,
+          0.28416374574583037
+        ]
+      }
+    },
+    "existing_plan_remains_valid_if_using_pretty_descriptor_file": true,
+    "paths_are_exposed_at_crosswalk_root": true,
+    "plan_selector_paths_usable_without_code_change": {
+      "descriptor_binding": "cohorts.standard.descriptor_sha256",
+      "provenance": "reference_method",
+      "state": "cohorts.standard.reference_state",
+      "uncertainty": "reference_uncertainty.estimate"
+    },
+    "reference_method": "Wolfram NDSolveValue BDF, exact rational coefficients, WP35/goal20 and WP50/goal28; independently checked by StiffnessSwitching at t=0.01 and published t=40 endpoint",
+    "reference_uncertainty": {
+      "cap_fraction": 9.999999999999999e-09,
+      "estimate": 1e-12,
+      "kind": "conservative numerical estimate from precision refinement and independent method/literature agreement; not a certified bound"
+    },
+    "required_plan_changes_for_direct_raw_stdout_binding": [
+      "Set descriptor_path to the locked current raw --describe stdout file and descriptor_sha256 to its SHA.",
+      "Set reference path to this crosswalk file and SHA; keep selector paths above."
+    ]
+  },
+  "adapter_direct_binding_examples": {
+    "case1": {
+      "atol": 1e-12,
+      "case": 1,
+      "descriptor_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/frozen_binary_describe_batch_20261025T0930/case01/stdout.bin",
+      "descriptor_sha256": "e72cc0783bf888b77479b8b2a19a774924642657c70ef650c081fbd8e6c59905",
+      "max_steps": 2000000,
+      "reference": {
+        "descriptor_binding": {
+          "kind": "descriptor_sha256",
+          "path": "cohorts.standard.descriptor_sha256"
+        },
+        "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/CASE1_RAW_DESCRIPTOR_ROBERTSON_V2_CROSSWALK.json",
+        "provenance_path": "reference_method",
+        "reference_file_sha256_to_lock_in_plan": true,
+        "state_path": "cohorts.standard.reference_state",
+        "uncertainty_path": "reference_uncertainty.estimate"
+      },
+      "rtol": 1e-10,
+      "size": "standard"
+    },
+    "case10": {
+      "atol": 1e-12,
+      "case": 10,
+      "descriptor_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/frozen_binary_describe_batch_20261025T0930/case10/stdout.bin",
+      "descriptor_sha256": "2f8216b943996168afe5a747ecc5aa64987559007ff9d251515e49fd57e52cdb",
+      "max_steps": 2000000,
+      "reference": {
+        "descriptor_binding": {
+          "kind": "descriptor_exact_final",
+          "path": "descriptor_exact_final"
+        },
+        "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/reference_10.json",
+        "provenance_path": "source",
+        "sha256": "1b3f868a4ea469b26a5b3799f9d3e6d0ed544c43dc8399cfe5295408b64652ef",
+        "state_path": "reference_state",
+        "uncertainty_path": "conservative_uncertainty_bound"
+      },
+      "rtol": 1e-10,
+      "size": "standard"
+    },
+    "case15": {
+      "atol": 1e-13,
+      "case": 15,
+      "descriptor_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/frozen_binary_describe_batch_20261025T0930/case15/stdout.bin",
+      "descriptor_sha256": "090ccaefd1f52464ccd50a4ff3feaffbdf46ce342b4c90c5bdc4ded26945a47d",
+      "max_steps": 2000000,
+      "reference": {
+        "descriptor_binding": {
+          "kind": "descriptor_exact_final",
+          "path": "descriptor_exact_final"
+        },
+        "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/reference_15.json",
+        "provenance_path": "source",
+        "sha256": "4eee5413cdf0200a71ab7ec3f6a95dc8b4058ca80bb8fb77f63c7d0f80c275cb",
+        "state_path": "reference_state",
+        "uncertainty_path": "conservative_uncertainty_bound"
+      },
+      "rtol": 1e-11,
+      "size": "standard"
+    },
+    "case16": {
+      "atol": 1e-12,
+      "case": 16,
+      "descriptor_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/frozen_binary_describe_batch_20261025T0930/case16/stdout.bin",
+      "descriptor_sha256": "a24bc437d1ca91964d42df9adcf12af8b958b38fa49a99bcdad5dc42ca0a8208",
+      "max_steps": 2000000,
+      "reference": {
+        "descriptor_binding": {
+          "kind": "descriptor_exact_final",
+          "path": "descriptor_exact_final"
+        },
+        "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/reference_16.json",
+        "provenance_path": "source",
+        "sha256": "c12debdde85bbd0e565ac8aaf88ce3efb4782e6d769892fabd2b7ea2f88fb707",
+        "state_path": "reference_state",
+        "uncertainty_path": "conservative_uncertainty_bound"
+      },
+      "rtol": 1e-10,
+      "size": "standard"
+    }
+  },
+  "adapter_lock": {
+    "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/julia_comparison.py",
+    "sha256": "8e0a5510f56052938ec09eaae216cb12b76f017b6b216b73f696bc46be0cb8b3"
+  },
+  "analytic_descriptor_crosswalks": {
+    "10": {
+      "adapter_binding_kind": "descriptor_exact_final",
+      "adapter_reference_selector_paths": {
+        "descriptor_exact_final": "descriptor_exact_final",
+        "provenance": "source",
+        "state": "reference_state",
+        "uncertainty": "conservative_uncertainty_bound"
+      },
+      "case": 10,
+      "cross_check_spread": 2.933764342571976e-14,
+      "descriptor_exact_final": [
+        -0.0019528541049367379,
+        -0.0024316953148132746,
+        0.140028008402801,
+        -0.21584765740663725,
+        0.9764270524683689,
+        0.2
+      ],
+      "difference_leq_U": true,
+      "full_parsed_json_equal_to_prior_model_file": true,
+      "max_component_difference_exact_to_reference_state": 2.933764342571976e-14,
+      "new_raw_describe_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/frozen_binary_describe_batch_20261025T0930/case10/stdout.bin",
+      "new_raw_describe_sha256": "2f8216b943996168afe5a747ecc5aa64987559007ff9d251515e49fd57e52cdb",
+      "prior_model_descriptor_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/model_10.json",
+      "prior_model_descriptor_sha256": "5a72993779bdf118fe5b8319ca8edf4d847da182a6a66c5e46b7acae307d353c",
+      "raw_bytes_equal_to_prior_model_file": false,
+      "reference_bytes": 498,
+      "reference_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/reference_10.json",
+      "reference_sha256": "1b3f868a4ea469b26a5b3799f9d3e6d0ed544c43dc8399cfe5295408b64652ef",
+      "reference_source": "80-digit mpmath analytic expression",
+      "reference_state": [
+        -0.0019528541049367249,
+        -0.002431695314813333,
+        0.14002800840280097,
+        -0.2158476574066666,
+        0.9764270524683625,
+        0.2
+      ],
+      "required_plan_changes_for_raw_stdout_lock": [
+        "Use current raw stdout path and its SHA in descriptor_path/descriptor_sha256; preserve existing reference file and selectors."
+      ],
+      "uncertainty_U": 1.0293376434257197e-12
+    },
+    "15": {
+      "adapter_binding_kind": "descriptor_exact_final",
+      "adapter_reference_selector_paths": {
+        "descriptor_exact_final": "descriptor_exact_final",
+        "provenance": "source",
+        "state": "reference_state",
+        "uncertainty": "conservative_uncertainty_bound"
+      },
+      "case": 15,
+      "cross_check_spread": 4.5067949372423755e-11,
+      "descriptor_exact_final": [
+        0.0012977361209802162,
+        -15.321258513822112
+      ],
+      "difference_leq_U": true,
+      "full_parsed_json_equal_to_prior_model_file": true,
+      "max_component_difference_exact_to_reference_state": 4.5067949372423755e-11,
+      "new_raw_describe_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/frozen_binary_describe_batch_20261025T0930/case15/stdout.bin",
+      "new_raw_describe_sha256": "090ccaefd1f52464ccd50a4ff3feaffbdf46ce342b4c90c5bdc4ded26945a47d",
+      "prior_model_descriptor_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/model_15.json",
+      "prior_model_descriptor_sha256": "fd52ea330ae0d3897f8d71c57862956010afc0239bfd8be27fc88fc4bdbff6bd",
+      "raw_bytes_equal_to_prior_model_file": false,
+      "reference_bytes": 325,
+      "reference_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/reference_15.json",
+      "reference_sha256": "4eee5413cdf0200a71ab7ec3f6a95dc8b4058ca80bb8fb77f63c7d0f80c275cb",
+      "reference_source": "80-digit mpmath analytic expression",
+      "reference_state": [
+        0.0012977361209777767,
+        -15.32125851386718
+      ],
+      "required_plan_changes_for_raw_stdout_lock": [
+        "Use current raw stdout path and its SHA in descriptor_path/descriptor_sha256; preserve existing reference file and selectors."
+      ],
+      "uncertainty_U": 4.606794937242376e-11
+    },
+    "16": {
+      "adapter_binding_kind": "descriptor_exact_final",
+      "adapter_reference_selector_paths": {
+        "descriptor_exact_final": "descriptor_exact_final",
+        "provenance": "source",
+        "state": "reference_state",
+        "uncertainty": "conservative_uncertainty_bound"
+      },
+      "case": 16,
+      "cross_check_spread": 1.582067810090848e-15,
+      "descriptor_exact_final": [
+        -0.18714283084572203,
+        -0.16799736327221393
+      ],
+      "difference_leq_U": true,
+      "full_parsed_json_equal_to_prior_model_file": true,
+      "max_component_difference_exact_to_reference_state": 1.582067810090848e-15,
+      "new_raw_describe_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/frozen_binary_describe_batch_20261025T0930/case16/stdout.bin",
+      "new_raw_describe_sha256": "a24bc437d1ca91964d42df9adcf12af8b958b38fa49a99bcdad5dc42ca0a8208",
+      "prior_model_descriptor_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/model_16.json",
+      "prior_model_descriptor_sha256": "99a16166b9743381327ba72818aa1a4548d6ce5a2be5f845a037119e31ff37c9",
+      "raw_bytes_equal_to_prior_model_file": false,
+      "reference_bytes": 325,
+      "reference_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/reference_16.json",
+      "reference_sha256": "c12debdde85bbd0e565ac8aaf88ce3efb4782e6d769892fabd2b7ea2f88fb707",
+      "reference_source": "80-digit mpmath analytic expression",
+      "reference_state": [
+        -0.1871428308457236,
+        -0.16799736327221468
+      ],
+      "required_plan_changes_for_raw_stdout_lock": [
+        "Use current raw stdout path and its SHA in descriptor_path/descriptor_sha256; preserve existing reference file and selectors."
+      ],
+      "uncertainty_U": 1.0015820678100908e-12
+    }
+  },
+  "cohorts": {
+    "standard": {
+      "descriptor_sha256": "e72cc0783bf888b77479b8b2a19a774924642657c70ef650c081fbd8e6c59905",
+      "reference_state": [
+        0.715827068719405,
+        9.185534764557764e-06,
+        0.28416374574583037
+      ]
+    }
+  },
+  "descriptor_binding": {
+    "byte_difference_classification": "JSON content is identical; preserved descriptor file is pretty-printed over multiple lines, current --describe stdout is compact JSON; both end with LF.",
+    "canonical_parsed_json_sha256": "1c0d87ac4400760d1300d05aa2db99420ddac295a7eeedd26190107743f3f643",
+    "case": 1,
+    "current_raw_describe_bytes": 1503,
+    "current_raw_describe_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/frozen_binary_describe_batch_20261025T0930/case01/stdout.bin",
+    "current_raw_describe_sha256": "e72cc0783bf888b77479b8b2a19a774924642657c70ef650c081fbd8e6c59905",
+    "current_raw_has_final_lf": true,
+    "parsed_full_json_equal": true,
+    "prior_model_descriptor_bytes": 2139,
+    "prior_model_descriptor_has_final_lf": true,
+    "prior_model_descriptor_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/model_1.json",
+    "prior_model_descriptor_sha256": "7a5233503d4d1440400216a76240a09e4e2ea13c4d0b1a237f85f6d2359dc80e",
+    "raw_bytes_equal": false,
+    "size": "standard"
+  },
+  "launch_admissible": false,
+  "original_reference_preservation": {
+    "bytes": 65676,
+    "modified": false,
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/robertson_reference/REASSESSMENT_V2.json",
+    "reference_method": "Wolfram NDSolveValue BDF, exact rational coefficients, WP35/goal20 and WP50/goal28; independently checked by StiffnessSwitching at t=0.01 and published t=40 endpoint",
+    "reference_uncertainty": {
+      "cap_fraction": 9.999999999999999e-09,
+      "estimate": 1e-12,
+      "kind": "conservative numerical estimate from precision refinement and independent method/literature agreement; not a certified bound"
+    },
+    "reference_urls": [
+      "https://www.unige.ch/~hairer/testset/stiff/rober/equation.f",
+      "https://link.springer.com/article/10.1007/s10910-022-01427-7"
+    ],
+    "schema": "vigilode.robertson.reference_reassessment.v2",
+    "sha256": "15a377923a660be0ab7295e3eabc9ddd716ab599b97ac2483fe9036dcd282de1",
+    "source_identity": {
+      "current_followup_commit": "ea91d14ccb4b0a025e68273944edc7c7c3392a38",
+      "current_followup_tree": "1fca5a7622506bab704f739757e577d8318550a8",
+      "frozen_commit": "aaf1f834d4c589e734ca7851a56c11bb44f7047a",
+      "frozen_tree": "03b12c682c688155e0f8b08c52508e04738acb93"
+    }
+  },
+  "reference_method": "Wolfram NDSolveValue BDF, exact rational coefficients, WP35/goal20 and WP50/goal28; independently checked by StiffnessSwitching at t=0.01 and published t=40 endpoint",
+  "reference_state_binding": {
+    "U_kind": "conservative numerical estimate from precision refinement and independent method/literature agreement; not a certified bound",
+    "assessment_scope": "endpoint only; no continuous trajectory or broad production claim",
+    "cap": 0.0001,
+    "descriptor_sha256_in_original_reference": "7a5233503d4d1440400216a76240a09e4e2ea13c4d0b1a237f85f6d2359dc80e",
+    "dimension": 3,
+    "endpoint_time": 40.0,
+    "method": "Wolfram NDSolveValue BDF, exact rational coefficients, WP35/goal20 and WP50/goal28; independently checked by StiffnessSwitching at t=0.01 and published t=40 endpoint",
+    "reference_state": [
+      0.715827068719405,
+      9.185534764557764e-06,
+      0.28416374574583037
+    ],
+    "reference_uncertainty_U": 1e-12
+  },
+  "reference_uncertainty": {
+    "cap_fraction": 9.999999999999999e-09,
+    "estimate": 1e-12,
+    "kind": "conservative numerical estimate from precision refinement and independent method/literature agreement; not a certified bound"
+  },
+  "schema": "vigilode.robertson-v2-raw-descriptor-crosswalk.v1",
+  "source_lock": {
+    "binary_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/native_diffsol_offline_locked_build_20261025T0924/target/measurement/examples/local_bottleneck_suite",
+    "binary_sha256": "b7eecc929570fd8ef25d3d7aca7d9a9d6aa4ea60ca84774996fc13f5556c9124",
+    "build_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/native_diffsol_offline_locked_build_20261025T0924/build_artifacts/BUILD_RECEIPT.json",
+    "build_receipt_sha256": "a82e942955ce61990a1891dc2d34e85ed9ddb815fed36c463ce8fe052913419e",
+    "cargo_lock_sha256": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351",
+    "commit": "3b69006ed81b1596e8e6705d51f46e95e09c28cd",
+    "models_source_sha256": "288cc9c54b9380dc35a59d52185cd0fe8f0b36947fafb08283048020efbdad2d",
+    "repo": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout",
+    "status_porcelain": "",
+    "suite_source_sha256": "e6f3c33fe857f0b99c857095989a0334a0dea19cf44bee5f7c056d815243ebc7",
+    "tree": "05a725484ceee60bc3d10f31e93f96d85d0282b8"
+  },
+  "status": "DERIVED_BINDING_CROSSWALK_PENDING_INDEPENDENT_REVIEW"
+}

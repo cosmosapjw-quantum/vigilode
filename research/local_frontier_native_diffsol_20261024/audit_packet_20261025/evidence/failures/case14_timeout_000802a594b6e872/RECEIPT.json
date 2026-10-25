@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-10-24T04:37:00.596000+00:00",
+  "command": [
+    "/tmp/vigilode-local-run-20261024.geLVCp9Q/target/measurement/examples/local_bottleneck_suite",
+    "--case",
+    "14",
+    "--size",
+    "standard",
+    "--method",
+    "switching",
+    "--parallel-layer",
+    "data",
+    "--threads",
+    "1",
+    "--rtol",
+    "1e-06",
+    "--atol",
+    "1e-09",
+    "--max-steps",
+    "200000",
+    "--ensemble-count",
+    "256"
+  ],
+  "wrapped_command": [
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/tmp/vigilode-local-run-20261024.geLVCp9Q/standard_continuation/runs/000802a594b6e872/attempt_001/resource.txt",
+    "--",
+    "/tmp/vigilode-local-run-20261024.geLVCp9Q/target/measurement/examples/local_bottleneck_suite",
+    "--case",
+    "14",
+    "--size",
+    "standard",
+    "--method",
+    "switching",
+    "--parallel-layer",
+    "data",
+    "--threads",
+    "1",
+    "--rtol",
+    "1e-06",
+    "--atol",
+    "1e-09",
+    "--max-steps",
+    "200000",
+    "--ensemble-count",
+    "256"
+  ],
+  "timeout_seconds": 60,
+  "address_space_limit_gib": 32,
+  "cpus": [
+    0
+  ],
+  "thread_environment": {
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "BLIS_NUM_THREADS": "1",
+    "VECLIB_MAXIMUM_THREADS": "1",
+    "VIGILODE_SOURCE_COMMIT": "aaf1f834d4c589e734ca7851a56c11bb44f7047a"
+  },
+  "finished_utc": "2026-10-24T04:38:01.137034+00:00",
+  "elapsed_process_seconds": 60.47854724084027,
+  "exit_code": 124,
+  "timed_out": true,
+  "spawn_error": null,
+  "execution_status": "TIMEOUT",
+  "parse_errors": [],
+  "result": null,
+  "stdout_sha256": "1393441d723c1ac6189b6f987ee0c486a02b70db12ae091864ac656c7b1bd7e9",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "resource_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "task": {
+    "case": 14,
+    "method": "switching",
+    "parallel_layer": "data",
+    "threads": 1,
+    "repeat": 1,
+    "instrumented": false,
+    "cpus": [
+      0
+    ],
+    "id": "000802a594b6e872"
+  },
+  "source": {
+    "commit": "aaf1f834d4c589e734ca7851a56c11bb44f7047a",
+    "tree": "03b12c682c688155e0f8b08c52508e04738acb93",
+    "status_porcelain": "",
+    "clean": true,
+    "exploratory_dirty_run": false
+  },
+  "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+  "profile": {
+    "requested": "none",
+    "status": "NOT_REQUESTED"
+  },
+  "result_contract_errors": [],
+  "eligible_for_timing_comparison": false
+}
