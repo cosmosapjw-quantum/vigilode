@@ -1,0 +1,327 @@
+    Blocking waiting for file lock on artifact directory
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+warning: missing documentation for an enum
+   --> crates/vigilode/src/execution_policy.rs:12:1
+    |
+ 12 | pub enum ExecutionLayer { Ensemble, Data, Stage }
+    | ^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: the lint level is defined here
+   --> crates/vigilode/src/lib.rs:160:9
+    |
+160 | #![warn(missing_docs)]
+    |         ^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/execution_policy.rs:12:27
+   |
+12 | pub enum ExecutionLayer { Ensemble, Data, Stage }
+   |                           ^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/execution_policy.rs:12:37
+   |
+12 | pub enum ExecutionLayer { Ensemble, Data, Stage }
+   |                                     ^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/execution_policy.rs:12:43
+   |
+12 | pub enum ExecutionLayer { Ensemble, Data, Stage }
+   |                                           ^^^^^
+
+warning: missing documentation for a struct
+  --> crates/vigilode/src/execution_policy.rs:14:1
+   |
+14 | pub struct WorkloadKey {
+   | ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:15:5
+   |
+15 |     pub model_epoch: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:16:5
+   |
+16 |     pub method_tag: u64,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:17:5
+   |
+17 |     pub dimension: usize,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:18:5
+   |
+18 |     pub batch_len: usize,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:19:5
+   |
+19 |     pub layer: ExecutionLayer,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:20:5
+   |
+20 |     pub environment_epoch: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an enum
+  --> crates/vigilode/src/execution_policy.rs:23:1
+   |
+23 | pub enum ExecutionMode { Serial, Parallel }
+   | ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/execution_policy.rs:23:26
+   |
+23 | pub enum ExecutionMode { Serial, Parallel }
+   |                          ^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/execution_policy.rs:23:34
+   |
+23 | pub enum ExecutionMode { Serial, Parallel }
+   |                                  ^^^^^^^^
+
+warning: missing documentation for an enum
+  --> crates/vigilode/src/execution_policy.rs:25:1
+   |
+25 | pub enum ExecutionReason {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/execution_policy.rs:26:5
+   |
+26 |     MeasuredGain, HysteresisRetained, NoMeasuredGain, UncalibratedWorkload,
+   |     ^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/execution_policy.rs:26:19
+   |
+26 |     MeasuredGain, HysteresisRetained, NoMeasuredGain, UncalibratedWorkload,
+   |                   ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/execution_policy.rs:26:39
+   |
+26 |     MeasuredGain, HysteresisRetained, NoMeasuredGain, UncalibratedWorkload,
+   |                                       ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/execution_policy.rs:26:55
+   |
+26 |     MeasuredGain, HysteresisRetained, NoMeasuredGain, UncalibratedWorkload,
+   |                                                       ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/execution_policy.rs:27:5
+   |
+27 |     ExpiredCalibration, NestedParallelism, InsufficientHorizon, SingleWorker,
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/execution_policy.rs:27:25
+   |
+27 |     ExpiredCalibration, NestedParallelism, InsufficientHorizon, SingleWorker,
+   |                         ^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/execution_policy.rs:27:44
+   |
+27 |     ExpiredCalibration, NestedParallelism, InsufficientHorizon, SingleWorker,
+   |                                            ^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/execution_policy.rs:27:65
+   |
+27 |     ExpiredCalibration, NestedParallelism, InsufficientHorizon, SingleWorker,
+   |                                                                 ^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/execution_policy.rs:28:5
+   |
+28 |     Residency,
+   |     ^^^^^^^^^
+
+warning: missing documentation for a struct
+  --> crates/vigilode/src/execution_policy.rs:31:1
+   |
+31 | pub struct ExecutionDecision {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:32:5
+   |
+32 |     pub mode: ExecutionMode,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:33:5
+   |
+33 |     pub reason: ExecutionReason,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:34:5
+   |
+34 |     pub probe_due: bool,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:35:5
+   |
+35 |     pub serial_lower_seconds: Option<f64>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:36:5
+   |
+36 |     pub parallel_upper_seconds: Option<f64>,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+  --> crates/vigilode/src/execution_policy.rs:39:1
+   |
+39 | pub struct ExecutionPolicyConfig {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:44:5
+   |
+44 |     pub min_resident_calls: usize,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:45:5
+   |
+45 |     pub max_calibration_age: usize,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+  --> crates/vigilode/src/execution_policy.rs:54:1
+   |
+54 | pub struct ExecutionTelemetry {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:55:5
+   |
+55 |     pub decisions: u64,
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:56:5
+   |
+56 |     pub parallel_calls: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:57:5
+   |
+57 |     pub serial_calls: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:58:5
+   |
+58 |     pub nested_fallbacks: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:59:5
+   |
+59 |     pub calibration_pairs: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:60:5
+   |
+60 |     pub invalid_calibrations: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:61:5
+   |
+61 |     pub switches: u64,
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+  --> crates/vigilode/src/execution_policy.rs:82:5
+   |
+82 |     pub fn new(workers: usize, config: ExecutionPolicyConfig) -> Result<Self, &'static str> {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> crates/vigilode/src/execution_policy.rs:93:5
+   |
+93 |     pub fn telemetry(&self) -> ExecutionTelemetry { self.telemetry }
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> crates/vigilode/src/execution_policy.rs:127:5
+    |
+127 |     pub fn decide(&mut self, key: WorkloadKey, remaining_calls: usize, nested: bool) -> ExecutionDecision {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/execution_policy.rs:192:5
+    |
+192 |     pub selector: ExecutionSelector,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/execution_policy.rs:193:5
+    |
+193 |     pub startup_seconds: f64,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an associated function
+   --> crates/vigilode/src/execution_policy.rs:196:5
+    |
+196 |     pub fn new(workers: usize, config: ExecutionPolicyConfig) -> CoreResult<Self> {
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+   --> crates/vigilode/src/execution_policy.rs:233:5
+    |
+233 | /     pub fn map_ordered<T, U, F>(&mut self, key: WorkloadKey, remaining_calls: usize,
+234 | |         external_parallel_context: bool, items: &[T], operation: F) -> CoreResult<(Vec<U>, ExecutionDecision)>
+235 | |     where T: Sync, U: Send, F: Fn(&T) -> CoreResult<U> + Send + Sync {
+    | |____________________________________________________________________^
+
+warning: `vigilode` (lib) generated 48 warnings
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-adapters/crates/vigilode)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 28s
+     Running tests/execution_policy_contracts.rs (target/debug/deps/execution_policy_contracts-734c2545169bce0a)
+
+running 8 tests
+test expired_calibration_falls_back_and_requests_probe ... ok
+test exact_key_and_nesting_cannot_reuse_unsafe_evidence ... ok
+test invalid_or_wrong_output_clears_prior_evidence ... ok
+test measured_gain_and_overhead_payback ... ok
+test actual_dispatch_preserves_order_and_no_implicit_replay ... ok
+test slow_parallel_stays_serial ... ok
+test internal_nested_wrapper_is_forced_serial ... ok
+test real_calibration_and_shape_validation ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

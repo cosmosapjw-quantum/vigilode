@@ -159,14 +159,18 @@
 #![forbid(unsafe_code)]
 #![warn(missing_docs)]
 
+mod automatic;
 mod capabilities;
+mod cofactor_chart;
 mod error;
 mod events;
+pub mod execution_policy;
 mod explicit;
 mod explicit_ensemble;
 mod fd;
 mod lawson;
 mod options;
+mod oscillatory_chart;
 mod problem;
 mod records;
 mod selection;
@@ -175,10 +179,14 @@ mod solution;
 mod solve;
 mod switching;
 
+pub use automatic::*;
 pub use capabilities::{Capabilities, FacadeRoute, OutputAccuracy};
+pub use cofactor_chart::*;
 pub use error::{CallbackError, SolveError, Unsupported};
 pub use events::{Direction, EventRecord};
+pub use lawson::*;
 pub use options::{Atol, InteriorError, Options, Tier};
+pub use oscillatory_chart::*;
 pub use problem::{
     BandJacobianFn, DenseJacobianFn, Jacobian, JvpFn, Problem, RhsFn, TimeDerivativeFn,
 };
@@ -192,7 +200,6 @@ pub use solution::{
 };
 pub use solve::Rodas5p;
 pub use switching::*;
-pub use lawson::*;
 
 pub use explicit::*;
 pub use explicit_ensemble::{Dopri5Ensemble, Dopri5EnsembleJob};

@@ -6,7 +6,9 @@
 use rodas5p_integrators::{AdaptiveStepConfig, Dopri5StopReason};
 use serde::Serialize;
 
-use crate::{Atol, Dopri5, ExplicitStats, Jacobian, Options, Problem, Rodas5p, Stats, Status};
+use crate::{
+    Atol, Dopri5, ExplicitStats, Jacobian, Options, Problem, Rodas5p, SessionEpochs, Stats, Status,
+};
 
 /// Authorization for derivative work after the explicit path shows pressure.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
@@ -56,6 +58,13 @@ pub struct SwitchingConfig {
     /// A successful entry pilot must cost at most this fraction of the explicit
     /// batch's deterministic work units. This is not a wall-clock guarantee.
     pub entry_cost_ratio: f64,
+    /// Carry the native DOPRI next-step proposal across committed explicit
+    /// batches. This carries a step proposal, not FSAL/workspace/PI history.
+    /// Implicit advancement invalidates the saved explicit proposal.
+    pub carry_explicit_step: bool,
+    /// Explicit batches between implicit entry pilots. Zero preserves legacy
+    /// scheduling. This permits later re-evaluation without a pilot every batch.
+    pub entry_pilot_cooldown_batches: usize,
 }
 
 impl Default for SwitchingConfig {
@@ -74,8 +83,50 @@ impl Default for SwitchingConfig {
             implicit_pilot_attempt_budget: 0,
             implicit_pilot_limit: 1,
             entry_cost_ratio: 0.8,
+            carry_explicit_step: false,
+            entry_pilot_cooldown_batches: 0,
         }
     }
+}
+
+impl SwitchingConfig {
+    /// Bounded work-based selection with step-proposal carry and repeated,
+    /// separated entry trials. Derivative permission remains explicit.
+    /// This classifies observed method fitness, not physical stiffness.
+    pub fn evidence_driven(fallback: DerivativeFallback) -> Self {
+        Self {
+            fallback,
+            implicit_pilot_attempt_budget: 64,
+            implicit_pilot_limit: 8,
+            entry_pilot_cooldown_batches: 4,
+            carry_explicit_step: true,
+            ..Self::default()
+        }
+    }
+}
+
+/// What the observed batch establishes about method fitness.
+/// None of these variants certifies a physical stiff/nonstiff regime.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum SwitchingEvidence {
+    /// No competitive comparison was performed.
+    #[default]
+    Uncompared,
+    /// An explicit batch required enough work to trigger reconsideration.
+    ExplicitWorkPressure,
+    /// Same-checkpoint implicit trial completed with lower charged work.
+    ImplicitCheaperOnPrefix,
+    /// Completed implicit trial did not meet the required work advantage.
+    ImplicitNotCheaperOnPrefix,
+    /// Implicit trial did not reach the matched endpoint.
+    ImplicitPilotIncomplete,
+    /// Successful explicit return trial beat the previous implicit work rate.
+    ExplicitCheaperThanPreviousWindow,
+    /// The bounded explicit return trial did not justify returning.
+    ExplicitReturnNotSupported,
+    /// An implicit batch completed; its rate is recorded for later comparison.
+    ImplicitWindowCompleted,
 }
 
 /// Executed method of an adapter batch.
@@ -136,6 +187,17 @@ pub struct SwitchingSegment {
     pub work_units: f64,
     /// Reason for the disposition or route decision.
     pub decision: String,
+    /// Typed evidence for selection; distinct from a physical regime label.
+    pub evidence: SwitchingEvidence,
+    /// Initial proposal actually supplied to this batch, before driver clipping.
+    pub initial_step: f64,
+    /// Native DOPRI proposal at batch exit when step carry is enabled.
+    /// Absent at full-span completion and for the implicit driver, whose
+    /// controller is not exported here.
+    pub proposed_next_step: Option<f64>,
+    /// Pilot work divided by its explicit comparator, when a matched-prefix
+    /// comparison was performed. Includes all charged attempts, not just accepts.
+    pub comparator_work_ratio: Option<f64>,
     /// Original telemetry; useful when a partial run has stopped.
     pub driver: SwitchingDriverStats,
 }
@@ -257,6 +319,8 @@ impl SwitchingSolver {
         let mut since_probe = 0usize;
         let mut implicit_rate: Option<f64> = None;
         let mut implicit_pilots = 0usize;
+        let mut batches_since_entry_pilot = usize::MAX;
+        let mut explicit_step: Option<f64> = None;
         'windows: for window in 1..=config.window_count {
             if result.final_time == t1 {
                 break;
@@ -285,6 +349,7 @@ impl SwitchingSolver {
                 let pilot_initial = if config.implicit_pilot_attempt_budget > 0
                     && method == SwitchingMethod::Dopri5
                     && implicit_pilots < config.implicit_pilot_limit
+                    && batches_since_entry_pilot >= config.entry_pilot_cooldown_batches
                 {
                     Some(result.final_state.clone())
                 } else {
@@ -296,7 +361,12 @@ impl SwitchingSolver {
                     method
                 };
                 let mut local = opts.clone();
-                local.h0 = opts.h0.min(target - start);
+                local.h0 = if selected == SwitchingMethod::Dopri5 && config.carry_explicit_step {
+                    explicit_step.unwrap_or(opts.h0)
+                } else {
+                    opts.h0
+                }
+                .min(target - start);
                 local.max_steps = remaining.min(match selected {
                     SwitchingMethod::Dopri5 if probe => config.probe_attempt_budget,
                     SwitchingMethod::Dopri5 if fallback => config.explicit_attempt_budget,
@@ -312,6 +382,8 @@ impl SwitchingSolver {
                     &local,
                     selected,
                     probe,
+                    config.carry_explicit_step,
+                    t1,
                 ) {
                     Ok(batch) => batch,
                     Err(message) => {
@@ -341,6 +413,8 @@ impl SwitchingSolver {
                     if economical {
                         record.decision =
                             "explicit probe completed within return work-rate hysteresis".into();
+                        record.evidence = SwitchingEvidence::ExplicitCheaperThanPreviousWindow;
+                        explicit_step = record.proposed_next_step;
                         commit(&mut result, &mut record, state);
                         method = SwitchingMethod::Dopri5;
                         result.stats.switches += 1;
@@ -355,6 +429,7 @@ impl SwitchingSolver {
                     } else {
                         record.decision =
                             "bounded explicit probe discarded; retain implicit route".into();
+                        record.evidence = SwitchingEvidence::ExplicitReturnNotSupported;
                     }
                     result.stats.segments.push(record);
                     probe = false;
@@ -369,12 +444,16 @@ impl SwitchingSolver {
                 }
                 match selected {
                     SwitchingMethod::Dopri5 => {
+                        batches_since_entry_pilot = batches_since_entry_pilot.saturating_add(1);
                         let rejection_pressure = record.attempts > 0
                             && record.rejected_steps as f64 / record.attempts as f64
                                 >= config.rejection_fraction;
                         let pressure = budget_stop
                             || record.attempts >= config.pressure_steps
                             || rejection_pressure;
+                        if pressure {
+                            record.evidence = SwitchingEvidence::ExplicitWorkPressure;
+                        }
                         if fallback
                             && pressure
                             && (record.success || budget_stop)
@@ -384,10 +463,12 @@ impl SwitchingSolver {
                             if config.implicit_pilot_attempt_budget > 0 {
                                 let remaining = opts.max_steps - result.stats.attempts;
                                 if implicit_pilots < config.implicit_pilot_limit
+                                    && pilot_initial.is_some()
                                     && remaining > 0
                                     && record.reached_time > start
                                 {
                                     implicit_pilots += 1;
+                                    batches_since_entry_pilot = 0;
                                     let mut pilot_opts = opts.clone();
                                     pilot_opts.h0 = opts.h0.min(record.reached_time - start);
                                     pilot_opts.max_steps =
@@ -400,12 +481,29 @@ impl SwitchingSolver {
                                         &pilot_opts,
                                         SwitchingMethod::Rodas5p,
                                         true,
+                                        false,
+                                        t1,
                                     ) {
                                         Ok(mut pilot) => {
                                             charge(&mut result.stats, &pilot.record);
                                             enter = pilot.record.success
                                                 && pilot.record.work_units
                                                     <= config.entry_cost_ratio * record.work_units;
+                                            pilot.record.comparator_work_ratio = if record
+                                                .work_units
+                                                > 0.0
+                                            {
+                                                Some(pilot.record.work_units / record.work_units)
+                                            } else {
+                                                None
+                                            };
+                                            pilot.record.evidence = if !pilot.record.success {
+                                                SwitchingEvidence::ImplicitPilotIncomplete
+                                            } else if enter {
+                                                SwitchingEvidence::ImplicitCheaperOnPrefix
+                                            } else {
+                                                SwitchingEvidence::ImplicitNotCheaperOnPrefix
+                                            };
                                             pilot.record.decision = if enter {
                                                 "same-checkpoint implicit pilot passed entry work ratio"
                                             } else {
@@ -468,6 +566,7 @@ impl SwitchingSolver {
                             result.stats.segments.push(record);
                             break 'windows;
                         }
+                        record.evidence = SwitchingEvidence::ImplicitWindowCompleted;
                         implicit_rate = Some(record.work_units / (target - start));
                         implicit_windows += 1;
                         since_probe += 1;
@@ -475,6 +574,11 @@ impl SwitchingSolver {
                             "implicit window completed; retain route until bounded recheck".into();
                     }
                 }
+                explicit_step = if selected == SwitchingMethod::Dopri5 {
+                    record.proposed_next_step
+                } else {
+                    None
+                };
                 commit(&mut result, &mut record, state);
                 result.stats.segments.push(record);
             }
@@ -542,6 +646,10 @@ fn persistent_explicit(
         linear_solves: counters.linear_solves,
         work_units: counters.rhs_calls as f64,
         decision: "derivative fallback forbidden; persistent RHS-only observed session".into(),
+        evidence: SwitchingEvidence::Uncompared,
+        initial_step: opts.h0,
+        proposed_next_step: None,
+        comparator_work_ratio: None,
         driver: SwitchingDriverStats::Dopri5(Box::new(run.stats)),
     };
     charge(&mut result.stats, &record);
@@ -570,6 +678,8 @@ fn run(
     opts: &Options,
     method: SwitchingMethod,
     probe: bool,
+    carry_explicit_step: bool,
+    solve_end: f64,
 ) -> Result<Batch, String> {
     let (
         reached,
@@ -586,14 +696,56 @@ fn run(
         fatal,
         budget,
         driver,
+        proposed_next_step,
     ) = match method {
         SwitchingMethod::Dopri5 => {
-            let r = Dopri5::solve(problem, (start, target), y, opts).map_err(|e| e.to_string())?;
+            let (next, r) = if carry_explicit_step {
+                let epochs = SessionEpochs::default();
+                // The batch target is an intermediate checkpoint, not the
+                // native terminal time. At tf the native driver intentionally
+                // skips the controller's next proposal, since none is needed.
+                let times = if target < solve_end {
+                    vec![start, target, solve_end]
+                } else {
+                    vec![start, target]
+                };
+                let (next, r) = Dopri5::with_session(
+                    problem,
+                    (start, solve_end),
+                    y,
+                    opts,
+                    &times,
+                    epochs,
+                    |session| {
+                        session.advance_to(target, opts.max_steps, epochs)?;
+                        Ok::<f64, crate::ExplicitSolveError>(session.checkpoint().proposed_h)
+                    },
+                )
+                .map_err(|e| e.to_string())?;
+                let next = next.map_err(|e| e.to_string())?;
+                // No proposal was newly computed after the final accepted
+                // step of the full solve. Do not expose its stale snapshot.
+                ((r.final_time < solve_end).then_some(next), r)
+            } else {
+                (
+                    None,
+                    Dopri5::solve(problem, (start, target), y, opts).map_err(|e| e.to_string())?,
+                )
+            };
             let c = r.stats.counters;
+            // A deliberate pause at this batch's endpoint is a successful
+            // batch even though the native full-span solve is unfinished.
+            let success = if carry_explicit_step {
+                r.final_time == target
+                    && matches!(r.stop_reason, None | Some(Dopri5StopReason::AttemptBudget))
+                    && r.callback_failure.is_none()
+            } else {
+                r.success
+            };
             (
                 r.final_time,
                 r.final_state,
-                r.success,
+                success,
                 r.stats.attempts,
                 r.stats.accepted_steps,
                 r.stats.rejected_steps,
@@ -603,8 +755,9 @@ fn run(
                 c.ft_calls,
                 c.linear_solves,
                 r.callback_failure.is_some(),
-                r.stop_reason == Some(Dopri5StopReason::AttemptBudget),
+                r.final_time < target && r.stop_reason == Some(Dopri5StopReason::AttemptBudget),
                 SwitchingDriverStats::Dopri5(Box::new(r.stats)),
+                next.filter(|h| h.is_finite() && *h > 0.0),
             )
         }
         SwitchingMethod::Rodas5p => {
@@ -634,6 +787,7 @@ fn run(
                 fatal,
                 budget,
                 SwitchingDriverStats::Rodas5p(Box::new(r.stats)),
+                None,
             )
         }
     };
@@ -658,6 +812,10 @@ fn run(
             linear_solves: solves,
             work_units,
             decision: String::new(),
+            evidence: SwitchingEvidence::Uncompared,
+            initial_step: opts.h0,
+            proposed_next_step,
+            comparator_work_ratio: None,
             driver,
         },
         state,

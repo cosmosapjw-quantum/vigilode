@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "current_native_pilot": "crates/vigilode/examples/evidence_switch_bench.rs",
+  "current_import_status": "WHOLE_TRAJECTORY_EXPLORATORY_RESULTS_RETAINED_SEPARATELY",
+  "do_not_infer": [
+    "paired decision windows from per-mode repetition index",
+    "missing build-source relation from final documentation commit",
+    "per-component timing from inclusive solve time",
+    "certified reference uncertainty from analytic formula evaluated in ordinary binary64"
+  ],
+  "future_runner_requirements": [
+    "capture actual before-build source manifest and after-build binary digest",
+    "capture actual host, affinity and compiler/build flags",
+    "save physical checkpoint and output/metric contract",
+    "record chosen method and decision reason before comparison",
+    "run replay-safe challenger from same physical checkpoint",
+    "record matching block identifier at launch",
+    "retain raw receipt and verify its digest",
+    "charge inclusive solve cost once and additional overhead only when excluded from solve",
+    "evaluate physical-space error with explicit reference uncertainty semantics"
+  ],
+  "raw_rerun_policy": "new output directory, no mutation/reclassification of historical raw",
+  "needed_metadata": {
+    "source_tree_sha256": null,
+    "host_sha256": null,
+    "build_config_sha256": null,
+    "timing_scope_sha256": null,
+    "physical_metric_sha256": null,
+    "output_workload_sha256": null
+  },
+  "null_semantics": "not supplied by this analyzer; populate from actual new measurements, never substitute invented values"
+}

@@ -1,0 +1,143 @@
+{
+  "schema": "vigilode.parallel-adapter-research.v1",
+  "skill_context_used": {
+    "skill": "physmath-research-loop",
+    "version": "1.3.0",
+    "selected_stages": [
+      "R2",
+      "R4",
+      "R5",
+      "R7",
+      "R9",
+      "C2",
+      "C3",
+      "C4",
+      "C5",
+      "C6",
+      "C7",
+      "C8"
+    ],
+    "references": [
+      "SKILL.md",
+      "references/POLICY_INTEGRATION.md",
+      "references/THEORY_LOOP.md",
+      "references/CODING_LOOP.md"
+    ]
+  },
+  "claims": [
+    {
+      "id": "PAR_SOURCE",
+      "status": "implementation-verified",
+      "claim": "Existing local-bottleneck data path takes boolean parallel flag, without measured automatic allocation."
+    },
+    {
+      "id": "PAR_PAYBACK",
+      "status": "derived",
+      "claim": "For fixed valid output-equivalent costs S>P and remaining m, total gain iff m(S-P)>H. Observed extrema are empirical proxies, not guaranteed cost bounds."
+    },
+    {
+      "id": "PAR_NATIVE",
+      "status": "implementation-verified",
+      "claim": "New opt-in exact-key selector dispatches through existing bounded ordered executor; nested wrapper calls serial; calibration requires explicit replay-safe use."
+    },
+    {
+      "id": "PAR_SPEED",
+      "status": "unresolved",
+      "claim": "Parent runs heldout same-host pilot sequentially after builds; no speed number inferred from policy."
+    }
+  ],
+  "implementation_scope": "Independent-job executor plus real ODE ensemble pilot; automatic insertion into every existing RHS and coupled-stage loop remains local integration work.",
+  "files": [
+    {
+      "path": "crates/vigilode/src/execution_policy.rs",
+      "sha256": "b3bcff4b77c8a0b5741eb8de682812820f229b35dc3132fd12f86c5155a0dffc"
+    },
+    {
+      "path": "crates/vigilode/tests/execution_policy_contracts.rs",
+      "sha256": "d4b00be2d02f4788cc61342ef0bc62a32a7679ecd13f64f41ebfb1e1254786c4"
+    },
+    {
+      "path": "crates/vigilode/examples/execution_policy_pilot.rs",
+      "sha256": "211d5c86c75cca7d13269702ce22b2cd7d4dd4c7c3d878246db5a30f44672d60"
+    },
+    {
+      "path": "research/adapter_research_20261025/parallel/analyze.py",
+      "sha256": "8f1b3ee2670abed09222faa2d700451eebf2edddf0981e06e2e252516ac519e5"
+    },
+    {
+      "path": "research/adapter_research_20261025/parallel/RESEARCH_KO.md",
+      "sha256": "b80b4b98f545c6c3596c3447408a37db5e370d86ba0bb66024822cab77f71407"
+    }
+  ],
+  "validation": {
+    "native_contracts": {
+      "command": "cargo test -p vigilode --test execution_policy_contracts --locked --offline",
+      "passed": 9,
+      "failed": 0,
+      "log": "parallel/tests_repair_refreshed.log"
+    },
+    "example_build_check": {
+      "command": "cargo check -p vigilode --example execution_policy_pilot --locked --offline",
+      "exit_code": 0,
+      "log": "parallel/example_check_current.log"
+    },
+    "initial_failures_preserved": [
+      "parallel/example_check.log: json macro expression missing parentheses",
+      "parallel/example_check_final.log: ExplicitSolution field API mismatch",
+      "parallel/tests_repair.log: shared-target stale linker symbols; touching owned module forced rebuild and9tests passed"
+    ],
+    "pilot": "PARENT_REPAIR_SEQUENTIAL_TIMING_PENDING"
+  },
+  "initial_pilot": {
+    "source": "parallel/initial/pilot.jsonl",
+    "summary": "parallel/initial/PILOT_SUMMARY.json",
+    "selected_parallel_fraction": [
+      0,
+      0,
+      0
+    ],
+    "heldout_adaptive_over_best": [
+      1.0178629601476819,
+      1.9739424234931928,
+      1.4854410193074596
+    ],
+    "root_causes": [
+      {
+        "batch": 1,
+        "status": "implementation-verified",
+        "cause": "Eager pool and calibration despite single independent item; avoidable startup/replay overhead."
+      },
+      {
+        "batch": 64,
+        "status": "derived_and_implementation-verified",
+        "cause": "Post-calibration future dispatch charged sunk H again; conservative-envelope recovery43.01 calls exceeded requested20 although observed candidate costs were lower."
+      },
+      {
+        "batch": 256,
+        "status": "unresolved",
+        "cause": "Observed parallel calibration maximum12.3752ms vs heldout median1.8036ms; no individual original pair record, so startup vs scheduling attribution unresolved."
+      }
+    ]
+  },
+  "repair": {
+    "policy_thresholds_unchanged": true,
+    "changes": [
+      "Lazy pool and no replay for single item/worker",
+      "Sunk probe cost reported as diagnostic, not post-calibration future dispatch barrier",
+      "One charged warmup pair and three raw steady timing pairs with arm order"
+    ],
+    "scientific_status": "9 native contract tests passed; parent sequential timing pending"
+  },
+  "parent_repaired_measurement": {
+    "summary": "PILOT_SUMMARY_REPAIRED.json",
+    "raw": "pilot_repaired.jsonl",
+    "mode_by_batch": {
+      "1": "Serial",
+      "64": "Parallel",
+      "256": "Parallel"
+    },
+    "empirical_choice_disagreement_fraction": 0,
+    "scope": "20 heldout repetitions per batch, one shared host, no statistical performance guarantee",
+    "initial_failure_retained": "initial/"
+  }
+}

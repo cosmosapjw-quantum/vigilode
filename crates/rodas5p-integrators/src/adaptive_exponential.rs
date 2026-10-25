@@ -5,7 +5,8 @@ use crate::output::OutputCollector;
 use crate::{
     AdaptiveControllerState, AdaptiveStepConfig, EarlyFlowDefectTelemetry,
     EarlyFlowDefectTelemetryMode, FusedPhiKrylovConfig, ObservedIntegrationResult, OdeProblem,
-    OutputSchedule, ParallelExecution, exponential::pexprb54s4_fused_step_charged,
+    OutputSchedule, ParallelExecution, adaptive_next_step_after_attempt,
+    exponential::pexprb54s4_fused_step_charged,
 };
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -275,7 +276,16 @@ fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
                 diagnostics.phi_error_norms.push(f64::INFINITY);
                 diagnostics.total_error_norms.push(f64::INFINITY);
                 counters.rejected_steps += 1;
-                h = trial_h * adaptive.min_factor;
+                h = adaptive_next_step_after_attempt(
+                    &mut controller,
+                    adaptive,
+                    h,
+                    trial_h,
+                    f64::INFINITY,
+                    5,
+                    false,
+                    clipped,
+                )?;
                 continue;
             }
             Err(error) => return Err(error),
@@ -336,19 +346,25 @@ fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
             diagnostics.accepted_steps += 1;
             diagnostics.accepted_step_sizes.push(trial_h);
             counters.accepted_steps += 1;
-            controller.record_acceptance(total_error)?;
-            h = trial_h * controller.propose_factor(adaptive, total_error.max(1.0e-16), 5, true)?;
         } else {
             diagnostics.rejected_steps += 1;
             diagnostics.rejected_step_sizes.push(trial_h);
             counters.rejected_steps += 1;
-            controller.record_rejection(total_error.max(1.0e-16))?;
-            h = trial_h
-                * if total_error.is_finite() {
-                    controller.propose_factor(adaptive, total_error.max(1.0e-16), 5, false)?
-                } else {
-                    adaptive.min_factor
-                };
+        }
+        // Preserve the preceding accepted error for PI/predictive control and
+        // preserve the pre-output-clipping request. This also records rejected
+        // trials for the represented-clock strict-shrink rule.
+        if t < tf {
+            h = adaptive_next_step_after_attempt(
+                &mut controller,
+                adaptive,
+                h,
+                trial_h,
+                total_error,
+                5,
+                accepted,
+                clipped,
+            )?;
         }
     }
     let success = t >= tf;

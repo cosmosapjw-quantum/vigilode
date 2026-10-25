@@ -1,0 +1,74 @@
+{
+  "schema": "vigilode.execution-selection-pilot.v1",
+  "source": "research/adapter_research_20261025/parallel/pilot.jsonl",
+  "timing_status": "EXPLORATORY_SHARED_HOST",
+  "results": [
+    {
+      "batch_len": 1,
+      "workers": 2,
+      "heldout_median_seconds": {
+        "serial": 9.209e-06,
+        "parallel": 2.5948e-05,
+        "adaptive": 9.373500000000001e-06
+      },
+      "heldout_faster_arm": "serial",
+      "adaptive_time_over_best_median": 1.0178629601476819,
+      "selected_parallel_fraction": 0.0,
+      "choice_disagreement_fraction": 0.0,
+      "reasons": {
+        "SingleWorker": 20
+      },
+      "calibration_seconds": 0.00028383,
+      "startup_seconds": 8.6147e-05,
+      "adaptive_total_with_calibration_and_startup": 0.0005774039999999999,
+      "serial_total": 0.000231946,
+      "parallel_total_excluding_pool_startup": 0.000672942,
+      "checksum_equal": true
+    },
+    {
+      "batch_len": 64,
+      "workers": 2,
+      "heldout_median_seconds": {
+        "serial": 0.000983465,
+        "parallel": 0.0005015239999999999,
+        "adaptive": 0.0009899795
+      },
+      "heldout_faster_arm": "parallel",
+      "adaptive_time_over_best_median": 1.9739424234931928,
+      "selected_parallel_fraction": 0.0,
+      "choice_disagreement_fraction": 1.0,
+      "reasons": {
+        "InsufficientHorizon": 20
+      },
+      "calibration_seconds": 0.003368723,
+      "startup_seconds": 9.9327e-05,
+      "adaptive_total_with_calibration_and_startup": 0.021936266,
+      "serial_total": 0.018472703,
+      "parallel_total_excluding_pool_startup": 0.010933111,
+      "checksum_equal": true
+    },
+    {
+      "batch_len": 256,
+      "workers": 2,
+      "heldout_median_seconds": {
+        "serial": 0.002724244,
+        "parallel": 0.0018035775,
+        "adaptive": 0.002679108
+      },
+      "heldout_faster_arm": "parallel",
+      "adaptive_time_over_best_median": 1.4854410193074596,
+      "selected_parallel_fraction": 0.0,
+      "choice_disagreement_fraction": 1.0,
+      "reasons": {
+        "NoMeasuredGain": 20
+      },
+      "calibration_seconds": 0.024882462,
+      "startup_seconds": 7.5291e-05,
+      "adaptive_total_with_calibration_and_startup": 0.08845835500000002,
+      "serial_total": 0.06609591000000001,
+      "parallel_total_excluding_pool_startup": 0.037440168,
+      "checksum_equal": true
+    }
+  ],
+  "interpretation": "Single-process paired calibration and heldout cyclic timing; choice disagreement is a diagnostic, not statistical proof of misclassification. Empirical timing envelopes are not certified future costs."
+}
