@@ -4,94 +4,96 @@
   "unit": "D5",
   "stages": {
     "R1": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S0"
     },
     "R2": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S0"
     },
     "R3": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S0"
     },
     "R4": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S0"
     },
     "R5": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S1"
     },
     "R6": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S2"
     },
     "R7": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S2"
     },
     "R8": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S2"
     },
     "R9": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S2"
     },
     "R10": {
-      "status": "PREPARED_DELIVERY_PENDING",
+      "status": "COMPLETE_SCOPED",
       "phase": "S3"
     },
     "C1": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S0"
     },
     "C2": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S0"
     },
     "C3": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S0"
     },
     "C4": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S0"
     },
     "C5": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S1"
     },
     "C6": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S2"
     },
     "C7": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S2"
     },
     "C8": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S2"
     },
     "C9": {
-      "status": "COMPLETE",
+      "status": "COMPLETE_SCOPED",
       "phase": "S2"
     },
     "C10": {
-      "status": "PREPARED_DELIVERY_PENDING",
+      "status": "COMPLETE_SCOPED",
       "phase": "S3"
     }
   },
-  "complete": 18,
+  "complete": 20,
   "total": 20,
-  "S_phases_complete": 3,
+  "S_phases_complete": 4,
   "S_phases_total": 4,
-  "publication": "S0_S1_S2_PUBLISHED_S3_PREPARED",
-  "backups": "Per-provider actual ACKs in delivery; UNKNOWN_NO_ACK is not completion",
+  "publication": "S0_S1_S2_S3_PUBLISHED",
+  "backups": "All four phases Library+Dropbox ACK and exact filename/size PASS; S0/S1 Drive UNKNOWN_NO_ACK; S2/S3 Drive NOT_ATTEMPTED_AFTER_TWO_UNACKNOWLEDGED_CALLS",
   "global_completion": null,
   "production": "HOLD",
   "publication_total": 4,
-  "science_scope": "D5 closed; final delivery pending"
+  "science_scope": "D5 scoped theory/code loop and phase delivery complete; production gates remain open",
+  "metadata_CI": "FAIL_AUTHORITY_ONLY; checker unit tests24 and ledger169 PASS",
+  "final_metadata_ci": "NOT_RUN_SKIP_CI; S3 result is tied to its actual commit"
 }

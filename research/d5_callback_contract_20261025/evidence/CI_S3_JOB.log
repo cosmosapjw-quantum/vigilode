@@ -1,0 +1,688 @@
+﻿2026-10-25T02:58:41.1514233Z Current runner version: '2.338.0'
+2026-10-25T02:58:41.1537831Z ##[group]Runner Image Provisioner
+2026-10-25T02:58:41.1539251Z Hosted Compute Agent
+2026-10-25T02:58:41.1539868Z Version: 20261021.618
+2026-10-25T02:58:41.1540549Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-25T02:58:41.1541294Z Build Date: 2026-10-21T00:45:21Z
+2026-10-25T02:58:41.1541996Z Worker ID: {df18b942-ee20-49fe-901c-259a1dc50cb7}
+2026-10-25T02:58:41.1542805Z Region: centralus
+2026-10-25T02:58:41.1543348Z Cloud: Azure
+2026-10-25T02:58:41.1543906Z ##[endgroup]
+2026-10-25T02:58:41.1545725Z ##[group]Operating System
+2026-10-25T02:58:41.1546385Z Ubuntu
+2026-10-25T02:58:41.1547027Z 26.04.1
+2026-10-25T02:58:41.1547536Z LTS
+2026-10-25T02:58:41.1548012Z ##[endgroup]
+2026-10-25T02:58:41.1548963Z ##[group]Runner Image
+2026-10-25T02:58:41.1549671Z Image: ubuntu-26.04
+2026-10-25T02:58:41.1550293Z Version: 20261012.163.1
+2026-10-25T02:58:41.1551543Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261012.163/images/ubuntu/Ubuntu2604-Readme.md
+2026-10-25T02:58:41.1553122Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261012.163
+2026-10-25T02:58:41.1554170Z ##[endgroup]
+2026-10-25T02:58:41.1555293Z ##[group]GITHUB_TOKEN Permissions
+2026-10-25T02:58:41.1557156Z Contents: read
+2026-10-25T02:58:41.1557852Z Metadata: read
+2026-10-25T02:58:41.1558631Z ##[endgroup]
+2026-10-25T02:58:41.1560691Z Secret source: Actions
+2026-10-25T02:58:41.1561762Z Cache mode: write
+2026-10-25T02:58:41.1562414Z Prepare workflow directory
+2026-10-25T02:58:41.1903550Z Prepare all required actions
+2026-10-25T02:58:41.1951096Z Getting action download info
+2026-10-25T02:58:41.4307007Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-25T02:58:41.5449463Z Download action repository 'actions/setup-python@v5' (SHA:a26af69be951a213d495a4c3e4e4022e16d87065)
+2026-10-25T02:58:41.7054533Z Complete job name: research-process
+2026-10-25T02:58:41.7941639Z ##[group]Run actions/checkout@v4
+2026-10-25T02:58:41.7942624Z with:
+2026-10-25T02:58:41.7943052Z   fetch-depth: 0
+2026-10-25T02:58:41.7943537Z   repository: cosmosapjw-quantum/vigilode
+2026-10-25T02:58:41.7947633Z   token: ***
+2026-10-25T02:58:41.7948069Z   ssh-strict: true
+2026-10-25T02:58:41.7948742Z   ssh-user: git
+2026-10-25T02:58:41.7949196Z   persist-credentials: true
+2026-10-25T02:58:41.7949687Z   clean: true
+2026-10-25T02:58:41.7950140Z   sparse-checkout-cone-mode: true
+2026-10-25T02:58:41.7950666Z   fetch-tags: false
+2026-10-25T02:58:41.7951108Z   show-progress: true
+2026-10-25T02:58:41.7951554Z   lfs: false
+2026-10-25T02:58:41.7951967Z   submodules: false
+2026-10-25T02:58:41.7952419Z   set-safe-directory: true
+2026-10-25T02:58:41.7952934Z   allow-unsafe-pr-checkout: false
+2026-10-25T02:58:41.7953710Z ##[endgroup]
+2026-10-25T02:58:41.8976208Z Syncing repository: cosmosapjw-quantum/vigilode
+2026-10-25T02:58:41.8978574Z ##[group]Getting Git version info
+2026-10-25T02:58:41.8979602Z Working directory is '/home/runner/work/vigilode/vigilode'
+2026-10-25T02:58:41.8980928Z [command]/usr/bin/git version
+2026-10-25T02:58:41.9007889Z git version 2.55.0
+2026-10-25T02:58:41.9035441Z ##[endgroup]
+2026-10-25T02:58:41.9051766Z Temporarily overriding HOME='/home/runner/work/_temp/bf23c777-7dfd-4afd-96b2-11f68e8e9529' before making global git config changes
+2026-10-25T02:58:41.9053318Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T02:58:41.9057388Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vigilode/vigilode
+2026-10-25T02:58:41.9117908Z Deleting the contents of '/home/runner/work/vigilode/vigilode'
+2026-10-25T02:58:41.9121997Z ##[group]Initializing the repository
+2026-10-25T02:58:41.9127288Z [command]/usr/bin/git init /home/runner/work/vigilode/vigilode
+2026-10-25T02:58:41.9249933Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-25T02:58:41.9252267Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-25T02:58:41.9254378Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-25T02:58:41.9255774Z hint: call:
+2026-10-25T02:58:41.9256936Z hint:
+2026-10-25T02:58:41.9257942Z hint: 	git config --global init.defaultBranch <name>
+2026-10-25T02:58:41.9259410Z hint:
+2026-10-25T02:58:41.9260448Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-25T02:58:41.9261535Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-25T02:58:41.9262540Z hint:
+2026-10-25T02:58:41.9263083Z hint: 	git branch -m <name>
+2026-10-25T02:58:41.9263914Z hint:
+2026-10-25T02:58:41.9264767Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-25T02:58:41.9265851Z Initialized empty Git repository in /home/runner/work/vigilode/vigilode/.git/
+2026-10-25T02:58:41.9267590Z [command]/usr/bin/git remote add origin https://github.com/cosmosapjw-quantum/vigilode
+2026-10-25T02:58:41.9315535Z ##[endgroup]
+2026-10-25T02:58:41.9316400Z ##[group]Disabling automatic garbage collection
+2026-10-25T02:58:41.9320324Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-25T02:58:41.9354102Z ##[endgroup]
+2026-10-25T02:58:41.9354846Z ##[group]Setting up auth
+2026-10-25T02:58:41.9362677Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T02:58:41.9399478Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T02:58:41.9867987Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T02:58:41.9908922Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T02:58:42.0185071Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-25T02:58:42.0219977Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-25T02:58:42.0486878Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-25T02:58:42.0525980Z ##[endgroup]
+2026-10-25T02:58:42.0527434Z ##[group]Fetching the repository
+2026-10-25T02:58:42.0538832Z [command]/usr/bin/git -c protocol.version=2 fetch --prune --no-recurse-submodules origin +refs/heads/*:refs/remotes/origin/* +refs/tags/*:refs/tags/* +1672f99b8fe2736e771d7f10edb012db3411bcf5:refs/remotes/pull/88/merge
+2026-10-25T02:58:48.3037132Z From https://github.com/cosmosapjw-quantum/vigilode
+2026-10-25T02:58:48.3039935Z  * [new branch]        audit/adversarial-audit-20260927         -> origin/audit/adversarial-audit-20260927
+2026-10-25T02:58:48.3042176Z  * [new branch]        audit/ncp-intensive-120m-20261021        -> origin/audit/ncp-intensive-120m-20261021
+2026-10-25T02:58:48.3045564Z  * [new branch]        audit/production-readiness-20261018      -> origin/audit/production-readiness-20261018
+2026-10-25T02:58:48.3049322Z  * [new branch]        audit/production-reaudit-20261021        -> origin/audit/production-reaudit-20261021
+2026-10-25T02:58:48.3053658Z  * [new branch]        audit/rvj-accuracy-speed-reaudit-20261010 -> origin/audit/rvj-accuracy-speed-reaudit-20261010
+2026-10-25T02:58:48.3058560Z  * [new branch]        audit/rvj-accuracy-speed-wave1-20261010  -> origin/audit/rvj-accuracy-speed-wave1-20261010
+2026-10-25T02:58:48.3063413Z  * [new branch]        audit/rvj-algorithmic-directions-20261008 -> origin/audit/rvj-algorithmic-directions-20261008
+2026-10-25T02:58:48.3068049Z  * [new branch]        audit/rvj-controller-grid-ct01-20261010  -> origin/audit/rvj-controller-grid-ct01-20261010
+2026-10-25T02:58:48.3072925Z  * [new branch]        audit/rvj-native-followup-20261003       -> origin/audit/rvj-native-followup-20261003
+2026-10-25T02:58:48.3076489Z  * [new branch]        audit/rvj-reaudit-remaining-20261011     -> origin/audit/rvj-reaudit-remaining-20261011
+2026-10-25T02:58:48.3081229Z  * [new branch]        audit/rvj-research-integration-20261004  -> origin/audit/rvj-research-integration-20261004
+2026-10-25T02:58:48.3086117Z  * [new branch]        audit/rvj-speed-research-20261005        -> origin/audit/rvj-speed-research-20261005
+2026-10-25T02:58:48.3091272Z  * [new branch]        bootstrap/import-v3.5-durable-baseline   -> origin/bootstrap/import-v3.5-durable-baseline
+2026-10-25T02:58:48.3095378Z  * [new branch]        bootstrap/import-v3.5-source             -> origin/bootstrap/import-v3.5-source
+2026-10-25T02:58:48.3098965Z  * [new branch]        bootstrap/import-v3.5-source-patch       -> origin/bootstrap/import-v3.5-source-patch
+2026-10-25T02:58:48.3102554Z  * [new branch]        bootstrap/import-v3.5-verified-baseline  -> origin/bootstrap/import-v3.5-verified-baseline
+2026-10-25T02:58:48.3105994Z  * [new branch]        chore/repo-hygiene-20261019              -> origin/chore/repo-hygiene-20261019
+2026-10-25T02:58:48.3109729Z  * [new branch]        claude/jolly-wozniak-7wl15h-integration  -> origin/claude/jolly-wozniak-7wl15h-integration
+2026-10-25T02:58:48.3113624Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu1-gcrodr-state -> origin/claude/jolly-wozniak-7wl15h-wu1-gcrodr-state
+2026-10-25T02:58:48.3119257Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu10-exponential-scaling -> origin/claude/jolly-wozniak-7wl15h-wu10-exponential-scaling
+2026-10-25T02:58:48.3126206Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu11-attempt-accounting -> origin/claude/jolly-wozniak-7wl15h-wu11-attempt-accounting
+2026-10-25T02:58:48.3133490Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu12-causal-transaction -> origin/claude/jolly-wozniak-7wl15h-wu12-causal-transaction
+2026-10-25T02:58:48.3138429Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu13-holdout-hygiene -> origin/claude/jolly-wozniak-7wl15h-wu13-holdout-hygiene
+2026-10-25T02:58:48.3143537Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu14-order-and-dense -> origin/claude/jolly-wozniak-7wl15h-wu14-order-and-dense
+2026-10-25T02:58:48.3147941Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu15-comparator-fidelity -> origin/claude/jolly-wozniak-7wl15h-wu15-comparator-fidelity
+2026-10-25T02:58:48.3153000Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu16-research-process -> origin/claude/jolly-wozniak-7wl15h-wu16-research-process
+2026-10-25T02:58:48.3160446Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu17-phi-estimate-semantics -> origin/claude/jolly-wozniak-7wl15h-wu17-phi-estimate-semantics
+2026-10-25T02:58:48.3167556Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu18-linearized-certificate -> origin/claude/jolly-wozniak-7wl15h-wu18-linearized-certificate
+2026-10-25T02:58:48.3174142Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu19-forcing-final-pass -> origin/claude/jolly-wozniak-7wl15h-wu19-forcing-final-pass
+2026-10-25T02:58:48.3179913Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu2-krylov-validation -> origin/claude/jolly-wozniak-7wl15h-wu2-krylov-validation
+2026-10-25T02:58:48.3184733Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu20-common-w-parity -> origin/claude/jolly-wozniak-7wl15h-wu20-common-w-parity
+2026-10-25T02:58:48.3189122Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu21-audit0930 -> origin/claude/jolly-wozniak-7wl15h-wu21-audit0930
+2026-10-25T02:58:48.3193142Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu22-reaudit-r2 -> origin/claude/jolly-wozniak-7wl15h-wu22-reaudit-r2
+2026-10-25T02:58:48.3197106Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu23-reaudit-r3 -> origin/claude/jolly-wozniak-7wl15h-wu23-reaudit-r3
+2026-10-25T02:58:48.3201231Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu24-reaudit-r4 -> origin/claude/jolly-wozniak-7wl15h-wu24-reaudit-r4
+2026-10-25T02:58:48.3205289Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu25-stiff-benchmark -> origin/claude/jolly-wozniak-7wl15h-wu25-stiff-benchmark
+2026-10-25T02:58:48.3209843Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu3-inner-forcing -> origin/claude/jolly-wozniak-7wl15h-wu3-inner-forcing
+2026-10-25T02:58:48.3213999Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu4-coefficient-cache -> origin/claude/jolly-wozniak-7wl15h-wu4-coefficient-cache
+2026-10-25T02:58:48.3218017Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu5-phi-action -> origin/claude/jolly-wozniak-7wl15h-wu5-phi-action
+2026-10-25T02:58:48.3222466Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu6a-output-admissibility -> origin/claude/jolly-wozniak-7wl15h-wu6a-output-admissibility
+2026-10-25T02:58:48.3227063Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu6b-clipped-controller -> origin/claude/jolly-wozniak-7wl15h-wu6b-clipped-controller
+2026-10-25T02:58:48.3231812Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu6c-interpolant-check -> origin/claude/jolly-wozniak-7wl15h-wu6c-interpolant-check
+2026-10-25T02:58:48.3235966Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu7-work-counters -> origin/claude/jolly-wozniak-7wl15h-wu7-work-counters
+2026-10-25T02:58:48.3240307Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu8-build-provenance -> origin/claude/jolly-wozniak-7wl15h-wu8-build-provenance
+2026-10-25T02:58:48.3244562Z  * [new branch]        claude/jolly-wozniak-7wl15h-wu9-stage-certificate -> origin/claude/jolly-wozniak-7wl15h-wu9-stage-certificate
+2026-10-25T02:58:48.3248378Z  * [new branch]        claude/nice-dijkstra-208xq0              -> origin/claude/nice-dijkstra-208xq0
+2026-10-25T02:58:48.3251687Z  * [new branch]        codex/vigilode-scientific-validity-v2    -> origin/codex/vigilode-scientific-validity-v2
+2026-10-25T02:58:48.3255020Z  * [new branch]        connectivity/audit2-20260829-base        -> origin/connectivity/audit2-20260829-base
+2026-10-25T02:58:48.3258567Z  * [new branch]        connectivity/audit2-20260829-head        -> origin/connectivity/audit2-20260829-head
+2026-10-25T02:58:48.3262219Z  * [new branch]        connectivity/audit2-matrix-free-20260830-base -> origin/connectivity/audit2-matrix-free-20260830-base
+2026-10-25T02:58:48.3266116Z  * [new branch]        connectivity/audit2-matrix-free-20260830-head -> origin/connectivity/audit2-matrix-free-20260830-head
+2026-10-25T02:58:48.3270185Z  * [new branch]        connectivity/audit2-readiness-20260829-base -> origin/connectivity/audit2-readiness-20260829-base
+2026-10-25T02:58:48.3273858Z  * [new branch]        connectivity/audit2-readiness-20260829-head -> origin/connectivity/audit2-readiness-20260829-head
+2026-10-25T02:58:48.3277516Z  * [new branch]        connectivity/k0-bootstrap-r2-base-20260828 -> origin/connectivity/k0-bootstrap-r2-base-20260828
+2026-10-25T02:58:48.3281577Z  * [new branch]        connectivity/k0-bootstrap-r2-head-20260828 -> origin/connectivity/k0-bootstrap-r2-head-20260828
+2026-10-25T02:58:48.3285533Z  * [new branch]        connectivity/k0-execution-transition-base-20260829 -> origin/connectivity/k0-execution-transition-base-20260829
+2026-10-25T02:58:48.3289990Z  * [new branch]        connectivity/k0-execution-transition-head-20260829 -> origin/connectivity/k0-execution-transition-head-20260829
+2026-10-25T02:58:48.3293967Z  * [new branch]        connectivity/k0-semantic-final-base-20260828 -> origin/connectivity/k0-semantic-final-base-20260828
+2026-10-25T02:58:48.3297724Z  * [new branch]        connectivity/k0-semantic-final-head-20260828 -> origin/connectivity/k0-semantic-final-head-20260828
+2026-10-25T02:58:48.3301598Z  * [new branch]        connectivity/k0-semantic-r3-base-20260828 -> origin/connectivity/k0-semantic-r3-base-20260828
+2026-10-25T02:58:48.3305258Z  * [new branch]        connectivity/k0-semantic-r3-head-20260828 -> origin/connectivity/k0-semantic-r3-head-20260828
+2026-10-25T02:58:48.3309290Z  * [new branch]        connectivity/k0-trust-boundary-base-20260829 -> origin/connectivity/k0-trust-boundary-base-20260829
+2026-10-25T02:58:48.3313136Z  * [new branch]        connectivity/k0-trust-boundary-head-20260829 -> origin/connectivity/k0-trust-boundary-head-20260829
+2026-10-25T02:58:48.3316755Z  * [new branch]        connectivity/mock-base-k0-20260828       -> origin/connectivity/mock-base-k0-20260828
+2026-10-25T02:58:48.3320447Z  * [new branch]        connectivity/mock-head-k0-20260828       -> origin/connectivity/mock-head-k0-20260828
+2026-10-25T02:58:48.3324119Z  * [new branch]        connectivity/original-target-next-20260830-base -> origin/connectivity/original-target-next-20260830-base
+2026-10-25T02:58:48.3328080Z  * [new branch]        connectivity/original-target-next-20260830-head -> origin/connectivity/original-target-next-20260830-head
+2026-10-25T02:58:48.3331891Z  * [new branch]        connector-smoke/base-20260901-1702       -> origin/connector-smoke/base-20260901-1702
+2026-10-25T02:58:48.3335509Z  * [new branch]        delivery/audit2-matrix-free-common-w-reuse-20260830 -> origin/delivery/audit2-matrix-free-common-w-reuse-20260830
+2026-10-25T02:58:48.3339204Z  * [new branch]        docs/diffsol-benchmark                   -> origin/docs/diffsol-benchmark
+2026-10-25T02:58:48.3342368Z  * [new branch]        docs/k0-codex-execution-package-20260827 -> origin/docs/k0-codex-execution-package-20260827
+2026-10-25T02:58:48.3345782Z  * [new branch]        followup/production-frontier-20261023    -> origin/followup/production-frontier-20261023
+2026-10-25T02:58:48.3349518Z  * [new branch]        handoff/a1-inner-tolerance-parity-20260825 -> origin/handoff/a1-inner-tolerance-parity-20260825
+2026-10-25T02:58:48.3353216Z  * [new branch]        handoff/a1-two-arm-authority-receipt-20260825 -> origin/handoff/a1-two-arm-authority-receipt-20260825
+2026-10-25T02:58:48.3357028Z  * [new branch]        handoff/a2-a3-gmres-inner-cycle-givens-20260826 -> origin/handoff/a2-a3-gmres-inner-cycle-givens-20260826
+2026-10-25T02:58:48.3361408Z  * [new branch]        handoff/pm4-task1-content-equivalence-final-20260824 -> origin/handoff/pm4-task1-content-equivalence-final-20260824
+2026-10-25T02:58:48.3365723Z  * [new branch]        handoff/pm4-task1-publication-recovery-20260824 -> origin/handoff/pm4-task1-publication-recovery-20260824
+2026-10-25T02:58:48.3370038Z  * [new branch]        handoff/pm4-task1-r5-cwd-surgical-repair-20260824 -> origin/handoff/pm4-task1-r5-cwd-surgical-repair-20260824
+2026-10-25T02:58:48.3374465Z  * [new branch]        handoff/pm4-task1-r5-cwd-surgical-repair-20260824-canonical -> origin/handoff/pm4-task1-r5-cwd-surgical-repair-20260824-canonical
+2026-10-25T02:58:48.3379267Z  * [new branch]        handoff/pm4-task1-r5-cwd-surgical-repair-final-20260824 -> origin/handoff/pm4-task1-r5-cwd-surgical-repair-final-20260824
+2026-10-25T02:58:48.3383837Z  * [new branch]        handoff/pm4-task1-r5-cwd-surgical-repair-final2-20260824 -> origin/handoff/pm4-task1-r5-cwd-surgical-repair-final2-20260824
+2026-10-25T02:58:48.3388596Z  * [new branch]        handoff/pm4-task1-r5-cwd-surgical-repair-final3-20260824 -> origin/handoff/pm4-task1-r5-cwd-surgical-repair-final3-20260824
+2026-10-25T02:58:48.3393117Z  * [new branch]        handoff/pm4-task1-r5-cwd-surgical-repair-stage-20260824 -> origin/handoff/pm4-task1-r5-cwd-surgical-repair-stage-20260824
+2026-10-25T02:58:48.3396343Z  * [new branch]        main                                     -> origin/main
+2026-10-25T02:58:48.3399047Z  * [new branch]        mock/git-roundtrip-base-20260822         -> origin/mock/git-roundtrip-base-20260822
+2026-10-25T02:58:48.3402120Z  * [new branch]        mock/git-roundtrip-head-20260822         -> origin/mock/git-roundtrip-head-20260822
+2026-10-25T02:58:48.3405548Z  * [new branch]        mock/github-import-pr-push-merge-base-20260823 -> origin/mock/github-import-pr-push-merge-base-20260823
+2026-10-25T02:58:48.3409611Z  * [new branch]        mock/github-import-pr-push-merge-head-20260823 -> origin/mock/github-import-pr-push-merge-head-20260823
+2026-10-25T02:58:48.3413575Z  * [new branch]        planning/vigilode-research-coding-spiral-20260904 -> origin/planning/vigilode-research-coding-spiral-20260904
+2026-10-25T02:58:48.3417096Z  * [new branch]        pr/as04-stage-residual-telemetry         -> origin/pr/as04-stage-residual-telemetry
+2026-10-25T02:58:48.3420389Z  * [new branch]        pr/as05-residual-gain-core               -> origin/pr/as05-residual-gain-core
+2026-10-25T02:58:48.3423140Z  * [new branch]        pr/ex01-pexprb-own-step                  -> origin/pr/ex01-pexprb-own-step
+2026-10-25T02:58:48.3425950Z  * [new branch]        pr/fix-jvp-only-direct-config            -> origin/pr/fix-jvp-only-direct-config
+2026-10-25T02:58:48.3429245Z  * [new branch]        pr/ht01-homotopy-client-contract         -> origin/pr/ht01-homotopy-client-contract
+2026-10-25T02:58:48.3432306Z  * [new branch]        pr/ht02-homotopy-parallel-pilot          -> origin/pr/ht02-homotopy-parallel-pilot
+2026-10-25T02:58:48.3435164Z  * [new branch]        pr/lp01-collective-model                 -> origin/pr/lp01-collective-model
+2026-10-25T02:58:48.3437857Z  * [new branch]        pr/lp02-packet-window                    -> origin/pr/lp02-packet-window
+2026-10-25T02:58:48.3440748Z  * [new branch]        pr/lp03-damped-moments                   -> origin/pr/lp03-damped-moments
+2026-10-25T02:58:48.3443458Z  * [new branch]        pr/lp04-packet-trajectory                -> origin/pr/lp04-packet-trajectory
+2026-10-25T02:58:48.3446161Z  * [new branch]        pr/lp09-packet-benchmark                 -> origin/pr/lp09-packet-benchmark
+2026-10-25T02:58:48.3449207Z  * [new branch]        pr/lp10-independent-decision             -> origin/pr/lp10-independent-decision
+2026-10-25T02:58:48.3452068Z  * [new branch]        pr/me01-full-cost-judgement              -> origin/pr/me01-full-cost-judgement
+2026-10-25T02:58:48.3454946Z  * [new branch]        pr/pc01-right-preconditioner             -> origin/pr/pc01-right-preconditioner
+2026-10-25T02:58:48.3457962Z  * [new branch]        pr/py01-laguerre-component-export        -> origin/pr/py01-laguerre-component-export
+2026-10-25T02:58:48.3461283Z  * [new branch]        pr/py02-laguerre-adjoint-bound           -> origin/pr/py02-laguerre-adjoint-bound
+2026-10-25T02:58:48.3464239Z  * [new branch]        pr/py03-single-backend-router            -> origin/pr/py03-single-backend-router
+2026-10-25T02:58:48.3467065Z  * [new branch]        pr/py04-fused-normalization              -> origin/pr/py04-fused-normalization
+2026-10-25T02:58:48.3470081Z  * [new branch]        pr/py05-leja-total-certificate           -> origin/pr/py05-leja-total-certificate
+2026-10-25T02:58:48.3473008Z  * [new branch]        pr/sp02-krylov-workspace-caller          -> origin/pr/sp02-krylov-workspace-caller
+2026-10-25T02:58:48.3475865Z  * [new branch]        pr/sp04-zero-start-recycling             -> origin/pr/sp04-zero-start-recycling
+2026-10-25T02:58:48.3479065Z  * [new branch]        probe/audit2-connectivity-base-20260830  -> origin/probe/audit2-connectivity-base-20260830
+2026-10-25T02:58:48.3482345Z  * [new branch]        probe/audit2-connectivity-head-20260830  -> origin/probe/audit2-connectivity-head-20260830
+2026-10-25T02:58:48.3485847Z  * [new branch]        probe/audit2-reusable-transaction-20260830-base -> origin/probe/audit2-reusable-transaction-20260830-base
+2026-10-25T02:58:48.3489821Z  * [new branch]        probe/audit2-reusable-transaction-20260830-head -> origin/probe/audit2-reusable-transaction-20260830-head
+2026-10-25T02:58:48.3492853Z  * [new branch]        production/a1-api                        -> origin/production/a1-api
+2026-10-25T02:58:48.3495308Z  * [new branch]        production/a1-defects                    -> origin/production/a1-defects
+2026-10-25T02:58:48.3497835Z  * [new branch]        production/a2-wfiltered                  -> origin/production/a2-wfiltered
+2026-10-25T02:58:48.3574758Z  * [new branch]        production/b1-lagged                     -> origin/production/b1-lagged
+2026-10-25T02:58:48.3579237Z  * [new branch]        production/b1b-gmres                     -> origin/production/b1b-gmres
+2026-10-25T02:58:48.3583250Z  * [new branch]        production/b1c-staleness                 -> origin/production/b1c-staleness
+2026-10-25T02:58:48.3587455Z  * [new branch]        production/c1-transaction                -> origin/production/c1-transaction
+2026-10-25T02:58:48.3592007Z  * [new branch]        production/ci-docs                       -> origin/production/ci-docs
+2026-10-25T02:58:48.3595038Z  * [new branch]        production/e1-bench                      -> origin/production/e1-bench
+2026-10-25T02:58:48.3597605Z  * [new branch]        production/e1b-dense                     -> origin/production/e1b-dense
+2026-10-25T02:58:48.3600518Z  * [new branch]        production/h-checker                     -> origin/production/h-checker
+2026-10-25T02:58:48.3603051Z  * [new branch]        production/h-hygiene                     -> origin/production/h-hygiene
+2026-10-25T02:58:48.3605535Z  * [new branch]        production/p0-api                        -> origin/production/p0-api
+2026-10-25T02:58:48.3607995Z  * [new branch]        production/p0-atol                       -> origin/production/p0-atol
+2026-10-25T02:58:48.3610818Z  * [new branch]        production/p0-events                     -> origin/production/p0-events
+2026-10-25T02:58:48.3613343Z  * [new branch]        production/p0-facade                     -> origin/production/p0-facade
+2026-10-25T02:58:48.3615903Z  * [new branch]        production/p0-fastdense                  -> origin/production/p0-fastdense
+2026-10-25T02:58:48.3618603Z  * [new branch]        production/t-verify                      -> origin/production/t-verify
+2026-10-25T02:58:48.3621347Z  * [new branch]        production/vigilode-plan-20261021        -> origin/production/vigilode-plan-20261021
+2026-10-25T02:58:48.3624126Z  * [new branch]        production/w2-final-fix                  -> origin/production/w2-final-fix
+2026-10-25T02:58:48.3626703Z  * [new branch]        production/w3-final-fix                  -> origin/production/w3-final-fix
+2026-10-25T02:58:48.3629348Z  * [new branch]        production/w3-flakes                     -> origin/production/w3-flakes
+2026-10-25T02:58:48.3632214Z  * [new branch]        production/wave1-integration             -> origin/production/wave1-integration
+2026-10-25T02:58:48.3635051Z  * [new branch]        production/wave2-integration             -> origin/production/wave2-integration
+2026-10-25T02:58:48.3637908Z  * [new branch]        production/wave3-integration             -> origin/production/wave3-integration
+2026-10-25T02:58:48.3641151Z  * [new branch]        research/a1-inner-tolerance-parity       -> origin/research/a1-inner-tolerance-parity
+2026-10-25T02:58:48.3644155Z  * [new branch]        research/a1-post-a2a3-kernel-rerun       -> origin/research/a1-post-a2a3-kernel-rerun
+2026-10-25T02:58:48.3647257Z  * [new branch]        research/a2-a3-gmres-inner-cycle-givens  -> origin/research/a2-a3-gmres-inner-cycle-givens
+2026-10-25T02:58:48.3650593Z  * [new branch]        research/adaptive-causal-20261023        -> origin/research/adaptive-causal-20261023
+2026-10-25T02:58:48.3653879Z  * [new branch]        research/all-dag-completion-20261018     -> origin/research/all-dag-completion-20261018
+2026-10-25T02:58:48.3657816Z  * [new branch]        research/audit2-bateman-local-execution-orchestrator-20260831 -> origin/research/audit2-bateman-local-execution-orchestrator-20260831
+2026-10-25T02:58:48.3662209Z  * [new branch]        research/audit2-matrix-free-common-w-20260830 -> origin/research/audit2-matrix-free-common-w-20260830
+2026-10-25T02:58:48.3665871Z  * [new branch]        research/audit2-matrix-free-w-20260830   -> origin/research/audit2-matrix-free-w-20260830
+2026-10-25T02:58:48.3669560Z  * [new branch]        research/audit2-original-target-bridge-20260830 -> origin/research/audit2-original-target-bridge-20260830
+2026-10-25T02:58:48.3672989Z  * [new branch]        research/audit2-output-policy-20260829   -> origin/research/audit2-output-policy-20260829
+2026-10-25T02:58:48.3676888Z  * [new branch]        research/audit2-real-client-authority-construction-20260830 -> origin/research/audit2-real-client-authority-construction-20260830
+2026-10-25T02:58:48.3682016Z  * [new branch]        research/audit2-reusable-preconditioner-transactional-step-20260830 -> origin/research/audit2-reusable-preconditioner-transactional-step-20260830
+2026-10-25T02:58:48.3687111Z  * [new branch]        research/audit2-stage-certificate-repair-handoff-20260831 -> origin/research/audit2-stage-certificate-repair-handoff-20260831
+2026-10-25T02:58:48.3691435Z  * [new branch]        research/audit2-stage-certificate-telemetry-20260831 -> origin/research/audit2-stage-certificate-telemetry-20260831
+2026-10-25T02:58:48.3695395Z  * [new branch]        research/audit2-stage-certificate-worktree-20260831 -> origin/research/audit2-stage-certificate-worktree-20260831
+2026-10-25T02:58:48.3698991Z  * [new branch]        research/banded-exact-reuse-20261020     -> origin/research/banded-exact-reuse-20261020
+2026-10-25T02:58:48.3701923Z  * [new branch]        research/bassrei-port-20261021           -> origin/research/bassrei-port-20261021
+2026-10-25T02:58:48.3704949Z  * [new branch]        research/benchmark-results-20261019-dual -> origin/research/benchmark-results-20261019-dual
+2026-10-25T02:58:48.3708401Z  * [new branch]        research/candidate-reconsideration-20261024 -> origin/research/candidate-reconsideration-20261024
+2026-10-25T02:58:48.3711615Z  * [new branch]        research/cloud-completion-20261018       -> origin/research/cloud-completion-20261018
+2026-10-25T02:58:48.3714567Z  * [new branch]        research/coupled-economy-20261020        -> origin/research/coupled-economy-20261020
+2026-10-25T02:58:48.3717710Z  * [new branch]        research/coupled-matrix-free-rust-20261020 -> origin/research/coupled-matrix-free-rust-20261020
+2026-10-25T02:58:48.3721269Z  * [new branch]        research/coupled-stage-adoption-20261022 -> origin/research/coupled-stage-adoption-20261022
+2026-10-25T02:58:48.3724443Z  * [new branch]        research/cumulative-evidence-20261020    -> origin/research/cumulative-evidence-20261020
+2026-10-25T02:58:48.3727645Z  * [new branch]        research/d2-stage-domain-20261024        -> origin/research/d2-stage-domain-20261024
+2026-10-25T02:58:48.3730897Z  * [new branch]        research/d3-dense-certificate-20261024   -> origin/research/d3-dense-certificate-20261024
+2026-10-25T02:58:48.3733963Z  * [new branch]        research/d4-effect-journal-20261025      -> origin/research/d4-effect-journal-20261025
+2026-10-25T02:58:48.3737033Z  * [new branch]        research/d5-callback-contract-20261025   -> origin/research/d5-callback-contract-20261025
+2026-10-25T02:58:48.3740225Z  * [new branch]        research/domain-admission-20261024       -> origin/research/domain-admission-20261024
+2026-10-25T02:58:48.3743530Z  * [new branch]        research/e4-fresh-clone-build-reproducibility -> origin/research/e4-fresh-clone-build-reproducibility
+2026-10-25T02:58:48.3747077Z  * [new branch]        research/frozen-full-e-shadow-economics-v3.6 -> origin/research/frozen-full-e-shadow-economics-v3.6
+2026-10-25T02:58:48.3750611Z  * [new branch]        research/general-ode-selection-20261024  -> origin/research/general-ode-selection-20261024
+2026-10-25T02:58:48.3753838Z  * [new branch]        research/hybrid-structure-ad-20261020    -> origin/research/hybrid-structure-ad-20261020
+2026-10-25T02:58:48.3757260Z  * [new branch]        research/k0-stage-telemetry-integration-20260827 -> origin/research/k0-stage-telemetry-integration-20260827
+2026-10-25T02:58:48.3760849Z  * [new branch]        research/local-frontier-20261024         -> origin/research/local-frontier-20261024
+2026-10-25T02:58:48.3763917Z  * [new branch]        research/midcheck-three-solver-20261020  -> origin/research/midcheck-three-solver-20261020
+2026-10-25T02:58:48.3767024Z  * [new branch]        research/ncp-followup-fvm-20261021       -> origin/research/ncp-followup-fvm-20261021
+2026-10-25T02:58:48.3770493Z  * [new branch]        research/nonstiff-explicit-20261023      -> origin/research/nonstiff-explicit-20261023
+2026-10-25T02:58:48.3773946Z  * [new branch]        research/orchestration-sandbox-20261022-vigilode -> origin/research/orchestration-sandbox-20261022-vigilode
+2026-10-25T02:58:48.3777718Z  * [new branch]        research/output-policy-assessment-20260829 -> origin/research/output-policy-assessment-20260829
+2026-10-25T02:58:48.3781191Z  * [new branch]        research/production-frontier-20261023    -> origin/research/production-frontier-20261023
+2026-10-25T02:58:48.3784371Z  * [new branch]        research/production-hardening-20261023   -> origin/research/production-hardening-20261023
+2026-10-25T02:58:48.3787487Z  * [new branch]        research/production-review-20261022      -> origin/research/production-review-20261022
+2026-10-25T02:58:48.3790632Z  * [new branch]        research/promotion-theory-20261011       -> origin/research/promotion-theory-20261011
+2026-10-25T02:58:48.3793609Z  * [new branch]        research/rvj-full-history-20261004       -> origin/research/rvj-full-history-20261004
+2026-10-25T02:58:48.3797314Z  * [new branch]        research/timing-replication-continuation-transaction-v3.7 -> origin/research/timing-replication-continuation-transaction-v3.7
+2026-10-25T02:58:48.3801344Z  * [new branch]        research/v1-adaptive-admission-20261024  -> origin/research/v1-adaptive-admission-20261024
+2026-10-25T02:58:48.3804390Z  * [new branch]        research/v1-integer-gate-20261024        -> origin/research/v1-integer-gate-20261024
+2026-10-25T02:58:48.3807324Z  * [new branch]        research/v1-portable-norm-20261024       -> origin/research/v1-portable-norm-20261024
+2026-10-25T02:58:48.3810666Z  * [new branch]        research/v1-readiness-contract-20261023  -> origin/research/v1-readiness-contract-20261023
+2026-10-25T02:58:48.3814318Z  * [new branch]        research/v37-continuation-transaction-implementation -> origin/research/v37-continuation-transaction-implementation
+2026-10-25T02:58:48.3817929Z  * [new branch]        research/v37-timing-authority-validator  -> origin/research/v37-timing-authority-validator
+2026-10-25T02:58:48.3821693Z  * [new branch]        research/v38d-exploratory-benchmark-substrate -> origin/research/v38d-exploratory-benchmark-substrate
+2026-10-25T02:58:48.3825700Z  * [new branch]        research/v38d-high-entropy-performance-tournament-design -> origin/research/v38d-high-entropy-performance-tournament-design
+2026-10-25T02:58:48.3830101Z  * [new branch]        research/v38d-high-entropy-performance-tournament-plan -> origin/research/v38d-high-entropy-performance-tournament-plan
+2026-10-25T02:58:48.3833492Z  * [new branch]        results/local-e1b-33e60cf                -> origin/results/local-e1b-33e60cf
+2026-10-25T02:58:48.3836140Z  * [new branch]        results/local-wave2-08fd052              -> origin/results/local-wave2-08fd052
+2026-10-25T02:58:48.3839082Z  * [new branch]        results/local-wave3-4945683              -> origin/results/local-wave3-4945683
+2026-10-25T02:58:48.3841892Z  * [new branch]        results/ncp-followup-fvm-5fd6e45         -> origin/results/ncp-followup-fvm-5fd6e45
+2026-10-25T02:58:48.3845028Z  * [new branch]        scratch/a1-two-arm-local-snapshot-20260826 -> origin/scratch/a1-two-arm-local-snapshot-20260826
+2026-10-25T02:58:48.3848068Z  * [new branch]        tmp/e4-tree-api-test-20260825            -> origin/tmp/e4-tree-api-test-20260825
+2026-10-25T02:58:48.3851106Z  * [new branch]        tmp/e4-tree-api-test-20260825-b          -> origin/tmp/e4-tree-api-test-20260825-b
+2026-10-25T02:58:48.3853900Z  * [new branch]        tmp/e4-tree-api-test-20260825-c          -> origin/tmp/e4-tree-api-test-20260825-c
+2026-10-25T02:58:48.3856694Z  * [new branch]        tmp/e4-tree-api-test-20260825-d          -> origin/tmp/e4-tree-api-test-20260825-d
+2026-10-25T02:58:48.3859605Z  * [new branch]        tmp/e4-tree-api-test-20260825-e          -> origin/tmp/e4-tree-api-test-20260825-e
+2026-10-25T02:58:48.3862405Z  * [new branch]        tmp/e4-tree-api-test-20260825-f          -> origin/tmp/e4-tree-api-test-20260825-f
+2026-10-25T02:58:48.3865375Z  * [new branch]        transport/audit2-matrix-free-w-20260830  -> origin/transport/audit2-matrix-free-w-20260830
+2026-10-25T02:58:48.3868626Z  * [new branch]        transport/v37-continuation-pr4-20260822  -> origin/transport/v37-continuation-pr4-20260822
+2026-10-25T02:58:48.3871446Z  * [new ref]           1672f99b8fe2736e771d7f10edb012db3411bcf5 -> pull/88/merge
+2026-10-25T02:58:48.3875269Z ##[endgroup]
+2026-10-25T02:58:48.3876671Z ##[group]Determining the checkout info
+2026-10-25T02:58:48.3878551Z ##[endgroup]
+2026-10-25T02:58:48.3879591Z [command]/usr/bin/git sparse-checkout disable
+2026-10-25T02:58:48.3882640Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-25T02:58:48.3886156Z ##[group]Checking out the ref
+2026-10-25T02:58:48.3887610Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/88/merge
+2026-10-25T02:58:49.3544689Z Updating files:  55% (7839/14140)
+2026-10-25T02:58:49.4133927Z Updating files:  56% (7919/14140)
+2026-10-25T02:58:49.4314071Z Updating files:  57% (8060/14140)
+2026-10-25T02:58:49.5028800Z Updating files:  58% (8202/14140)
+2026-10-25T02:58:49.5093521Z Updating files:  59% (8343/14140)
+2026-10-25T02:58:49.5172330Z Updating files:  60% (8484/14140)
+2026-10-25T02:58:49.5340065Z Updating files:  61% (8626/14140)
+2026-10-25T02:58:49.5401386Z Updating files:  62% (8767/14140)
+2026-10-25T02:58:49.5494191Z Updating files:  63% (8909/14140)
+2026-10-25T02:58:49.7789688Z Updating files:  64% (9050/14140)
+2026-10-25T02:58:49.8131975Z Updating files:  65% (9191/14140)
+2026-10-25T02:58:50.0047462Z Updating files:  66% (9333/14140)
+2026-10-25T02:58:50.0206720Z Updating files:  67% (9474/14140)
+2026-10-25T02:58:50.0304755Z Updating files:  68% (9616/14140)
+2026-10-25T02:58:50.0526754Z Updating files:  69% (9757/14140)
+2026-10-25T02:58:50.0671097Z Updating files:  70% (9898/14140)
+2026-10-25T02:58:50.0811236Z Updating files:  71% (10040/14140)
+2026-10-25T02:58:50.0925769Z Updating files:  72% (10181/14140)
+2026-10-25T02:58:50.1182564Z Updating files:  73% (10323/14140)
+2026-10-25T02:58:50.1394548Z Updating files:  74% (10464/14140)
+2026-10-25T02:58:50.1816100Z Updating files:  75% (10605/14140)
+2026-10-25T02:58:50.2235472Z Updating files:  76% (10747/14140)
+2026-10-25T02:58:50.2290102Z Updating files:  77% (10888/14140)
+2026-10-25T02:58:50.2365214Z Updating files:  78% (11030/14140)
+2026-10-25T02:58:50.2431569Z Updating files:  79% (11171/14140)
+2026-10-25T02:58:50.2492932Z Updating files:  80% (11312/14140)
+2026-10-25T02:58:50.2555770Z Updating files:  81% (11454/14140)
+2026-10-25T02:58:50.2681918Z Updating files:  82% (11595/14140)
+2026-10-25T02:58:50.2787750Z Updating files:  83% (11737/14140)
+2026-10-25T02:58:50.2969540Z Updating files:  84% (11878/14140)
+2026-10-25T02:58:50.3170428Z Updating files:  85% (12019/14140)
+2026-10-25T02:58:50.3305295Z Updating files:  86% (12161/14140)
+2026-10-25T02:58:50.3425833Z Updating files:  86% (12253/14140)
+2026-10-25T02:58:50.3738359Z Updating files:  87% (12302/14140)
+2026-10-25T02:58:50.3999210Z Updating files:  88% (12444/14140)
+2026-10-25T02:58:50.4177901Z Updating files:  89% (12585/14140)
+2026-10-25T02:58:50.4256181Z Updating files:  90% (12726/14140)
+2026-10-25T02:58:50.4325487Z Updating files:  91% (12868/14140)
+2026-10-25T02:58:50.4529658Z Updating files:  92% (13009/14140)
+2026-10-25T02:58:50.4874688Z Updating files:  93% (13151/14140)
+2026-10-25T02:58:50.5139722Z Updating files:  94% (13292/14140)
+2026-10-25T02:58:50.6220871Z Updating files:  95% (13433/14140)
+2026-10-25T02:58:50.6949261Z Updating files:  96% (13575/14140)
+2026-10-25T02:58:50.7437239Z Updating files:  97% (13716/14140)
+2026-10-25T02:58:50.7556016Z Updating files:  98% (13858/14140)
+2026-10-25T02:58:50.7741842Z Updating files:  99% (13999/14140)
+2026-10-25T02:58:50.7742590Z Updating files: 100% (14140/14140)
+2026-10-25T02:58:50.7743253Z Updating files: 100% (14140/14140), done.
+2026-10-25T02:58:50.7887099Z Note: switching to 'refs/remotes/pull/88/merge'.
+2026-10-25T02:58:50.7887631Z 
+2026-10-25T02:58:50.7888049Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-25T02:58:50.7889156Z changes and commit them, and you can discard any commits you make in this
+2026-10-25T02:58:50.7889964Z state without impacting any branches by switching back to a branch.
+2026-10-25T02:58:50.7890573Z 
+2026-10-25T02:58:50.7890837Z If you want to create a new branch to retain commits you create, you may
+2026-10-25T02:58:50.7891429Z do so (now or later) by using -c with the switch command. Example:
+2026-10-25T02:58:50.7891768Z 
+2026-10-25T02:58:50.7891900Z   git switch -c <new-branch-name>
+2026-10-25T02:58:50.7892126Z 
+2026-10-25T02:58:50.7892252Z Or undo this operation with:
+2026-10-25T02:58:50.7892467Z 
+2026-10-25T02:58:50.7892580Z   git switch -
+2026-10-25T02:58:50.7892745Z 
+2026-10-25T02:58:50.7893026Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-25T02:58:50.7893430Z 
+2026-10-25T02:58:50.7893891Z HEAD is now at 1672f99b Merge 8c2a18c2c4706056e9bf9c7132aae419b787e5b3 into 3c8877ea0409495752dcfab42426e679e3ba92d3
+2026-10-25T02:58:50.8016590Z ##[endgroup]
+2026-10-25T02:58:50.8072800Z [command]/usr/bin/git log -1 --format=%H
+2026-10-25T02:58:50.8098728Z 1672f99b8fe2736e771d7f10edb012db3411bcf5
+2026-10-25T02:58:50.8365794Z ##[group]Run actions/setup-python@v5
+2026-10-25T02:58:50.8366093Z with:
+2026-10-25T02:58:50.8366308Z   python-version: 3.13
+2026-10-25T02:58:50.8366542Z   check-latest: false
+2026-10-25T02:58:50.8369502Z   token: ***
+2026-10-25T02:58:50.8369732Z   update-environment: true
+2026-10-25T02:58:50.8369991Z   allow-prereleases: false
+2026-10-25T02:58:50.8370231Z   freethreaded: false
+2026-10-25T02:58:50.8370457Z ##[endgroup]
+2026-10-25T02:58:50.9712996Z ##[group]Installed versions
+2026-10-25T02:58:50.9817120Z (node:2332) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-10-25T02:58:50.9818072Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-10-25T02:58:50.9819101Z Successfully set up CPython (3.13.16)
+2026-10-25T02:58:50.9819974Z ##[endgroup]
+2026-10-25T02:58:51.0013732Z ##[group]Run set -euo pipefail
+2026-10-25T02:58:51.0014101Z [36;1mset -euo pipefail[0m
+2026-10-25T02:58:51.0014427Z [36;1mpython3 tools/test_check_research_node.py -v[0m
+2026-10-25T02:58:51.0014842Z [36;1mpython3 tools/test_check_authority_refs.py -v[0m
+2026-10-25T02:58:51.0237143Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-25T02:58:51.0237526Z env:
+2026-10-25T02:58:51.0237814Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+2026-10-25T02:58:51.0238572Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+2026-10-25T02:58:51.0239017Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+2026-10-25T02:58:51.0239397Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+2026-10-25T02:58:51.0239786Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+2026-10-25T02:58:51.0240177Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+2026-10-25T02:58:51.0240530Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-25T02:58:51.0240837Z ##[endgroup]
+2026-10-25T02:58:52.1479168Z test_bad_verdict_fails (__main__.ResearchNodeTests.test_bad_verdict_fails) ... ok
+2026-10-25T02:58:52.2346816Z test_edited_ledger_row_fails (__main__.ResearchNodeTests.test_edited_ledger_row_fails) ... ok
+2026-10-25T02:58:52.3932345Z test_exempt_node_needs_no_preregistration_but_still_needs_a_ledger_row (__main__.ResearchNodeTests.test_exempt_node_needs_no_preregistration_but_still_needs_a_ledger_row) ... ok
+2026-10-25T02:58:52.5509666Z test_exemption_needs_a_reason_and_a_tracked_node (__main__.ResearchNodeTests.test_exemption_needs_a_reason_and_a_tracked_node) ... ok
+2026-10-25T02:58:52.6347005Z test_missing_preregistration_fails (__main__.ResearchNodeTests.test_missing_preregistration_fails) ... ok
+2026-10-25T02:58:52.7165182Z test_new_node_without_ledger_row_fails (__main__.ResearchNodeTests.test_new_node_without_ledger_row_fails) ... ok
+2026-10-25T02:58:52.7989552Z test_new_node_without_numeric_results_fails (__main__.ResearchNodeTests.test_new_node_without_numeric_results_fails) ... ok
+2026-10-25T02:58:52.8974708Z test_nodes_present_when_ledger_was_introduced_are_frozen (__main__.ResearchNodeTests.test_nodes_present_when_ledger_was_introduced_are_frozen) ... ok
+2026-10-25T02:58:52.9584993Z test_output_hash_mismatch_fails (__main__.ResearchNodeTests.test_output_hash_mismatch_fails) ... ok
+2026-10-25T02:58:53.1042281Z test_output_rebound_by_superseding_row_checks_only_the_later_digest (__main__.ResearchNodeTests.test_output_rebound_by_superseding_row_checks_only_the_later_digest) ... ok
+2026-10-25T02:58:53.1849254Z test_removed_ledger_row_fails (__main__.ResearchNodeTests.test_removed_ledger_row_fails) ... ok
+2026-10-25T02:58:53.2452618Z test_schema_rejects_unknown_field_and_dangling_supersedes (__main__.ResearchNodeTests.test_schema_rejects_unknown_field_and_dangling_supersedes) ... ok
+2026-10-25T02:58:53.4003287Z test_stall_rule_allows_two_and_is_broken_by_a_numeric_result (__main__.ResearchNodeTests.test_stall_rule_allows_two_and_is_broken_by_a_numeric_result) ... ok
+2026-10-25T02:58:53.4842578Z test_stall_rule_triggers_on_third_node_without_numeric_result (__main__.ResearchNodeTests.test_stall_rule_triggers_on_third_node_without_numeric_result) ... ok
+2026-10-25T02:58:53.5457007Z test_unrecorded_command_cannot_pass (__main__.ResearchNodeTests.test_unrecorded_command_cannot_pass) ... ok
+2026-10-25T02:58:53.6281036Z test_valid_new_node_passes (__main__.ResearchNodeTests.test_valid_new_node_passes) ... ok
+2026-10-25T02:58:53.6281716Z 
+2026-10-25T02:58:53.6281995Z ----------------------------------------------------------------------
+2026-10-25T02:58:53.6282587Z Ran 16 tests in 1.664s
+2026-10-25T02:58:53.6282807Z 
+2026-10-25T02:58:53.6282934Z OK
+2026-10-25T02:58:53.8295310Z test_allowlist_entry_without_reason_fails (__main__.AuthorityRefsTests.test_allowlist_entry_without_reason_fails) ... ok
+2026-10-25T02:58:53.9333713Z test_allowlisted_sha_passes (__main__.AuthorityRefsTests.test_allowlisted_sha_passes) ... ok
+2026-10-25T02:58:54.0332244Z test_missing_sha_in_json_key_fails (__main__.AuthorityRefsTests.test_missing_sha_in_json_key_fails) ... ok
+2026-10-25T02:58:54.1460080Z test_non_authority_context_and_sha256_and_trees_are_ignored (__main__.AuthorityRefsTests.test_non_authority_context_and_sha256_and_trees_are_ignored) ... ok
+2026-10-25T02:58:54.3259456Z test_paths_limits_scope (__main__.AuthorityRefsTests.test_paths_limits_scope) ... ok
+2026-10-25T02:58:54.4321959Z test_reachable_sha_passes (__main__.AuthorityRefsTests.test_reachable_sha_passes) ... ok
+2026-10-25T02:58:54.5343169Z test_unreachable_local_only_sha_fails (__main__.AuthorityRefsTests.test_unreachable_local_only_sha_fails) ... ok
+2026-10-25T02:58:54.6279779Z test_untracked_files_are_not_scanned (__main__.AuthorityRefsTests.test_untracked_files_are_not_scanned) ... ok
+2026-10-25T02:58:54.6280515Z 
+2026-10-25T02:58:54.6280770Z ----------------------------------------------------------------------
+2026-10-25T02:58:54.6281322Z Ran 8 tests in 0.901s
+2026-10-25T02:58:54.6281548Z 
+2026-10-25T02:58:54.6281699Z OK
+2026-10-25T02:58:54.7905167Z ##[group]Run set -euo pipefail
+2026-10-25T02:58:54.7905505Z [36;1mset -euo pipefail[0m
+2026-10-25T02:58:54.7905816Z [36;1mif [[ "pull_request" == "pull_request" ]]; then[0m
+2026-10-25T02:58:54.7906274Z [36;1m  python3 tools/check-research-node.py --base "origin/${BASE_REF}"[0m
+2026-10-25T02:58:54.7906665Z [36;1melse[0m
+2026-10-25T02:58:54.7906908Z [36;1m  python3 tools/check-research-node.py[0m
+2026-10-25T02:58:54.7907225Z [36;1mfi[0m
+2026-10-25T02:58:54.7970917Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-25T02:58:54.7971282Z env:
+2026-10-25T02:58:54.7971558Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+2026-10-25T02:58:54.7972012Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+2026-10-25T02:58:54.7972463Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+2026-10-25T02:58:54.7972862Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+2026-10-25T02:58:54.7973302Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+2026-10-25T02:58:54.7973701Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+2026-10-25T02:58:54.7974236Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-25T02:58:54.7974527Z   BASE_REF: research/d4-effect-journal-20261025
+2026-10-25T02:58:54.7974828Z ##[endgroup]
+2026-10-25T02:58:57.1056425Z check-research-node: PASS (169 ledger rows, base=origin/research/d4-effect-journal-20261025, new nodes=['d5_callback_contract_20261025'])
+2026-10-25T02:58:57.1180039Z ##[group]Run set -euo pipefail
+2026-10-25T02:58:57.1180397Z [36;1mset -euo pipefail[0m
+2026-10-25T02:58:57.1180698Z [36;1mpython3 tools/check-authority-refs.py[0m
+2026-10-25T02:58:57.1243067Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-10-25T02:58:57.1243419Z env:
+2026-10-25T02:58:57.1243692Z   pythonLocation: /opt/hostedtoolcache/Python/3.13.16/x64
+2026-10-25T02:58:57.1244162Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib/pkgconfig
+2026-10-25T02:58:57.1244625Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+2026-10-25T02:58:57.1245027Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+2026-10-25T02:58:57.1245449Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.13.16/x64
+2026-10-25T02:58:57.1245848Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.13.16/x64/lib
+2026-10-25T02:58:57.1246193Z   PYTHONDONTWRITEBYTECODE: 1
+2026-10-25T02:58:57.1246440Z ##[endgroup]
+2026-10-25T02:59:16.5994170Z FAIL: research/adaptive_causal_20261023/ARTIFACT_MANIFEST.json:4: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [native_commit]
+2026-10-25T02:59:16.5996529Z FAIL: research/adaptive_causal_20261023/CAUSAL_COMPLETION.json:36: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [final_benchmark_source]
+2026-10-25T02:59:16.5997992Z FAIL: research/adaptive_causal_20261023/DECISIONS.json:5: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [first_native_commit]
+2026-10-25T02:59:16.5999512Z FAIL: research/adaptive_causal_20261023/DECISIONS.json:6: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [final_native_commit]
+2026-10-25T02:59:16.6000643Z FAIL: research/adaptive_causal_20261023/DECISIONS.json:5: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [campaigns.source_commit]
+2026-10-25T02:59:16.6001820Z FAIL: research/adaptive_causal_20261023/DECISIONS.json:6: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [campaigns.source_commit]
+2026-10-25T02:59:16.6002951Z FAIL: research/adaptive_causal_20261023/DECISIONS.json:5: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [campaigns.source_commit]
+2026-10-25T02:59:16.6004046Z FAIL: research/adaptive_causal_20261023/DECISIONS.json:5: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [campaigns.source_commit]
+2026-10-25T02:59:16.6005106Z FAIL: research/adaptive_causal_20261023/NEXT_STEPS.json:3: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6006224Z FAIL: research/adaptive_causal_20261023/PUBLISH_MAP.json:10: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [mappings.local_evidence_commit]
+2026-10-25T02:59:16.6007461Z FAIL: research/adaptive_causal_20261023/PUBLISH_MAP.json:16: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [mappings.local_evidence_commit]
+2026-10-25T02:59:16.6009077Z FAIL: research/adaptive_causal_20261023/PUBLISH_MAP.json:22: 910dc3860b26739ba3d8330c157d5b2082899f18 is missing (no remote branch contains it) [mappings.local_evidence_commit]
+2026-10-25T02:59:16.6011021Z FAIL: research/adaptive_causal_20261023/REPORT_KO.md:13: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [출발점은 `14c74978b93339a79d7228a324fa77552dae548e`다. 이번의 첫 native 구현은 `548526add83a38a996875b3bd2f3cd3357465ed6`, 기본 explic]
+2026-10-25T02:59:16.6013000Z FAIL: research/adaptive_causal_20261023/REPORT_KO.md:13: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [출발점은 `14c74978b93339a79d7228a324fa77552dae548e`다. 이번의 첫 native 구현은 `548526add83a38a996875b3bd2f3cd3357465ed6`, 기본 explic]
+2026-10-25T02:59:16.6015090Z FAIL: research/adaptive_causal_20261023/REVIEW.json:6: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [reviewed_source_commit]
+2026-10-25T02:59:16.6016277Z FAIL: research/adaptive_causal_20261023/REVIEW.json:6: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [reviewed_execution_evidence.native_runs.source_commit]
+2026-10-25T02:59:16.6017555Z FAIL: research/adaptive_causal_20261023/REVIEW.json:202: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [reviewed_execution_evidence.native_runs.source_commit]
+2026-10-25T02:59:16.6019204Z FAIL: research/adaptive_causal_20261023/REVIEW.json:202: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [reviewed_execution_evidence.native_runs.source_commit]
+2026-10-25T02:59:16.6020527Z FAIL: research/adaptive_causal_20261023/REVIEW.json:202: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [benchmark_and_report_review.reviewed_campaigns.source_commit]
+2026-10-25T02:59:16.6021861Z FAIL: research/adaptive_causal_20261023/REVIEW.json:202: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [benchmark_and_report_review.reviewed_campaigns.source_commit]
+2026-10-25T02:59:16.6023181Z FAIL: research/adaptive_causal_20261023/REVIEW.json:202: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [benchmark_and_report_review.reviewed_campaigns.source_commit]
+2026-10-25T02:59:16.6024501Z FAIL: research/adaptive_causal_20261023/REVIEW.json:6: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [benchmark_and_report_review.reviewed_campaigns.source_commit]
+2026-10-25T02:59:16.6025748Z FAIL: research/adaptive_causal_20261023/REVIEW.json:202: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [source_followup.previous_native_commit]
+2026-10-25T02:59:16.6027010Z FAIL: research/adaptive_causal_20261023/REVIEW.json:202: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [publication_metadata_review.mappings.local_evidence_commit]
+2026-10-25T02:59:16.6028540Z FAIL: research/adaptive_causal_20261023/REVIEW.json:6: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [publication_metadata_review.mappings.local_evidence_commit]
+2026-10-25T02:59:16.6029912Z FAIL: research/adaptive_causal_20261023/REVIEW.json:550: 910dc3860b26739ba3d8330c157d5b2082899f18 is missing (no remote branch contains it) [publication_metadata_review.mappings.local_evidence_commit]
+2026-10-25T02:59:16.6031191Z FAIL: research/adaptive_causal_20261023/WORKFLOW.json:17: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [executions.environment.source_commit]
+2026-10-25T02:59:16.6032394Z FAIL: research/adaptive_causal_20261023/WORKFLOW.json:17: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [executions.environment.source_commit]
+2026-10-25T02:59:16.6033581Z FAIL: research/adaptive_causal_20261023/WORKFLOW.json:17: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [executions.environment.source_commit]
+2026-10-25T02:59:16.6034755Z FAIL: research/adaptive_causal_20261023/WORKFLOW.json:22: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [executions.environment.source_commit]
+2026-10-25T02:59:16.6035928Z FAIL: research/adaptive_causal_20261023/WORKFLOW.json:17: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [executions.environment.source_commit]
+2026-10-25T02:59:16.6037105Z FAIL: research/adaptive_causal_20261023/WORKFLOW.json:17: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [executions.environment.source_commit]
+2026-10-25T02:59:16.6038741Z FAIL: research/adaptive_causal_20261023/WORKFLOW.json:22: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [executions.environment.source_commit]
+2026-10-25T02:59:16.6040110Z FAIL: research/adaptive_causal_20261023/WORKFLOW.json:17: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [source_cohorts.initial_native_commit]
+2026-10-25T02:59:16.6041294Z FAIL: research/adaptive_causal_20261023/WORKFLOW.json:22: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [source_cohorts.final_native_commit]
+2026-10-25T02:59:16.6042450Z FAIL: research/adaptive_causal_20261023/WORKFLOW.json:22: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [publication.source_commit]
+2026-10-25T02:59:16.6044071Z FAIL: research/adaptive_causal_20261023/analysis/CAUSAL_IMPLEMENTATION_KO.md:108: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [최종 고정 source `548526add83a38a996875b3bd2f3cd3357465ed6`에서 CPU 0에 고정한 단일]
+2026-10-25T02:59:16.6045799Z FAIL: research/adaptive_causal_20261023/analysis/INDEPENDENT_REVIEW_KO.md:115: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [최종 native commit `d4e8623bf8add9f505ec018532c4602e5a838a41`과 이전 측정]
+2026-10-25T02:59:16.6047485Z FAIL: research/adaptive_causal_20261023/analysis/INDEPENDENT_REVIEW_KO.md:116: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [commit `548526add83a38a996875b3bd2f3cd3357465ed6`을 구별했다. 변경된 facade]
+2026-10-25T02:59:16.6049838Z FAIL: research/adaptive_causal_20261023/analysis/OSCILLATORY_KO.md:110: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [컴파일 중 공유 호스트에서 얻은 초기 측정은 `quotient_benchmark_initial.json` 및 `quotient_summary_preliminary.json`으로 남겼다. 최종 성능 수치는 native]
+2026-10-25T02:59:16.6051899Z FAIL: research/adaptive_causal_20261023/analysis/SWITCHING_BENCHMARK_KO.md:3: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [소스 commit: `548526add83a38a996875b3bd2f3cd3357465ed6`. 동일한 measurement binary, CPU affinity 0, Rayon/BLAS/OMP thread 수 1]
+2026-10-25T02:59:16.6053481Z FAIL: research/adaptive_causal_20261023/evidence/RHS_PERSISTENCE_FOLLOWUP.json:18: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6054655Z FAIL: research/adaptive_causal_20261023/evidence/SOURCE_IDENTITY.json:4: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [native_commit]
+2026-10-25T02:59:16.6055800Z FAIL: research/adaptive_causal_20261023/results/FINAL_NATIVE_TESTS.json:2: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6056974Z FAIL: research/adaptive_causal_20261023/results/PERSISTENT_FINAL_TESTS.json:2: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6058388Z FAIL: research/adaptive_causal_20261023/results/benchmark_build_receipt.json:4: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6059685Z FAIL: research/adaptive_causal_20261023/results/causal_benchmark_receipt.json:5: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6060873Z FAIL: research/adaptive_causal_20261023/results/causal_benchmark_summary.json:3: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6062042Z FAIL: research/adaptive_causal_20261023/results/quotient_build_receipt.json:3: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6063209Z FAIL: research/adaptive_causal_20261023/results/quotient_run_receipt.json:3: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6064549Z FAIL: research/adaptive_causal_20261023/results/rhs_persistent_build_receipt.json:4: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6065867Z FAIL: research/adaptive_causal_20261023/results/rhs_persistent_campaign/PLAN.json:3: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6067107Z FAIL: research/adaptive_causal_20261023/results/rhs_persistent_campaign/RHS_PARITY.json:3: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6068498Z FAIL: research/adaptive_causal_20261023/results/rhs_persistent_campaign/SUMMARY.json:3: d4e8623bf8add9f505ec018532c4602e5a838a41 is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6069714Z FAIL: research/adaptive_causal_20261023/results/switching_campaign/PLAN.json:3: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6070903Z FAIL: research/adaptive_causal_20261023/results/switching_campaign/SUMMARY.json:3: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6072131Z FAIL: research/adaptive_causal_20261023/results/switching_persistent_correction.json:4: 548526add83a38a996875b3bd2f3cd3357465ed6 is missing (no remote branch contains it) [baseline_commit]
+2026-10-25T02:59:16.6073302Z FAIL: research/all_dag_completion_20261018/DAG.json:11: 40a36d922e915e1d1c296adc136b7e5b7676eb67 is missing (no remote branch contains it) [local_integration_commit]
+2026-10-25T02:59:16.6074490Z FAIL: research/all_dag_completion_20261018/LOCAL_POSTFLIGHT.json:15: 40a36d922e915e1d1c296adc136b7e5b7676eb67 is missing (no remote branch contains it) [checks.check_authority_refs.classification]
+2026-10-25T02:59:16.6075793Z FAIL: research/all_dag_completion_20261018/LOCAL_POSTFLIGHT.json:15: 40a36d922e915e1d1c296adc136b7e5b7676eb67 is missing (no remote branch contains it) [classification.authority_reference_failure]
+2026-10-25T02:59:16.6077137Z FAIL: research/all_dag_completion_20261018/LOCAL_POSTFLIGHT.json:15: 40a36d922e915e1d1c296adc136b7e5b7676eb67 is missing (no remote branch contains it) [repository_checkers.check_authority_refs.classification]
+2026-10-25T02:59:16.6078782Z FAIL: research/all_dag_completion_20261018/LOCAL_POSTFLIGHT.json:15: 40a36d922e915e1d1c296adc136b7e5b7676eb67 is missing (no remote branch contains it) [published_postflight.check_authority_refs.counts]
+2026-10-25T02:59:16.6080011Z FAIL: research/all_dag_completion_20261018/nodes/A02/RESULT.json:6: 40a36d922e915e1d1c296adc136b7e5b7676eb67 is missing (no remote branch contains it) [base_commit]
+2026-10-25T02:59:16.6081520Z FAIL: research/all_dag_completion_20261018/nodes/A04/REPORT_KO.md:12: 40a36d922e915e1d1c296adc136b7e5b7676eb67 is missing (no remote branch contains it) [조사 기준 HEAD는 `40a36d922e915e1d1c296adc136b7e5b7676eb67`이다. 기존]
+2026-10-25T02:59:16.6082858Z FAIL: research/all_dag_completion_20261018/nodes/A04/RESULT.json:8: 40a36d922e915e1d1c296adc136b7e5b7676eb67 is missing (no remote branch contains it) [baseline_commit]
+2026-10-25T02:59:16.6084001Z FAIL: research/all_dag_completion_20261018/nodes/A05/RESULT.json:5: 40a36d922e915e1d1c296adc136b7e5b7676eb67 is missing (no remote branch contains it) [baseline_commit]
+2026-10-25T02:59:16.6085183Z FAIL: research/all_dag_completion_20261018/nodes/A07/native_smoke/MANIFEST.json:29: 40a36d922e915e1d1c296adc136b7e5b7676eb67 is missing (no remote branch contains it) [git_head.stdout]
+2026-10-25T02:59:16.6086312Z FAIL: research/all_dag_completion_20261018/nodes/A08.json:6: 40a36d922e915e1d1c296adc136b7e5b7676eb67 is missing (no remote branch contains it) [source_base]
+2026-10-25T02:59:16.6087399Z FAIL: research/all_dag_completion_20261018/nodes/A09/RESULT.json:11: 40a36d922e915e1d1c296adc136b7e5b7676eb67 is missing (no remote branch contains it) [baseline_commit]
+2026-10-25T02:59:16.6088803Z FAIL: research/all_dag_completion_20261018/nodes/A11/RESULT.json:117: 40a36d922e915e1d1c296adc136b7e5b7676eb67 is missing (no remote branch contains it) [source_identity.base_commit]
+2026-10-25T02:59:16.6090259Z FAIL: research/all_dag_completion_20261018/nodes/A12/REVIEW.json:7: 40a36d922e915e1d1c296adc136b7e5b7676eb67 is missing (no remote branch contains it) [base_merge_commit]
+2026-10-25T02:59:16.6091467Z FAIL: research/branch_integration_20261021/LEDGER_INDEX.json:3182: 4a5fc656730fe8243f06b6e603cb8aa758b00b2f is missing (no remote branch contains it) [observed_worktree_base]
+2026-10-25T02:59:16.6092614Z FAIL: research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json:8: 407381b302d8b98f251b54d277823997bc4fca9f is missing (no remote branch contains it) [objects.sha]
+2026-10-25T02:59:16.6093773Z FAIL: research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json:8: 407381b302d8b98f251b54d277823997bc4fca9f is missing (no remote branch contains it) [objects.canonical_url]
+2026-10-25T02:59:16.6094942Z FAIL: research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json:15: 4eab1bd2ee3561fe07beda4301f082321522c611 is missing (no remote branch contains it) [objects.sha]
+2026-10-25T02:59:16.6096084Z FAIL: research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json:23: 0a088e1f8fca6618107525e687f930406ca32d18 is missing (no remote branch contains it) [objects.sha]
+2026-10-25T02:59:16.6097250Z FAIL: research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json:23: 0a088e1f8fca6618107525e687f930406ca32d18 is missing (no remote branch contains it) [objects.canonical_url]
+2026-10-25T02:59:16.6098584Z FAIL: research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json:30: 54a65d4d84d3cb7a8dc05a2d69c6910690b30bff is missing (no remote branch contains it) [objects.sha]
+2026-10-25T02:59:16.6099800Z FAIL: research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json:30: 54a65d4d84d3cb7a8dc05a2d69c6910690b30bff is missing (no remote branch contains it) [objects.canonical_url]
+2026-10-25T02:59:16.6101004Z FAIL: research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json:37: 277572a17b27c09246dbeaa707a1fa82f89cffcd is missing (no remote branch contains it) [objects.sha]
+2026-10-25T02:59:16.6102176Z FAIL: research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json:37: 277572a17b27c09246dbeaa707a1fa82f89cffcd is missing (no remote branch contains it) [objects.canonical_url]
+2026-10-25T02:59:16.6103352Z FAIL: research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json:44: ccf2bd088972e952fbe8e7e6eb21ccc8a7275447 is missing (no remote branch contains it) [objects.sha]
+2026-10-25T02:59:16.6104516Z FAIL: research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json:44: ccf2bd088972e952fbe8e7e6eb21ccc8a7275447 is missing (no remote branch contains it) [objects.canonical_url]
+2026-10-25T02:59:16.6105690Z FAIL: research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json:51: 2354d6e995fde736fffbcad2d0e40473218cb8c4 is missing (no remote branch contains it) [objects.sha]
+2026-10-25T02:59:16.6106859Z FAIL: research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json:51: 2354d6e995fde736fffbcad2d0e40473218cb8c4 is missing (no remote branch contains it) [objects.canonical_url]
+2026-10-25T02:59:16.6108032Z FAIL: research/d4_effect_journal_20261025/FINAL_DELIVERY.json:350: 2354d6e995fde736fffbcad2d0e40473218cb8c4 is missing (no remote branch contains it) [latest_central_head]
+2026-10-25T02:59:16.6109891Z FAIL: research/d4_effect_journal_20261025/HANDOFF_KO.md:136: 407381b302d8b98f251b54d277823997bc4fca9f is missing (no remote branch contains it) [조사에서 보존한 native frontier는 `aaf1f834d4c589e734ca7851a56c11bb44f7047a`, 중앙 PR222의 당시 관측 HEAD는 `407381b302d8b98f251b54d2778]
+2026-10-25T02:59:16.6111877Z FAIL: research/d4_effect_journal_20261025/RELATED_REPOS_KO.md:9: 407381b302d8b98f251b54d277823997bc4fca9f is missing (no remote branch contains it) [| 중앙 REI PR222 | `407381b302d8b98f251b54d277823997bc4fca9f` | Draft/open/unmerged. 최신 commit은 HE PR99 finite-M shell 관측이]
+2026-10-25T02:59:16.6113872Z FAIL: research/d4_effect_journal_20261025/RELATED_REPOS_KO.md:10: 4eab1bd2ee3561fe07beda4301f082321522c611 is missing (no remote branch contains it) [| 중앙 VigilODE handoff | blob `4eab1bd2ee3561fe07beda4301f082321522c611` | 2026-10-23 초기 V1–V5 계약을 보존한다. 기존 planned 상태를 이]
+2026-10-25T02:59:16.6116084Z FAIL: research/d4_effect_journal_20261025/RELATED_REPOS_KO.md:12: 0a088e1f8fca6618107525e687f930406ca32d18 is missing (no remote branch contains it) [| BASS PR187 | `0a088e1f8fca6618107525e687f930406ca32d18` | REC locked 35-cell×26-direction inventory→910 massless packe]
+2026-10-25T02:59:16.6118040Z FAIL: research/d4_effect_journal_20261025/RELATED_REPOS_KO.md:13: 54a65d4d84d3cb7a8dc05a2d69c6910690b30bff is missing (no remote branch contains it) [| REI PR226 | `54a65d4d84d3cb7a8dc05a2d69c6910690b30bff` | REC-HISTORY frozen response 관측. REC science `277572a17b27c092]
+2026-10-25T02:59:16.6120361Z FAIL: research/d4_effect_journal_20261025/RELATED_REPOS_KO.md:13: 277572a17b27c09246dbeaa707a1fa82f89cffcd is missing (no remote branch contains it) [| REI PR226 | `54a65d4d84d3cb7a8dc05a2d69c6910690b30bff` | REC-HISTORY frozen response 관측. REC science `277572a17b27c092]
+2026-10-25T02:59:16.6122332Z FAIL: research/d4_effect_journal_20261025/RELATED_REPOS_KO.md:13: ccf2bd088972e952fbe8e7e6eb21ccc8a7275447 is missing (no remote branch contains it) [| REI PR226 | `54a65d4d84d3cb7a8dc05a2d69c6910690b30bff` | REC-HISTORY frozen response 관측. REC science `277572a17b27c092]
+2026-10-25T02:59:16.6125473Z FAIL: research/d4_effect_journal_20261025/RELATED_REPOS_KO.md:17: 407381b302d8b98f251b54d277823997bc4fca9f is missing (no remote branch contains it) [[중앙 handoff](https://github.com/cosmosapjw-quantum/rei_bianchi/blob/407381b302d8b98f251b54d277823997bc4fca9f/research/or]
+2026-10-25T02:59:16.6127311Z FAIL: research/d4_effect_journal_20261025/REPORT_KO.md:13: 407381b302d8b98f251b54d277823997bc4fca9f is missing (no remote branch contains it) [D2 HEAD1c829f206ab67585191231be7f5135fd0d4c804e, D3 HEAD02060cc9dc4551dc5cf6ec86ad9b53b697a2c3ce, native frontier aaf1f8]
+2026-10-25T02:59:16.6129633Z FAIL: research/d4_effect_journal_20261025/REPORT_KO.md:138: 2354d6e995fde736fffbcad2d0e40473218cb8c4 is missing (no remote branch contains it) [종료 시 중앙 PR222 HEAD는2354d6e995fde736fffbcad2d0e40473218cb8c4로 갱신됐다. 조사 당시407381b302d8b98f251b54d277823997bc4fca9f에서4commi]
+2026-10-25T02:59:16.6131619Z FAIL: research/d4_effect_journal_20261025/REPORT_KO.md:138: 407381b302d8b98f251b54d277823997bc4fca9f is missing (no remote branch contains it) [종료 시 중앙 PR222 HEAD는2354d6e995fde736fffbcad2d0e40473218cb8c4로 갱신됐다. 조사 당시407381b302d8b98f251b54d277823997bc4fca9f에서4commi]
+2026-10-25T02:59:16.6133424Z FAIL: research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md:44: 10f3ea585c6608e794900efe7e4f8f42c0747a3b is missing (no remote branch contains it) [| [htt_base #561](https://github.com/cosmosapjw-quantum/htt_base/pull/561) | 10f3ea585c6608e794900efe7e4f8f42c0747a3b | ]
+2026-10-25T02:59:16.6135266Z FAIL: research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md:45: 2f10fbd64cfd0810a976bf2720186fd56b7bfde7 is missing (no remote branch contains it) [| [htt_base #508](https://github.com/cosmosapjw-quantum/htt_base/pull/508) | 2f10fbd64cfd0810a976bf2720186fd56b7bfde7 | ]
+2026-10-25T02:59:16.6137361Z FAIL: research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md:83: ba438dc3c202b05990752bfd2278fe2bec6714f0 is missing (no remote branch contains it) [branch는 main 한 개이며 SHA는 ba438dc3c202b05990752bfd2278fe2bec6714f0다. 모든 상태 PR 목록은 첫 페이지부터 0이다. 따라서 최신 PR source/callback 연]
+2026-10-25T02:59:16.6139814Z FAIL: research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md:91: 26ab505dac2bfcb0cfd3d049f22bc408f4c86241 is missing (no remote branch contains it) [| bass_cr | research/cr-c21i-callback-optimization-20261020 | 26ab505dac2bfcb0cfd3d049f22bc408f4c86241 | PR86와 아래 source]
+2026-10-25T02:59:16.6141914Z FAIL: research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md:92: 0ec4c55102766c40c554ffc6141eb08fba741c79 is missing (no remote branch contains it) [| bass_cr | research/cr-c21h-vigilode-bridge-20261019 | 0ec4c55102766c40c554ffc6141eb08fba741c79 | PR85와 아래 source 직접 읽음]
+2026-10-25T02:59:16.6144306Z FAIL: research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md:93: efd1520dfc0643220f729307583ff0bc04b059e9 is missing (no remote branch contains it) [| WU088_HH | research/hh-phys69-angular-tail-vigilode-20261019 | efd1520dfc0643220f729307583ff0bc04b059e9 | VigilODE 관련 ]
+2026-10-25T02:59:16.6146392Z FAIL: research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md:94: 49a3f747aead23ac412922a45c9c1f4ef2a54157 is missing (no remote branch contains it) [| BASS_HE | research/he18-c2-source-jacobian-20261015 | 49a3f747aead23ac412922a45c9c1f4ef2a54157 | source Jacobian이라는 이름]
+2026-10-25T02:59:16.6148519Z FAIL: research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md:103: 98d036180338fbd7cbe71353882bd8df09959da0 is missing (no remote branch contains it) [| C21H rust_bridge/src/main.rs | 98d036180338fbd7cbe71353882bd8df09959da0 | forbid(unsafe_code), RPC preflight, identity]
+2026-10-25T02:59:16.6150625Z FAIL: research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md:104: fbfd4c27373c1bcc051e0bc10d55a2db6efe76dd is missing (no remote branch contains it) [| C21I optimized_adapter.py | fbfd4c27373c1bcc051e0bc10d55a2db6efe76dd | frozen cell scope, provider pre/post guard, 성공한]
+2026-10-25T02:59:16.6152520Z FAIL: research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md:105: e167121a6604eb7ec13a941b99042902e95b379b is missing (no remote branch contains it) [| C21I native_cache_contract.py | e167121a6604eb7ec13a941b99042902e95b379b | source/provider/class/process/config/file l]
+2026-10-25T02:59:16.6154542Z FAIL: research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md:106: df12907b21a308f708463021a1814b5a82d9554f is missing (no remote branch contains it) [| C21I C21I_RESEARCH_REPORT_KO.md | df12907b21a308f708463021a1814b5a82d9554f | 고정 C21H optical model 최적화, actual native/]
+2026-10-25T02:59:16.6156569Z FAIL: research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md:107: 6180be2590cb42c975814d7204db6df1f78ba736 is missing (no remote branch contains it) [| C21I NATIVE_CACHE_ADMISSION_KO.md | 6180be2590cb42c975814d7204db6df1f78ba736 | admission source와 guard의 실제 범위, 일반 atte]
+2026-10-25T02:59:16.6158616Z FAIL: research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md:113: 0ec4c55102766c40c554ffc6141eb08fba741c79 is missing (no remote branch contains it) [- [C21H Rust bridge](https://github.com/cosmosapjw-quantum/bass_cr/blob/0ec4c55102766c40c554ffc6141eb08fba741c79/researc]
+2026-10-25T02:59:16.6160745Z FAIL: research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md:118: 40ea4bbd5b2eb1b0c82f8ec9d5fdc1c6324e44f8 is missing (no remote branch contains it) [H/I의 source content commit은 각각 40ea4bbd5b2eb1b0c82f8ec9d5fdc1c6324e44f8, fe6bbaec2de5032b938aed0713623b9618ba70e6이고 위 관측]
+2026-10-25T02:59:16.6162866Z FAIL: research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md:118: fe6bbaec2de5032b938aed0713623b9618ba70e6 is missing (no remote branch contains it) [H/I의 source content commit은 각각 40ea4bbd5b2eb1b0c82f8ec9d5fdc1c6324e44f8, fe6bbaec2de5032b938aed0713623b9618ba70e6이고 위 관측]
+2026-10-25T02:59:16.6164968Z FAIL: research/d5_callback_contract_20261025/RELATED_REPOS_KO.md:16: 4e4276e1d27b830084ae572a26650e7c9e3d979f is missing (no remote branch contains it) [| REC PR136 4e4276e1d27b830084ae572a26650e7c9e3d979f | stable-source K_s와history binding의 S0. 완료로 승격하지 않음 |]
+2026-10-25T02:59:16.6166948Z FAIL: research/d5_callback_contract_20261025/RELATED_REPOS_KO.md:17: 77228ff9316108afcd805f41bed24495a7ff41c0 is missing (no remote branch contains it) [| BASS PR188 77228ff9316108afcd805f41bed24495a7ff41c0 | angular cohort error 완료;22/28 comparison 실패 자체가 측정결과. callback/n]
+2026-10-25T02:59:16.6169211Z FAIL: research/d5_callback_contract_20261025/RELATED_REPOS_KO.md:18: 11d06f9dc35143058fcdee9e81c979b039e08a83 is missing (no remote branch contains it) [| BASS PR189 11d06f9dc35143058fcdee9e81c979b039e08a83 | source-aware positive angular S0. 새 finite receiver trace/produc]
+2026-10-25T02:59:16.6171223Z FAIL: research/d5_callback_contract_20261025/REPORT_KO.md:252: 0ec4c55102766c40c554ffc6141eb08fba741c79 is missing (no remote branch contains it) [- [C21H bridge](https://github.com/cosmosapjw-quantum/bass_cr/blob/0ec4c55102766c40c554ffc6141eb08fba741c79/research/cr_]
+2026-10-25T02:59:16.6173113Z FAIL: research/d5_callback_contract_20261025/REPORT_KO.md:253: 26ab505dac2bfcb0cfd3d049f22bc408f4c86241 is missing (no remote branch contains it) [- [C21I adapter](https://github.com/cosmosapjw-quantum/bass_cr/blob/26ab505dac2bfcb0cfd3d049f22bc408f4c86241/research/cr]
+2026-10-25T02:59:16.6174623Z FAIL: research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json:6: 0ec4c55102766c40c554ffc6141eb08fba741c79 is missing (no remote branch contains it) [pins.ref]
+2026-10-25T02:59:16.6175817Z FAIL: research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json:6: 0ec4c55102766c40c554ffc6141eb08fba741c79 is missing (no remote branch contains it) [pins.ref]
+2026-10-25T02:59:16.6177010Z FAIL: research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json:22: 26ab505dac2bfcb0cfd3d049f22bc408f4c86241 is missing (no remote branch contains it) [pins.ref]
+2026-10-25T02:59:16.6178439Z FAIL: research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json:22: 26ab505dac2bfcb0cfd3d049f22bc408f4c86241 is missing (no remote branch contains it) [pins.ref]
+2026-10-25T02:59:16.6179674Z FAIL: research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json:22: 26ab505dac2bfcb0cfd3d049f22bc408f4c86241 is missing (no remote branch contains it) [pins.ref]
+2026-10-25T02:59:16.6180879Z FAIL: research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json:22: 26ab505dac2bfcb0cfd3d049f22bc408f4c86241 is missing (no remote branch contains it) [pins.ref]
+2026-10-25T02:59:16.6182069Z FAIL: research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json:22: 26ab505dac2bfcb0cfd3d049f22bc408f4c86241 is missing (no remote branch contains it) [pins.ref]
+2026-10-25T02:59:16.6183261Z FAIL: research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json:22: 26ab505dac2bfcb0cfd3d049f22bc408f4c86241 is missing (no remote branch contains it) [pins.ref]
+2026-10-25T02:59:16.6184451Z FAIL: research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json:6: 0ec4c55102766c40c554ffc6141eb08fba741c79 is missing (no remote branch contains it) [pins.ref]
+2026-10-25T02:59:16.6185628Z FAIL: research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json:6: 0ec4c55102766c40c554ffc6141eb08fba741c79 is missing (no remote branch contains it) [pins.ref]
+2026-10-25T02:59:16.6186805Z FAIL: research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json:6: 0ec4c55102766c40c554ffc6141eb08fba741c79 is missing (no remote branch contains it) [pins.ref]
+2026-10-25T02:59:16.6187943Z FAIL: research/ncp_followup_20261021/BASS_REI_INPUTS.json:4: 80825585f9fe31d2ee0d5af545ada3fa1f52be72 is missing (no remote branch contains it) [rei_source_commit]
+2026-10-25T02:59:16.6189314Z FAIL: research/ncp_followup_20261021/BASS_REI_INPUTS.json:5: beb7594e5a68bb361cfcb813c7cc9fb1a2d6b8f0 is missing (no remote branch contains it) [rei_source_tree]
+2026-10-25T02:59:16.6190434Z FAIL: research/ncp_followup_20261021/BASS_REI_INPUTS.json:6: 106a0153bf113fa4f0beea9743e84a744b65f424 is missing (no remote branch contains it) [bass_recorded_source_commit]
+2026-10-25T02:59:16.6191568Z FAIL: research/ncp_followup_20261021/BASS_REI_INPUTS.json:7: 41a83fb95bce2d5e0d72f4c8ecd8479c55a4946a is missing (no remote branch contains it) [bass_recorded_source_tree]
+2026-10-25T02:59:16.6193030Z FAIL: research/ncp_followup_20261021/BASS_REI_PORT_RESEARCH.md:7: 80825585f9fe31d2ee0d5af545ada3fa1f52be72 is missing (no remote branch contains it) [The inspected rei C15 source is commit `80825585f9fe31d2ee0d5af545ada3fa1f52be72`, tree `beb7594e5a68bb361cfcb813c7cc9fb]
+2026-10-25T02:59:16.6194826Z FAIL: research/ncp_followup_20261021/BASS_REI_PORT_RESEARCH.md:7: beb7594e5a68bb361cfcb813c7cc9fb1a2d6b8f0 is missing (no remote branch contains it) [The inspected rei C15 source is commit `80825585f9fe31d2ee0d5af545ada3fa1f52be72`, tree `beb7594e5a68bb361cfcb813c7cc9fb]
+2026-10-25T02:59:16.6196859Z FAIL: research/ncp_followup_20261021/BASS_REI_PORT_RESEARCH.md:7: 106a0153bf113fa4f0beea9743e84a744b65f424 is missing (no remote branch contains it) [The inspected rei C15 source is commit `80825585f9fe31d2ee0d5af545ada3fa1f52be72`, tree `beb7594e5a68bb361cfcb813c7cc9fb]
+2026-10-25T02:59:16.6198890Z FAIL: research/ncp_followup_20261021/BASS_REI_PORT_RESEARCH.md:7: 41a83fb95bce2d5e0d72f4c8ecd8479c55a4946a is missing (no remote branch contains it) [The inspected rei C15 source is commit `80825585f9fe31d2ee0d5af545ada3fa1f52be72`, tree `beb7594e5a68bb361cfcb813c7cc9fb]
+2026-10-25T02:59:16.6200379Z FAIL: research/ncp_followup_20261021/BASS_REI_RECENCY.json:7: 9c6506e4e2087129a8b674ff10438e5db1a55c9d is missing (no remote branch contains it) [default_branches.head]
+2026-10-25T02:59:16.6201495Z FAIL: research/ncp_followup_20261021/BASS_REI_RECENCY.json:8: ae3402713c4b6530ab2b27f008f5f5d5c6a999ed is missing (no remote branch contains it) [default_branches.head]
+2026-10-25T02:59:16.6202641Z FAIL: research/ncp_followup_20261021/BASS_REI_RECENCY.json:11: 26f4a89a54462c4e7c5705f281f187f33f45166a is missing (no remote branch contains it) [relevant_current_branches.head]
+2026-10-25T02:59:16.6203817Z FAIL: research/ncp_followup_20261021/BASS_REI_RECENCY.json:12: d32cd99fa19c65aa1ca63dbc8aab8741834270e8 is missing (no remote branch contains it) [relevant_current_branches.head]
+2026-10-25T02:59:16.6204986Z FAIL: research/ncp_followup_20261021/BASS_REI_RECENCY.json:13: 80825585f9fe31d2ee0d5af545ada3fa1f52be72 is missing (no remote branch contains it) [relevant_current_branches.head]
+2026-10-25T02:59:16.6206157Z FAIL: research/ncp_followup_20261021/BASS_REI_RECENCY.json:14: 99e07bcff126d0a73a03bafc4b71e0b735dbcc3e is missing (no remote branch contains it) [relevant_current_branches.head]
+2026-10-25T02:59:16.6207320Z FAIL: research/ncp_followup_20261021/BASS_REI_RECENCY.json:15: c9deb933761a8d2593d1176aee028cd423bdbc05 is missing (no remote branch contains it) [relevant_current_branches.head]
+2026-10-25T02:59:16.6208604Z FAIL: research/ncp_followup_20261021/BASS_REI_RECENCY.json:16: 220c0525e36e817fbe3a4e8932508555e781c1c3 is missing (no remote branch contains it) [relevant_current_branches.head]
+2026-10-25T02:59:16.6209773Z FAIL: research/ncp_followup_20261021/BASS_REI_RECENCY.json:12: d32cd99fa19c65aa1ca63dbc8aab8741834270e8 is missing (no remote branch contains it) [byte_identity_comparisons.ref]
+2026-10-25T02:59:16.6210938Z FAIL: research/ncp_followup_20261021/BASS_REI_RECENCY.json:12: d32cd99fa19c65aa1ca63dbc8aab8741834270e8 is missing (no remote branch contains it) [byte_identity_comparisons.ref]
+2026-10-25T02:59:16.6212106Z FAIL: research/ncp_followup_20261021/BASS_REI_RECENCY.json:12: d32cd99fa19c65aa1ca63dbc8aab8741834270e8 is missing (no remote branch contains it) [byte_identity_comparisons.ref]
+2026-10-25T02:59:16.6213256Z FAIL: research/ncp_followup_20261021/BASS_REI_RECENCY.json:11: 26f4a89a54462c4e7c5705f281f187f33f45166a is missing (no remote branch contains it) [byte_identity_comparisons.ref]
+2026-10-25T02:59:16.6214386Z FAIL: research/ncp_followup_20261021/BASS_REI_RECENCY.json:12: d32cd99fa19c65aa1ca63dbc8aab8741834270e8 is missing (no remote branch contains it) [reproduction_urls]
+2026-10-25T02:59:16.6215481Z FAIL: research/ncp_followup_20261021/BASS_REI_RECENCY.json:12: d32cd99fa19c65aa1ca63dbc8aab8741834270e8 is missing (no remote branch contains it) [reproduction_urls]
+2026-10-25T02:59:16.6216567Z FAIL: research/ncp_followup_20261021/BASS_REI_RECENCY.json:11: 26f4a89a54462c4e7c5705f281f187f33f45166a is missing (no remote branch contains it) [reproduction_urls]
+2026-10-25T02:59:16.6217858Z FAIL: research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml:31: 7063ad1083578215c7c4bf410368150abe8d5524 is missing (no remote branch contains it) [git-tree-sha1 = "7063ad1083578215c7c4bf410368150abe8d5524"]
+2026-10-25T02:59:16.6219723Z FAIL: research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml:126: b1b04c236ff7ed92e69d64b620448b3da00933d4 is missing (no remote branch contains it) [git-tree-sha1 = "b1b04c236ff7ed92e69d64b620448b3da00933d4"]
+2026-10-25T02:59:16.6221340Z FAIL: research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml:166: 802bb88cd69dfd1509f6670416bd4434015693ad is missing (no remote branch contains it) [git-tree-sha1 = "802bb88cd69dfd1509f6670416bd4434015693ad"]
+2026-10-25T02:59:16.6222834Z FAIL: research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml:181: b4b092499347b18a015186eae3042f72267106cb is missing (no remote branch contains it) [git-tree-sha1 = "b4b092499347b18a015186eae3042f72267106cb"]
+2026-10-25T02:59:16.6224314Z FAIL: research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml:844: 5a995982a30ce31999c5504569234ecb91a6e0ef is missing (no remote branch contains it) [git-tree-sha1 = "5a995982a30ce31999c5504569234ecb91a6e0ef"]
+2026-10-25T02:59:16.6225815Z FAIL: research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml:860: 57ebe5c7130f1def087d4ebc01a4959bba8c7689 is missing (no remote branch contains it) [git-tree-sha1 = "57ebe5c7130f1def087d4ebc01a4959bba8c7689"]
+2026-10-25T02:59:16.6227318Z FAIL: research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml:870: 4d6354525db068b9d1578389274b7e6cabc663b4 is missing (no remote branch contains it) [git-tree-sha1 = "4d6354525db068b9d1578389274b7e6cabc663b4"]
+2026-10-25T02:59:16.6229102Z FAIL: research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml:881: 371de3eb5985febd9d7babb0937520653f2b15ca is missing (no remote branch contains it) [git-tree-sha1 = "371de3eb5985febd9d7babb0937520653f2b15ca"]
+2026-10-25T02:59:16.6230620Z FAIL: research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml:977: e6391348505df3c9c33008c0fec050862b834bf4 is missing (no remote branch contains it) [git-tree-sha1 = "e6391348505df3c9c33008c0fec050862b834bf4"]
+2026-10-25T02:59:16.6232120Z FAIL: research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml:1028: 9bb075002b40849582905394bb3031fb77aa102d is missing (no remote branch contains it) [git-tree-sha1 = "9bb075002b40849582905394bb3031fb77aa102d"]
+2026-10-25T02:59:16.6233613Z FAIL: research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml:1038: 85f85c3c5b949e7d691047e758e3fdb77c21310c is missing (no remote branch contains it) [git-tree-sha1 = "85f85c3c5b949e7d691047e758e3fdb77c21310c"]
+2026-10-25T02:59:16.6235112Z FAIL: research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml:1092: 781d5413c2991e581da86979b0d9f86f9a034a1c is missing (no remote branch contains it) [git-tree-sha1 = "781d5413c2991e581da86979b0d9f86f9a034a1c"]
+2026-10-25T02:59:16.6236616Z FAIL: research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml:1140: c5391c6ace3bc430ca630251d02ea9687169ca68 is missing (no remote branch contains it) [git-tree-sha1 = "c5391c6ace3bc430ca630251d02ea9687169ca68"]
+2026-10-25T02:59:16.6237983Z FAIL: research/production_frontier_20261023/PUBLISH_MAP.json:14: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [source_equivalence.local_commit]
+2026-10-25T02:59:16.6239442Z FAIL: research/production_frontier_20261023/PUBLISH_MAP.json:23: 50d3052843d7bbce75bba55a104725c4cfcf6292 is missing (no remote branch contains it) [source_equivalence.local_commit]
+2026-10-25T02:59:16.6240930Z FAIL: research/production_frontier_20261023/REPRODUCE.md:3: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [This is a new research branch based on `9b210c76dffb8909902f733e80d6cfa32405006e`. Native code and experiment sources we]
+2026-10-25T02:59:16.6242713Z FAIL: research/production_frontier_20261023/REPRODUCE.md:5: 50d3052843d7bbce75bba55a104725c4cfcf6292 is missing (no remote branch contains it) [There is one later numerical-source exception: the standalone PDE prototype received the `Q=0`/`t=0` identity-path repai]
+2026-10-25T02:59:16.6244741Z FAIL: research/production_frontier_20261023/analysis/ADVERSARIAL_AUDIT.md:58: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [The reviewer read the final native logs at local source `55ad7ec6af8b127cb90849db56abff4f02b9920b`:28 integrator, 29 fac]
+2026-10-25T02:59:16.6246445Z FAIL: research/production_frontier_20261023/analysis/ADVERSARIAL_FINDINGS.json:250: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [native_source.local_commit]
+2026-10-25T02:59:16.6247737Z FAIL: research/production_frontier_20261023/analysis/CAUSAL_FINDINGS.json:81: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [benchmark.source_commit]
+2026-10-25T02:59:16.6249879Z FAIL: research/production_frontier_20261023/analysis/CAUSAL_TRAJECTORY.md:60: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [고정 native source `55ad7ec6af8b127cb90849db56abff4f02b9920b`와 동일 executable에서 단일 스레드 126회(3반복), 2스레드 84회(2반복)를 완료했다. 캠페인 ]
+2026-10-25T02:59:16.6251516Z FAIL: research/production_frontier_20261023/analysis/SWITCHING.json:121: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [benchmark.source_commit]
+2026-10-25T02:59:16.6252777Z FAIL: research/production_frontier_20261023/evidence/affine_campaign_receipt.json:3: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6254035Z FAIL: research/production_frontier_20261023/evidence/pde_campaign_final_receipt.json:2: 50d3052843d7bbce75bba55a104725c4cfcf6292 is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6255280Z FAIL: research/production_frontier_20261023/evidence/pde_campaign_receipt.json:3: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6256488Z FAIL: research/production_frontier_20261023/results/AFFINE_SUMMARY.json:3: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6257689Z FAIL: research/production_frontier_20261023/results/CAUSAL_THREADS_AUDIT.json:3: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6259232Z FAIL: research/production_frontier_20261023/results/FINAL_EVIDENCE_AUDIT.json:15: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [causal.source_commits]
+2026-10-25T02:59:16.6260477Z FAIL: research/production_frontier_20261023/results/causal_campaign/PLAN.json:3: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6261739Z FAIL: research/production_frontier_20261023/results/causal_campaign_threads2/PLAN.json:3: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6262995Z FAIL: research/production_frontier_20261023/results/switching_campaign/PLAN.json:3: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [source_commit]
+2026-10-25T02:59:16.6264401Z FAIL: research/production_frontier_followup_20261023/IDENTITY.json:29: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [published_source_equivalence.local_commit]
+2026-10-25T02:59:16.6265730Z FAIL: research/production_frontier_followup_20261023/IDENTITY.json:35: 50d3052843d7bbce75bba55a104725c4cfcf6292 is missing (no remote branch contains it) [published_source_equivalence.local_commit]
+2026-10-25T02:59:16.6267000Z FAIL: research/production_reaudit_20261021/BRANCH_INTEGRATION.json:8: 4a5fc656730fe8243f06b6e603cb8aa758b00b2f is missing (no remote branch contains it) [production_integration_base]
+2026-10-25T02:59:16.6268370Z FAIL: research/production_reaudit_20261021/BRANCH_INTEGRATION.json:8: 4a5fc656730fe8243f06b6e603cb8aa758b00b2f is missing (no remote branch contains it) [ledger.production_archive_worktree_base]
+2026-10-25T02:59:16.6270603Z FAIL: research/production_reaudit_20261021/BRANCH_INTEGRATION.md:3: 4a5fc656730fe8243f06b6e603cb8aa758b00b2f is missing (no remote branch contains it) [이번 통합은 `33e45625`의 인증 API만 옮기는 데서 끝내지 않는다. production 두 분기의 통합 기반 `4a5fc656730fe8243f06b6e603cb8aa758b00b2f`와 연구 브랜치 최신 ]
+2026-10-25T02:59:16.6272376Z FAIL: research/production_reaudit_20261021/INDEPENDENT_BRANCH_REVIEW.json:381: 4a5fc656730fe8243f06b6e603cb8aa758b00b2f is missing (no remote branch contains it) [refs.production_base]
+2026-10-25T02:59:16.6273605Z FAIL: research/production_reaudit_20261021/INPUTS.json:6: 4a5fc656730fe8243f06b6e603cb8aa758b00b2f is missing (no remote branch contains it) [baseline_merged_commit]
+2026-10-25T02:59:16.6274749Z FAIL: research/production_reaudit_20261021/dense_transaction.json:5: 4a5fc656730fe8243f06b6e603cb8aa758b00b2f is missing (no remote branch contains it) [baseline.merged_commit]
+2026-10-25T02:59:16.6276525Z FAIL: research/production_reaudit_20261021/dense_transaction.md:3: 4a5fc656730fe8243f06b6e603cb8aa758b00b2f is missing (no remote branch contains it) [기준은 최신 계획 `cc2e1a0`과 실행 코드 `f2f20c1`의 합성 `4a5fc656730fe8243f06b6e603cb8aa758b00b2f`이다. 담당 범위는 sequential dense enforceme]
+2026-10-25T02:59:16.6278339Z FAIL: research/production_reaudit_20261021/evidence/ncp_harness/DRY_RUN_PLAN.json:239: 4a5fc656730fe8243f06b6e603cb8aa758b00b2f is missing (no remote branch contains it) [identity.source.commit]
+2026-10-25T02:59:16.6279687Z FAIL: research/production_reaudit_20261021/evidence/ncp_harness/DRY_RUN_PLAN.json:242: 274ad0c57a372f2816cb78054fa6a1d9939794eb is missing (no remote branch contains it) [identity.source.tree]
+2026-10-25T02:59:16.6280970Z FAIL: research/production_reaudit_20261021/evidence/ncp_harness/DRY_RUN_SUMMARY.json:3452: 4a5fc656730fe8243f06b6e603cb8aa758b00b2f is missing (no remote branch contains it) [source.commit]
+2026-10-25T02:59:16.6282236Z FAIL: research/production_reaudit_20261021/evidence/ncp_harness/DRY_RUN_SUMMARY.json:3455: 274ad0c57a372f2816cb78054fa6a1d9939794eb is missing (no remote branch contains it) [source.tree]
+2026-10-25T02:59:16.6283464Z FAIL: research/production_reaudit_20261021/evidence/port/PORT.json:5: 4a5fc656730fe8243f06b6e603cb8aa758b00b2f is missing (no remote branch contains it) [baseline_commit]
+2026-10-25T02:59:16.6284772Z FAIL: research/production_reaudit_20261021/evidence/port/PORT.md:7: 4a5fc656730fe8243f06b6e603cb8aa758b00b2f is missing (no remote branch contains it) [- Integration base: `4a5fc656730fe8243f06b6e603cb8aa758b00b2f`.]
+2026-10-25T02:59:16.6286211Z FAIL: research/production_reaudit_20261021/evidence/port/PORT_ANALYSIS.md:3: 4a5fc656730fe8243f06b6e603cb8aa758b00b2f is missing (no remote branch contains it) [Current source: `4a5fc656730fe8243f06b6e603cb8aa758b00b2f`]
+2026-10-25T02:59:16.6287475Z FAIL: research/production_reaudit_20261021/facade.json:4: 4a5fc656730fe8243f06b6e603cb8aa758b00b2f is missing (no remote branch contains it) [baseline_commit]
+2026-10-25T02:59:16.6288707Z check-authority-refs: FAIL (8261 citations, 896 distinct SHAs: missing=56, missing+allowlisted=27, non-commit=336, reachable=477)
+2026-10-25T02:59:16.6300083Z ##[error]Process completed with exit code 1.
+2026-10-25T02:59:16.6448946Z Post job cleanup.
+2026-10-25T02:59:16.7304929Z [command]/usr/bin/git version
+2026-10-25T02:59:16.7347667Z git version 2.55.0
+2026-10-25T02:59:16.7392755Z Temporarily overriding HOME='/home/runner/work/_temp/3f0e34bf-336e-47ca-ae97-5304038e67a5' before making global git config changes
+2026-10-25T02:59:16.7394410Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-25T02:59:16.7398094Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vigilode/vigilode
+2026-10-25T02:59:16.7440431Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-25T02:59:16.7477318Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-25T02:59:16.7818899Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-25T02:59:16.7846665Z http.https://github.com/.extraheader
+2026-10-25T02:59:16.7874281Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-25T02:59:16.7911429Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-25T02:59:16.8363419Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-25T02:59:16.8410732Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-25T02:59:16.8909175Z Cleaning up orphan processes
+2026-10-25T02:59:16.9273544Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-python@v5. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

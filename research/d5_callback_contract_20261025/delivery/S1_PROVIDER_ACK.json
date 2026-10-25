@@ -1,7 +1,7 @@
 {
   "schema": "VIGILODE_D5_PROVIDER_ACK_V1",
   "stage": "S1",
-  "updated_utc": "2026-10-25T02:57:46.192242+00:00",
+  "updated_utc": "2026-10-25T02:59:09.075664+00:00",
   "archive": "VIGILODE_D5_CALLBACK_S1_20261025.zip",
   "archive_bytes": 132856,
   "archive_sha256": "e3ebdf89f8854ee3ea0e99a9fe9d27e9ea49e06a12ca714639b91116eec41f06",
@@ -18,10 +18,11 @@
       "filename": "VIGILODE_D5_CALLBACK_S1_20261025.zip",
       "path": "/BASS/VIGILODE_D5_CALLBACK_S1_20261025.zip",
       "local_metadata_applied": true,
-      "provider_size_bytes": null,
-      "provider_size_verification": "NOT_RETURNED_IN_HELPER_ACK",
+      "provider_size_bytes": 132856,
+      "provider_size_verification": "PASS",
       "submitted_local_bytes": 132856,
-      "raw_receipt": "intake/backups/private_delivery/S1_LIBRARY_UPLOAD_RESULT.json"
+      "raw_receipt": "intake/backups/private_delivery/S1_LIBRARY_UPLOAD_RESULT.json",
+      "metadata_readback": "Exact library ID, filename, bytes observed"
     },
     "drive": {
       "status": "UNKNOWN_NO_ACK",
@@ -39,7 +40,13 @@
       "control_wait_reported_seconds": 614.1,
       "reason": "Parent interrupted continuous control wait; no evidence of remote failure, user cancellation, or automatic approval rejection",
       "duplicate_retry": 0,
-      "readonly_exact_filename_reconciliation": "PENDING_AT_MOST_ONE_QUERY"
+      "readonly_exact_filename_reconciliation": {
+        "query_count": 1,
+        "result_count": 0,
+        "status": "NO_MATCH_OBSERVED",
+        "raw_receipt": "intake/backups/private_delivery/S1_DRIVE_READONLY_RECONCILIATION.json",
+        "meaning": "No returned upload ACK; no duplicate retry"
+      }
     },
     "dropbox": {
       "status": "completed",

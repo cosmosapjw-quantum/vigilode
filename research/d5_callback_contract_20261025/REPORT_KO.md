@@ -226,7 +226,7 @@ Scientific validity, execution, source identity, backup preservation과 producti
 Draft PR은 [VigilODE88](https://github.com/cosmosapjw-quantum/vigilode/pull/88)이다.
 S0/S1/S2 게시와 각 phase의 immutable archive는 실제 receipt로 결속한다. S2 commit은
 3107693de084341129c47c592204225c9045aa2e이며95개 Git blob/size를 확인했다.
-S3에서 append-only ledger L-0172를 더해168행을169행으로 늘린다. 기존453,263바이트는
+S3에서 append-only ledger L-0172를 더해168행을169행으로 늘렸다. 기존453,263바이트는
 그대로 prefix로 보존한다. Ledger의 재현 source는 schema 보완을 포함한 S2이고,
 실제 수치 실행 source S1과는 SOURCE_EXECUTION_IDENTITY.json에서 분명히 구별한다.
 S0 Drive upload는920.8초 응답 대기 뒤 제어 대기를 중단했고 ACK/operationID가
@@ -234,9 +234,15 @@ S0 Drive upload는920.8초 응답 대기 뒤 제어 대기를 중단했고 ACK/o
 단정하지 않으며 UNKNOWN_NO_ACK와 중복 재시도0을 유지한다. Library/Dropbox 등의
 확인된 ACK와 구분하고 삼중 백업 완료를 추정하지 않는다.
 
-현재 repo authority CI와 D4의 실제 실패는 별도다. 기존 checker/allowlist는
-수정하지 않는다. 최신 D5 source의 metadata CI가 실제로 관측되면 최종 receipt에
-기록하며, scoped science PASS를 전체 CI green으로 표현하지 않는다.
+실제 S3 CI run40156477518/job121058848743는 FAIL이다. Metadata checker 시험은
+16+8=24개 PASS이고, 새 node와 append-only ledger169행도 PASS다. Authority는
+8,261citations/896distinct 중 missing56distinct, 실제FAIL199occurrences다.
+파일별로 D4 이전32/143, D4경로7/25, D5경로17/31이다. 이전 D4 CI snapshot38/152와
+현재 D4경로는 다르다. D4 final delivery의 추가중앙HEAD/인용이 +1/+16을,
+D5가 +17/+31을 더했다. D5 실패는 다른repo source pin 문맥이며 checker는 해당repo를
+조회하지 않는다. 이 설명이 inherited 실패를 무효화하지는 않는다.
+원 로그/실제 receipt는 CI_RESULT_KO.md와 evidence/CI_S3_RESULT.json에 있다.
+Checker/allowlist를 수정하거나 CI를 재실행하지 않았다. Scoped science PASS와 CI green은 다르다.
 
 다음 대화의 첫 행동은 현재 native 담당 source·예약·live dirty·완료 receipt의
 실제 연결이다. 그 뒤 이번 strict adapter의 opt-in native 연결 위치와 진짜
@@ -252,3 +258,32 @@ actual BASS, 유한 종료, durable restore와 production FP는 각 gate대로 �
 - [C21H bridge](https://github.com/cosmosapjw-quantum/bass_cr/blob/0ec4c55102766c40c554ffc6141eb08fba741c79/research/cr_c21h_vigilode_bridge_20261019/rust_bridge/src/main.rs).
 - [C21I adapter](https://github.com/cosmosapjw-quantum/bass_cr/blob/26ab505dac2bfcb0cfd3d049f22bc408f4c86241/research/cr_c21i_callback_optimization_20261020/optimized_adapter.py).
 - [Neumaier 원전](https://arnold-neumaier.at/ms/ode.pdf), [Rust catch_unwind](https://doc.rust-lang.org/std/panic/fn.catch_unwind.html).
+
+## 9. S3 최종 전달 상태
+
+**D5 local S0–S3=4/4, R1–R10+C1–C10=20/20을 scoped 완료로 닫았다.**
+이 수치는 이번 연구 단위의 단계·전달 완료다. Global completion=null,
+production=HOLD, independent personnel=NOT_RUN 및 native dependency 미해결은 유지한다.
+
+| Phase | 실제 Git commit | Archive payload/bytes | 확인된 보존 | Drive |
+|---|---|---:|---|---|
+| S0 | 8b53c60c51bc3a0fdec7402ef3657236b11e3205 | 17/51,312 | Library+Dropbox ACK·filename·size PASS | UNKNOWN_NO_ACK |
+| S1 | 0c73202734a52f30e4214d455be0fa9c47d37e0f | 60/132,856 | Library+Dropbox ACK·filename·size PASS | UNKNOWN_NO_ACK |
+| S2 | 3107693de084341129c47c592204225c9045aa2e | 96/543,085 | Library+Dropbox ACK·filename·size PASS | NOT_ATTEMPTED_AFTER_TWO_UNACKNOWLEDGED_CALLS |
+| S3 | 8c2a18c2c4706056e9bf9c7132aae419b787e5b3 | 105/565,668 | Library+Dropbox ACK·filename·size PASS | NOT_ATTEMPTED_AFTER_TWO_UNACKNOWLEDGED_CALLS |
+
+각 ZIP CRC와 모든 manifest payload의 SHA256/size는 로컬에서 확인했다.
+새 D5 archive의 원격 전체 bytes GET/SHA256 복원은 NOT_RUN이며 ACK/metadata와 구별한다.
+S0와 S1 Drive는 각각 정확한 filename+parent 조회1회에서0건이었고 중복 업로드0이다.
+두 요청의 ACK/opID 없는 대기 중단을 원격 실패·사용자 취소로 바꾸어 기록하지 않았다.
+S2/S3 및 최종 companion의 Drive 전송은 더 시도하지 않는다.
+
+새 전달 댓글은 중앙 PR222의6392739094와 부모 PR87의6392740056이다.
+두 댓글의 실제 body를 게시 후 다시 읽어 정확히 일치함을 확인했다.
+기존 D2/D3/D4 댓글은 중복하지 않았다. PR88은 Draft/open을 유지했다.
+
+S3 과학 결과 commit은8c2a18c2c4706056e9bf9c7132aae419b787e5b3이다.
+그 뒤의 최종 metadata commit은 source/원자료/closed budget/ledger를 바꾸지 않고
+실제 CI·provider·댓글 receipt와 이 완료 기록을 연결한다. 자신의 commit ID는
+해당 commit에 미리 넣을 수 없으므로 외부 delivery/FINAL_PUBLICATION.json과
+최종 archive의 receipt에 기록한다. 최종 metadata CI는 skip 표시로 재실행하지 않는다.

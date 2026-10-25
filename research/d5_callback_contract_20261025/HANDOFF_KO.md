@@ -9,7 +9,8 @@ branch: research/d5-callback-contract-20261025
 Draft PR: #88 (base: research/d4-effect-journal-20261025)
 actual science source S1: 0c73202734a52f30e4214d455be0fa9c47d37e0f
 S2 result publication: 3107693de084341129c47c592204225c9045aa2e
-S3/final HEAD: delivery/S3_PUBLICATION.json 및 최종 metadata receipt에서 확인한다.
+S3 science publication: 8c2a18c2c4706056e9bf9c7132aae419b787e5b3
+Final metadata HEAD: 최종 archive의 delivery/FINAL_PUBLICATION.json과 실제 PR88 HEAD에서 확인한다.
 
 먼저 실제 HEAD, 적용 AGENTS, research/d5_callback_contract_20261025/의
 REPORT_KO.md, THEORY.md, CONTRACT.md, S2_RESULT.json, REVIEW_BUNDLE.json,
@@ -63,7 +64,8 @@ D4 original archives93payload 전체 바이트 복구검증 PASS를 재사용한
 
 각 phase Git/blob/size, archive local CRC/hash, provider ACK,
 remote whole-byte restore를 구분하라. 새 D5 remote full GET/hash는 NOT_RUN이다.
-S0 Drive는 UNKNOWN_NO_ACK이고 exact-name1query0건, 중복 재시도0이다.
+S0/S1 Drive는 UNKNOWN_NO_ACK이고 각각 exact-name1query0건, 중복 재시도0이다.
+S2/S3 Drive는 두 불명 요청 이후 미시도다. 네 phase 모두 Library+Dropbox ACK와 size PASS다.
 다른 phase 실제 provider 상태는 delivery/*_PROVIDER_ACK.json을 읽어라.
 Unknown mutation을 임의로 실패/성공 처리하거나 재업로드하지 마라.
 
@@ -71,10 +73,17 @@ Production=HOLD, global_completion=null, independent_personnel=NOT_RUN.
 현재 scoped native subagent 사용과 역사적 D2 native_subagent=NOT_RUN은 다르다.
 Metadata authority CI와 scoped science PASS도 구분하라.
 Checker/allowlist를 녹색 표시를 위해 수정하지 마라.
-기존 중앙/부모 댓글을 중복 게시하지 말고 새 D5 전달 ID를 FINAL_DELIVERY에서 읽어라.
+새 D5 중앙 PR222 댓글6392739094와 부모 PR87 댓글6392740056은 전달·정확본문 readback 완료다.
+이전 및 새 댓글을 중복 게시하지 마라.
+D5 scoped S0–S3=4/4, 이론10+코딩10=20/20이다.
+실제 S3 metadata CI40156477518/job121058848743:24tests PASS,ledger169 PASS,
+authority FAIL56distinct/199occurrences. D4 이전32/143,현재D4경로7/25,D5경로17/31이다.
+기존 D4 CI snapshot38/152와 현재 분해를 혼동하지 마라.
+최종metadata CI는 NOT_RUN_SKIP_CI이며 최신전체CI green을 주장하지 않는다.
 ```
 
 ## 전달 완료 기록
 
-S3 게시·백업·CI·댓글의 실제 관측이 끝나면 후속 metadata commit에서 이 절과
-FINAL_DELIVERY.json을 갱신한다. 과학 source·원자료·closed budget은 바꾸지 않는다.
+S3 게시·백업·CI·댓글의 실제 관측을 FINAL_DELIVERY.json에 연결했다.
+최종 metadata commit ID는 최종 archive의 delivery/FINAL_PUBLICATION.json에 있다.
+과학 source·원자료·closed budget·append-only ledger는 그대로 보존했다.

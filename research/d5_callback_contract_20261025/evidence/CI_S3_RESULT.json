@@ -1,0 +1,2142 @@
+{
+  "schema": "vigilode.d5.observed_metadata_ci.v1",
+  "status": "OBSERVED_COMPLETED_AUTHORITY_FAILURE",
+  "whole_ci_green": false,
+  "repository": "cosmosapjw-quantum/vigilode",
+  "source_head": "8c2a18c2c4706056e9bf9c7132aae419b787e5b3",
+  "source_tree": "5e48e13d04073dc1de5069852b5e9bb5ec673772",
+  "source_tree_provenance": "actual workflow-run metadata",
+  "workflow": {
+    "name": "Research ledger and authority references",
+    "path": ".github/workflows/research-process.yml",
+    "id": 370337612,
+    "event": "pull_request",
+    "run_id": 40156477518,
+    "run_attempt": 1,
+    "status": "completed",
+    "conclusion": "failure",
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40156477518",
+    "created_at": "2026-10-25T02:58:37Z",
+    "updated_at": "2026-10-25T02:59:19Z"
+  },
+  "job": {
+    "id": 121058848743,
+    "name": "research-process",
+    "status": "completed",
+    "conclusion": "failure",
+    "started_at": "2026-10-25T02:58:40Z",
+    "completed_at": "2026-10-25T02:59:18Z",
+    "steps": [
+      {
+        "name": "Set up job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 1,
+        "started_at": "2026-10-25T02:58:41Z",
+        "completed_at": "2026-10-25T02:58:41Z"
+      },
+      {
+        "name": "Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 2,
+        "started_at": "2026-10-25T02:58:41Z",
+        "completed_at": "2026-10-25T02:58:50Z"
+      },
+      {
+        "name": "Run actions/setup-python@v5",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 3,
+        "started_at": "2026-10-25T02:58:50Z",
+        "completed_at": "2026-10-25T02:58:50Z"
+      },
+      {
+        "name": "Test the research-process checks",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 4,
+        "started_at": "2026-10-25T02:58:50Z",
+        "completed_at": "2026-10-25T02:58:54Z"
+      },
+      {
+        "name": "Check research nodes and the append-only ledger",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 5,
+        "started_at": "2026-10-25T02:58:54Z",
+        "completed_at": "2026-10-25T02:58:57Z"
+      },
+      {
+        "name": "Check authority commit references are published",
+        "status": "completed",
+        "conclusion": "failure",
+        "number": 6,
+        "started_at": "2026-10-25T02:58:57Z",
+        "completed_at": "2026-10-25T02:59:16Z"
+      },
+      {
+        "name": "Post Run actions/setup-python@v5",
+        "status": "completed",
+        "conclusion": "skipped",
+        "number": 11,
+        "started_at": "2026-10-25T02:59:16Z",
+        "completed_at": "2026-10-25T02:59:16Z"
+      },
+      {
+        "name": "Post Run actions/checkout@v4",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 12,
+        "started_at": "2026-10-25T02:59:16Z",
+        "completed_at": "2026-10-25T02:59:16Z"
+      },
+      {
+        "name": "Complete job",
+        "status": "completed",
+        "conclusion": "success",
+        "number": 13,
+        "started_at": "2026-10-25T02:59:16Z",
+        "completed_at": "2026-10-25T02:59:16Z"
+      }
+    ]
+  },
+  "metadata_tests": {
+    "research_node": 16,
+    "authority_refs": 8,
+    "total_passed": 24,
+    "step_conclusion": "success",
+    "research_node_reported_seconds": 1.664,
+    "authority_refs_reported_seconds": 0.901,
+    "scope": "metadata checker unit tests, not scientific solver/contract campaign"
+  },
+  "research_node_and_ledger": {
+    "status": "PASS",
+    "ledger_rows": 169,
+    "base": "origin/research/d4-effect-journal-20261025",
+    "new_nodes": [
+      "d5_callback_contract_20261025"
+    ]
+  },
+  "authority": {
+    "status": "FAIL",
+    "citations": 8261,
+    "distinct_all": 896,
+    "missing_not_allowlisted_distinct": 56,
+    "missing_allowlisted_distinct": 27,
+    "non_commit_distinct": 336,
+    "reachable_distinct": 477,
+    "failure_occurrences": 199,
+    "exit_code": 1
+  },
+  "observed_partition_by_file_path": {
+    "pre_d4": {
+      "distinct": 32,
+      "occurrences": 143
+    },
+    "d4": {
+      "distinct": 7,
+      "occurrences": 25
+    },
+    "d5": {
+      "distinct": 17,
+      "occurrences": 31
+    }
+  },
+  "prior_saved_d4_ci": {
+    "receipt_path": "../recovered_d4_delivery/delivery/CI_RECEIPT.json",
+    "receipt_sha256": "d988b3f23ff0ba85f31ab5268d830a443980d1063e4a2353c474757cffeda0fa",
+    "raw_log_path": "../recovered_d4_delivery/evidence/S3_RESEARCH_PROCESS_CI.log",
+    "raw_log_sha256": "95cbce76a588f3ebdb932508eabbfb2f1cb555023bee405a790d826086e4a3d4",
+    "run_id": 40138539924,
+    "source_commit": "c6630c1c412d41eb47adf013d23b385192971798",
+    "missing_distinct": 38,
+    "failure_occurrences": 152,
+    "pre_d4": {
+      "distinct": 32,
+      "occurrences": 143
+    },
+    "d4_at_that_ci": {
+      "distinct": 6,
+      "occurrences": 9
+    },
+    "read_saved_only": true,
+    "old_ci_rerun": false
+  },
+  "comparison": {
+    "total_delta_distinct": 18,
+    "total_delta_occurrences": 47,
+    "all_prior_38_missing_shas_still_missing": true,
+    "d4_delivery_metadata_delta": {
+      "distinct": 1,
+      "occurrences": 16,
+      "new_central_reference": "2354d6e995fde736fffbcad2d0e40473218cb8c4",
+      "new_central_reference_occurrences": 4,
+      "additional_occurrences_of_prior_d4_foreign_shas": 12
+    },
+    "d5_delta": {
+      "distinct": 17,
+      "occurrences": 31
+    },
+    "interpretation": "Do not attribute the full +18/+47 difference to D5: +1/+16 occurs in inherited D4 final-delivery files."
+  },
+  "d5_failure_classification": {
+    "based_on": "actual failure locations plus already saved related-repository source pins; no new external-object resolution",
+    "foreign_source_distinct": 17,
+    "foreign_source_occurrences": 31,
+    "foreign_commit_distinct": 12,
+    "foreign_blob_distinct": 5,
+    "compiler_pin_failure_observed": false,
+    "unclassified_d5_distinct": 0,
+    "source_object_availability_now": "NOT_REVALIDATED",
+    "objects": [
+      {
+        "sha": "10f3ea585c6608e794900efe7e4f8f42c0747a3b",
+        "repository": "cosmosapjw-quantum/htt_base",
+        "object_type_from_existing_intake": "commit",
+        "classification_basis": "PR561 pin in raw cited context",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 1,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+            "source_line": 44,
+            "log_line": 569
+          }
+        ]
+      },
+      {
+        "sha": "2f10fbd64cfd0810a976bf2720186fd56b7bfde7",
+        "repository": "cosmosapjw-quantum/htt_base",
+        "object_type_from_existing_intake": "commit",
+        "classification_basis": "PR508 pin in raw cited context",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 1,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+            "source_line": 45,
+            "log_line": 570
+          }
+        ]
+      },
+      {
+        "sha": "ba438dc3c202b05990752bfd2278fe2bec6714f0",
+        "repository": "cosmosapjw-quantum/ISM",
+        "object_type_from_existing_intake": "commit",
+        "classification_basis": "existing RELATED_ADDITIONAL_KO.md ISM main-branch intake; raw cited line83",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 1,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+            "source_line": 83,
+            "log_line": 571
+          }
+        ]
+      },
+      {
+        "sha": "26ab505dac2bfcb0cfd3d049f22bc408f4c86241",
+        "repository": "cosmosapjw-quantum/bass_cr",
+        "object_type_from_existing_intake": "commit",
+        "classification_basis": "C21I branch and PR86 source pin",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 8,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+            "source_line": 91,
+            "log_line": 572
+          },
+          {
+            "path": "research/d5_callback_contract_20261025/REPORT_KO.md",
+            "source_line": 253,
+            "log_line": 588
+          },
+          {
+            "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+            "source_line": 22,
+            "log_line": 591
+          },
+          {
+            "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+            "source_line": 22,
+            "log_line": 592
+          },
+          {
+            "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+            "source_line": 22,
+            "log_line": 593
+          },
+          {
+            "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+            "source_line": 22,
+            "log_line": 594
+          },
+          {
+            "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+            "source_line": 22,
+            "log_line": 595
+          },
+          {
+            "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+            "source_line": 22,
+            "log_line": 596
+          }
+        ]
+      },
+      {
+        "sha": "0ec4c55102766c40c554ffc6141eb08fba741c79",
+        "repository": "cosmosapjw-quantum/bass_cr",
+        "object_type_from_existing_intake": "commit",
+        "classification_basis": "C21H branch and PR85 source pin",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 8,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+            "source_line": 92,
+            "log_line": 573
+          },
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+            "source_line": 113,
+            "log_line": 581
+          },
+          {
+            "path": "research/d5_callback_contract_20261025/REPORT_KO.md",
+            "source_line": 252,
+            "log_line": 587
+          },
+          {
+            "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+            "source_line": 6,
+            "log_line": 589
+          },
+          {
+            "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+            "source_line": 6,
+            "log_line": 590
+          },
+          {
+            "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+            "source_line": 6,
+            "log_line": 597
+          },
+          {
+            "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+            "source_line": 6,
+            "log_line": 598
+          },
+          {
+            "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+            "source_line": 6,
+            "log_line": 599
+          }
+        ]
+      },
+      {
+        "sha": "efd1520dfc0643220f729307583ff0bc04b059e9",
+        "repository": "cosmosapjw-quantum/WU088_HH",
+        "object_type_from_existing_intake": "commit",
+        "classification_basis": "named HH source branch in raw cited context",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 1,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+            "source_line": 93,
+            "log_line": 574
+          }
+        ]
+      },
+      {
+        "sha": "49a3f747aead23ac412922a45c9c1f4ef2a54157",
+        "repository": "cosmosapjw-quantum/BASS_HE",
+        "object_type_from_existing_intake": "commit",
+        "classification_basis": "named HE source/Jacobian branch in raw cited context",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 1,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+            "source_line": 94,
+            "log_line": 575
+          }
+        ]
+      },
+      {
+        "sha": "98d036180338fbd7cbe71353882bd8df09959da0",
+        "repository": "cosmosapjw-quantum/bass_cr",
+        "object_type_from_existing_intake": "blob",
+        "classification_basis": "existing C21H rust_bridge/src/main.rs source pin",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 1,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+            "source_line": 103,
+            "log_line": 576
+          }
+        ]
+      },
+      {
+        "sha": "fbfd4c27373c1bcc051e0bc10d55a2db6efe76dd",
+        "repository": "cosmosapjw-quantum/bass_cr",
+        "object_type_from_existing_intake": "blob",
+        "classification_basis": "existing C21I optimized_adapter.py source pin",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 1,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+            "source_line": 104,
+            "log_line": 577
+          }
+        ]
+      },
+      {
+        "sha": "e167121a6604eb7ec13a941b99042902e95b379b",
+        "repository": "cosmosapjw-quantum/bass_cr",
+        "object_type_from_existing_intake": "blob",
+        "classification_basis": "existing C21I native_cache_contract.py source pin",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 1,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+            "source_line": 105,
+            "log_line": 578
+          }
+        ]
+      },
+      {
+        "sha": "df12907b21a308f708463021a1814b5a82d9554f",
+        "repository": "cosmosapjw-quantum/bass_cr",
+        "object_type_from_existing_intake": "blob",
+        "classification_basis": "existing C21I report source pin",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 1,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+            "source_line": 106,
+            "log_line": 579
+          }
+        ]
+      },
+      {
+        "sha": "6180be2590cb42c975814d7204db6df1f78ba736",
+        "repository": "cosmosapjw-quantum/bass_cr",
+        "object_type_from_existing_intake": "blob",
+        "classification_basis": "existing C21I admission document source pin",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 1,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+            "source_line": 107,
+            "log_line": 580
+          }
+        ]
+      },
+      {
+        "sha": "40ea4bbd5b2eb1b0c82f8ec9d5fdc1c6324e44f8",
+        "repository": "cosmosapjw-quantum/bass_cr",
+        "object_type_from_existing_intake": "commit",
+        "classification_basis": "existing C21H source content commit",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 1,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+            "source_line": 118,
+            "log_line": 582
+          }
+        ]
+      },
+      {
+        "sha": "fe6bbaec2de5032b938aed0713623b9618ba70e6",
+        "repository": "cosmosapjw-quantum/bass_cr",
+        "object_type_from_existing_intake": "commit",
+        "classification_basis": "existing C21I source content commit",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 1,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+            "source_line": 118,
+            "log_line": 583
+          }
+        ]
+      },
+      {
+        "sha": "4e4276e1d27b830084ae572a26650e7c9e3d979f",
+        "repository": "cosmosapjw-quantum/REC",
+        "object_type_from_existing_intake": "commit",
+        "classification_basis": "REC PR136 pin in raw cited context",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 1,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_REPOS_KO.md",
+            "source_line": 16,
+            "log_line": 584
+          }
+        ]
+      },
+      {
+        "sha": "77228ff9316108afcd805f41bed24495a7ff41c0",
+        "repository": "cosmosapjw-quantum/BASS",
+        "object_type_from_existing_intake": "commit",
+        "classification_basis": "BASS PR188 pin in raw cited context",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 1,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_REPOS_KO.md",
+            "source_line": 17,
+            "log_line": 585
+          }
+        ]
+      },
+      {
+        "sha": "11d06f9dc35143058fcdee9e81c979b039e08a83",
+        "repository": "cosmosapjw-quantum/BASS",
+        "object_type_from_existing_intake": "commit",
+        "classification_basis": "BASS PR189 pin in raw cited context",
+        "external_revalidation": "NOT_RUN",
+        "failure_occurrences": 1,
+        "evidence_locations": [
+          {
+            "path": "research/d5_callback_contract_20261025/RELATED_REPOS_KO.md",
+            "source_line": 18,
+            "log_line": 586
+          }
+        ]
+      }
+    ]
+  },
+  "raw_log": {
+    "path": "evidence/CI_S3_JOB.log",
+    "sha256": "2c96915f8c65dea8c43203544091e5d88ac00e70715bf601784d1497169b082c",
+    "utf8_bytes": 100268,
+    "lines": 688,
+    "utf8_bom_preserved": true,
+    "newlines": "LF",
+    "trailing_newline_preserved": true,
+    "entire_file_readback_equals_connector_decoded_log": true,
+    "transport_scope": "exact decoded UTF-8 job log returned by GitHub connector, not a workflow ZIP archive"
+  },
+  "failure_records": [
+    {
+      "log_line": 472,
+      "path": "research/adaptive_causal_20261023/ARTIFACT_MANIFEST.json",
+      "source_line": 4,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "native_commit"
+    },
+    {
+      "log_line": 473,
+      "path": "research/adaptive_causal_20261023/CAUSAL_COMPLETION.json",
+      "source_line": 36,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "final_benchmark_source"
+    },
+    {
+      "log_line": 474,
+      "path": "research/adaptive_causal_20261023/DECISIONS.json",
+      "source_line": 5,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "first_native_commit"
+    },
+    {
+      "log_line": 475,
+      "path": "research/adaptive_causal_20261023/DECISIONS.json",
+      "source_line": 6,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "final_native_commit"
+    },
+    {
+      "log_line": 476,
+      "path": "research/adaptive_causal_20261023/DECISIONS.json",
+      "source_line": 5,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "campaigns.source_commit"
+    },
+    {
+      "log_line": 477,
+      "path": "research/adaptive_causal_20261023/DECISIONS.json",
+      "source_line": 6,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "campaigns.source_commit"
+    },
+    {
+      "log_line": 478,
+      "path": "research/adaptive_causal_20261023/DECISIONS.json",
+      "source_line": 5,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "campaigns.source_commit"
+    },
+    {
+      "log_line": 479,
+      "path": "research/adaptive_causal_20261023/DECISIONS.json",
+      "source_line": 5,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "campaigns.source_commit"
+    },
+    {
+      "log_line": 480,
+      "path": "research/adaptive_causal_20261023/NEXT_STEPS.json",
+      "source_line": 3,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 481,
+      "path": "research/adaptive_causal_20261023/PUBLISH_MAP.json",
+      "source_line": 10,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "mappings.local_evidence_commit"
+    },
+    {
+      "log_line": 482,
+      "path": "research/adaptive_causal_20261023/PUBLISH_MAP.json",
+      "source_line": 16,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "mappings.local_evidence_commit"
+    },
+    {
+      "log_line": 483,
+      "path": "research/adaptive_causal_20261023/PUBLISH_MAP.json",
+      "source_line": 22,
+      "sha": "910dc3860b26739ba3d8330c157d5b2082899f18",
+      "state": "missing",
+      "context": "mappings.local_evidence_commit"
+    },
+    {
+      "log_line": 484,
+      "path": "research/adaptive_causal_20261023/REPORT_KO.md",
+      "source_line": 13,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "출발점은 `14c74978b93339a79d7228a324fa77552dae548e`다. 이번의 첫 native 구현은 `548526add83a38a996875b3bd2f3cd3357465ed6`, 기본 explic"
+    },
+    {
+      "log_line": 485,
+      "path": "research/adaptive_causal_20261023/REPORT_KO.md",
+      "source_line": 13,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "출발점은 `14c74978b93339a79d7228a324fa77552dae548e`다. 이번의 첫 native 구현은 `548526add83a38a996875b3bd2f3cd3357465ed6`, 기본 explic"
+    },
+    {
+      "log_line": 486,
+      "path": "research/adaptive_causal_20261023/REVIEW.json",
+      "source_line": 6,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "reviewed_source_commit"
+    },
+    {
+      "log_line": 487,
+      "path": "research/adaptive_causal_20261023/REVIEW.json",
+      "source_line": 6,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "reviewed_execution_evidence.native_runs.source_commit"
+    },
+    {
+      "log_line": 488,
+      "path": "research/adaptive_causal_20261023/REVIEW.json",
+      "source_line": 202,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "reviewed_execution_evidence.native_runs.source_commit"
+    },
+    {
+      "log_line": 489,
+      "path": "research/adaptive_causal_20261023/REVIEW.json",
+      "source_line": 202,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "reviewed_execution_evidence.native_runs.source_commit"
+    },
+    {
+      "log_line": 490,
+      "path": "research/adaptive_causal_20261023/REVIEW.json",
+      "source_line": 202,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "benchmark_and_report_review.reviewed_campaigns.source_commit"
+    },
+    {
+      "log_line": 491,
+      "path": "research/adaptive_causal_20261023/REVIEW.json",
+      "source_line": 202,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "benchmark_and_report_review.reviewed_campaigns.source_commit"
+    },
+    {
+      "log_line": 492,
+      "path": "research/adaptive_causal_20261023/REVIEW.json",
+      "source_line": 202,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "benchmark_and_report_review.reviewed_campaigns.source_commit"
+    },
+    {
+      "log_line": 493,
+      "path": "research/adaptive_causal_20261023/REVIEW.json",
+      "source_line": 6,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "benchmark_and_report_review.reviewed_campaigns.source_commit"
+    },
+    {
+      "log_line": 494,
+      "path": "research/adaptive_causal_20261023/REVIEW.json",
+      "source_line": 202,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "source_followup.previous_native_commit"
+    },
+    {
+      "log_line": 495,
+      "path": "research/adaptive_causal_20261023/REVIEW.json",
+      "source_line": 202,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "publication_metadata_review.mappings.local_evidence_commit"
+    },
+    {
+      "log_line": 496,
+      "path": "research/adaptive_causal_20261023/REVIEW.json",
+      "source_line": 6,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "publication_metadata_review.mappings.local_evidence_commit"
+    },
+    {
+      "log_line": 497,
+      "path": "research/adaptive_causal_20261023/REVIEW.json",
+      "source_line": 550,
+      "sha": "910dc3860b26739ba3d8330c157d5b2082899f18",
+      "state": "missing",
+      "context": "publication_metadata_review.mappings.local_evidence_commit"
+    },
+    {
+      "log_line": 498,
+      "path": "research/adaptive_causal_20261023/WORKFLOW.json",
+      "source_line": 17,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "executions.environment.source_commit"
+    },
+    {
+      "log_line": 499,
+      "path": "research/adaptive_causal_20261023/WORKFLOW.json",
+      "source_line": 17,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "executions.environment.source_commit"
+    },
+    {
+      "log_line": 500,
+      "path": "research/adaptive_causal_20261023/WORKFLOW.json",
+      "source_line": 17,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "executions.environment.source_commit"
+    },
+    {
+      "log_line": 501,
+      "path": "research/adaptive_causal_20261023/WORKFLOW.json",
+      "source_line": 22,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "executions.environment.source_commit"
+    },
+    {
+      "log_line": 502,
+      "path": "research/adaptive_causal_20261023/WORKFLOW.json",
+      "source_line": 17,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "executions.environment.source_commit"
+    },
+    {
+      "log_line": 503,
+      "path": "research/adaptive_causal_20261023/WORKFLOW.json",
+      "source_line": 17,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "executions.environment.source_commit"
+    },
+    {
+      "log_line": 504,
+      "path": "research/adaptive_causal_20261023/WORKFLOW.json",
+      "source_line": 22,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "executions.environment.source_commit"
+    },
+    {
+      "log_line": 505,
+      "path": "research/adaptive_causal_20261023/WORKFLOW.json",
+      "source_line": 17,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "source_cohorts.initial_native_commit"
+    },
+    {
+      "log_line": 506,
+      "path": "research/adaptive_causal_20261023/WORKFLOW.json",
+      "source_line": 22,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "source_cohorts.final_native_commit"
+    },
+    {
+      "log_line": 507,
+      "path": "research/adaptive_causal_20261023/WORKFLOW.json",
+      "source_line": 22,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "publication.source_commit"
+    },
+    {
+      "log_line": 508,
+      "path": "research/adaptive_causal_20261023/analysis/CAUSAL_IMPLEMENTATION_KO.md",
+      "source_line": 108,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "최종 고정 source `548526add83a38a996875b3bd2f3cd3357465ed6`에서 CPU 0에 고정한 단일"
+    },
+    {
+      "log_line": 509,
+      "path": "research/adaptive_causal_20261023/analysis/INDEPENDENT_REVIEW_KO.md",
+      "source_line": 115,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "최종 native commit `d4e8623bf8add9f505ec018532c4602e5a838a41`과 이전 측정"
+    },
+    {
+      "log_line": 510,
+      "path": "research/adaptive_causal_20261023/analysis/INDEPENDENT_REVIEW_KO.md",
+      "source_line": 116,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "commit `548526add83a38a996875b3bd2f3cd3357465ed6`을 구별했다. 변경된 facade"
+    },
+    {
+      "log_line": 511,
+      "path": "research/adaptive_causal_20261023/analysis/OSCILLATORY_KO.md",
+      "source_line": 110,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "컴파일 중 공유 호스트에서 얻은 초기 측정은 `quotient_benchmark_initial.json` 및 `quotient_summary_preliminary.json`으로 남겼다. 최종 성능 수치는 native"
+    },
+    {
+      "log_line": 512,
+      "path": "research/adaptive_causal_20261023/analysis/SWITCHING_BENCHMARK_KO.md",
+      "source_line": 3,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "소스 commit: `548526add83a38a996875b3bd2f3cd3357465ed6`. 동일한 measurement binary, CPU affinity 0, Rayon/BLAS/OMP thread 수 1"
+    },
+    {
+      "log_line": 513,
+      "path": "research/adaptive_causal_20261023/evidence/RHS_PERSISTENCE_FOLLOWUP.json",
+      "source_line": 18,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 514,
+      "path": "research/adaptive_causal_20261023/evidence/SOURCE_IDENTITY.json",
+      "source_line": 4,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "native_commit"
+    },
+    {
+      "log_line": 515,
+      "path": "research/adaptive_causal_20261023/results/FINAL_NATIVE_TESTS.json",
+      "source_line": 2,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 516,
+      "path": "research/adaptive_causal_20261023/results/PERSISTENT_FINAL_TESTS.json",
+      "source_line": 2,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 517,
+      "path": "research/adaptive_causal_20261023/results/benchmark_build_receipt.json",
+      "source_line": 4,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 518,
+      "path": "research/adaptive_causal_20261023/results/causal_benchmark_receipt.json",
+      "source_line": 5,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 519,
+      "path": "research/adaptive_causal_20261023/results/causal_benchmark_summary.json",
+      "source_line": 3,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 520,
+      "path": "research/adaptive_causal_20261023/results/quotient_build_receipt.json",
+      "source_line": 3,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 521,
+      "path": "research/adaptive_causal_20261023/results/quotient_run_receipt.json",
+      "source_line": 3,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 522,
+      "path": "research/adaptive_causal_20261023/results/rhs_persistent_build_receipt.json",
+      "source_line": 4,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 523,
+      "path": "research/adaptive_causal_20261023/results/rhs_persistent_campaign/PLAN.json",
+      "source_line": 3,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 524,
+      "path": "research/adaptive_causal_20261023/results/rhs_persistent_campaign/RHS_PARITY.json",
+      "source_line": 3,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 525,
+      "path": "research/adaptive_causal_20261023/results/rhs_persistent_campaign/SUMMARY.json",
+      "source_line": 3,
+      "sha": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 526,
+      "path": "research/adaptive_causal_20261023/results/switching_campaign/PLAN.json",
+      "source_line": 3,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 527,
+      "path": "research/adaptive_causal_20261023/results/switching_campaign/SUMMARY.json",
+      "source_line": 3,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 528,
+      "path": "research/adaptive_causal_20261023/results/switching_persistent_correction.json",
+      "source_line": 4,
+      "sha": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "state": "missing",
+      "context": "baseline_commit"
+    },
+    {
+      "log_line": 529,
+      "path": "research/all_dag_completion_20261018/DAG.json",
+      "source_line": 11,
+      "sha": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+      "state": "missing",
+      "context": "local_integration_commit"
+    },
+    {
+      "log_line": 530,
+      "path": "research/all_dag_completion_20261018/LOCAL_POSTFLIGHT.json",
+      "source_line": 15,
+      "sha": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+      "state": "missing",
+      "context": "checks.check_authority_refs.classification"
+    },
+    {
+      "log_line": 531,
+      "path": "research/all_dag_completion_20261018/LOCAL_POSTFLIGHT.json",
+      "source_line": 15,
+      "sha": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+      "state": "missing",
+      "context": "classification.authority_reference_failure"
+    },
+    {
+      "log_line": 532,
+      "path": "research/all_dag_completion_20261018/LOCAL_POSTFLIGHT.json",
+      "source_line": 15,
+      "sha": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+      "state": "missing",
+      "context": "repository_checkers.check_authority_refs.classification"
+    },
+    {
+      "log_line": 533,
+      "path": "research/all_dag_completion_20261018/LOCAL_POSTFLIGHT.json",
+      "source_line": 15,
+      "sha": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+      "state": "missing",
+      "context": "published_postflight.check_authority_refs.counts"
+    },
+    {
+      "log_line": 534,
+      "path": "research/all_dag_completion_20261018/nodes/A02/RESULT.json",
+      "source_line": 6,
+      "sha": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+      "state": "missing",
+      "context": "base_commit"
+    },
+    {
+      "log_line": 535,
+      "path": "research/all_dag_completion_20261018/nodes/A04/REPORT_KO.md",
+      "source_line": 12,
+      "sha": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+      "state": "missing",
+      "context": "조사 기준 HEAD는 `40a36d922e915e1d1c296adc136b7e5b7676eb67`이다. 기존"
+    },
+    {
+      "log_line": 536,
+      "path": "research/all_dag_completion_20261018/nodes/A04/RESULT.json",
+      "source_line": 8,
+      "sha": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+      "state": "missing",
+      "context": "baseline_commit"
+    },
+    {
+      "log_line": 537,
+      "path": "research/all_dag_completion_20261018/nodes/A05/RESULT.json",
+      "source_line": 5,
+      "sha": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+      "state": "missing",
+      "context": "baseline_commit"
+    },
+    {
+      "log_line": 538,
+      "path": "research/all_dag_completion_20261018/nodes/A07/native_smoke/MANIFEST.json",
+      "source_line": 29,
+      "sha": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+      "state": "missing",
+      "context": "git_head.stdout"
+    },
+    {
+      "log_line": 539,
+      "path": "research/all_dag_completion_20261018/nodes/A08.json",
+      "source_line": 6,
+      "sha": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+      "state": "missing",
+      "context": "source_base"
+    },
+    {
+      "log_line": 540,
+      "path": "research/all_dag_completion_20261018/nodes/A09/RESULT.json",
+      "source_line": 11,
+      "sha": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+      "state": "missing",
+      "context": "baseline_commit"
+    },
+    {
+      "log_line": 541,
+      "path": "research/all_dag_completion_20261018/nodes/A11/RESULT.json",
+      "source_line": 117,
+      "sha": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+      "state": "missing",
+      "context": "source_identity.base_commit"
+    },
+    {
+      "log_line": 542,
+      "path": "research/all_dag_completion_20261018/nodes/A12/REVIEW.json",
+      "source_line": 7,
+      "sha": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+      "state": "missing",
+      "context": "base_merge_commit"
+    },
+    {
+      "log_line": 543,
+      "path": "research/branch_integration_20261021/LEDGER_INDEX.json",
+      "source_line": 3182,
+      "sha": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+      "state": "missing",
+      "context": "observed_worktree_base"
+    },
+    {
+      "log_line": 544,
+      "path": "research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json",
+      "source_line": 8,
+      "sha": "407381b302d8b98f251b54d277823997bc4fca9f",
+      "state": "missing",
+      "context": "objects.sha"
+    },
+    {
+      "log_line": 545,
+      "path": "research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json",
+      "source_line": 8,
+      "sha": "407381b302d8b98f251b54d277823997bc4fca9f",
+      "state": "missing",
+      "context": "objects.canonical_url"
+    },
+    {
+      "log_line": 546,
+      "path": "research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json",
+      "source_line": 15,
+      "sha": "4eab1bd2ee3561fe07beda4301f082321522c611",
+      "state": "missing",
+      "context": "objects.sha"
+    },
+    {
+      "log_line": 547,
+      "path": "research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json",
+      "source_line": 23,
+      "sha": "0a088e1f8fca6618107525e687f930406ca32d18",
+      "state": "missing",
+      "context": "objects.sha"
+    },
+    {
+      "log_line": 548,
+      "path": "research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json",
+      "source_line": 23,
+      "sha": "0a088e1f8fca6618107525e687f930406ca32d18",
+      "state": "missing",
+      "context": "objects.canonical_url"
+    },
+    {
+      "log_line": 549,
+      "path": "research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json",
+      "source_line": 30,
+      "sha": "54a65d4d84d3cb7a8dc05a2d69c6910690b30bff",
+      "state": "missing",
+      "context": "objects.sha"
+    },
+    {
+      "log_line": 550,
+      "path": "research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json",
+      "source_line": 30,
+      "sha": "54a65d4d84d3cb7a8dc05a2d69c6910690b30bff",
+      "state": "missing",
+      "context": "objects.canonical_url"
+    },
+    {
+      "log_line": 551,
+      "path": "research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json",
+      "source_line": 37,
+      "sha": "277572a17b27c09246dbeaa707a1fa82f89cffcd",
+      "state": "missing",
+      "context": "objects.sha"
+    },
+    {
+      "log_line": 552,
+      "path": "research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json",
+      "source_line": 37,
+      "sha": "277572a17b27c09246dbeaa707a1fa82f89cffcd",
+      "state": "missing",
+      "context": "objects.canonical_url"
+    },
+    {
+      "log_line": 553,
+      "path": "research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json",
+      "source_line": 44,
+      "sha": "ccf2bd088972e952fbe8e7e6eb21ccc8a7275447",
+      "state": "missing",
+      "context": "objects.sha"
+    },
+    {
+      "log_line": 554,
+      "path": "research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json",
+      "source_line": 44,
+      "sha": "ccf2bd088972e952fbe8e7e6eb21ccc8a7275447",
+      "state": "missing",
+      "context": "objects.canonical_url"
+    },
+    {
+      "log_line": 555,
+      "path": "research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json",
+      "source_line": 51,
+      "sha": "2354d6e995fde736fffbcad2d0e40473218cb8c4",
+      "state": "missing",
+      "context": "objects.sha"
+    },
+    {
+      "log_line": 556,
+      "path": "research/d4_effect_journal_20261025/EXTERNAL_SOURCE_BINDINGS.json",
+      "source_line": 51,
+      "sha": "2354d6e995fde736fffbcad2d0e40473218cb8c4",
+      "state": "missing",
+      "context": "objects.canonical_url"
+    },
+    {
+      "log_line": 557,
+      "path": "research/d4_effect_journal_20261025/FINAL_DELIVERY.json",
+      "source_line": 350,
+      "sha": "2354d6e995fde736fffbcad2d0e40473218cb8c4",
+      "state": "missing",
+      "context": "latest_central_head"
+    },
+    {
+      "log_line": 558,
+      "path": "research/d4_effect_journal_20261025/HANDOFF_KO.md",
+      "source_line": 136,
+      "sha": "407381b302d8b98f251b54d277823997bc4fca9f",
+      "state": "missing",
+      "context": "조사에서 보존한 native frontier는 `aaf1f834d4c589e734ca7851a56c11bb44f7047a`, 중앙 PR222의 당시 관측 HEAD는 `407381b302d8b98f251b54d2778"
+    },
+    {
+      "log_line": 559,
+      "path": "research/d4_effect_journal_20261025/RELATED_REPOS_KO.md",
+      "source_line": 9,
+      "sha": "407381b302d8b98f251b54d277823997bc4fca9f",
+      "state": "missing",
+      "context": "| 중앙 REI PR222 | `407381b302d8b98f251b54d277823997bc4fca9f` | Draft/open/unmerged. 최신 commit은 HE PR99 finite-M shell 관측이"
+    },
+    {
+      "log_line": 560,
+      "path": "research/d4_effect_journal_20261025/RELATED_REPOS_KO.md",
+      "source_line": 10,
+      "sha": "4eab1bd2ee3561fe07beda4301f082321522c611",
+      "state": "missing",
+      "context": "| 중앙 VigilODE handoff | blob `4eab1bd2ee3561fe07beda4301f082321522c611` | 2026-10-23 초기 V1–V5 계약을 보존한다. 기존 planned 상태를 이"
+    },
+    {
+      "log_line": 561,
+      "path": "research/d4_effect_journal_20261025/RELATED_REPOS_KO.md",
+      "source_line": 12,
+      "sha": "0a088e1f8fca6618107525e687f930406ca32d18",
+      "state": "missing",
+      "context": "| BASS PR187 | `0a088e1f8fca6618107525e687f930406ca32d18` | REC locked 35-cell×26-direction inventory→910 massless packe"
+    },
+    {
+      "log_line": 562,
+      "path": "research/d4_effect_journal_20261025/RELATED_REPOS_KO.md",
+      "source_line": 13,
+      "sha": "54a65d4d84d3cb7a8dc05a2d69c6910690b30bff",
+      "state": "missing",
+      "context": "| REI PR226 | `54a65d4d84d3cb7a8dc05a2d69c6910690b30bff` | REC-HISTORY frozen response 관측. REC science `277572a17b27c092"
+    },
+    {
+      "log_line": 563,
+      "path": "research/d4_effect_journal_20261025/RELATED_REPOS_KO.md",
+      "source_line": 13,
+      "sha": "277572a17b27c09246dbeaa707a1fa82f89cffcd",
+      "state": "missing",
+      "context": "| REI PR226 | `54a65d4d84d3cb7a8dc05a2d69c6910690b30bff` | REC-HISTORY frozen response 관측. REC science `277572a17b27c092"
+    },
+    {
+      "log_line": 564,
+      "path": "research/d4_effect_journal_20261025/RELATED_REPOS_KO.md",
+      "source_line": 13,
+      "sha": "ccf2bd088972e952fbe8e7e6eb21ccc8a7275447",
+      "state": "missing",
+      "context": "| REI PR226 | `54a65d4d84d3cb7a8dc05a2d69c6910690b30bff` | REC-HISTORY frozen response 관측. REC science `277572a17b27c092"
+    },
+    {
+      "log_line": 565,
+      "path": "research/d4_effect_journal_20261025/RELATED_REPOS_KO.md",
+      "source_line": 17,
+      "sha": "407381b302d8b98f251b54d277823997bc4fca9f",
+      "state": "missing",
+      "context": "[중앙 handoff](https://github.com/cosmosapjw-quantum/rei_bianchi/blob/407381b302d8b98f251b54d277823997bc4fca9f/research/or"
+    },
+    {
+      "log_line": 566,
+      "path": "research/d4_effect_journal_20261025/REPORT_KO.md",
+      "source_line": 13,
+      "sha": "407381b302d8b98f251b54d277823997bc4fca9f",
+      "state": "missing",
+      "context": "D2 HEAD1c829f206ab67585191231be7f5135fd0d4c804e, D3 HEAD02060cc9dc4551dc5cf6ec86ad9b53b697a2c3ce, native frontier aaf1f8"
+    },
+    {
+      "log_line": 567,
+      "path": "research/d4_effect_journal_20261025/REPORT_KO.md",
+      "source_line": 138,
+      "sha": "2354d6e995fde736fffbcad2d0e40473218cb8c4",
+      "state": "missing",
+      "context": "종료 시 중앙 PR222 HEAD는2354d6e995fde736fffbcad2d0e40473218cb8c4로 갱신됐다. 조사 당시407381b302d8b98f251b54d277823997bc4fca9f에서4commi"
+    },
+    {
+      "log_line": 568,
+      "path": "research/d4_effect_journal_20261025/REPORT_KO.md",
+      "source_line": 138,
+      "sha": "407381b302d8b98f251b54d277823997bc4fca9f",
+      "state": "missing",
+      "context": "종료 시 중앙 PR222 HEAD는2354d6e995fde736fffbcad2d0e40473218cb8c4로 갱신됐다. 조사 당시407381b302d8b98f251b54d277823997bc4fca9f에서4commi"
+    },
+    {
+      "log_line": 569,
+      "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+      "source_line": 44,
+      "sha": "10f3ea585c6608e794900efe7e4f8f42c0747a3b",
+      "state": "missing",
+      "context": "htt_base #561](https://github.com/cosmosapjw-quantum/htt_base/pull/561) | 10f3ea585c6608e794900efe7e4f8f42c0747a3b | "
+    },
+    {
+      "log_line": 570,
+      "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+      "source_line": 45,
+      "sha": "2f10fbd64cfd0810a976bf2720186fd56b7bfde7",
+      "state": "missing",
+      "context": "htt_base #508](https://github.com/cosmosapjw-quantum/htt_base/pull/508) | 2f10fbd64cfd0810a976bf2720186fd56b7bfde7 | "
+    },
+    {
+      "log_line": 571,
+      "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+      "source_line": 83,
+      "sha": "ba438dc3c202b05990752bfd2278fe2bec6714f0",
+      "state": "missing",
+      "context": "branch는 main 한 개이며 SHA는 ba438dc3c202b05990752bfd2278fe2bec6714f0다. 모든 상태 PR 목록은 첫 페이지부터 0이다. 따라서 최신 PR source/callback 연"
+    },
+    {
+      "log_line": 572,
+      "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+      "source_line": 91,
+      "sha": "26ab505dac2bfcb0cfd3d049f22bc408f4c86241",
+      "state": "missing",
+      "context": "| bass_cr | research/cr-c21i-callback-optimization-20261020 | 26ab505dac2bfcb0cfd3d049f22bc408f4c86241 | PR86와 아래 source"
+    },
+    {
+      "log_line": 573,
+      "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+      "source_line": 92,
+      "sha": "0ec4c55102766c40c554ffc6141eb08fba741c79",
+      "state": "missing",
+      "context": "| bass_cr | research/cr-c21h-vigilode-bridge-20261019 | 0ec4c55102766c40c554ffc6141eb08fba741c79 | PR85와 아래 source 직접 읽음"
+    },
+    {
+      "log_line": 574,
+      "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+      "source_line": 93,
+      "sha": "efd1520dfc0643220f729307583ff0bc04b059e9",
+      "state": "missing",
+      "context": "| WU088_HH | research/hh-phys69-angular-tail-vigilode-20261019 | efd1520dfc0643220f729307583ff0bc04b059e9 | VigilODE 관련 "
+    },
+    {
+      "log_line": 575,
+      "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+      "source_line": 94,
+      "sha": "49a3f747aead23ac412922a45c9c1f4ef2a54157",
+      "state": "missing",
+      "context": "| BASS_HE | research/he18-c2-source-jacobian-20261015 | 49a3f747aead23ac412922a45c9c1f4ef2a54157 | source Jacobian이라는 이름"
+    },
+    {
+      "log_line": 576,
+      "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+      "source_line": 103,
+      "sha": "98d036180338fbd7cbe71353882bd8df09959da0",
+      "state": "missing",
+      "context": "| C21H rust_bridge/src/main.rs | 98d036180338fbd7cbe71353882bd8df09959da0 | forbid(unsafe_code), RPC preflight, identity"
+    },
+    {
+      "log_line": 577,
+      "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+      "source_line": 104,
+      "sha": "fbfd4c27373c1bcc051e0bc10d55a2db6efe76dd",
+      "state": "missing",
+      "context": "| C21I optimized_adapter.py | fbfd4c27373c1bcc051e0bc10d55a2db6efe76dd | frozen cell scope, provider pre/post guard, 성공한"
+    },
+    {
+      "log_line": 578,
+      "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+      "source_line": 105,
+      "sha": "e167121a6604eb7ec13a941b99042902e95b379b",
+      "state": "missing",
+      "context": "| C21I native_cache_contract.py | e167121a6604eb7ec13a941b99042902e95b379b | source/provider/class/process/config/file l"
+    },
+    {
+      "log_line": 579,
+      "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+      "source_line": 106,
+      "sha": "df12907b21a308f708463021a1814b5a82d9554f",
+      "state": "missing",
+      "context": "| C21I C21I_RESEARCH_REPORT_KO.md | df12907b21a308f708463021a1814b5a82d9554f | 고정 C21H optical model 최적화, actual native/"
+    },
+    {
+      "log_line": 580,
+      "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+      "source_line": 107,
+      "sha": "6180be2590cb42c975814d7204db6df1f78ba736",
+      "state": "missing",
+      "context": "| C21I NATIVE_CACHE_ADMISSION_KO.md | 6180be2590cb42c975814d7204db6df1f78ba736 | admission source와 guard의 실제 범위, 일반 atte"
+    },
+    {
+      "log_line": 581,
+      "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+      "source_line": 113,
+      "sha": "0ec4c55102766c40c554ffc6141eb08fba741c79",
+      "state": "missing",
+      "context": "C21H Rust bridge](https://github.com/cosmosapjw-quantum/bass_cr/blob/0ec4c55102766c40c554ffc6141eb08fba741c79/researc"
+    },
+    {
+      "log_line": 582,
+      "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+      "source_line": 118,
+      "sha": "40ea4bbd5b2eb1b0c82f8ec9d5fdc1c6324e44f8",
+      "state": "missing",
+      "context": "H/I의 source content commit은 각각 40ea4bbd5b2eb1b0c82f8ec9d5fdc1c6324e44f8, fe6bbaec2de5032b938aed0713623b9618ba70e6이고 위 관측"
+    },
+    {
+      "log_line": 583,
+      "path": "research/d5_callback_contract_20261025/RELATED_ADDITIONAL_KO.md",
+      "source_line": 118,
+      "sha": "fe6bbaec2de5032b938aed0713623b9618ba70e6",
+      "state": "missing",
+      "context": "H/I의 source content commit은 각각 40ea4bbd5b2eb1b0c82f8ec9d5fdc1c6324e44f8, fe6bbaec2de5032b938aed0713623b9618ba70e6이고 위 관측"
+    },
+    {
+      "log_line": 584,
+      "path": "research/d5_callback_contract_20261025/RELATED_REPOS_KO.md",
+      "source_line": 16,
+      "sha": "4e4276e1d27b830084ae572a26650e7c9e3d979f",
+      "state": "missing",
+      "context": "| REC PR136 4e4276e1d27b830084ae572a26650e7c9e3d979f | stable-source K_s와history binding의 S0. 완료로 승격하지 않음 |"
+    },
+    {
+      "log_line": 585,
+      "path": "research/d5_callback_contract_20261025/RELATED_REPOS_KO.md",
+      "source_line": 17,
+      "sha": "77228ff9316108afcd805f41bed24495a7ff41c0",
+      "state": "missing",
+      "context": "| BASS PR188 77228ff9316108afcd805f41bed24495a7ff41c0 | angular cohort error 완료;22/28 comparison 실패 자체가 측정결과. callback/n"
+    },
+    {
+      "log_line": 586,
+      "path": "research/d5_callback_contract_20261025/RELATED_REPOS_KO.md",
+      "source_line": 18,
+      "sha": "11d06f9dc35143058fcdee9e81c979b039e08a83",
+      "state": "missing",
+      "context": "| BASS PR189 11d06f9dc35143058fcdee9e81c979b039e08a83 | source-aware positive angular S0. 새 finite receiver trace/produc"
+    },
+    {
+      "log_line": 587,
+      "path": "research/d5_callback_contract_20261025/REPORT_KO.md",
+      "source_line": 252,
+      "sha": "0ec4c55102766c40c554ffc6141eb08fba741c79",
+      "state": "missing",
+      "context": "C21H bridge](https://github.com/cosmosapjw-quantum/bass_cr/blob/0ec4c55102766c40c554ffc6141eb08fba741c79/research/cr_"
+    },
+    {
+      "log_line": 588,
+      "path": "research/d5_callback_contract_20261025/REPORT_KO.md",
+      "source_line": 253,
+      "sha": "26ab505dac2bfcb0cfd3d049f22bc408f4c86241",
+      "state": "missing",
+      "context": "C21I adapter](https://github.com/cosmosapjw-quantum/bass_cr/blob/26ab505dac2bfcb0cfd3d049f22bc408f4c86241/research/cr"
+    },
+    {
+      "log_line": 589,
+      "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+      "source_line": 6,
+      "sha": "0ec4c55102766c40c554ffc6141eb08fba741c79",
+      "state": "missing",
+      "context": "pins.ref"
+    },
+    {
+      "log_line": 590,
+      "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+      "source_line": 6,
+      "sha": "0ec4c55102766c40c554ffc6141eb08fba741c79",
+      "state": "missing",
+      "context": "pins.ref"
+    },
+    {
+      "log_line": 591,
+      "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+      "source_line": 22,
+      "sha": "26ab505dac2bfcb0cfd3d049f22bc408f4c86241",
+      "state": "missing",
+      "context": "pins.ref"
+    },
+    {
+      "log_line": 592,
+      "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+      "source_line": 22,
+      "sha": "26ab505dac2bfcb0cfd3d049f22bc408f4c86241",
+      "state": "missing",
+      "context": "pins.ref"
+    },
+    {
+      "log_line": 593,
+      "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+      "source_line": 22,
+      "sha": "26ab505dac2bfcb0cfd3d049f22bc408f4c86241",
+      "state": "missing",
+      "context": "pins.ref"
+    },
+    {
+      "log_line": 594,
+      "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+      "source_line": 22,
+      "sha": "26ab505dac2bfcb0cfd3d049f22bc408f4c86241",
+      "state": "missing",
+      "context": "pins.ref"
+    },
+    {
+      "log_line": 595,
+      "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+      "source_line": 22,
+      "sha": "26ab505dac2bfcb0cfd3d049f22bc408f4c86241",
+      "state": "missing",
+      "context": "pins.ref"
+    },
+    {
+      "log_line": 596,
+      "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+      "source_line": 22,
+      "sha": "26ab505dac2bfcb0cfd3d049f22bc408f4c86241",
+      "state": "missing",
+      "context": "pins.ref"
+    },
+    {
+      "log_line": 597,
+      "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+      "source_line": 6,
+      "sha": "0ec4c55102766c40c554ffc6141eb08fba741c79",
+      "state": "missing",
+      "context": "pins.ref"
+    },
+    {
+      "log_line": 598,
+      "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+      "source_line": 6,
+      "sha": "0ec4c55102766c40c554ffc6141eb08fba741c79",
+      "state": "missing",
+      "context": "pins.ref"
+    },
+    {
+      "log_line": 599,
+      "path": "research/d5_callback_contract_20261025/evidence/REUSED_CR_PATTERN_PINS.json",
+      "source_line": 6,
+      "sha": "0ec4c55102766c40c554ffc6141eb08fba741c79",
+      "state": "missing",
+      "context": "pins.ref"
+    },
+    {
+      "log_line": 600,
+      "path": "research/ncp_followup_20261021/BASS_REI_INPUTS.json",
+      "source_line": 4,
+      "sha": "80825585f9fe31d2ee0d5af545ada3fa1f52be72",
+      "state": "missing",
+      "context": "rei_source_commit"
+    },
+    {
+      "log_line": 601,
+      "path": "research/ncp_followup_20261021/BASS_REI_INPUTS.json",
+      "source_line": 5,
+      "sha": "beb7594e5a68bb361cfcb813c7cc9fb1a2d6b8f0",
+      "state": "missing",
+      "context": "rei_source_tree"
+    },
+    {
+      "log_line": 602,
+      "path": "research/ncp_followup_20261021/BASS_REI_INPUTS.json",
+      "source_line": 6,
+      "sha": "106a0153bf113fa4f0beea9743e84a744b65f424",
+      "state": "missing",
+      "context": "bass_recorded_source_commit"
+    },
+    {
+      "log_line": 603,
+      "path": "research/ncp_followup_20261021/BASS_REI_INPUTS.json",
+      "source_line": 7,
+      "sha": "41a83fb95bce2d5e0d72f4c8ecd8479c55a4946a",
+      "state": "missing",
+      "context": "bass_recorded_source_tree"
+    },
+    {
+      "log_line": 604,
+      "path": "research/ncp_followup_20261021/BASS_REI_PORT_RESEARCH.md",
+      "source_line": 7,
+      "sha": "80825585f9fe31d2ee0d5af545ada3fa1f52be72",
+      "state": "missing",
+      "context": "The inspected rei C15 source is commit `80825585f9fe31d2ee0d5af545ada3fa1f52be72`, tree `beb7594e5a68bb361cfcb813c7cc9fb"
+    },
+    {
+      "log_line": 605,
+      "path": "research/ncp_followup_20261021/BASS_REI_PORT_RESEARCH.md",
+      "source_line": 7,
+      "sha": "beb7594e5a68bb361cfcb813c7cc9fb1a2d6b8f0",
+      "state": "missing",
+      "context": "The inspected rei C15 source is commit `80825585f9fe31d2ee0d5af545ada3fa1f52be72`, tree `beb7594e5a68bb361cfcb813c7cc9fb"
+    },
+    {
+      "log_line": 606,
+      "path": "research/ncp_followup_20261021/BASS_REI_PORT_RESEARCH.md",
+      "source_line": 7,
+      "sha": "106a0153bf113fa4f0beea9743e84a744b65f424",
+      "state": "missing",
+      "context": "The inspected rei C15 source is commit `80825585f9fe31d2ee0d5af545ada3fa1f52be72`, tree `beb7594e5a68bb361cfcb813c7cc9fb"
+    },
+    {
+      "log_line": 607,
+      "path": "research/ncp_followup_20261021/BASS_REI_PORT_RESEARCH.md",
+      "source_line": 7,
+      "sha": "41a83fb95bce2d5e0d72f4c8ecd8479c55a4946a",
+      "state": "missing",
+      "context": "The inspected rei C15 source is commit `80825585f9fe31d2ee0d5af545ada3fa1f52be72`, tree `beb7594e5a68bb361cfcb813c7cc9fb"
+    },
+    {
+      "log_line": 608,
+      "path": "research/ncp_followup_20261021/BASS_REI_RECENCY.json",
+      "source_line": 7,
+      "sha": "9c6506e4e2087129a8b674ff10438e5db1a55c9d",
+      "state": "missing",
+      "context": "default_branches.head"
+    },
+    {
+      "log_line": 609,
+      "path": "research/ncp_followup_20261021/BASS_REI_RECENCY.json",
+      "source_line": 8,
+      "sha": "ae3402713c4b6530ab2b27f008f5f5d5c6a999ed",
+      "state": "missing",
+      "context": "default_branches.head"
+    },
+    {
+      "log_line": 610,
+      "path": "research/ncp_followup_20261021/BASS_REI_RECENCY.json",
+      "source_line": 11,
+      "sha": "26f4a89a54462c4e7c5705f281f187f33f45166a",
+      "state": "missing",
+      "context": "relevant_current_branches.head"
+    },
+    {
+      "log_line": 611,
+      "path": "research/ncp_followup_20261021/BASS_REI_RECENCY.json",
+      "source_line": 12,
+      "sha": "d32cd99fa19c65aa1ca63dbc8aab8741834270e8",
+      "state": "missing",
+      "context": "relevant_current_branches.head"
+    },
+    {
+      "log_line": 612,
+      "path": "research/ncp_followup_20261021/BASS_REI_RECENCY.json",
+      "source_line": 13,
+      "sha": "80825585f9fe31d2ee0d5af545ada3fa1f52be72",
+      "state": "missing",
+      "context": "relevant_current_branches.head"
+    },
+    {
+      "log_line": 613,
+      "path": "research/ncp_followup_20261021/BASS_REI_RECENCY.json",
+      "source_line": 14,
+      "sha": "99e07bcff126d0a73a03bafc4b71e0b735dbcc3e",
+      "state": "missing",
+      "context": "relevant_current_branches.head"
+    },
+    {
+      "log_line": 614,
+      "path": "research/ncp_followup_20261021/BASS_REI_RECENCY.json",
+      "source_line": 15,
+      "sha": "c9deb933761a8d2593d1176aee028cd423bdbc05",
+      "state": "missing",
+      "context": "relevant_current_branches.head"
+    },
+    {
+      "log_line": 615,
+      "path": "research/ncp_followup_20261021/BASS_REI_RECENCY.json",
+      "source_line": 16,
+      "sha": "220c0525e36e817fbe3a4e8932508555e781c1c3",
+      "state": "missing",
+      "context": "relevant_current_branches.head"
+    },
+    {
+      "log_line": 616,
+      "path": "research/ncp_followup_20261021/BASS_REI_RECENCY.json",
+      "source_line": 12,
+      "sha": "d32cd99fa19c65aa1ca63dbc8aab8741834270e8",
+      "state": "missing",
+      "context": "byte_identity_comparisons.ref"
+    },
+    {
+      "log_line": 617,
+      "path": "research/ncp_followup_20261021/BASS_REI_RECENCY.json",
+      "source_line": 12,
+      "sha": "d32cd99fa19c65aa1ca63dbc8aab8741834270e8",
+      "state": "missing",
+      "context": "byte_identity_comparisons.ref"
+    },
+    {
+      "log_line": 618,
+      "path": "research/ncp_followup_20261021/BASS_REI_RECENCY.json",
+      "source_line": 12,
+      "sha": "d32cd99fa19c65aa1ca63dbc8aab8741834270e8",
+      "state": "missing",
+      "context": "byte_identity_comparisons.ref"
+    },
+    {
+      "log_line": 619,
+      "path": "research/ncp_followup_20261021/BASS_REI_RECENCY.json",
+      "source_line": 11,
+      "sha": "26f4a89a54462c4e7c5705f281f187f33f45166a",
+      "state": "missing",
+      "context": "byte_identity_comparisons.ref"
+    },
+    {
+      "log_line": 620,
+      "path": "research/ncp_followup_20261021/BASS_REI_RECENCY.json",
+      "source_line": 12,
+      "sha": "d32cd99fa19c65aa1ca63dbc8aab8741834270e8",
+      "state": "missing",
+      "context": "reproduction_urls"
+    },
+    {
+      "log_line": 621,
+      "path": "research/ncp_followup_20261021/BASS_REI_RECENCY.json",
+      "source_line": 12,
+      "sha": "d32cd99fa19c65aa1ca63dbc8aab8741834270e8",
+      "state": "missing",
+      "context": "reproduction_urls"
+    },
+    {
+      "log_line": 622,
+      "path": "research/ncp_followup_20261021/BASS_REI_RECENCY.json",
+      "source_line": 11,
+      "sha": "26f4a89a54462c4e7c5705f281f187f33f45166a",
+      "state": "missing",
+      "context": "reproduction_urls"
+    },
+    {
+      "log_line": 623,
+      "path": "research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml",
+      "source_line": 31,
+      "sha": "7063ad1083578215c7c4bf410368150abe8d5524",
+      "state": "missing",
+      "context": "git-tree-sha1 = \"7063ad1083578215c7c4bf410368150abe8d5524\""
+    },
+    {
+      "log_line": 624,
+      "path": "research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml",
+      "source_line": 126,
+      "sha": "b1b04c236ff7ed92e69d64b620448b3da00933d4",
+      "state": "missing",
+      "context": "git-tree-sha1 = \"b1b04c236ff7ed92e69d64b620448b3da00933d4\""
+    },
+    {
+      "log_line": 625,
+      "path": "research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml",
+      "source_line": 166,
+      "sha": "802bb88cd69dfd1509f6670416bd4434015693ad",
+      "state": "missing",
+      "context": "git-tree-sha1 = \"802bb88cd69dfd1509f6670416bd4434015693ad\""
+    },
+    {
+      "log_line": 626,
+      "path": "research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml",
+      "source_line": 181,
+      "sha": "b4b092499347b18a015186eae3042f72267106cb",
+      "state": "missing",
+      "context": "git-tree-sha1 = \"b4b092499347b18a015186eae3042f72267106cb\""
+    },
+    {
+      "log_line": 627,
+      "path": "research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml",
+      "source_line": 844,
+      "sha": "5a995982a30ce31999c5504569234ecb91a6e0ef",
+      "state": "missing",
+      "context": "git-tree-sha1 = \"5a995982a30ce31999c5504569234ecb91a6e0ef\""
+    },
+    {
+      "log_line": 628,
+      "path": "research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml",
+      "source_line": 860,
+      "sha": "57ebe5c7130f1def087d4ebc01a4959bba8c7689",
+      "state": "missing",
+      "context": "git-tree-sha1 = \"57ebe5c7130f1def087d4ebc01a4959bba8c7689\""
+    },
+    {
+      "log_line": 629,
+      "path": "research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml",
+      "source_line": 870,
+      "sha": "4d6354525db068b9d1578389274b7e6cabc663b4",
+      "state": "missing",
+      "context": "git-tree-sha1 = \"4d6354525db068b9d1578389274b7e6cabc663b4\""
+    },
+    {
+      "log_line": 630,
+      "path": "research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml",
+      "source_line": 881,
+      "sha": "371de3eb5985febd9d7babb0937520653f2b15ca",
+      "state": "missing",
+      "context": "git-tree-sha1 = \"371de3eb5985febd9d7babb0937520653f2b15ca\""
+    },
+    {
+      "log_line": 631,
+      "path": "research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml",
+      "source_line": 977,
+      "sha": "e6391348505df3c9c33008c0fec050862b834bf4",
+      "state": "missing",
+      "context": "git-tree-sha1 = \"e6391348505df3c9c33008c0fec050862b834bf4\""
+    },
+    {
+      "log_line": 632,
+      "path": "research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml",
+      "source_line": 1028,
+      "sha": "9bb075002b40849582905394bb3031fb77aa102d",
+      "state": "missing",
+      "context": "git-tree-sha1 = \"9bb075002b40849582905394bb3031fb77aa102d\""
+    },
+    {
+      "log_line": 633,
+      "path": "research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml",
+      "source_line": 1038,
+      "sha": "85f85c3c5b949e7d691047e758e3fdb77c21310c",
+      "state": "missing",
+      "context": "git-tree-sha1 = \"85f85c3c5b949e7d691047e758e3fdb77c21310c\""
+    },
+    {
+      "log_line": 634,
+      "path": "research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml",
+      "source_line": 1092,
+      "sha": "781d5413c2991e581da86979b0d9f86f9a034a1c",
+      "state": "missing",
+      "context": "git-tree-sha1 = \"781d5413c2991e581da86979b0d9f86f9a034a1c\""
+    },
+    {
+      "log_line": 635,
+      "path": "research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml",
+      "source_line": 1140,
+      "sha": "c5391c6ace3bc430ca630251d02ea9687169ca68",
+      "state": "missing",
+      "context": "git-tree-sha1 = \"c5391c6ace3bc430ca630251d02ea9687169ca68\""
+    },
+    {
+      "log_line": 636,
+      "path": "research/production_frontier_20261023/PUBLISH_MAP.json",
+      "source_line": 14,
+      "sha": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "state": "missing",
+      "context": "source_equivalence.local_commit"
+    },
+    {
+      "log_line": 637,
+      "path": "research/production_frontier_20261023/PUBLISH_MAP.json",
+      "source_line": 23,
+      "sha": "50d3052843d7bbce75bba55a104725c4cfcf6292",
+      "state": "missing",
+      "context": "source_equivalence.local_commit"
+    },
+    {
+      "log_line": 638,
+      "path": "research/production_frontier_20261023/REPRODUCE.md",
+      "source_line": 3,
+      "sha": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "state": "missing",
+      "context": "This is a new research branch based on `9b210c76dffb8909902f733e80d6cfa32405006e`. Native code and experiment sources we"
+    },
+    {
+      "log_line": 639,
+      "path": "research/production_frontier_20261023/REPRODUCE.md",
+      "source_line": 5,
+      "sha": "50d3052843d7bbce75bba55a104725c4cfcf6292",
+      "state": "missing",
+      "context": "There is one later numerical-source exception: the standalone PDE prototype received the `Q=0`/`t=0` identity-path repai"
+    },
+    {
+      "log_line": 640,
+      "path": "research/production_frontier_20261023/analysis/ADVERSARIAL_AUDIT.md",
+      "source_line": 58,
+      "sha": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "state": "missing",
+      "context": "The reviewer read the final native logs at local source `55ad7ec6af8b127cb90849db56abff4f02b9920b`:28 integrator, 29 fac"
+    },
+    {
+      "log_line": 641,
+      "path": "research/production_frontier_20261023/analysis/ADVERSARIAL_FINDINGS.json",
+      "source_line": 250,
+      "sha": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "state": "missing",
+      "context": "native_source.local_commit"
+    },
+    {
+      "log_line": 642,
+      "path": "research/production_frontier_20261023/analysis/CAUSAL_FINDINGS.json",
+      "source_line": 81,
+      "sha": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "state": "missing",
+      "context": "benchmark.source_commit"
+    },
+    {
+      "log_line": 643,
+      "path": "research/production_frontier_20261023/analysis/CAUSAL_TRAJECTORY.md",
+      "source_line": 60,
+      "sha": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "state": "missing",
+      "context": "고정 native source `55ad7ec6af8b127cb90849db56abff4f02b9920b`와 동일 executable에서 단일 스레드 126회(3반복), 2스레드 84회(2반복)를 완료했다. 캠페인 "
+    },
+    {
+      "log_line": 644,
+      "path": "research/production_frontier_20261023/analysis/SWITCHING.json",
+      "source_line": 121,
+      "sha": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "state": "missing",
+      "context": "benchmark.source_commit"
+    },
+    {
+      "log_line": 645,
+      "path": "research/production_frontier_20261023/evidence/affine_campaign_receipt.json",
+      "source_line": 3,
+      "sha": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 646,
+      "path": "research/production_frontier_20261023/evidence/pde_campaign_final_receipt.json",
+      "source_line": 2,
+      "sha": "50d3052843d7bbce75bba55a104725c4cfcf6292",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 647,
+      "path": "research/production_frontier_20261023/evidence/pde_campaign_receipt.json",
+      "source_line": 3,
+      "sha": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 648,
+      "path": "research/production_frontier_20261023/results/AFFINE_SUMMARY.json",
+      "source_line": 3,
+      "sha": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 649,
+      "path": "research/production_frontier_20261023/results/CAUSAL_THREADS_AUDIT.json",
+      "source_line": 3,
+      "sha": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 650,
+      "path": "research/production_frontier_20261023/results/FINAL_EVIDENCE_AUDIT.json",
+      "source_line": 15,
+      "sha": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "state": "missing",
+      "context": "causal.source_commits"
+    },
+    {
+      "log_line": 651,
+      "path": "research/production_frontier_20261023/results/causal_campaign/PLAN.json",
+      "source_line": 3,
+      "sha": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 652,
+      "path": "research/production_frontier_20261023/results/causal_campaign_threads2/PLAN.json",
+      "source_line": 3,
+      "sha": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 653,
+      "path": "research/production_frontier_20261023/results/switching_campaign/PLAN.json",
+      "source_line": 3,
+      "sha": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "state": "missing",
+      "context": "source_commit"
+    },
+    {
+      "log_line": 654,
+      "path": "research/production_frontier_followup_20261023/IDENTITY.json",
+      "source_line": 29,
+      "sha": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "state": "missing",
+      "context": "published_source_equivalence.local_commit"
+    },
+    {
+      "log_line": 655,
+      "path": "research/production_frontier_followup_20261023/IDENTITY.json",
+      "source_line": 35,
+      "sha": "50d3052843d7bbce75bba55a104725c4cfcf6292",
+      "state": "missing",
+      "context": "published_source_equivalence.local_commit"
+    },
+    {
+      "log_line": 656,
+      "path": "research/production_reaudit_20261021/BRANCH_INTEGRATION.json",
+      "source_line": 8,
+      "sha": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+      "state": "missing",
+      "context": "production_integration_base"
+    },
+    {
+      "log_line": 657,
+      "path": "research/production_reaudit_20261021/BRANCH_INTEGRATION.json",
+      "source_line": 8,
+      "sha": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+      "state": "missing",
+      "context": "ledger.production_archive_worktree_base"
+    },
+    {
+      "log_line": 658,
+      "path": "research/production_reaudit_20261021/BRANCH_INTEGRATION.md",
+      "source_line": 3,
+      "sha": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+      "state": "missing",
+      "context": "이번 통합은 `33e45625`의 인증 API만 옮기는 데서 끝내지 않는다. production 두 분기의 통합 기반 `4a5fc656730fe8243f06b6e603cb8aa758b00b2f`와 연구 브랜치 최신 "
+    },
+    {
+      "log_line": 659,
+      "path": "research/production_reaudit_20261021/INDEPENDENT_BRANCH_REVIEW.json",
+      "source_line": 381,
+      "sha": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+      "state": "missing",
+      "context": "refs.production_base"
+    },
+    {
+      "log_line": 660,
+      "path": "research/production_reaudit_20261021/INPUTS.json",
+      "source_line": 6,
+      "sha": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+      "state": "missing",
+      "context": "baseline_merged_commit"
+    },
+    {
+      "log_line": 661,
+      "path": "research/production_reaudit_20261021/dense_transaction.json",
+      "source_line": 5,
+      "sha": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+      "state": "missing",
+      "context": "baseline.merged_commit"
+    },
+    {
+      "log_line": 662,
+      "path": "research/production_reaudit_20261021/dense_transaction.md",
+      "source_line": 3,
+      "sha": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+      "state": "missing",
+      "context": "기준은 최신 계획 `cc2e1a0`과 실행 코드 `f2f20c1`의 합성 `4a5fc656730fe8243f06b6e603cb8aa758b00b2f`이다. 담당 범위는 sequential dense enforceme"
+    },
+    {
+      "log_line": 663,
+      "path": "research/production_reaudit_20261021/evidence/ncp_harness/DRY_RUN_PLAN.json",
+      "source_line": 239,
+      "sha": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+      "state": "missing",
+      "context": "identity.source.commit"
+    },
+    {
+      "log_line": 664,
+      "path": "research/production_reaudit_20261021/evidence/ncp_harness/DRY_RUN_PLAN.json",
+      "source_line": 242,
+      "sha": "274ad0c57a372f2816cb78054fa6a1d9939794eb",
+      "state": "missing",
+      "context": "identity.source.tree"
+    },
+    {
+      "log_line": 665,
+      "path": "research/production_reaudit_20261021/evidence/ncp_harness/DRY_RUN_SUMMARY.json",
+      "source_line": 3452,
+      "sha": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+      "state": "missing",
+      "context": "source.commit"
+    },
+    {
+      "log_line": 666,
+      "path": "research/production_reaudit_20261021/evidence/ncp_harness/DRY_RUN_SUMMARY.json",
+      "source_line": 3455,
+      "sha": "274ad0c57a372f2816cb78054fa6a1d9939794eb",
+      "state": "missing",
+      "context": "source.tree"
+    },
+    {
+      "log_line": 667,
+      "path": "research/production_reaudit_20261021/evidence/port/PORT.json",
+      "source_line": 5,
+      "sha": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+      "state": "missing",
+      "context": "baseline_commit"
+    },
+    {
+      "log_line": 668,
+      "path": "research/production_reaudit_20261021/evidence/port/PORT.md",
+      "source_line": 7,
+      "sha": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+      "state": "missing",
+      "context": "- Integration base: `4a5fc656730fe8243f06b6e603cb8aa758b00b2f`."
+    },
+    {
+      "log_line": 669,
+      "path": "research/production_reaudit_20261021/evidence/port/PORT_ANALYSIS.md",
+      "source_line": 3,
+      "sha": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+      "state": "missing",
+      "context": "Current source: `4a5fc656730fe8243f06b6e603cb8aa758b00b2f`"
+    },
+    {
+      "log_line": 670,
+      "path": "research/production_reaudit_20261021/facade.json",
+      "source_line": 4,
+      "sha": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+      "state": "missing",
+      "context": "baseline_commit"
+    }
+  ],
+  "operations": {
+    "read_only_github_calls": 3,
+    "status_reads": 1,
+    "busy_polling": false,
+    "remote_mutations": 0,
+    "dispatches": 0,
+    "reruns": 0,
+    "local_checker_runs": 0,
+    "scientific_executions": 0,
+    "external_object_revalidation": 0,
+    "old_science_replays": 0,
+    "budget_edits": 0,
+    "allowlist_edits": 0,
+    "checker_edits": 0
+  },
+  "production": "HOLD",
+  "global_completion": null
+}
