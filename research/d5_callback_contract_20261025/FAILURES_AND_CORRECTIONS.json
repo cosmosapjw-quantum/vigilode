@@ -1,0 +1,92 @@
+{
+  "preexecution_findings": [
+    {
+      "id": "P1-FD-ENV",
+      "finding": "represented stencil arithmetic preceded the first FP witness",
+      "correction": "probe immediately before stencil arithmetic; adjust affected probe-count assertions and add bad-FP refusal case",
+      "evidence": "evidence/preexecution_fp_correction/RECEIPT.json",
+      "original_scientific_execution": false,
+      "reruns": 0
+    },
+    {
+      "id": "SCOPE-REUSE",
+      "finding": "C21H/C21I already implement physics-specific staging/domain/provider patterns",
+      "correction": "reuse those patterns and narrow added scope to generic strict full-write/pair/bilateral FD composition",
+      "evidence": "RELATED_ADDITIONAL_KO.md",
+      "reruns": 0
+    },
+    {
+      "id": "R6-DET",
+      "finding": "a positive determinant is a nonsingularity check, not a conditioning bound",
+      "correction": "narrow theory wording; no formula/source change",
+      "reruns": 0
+    },
+    {
+      "id": "R6-DROP",
+      "finding": "destructor unwind is not generally caught by callback guards",
+      "correction": "state normal return of required destructors/panic-payload drops separately",
+      "reruns": 0
+    },
+    {
+      "id": "R6-C9-DOMAIN-FP",
+      "finding": "floating comparison in domain construction/check preceded the generic probe",
+      "correction": "finite binary64 integer ordering, with signed-zero equivalence; original query unchanged; one subnormal/zero boundary contract test",
+      "evidence": "evidence/preexecution_bit_domain_correction/RECEIPT.json",
+      "scientific_runs_before_correction": 0
+    }
+  ],
+  "execution_failures": [
+    {
+      "name": "restore_toolchain",
+      "kind": "toolchain infrastructure",
+      "cause": "two official archive components contain root manifest.in; exclusive flattening refused the second metadata path after80files",
+      "exit": 1,
+      "log": "evidence/restore_toolchain.log",
+      "original_source": "restore_toolchain.py",
+      "correction": "resume exact bin/lib payloads, verify/reuse existing runtime bytes, skip component metadata; preserve partial tree and original log",
+      "old_science_replayed": 0
+    },
+    {
+      "name": "rustc_version",
+      "kind": "toolchain infrastructure probe",
+      "cause": "previous incomplete extraction had not reached librustc_driver; loader refused compiler startup",
+      "exit": 127,
+      "log": "evidence/rustc_version.log",
+      "correction": "complete missing official runtime payloads; version probe will run only after concrete restoration",
+      "old_science_replayed": 0
+    }
+  ],
+  "old_scientific_replays": 0,
+  "packaging_corrections": [
+    {
+      "id": "S0-CR-PIN",
+      "finding": "initial local S0 whitelist omitted the additional CR pattern pin file referenced by docs",
+      "correction": "preserve initial unpublished archive and create uniquely named S0_R1 with17payloads before upload",
+      "old_archive_receipt": "delivery/S0_INITIAL_LOCAL_ARCHIVE.json",
+      "science_reruns": 0
+    }
+  ],
+  "figure_findings": [
+    {
+      "id": "FIG-ANNOTATION",
+      "finding": "state annotation touched the dashed J interpretation line in actual initial PNG",
+      "correction": "remove in-panel annotation; put fixed x/y in report caption",
+      "rerun_scope": "saved-data plot only"
+    },
+    {
+      "id": "FIG-LABEL",
+      "finding": "Outside stencil excluded zero/NaN/sub-ulp step refusals from the apparent label",
+      "correction": "use Invalid stencil and Invalid query",
+      "rerun_scope": "saved-data plot only"
+    }
+  ],
+  "review_findings": [
+    {
+      "id": "C9-SCHEMA-COVERAGE",
+      "finding": "zip in original numerical oracle can omit short-array fields",
+      "correction": "preserve original and add complete-shape/key/field-count validation over identical saved bytes",
+      "receipt": "SCHEMA_REVIEW.json",
+      "model_callback_oracle_reruns": 0
+    }
+  ]
+}

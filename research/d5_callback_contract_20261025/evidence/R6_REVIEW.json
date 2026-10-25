@@ -1,0 +1,263 @@
+{
+  "stage": "R6",
+  "reviewer": "/root/next_contract_sources",
+  "review_pass": "single_complementary_pass",
+  "status": "PASS_SCOPED_DERIVATION_AND_SOURCE_BOUND",
+  "blocking_findings": 0,
+  "saved_result_review": "PASS_SYMBOLIC_POINT_FD_CONTRACT_RAW_READBACK",
+  "inputs": [
+    {
+      "path": "CONTRACT.md",
+      "sha256": "11b3a7e8a1ba721a950ccaa6df42ccb6b6804adb9912b9c971d8a7a2925d315a"
+    },
+    {
+      "path": "PREREGISTRATION.md",
+      "sha256": "fca5617f0daea740853323e2279013288996e625d7241900e6211e54ff194a76"
+    },
+    {
+      "path": "THEORY.md",
+      "sha256": "5b2ad00d527d74760f2302057d177552349b4ac9e85077d92f8d6a106376795f"
+    },
+    {
+      "path": "source/gateway.rs",
+      "sha256": "c4ae170271fdae67bab2edfddb16ea149bccfc77f60f59e161347cbcfee697ee"
+    }
+  ],
+  "methods": [
+    "direct source/contract reading",
+    "independent hand algebra",
+    "finite-state/data-ownership argument",
+    "primary theorem boundary reused from R2"
+  ],
+  "mathematical_checks": {
+    "jacobian": "PASS_HAND_DERIVED",
+    "partial_t": "PASS_HAND_DERIVED",
+    "fixed_time_state_taylor_second_order": "PASS_EXACT_HAND_DERIVED",
+    "transfer_loss_sum": "PASS_HAND_DERIVED",
+    "simplex": "PASS_CONDITIONAL_EXACT_SOLUTION",
+    "determinants": "PASS_SIGN_NONSINGULARITY_ONLY",
+    "represented_secant": "PASS_REAL_SECANT_VS_COMPUTED_ESTIMATE_DISTINGUISHED",
+    "frozen_dyadic_grid_exactness": "COMPATIBLE_WITH_FROZEN_EQUALITY_REQUIREMENT",
+    "finite_bit_domain_order": "PASS_HAND_ARGUMENT",
+    "atomic_owned_result": "PASS_CONDITIONAL_SOURCE_BOUND",
+    "epoch_fp_panic_assumptions": "EXPLICIT_AND_SCOPED",
+    "pattern_reuse": "D2_D4_NATIVE_C21H_C21I_REUSED"
+  },
+  "manual_witness": {
+    "t": "1/2",
+    "x": "1/4",
+    "y": "3/4",
+    "k": "17/8",
+    "f": [
+      "57/128",
+      "-153/128"
+    ],
+    "J": [
+      [
+        "-3",
+        "51/16"
+      ],
+      [
+        "3",
+        "-67/16"
+      ]
+    ],
+    "partial_t": [
+      "9/32",
+      "-9/32"
+    ],
+    "jvp_one_minus_one": [
+      "-99/16",
+      "115/16"
+    ],
+    "fixed_time_delta": [
+      "1/8",
+      "-1/8"
+    ],
+    "state_remainder": [
+      "17/512",
+      "-17/512"
+    ],
+    "classification": "HAND_ALGEBRA_NOT_EXECUTED_GRID"
+  },
+  "symbolic_evidence": {
+    "status": "PASS_SAVED_SOURCE_RAW_AND_EXTRACTED_OUTPUT_READBACK",
+    "execution_owner": "/root",
+    "root_new_cas_calls": 1,
+    "reviewer_new_cas_calls": 0,
+    "inputs": [
+      {
+        "path": "evidence/DERIVATION.wl",
+        "sha256": "5d045af0e8ede514c36dabafa09707be1197301db27e1365264460a11b97b98d"
+      },
+      {
+        "path": "evidence/WOLFRAM_RESULT.json",
+        "sha256": "ae9aee06de85128bae42566301a35632ebaf01d671f67e6cf7c8b3f2ca3f5303"
+      },
+      {
+        "path": "evidence/WOLFRAM_CHECK.json",
+        "sha256": "6c80ad9a33be47262bdd82c95f2e53ad076a8c0deefad3073534d37fad0b98b3"
+      }
+    ],
+    "residual_groups": 12,
+    "all_scalar_zero_checks_true": true,
+    "raw_and_extracted_output_match": true,
+    "sample_matches_independent_hand_algebra": true,
+    "residual_arrays_exported": false,
+    "kernel": "15.0.1 for Linux x86 (64-bit) (July 2, 2026)",
+    "reported_kernel_wall_seconds": 0.035829,
+    "reported_kernel_cpu_seconds": 0.03582899999999967,
+    "limits": [
+      "secant rational identities require nonzero denominators; no general binary64 exactness claim",
+      "boundary residual identities are not by themselves an invariant-set proof",
+      "determinant identity plus sign assumptions yields nonsingularity, not a conditioning bound",
+      "wrong_J_plus_I verifies a known nonzero derivative error, not correctness of the bad Jacobian",
+      "saved output contains Boolean scalar zero checks and an exact sample, not residual arrays",
+      "no callback honesty, rollback, native admission, or general dense certificate follows"
+    ]
+  },
+  "grid_evidence": {
+    "status": "PASS_SAVED_RAW_AND_ORACLE_SOURCE_BOUND",
+    "reviewer_new_runs": 0,
+    "review_method": "read actual raw representative/boundary/symmetric-J points and all FD/refusal/wrong-J/summary rows; independent hand algebra; read saved oracle source, output and log; no oracle rerun",
+    "input": {
+      "path": "evidence/points.jsonl",
+      "sha256": "cb64d9455289f183363749289038d6f250bf63e0ab95ea94cd51defa88d2ba21",
+      "actual_lines": 794,
+      "actual_bytes": 170379
+    },
+    "supporting_files": [
+      {"path": "REVIEW.json", "sha256": "115e3aeee8424c2e906a7ec8cad4aef3691c2716351bf754817abaa8d54dc1f7"},
+      {"path": "evidence/exact_saved_point_oracle.log", "sha256": "115e3aeee8424c2e906a7ec8cad4aef3691c2716351bf754817abaa8d54dc1f7"},
+      {"path": "source/probes.rs", "sha256": "1775a83dbb02fd986ac9913297f5f8e1f3ed4d67b83d43e2361c7c9b72eb8669"},
+      {"path": "review_points.py", "sha256": "6014b5a11d179d7808f42efb30b823329682842252f3d3581eee74e4492b9c16"},
+      {"path": "source/session_tests.rs", "sha256": "b6f54cedcf623e004e7985e7ba42c96f800b0460a57d677d9d4633745c0ee23c"},
+      {"path": "evidence/new_gateway_contracts.log", "sha256": "f5377e20e0fe2424cb2f62c5ccef6e6ff824f85b4a1afdc3df9235b552ae5a90"},
+      {"path": "evidence/new_session_composition.log", "sha256": "fe32466f8065d235b7d0e2a63e63cee4b2db3e2a5e00492c4f2db73b1db97729"}
+    ],
+    "report_and_oracle_log_byte_identical": true,
+    "original_contract_theory_preregistration_gateway_hashes_unchanged": true,
+    "additive_schema_receipt": {
+      "status": "PASS_READBACK_OF_COMPOSITE_EVIDENCE",
+      "finding_owner": "C9",
+      "finding": "original oracle zip() can truncate malformed short arrays",
+      "original_oracle_claim_limit": "exact value comparisons rely additionally on complete shapes and frozen key coverage",
+      "receipt_path": "SCHEMA_REVIEW.json",
+      "receipt_sha256": "780ae258fea1f182402eed5f5fe65507afd702c87760c61483e62e6a104d1e06",
+      "log_path": "evidence/additive_saved_schema.log",
+      "log_sha256": "780ae258fea1f182402eed5f5fe65507afd702c87760c61483e62e6a104d1e06",
+      "validator_path": "validate_saved_schema.py",
+      "validator_sha256": "cf56eac2fb5715dc12d0504627b833a80a2f3f3f30ed4c48557924ec22deaf23",
+      "same_raw_and_original_result_hashes_preserved": true,
+      "saved_receipt_status": "PASS_COMPLETE_FIELDS_AND_COVERAGE",
+      "actual_point_value_count": 6561,
+      "actual_fd_estimate_count": 98,
+      "point_key_coverage": "EXACT_9x9x9",
+      "stencil_key_coverage": "EXACT_7x7",
+      "saved_receipt_model_evaluations": 0,
+      "saved_receipt_callback_evaluations": 0,
+      "r6_validator_or_oracle_reexecutions": 0,
+      "interpretation": "original exact-oracle result plus additive schema receipt; R6 readback only"
+    },
+    "saved_oracle_results": {
+      "point_rows": 729,
+      "point_exact_value_comparisons": 6561,
+      "point_exact_rational_mismatches": 0,
+      "total_comparison_assertions": 8613,
+      "fd_rows": 49,
+      "fd_max_absolute_error": 0.0,
+      "fd_gate": 1.4210854715202004e-14,
+      "input_refusal_rows": 7,
+      "fd_refusal_rows": 7,
+      "actual_finite_wrong_j_pairs_admitted": 1,
+      "semantic_mutation_detected_rows": {
+        "transpose": 720,
+        "off_diagonal_sign": 729,
+        "finite_J_plus_I": 729
+      }
+    },
+    "manual_raw_checks": {
+      "independent_hand_witness_grid_index": [4, 2, 6],
+      "hand_witness_matches_raw_and_symbolic": true,
+      "boundary_points_read": [[0, 0, 0], [0, 8, 0], [8, 0, 8], [8, 8, 8]],
+      "mass_residual_means_rhs_sum_plus_y": true,
+      "transpose_nondetections_are_nine_symmetric_J_rows_t0_y_three_quarters": true,
+      "actual_wrong_j_differs_from_true_J_by_identity": true,
+      "fd_represented_symmetric_denominator_matches_hand_sample": true,
+      "all_fourteen_refusal_rows_zero_rhs": true,
+      "rhs_entries": 828,
+      "jac_entries": 730,
+      "witness_calls": 3168,
+      "forbidden_callback_entries": 0,
+      "new_ode_trajectories": 0
+    },
+    "saved_rust_test_logs": {
+      "gateway_passed": 30,
+      "session_passed": 5,
+      "total_passed": 35,
+      "failed": 0,
+      "reviewer_reexecutions": 0,
+      "accepted_prefix_scope": "synthetic Session fixture with unchanged candidate and zero defect; not a manufactured nonlinear ODE trajectory"
+    },
+    "limits": [
+      "all-grid exact comparisons belong to the saved oracle run, not a second reviewer execution",
+      "the 729-point box includes points outside the x+y<=1 invariant simplex",
+      "zero mass residual is the transfer/loss identity rhs_sum=-y, not mass conservation",
+      "semantic mutations reinterpret saved matrices; only one J+I pair is an actual wrong-callback execution",
+      "zero FD error is restricted to the frozen symmetric dyadic stencils",
+      "forbidden input count zero is observed for this corpus; general safety remains conditional on stated source contracts",
+      "no new trajectory, actual BASS, general dense certificate, durable restore, or production admission"
+    ]
+  },
+  "findings": [
+    {
+      "id": "R6-01",
+      "topic": "determinant conditioning wording",
+      "status": "CLOSED_READBACK"
+    },
+    {
+      "id": "R6-02",
+      "topic": "destructor and panic-payload normal return",
+      "status": "CLOSED_READBACK"
+    },
+    {
+      "id": "R6-03",
+      "topic": "pre-witness FP-dependent domain comparisons",
+      "status": "CLOSED_SOURCE_AND_DOC_READBACK",
+      "prior_source_sha256": "3eef1557d87c4567b412f1c1feae0143ad022d9140ab14fba99e6bde8ba49d0f",
+      "correction_receipt": "evidence/preexecution_bit_domain_correction/RECEIPT.json"
+    },
+    {
+      "id": "R6-04",
+      "topic": "pair counter counts Prepared returns",
+      "status": "CLOSED_READBACK"
+    }
+  ],
+  "new_executions": {
+    "solver": 0,
+    "test": 0,
+    "compile": 0,
+    "cas": 0,
+    "benchmark": 0,
+    "ncp": 0,
+    "past_science_replay": 0,
+    "remote_publication": 0,
+    "desktop_commander": 0
+  },
+  "personnel_independent_review": "NOT_RUN",
+  "actual_delegated_agent_review": "RUN",
+  "strong_no_go_claim": false,
+  "novelty_claim": false,
+  "production": "HOLD",
+  "global_completion": null,
+  "skill_context_used": {
+    "package": "e1/skill-6aa0657100b08191b7d67482d1f97c1d",
+    "version": "1.0.0",
+    "references": [
+      "RESEARCH_POLICY.md",
+      "THEORY_LOOP.md",
+      "EVIDENCE_AND_HANDOFF.md"
+    ],
+    "applied": "one complementary review pass; narrow claims; reuse completed evidence; preserve preexecution corrections; no science rerun"
+  }
+}

@@ -1,0 +1,347 @@
+{
+  "schema": "vigilode.d5.budget.v1",
+  "scope": "new D5 computational children (toolchain, build, contracts, manufactured points, saved-output review/figures) plus reported Wolfram kernel wall; metadata/API/backup waiting excluded",
+  "cap_seconds": 120.0,
+  "total_seconds": 35.626779343961594,
+  "subprocess_seconds": 35.590950343961595,
+  "wolfram_seconds": 0.035829,
+  "entries": [
+    {
+      "name": "new_symbolic_derivation",
+      "kind": "Wolfram kernel",
+      "seconds": 0.035829,
+      "cpu_seconds": 0.03582899999999967,
+      "tool": "wolframlanguageevaluator",
+      "input": "evidence/DERIVATION.wl",
+      "input_sha256": "5d045af0e8ede514c36dabafa09707be1197301db27e1365264460a11b97b98d",
+      "output": "evidence/WOLFRAM_RESULT.json",
+      "output_sha256": "ae9aee06de85128bae42566301a35632ebaf01d671f67e6cf7c8b3f2ca3f5303",
+      "version": "15.0.1 for Linux x86 (64-bit) (July 2, 2026)",
+      "exit": "all12groupszero",
+      "recorded_utc": "2026-10-25T02:34:57.722115+00:00"
+    },
+    {
+      "name": "restore_toolchain",
+      "kind": "toolchain_restore",
+      "cmd": [
+        "python3",
+        "restore_toolchain.py"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:34:58.004705+00:00",
+      "seconds": 14.34848363600031,
+      "cpu_seconds": 14.329284,
+      "exit": 1,
+      "timeout_seconds": 45,
+      "log": "evidence/restore_toolchain.log",
+      "sha256": "872505573dcd453b09142f49cbff1fd0563bf82e79d411b7fd17888ba7cfa380",
+      "reason": null
+    },
+    {
+      "name": "rustc_version",
+      "kind": "toolchain_probe",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--version",
+        "--verbose"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:36:42.998650+00:00",
+      "seconds": 0.0008465249993605539,
+      "cpu_seconds": 0.0007120000000000004,
+      "exit": 127,
+      "timeout_seconds": 45,
+      "log": "evidence/rustc_version.log",
+      "sha256": "34d0dca06ab434614da824043a5b8be527104a2ae87a89c2e32523679971d01b",
+      "reason": null
+    },
+    {
+      "name": "complete_runtime_payloads",
+      "kind": "toolchain_resume",
+      "cmd": [
+        "python3",
+        "resume_toolchain.py"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:37:11.441963+00:00",
+      "seconds": 15.464345196989598,
+      "cpu_seconds": 15.449193,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/complete_runtime_payloads.log",
+      "sha256": "1fc5564b7fc54fbceb0ae1a51de5a90b15722109cc9b4460786ef7635ba9c779",
+      "reason": null
+    },
+    {
+      "name": "rustc_version_restored",
+      "kind": "toolchain_probe",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--version",
+        "--verbose"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:37:57.837734+00:00",
+      "seconds": 0.008521474999724887,
+      "cpu_seconds": 0.0071319999999999995,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/rustc_version_restored.log",
+      "sha256": "a834181975ab3494d51a1a01e4a9d4321fecd674a52e3db3cf93b3b84b6fc2c1",
+      "reason": null
+    },
+    {
+      "name": "fixture_compile",
+      "kind": "build",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--edition=2021",
+        "--crate-type=rlib",
+        "source/fixture.rs",
+        "-o",
+        "bin/libd3_fixture.rlib"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:40:08.884251+00:00",
+      "seconds": 0.15572234299906995,
+      "cpu_seconds": 0.169005,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/fixture_compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reason": null
+    },
+    {
+      "name": "safe_gateway_compile",
+      "kind": "build",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--edition=2021",
+        "--crate-name=d5_gateway",
+        "--crate-type=lib",
+        "-F",
+        "unsafe-code",
+        "source/gateway.rs",
+        "-o",
+        "bin/libd5_gateway.rlib"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:40:09.300158+00:00",
+      "seconds": 0.05203634800272994,
+      "cpu_seconds": 0.049825,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/safe_gateway_compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reason": null
+    },
+    {
+      "name": "gateway_tests_compile",
+      "kind": "build",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--edition=2021",
+        "--test",
+        "-F",
+        "unsafe-code",
+        "source/tests.rs",
+        "--extern",
+        "d3_fixture=bin/libd3_fixture.rlib",
+        "-o",
+        "bin/gateway_tests"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:40:09.632993+00:00",
+      "seconds": 0.25622555300651584,
+      "cpu_seconds": 0.357958,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/gateway_tests_compile.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "reason": null
+    },
+    {
+      "name": "session_tests_compile",
+      "kind": "build",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--edition=2021",
+        "--test",
+        "-F",
+        "unsafe-code",
+        "source/session_tests.rs",
+        "--extern",
+        "d3_fixture=bin/libd3_fixture.rlib",
+        "-o",
+        "bin/session_tests"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:40:10.152420+00:00",
+      "seconds": 0.1382687680015806,
+      "cpu_seconds": 0.15901400000000002,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/session_tests_compile.log",
+      "sha256": "45f183c0dcbc2296af04f19447f5006ae4a744742ad3f0c06593d8c9d4c667a6",
+      "reason": null
+    },
+    {
+      "name": "new_probes_compile",
+      "kind": "build",
+      "cmd": [
+        "toolchain/bin/rustc",
+        "--edition=2021",
+        "-O",
+        "-F",
+        "unsafe-code",
+        "source/probes.rs",
+        "--extern",
+        "d3_fixture=bin/libd3_fixture.rlib",
+        "-o",
+        "bin/probes"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:40:10.551308+00:00",
+      "seconds": 0.2264417139958823,
+      "cpu_seconds": 0.35223099999999996,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/new_probes_compile.log",
+      "sha256": "8d2676fcb723d55681d302d862ef2b4294bc4f41bad11346ea716847be17bc86",
+      "reason": null
+    },
+    {
+      "name": "new_gateway_contracts",
+      "kind": "new_contract_tests",
+      "cmd": [
+        "bin/gateway_tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:40:26.308038+00:00",
+      "seconds": 0.00574166099249851,
+      "cpu_seconds": 0.0038629999999999997,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/new_gateway_contracts.log",
+      "sha256": "f5377e20e0fe2424cb2f62c5ccef6e6ff824f85b4a1afdc3df9235b552ae5a90",
+      "reason": null
+    },
+    {
+      "name": "new_session_composition",
+      "kind": "new_contract_tests",
+      "cmd": [
+        "bin/session_tests",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:40:26.600978+00:00",
+      "seconds": 0.0020795199961867183,
+      "cpu_seconds": 0.0014869999999999996,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/new_session_composition.log",
+      "sha256": "fe32466f8065d235b7d0e2a63e63cee4b2db3e2a5e00492c4f2db73b1db97729",
+      "reason": null
+    },
+    {
+      "name": "frozen_new_points",
+      "kind": "new_manufactured_points",
+      "cmd": [
+        "bin/probes",
+        "evidence/points.jsonl"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:40:26.960947+00:00",
+      "seconds": 0.002056915996945463,
+      "cpu_seconds": 0.0019130000000000002,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/frozen_new_points.log",
+      "sha256": "11e0507cdd4c438af8b88812e76c39b119fd8a76b39cc49d9b26710aa3e7cfe8",
+      "reason": null
+    },
+    {
+      "name": "exact_saved_point_oracle",
+      "kind": "saved_output_review",
+      "cmd": [
+        "python3",
+        "review_points.py"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:40:27.248509+00:00",
+      "seconds": 0.09806313399167266,
+      "cpu_seconds": 0.09761,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/exact_saved_point_oracle.log",
+      "sha256": "115e3aeee8424c2e906a7ec8cad4aef3691c2716351bf754817abaa8d54dc1f7",
+      "reason": null
+    },
+    {
+      "name": "saved_point_figures",
+      "kind": "saved_output_figure",
+      "cmd": [
+        "python3",
+        "plot_saved.py"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:40:27.613261+00:00",
+      "seconds": 2.414399262997904,
+      "cpu_seconds": 3.2433129999999997,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/saved_point_figures.log",
+      "sha256": "be278f152fcfb4a36c788e105ca838434ccb3f91ec2e334b726d3698e71c8892",
+      "reason": null
+    },
+    {
+      "name": "corrected_saved_point_figures",
+      "kind": "saved_output_figure",
+      "cmd": [
+        "python3",
+        "plot_saved.py"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:41:06.524530+00:00",
+      "seconds": 2.3525558859982993,
+      "cpu_seconds": 3.181177,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/corrected_saved_point_figures.log",
+      "sha256": "7ded360ac2a8f647279a495f21c1683d058b228b2df0e7bbd341403caf80c5bd",
+      "reason": null
+    },
+    {
+      "name": "additive_saved_schema",
+      "kind": "saved_output_schema",
+      "cmd": [
+        "python3",
+        "validate_saved_schema.py"
+      ],
+      "cwd": "/workspace/scratch/6a9ff47f24f5/next_20261025/d5",
+      "started_utc": "2026-10-25T02:43:22.112291+00:00",
+      "seconds": 0.06516240499331616,
+      "cpu_seconds": 0.06489099999999999,
+      "exit": 0,
+      "timeout_seconds": 45,
+      "log": "evidence/additive_saved_schema.log",
+      "sha256": "780ae258fea1f182402eed5f5fe65507afd702c87760c61483e62e6a104d1e06",
+      "reason": null
+    }
+  ],
+  "closed": true,
+  "reset": false,
+  "older_remaining": null,
+  "historical_closed_seconds": {
+    "D4": 25.906088458010345,
+    "D3": 35.897308696992695,
+    "D2": 25.104395919000012,
+    "prior_known": 83.29566578299983,
+    "native_boundary": 14.951735806986107
+  },
+  "old_science_replays": 0,
+  "Desktop_Commander_calls": 0,
+  "closed_utc": "2026-10-25T02:47:21.696832+00:00",
+  "close_reason": "Frozen new experiment completed; same review pass material findings closed; only publication/preservation/metadata work remains"
+}

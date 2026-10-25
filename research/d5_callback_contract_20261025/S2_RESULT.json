@@ -1,0 +1,120 @@
+{
+  "schema": "vigilode.d5.result.v1",
+  "status": "PASS_SCOPED_STRICT_CALLBACK_CONTRACT",
+  "executed_source_commit": "0c73202734a52f30e4214d455be0fa9c47d37e0f",
+  "new_rust_tests": {
+    "gateway": 30,
+    "Session_composition": 5,
+    "total": 35,
+    "passed": 35,
+    "failed": 0,
+    "runs_per_suite": 1
+  },
+  "corpus": {
+    "rows_before_summary": 793,
+    "points": 729,
+    "stencils": 49,
+    "wrong_finite_pairs": 1,
+    "input_refusals": 7,
+    "fd_refusals": 7,
+    "rhs_entries": 828,
+    "jac_entries": 730,
+    "forbidden_callback_entries": 0,
+    "witness_calls": 3168,
+    "new_ode_trajectories": 0
+  },
+  "counter_scope": "only the frozen point/stencil corpus; contract-test callbacks are not aggregated into these totals",
+  "corpus_rows": 794,
+  "corpus_bytes": 170379,
+  "corpus_sha256": "cb64d9455289f183363749289038d6f250bf63e0ab95ea94cd51defa88d2ba21",
+  "exact_point_value_comparisons": 6561,
+  "comparison_assertions": 8613,
+  "point_exact_mismatches": 0,
+  "fd_stencils": 49,
+  "fd_max_abs_error": 0.0,
+  "fd_gate": 1.4210854715202004e-14,
+  "mutations": {
+    "transpose": {
+      "detected_rows": 720,
+      "first": {
+        "grid_index": [
+          0,
+          0,
+          0
+        ],
+        "exact_error": "3"
+      },
+      "maximum_entry_error": 3.0
+    },
+    "off_diagonal_sign": {
+      "detected_rows": 729,
+      "first": {
+        "grid_index": [
+          0,
+          0,
+          0
+        ],
+        "exact_error": "6"
+      },
+      "maximum_entry_error": 10.0
+    },
+    "finite_J_plus_I": {
+      "detected_rows": 729,
+      "first": {
+        "grid_index": [
+          0,
+          0,
+          0
+        ],
+        "exact_error": "1"
+      },
+      "maximum_entry_error": 1.0
+    }
+  },
+  "wrong_finite_J_actual_callback_pairs_admitted": 1,
+  "symbolic": {
+    "tool": "Wolfram15.0.1",
+    "runs": 1,
+    "exact_residual_groups": 12,
+    "all_zero": true,
+    "wall_seconds": 0.035829
+  },
+  "complete_coverage": {
+    "point_field_count": 6561,
+    "FD_value_count": 98,
+    "malformed_schema_controls_rejected": 3,
+    "model_calls_for_schema": 0
+  },
+  "review": [
+    "PHYS_MATH_REVIEW_KO.md",
+    "CODE_REVIEW_KO.md",
+    "REVIEW_BUNDLE.json"
+  ],
+  "material_findings_open": 0,
+  "new_ode_trajectories": 0,
+  "new_benchmarks": 0,
+  "old_D2_D3_D4_science_replays": 0,
+  "NCP": 0,
+  "Desktop_Commander_calls": 0,
+  "resources": {
+    "closed_total_seconds": 35.626779343961594,
+    "subprocess_seconds": 35.590950343961595,
+    "Wolfram_kernel_seconds": 0.035829,
+    "entries": 17,
+    "local_children": 16,
+    "cap_seconds": 120.0,
+    "initial_infrastructure_failures": 2,
+    "plot_only_runs": 2,
+    "reset": false,
+    "older_remaining": null
+  },
+  "native_owner_chain": "UNRESOLVED_INPUT_DEPENDENCY",
+  "native_production_integration": "NOT_RUN",
+  "general_derivative_correctness": "NOT_CERTIFIED_BY_INTERFACE",
+  "general_dense_authority": "NOT_GRANTED",
+  "independent_personnel": "NOT_RUN",
+  "current_native_subagent": "RUN_SCOPED_INTAKE_IMPLEMENTATION_AND_COMPLEMENTARY_REVIEWS",
+  "historical_D2_native_subagent": "NOT_RUN",
+  "production": "HOLD",
+  "global_completion": null
+}

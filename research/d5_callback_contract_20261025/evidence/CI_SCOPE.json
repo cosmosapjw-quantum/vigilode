@@ -1,0 +1,324 @@
+{
+  "schema": "vigilode.d5.ci_scope.v1",
+  "status": "PASS_STATIC_SCOPE_NO_SCIENCE_TRIGGER_FOR_DECLARED_DIFF",
+  "assessment_kind": "static workflow-rule inference, not a workflow execution result",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "source_commit": "3107693de084341129c47c592204225c9045aa2e",
+  "observed_pr": {
+    "number": 88,
+    "draft": true,
+    "head": "research/d5-callback-contract-20261025",
+    "head_sha": "3107693de084341129c47c592204225c9045aa2e",
+    "base": "research/d4-effect-journal-20261025",
+    "base_sha": "3c8877ea0409495752dcfab42426e679e3ba92d3",
+    "labels": []
+  },
+  "declared_change_scope": [
+    "research/d5_callback_contract_20261025/**",
+    "research/LEDGER.jsonl"
+  ],
+  "actual_s2_pr_diff": {
+    "pages": [
+      {
+        "page": 1,
+        "count": 95
+      },
+      {
+        "page": 2,
+        "count": 0
+      }
+    ],
+    "all_95_files_under_d5": true,
+    "ledger_already_in_s2_pr_diff": false,
+    "additional_ledger_append_in_declared_scope": true
+  },
+  "workflow_inventory_count": 17,
+  "workflow_files_read": 17,
+  "directory_and_file_blob_identities_match": true,
+  "matching_automatic_pull_request_workflows": [
+    ".github/workflows/research-process.yml"
+  ],
+  "matching_automatic_d5_branch_push_workflows": [],
+  "draft_excludes_research_process": false,
+  "once_only_enforced_by_workflow": false,
+  "matching_job": {
+    "name": "research-process",
+    "permissions": "contents: read",
+    "runner": "ubuntu-latest",
+    "timeout_minutes": 10,
+    "checkout_fetch_depth": 0,
+    "python_version": "3.13",
+    "commands_as_read_not_executed": [
+      "python3 tools/test_check_research_node.py -v",
+      "python3 tools/test_check_authority_refs.py -v",
+      "python3 tools/check-research-node.py --base \"origin/${BASE_REF}\"",
+      "python3 tools/check-authority-refs.py"
+    ],
+    "classification": "metadata checker unit tests and append-only/hash/reachability checks; no numerical model, solver, Cargo, benchmark, NCP or campaign dispatch"
+  },
+  "script_pins": [
+    {
+      "path": "tools/check-research-node.py",
+      "git_blob_sha": "f796c69c5fbfbd1827c139e6e1624537a67dfbd9",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/tools/check-research-node.py"
+    },
+    {
+      "path": "tools/test_check_research_node.py",
+      "git_blob_sha": "4e06a2f26df9a4c0ff9c4a892604217fb8f3db4b",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/tools/test_check_research_node.py"
+    },
+    {
+      "path": "tools/check-authority-refs.py",
+      "git_blob_sha": "617f877a884e2031502168e581986e09b698156c",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/tools/check-authority-refs.py"
+    },
+    {
+      "path": "tools/test_check_authority_refs.py",
+      "git_blob_sha": "7002b35a52293f1af05a45a74761f2b8fa5df866",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/tools/test_check_authority_refs.py"
+    }
+  ],
+  "authority_scope": {
+    "tracked_roots": [
+      "research",
+      "docs"
+    ],
+    "suffixes": [
+      ".md",
+      ".json",
+      ".jsonl",
+      ".toml"
+    ],
+    "candidate": "40 lowercase hex token with authority keyword context; not part of longer hex run",
+    "resolution": "local git cat-file object type, then git branch -r --contains for commits",
+    "non_commit_objects": "skipped when present locally",
+    "cross_repository_objects": "repository identity is not resolved by this checker; absent foreign objects may fail even when their source repository is published",
+    "ci_pass_claimed": false,
+    "checker_changed": false
+  },
+  "workflows": [
+    {
+      "path": ".github/workflows/a1-inner-tolerance-parity.yml",
+      "git_blob_sha": "7fc396bd14733ada49746edcdbdf4c4f2f2e70de",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/a1-inner-tolerance-parity.yml",
+      "trigger_rules": "on:\n  pull_request:\n    paths:\n      - \".github/workflows/a1-inner-tolerance-parity.yml\"\n      - \"crates/rodas5p-integrators/**\"\n      - \"crates/rodas5p-cli/**\"\n      - \"docs/superpowers/plans/2026-08-25-a1-inner-tolerance-audit-repair.md\"\n      - \"docs/superpowers/specs/2026-08-25-a1-inner-tolerance-audit-repair-design.md\"\n      - \"research/a1_inner_tolerance_audit_20260825/**\"\n  push:\n    branches:\n      - main\n    paths:\n      - \".github/workflows/a1-inner-tolerance-parity.yml\"\n      - \"crates/rodas5p-integrators/**\"\n      - \"crates/rodas5p-cli/**\"\n      - \"docs/superpowers/plans/2026-08-25-a1-inner-tolerance-audit-repair.md\"\n      - \"docs/superpowers/specs/2026-08-25-a1-inner-tolerance-audit-repair-design.md\"\n      - \"research/a1_inner_tolerance_audit_20260825/**\"\n  workflow_dispatch:\n",
+      "decision": "NO_MATCH_PR_PATHS_AND_PUSH_BRANCH",
+      "reason": "PR: crate/A1-specific paths; push: main only.",
+      "pr_declared_diff_matches": false,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    },
+    {
+      "path": ".github/workflows/a1-two-arm-receipt.yml",
+      "git_blob_sha": "ce01aa27b57acdf3de39cfe4e492386f79d725f4",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/a1-two-arm-receipt.yml",
+      "trigger_rules": "on:\n  pull_request:\n    paths:\n      - \".github/workflows/a1-two-arm-receipt.yml\"\n      - \"crates/rodas5p-integrators/**\"\n      - \"crates/rodas5p-cli/**\"\n      - \"tools/summarize-a1-tolerance-arms.py\"\n      - \"tools/test_a1_tolerance_receipt.py\"\n      - \"tools/a1_receipt_ci_scope.py\"\n      - \"tools/test_a1_receipt_ci_scope.py\"\n      - \"research/a1_inner_tolerance_audit_20260825/**\"\n",
+      "decision": "NO_MATCH_PR_PATHS",
+      "reason": "PR: A1/crate/scope-tool paths only; no D5 or ledger path.",
+      "pr_declared_diff_matches": false,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    },
+    {
+      "path": ".github/workflows/a2-a3-gmres-inner-cycle.yml",
+      "git_blob_sha": "769b475c4e7cb9fe13dbe3b394818c4b33c11f50",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/a2-a3-gmres-inner-cycle.yml",
+      "trigger_rules": "on:\n  pull_request:\n    paths:\n      - \".github/workflows/a2-a3-gmres-inner-cycle.yml\"\n      - \"crates/rodas5p-krylov/**\"\n      - \"crates/rodas5p-integrators/**\"\n  workflow_dispatch:\n",
+      "decision": "NO_MATCH_PR_PATHS",
+      "reason": "PR: Krylov/integrator/workflow paths only.",
+      "pr_declared_diff_matches": false,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    },
+    {
+      "path": ".github/workflows/audit2-research.yml",
+      "git_blob_sha": "638efc6380ac43eb2e3a763428e409ff8a1bdbec",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/audit2-research.yml",
+      "trigger_rules": "on:\n  pull_request:\n    paths:\n      - '.github/workflows/audit2-research.yml'\n      - '.github/workflows/a1-two-arm-receipt.yml'\n      - 'crates/rodas5p-core/**'\n      - 'crates/rodas5p-krylov/**'\n      - 'crates/rodas5p-integrators/**'\n      - 'crates/rodas5p-fair-ab/**'\n      - 'fixtures/rodas5p_coefficients_snapshot.json'\n      - 'Cargo.toml'\n      - 'Cargo.lock'\n      - 'tools/*audit2*'\n      - 'tools/*a1_receipt_ci_scope*'\n      - 'research/audit2_stage_certificate_telemetry_20260831/**'\n  push:\n    branches: [main]\n    paths:\n      - '.github/workflows/audit2-research.yml'\n      - '.github/workflows/a1-two-arm-receipt.yml'\n      - 'crates/**'\n      - 'fixtures/rodas5p_coefficients_snapshot.json'\n      - 'Cargo.toml'\n      - 'Cargo.lock'\n      - 'tools/*audit2*'\n      - 'tools/*a1_receipt_ci_scope*'\n      - 'research/audit2_stage_certificate_telemetry_20260831/**'\n  workflow_dispatch:\n",
+      "decision": "NO_MATCH_PR_PATHS_AND_PUSH_BRANCH",
+      "reason": "PR: audit2/crate/tool/fixture paths; push: main only.",
+      "pr_declared_diff_matches": false,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    },
+    {
+      "path": ".github/workflows/audit2-stage-certificate-repair-handoff.yml",
+      "git_blob_sha": "1cefcd9d5326282545301cbba1dbf327e17bdccc",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/audit2-stage-certificate-repair-handoff.yml",
+      "trigger_rules": "on:\n  pull_request:\n    paths:\n      - '.github/workflows/audit2-stage-certificate-repair-handoff.yml'\n      - 'research/audit2_stage_certificate_repair_20260831/**'\n      - 'research/audit2_stage_certificate_telemetry_20260831/formal/**'\n      - 'crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs'\n      - 'crates/rodas5p-integrators/tests/audit2_stage_certificate_contracts.rs'\n      - 'tools/*stage_certificate*'\n  workflow_dispatch:\n",
+      "decision": "NO_MATCH_PR_PATHS",
+      "reason": "PR: named audit2 research/source/test/tool paths only.",
+      "pr_declared_diff_matches": false,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    },
+    {
+      "path": ".github/workflows/coupled-closeout-20261020.yml",
+      "git_blob_sha": "90bcc8fac9c873c786d28b1d7b186960a5aecb0b",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/coupled-closeout-20261020.yml",
+      "trigger_rules": "on:\n  push:\n    branches: [research/coupled-matrix-free-rust-20261020]\n    paths:\n      - '.github/workflows/coupled-closeout-20261020.yml'\n      - 'research/coupled_native_20261020/closeout/**'",
+      "decision": "NO_MATCH_PUSH_BRANCH_AND_PATHS",
+      "reason": "push: research/coupled-matrix-free-rust-20261020 and named closeout paths.",
+      "pr_declared_diff_matches": false,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    },
+    {
+      "path": ".github/workflows/coupled-economy-20261020.yml",
+      "git_blob_sha": "0298e5ec0e1eef53dc2c6d89c2eeb18ce38ec44e",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/coupled-economy-20261020.yml",
+      "trigger_rules": "on:\n  push:\n    branches: [research/coupled-economy-20261020]\n    paths:\n      - '.github/workflows/coupled-economy-20261020.yml'\n      - 'research/coupled_economy_20261020/run_ci.sh'\n  workflow_dispatch:",
+      "decision": "NO_MATCH_PUSH_BRANCH_AND_PATHS",
+      "reason": "push: research/coupled-economy-20261020 and named workflow/run_ci.sh.",
+      "pr_declared_diff_matches": false,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    },
+    {
+      "path": ".github/workflows/coupled-economy-closeout-20261020.yml",
+      "git_blob_sha": "965ce3491c1c71f2f55a5d13d6e043e0abcf1e20",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/coupled-economy-closeout-20261020.yml",
+      "trigger_rules": "on:\n  push:\n    branches: [research/coupled-economy-20261020]\n    paths:\n      - '.github/workflows/coupled-economy-closeout-20261020.yml'\n      - 'research/coupled_economy_20261020/closeout.py'",
+      "decision": "NO_MATCH_PUSH_BRANCH_AND_PATHS",
+      "reason": "push: research/coupled-economy-20261020 and named closeout.py/workflow.",
+      "pr_declared_diff_matches": false,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    },
+    {
+      "path": ".github/workflows/coupled-native-20261020.yml",
+      "git_blob_sha": "6d96f4b90eab800b1951db7b4beb758222b73169",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/coupled-native-20261020.yml",
+      "trigger_rules": "on:\n  push:\n    branches: [research/coupled-matrix-free-rust-20261020]\n    paths:\n      - '.github/workflows/coupled-native-20261020.yml'\n      - 'research/coupled_native_20261020/run_ci.sh'\n  workflow_dispatch:",
+      "decision": "NO_MATCH_PUSH_BRANCH_AND_PATHS",
+      "reason": "push: research/coupled-matrix-free-rust-20261020 and named workflow/run_ci.sh.",
+      "pr_declared_diff_matches": false,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    },
+    {
+      "path": ".github/workflows/coupled-reference-recovery-20261020.yml",
+      "git_blob_sha": "7b3803944a5d3c3204ac3f3fcde3687ed9eda637",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/coupled-reference-recovery-20261020.yml",
+      "trigger_rules": "on:\n  push:\n    branches: [research/coupled-economy-20261020]\n    paths: ['.github/workflows/coupled-reference-recovery-20261020.yml']",
+      "decision": "NO_MATCH_PUSH_BRANCH_AND_PATHS",
+      "reason": "push: research/coupled-economy-20261020 and this workflow path.",
+      "pr_declared_diff_matches": false,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    },
+    {
+      "path": ".github/workflows/cumulative-private-transfer-20261020.yml",
+      "git_blob_sha": "f237b7add2d46cb7056b7a27ff055549fba4efed",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/cumulative-private-transfer-20261020.yml",
+      "trigger_rules": "on:\n  push:\n    branches: [research/cumulative-evidence-20261020]\n    paths: ['.github/workflows/cumulative-private-transfer-20261020.yml']\n  workflow_dispatch:",
+      "decision": "NO_MATCH_PUSH_BRANCH_AND_PATHS",
+      "reason": "push: research/cumulative-evidence-20261020 and this workflow path.",
+      "pr_declared_diff_matches": false,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    },
+    {
+      "path": ".github/workflows/e4-fresh-clone-build.yml",
+      "git_blob_sha": "49717a08bf1a58b6bbd7860700e5da36d3f45490",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/e4-fresh-clone-build.yml",
+      "trigger_rules": "on:\n  pull_request:\n    paths:\n      - \".cargo/**\"\n      - \".github/workflows/e4-fresh-clone-build.yml\"\n      - \".gitignore\"\n      - \"Cargo.lock\"\n      - \"Cargo.toml\"\n      - \"README.md\"\n      - \"crates/**\"\n      - \"rust-toolchain.toml\"\n      - \"tools/**\"\n      - \"docs/superpowers/plans/**\"\n      - \"docs/superpowers/specs/**\"\n  workflow_dispatch:\n",
+      "decision": "NO_MATCH_PR_PATHS",
+      "reason": "PR: root build/tool/doc-plan paths; research/** is absent.",
+      "pr_declared_diff_matches": false,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    },
+    {
+      "path": ".github/workflows/hybrid-structure-ad-20261020.yml",
+      "git_blob_sha": "11a7041d681ade0103fbf6e051e6158a9af695ac",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/hybrid-structure-ad-20261020.yml",
+      "trigger_rules": "on:\n  push:\n    branches: [research/hybrid-structure-ad-20261020]\n    paths:\n      - '.github/workflows/hybrid-structure-ad-20261020.yml'\n      - 'research/hybrid_20261020/run_ci.sh'\n  workflow_dispatch:",
+      "decision": "NO_MATCH_PUSH_BRANCH_AND_PATHS",
+      "reason": "push: research/hybrid-structure-ad-20261020 and named workflow/run_ci.sh.",
+      "pr_declared_diff_matches": false,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    },
+    {
+      "path": ".github/workflows/ignored-tests.yml",
+      "git_blob_sha": "8aaa30f66b25a776f9a3709f3da77917417a16de",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/ignored-tests.yml",
+      "trigger_rules": "on:\n  pull_request:\n    paths:\n      - '.github/workflows/ignored-tests.yml'\n      - 'crates/**'\n      - 'research/generic_timing_replication_continuation_transaction_v37/results/**'\n      - 'Cargo.toml'\n      - 'Cargo.lock'\n      - 'tools/check_ignored_tests_in_ci.py'\n  push:\n    branches: [main]\n    paths:\n      - 'crates/**'\n      - 'Cargo.toml'\n      - 'Cargo.lock'\n  workflow_dispatch:\n",
+      "decision": "NO_MATCH_PR_PATHS_AND_PUSH_BRANCH",
+      "reason": "PR: crates, root manifests, named v37 results and checker; push: main only.",
+      "pr_declared_diff_matches": false,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    },
+    {
+      "path": ".github/workflows/production.yml",
+      "git_blob_sha": "47de344bbb05c533ba4af32d8c8554201a4a99e4",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/production.yml",
+      "trigger_rules": "on:\n  workflow_dispatch:\n  pull_request:\n    paths:\n      - 'crates/**'\n      - 'Cargo.toml'\n      - 'Cargo.lock'\n      - 'rust-toolchain.toml'\n      - '.github/workflows/production.yml'\n  push:\n    branches: [main]\n    paths:\n      - 'crates/**'\n      - 'Cargo.toml'\n      - 'Cargo.lock'\n      - 'rust-toolchain.toml'\n      - '.github/workflows/production.yml'\n",
+      "decision": "NO_MATCH_PR_PATHS_AND_PUSH_BRANCH",
+      "reason": "PR: crates, root manifests/toolchain and this workflow; push: main only.",
+      "pr_declared_diff_matches": false,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    },
+    {
+      "path": ".github/workflows/research-process.yml",
+      "git_blob_sha": "8e94de5c01d8965c74e8ecda5f7e089b5fbe493f",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/research-process.yml",
+      "trigger_rules": "on:\n  pull_request:\n    paths:\n      - '.github/workflows/research-process.yml'\n      - 'research/**'\n      - 'docs/**'\n      - 'tools/check-research-node.py'\n      - 'tools/test_check_research_node.py'\n      - 'tools/research_node_exemptions.txt'\n      - 'tools/check-authority-refs.py'\n      - 'tools/test_check_authority_refs.py'\n      - 'tools/authority_refs_allowlist.txt'\n  push:\n    branches: [main]\n    paths:\n      - '.github/workflows/research-process.yml'\n      - 'research/**'\n      - 'docs/**'\n      - 'tools/check-research-node.py'\n      - 'tools/test_check_research_node.py'\n      - 'tools/research_node_exemptions.txt'\n      - 'tools/check-authority-refs.py'\n      - 'tools/test_check_authority_refs.py'\n      - 'tools/authority_refs_allowlist.txt'\n  workflow_dispatch:\n",
+      "decision": "MATCH_PR_RESEARCH_PATHS_ONLY",
+      "reason": "PR: research/** matches D5 and LEDGER, no draft exclusion; push: main only.",
+      "pr_declared_diff_matches": true,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    },
+    {
+      "path": ".github/workflows/rvj-audit-offline-source.yml",
+      "git_blob_sha": "59a8ada9a3697215096d6c6d03a7e36df737ddbd",
+      "source_url": "https://github.com/cosmosapjw-quantum/vigilode/blob/3107693de084341129c47c592204225c9045aa2e/.github/workflows/rvj-audit-offline-source.yml",
+      "trigger_rules": "on:\n  push:\n    branches: ['audit/rvj-native-followup-20261003']\n    paths: ['.github/workflows/rvj-audit-offline-source.yml']\n",
+      "decision": "NO_MATCH_PUSH_BRANCH_AND_PATHS",
+      "reason": "push: audit/rvj-native-followup-20261003 and this workflow path.",
+      "pr_declared_diff_matches": false,
+      "d5_branch_push_matches": false,
+      "workflow_run_trigger": false,
+      "repository_dispatch_trigger": false
+    }
+  ],
+  "limits": [
+    "Classification holds for the declared diff only and the pinned 17 workflow definitions.",
+    "Draft status does not exclude the matching metadata workflow.",
+    "Each qualifying pull_request event can produce another metadata job; workflow does not implement an exactly-once guard.",
+    "No manual workflow_dispatch or remote workflow mutation was performed.",
+    "This audit does not assert an actual Actions result or rule out unrelated externally scheduled/manual runs.",
+    "Scientific results and R6 evidence were not reverified."
+  ],
+  "this_task_actions": {
+    "read_only_github_connector_calls": 25,
+    "remote_mutations": 0,
+    "workflow_dispatches": 0,
+    "shell_commands": 0,
+    "tests": 0,
+    "scientific_verification_runs": 0,
+    "desktop_commander": 0
+  },
+  "production": "HOLD",
+  "global_completion": null
+}
