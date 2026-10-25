@@ -18,7 +18,6 @@ axes[0].plot([r['t'] for r in selected],[r['jac'][0][1] for r in selected],color
 axes[0].plot([r['t'] for r in selected],[r['jac'][1][0] for r in selected],color='#AD463E',linestyle='--',label='Transpose interpretation')
 axes[0].set(title='A  Derivative distinction',xlabel='Nondimensional time t',ylabel='Jacobian entry',xticks=[0,.5,1],ylim=(2.9,3.9))
 axes[0].legend(loc='upper left',frameon=False)
-axes[0].text(.98,.05,'x=1/4, y=3/4',ha='right',va='bottom',transform=axes[0].transAxes,fontsize=8)
 powers=sorted({r['power'] for r in data['fd']})
 maximum=[max(r['max_absolute_error'] for r in data['fd'] if r['power']==p) for p in powers]
 axes[1].plot(powers,maximum,color='#126A8A',marker='D',markersize=3,label='49 stencils: observed error')
@@ -39,7 +38,7 @@ vals=[review['mutations'][k]['detected_rows'] for k in keys]
 axes[0].barh(names,vals,color=['#AD463E','#AD463E','#AD463E'],height=.55)
 for i,v in enumerate(vals):axes[0].text(v-8,i,str(v)+'/729',va='center',ha='right',color='white',fontsize=8)
 axes[0].invert_yaxis();axes[0].set(title='A  Wrong-J interpretations detected',xlabel='Frozen point rows',xlim=(0,750),xticks=[0,365,729])
-labels=['Outside query','Outside stencil','Finite wrong J'];accepted=[0,0,1]
+labels=['Invalid query','Invalid stencil','Finite wrong J'];accepted=[0,0,1]
 axes[1].barh(labels,accepted,color=['#126A8A','#126A8A','#D99329'],height=.55)
 for i,(a,total) in enumerate(zip(accepted,[7,7,1])):axes[1].text(a+.04,i,f'{a}/{total}',va='center',ha='left',fontsize=8)
 axes[1].invert_yaxis();axes[1].set(title='B  Interface admission boundary',xlabel='Requests admitted',xlim=(0,1.5),xticks=[0,1])

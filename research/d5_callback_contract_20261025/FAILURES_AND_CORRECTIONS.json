@@ -65,5 +65,28 @@
       "old_archive_receipt": "delivery/S0_INITIAL_LOCAL_ARCHIVE.json",
       "science_reruns": 0
     }
+  ],
+  "figure_findings": [
+    {
+      "id": "FIG-ANNOTATION",
+      "finding": "state annotation touched the dashed J interpretation line in actual initial PNG",
+      "correction": "remove in-panel annotation; put fixed x/y in report caption",
+      "rerun_scope": "saved-data plot only"
+    },
+    {
+      "id": "FIG-LABEL",
+      "finding": "Outside stencil excluded zero/NaN/sub-ulp step refusals from the apparent label",
+      "correction": "use Invalid stencil and Invalid query",
+      "rerun_scope": "saved-data plot only"
+    }
+  ],
+  "review_findings": [
+    {
+      "id": "C9-SCHEMA-COVERAGE",
+      "finding": "zip in original numerical oracle can omit short-array fields",
+      "correction": "preserve original and add complete-shape/key/field-count validation over identical saved bytes",
+      "receipt": "SCHEMA_REVIEW.json",
+      "model_callback_oracle_reruns": 0
+    }
   ]
 }

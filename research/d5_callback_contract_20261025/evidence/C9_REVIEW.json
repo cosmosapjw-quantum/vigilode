@@ -2,7 +2,7 @@
   "schema": "vigilode.d5.c9_review.v1",
   "reviewer": "/root/d5_code_review",
   "scope": "one complementary independent source/code and later saved-output review pass",
-  "status": "PASS_SCOPED_PREEXECUTION_SOURCE_EXECUTION_EVIDENCE_PENDING",
+  "status": "PASS_SCOPED_D5_STRICT_CALLBACK_CONTRACT",
   "reviewer_authored_implementation": false,
   "source_snapshot": {
     "source/gateway.rs": "c4ae170271fdae67bab2edfddb16ea149bccfc77f60f59e161347cbcfee697ee",
@@ -26,6 +26,23 @@
       "closure_review": "Read exact source diff and revised CONTRACT/THEORY; finite bit-key monotonic order verified by case analysis",
       "preserved_source": "evidence/preexecution_bit_domain_correction/",
       "scientific_reruns": 0
+    },
+    {
+      "id": "C9-SCHEMA-COVERAGE",
+      "priority": "P2",
+      "kind": "saved_oracle_completeness",
+      "status": "CLOSED_BY_ADDITIVE_SAVED_DATA_REVIEW",
+      "observation": "zip-based RHS/Jv/FD comparisons can silently truncate shorter arrays; unique key count alone does not force the preregistered grid key set",
+      "current_data_failure_claim": false,
+      "minimal_closure": "Add a saved-data-only schema/key coverage receipt checking exact arrays/matrix shapes, full point/stencil key sets, refusal ids/names, and actual value comparison counts; preserve original oracle result and avoid callback/test replay",
+      "new_execution": false,
+      "closure_evidence": [
+        "validate_saved_schema.py",
+        "SCHEMA_REVIEW.json",
+        "evidence/additive_saved_schema.log"
+      ],
+      "closure_review": "Read complete schema-validator source, actual receipt/log, and unchanged corpus/oracle identities. Exact array dimensions and frozen point/stencil identity sets close silent zip truncation for this corpus. Original numerical oracle remains preserved; require both receipts.",
+      "model_callback_or_original_oracle_reruns": 0
     }
   ],
   "known_preexecution_correction": {
@@ -52,9 +69,201 @@
     "gateway": 30,
     "session_composition": 5
   },
-  "execution_readback": "PENDING",
-  "oracle_readback": "PENDING",
-  "figure_readback": "PENDING",
+  "execution_readback": {
+    "status": "PASS_SCOPED",
+    "executed_source_commit": "0c73202734a52f30e4214d455be0fa9c47d37e0f",
+    "source_blob_and_size_receipt_matches": 7,
+    "compiler": "rustc 1.94.1 e408947bfd200af42db322daf0fadfe7e26d3bd1 x86_64 LLVM21.1.8",
+    "gateway_tests_passed": 30,
+    "session_tests_passed": 5,
+    "new_test_failures": 0,
+    "infrastructure_initial_failures": [
+      {
+        "name": "restore_toolchain",
+        "exit": 1,
+        "cause": "duplicate component manifest.in under exclusive create"
+      },
+      {
+        "name": "rustc_version",
+        "exit": 127,
+        "cause": "librustc_driver absent after partial extraction"
+      }
+    ],
+    "runtime_resume": "73 existing runtime files verified,11 added,21 metadata entries skipped",
+    "budget_log_hash_readback": {
+      "status": "PASS",
+      "entries": 17,
+      "records": [
+        {
+          "name": "new_symbolic_derivation",
+          "log_or_output": "evidence/WOLFRAM_RESULT.json",
+          "sha256": "ae9aee06de85128bae42566301a35632ebaf01d671f67e6cf7c8b3f2ca3f5303",
+          "matches": true
+        },
+        {
+          "name": "restore_toolchain",
+          "log_or_output": "evidence/restore_toolchain.log",
+          "sha256": "872505573dcd453b09142f49cbff1fd0563bf82e79d411b7fd17888ba7cfa380",
+          "matches": true
+        },
+        {
+          "name": "rustc_version",
+          "log_or_output": "evidence/rustc_version.log",
+          "sha256": "34d0dca06ab434614da824043a5b8be527104a2ae87a89c2e32523679971d01b",
+          "matches": true
+        },
+        {
+          "name": "complete_runtime_payloads",
+          "log_or_output": "evidence/complete_runtime_payloads.log",
+          "sha256": "1fc5564b7fc54fbceb0ae1a51de5a90b15722109cc9b4460786ef7635ba9c779",
+          "matches": true
+        },
+        {
+          "name": "rustc_version_restored",
+          "log_or_output": "evidence/rustc_version_restored.log",
+          "sha256": "a834181975ab3494d51a1a01e4a9d4321fecd674a52e3db3cf93b3b84b6fc2c1",
+          "matches": true
+        },
+        {
+          "name": "fixture_compile",
+          "log_or_output": "evidence/fixture_compile.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matches": true
+        },
+        {
+          "name": "safe_gateway_compile",
+          "log_or_output": "evidence/safe_gateway_compile.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matches": true
+        },
+        {
+          "name": "gateway_tests_compile",
+          "log_or_output": "evidence/gateway_tests_compile.log",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "matches": true
+        },
+        {
+          "name": "session_tests_compile",
+          "log_or_output": "evidence/session_tests_compile.log",
+          "sha256": "45f183c0dcbc2296af04f19447f5006ae4a744742ad3f0c06593d8c9d4c667a6",
+          "matches": true
+        },
+        {
+          "name": "new_probes_compile",
+          "log_or_output": "evidence/new_probes_compile.log",
+          "sha256": "8d2676fcb723d55681d302d862ef2b4294bc4f41bad11346ea716847be17bc86",
+          "matches": true
+        },
+        {
+          "name": "new_gateway_contracts",
+          "log_or_output": "evidence/new_gateway_contracts.log",
+          "sha256": "f5377e20e0fe2424cb2f62c5ccef6e6ff824f85b4a1afdc3df9235b552ae5a90",
+          "matches": true
+        },
+        {
+          "name": "new_session_composition",
+          "log_or_output": "evidence/new_session_composition.log",
+          "sha256": "fe32466f8065d235b7d0e2a63e63cee4b2db3e2a5e00492c4f2db73b1db97729",
+          "matches": true
+        },
+        {
+          "name": "frozen_new_points",
+          "log_or_output": "evidence/frozen_new_points.log",
+          "sha256": "11e0507cdd4c438af8b88812e76c39b119fd8a76b39cc49d9b26710aa3e7cfe8",
+          "matches": true
+        },
+        {
+          "name": "exact_saved_point_oracle",
+          "log_or_output": "evidence/exact_saved_point_oracle.log",
+          "sha256": "115e3aeee8424c2e906a7ec8cad4aef3691c2716351bf754817abaa8d54dc1f7",
+          "matches": true
+        },
+        {
+          "name": "saved_point_figures",
+          "log_or_output": "evidence/saved_point_figures.log",
+          "sha256": "be278f152fcfb4a36c788e105ca838434ccb3f91ec2e334b726d3698e71c8892",
+          "matches": true
+        },
+        {
+          "name": "corrected_saved_point_figures",
+          "log_or_output": "evidence/corrected_saved_point_figures.log",
+          "sha256": "7ded360ac2a8f647279a495f21c1683d058b228b2df0e7bbd341403caf80c5bd",
+          "matches": true
+        },
+        {
+          "name": "additive_saved_schema",
+          "log_or_output": "evidence/additive_saved_schema.log",
+          "sha256": "780ae258fea1f182402eed5f5fe65507afd702c87760c61483e62e6a104d1e06",
+          "matches": true
+        }
+      ]
+    },
+    "old_science_replays": 0
+  },
+  "oracle_readback": {
+    "status": "PASS_SCOPED_COMPOSITE_NUMERICAL_AND_SCHEMA_REVIEW",
+    "source": "review_points.py",
+    "source_sha256": "6014b5a11d179d7808f42efb30b823329682842252f3d3581eee74e4492b9c16",
+    "data": "evidence/points.jsonl",
+    "data_bytes": 170379,
+    "data_sha256": "cb64d9455289f183363749289038d6f250bf63e0ab95ea94cd51defa88d2ba21",
+    "actual_lines": 794,
+    "method": "Read full oracle source and execution result/log; hash whole raw corpus, directly inspect selected boundary/interior/control rows; do not rerun numerical oracle",
+    "comparison_assertions": 8613,
+    "point_value_comparisons": 6561,
+    "point_exact_rational_mismatches": 0,
+    "fd_max_absolute_error": 0.0,
+    "semantic_mutant_detected_rows": {
+      "transpose": 720,
+      "off_diagonal_sign": 729,
+      "finite_J_plus_I": 729
+    },
+    "actual_finite_wrong_j_control_admitted": 1,
+    "summary_matches_preexecution_independent_count": true,
+    "mandatory_evidence": [
+      "REVIEW.json",
+      "SCHEMA_REVIEW.json"
+    ],
+    "schema_source": "validate_saved_schema.py",
+    "schema_source_sha256": "cf56eac2fb5715dc12d0504627b833a80a2f3f3f30ed4c48557924ec22deaf23",
+    "actual_numeric_field_counts": {
+      "rhs": 1458,
+      "jacobian": 2916,
+      "jvp": 1458,
+      "mass_residual": 729,
+      "fd_estimate": 98
+    },
+    "schema_negative_controls": {
+      "short_rhs": "REJECTED",
+      "short_fd_estimate": "REJECTED",
+      "wrong_grid_index": "REJECTED"
+    }
+  },
+  "figure_readback": {
+    "status": "PASS_SCOPED",
+    "method": "actual view_image of both final PNG plus plot source and preserved initial figure receipt",
+    "intended_width_mm": 90,
+    "readable_at_width_mm": 180,
+    "overlap_or_clipping_findings": 0,
+    "figures": [
+      {
+        "path": "figures/D5_DERIVATIVE_WITNESSES.png",
+        "bytes": 90561,
+        "sha256": "46699e1ae71e68bfbb218f4ff4a7f7d71e7340f8ba4c66988941f1377cd3e9fa"
+      },
+      {
+        "path": "figures/D5_BOUNDARY_WITNESSES.png",
+        "bytes": 67094,
+        "sha256": "aa3411e1dcf2f01d74a3b4a20b1b7d3a60491d6f214fa471f45391e373a5dab8"
+      }
+    ],
+    "caption_conditions": [
+      "Derivative A is the x=1/4,y=3/4 slice",
+      "Derivative B is maximum over7times for each of7eps exponents,49stencils total; zero is observed for this dyadic manufactured model",
+      "Boundary A uses saved-J semantic interpretations; Boundary B finite wrong J1/1 is one actual callback control"
+    ],
+    "further_plot_rerun_required": false
+  },
   "reviewer_executions": {
     "compile": 0,
     "test": 0,
@@ -76,5 +285,63 @@
     "source/fixture.rs": "aaf090ebbe504125244d8afcb2f1c959620216dc419a1459c58e466884a86f1a",
     "source/reused/admission.rs": "7a35b7daf77e2f9c055f6a74a50e1994afd5e398c9bb19379eb9fb7c5b4e66fb"
   },
-  "open_source_findings": 0
+  "open_source_findings": 0,
+  "review_passes": 1,
+  "open_material_findings": 0,
+  "evidence_pins": [
+    {
+      "path": "review_points.py",
+      "bytes": 5762,
+      "sha256": "6014b5a11d179d7808f42efb30b823329682842252f3d3581eee74e4492b9c16"
+    },
+    {
+      "path": "validate_saved_schema.py",
+      "bytes": 4946,
+      "sha256": "cf56eac2fb5715dc12d0504627b833a80a2f3f3f30ed4c48557924ec22deaf23"
+    },
+    {
+      "path": "REVIEW.json",
+      "bytes": 1963,
+      "sha256": "115e3aeee8424c2e906a7ec8cad4aef3691c2716351bf754817abaa8d54dc1f7"
+    },
+    {
+      "path": "SCHEMA_REVIEW.json",
+      "bytes": 1231,
+      "sha256": "780ae258fea1f182402eed5f5fe65507afd702c87760c61483e62e6a104d1e06"
+    },
+    {
+      "path": "evidence/points.jsonl",
+      "bytes": 170379,
+      "sha256": "cb64d9455289f183363749289038d6f250bf63e0ab95ea94cd51defa88d2ba21"
+    },
+    {
+      "path": "evidence/additive_saved_schema.log",
+      "bytes": 1231,
+      "sha256": "780ae258fea1f182402eed5f5fe65507afd702c87760c61483e62e6a104d1e06"
+    },
+    {
+      "path": "plot_saved.py",
+      "bytes": 3545,
+      "sha256": "5c2e7dfbb323d27a921e3abc4f34f74a5d974c726b032ba177cd3aa1a8ddc3ed"
+    },
+    {
+      "path": "figures/D5_DERIVATIVE_WITNESSES.png",
+      "bytes": 90561,
+      "sha256": "46699e1ae71e68bfbb218f4ff4a7f7d71e7340f8ba4c66988941f1377cd3e9fa"
+    },
+    {
+      "path": "figures/D5_BOUNDARY_WITNESSES.png",
+      "bytes": 67094,
+      "sha256": "aa3411e1dcf2f01d74a3b4a20b1b7d3a60491d6f214fa471f45391e373a5dab8"
+    }
+  ],
+  "remaining_scope_gates": [
+    "native owner/source/reservation/live dirty/completion",
+    "production FP provider and compiler/environment attestation",
+    "general model derivative truth and immutable provider binding",
+    "general dense-domain",
+    "actual BASS",
+    "nonreturning callbacks or destructors/process abort",
+    "durable sink/outbox/crash restore"
+  ]
 }

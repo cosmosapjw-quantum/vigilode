@@ -9,9 +9,11 @@
 아래 4개 finding은 실제 문서/source 교정 뒤 닫았다. 수학적 blocking finding은 0이다.
 Root가 실행한 Wolfram의 실제 source·raw·추출 JSON을 같은 pass에 합류해 대조했다.
 12개 exact residual group의 스칼라 zero-check는 모두 true이며, exact sample은 위임 검토자의 손대수 값과 일치한다.
-저장된 point/stencil 결과는 아직 전달받지 않았다. 따라서 이 판정은 S2 전체 결과의 PASS를 대신하지 않는다.
+저장된 point/stencil 원자료, exact oracle source·보고서·로그 및 Rust 시험 로그도 같은 pass에 합류했다.
+대표점·경계·전체 FD/refusal·actual wrong-J 기록의 손대수/source 대조와 데이터 identity 검토를 마쳤다.
+이 판정은 R6 범위의 PASS이며, 별도 C9·게시·production gate를 대신하지 않는다.
 
-신규 solver/test/compile/CAS/benchmark/NCP 실행 0, 원격 게시 0.
+이 R6 검토자의 신규 solver/test/compile/CAS/benchmark/NCP 실행 0, 원격 게시 0.
 파일 읽기·review 문서 작성·identity 기록 외의 실행을 하지 않았다.
 independent personnel=NOT_RUN; actual delegated agent review=RUN.
 
@@ -290,13 +292,96 @@ exact sample {{57/128,-153/128},{{-3,51/16},{3,-67/16}},{9/32,-9/32}}에서 일�
 - wrong_J_plus_I=true는 (J_bad-J)(1,-1)=(1,-1)이라는 알려진 비영 오차를 확인한다. J_bad가 올바른 도함수라는 뜻이 아니다.
 - 이 기호 계산은 callback epoch의 정직성, full-write 계약 준수, 외부 부작용 rollback, native production admission 또는 일반 dense certificate를 입증하지 않는다.
 
-### Point/stencil 원자료: 아직 합류하지 않음
+### Point/stencil 원자료: 같은 pass의 마지막 합류 검토 완료
 
-point/stencil JSONL 및 독립 exact oracle 결과는 아직 전달받지 않았다.
-그 결과가 생기면 본 같은 review pass에서 raw의 주장 범위와 사전 기준을 대조한다.
-추가 CAS, solver, grid 또는 test 실행을 요청하거나 시작하지 않는다.
+실제 points.jsonl의 794행·170379바이트와 SHA256을 읽기/identity 기록으로 확인했다.
+REVIEW.json의 input identity가 이 파일과 일치하며, REVIEW.json과 exact_saved_point_oracle.log의 바이트 해시도 같다.
+source/probes.rs, review_points.py, source/session_tests.rs를 직접 읽었고 실행하지 않았다.
+초기 CONTRACT/THEORY/PREREGISTRATION/gateway identity는 §1과 그대로 일치했다.
 
-현재 R6 판정은 수학 유도/가정/source correspondence와 저장된 symbolic raw의 일치에 한정한 PASS_SCOPED다.
-S2 실행 결과, C9 코드/원자료 판정, production admission은 별도 실제 근거를 필요로 한다.
+| 실제 입력·결과 파일 | SHA256 |
+|---|---|
+| evidence/points.jsonl | cb64d9455289f183363749289038d6f250bf63e0ab95ea94cd51defa88d2ba21 |
+| REVIEW.json | 115e3aeee8424c2e906a7ec8cad4aef3691c2716351bf754817abaa8d54dc1f7 |
+| evidence/exact_saved_point_oracle.log | 115e3aeee8424c2e906a7ec8cad4aef3691c2716351bf754817abaa8d54dc1f7 |
+| source/probes.rs | 1775a83dbb02fd986ac9913297f5f8e1f3ed4d67b83d43e2361c7c9b72eb8669 |
+| review_points.py | 6014b5a11d179d7808f42efb30b823329682842252f3d3581eee74e4492b9c16 |
+| source/session_tests.rs | b6f54cedcf623e004e7985e7ba42c96f800b0460a57d677d9d4633745c0ee23c |
+| evidence/new_gateway_contracts.log | f5377e20e0fe2424cb2f62c5ccef6e6ff824f85b4a1afdc3df9235b552ae5a90 |
+| evidence/new_session_composition.log | fe32466f8065d235b7d0e2a63e63cee4b2db3e2a5e00492c4f2db73b1db97729 |
+
+원자료 대조는 729개 point 각각의 oracle를 다시 실행한 것이 아니다.
+representative/boundary/symmetric-J point를 직접 읽고, 49개 FD·14개 refusal·1개 actual wrong-J·summary의 원문을 모두 읽었다.
+전체 exact 비교 수치는 source를 읽어 의미를 확인한 뒤 이미 저장된 oracle 결과에 귀속한다.
+
+| 직접 읽은 point | 실제 raw의 핵심 값 | 독립 손대수와 주장 범위 |
+|---|---|---|
+| i=[0,0,0] | RHS=(0,0), J=((-3,0),(3,-1)), Jv=(-3,4), mass_residual=0 | 최초 경계 입력과 비대칭 Jacobian witness |
+| i=[4,2,6] | RHS=(0.4453125,-1.1953125), J=((-3,3.1875),(3,-4.1875)), Jv=(-6.1875,7.1875), mass_residual=0 | §2의 exact sample 및 Jv와 동일; RHS 합은 -0.75 |
+| i=[0,8,0] | RHS=(-3,3), mass_residual=0 | y=0에서 y'=3>=0; x+y의 변화는 0 |
+| i=[8,0,8] | RHS=(2.5,-3.5), J=((-3,5),(3,-6)), mass_residual=0 | x=0에서 x'=2.5>=0; RHS 합은 -1 |
+| i=[8,8,8] | RHS=(-0.5,-0.5), Jv=(-8,9), mass_residual=0 | box의 위쪽 corner; x+y=2이므로 초기 단순체 x+y<=1의 궤적 표본으로 세지 않음 |
+
+mass_residual의 source 정의는 rhs[0]+rhs[1]+y이다. 따라서 0이라는 값은 합 변화가 -y임을 뜻하며,
+두 성분 합 자체가 보존된다는 뜻이 아니다. 위 표와 §2의 수식이 이 정의에 맞는다.
+
+저장된 oracle는 binary64 값을 Fraction.from_float로 exact rational에 옮기고,
+Rust 평가 순서와 다른 전개식 및 stoichiometric 표현으로 RHS/J/Jv를 비교한다.
+point당 2 RHS+4 J+2 Jv+1 mass residual=9개 exact 값, 총 6561개 비교가 모두 같아 mismatch=0으로 완료됐다.
+비교 assertion 8613은 값만의 수가 아니다. source상 point당 11개×729, point cardinality 1개,
+FD당 11개×49, FD cardinality 1개, wrong-J 7개, input refusal 14개, FD refusal 21개,
+summary 11개를 포함하여 8613이 된다. 출력의 exact-zero mismatch와 max_point_error=0은 이 고정 grid에 한정한다.
+
+C9가 찾은 원본 oracle의 zip() 단축 위험은 별도 보완 receipt와 함께 해석한다.
+원본 review_points.py의 zip 비교는 배열 길이가 잘못 짧아졌을 때 비교 수를 줄일 수 있으므로,
+원본 REVIEW.json 하나만으로 일반 malformed schema의 거절을 주장하지 않는다.
+Root가 같은 raw에 대해 수행한 별도 schema 검토의 SCHEMA_REVIEW.json을 직접 읽었고,
+그 receipt 및 additive_saved_schema.log의 SHA256은
+780ae258fea1f182402eed5f5fe65507afd702c87760c61483e62e6a104d1e06으로 같다.
+기록된 validator identity는 cf56eac2fb5715dc12d0504627b833a80a2f3f3f30ed4c48557924ec22deaf23이다.
+이 receipt는 같은 794행/170379바이트 raw의 exact 9×9×9 point/7×7 FD key coverage,
+실제 RHS 1458/J 2916/Jv 1458/mass residual 729개=6561 값과 FD estimate 98개,
+duplicate JSON key=0 및 세 가지 malformed control의 거절을 보고한다.
+Root의 이 보완 검토는 model/callback evaluation=0을 기록하며 원본 oracle/result를 보존했다.
+최종 근거는 원본 exact 비교 결과와 이 schema receipt의 합성이다.
+R6는 receipt와 raw/original-result hash 불변만 읽기 확인했으며 validator 또는 oracle를 다시 실행하지 않았다.
+
+49개 FD는 모두 x=1/4,y=3/4에서 대칭 dyadic 점을 사용한다.
+대표 t=1/2,power=3의 raw는 minus=3/8, plus=5/8, denominator=1/4,
+estimate=(0.28125,-0.28125)=(9/32,-9/32)이며 손대수와 같다.
+첫 stencil은 minus=0을, 마지막 t=7/8,power=3 stencil은 plus=1을 포함하여 유효 경계까지 조사했다.
+저장된 oracle의 max absolute error=0, 사전 고정 gate=1.4210854715202004e-14가 유지됐다.
+이는 이 49개 대칭 dyadic 입력의 결과이며 일반 FD accuracy certificate가 아니다.
+
+input refusal 7개는 음수/상한 초과 t·state 및 NaN/Inf에서 모두 OutsideDomain,
+RHS/J/pairs=0이다. FD refusal 7개 중 left/right는 OutsideDomain, collapse/zero/negative/infinite/nan은
+InvalidDifferenceStep이며 모두 RHS=0이다. left/right/collapse만 pre-arithmetic witness를 1회 실행했고
+나머지는 0회다. 이 기록은 거절된 query를 바꿔 callback에 넣었다는 흔적을 보이지 않는다.
+
+actual finite_wrong_j 행은 위 t=1/2,x=1/4,y=3/4에서 J_bad=((-2,51/16),(3,-51/16))을 기록하고 admitted=true다.
+올바른 J와의 차는 정확히 I다. source는 실제 full-write J+I callback을 gateway에 1회 통과시켰다.
+별도 semantic mutation은 저장된 true-J를 transpose/양쪽 off-diagonal 부호 반전/J+I로 해석한 대조이며,
+compiled Rust source mutant를 729회 실행한 기록이 아니다.
+검출은 각각 720/729, 729/729, 729/729다. transpose 미검출 9행 i=[0,ix,6]을 실제 읽었으며,
+t=0,y=3/4에서 J=((-3,3),(3,-4))가 대칭이므로 같은 행렬이 되는 경우다.
+이는 사전 “각 mutation이 적어도 한 점에서 실패” 기준과 맞는다.
+
+callback 계수의 source상 분해도 실제 summary와 일치한다.
+RHS=729+49×2+1=828, J=729+1=730,
+witness=729×4+49×5+4+3=3168이다. forbidden_callback_entries=0은 이 고정 corpus의 관측이다.
+Gateway의 일반 조건부 안전성 논증은 §4–5에 두며 이 유한 관측만으로 모든 callback의 정직성 또는 종료를 주장하지 않는다.
+
+### 저장된 Rust 시험과 synthetic Session 경계
+
+실제 로그는 gateway 30 passed, Session composition 5 passed이며 failed/ignored는 각각 0이다.
+이 검토자는 이를 재실행하지 않았다. 35/35는 새 계약 시험의 저장된 결과이고 과거 D2–D4 시험의 재실행 수가 아니다.
+Session source의 accepted-prefix 시험은 unchanged candidate와 exact zero defect로 만든 synthetic admission fixture다.
+코드 주석도 reversible-exchange RHS를 적분한 상태라고 주장하지 않는다고 명시한다.
+따라서 보존된 accepted=1, t=0.125는 이후 callback failure에서 Session snapshot이 유지된다는 계약의 근거이며
+이 제조 비선형 모델의 trajectory accuracy 근거가 아니다. 실제 새 ODE trajectory는 0이다.
+
+현재 R6 판정은 수학 유도/가정/source correspondence와 저장된 symbolic/point/FD/contract 근거의 범위 일치에 한정한 PASS_SCOPED다.
+이 마지막 합류 검토에서 새 blocking finding은 없었다. 추가 CAS, solver, oracle, grid 또는 test 실행은 0이다.
+C9 코드·그림 검토, 게시/백업 readback 및 production admission은 각각의 실제 근거를 필요로 한다.
 global completion=null, production=HOLD, actual BASS/general dense/durable/native live-owner gate는 유지한다.
 

@@ -1,0 +1,40 @@
+{
+  "schema": "vigilode.d5.saved_schema.v1",
+  "status": "PASS_COMPLETE_FIELDS_AND_COVERAGE",
+  "input_sha256": "cb64d9455289f183363749289038d6f250bf63e0ab95ea94cd51defa88d2ba21",
+  "input_bytes": 170379,
+  "input_rows": 794,
+  "actual_numeric_field_counts": {
+    "rhs": 1458,
+    "jacobian": 2916,
+    "jvp": 1458,
+    "mass_residual": 729,
+    "fd_estimate": 98
+  },
+  "actual_point_value_count": 6561,
+  "point_key_coverage": "EXACT_9x9x9",
+  "stencil_key_coverage": "EXACT_7x7",
+  "input_refusal_ids": "EXACT_0_TO_6",
+  "fd_refusal_names": "EXACT_FROZEN_7",
+  "duplicate_JSON_keys": 0,
+  "malformed_schema_controls": [
+    {
+      "case": "short_rhs",
+      "result": "REJECTED"
+    },
+    {
+      "case": "short_fd_estimate",
+      "result": "REJECTED"
+    },
+    {
+      "case": "wrong_grid_index",
+      "result": "REJECTED"
+    }
+  ],
+  "finding_closed": "original oracle zip() could truncate a malformed short array; full saved shapes, identities and measured field counts are separately proven here",
+  "original_oracle_and_result_preserved": true,
+  "model_evaluations": 0,
+  "callback_evaluations": 0,
+  "old_science_replays": 0,
+  "script_sha256": "cf56eac2fb5715dc12d0504627b833a80a2f3f3f30ed4c48557924ec22deaf23"
+}

@@ -81,3 +81,18 @@ preserved. Production HOLD; global completion=null. The next thread must begin
 with current native source/reservation/live dirty/completion receipts, reuse
 existing hooks, and preserve the separate actual BASS, general model derivative,
 dense-domain, nonreturning-callback, durable-crash and production FP gates.
+
+## Mandatory complete coverage companion
+
+The original numerical oracle uses zip. Its PASS must be combined with
+SCHEMA_REVIEW.json and REVIEW_BUNDLE.json, never consumed as a standalone
+complete-field claim for arbitrary malformed data. Actual additional command:
+
+```sh
+python3 run.py --kind saved_output_schema additive_saved_schema -- python3 validate_saved_schema.py
+```
+
+This was executed once after C9 found the specific short-array risk, over the
+identical saved794-row corpus. It made zero model/callback evaluations and did
+not replay the original oracle. Future authorized fresh pipelines must validate
+complete schema/coverage before accepting the numerical oracle result.

@@ -1,0 +1,22 @@
+warning: variant `Recoverable` is never constructed
+  --> source/gateway.rs:11:26
+   |
+11 | pub enum CallbackFault { Recoverable, Fatal }
+   |          -------------   ^^^^^^^^^^^
+   |          |
+   |          variant in this enum
+   |
+   = note: `CallbackFault` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: method `terminal` is never used
+  --> source/gateway.rs:90:12
+   |
+85 | impl<const N: usize> Gate<N> {
+   | ---------------------------- method in this implementation
+...
+90 |     pub fn terminal(&self) -> Option<Fault> { self.terminal }
+   |            ^^^^^^^^
+
+warning: 2 warnings emitted
+

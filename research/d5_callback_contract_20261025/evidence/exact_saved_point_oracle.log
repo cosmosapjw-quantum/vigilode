@@ -1,0 +1,81 @@
+{
+  "schema": "vigilode.d5.exact_oracle.v1",
+  "status": "PASS_SCOPED",
+  "input": {
+    "path": "evidence/points.jsonl",
+    "bytes": 170379,
+    "sha256": "cb64d9455289f183363749289038d6f250bf63e0ab95ea94cd51defa88d2ba21"
+  },
+  "row_counts": {
+    "point": 729,
+    "fd": 49,
+    "finite_wrong_j": 1,
+    "input_refusal": 7,
+    "fd_refusal": 7,
+    "summary": 1
+  },
+  "comparison_assertions": 8613,
+  "point_value_comparisons": 6561,
+  "point_exact_rational_mismatches": 0,
+  "max_point_error": 0.0,
+  "fd_max_absolute_error": 0.0,
+  "fd_tolerance_rule": "64*binary64 epsilon*max(1,abs(exact secant))",
+  "fd_min_gate": 1.4210854715202004e-14,
+  "observed": {
+    "rows_before_summary": 793,
+    "points": 729,
+    "stencils": 49,
+    "wrong_finite_pairs": 1,
+    "input_refusals": 7,
+    "fd_refusals": 7,
+    "rhs_entries": 828,
+    "jac_entries": 730,
+    "forbidden_callback_entries": 0,
+    "witness_calls": 3168,
+    "new_ode_trajectories": 0
+  },
+  "mutations": {
+    "transpose": {
+      "detected_rows": 720,
+      "first": {
+        "grid_index": [
+          0,
+          0,
+          0
+        ],
+        "exact_error": "3"
+      },
+      "maximum_entry_error": 3.0
+    },
+    "off_diagonal_sign": {
+      "detected_rows": 729,
+      "first": {
+        "grid_index": [
+          0,
+          0,
+          0
+        ],
+        "exact_error": "6"
+      },
+      "maximum_entry_error": 10.0
+    },
+    "finite_J_plus_I": {
+      "detected_rows": 729,
+      "first": {
+        "grid_index": [
+          0,
+          0,
+          0
+        ],
+        "exact_error": "1"
+      },
+      "maximum_entry_error": 1.0
+    }
+  },
+  "mutation_method": "independent interpretations of saved true-J rows, not compiled source mutants",
+  "wrong_finite_J_control": "one actual full-write J+I callback pair admitted; exact derivative oracle rejects it",
+  "new_ode_trajectories": 0,
+  "old_science_replays": 0,
+  "production": "HOLD",
+  "global_completion": null
+}

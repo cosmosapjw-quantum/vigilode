@@ -1,0 +1,75 @@
+{
+  "schema": "VIGILODE_D5_PROVIDER_ACK_V1",
+  "stage": "S0",
+  "updated_utc": "2026-10-25T02:46:09.664085+00:00",
+  "archive": "VIGILODE_D5_CALLBACK_S0_20261025_R1.zip",
+  "archive_bytes": 51312,
+  "archive_sha256": "37a810ee0f2672aa6b76b7c8ba955f5c81d0eedb33bff8817d4599762ac197a9",
+  "payload_count": 17,
+  "source_commit": "8b53c60c51bc3a0fdec7402ef3657236b11e3205",
+  "source_tree": "f3f832199e0067c33c281d6d79529992906b9e5e",
+  "local_archive_identity": "PASS",
+  "local_archive_crc_and_payload_hashes": "PASS_REUSED_PARENT_EVIDENCE",
+  "status": "PARTIAL_2_OF_3_DRIVE_UNKNOWN_NO_ACK",
+  "providers": {
+    "library": {
+      "status": "succeeded",
+      "library_file_id": "libfile_322e451354b48191b4279f1e4a94524d",
+      "file_id": "file_000000002f5c820da5e308a7e44ef38d",
+      "filename": "VIGILODE_D5_CALLBACK_S0_20261025_R1.zip",
+      "path": "/BASS/VIGILODE_D5_CALLBACK_S0_20261025_R1.zip",
+      "local_metadata_applied": true,
+      "current_version_number": 0,
+      "provider_size_bytes": 51312,
+      "provider_size_verification": "PASS",
+      "submitted_local_bytes": 51312,
+      "last_completed_local_helper_result_mtime_utc": "2026-10-25T02:28:53.381937+00:00",
+      "raw_receipt": "intake/backups/private_delivery/S0_LIBRARY_UPLOAD_RESULT.json",
+      "metadata_readback": "Exact library ID, filename, bytes observed"
+    },
+    "drive": {
+      "status": "UNKNOWN_NO_ACK",
+      "operation": "google_drive_upload_file",
+      "args": {
+        "file_uri": "/workspace/scratch/6a9ff47f24f5/next_20261025/archives/VIGILODE_D5_CALLBACK_S0_20261025_R1.zip",
+        "file_name": "VIGILODE_D5_CALLBACK_S0_20261025_R1.zip",
+        "mime_type": "application/zip",
+        "parent_folder_id": "1zETZ_0uFYQQYL97E2raEhcl83-0jv--T"
+      },
+      "operation_id": null,
+      "response_received": false,
+      "call_start_utc": null,
+      "start_time_lower_bound_utc": "2026-10-25T02:28:53.381937+00:00",
+      "control_wait_reported_seconds": 920.8,
+      "reason": "Parent interrupted continuous wait; this is not evidence of remote failure, user cancellation, or automatic approval rejection",
+      "duplicate_retry": 0,
+      "readonly_exact_filename_reconciliation": {
+        "status": "NO_MATCH_OBSERVED",
+        "query_count": 1,
+        "exact_filename": "VIGILODE_D5_CALLBACK_S0_20261025_R1.zip",
+        "parent_folder_id": "1zETZ_0uFYQQYL97E2raEhcl83-0jv--T",
+        "result_count": 0,
+        "meaning": "No matching metadata observed at query time; original upload remains UNKNOWN_NO_ACK; duplicate retry prohibited",
+        "raw_receipt": "intake/backups/private_delivery/S0_DRIVE_READONLY_RECONCILIATION.json"
+      }
+    },
+    "dropbox": {
+      "status": "completed",
+      "file_id": "id:BSpOijBcT10AAAAAAD_9yw",
+      "filename": "VIGILODE_D5_CALLBACK_S0_20261025_R1.zip",
+      "provider_size_bytes": 51312,
+      "provider_size_verification": "PASS",
+      "path": "/bianchi/research_backups/rei_bianchi/VIGILODE_D5_CALLBACK_S0_20261025_R1.zip",
+      "modified_time": "2026-10-25T02:45:49Z",
+      "operation_id_recorded_private": true,
+      "raw_receipt": "intake/backups/private_delivery/S0_DROPBOX_STATUS_1.json"
+    }
+  },
+  "remote_full_GET_SHA256": "NOT_RUN",
+  "science_executions_for_delivery": 0,
+  "budget_mutations": 0,
+  "remote_delay_accounting": "Delivery/tool latency; excluded from scientific subprocess budget",
+  "historical_initial_unpublished_S0_archive": "PRESERVED; R1 contains added CR pattern pin, no scientific rerun",
+  "provider_ack_count": 2,
+  "provider_count": 3
+}
