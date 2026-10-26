@@ -1,0 +1,22 @@
+{
+ "schema": "vigilode.adapter-economy-binaries.v1",
+ "before_commit": "4fe67602502440d76aa9dd245c6b1d67558c14bf",
+ "before_binaries": {
+  "evidence_switch_bench": "ab812631e6f4a32e532958388081d10b03498034e279e598569953e3af9ca912",
+  "local_bottleneck_suite": "12e66ce27610a274f9c83ca8c95ee75cd5f864d815ab2d99d47b97b45ccaeff8",
+  "adapter_gyro_grid": "8c0271e1a3e6f80e5b087113a30959264c1cc073f0471aa00286fdf22a13aaf9",
+  "adapter_attempt_trace": "3206478d94f32325598a6f1efb33a5476194b6cb6c34a0f3aba19e6cc25f795b",
+  "adapter_phase_grid": "38bae22ad94c308358e28f33f1fec4fa763da86896c62708e94ef1f8c3783d83"
+ },
+ "before_note": "identical to external_reports/adapter_local_followup_20261025/BINARY_SHA256_FINAL.json for the three adapter examples unchanged since d914b4c8",
+ "after_commit": "636cdc7a49011af3c10f8cf474cc4bb46e249700",
+ "after_binaries": {
+  "evidence_switch_bench": "68ef8abd78008244d59b25dfa73011a8165801c56ef8c99583379af709c974c6",
+  "local_bottleneck_suite": "386c105c9b8cebd3f53bd15207d565d2aea8c7ed53252201402e72de3f69d0c5",
+  "adapter_gyro_grid": "31d0c3542b7387a79c3d221c087f9fefc198dc58b6d84d967b860dd950deebfb",
+  "adapter_attempt_trace": "3206478d94f32325598a6f1efb33a5476194b6cb6c34a0f3aba19e6cc25f795b",
+  "adapter_phase_grid": "e2a672f4dbba909a18ad0173a7136da38ad18bbc7112a1d0d66ec30efa43c764"
+ },
+ "build": "CARGO_TARGET_DIR=/tmp/vigilode-adapter-perf-target CARGO_BUILD_JOBS=16 cargo build --locked --offline --profile measurement -p vigilode --example adapter_phase_grid --example adapter_attempt_trace --example adapter_gyro_grid --example evidence_switch_bench --example local_bottleneck_suite",
+ "cargo_lock_sha256": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351"
+}

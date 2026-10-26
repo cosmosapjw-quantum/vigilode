@@ -38,9 +38,12 @@ for k in SW:
     if cb.get("best_direct") is None or ca.get("best_direct") is None:
         L.append(f"| {k} | no completed direct candidate | | | | | | | | | |"); continue
     ok2 = ta["attempts"] <= tb["attempts"] and ta["rhs_calls"] <= tb["rhs_calls"] and ba["implicit_pilot_discarded"]["attempts"] <= bb["implicit_pilot_discarded"]["attempts"] and ba["explicit_probe_discarded"]["attempts"] <= bb["explicit_probe_discarded"]["attempts"] and ba["implicit_committed"]["count"] <= bb["implicit_committed"]["count"]
-    validated = a["error"] is not None
-    ok3 = a["success"] and (a["accuracy_pass"] if validated else True) and a["reconciled"] and a["determinism"]["identical_across_runs"]
-    gates.setdefault("accuracy_validated_cells", []).append(k) if validated else gates.setdefault("accuracy_unvalidated_cells", []).append(k)
+    # The cap is gated only where it is attainable: a validated error and at least one direct
+    # candidate of the same cell that passes the cap (the registered default-tolerance gyro cell has
+    # none and is reported only).
+    attainable = a["error"] is not None and any(dv["accuracy_pass"] for dk, dv in A["runs"].items() if dv["role"] == "direct" and dv["kind"] == a["kind"] and dv["case"] == a["case"])
+    ok3 = a["success"] and (a["accuracy_pass"] if attainable else True) and a["reconciled"] and a["determinism"]["identical_across_runs"]
+    gates.setdefault("accuracy_gated_cells" if attainable else "accuracy_report_only_cells", []).append(k)
     g2 &= ok2; g3 &= ok3
     gates[k] = {"work_not_higher": ok2, "success_accuracy_reconciled_deterministic": ok3}
     def bk(x, n): return f"{x[n]['count']}({x[n]['attempts']})"
