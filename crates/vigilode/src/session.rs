@@ -14,8 +14,8 @@ use serde::Serialize;
 
 use crate::explicit::validate;
 use crate::{
-    CallbackError, Dopri5, ExplicitCallbackFailure, ExplicitCallbackWork, ExplicitErrorControl,
-    ExplicitSolution, ExplicitSolveError, ExplicitStats, Options, Problem, EXPLICIT_STATS_SCHEMA,
+    CallbackError, Dopri5, EXPLICIT_STATS_SCHEMA, ExplicitCallbackFailure, ExplicitCallbackWork,
+    ExplicitErrorControl, ExplicitSolution, ExplicitSolveError, ExplicitStats, Options, Problem,
 };
 
 /// Caller-declared versions of the bindings held fixed during a session.
@@ -85,13 +85,20 @@ pub struct SessionCheckpoint<'a> {
     pub counters: &'a WorkCounters,
 }
 
-/// Cumulative native and callback statistics at an accepted checkpoint.
-/// Subtract successive snapshots to report one switching batch's actual work.
-#[derive(Clone, Debug)]
-pub(crate) struct SessionStatistics {
-    pub stats: ExplicitStats,
+/// Copyable numbers of a session at an accepted checkpoint. Two snapshots
+/// bound one switching batch without cloning the fixed configuration.
+#[derive(Clone, Copy, Debug)]
+pub(crate) struct SessionSnapshot {
+    pub attempts: usize,
+    pub accepted_steps: usize,
+    pub rejected_steps: usize,
+    pub counters: WorkCounters,
+    pub rhs_completed: u64,
+    pub fsal_reuses: u64,
+    pub output_clipped_steps: usize,
+    pub callback_work: ExplicitCallbackWork,
     pub stop_reason: Option<rodas5p_integrators::Dopri5StopReason>,
-    pub callback_failure: Option<ExplicitCallbackFailure>,
+    pub failed: bool,
 }
 
 type SessionRhs<'a> = dyn Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + 'a;
@@ -163,29 +170,60 @@ impl ExplicitSession<'_> {
         self.failure.borrow().clone()
     }
 
-    /// Return a cumulative, read-only telemetry snapshot without finalizing.
-    pub(crate) fn statistics(&self) -> SessionStatistics {
+    /// Cumulative numbers at the accepted checkpoint, without allocating.
+    pub(crate) fn snapshot(&self) -> SessionSnapshot {
         let checkpoint = self.native.checkpoint();
         let native = self.native.telemetry();
-        SessionStatistics {
-            stats: ExplicitStats {
-                schema: EXPLICIT_STATS_SCHEMA,
-                method: "dopri5-5(4)-fsal",
-                options: self.options.clone(),
-                error_control: self.error_control.clone(),
-                adaptive: self.adaptive.clone(),
-                observation_mode: "step-landing",
-                counters: *checkpoint.counters,
-                attempts: checkpoint.attempts,
-                accepted_steps: checkpoint.accepted_steps,
-                rejected_steps: checkpoint.rejected_steps,
-                rhs_completed: native.rhs_completed,
-                fsal_reuses: native.fsal_reuses,
-                callback_work: self.work.get(),
-                output_clipped_steps: native.output_clipped_steps,
-            },
+        SessionSnapshot {
+            attempts: checkpoint.attempts,
+            accepted_steps: checkpoint.accepted_steps,
+            rejected_steps: checkpoint.rejected_steps,
+            counters: *checkpoint.counters,
+            rhs_completed: native.rhs_completed,
+            fsal_reuses: native.fsal_reuses,
+            output_clipped_steps: native.output_clipped_steps,
+            callback_work: self.work.get(),
             stop_reason: native.stop_reason,
-            callback_failure: self.failure.borrow().clone(),
+            failed: self.failure.borrow().is_some(),
+        }
+    }
+
+    /// The driver record of the work done since `before`, built once. The
+    /// fixed session configuration is cloned into it, as the public record
+    /// schema requires; the work fields are differences of cumulative counts.
+    pub(crate) fn stats_since(&self, before: SessionSnapshot) -> ExplicitStats {
+        let now = self.snapshot();
+        let w = |a: u64, b: u64| a.saturating_sub(b);
+        ExplicitStats {
+            schema: EXPLICIT_STATS_SCHEMA,
+            method: "dopri5-5(4)-fsal",
+            options: self.options.clone(),
+            error_control: self.error_control.clone(),
+            adaptive: self.adaptive.clone(),
+            observation_mode: "step-landing",
+            counters: now.counters.delta(before.counters),
+            attempts: now.attempts - before.attempts,
+            accepted_steps: now.accepted_steps - before.accepted_steps,
+            rejected_steps: now.rejected_steps - before.rejected_steps,
+            rhs_completed: w(now.rhs_completed, before.rhs_completed),
+            fsal_reuses: w(now.fsal_reuses, before.fsal_reuses),
+            callback_work: ExplicitCallbackWork {
+                attempted: w(now.callback_work.attempted, before.callback_work.attempted),
+                completed: w(now.callback_work.completed, before.callback_work.completed),
+                recoverable_errors: w(
+                    now.callback_work.recoverable_errors,
+                    before.callback_work.recoverable_errors,
+                ),
+                fatal_errors: w(
+                    now.callback_work.fatal_errors,
+                    before.callback_work.fatal_errors,
+                ),
+                malformed_outputs: w(
+                    now.callback_work.malformed_outputs,
+                    before.callback_work.malformed_outputs,
+                ),
+            },
+            output_clipped_steps: now.output_clipped_steps - before.output_clipped_steps,
         }
     }
 }

@@ -103,6 +103,15 @@ pub enum FailureReason {
         /// Time at which the state was unavailable.
         t: f64,
     },
+    /// The charged callback work of a bounded trial exceeded its ceiling
+    /// (the switching adapter's entry pilots). The solution holds the last
+    /// accepted state; every call that was made is counted.
+    WorkCeilingReached {
+        /// The ceiling in callback work units.
+        ceiling: u64,
+        /// The charged work at the stop, above the ceiling.
+        charged: u64,
+    },
     /// A user callback returned [`crate::CallbackError::Fatal`].
     CallbackFailed {
         /// The callback.
@@ -143,6 +152,10 @@ impl fmt::Display for FailureReason {
             Self::EventInterpolationFailed { t } => {
                 write!(f, "event state unavailable at t = {t:e}")
             }
+            Self::WorkCeilingReached { ceiling, charged } => write!(
+                f,
+                "charged callback work {charged} exceeded the trial's work ceiling {ceiling}"
+            ),
             Self::CallbackFailed {
                 callback,
                 t,

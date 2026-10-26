@@ -123,6 +123,25 @@ impl Rodas5p {
         y0: &[f64],
         opts: &Options,
     ) -> Result<Solution, SolveError> {
+        Self::solve_observed_bounded(problem, t_span, y0, opts, &[], None)
+    }
+
+    /// [`Rodas5p::solve`] with interior landing times and an optional
+    /// callback work ceiling, for the switching adapter's coalesced implicit
+    /// windows and bounded entry pilots. Every `interior` time strictly inside
+    /// the span is landed on exactly and appears in [`Solution::t`]. With a
+    /// ceiling, the run stops with [`FailureReason::WorkCeilingReached`]
+    /// right after the callback whose charged work (RHS, JVP and
+    /// time-derivative calls one unit each, a dense or band Jacobian `n`
+    /// units) exceeds it; every call that was made stays counted.
+    pub(crate) fn solve_observed_bounded(
+        problem: &Problem,
+        t_span: (f64, f64),
+        y0: &[f64],
+        opts: &Options,
+        interior: &[f64],
+        work_ceiling: Option<u64>,
+    ) -> Result<Solution, SolveError> {
         let atol = validate(problem, t_span, y0, opts)?;
         let adaptive = AdaptiveStepConfig {
             rtol: opts.rtol,
@@ -134,15 +153,24 @@ impl Rodas5p {
         adaptive
             .validate()
             .map_err(|e| SolveError::InvalidInput(e.to_string()))?;
-        let times = if t_span.1 > t_span.0 {
-            vec![t_span.0, t_span.1]
-        } else {
-            vec![t_span.0]
-        };
+        let mut times = Vec::with_capacity(interior.len() + 2);
+        times.push(t_span.0);
+        times.extend(
+            interior
+                .iter()
+                .copied()
+                .filter(|t| *t > t_span.0 && *t < t_span.1),
+        );
+        if t_span.1 > t_span.0 {
+            times.push(t_span.1);
+        }
         let schedule =
             OutputSchedule::new(times).map_err(|e| SolveError::InvalidInput(e.to_string()))?;
 
-        let guard = Arc::new(Guard::default());
+        let guard = Arc::new(match work_ceiling {
+            Some(ceiling) => Guard::with_ceiling(ceiling),
+            None => Guard::default(),
+        });
         let sequential = sequential_route(problem, opts);
         let (ode, plan, jacobian_record) = build(problem, &guard, sequential)?;
         // Dense output without a mass matrix (and not `Enforce`) runs the
@@ -466,14 +494,17 @@ impl Rodas5p {
         counters.rhs_calls += fd.rhs_calls;
         counters.rhs_evaluations += fd.rhs_calls;
 
-        let status = match guard.fatal() {
-            Some(fatal) => Status::Failed(FailureReason::CallbackFailed {
+        let status = match (guard.fatal(), guard.ceiling_hit()) {
+            (Some(fatal), _) => Status::Failed(FailureReason::CallbackFailed {
                 callback: fatal.callback,
                 t: fatal.t,
                 message: fatal.message,
             }),
-            None if run.observed.success => Status::Success,
-            None => Status::Failed(failure_reason(
+            (None, Some((ceiling, charged))) => {
+                Status::Failed(FailureReason::WorkCeilingReached { ceiling, charged })
+            }
+            (None, None) if run.observed.success => Status::Success,
+            (None, None) => Status::Failed(failure_reason(
                 run.partial.as_ref(),
                 run.attempts,
                 &adaptive,
@@ -559,7 +590,7 @@ impl Rodas5p {
             extension: run.segments,
         };
         // Event callbacks are user code too: a fatal callback ends the run.
-        let (evaluations, terminal) = if guard.fatal().is_some() {
+        let (evaluations, terminal) = if guard.fatal().is_some() || guard.ceiling_hit().is_some() {
             (0, None)
         } else {
             crate::events::locate(&mut solution, &problem.events)
@@ -745,7 +776,9 @@ fn build(
                 let (user, guard) = (user.clone(), guard.clone());
                 Arc::new(move |t, y| {
                     let mut m = DenseMatrix::zeros(n, n);
-                    guard.call(Callback::Jacobian, t, || user(t, y, m.as_mut_slice()))?;
+                    guard.call_charged(Callback::Jacobian, t, n as u64, || {
+                        user(t, y, m.as_mut_slice())
+                    })?;
                     finite(m.as_slice(), "dense Jacobian")?;
                     Ok(m)
                 })
@@ -757,7 +790,9 @@ fn build(
                     // The driver hands back the previous matrix; the facade
                     // documents a zeroed buffer before every call (B3d).
                     m.as_mut_slice().fill(0.0);
-                    guard.call(Callback::Jacobian, t, || user(t, y, m.as_mut_slice()))?;
+                    guard.call_charged(Callback::Jacobian, t, n as u64, || {
+                        user(t, y, m.as_mut_slice())
+                    })?;
                     finite(m.as_slice(), "dense Jacobian")
                 })
             });
@@ -830,7 +865,7 @@ fn build(
             let fill: CoreRhs = {
                 let (user, guard) = (fill.clone(), guard.clone());
                 Arc::new(move |t, y, out| {
-                    guard.call(Callback::Jacobian, t, || user(t, y, out))?;
+                    guard.call_charged(Callback::Jacobian, t, n as u64, || user(t, y, out))?;
                     finite(out, "band Jacobian")
                 })
             };

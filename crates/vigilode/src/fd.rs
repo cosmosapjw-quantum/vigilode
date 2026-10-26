@@ -34,9 +34,32 @@ pub(crate) struct Guard {
     short_circuited_rhs_calls: AtomicU64,
     fd_builds: AtomicU64,
     fd_rhs_calls: AtomicU64,
+    charged_units: AtomicU64,
+    ceiling: Option<u64>,
+    ceiling_hit: AtomicBool,
 }
 
 impl Guard {
+    /// A guard that stops the run once the charged callback work exceeds
+    /// `ceiling`: RHS, JVP and time-derivative calls cost one unit each, a
+    /// dense or band Jacobian the units its caller charges (`n`).
+    pub(crate) fn with_ceiling(ceiling: u64) -> Self {
+        Self {
+            ceiling: Some(ceiling),
+            ..Self::default()
+        }
+    }
+
+    /// The ceiling and the charged work, once the ceiling was exceeded.
+    pub(crate) fn ceiling_hit(&self) -> Option<(u64, u64)> {
+        self.ceiling_hit.load(Ordering::Acquire).then(|| {
+            (
+                self.ceiling.unwrap_or(0),
+                self.charged_units.load(Ordering::Relaxed),
+            )
+        })
+    }
+
     /// Evaluate a vector-output callback. An invalid numerical stage is
     /// refused before entering user code; an `Ok` callback that leaves a
     /// component unwritten or nonfinite violates its contract and is terminal.
@@ -54,7 +77,9 @@ impl Guard {
             // Preserve an already latched terminal error even if a caller
             // presents another invalid stage afterward.
             if self.poisoned.load(Ordering::Acquire) {
-                return self.call(callback, t, || unreachable!("fatal latch must short-circuit"));
+                return self.call(callback, t, || {
+                    unreachable!("fatal latch must short-circuit")
+                });
             }
             return Err(CoreError::NonFinite(format!(
                 "{callback:?} callback input contains NaN/Inf"
@@ -81,6 +106,20 @@ impl Guard {
         t: f64,
         user: impl FnOnce() -> Result<(), CallbackError>,
     ) -> CoreResult<()> {
+        self.call_charged(callback, t, 1, user)
+    }
+
+    /// [`Guard::call`] charging `units` of callback work against the work
+    /// ceiling, if one is set. A call is charged after it completed, so every
+    /// counted call entered user code; the call that takes the charged total
+    /// past the ceiling is answered with the terminal signal and latches it.
+    pub(crate) fn call_charged(
+        &self,
+        callback: Callback,
+        t: f64,
+        units: u64,
+        user: impl FnOnce() -> Result<(), CallbackError>,
+    ) -> CoreResult<()> {
         if self.poisoned.load(Ordering::Acquire) {
             self.short_circuited_calls.fetch_add(1, Ordering::Relaxed);
             if callback == Callback::Rhs {
@@ -92,7 +131,20 @@ impl Guard {
             )));
         }
         match user() {
-            Ok(()) => Ok(()),
+            Ok(()) => {
+                if let Some(ceiling) = self.ceiling {
+                    let charged = self.charged_units.fetch_add(units, Ordering::Relaxed) + units;
+                    if charged > ceiling {
+                        self.ceiling_hit.store(true, Ordering::Release);
+                        self.poisoned.store(true, Ordering::Release);
+                        return Err(CoreError::FatalCallback(format!(
+                            "{callback:?} callback at t = {t:e} completed, but the charged \
+                             callback work {charged} exceeds the work ceiling {ceiling}"
+                        )));
+                    }
+                }
+                Ok(())
+            }
             Err(CallbackError::Recoverable(message)) => {
                 self.recoverable_errors.fetch_add(1, Ordering::Relaxed);
                 Err(CoreError::NonFinite(format!(
