@@ -498,10 +498,10 @@ fn candidate_refusals_are_atomic_and_provider_work_is_never_rolled_back() {
 }
 
 #[test]
-fn prepared_token_drop_preserves_checkpoint_and_controller_shadow_and_commit_advances_both_state_and_budget(
-) {
+fn prepared_token_drop_preserves_checkpoint_and_controller_shadow_and_commit_advances_both_state_and_budget()
+ {
     use rodas5p_integrators::{
-        adaptive_next_step_after_attempt, AdaptiveControllerState, AdaptiveStepConfig,
+        AdaptiveControllerState, AdaptiveStepConfig, adaptive_next_step_after_attempt,
     };
     let mut budget = PhysicalErrorBudget::<8>::new(ID, 1.0, [1.0; 6]).unwrap();
     let before_budget = budget.clone();

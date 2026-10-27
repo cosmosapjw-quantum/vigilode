@@ -762,24 +762,37 @@ impl Lagged {
         let target = self.targets[stage];
         let columns_before = self.work.gmres_iterations;
         let column_products_before = self.work.gmres_column_applications;
-        let successful_products_before = counters.linear_matvecs;
+        let counted_products_before = counters.linear_matvecs;
+        let physical_products_before = if op.jvp.is_some() {
+            counters.jvp_calls
+        } else {
+            counters.jacobian_matvecs
+        };
         let successful_pc_before = counters.preconditioner_apps;
         let outcome = self.gmres_stage(&op, &pc, target, counters);
         // Charged whether the stage converged, refreshes or failed.
         let products = op.applications.load(Ordering::Relaxed);
         let lu = pc.applications.load(Ordering::Relaxed);
-        // Generic apply_counted/apply_preconditioner charge successful
-        // calls only. This driver promises attempted-work accounting, so
-        // charge the failed callback too before propagating its error.
-        let failed_products = products - (counters.linear_matvecs - successful_products_before);
-        counters.linear_matvecs += failed_products;
-        counters.linear_matvec_vectors += failed_products;
-        if op.jvp.is_some() {
-            counters.jvp_calls += failed_products;
-            counters.jvp_vectors += failed_products;
+        // apply_counted charges solver-level attempts before provider entry,
+        // while the default provider work hook charges only successful work.
+        // Reconcile the two ledgers independently before propagating an error.
+        let uncharged_products = products - (counters.linear_matvecs - counted_products_before);
+        counters.linear_matvecs += uncharged_products;
+        counters.linear_matvec_vectors += uncharged_products;
+        let physical_products_after = if op.jvp.is_some() {
+            counters.jvp_calls
         } else {
-            counters.jacobian_matvecs += failed_products;
+            counters.jacobian_matvecs
+        };
+        let uncharged_physical_products =
+            products - (physical_products_after - physical_products_before);
+        if op.jvp.is_some() {
+            counters.jvp_calls += uncharged_physical_products;
+            counters.jvp_vectors += uncharged_physical_products;
+        } else {
+            counters.jacobian_matvecs += uncharged_physical_products;
         }
+        // apply_preconditioner still charges successful applications only.
         let failed_pc = lu - (counters.preconditioner_apps - successful_pc_before);
         counters.preconditioner_apps += failed_pc;
         counters.preconditioner_vectors += failed_pc;

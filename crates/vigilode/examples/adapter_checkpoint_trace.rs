@@ -5,16 +5,15 @@
 //! runs. True local error is measured against two tight independent
 //! references; it is not the native embedded estimate. Wall time is
 //! diagnostic only.
-#[allow(dead_code)]
 #[path = "local_bottleneck_support/models.rs"]
 mod models;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::{
     alloc::{GlobalAlloc, Layout, System},
     cell::Cell,
     sync::{
-        atomic::{AtomicBool, Ordering},
         Mutex,
+        atomic::{AtomicBool, Ordering},
     },
     time::Instant,
 };
@@ -55,12 +54,11 @@ fn allocations() -> u64 {
 static REC_ON: AtomicBool = AtomicBool::new(false);
 static REC: Mutex<Vec<f64>> = Mutex::new(Vec::new());
 fn rec(t: f64) {
-    if REC_ON.load(Ordering::Relaxed) {
-        if let Ok(mut v) = REC.lock() {
-            if v.len() < v.capacity() {
-                v.push(t);
-            }
-        }
+    if REC_ON.load(Ordering::Relaxed)
+        && let Ok(mut v) = REC.lock()
+        && v.len() < v.capacity()
+    {
+        v.push(t);
     }
 }
 fn rec_reset(on: bool) {
@@ -159,7 +157,7 @@ fn model(name: &str) -> (Problem, Vec<f64>, f64, Vec<f64>, f64, f64) {
                 "../../../research/local_frontier_native_diffsol_20261024/stop_audit_20261025/evidence/case_references/case05/EXTERNAL_REFERENCE_PRECOMMIT.json")).unwrap();
             (
                 Problem::new(2, |t, y, o| {
-                rec(t);
+                    rec(t);
                     o[1] = -y[1] / (1.0 + t) + 0.2 * y[0];
                     o[0] = -(y[0] - y[1].cos()) / 1e-6 - y[1].sin() * o[1];
                     Ok(())
@@ -200,16 +198,22 @@ fn model(name: &str) -> (Problem, Vec<f64>, f64, Vec<f64>, f64, f64) {
             fn g(t: f64) -> (f64, f64, f64) {
                 let (a, w) = (1e-2, 150.0);
                 let q = (200.0 * (t - 0.5)).tanh();
-                let (s, s1, s2) = (0.5 * (1.0 + q), 100.0 * (1.0 - q * q), -40000.0 * q * (1.0 - q * q));
+                let (s, s1, s2) = (
+                    0.5 * (1.0 + q),
+                    100.0 * (1.0 - q * q),
+                    -40000.0 * q * (1.0 - q * q),
+                );
                 let (sn, cs) = (w * t).sin_cos();
-                (t.cos() + a * s * sn,
-                 -t.sin() + a * (s1 * sn + s * w * cs),
-                 -t.cos() + a * (s2 * sn + 2.0 * s1 * w * cs - s * w * w * sn))
+                (
+                    t.cos() + a * s * sn,
+                    -t.sin() + a * (s1 * sn + s * w * cs),
+                    -t.cos() + a * (s2 * sn + 2.0 * s1 * w * cs - s * w * w * sn),
+                )
             }
             let (g1, _, _) = g(1.0);
             (
                 Problem::new(1, |t, y, o| {
-                rec(t);
+                    rec(t);
                     let (l, _) = lam(t);
                     let (g0, g1, _) = g(t);
                     o[0] = -l * (y[0] - g0) + g1;
@@ -241,7 +245,7 @@ fn model(name: &str) -> (Problem, Vec<f64>, f64, Vec<f64>, f64, f64) {
                 / 100.0;
             (
                 Problem::new(2, move |t, y, o| {
-                rec(t);
+                    rec(t);
                     let l = 5e4 * (1.0 + (60.0 * (t - tau)).tanh());
                     let (s, c) = (100.0 * t).sin_cos();
                     o[0] = -100.0 * y[1] - l * (y[0] - c);
@@ -279,7 +283,7 @@ fn model(name: &str) -> (Problem, Vec<f64>, f64, Vec<f64>, f64, f64) {
 fn catalog_problem(m: &models::Model, dense: bool) -> Problem {
     let mr = m.clone();
     let mut p = Problem::new(m.n, move |t, y, out| {
-                rec(t);
+        rec(t);
         mr.apply(t, y, None, false, out, false);
         Ok(())
     });
@@ -293,7 +297,9 @@ fn catalog_problem(m: &models::Model, dense: bool) -> Problem {
             for j in 0..mj.n {
                 v[j] = 1.0;
                 mj.apply(t, y, Some(&v[..mj.n]), false, &mut col[..mj.n], false);
-                for i in 0..mj.n { a[i * mj.n + j] = col[i]; }
+                for i in 0..mj.n {
+                    a[i * mj.n + j] = col[i];
+                }
                 v[j] = 0.0;
             }
             Ok(())
@@ -304,7 +310,9 @@ fn catalog_problem(m: &models::Model, dense: bool) -> Problem {
             Ok(())
         }));
     }
-    if m.autonomous() { p.autonomous() } else {
+    if m.autonomous() {
+        p.autonomous()
+    } else {
         let mt = m.clone();
         p.time_derivative(move |t, y, out| {
             mt.apply(t, y, None, true, out, false);
@@ -319,8 +327,13 @@ struct Fixture {
     // Diagnostic control only: the same RHS with the facade's default
     // finite-difference Jacobian (no provider), for allocation audits.
     fd_problem: Option<Problem>,
-    y0: Vec<f64>, end: f64, reference: Vec<f64>, cap: f64, uncertainty: f64,
-    options: Options, report_only: bool,
+    y0: Vec<f64>,
+    end: f64,
+    reference: Vec<f64>,
+    cap: f64,
+    uncertainty: f64,
+    options: Options,
+    report_only: bool,
 }
 
 fn fixture(case: &str) -> Fixture {
@@ -329,9 +342,16 @@ fn fixture(case: &str) -> Fixture {
         if gyro { model("decay") } else { model(case) };
     let mut dense_problem = None;
     let mut fd_problem = None;
-    let mut options = Options { rtol: 1e-7, atol: Atol::Scalar(1e-10), h0: 1e-7,
-        max_steps: 100_000, ..Default::default() };
-    if case.starts_with("transition-") || case == "relaxation" || case == "stale-return" { options.h0 = 1e-4; }
+    let mut options = Options {
+        rtol: 1e-7,
+        atol: Atol::Scalar(1e-10),
+        h0: 1e-7,
+        max_steps: 100_000,
+        ..Default::default()
+    };
+    if case.starts_with("transition-") || case == "relaxation" || case == "stale-return" {
+        options.h0 = 1e-4;
+    }
     if case == "case5" || gyro {
         let m = models::Model::new(if gyro { 10 } else { 5 }, false).unwrap();
         problem = catalog_problem(&m, false);
@@ -342,22 +362,42 @@ fn fixture(case: &str) -> Fixture {
             mr.apply(t, y, None, false, out, false);
             Ok(())
         });
-        fd_problem = Some(if m.autonomous() { fd.autonomous() } else {
+        fd_problem = Some(if m.autonomous() {
+            fd.autonomous()
+        } else {
             fd.time_derivative(move |t, y, out| {
                 mt.apply(t, y, None, true, out, false);
                 Ok(())
             })
         });
-        y0 = m.initial(); end = m.end; cap = 1e-4;
+        y0 = m.initial();
+        end = m.end;
+        cap = 1e-4;
         options.h0 = 1e-4;
-        options.rtol = 1e-6; options.atol = Atol::Scalar(1e-9);
-        if gyro { reference = m.exact(end).unwrap(); uncertainty = 1e-13; }
-        if case == "gyro-tight" { options.rtol = 1e-9; options.atol = Atol::Scalar(1e-12); }
+        options.rtol = 1e-6;
+        options.atol = Atol::Scalar(1e-9);
+        if gyro {
+            reference = m.exact(end).unwrap();
+            uncertainty = 1e-13;
+        }
+        if case == "gyro-tight" {
+            options.rtol = 1e-9;
+            options.atol = Atol::Scalar(1e-12);
+        }
     }
-    Fixture { problem, dense_problem, fd_problem, y0, end, reference, cap, uncertainty, options,
-        report_only: case == "gyro-default" }
+    Fixture {
+        problem,
+        dense_problem,
+        fd_problem,
+        y0,
+        end,
+        reference,
+        cap,
+        uncertainty,
+        options,
+        report_only: case == "gyro-default",
+    }
 }
-
 
 fn scaled(o: &Options) -> f64 {
     match &o.atol {
@@ -378,16 +418,20 @@ fn reference(f: &Fixture, t0: f64, t1: f64, y0: &[f64]) -> (Vec<f64>, f64) {
         ..Default::default()
     };
     let p = f.dense_problem.as_ref().unwrap_or(&f.problem);
-    let a = Rodas5p::solve(p, (t0, t1), y0, &tight(1e-12)).ok().and_then(|r| {
-        r.is_success().then(|| r.final_state().unwrap().to_vec())
-    });
+    let a = Rodas5p::solve(p, (t0, t1), y0, &tight(1e-12))
+        .ok()
+        .and_then(|r| r.is_success().then(|| r.final_state().unwrap().to_vec()));
     let b = Dopri5::solve(&f.problem, (t0, t1), y0, &tight(1e-12))
         .ok()
         .and_then(|r| r.success.then_some(r.final_state));
     REC_ON.store(was, Ordering::Relaxed);
     match (a, b) {
         (Some(a), Some(b)) => {
-            let d = a.iter().zip(&b).map(|(x, y)| (x - y).abs()).fold(0.0, f64::max);
+            let d = a
+                .iter()
+                .zip(&b)
+                .map(|(x, y)| (x - y).abs())
+                .fold(0.0, f64::max);
             (a, d)
         }
         (Some(a), None) => (a, f64::NAN),
@@ -413,8 +457,11 @@ fn local_error(f: &Fixture, t0: f64, t1: f64, y0: &[f64], y1: &[f64]) -> Value {
 }
 
 fn work_units(c: &vigilode::WorkRecord, n: usize) -> f64 {
-    c.rhs_calls as f64 + c.jvp_vectors as f64 + c.ft_calls as f64
-        + c.jacobian_builds as f64 * n as f64 + c.linear_solves as f64
+    c.rhs_calls as f64
+        + c.jvp_vectors as f64
+        + c.ft_calls as f64
+        + c.jacobian_builds as f64 * n as f64
+        + c.linear_solves as f64
 }
 
 fn counters_delta(a: &vigilode::WorkRecord, b: &vigilode::WorkRecord) -> Value {
@@ -432,23 +479,40 @@ fn counters_delta(a: &vigilode::WorkRecord, b: &vigilode::WorkRecord) -> Value {
 }
 
 fn reason(d: &Value, accepted: bool) -> &'static str {
-    if accepted { return "accepted"; }
-    for (k, r) in [("linear_solve_failures", "linear-solve failure"),
+    if accepted {
+        return "accepted";
+    }
+    for (k, r) in [
+        ("linear_solve_failures", "linear-solve failure"),
         ("nonlinear_solve_failures", "nonlinear failure"),
         ("nonfinite_step_failures", "nonfinite stage"),
-        ("local_error_failures", "local error test")] {
-        if d[k].as_u64().unwrap_or(0) > 0 { return r; }
+        ("local_error_failures", "local error test"),
+    ] {
+        if d[k].as_u64().unwrap_or(0) > 0 {
+            return r;
+        }
     }
     "rejected (error test; driver does not split the reason)"
 }
 
 // One attempt at a time through the native session used by switching probes.
-fn trace_dopri(f: &Fixture, start: f64, target: f64, end: f64, y: &[f64], h0: f64,
-    max_attempts: usize) -> Value {
+fn trace_dopri(
+    f: &Fixture,
+    start: f64,
+    target: f64,
+    end: f64,
+    y: &[f64],
+    h0: f64,
+    max_attempts: usize,
+) -> Value {
     let mut o = f.options.clone();
     o.h0 = h0;
     o.max_steps = max_attempts;
-    let times = if target < end { vec![start, target, end] } else { vec![start, target] };
+    let times = if target < end {
+        vec![start, target, end]
+    } else {
+        vec![start, target]
+    };
     let epochs = SessionEpochs::default();
     rec_reset(true);
     let mut rows = Vec::new();
@@ -458,7 +522,13 @@ fn trace_dopri(f: &Fixture, start: f64, target: f64, end: f64, y: &[f64], h0: f6
         loop {
             let (t_before, h_req, acc0, rej0, c0) = {
                 let c = s.checkpoint();
-                (c.t, c.proposed_h, c.accepted_steps, c.rejected_steps, vigilode::WorkRecord::from(c.counters))
+                (
+                    c.t,
+                    c.proposed_h,
+                    c.accepted_steps,
+                    c.rejected_steps,
+                    vigilode::WorkRecord::from(c.counters),
+                )
             };
             let y_before = s.checkpoint().y.to_vec();
             let calls0 = REC.lock().unwrap().len();
@@ -469,7 +539,9 @@ fn trace_dopri(f: &Fixture, start: f64, target: f64, end: f64, y: &[f64], h0: f6
             let al = allocations() - al;
             let c = s.checkpoint();
             let (acc, rej) = (c.accepted_steps - acc0, c.rejected_steps - rej0);
-            if acc + rej == 0 { break; }
+            if acc + rej == 0 {
+                break;
+            }
             let calls = REC.lock().unwrap()[calls0..].to_vec();
             let stage_max = calls.iter().copied().fold(f64::NEG_INFINITY, f64::max);
             let trial = stage_max - t_before;
@@ -483,10 +555,13 @@ fn trace_dopri(f: &Fixture, start: f64, target: f64, end: f64, y: &[f64], h0: f6
                 row["error"] = local_error(f, t_before, c.t, &y_before, &y_after);
             }
             rows.push(row);
-            if !matches!(adv, Ok(SessionAdvance::Yield)) || c.t >= target { break; }
+            if !matches!(adv, Ok(SessionAdvance::Yield)) || c.t >= target {
+                break;
+            }
         }
         Ok::<(), vigilode::ExplicitSolveError>(())
-    }).expect("session");
+    })
+    .expect("session");
     let total_ns = t_total.elapsed().as_nanos() as u64;
     rec_reset(false);
     let c = vigilode::WorkRecord::from(&sol.stats.counters);
@@ -500,9 +575,20 @@ fn trace_dopri(f: &Fixture, start: f64, target: f64, end: f64, y: &[f64], h0: f6
 
 // Deterministic prefix runs: run k stops after attempt k. Attempt k is the
 // difference between prefixes k and k-1, all from the same checkpoint.
-fn trace_rodas(f: &Fixture, start: f64, target: f64, y: &[f64], h0: f64, max_attempts: usize,
-    dense: bool) -> Value {
-    let p = if dense { f.dense_problem.as_ref().expect("dense control") } else { &f.problem };
+fn trace_rodas(
+    f: &Fixture,
+    start: f64,
+    target: f64,
+    y: &[f64],
+    h0: f64,
+    max_attempts: usize,
+    dense: bool,
+) -> Value {
+    let p = if dense {
+        f.dense_problem.as_ref().expect("dense control")
+    } else {
+        &f.problem
+    };
     let mut o = f.options.clone();
     o.h0 = h0;
     let mut rows = Vec::new();
@@ -524,16 +610,23 @@ fn trace_rodas(f: &Fixture, start: f64, target: f64, y: &[f64], h0: f64, max_att
             let clock = Instant::now();
             let r = Rodas5p::solve(p, (start, target), y, &o).expect("rodas");
             best_ns = best_ns.min(clock.elapsed().as_nanos() as u64);
-            if rep == 0 { out = Some((r, allocations() - al, rec_snapshot())); }
+            if rep == 0 {
+                out = Some((r, allocations() - al, rec_snapshot()));
+            }
         }
         rec_reset(false);
         let (r, alloc, calls) = out.unwrap();
-        if r.stats.attempts < k { break; }
+        if r.stats.attempts < k {
+            break;
+        }
         let c = r.stats.counters;
         let t_after = *r.t.last().unwrap();
         let acc = r.stats.accepted_steps - prev_acc;
         let attempt_calls = &calls[prev_calls.min(calls.len())..];
-        let stage_max = attempt_calls.iter().copied().fold(f64::NEG_INFINITY, f64::max);
+        let stage_max = attempt_calls
+            .iter()
+            .copied()
+            .fold(f64::NEG_INFINITY, f64::max);
         let trial = stage_max - prev_t;
         let d = counters_delta(&prev_c, &c);
         let clipped = acc == 1 && t_after == target;
@@ -543,7 +636,10 @@ fn trace_rodas(f: &Fixture, start: f64, target: f64, y: &[f64], h0: f64, max_att
             "t_after": t_after, "work": d,
             "allocations_marginal": alloc as i64 - prev_alloc as i64,
             "attempt_ns_marginal_diagnostic": best_ns as i64 - prev_ns as i64});
-        let y_after = r.final_state().map(<[f64]>::to_vec).unwrap_or_else(|| prev_y.clone());
+        let y_after = r
+            .final_state()
+            .map(<[f64]>::to_vec)
+            .unwrap_or_else(|| prev_y.clone());
         if acc == 1 {
             row["error"] = local_error(f, prev_t, t_after, &prev_y, &y_after);
             prev_y = y_after;
@@ -557,7 +653,9 @@ fn trace_rodas(f: &Fixture, start: f64, target: f64, y: &[f64], h0: f64, max_att
         prev_acc = r.stats.accepted_steps;
         let done = r.is_success();
         last = Some((r, alloc, best_ns));
-        if done { break; }
+        if done {
+            break;
+        }
     }
     let (r, alloc, ns) = last.expect("at least one attempt");
     let c = r.stats.counters;
@@ -574,7 +672,11 @@ fn trace_rodas(f: &Fixture, start: f64, target: f64, y: &[f64], h0: f64, max_att
 fn solve_only(f: &Fixture, arm: &str) {
     let span = (0.0, f.end);
     match arm {
-        "dopri" => { std::hint::black_box(Dopri5::solve(&f.problem, span, &f.y0, &f.options).expect("dopri")); }
+        "dopri" => {
+            std::hint::black_box(
+                Dopri5::solve(&f.problem, span, &f.y0, &f.options).expect("dopri"),
+            );
+        }
         "rodas" | "rodas-dense" | "rodas-fd" => {
             let p = match arm {
                 "rodas-dense" => f.dense_problem.as_ref().unwrap_or(&f.problem),
@@ -585,7 +687,9 @@ fn solve_only(f: &Fixture, arm: &str) {
         }
         _ => {
             let c = switching_config(arm);
-            std::hint::black_box(SwitchingSolver::solve(&f.problem, span, &f.y0, &f.options, &c).expect("switching"));
+            std::hint::black_box(
+                SwitchingSolver::solve(&f.problem, span, &f.y0, &f.options, &c).expect("switching"),
+            );
         }
     }
 }
@@ -596,20 +700,31 @@ fn switching_config(arm: &str) -> SwitchingConfig {
     } else {
         SwitchingConfig::adaptive_evidence(DerivativeFallback::ProvidedOnly)
     };
-    if arm == "adaptive-sentinel" { c.return_sentinel_interval = 1; }
+    if arm == "adaptive-sentinel" {
+        c.return_sentinel_interval = 1;
+    }
     c
 }
 
 // One registered arm: (rhs, max component error, work summary).
 fn solve_arm(f: &Fixture, arm: &str) -> (u64, f64, Value) {
     let span = (0.0, f.end);
-    let err = |y: &[f64]| y.iter().zip(&f.reference).map(|(a, b)| (a - b).abs()).fold(0.0, f64::max);
+    let err = |y: &[f64]| {
+        y.iter()
+            .zip(&f.reference)
+            .map(|(a, b)| (a - b).abs())
+            .fold(0.0, f64::max)
+    };
     match arm {
         "dopri" => {
             let r = Dopri5::solve(&f.problem, span, &f.y0, &f.options).expect("dopri");
             let c = vigilode::WorkRecord::from(&r.stats.counters);
-            (c.rhs_calls, err(&r.final_state), json!({"attempts": r.stats.attempts,
-                "work_units": work_units(&c, f.y0.len()), "success": r.success}))
+            (
+                c.rhs_calls,
+                err(&r.final_state),
+                json!({"attempts": r.stats.attempts,
+                "work_units": work_units(&c, f.y0.len()), "success": r.success}),
+            )
         }
         "rodas" | "rodas-dense" | "rodas-fd" => {
             let p = match arm {
@@ -619,20 +734,38 @@ fn solve_arm(f: &Fixture, arm: &str) -> (u64, f64, Value) {
             };
             let r = Rodas5p::solve(p, span, &f.y0, &f.options).expect("rodas");
             let c = r.stats.counters;
-            (c.rhs_calls, err(r.final_state().unwrap_or(&[])), json!({"attempts": r.stats.attempts,
+            (
+                c.rhs_calls,
+                err(r.final_state().unwrap_or(&[])),
+                json!({"attempts": r.stats.attempts,
                 "work_units": work_units(&c, f.y0.len()), "jvp_vectors": c.jvp_vectors,
                 "linear_solves": c.linear_solves, "linear_iterations": c.linear_iterations,
-                "direct_factorizations": c.direct_factorizations, "success": r.is_success()}))
+                "direct_factorizations": c.direct_factorizations, "success": r.is_success()}),
+            )
         }
         _ => {
             let c = switching_config(arm);
-            let r = SwitchingSolver::solve(&f.problem, span, &f.y0, &f.options, &c).expect("switching");
+            let r =
+                SwitchingSolver::solve(&f.problem, span, &f.y0, &f.options, &c).expect("switching");
             let mut kinds = serde_json::Map::new();
             for s in &r.stats.segments {
-                let k = format!("{}{}{}", if s.is_probe { "probe-" } else { "" },
-                    if s.method == vigilode::SwitchingMethod::Dopri5 { "dopri" } else { "rodas" },
-                    if s.committed { "-committed" } else { "-discarded" });
-                let e = kinds.entry(k).or_insert(json!({"segments": 0, "attempts": 0, "rhs": 0,
+                let k = format!(
+                    "{}{}{}",
+                    if s.is_probe { "probe-" } else { "" },
+                    if s.method == vigilode::SwitchingMethod::Dopri5 {
+                        "dopri"
+                    } else {
+                        "rodas"
+                    },
+                    if s.committed {
+                        "-committed"
+                    } else {
+                        "-discarded"
+                    }
+                );
+                let e = kinds
+                    .entry(k)
+                    .or_insert(json!({"segments": 0, "attempts": 0, "rhs": 0,
                     "jvp": 0, "linear_solves": 0, "work_units": 0.0}));
                 e["segments"] = json!(e["segments"].as_u64().unwrap() + 1);
                 e["attempts"] = json!(e["attempts"].as_u64().unwrap() + s.attempts as u64);
@@ -641,9 +774,13 @@ fn solve_arm(f: &Fixture, arm: &str) -> (u64, f64, Value) {
                 e["linear_solves"] = json!(e["linear_solves"].as_u64().unwrap() + s.linear_solves);
                 e["work_units"] = json!(e["work_units"].as_f64().unwrap() + s.work_units);
             }
-            (r.stats.rhs_calls, err(&r.final_state), json!({"attempts": r.stats.attempts,
+            (
+                r.stats.rhs_calls,
+                err(&r.final_state),
+                json!({"attempts": r.stats.attempts,
                 "segments": r.stats.segments.len(), "switches": r.stats.switches,
-                "output_rows": r.t.len(), "success": r.success, "by_kind": kinds}))
+                "output_rows": r.t.len(), "success": r.success, "by_kind": kinds}),
+            )
         }
     }
 }
@@ -673,8 +810,13 @@ fn main() {
             for _ in 0..n {
                 once();
             }
-            eprintln!("repeat-arm {} {} n={} ns/solve={}", a[2], arm, n,
-                clock.elapsed().as_nanos() as f64 / n as f64);
+            eprintln!(
+                "repeat-arm {} {} n={} ns/solve={}",
+                a[2],
+                arm,
+                n,
+                clock.elapsed().as_nanos() as f64 / n as f64
+            );
             return;
         }
         let cold = once();
@@ -683,25 +825,34 @@ fn main() {
         let mut n = 1usize;
         loop {
             let clock = Instant::now();
-            for _ in 0..n { once(); }
-            if clock.elapsed().as_secs_f64() >= 0.05 || n >= 1 << 20 { break; }
+            for _ in 0..n {
+                once();
+            }
+            if clock.elapsed().as_secs_f64() >= 0.05 || n >= 1 << 20 {
+                break;
+            }
             n *= 2;
         }
         let mut per = Vec::new();
         for _ in 0..7 {
             let clock = Instant::now();
-            for _ in 0..n { once(); }
+            for _ in 0..n {
+                once();
+            }
             per.push(clock.elapsed().as_nanos() as f64 / n as f64);
         }
         let mut sorted = per.clone();
         sorted.sort_by(f64::total_cmp);
-        println!("{}", json!({"schema": "vigilode.adapter-light-bench.v2", "case": a[2], "arm": arm,
+        println!(
+            "{}",
+            json!({"schema": "vigilode.adapter-light-bench.v2", "case": a[2], "arm": arm,
             "repetitions_per_batch": n, "ns_per_solve_batches": per, "ns_per_solve_median": sorted[3],
             "ns_per_solve_min": sorted[0], "batch_spread": (sorted[6] - sorted[0]) / sorted[3],
             "allocations_cold_first_call": cold, "allocations_warm": warm, "rhs": rhs,
             "max_component_absolute_error": err, "accuracy_cap": f.cap, "summary": summary,
             "timing_scope": "solver call only; result destruction included; summary built outside timing",
-            "timing_authority": "diagnostic_only"}));
+            "timing_authority": "diagnostic_only"})
+        );
         return;
     }
     if a[1] == "repeat-rodas" {
@@ -735,15 +886,23 @@ fn main() {
     } else {
         SwitchingConfig::evidence_driven(DerivativeFallback::ProvidedOnly)
     };
-    if arm == "adaptive-unseeded" { config.reuse_entry_pilot_step = false; }
-    if arm == "adaptive-no-startup-retry" { config.retry_unresolved_entry_once = false; }
+    if arm == "adaptive-unseeded" {
+        config.reuse_entry_pilot_step = false;
+    }
+    if arm == "adaptive-no-startup-retry" {
+        config.retry_unresolved_entry_once = false;
+    }
     let sol = SwitchingSolver::solve(&f.problem, (0.0, f.end), &f.y0, &f.options, &config)
         .expect("switching rerun");
     if a.get(3).map(String::as_str) == Some("tenure") {
         // Uninterrupted RODAS from a committed checkpoint over a whole tenure:
         // a lower bound on the work a fully preserved session could reach.
         let p: Vec<f64> = a[4..7].iter().map(|s| s.parse().unwrap()).collect();
-        let i = sol.t.iter().position(|t| *t == p[0]).expect("committed checkpoint");
+        let i = sol
+            .t
+            .iter()
+            .position(|t| *t == p[0])
+            .expect("committed checkpoint");
         let mut o = f.options.clone();
         o.h0 = p[2];
         let a0 = allocations();
@@ -751,11 +910,14 @@ fn main() {
         let r = Rodas5p::solve(&f.problem, (p[0], p[1]), &sol.y[i], &o).expect("rodas");
         let ns = clock.elapsed().as_nanos() as u64;
         let c = r.stats.counters;
-        println!("{}", json!({"start": p[0], "end": p[1], "h0": p[2], "success": r.is_success(),
+        println!(
+            "{}",
+            json!({"start": p[0], "end": p[1], "h0": p[2], "success": r.is_success(),
             "attempts": r.stats.attempts, "rejected": r.stats.rejected_steps, "rhs": c.rhs_calls,
             "jvp_vectors": c.jvp_vectors, "linear_solves": c.linear_solves,
             "work_units": work_units(&c, f.y0.len()), "allocations": allocations() - a0,
-            "ns_diagnostic": ns}));
+            "ns_diagnostic": ns})
+        );
         return;
     }
     let mut points = Vec::new();
@@ -771,15 +933,20 @@ fn main() {
             "dopri": trace_dopri(&f, start, target, f.end, &y, hd, f.options.max_steps),
             "rodas": trace_rodas(&f, start, target, &y, hr, 400, false)});
         if f.dense_problem.is_some() {
-            point["rodas_dense_unavailable_to_selector"] = trace_rodas(&f, start, target, &y, hr, 400, true);
+            point["rodas_dense_unavailable_to_selector"] =
+                trace_rodas(&f, start, target, &y, hr, 400, true);
         }
         points.push(point);
     }
-    println!("{}", json!({"schema": "vigilode.adapter-checkpoint-trace.v1", "case": case, "arm": arm,
+    println!(
+        "{}",
+        json!({"schema": "vigilode.adapter-checkpoint-trace.v1", "case": case, "arm": arm,
+            "declared_reference_uncertainty": f.uncertainty, "reference_report_only": f.report_only,
         "rerun": {"rhs": sol.stats.rhs_calls, "attempts": sol.stats.attempts,
             "final_state": sol.final_state, "segments": sol.stats.segments},
         "points": points,
         "error_scope": "true local error of accepted steps against tight RODAS and DOPRI references from the same accepted start; not the native embedded estimate; rejected trials carry no state",
         "proposal_scope": "DOPRI proposals are native session checkpoints; RODAS proposals are known only for the first attempt and unclipped accepted attempts",
-        "timing_authority": "diagnostic_only"}));
+        "timing_authority": "diagnostic_only"})
+    );
 }

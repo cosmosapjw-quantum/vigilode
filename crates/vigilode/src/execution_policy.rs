@@ -4,8 +4,8 @@
 //! callback, affinity, pool topology, or cost regime changes. Timing observations
 //! are empirical, not confidence bounds. No callbacks are replayed by `map_ordered`.
 use crate::selection_evidence::{
-    compare_qualified_costs, CostComparison, CostEvidence, CostEvidenceKind, CostInterval,
-    CostUnit, SelectionIdentity,
+    CostComparison, CostEvidence, CostEvidenceKind, CostInterval, CostUnit, SelectionIdentity,
+    compare_qualified_costs,
 };
 use rodas5p_core::{CoreError, CoreResult};
 use rodas5p_integrators::ParallelExecution;

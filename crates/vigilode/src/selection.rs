@@ -119,6 +119,9 @@ pub enum GeneralSolveError {
 }
 
 /// The full method-specific result, including partial states and work counters.
+// Keep the established public representation and avoid adding a heap allocation
+// to every implicit result solely to equalize these payload sizes.
+#[allow(clippy::large_enum_variant)]
 #[derive(Debug)]
 pub enum GeneralResult {
     /// Dormand--Prince result.

@@ -1,0 +1,51 @@
+{
+  "iteration": 0,
+  "kind": "initial implementation validation",
+  "started_utc": "2026-10-27T14:07:44.485950+00:00",
+  "sources": {
+    "crates/vigilode-coupled/src/structural_mean_field.rs": "65d6b8689bf1faa77fe3cf6e00ed7c8f438501633fde2409819a5351b31e6412",
+    "crates/vigilode-coupled/tests/structural_production_contracts.rs": "b49412b62694991b7f295833415ecd6dac477d6601cb535f2dbb6eebcd17a15e",
+    "crates/vigilode-coupled/examples/structural_production_bench_20261027.rs": "1d9c14bdd8b34cfb1df75b2be746f849e77b427529474dad64f20b83459ec59a"
+  },
+  "executions": [
+    {
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "vigilode-coupled",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "--test",
+        "structural_mean_field_contracts",
+        "--test",
+        "structural_production_contracts",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 3.2993220429998473,
+      "log": "research/production_solver_closure_20261027/structural/initial_native_0.log"
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "-p",
+        "vigilode-coupled",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "--example",
+        "structural_production_bench_20261027"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 3.36806522400002,
+      "log": "research/production_solver_closure_20261027/structural/initial_native_1.log"
+    }
+  ],
+  "finished_utc": "2026-10-27T14:08:30.743945+00:00"
+}

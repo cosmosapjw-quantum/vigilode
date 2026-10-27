@@ -10,7 +10,7 @@
 //! This is conditional on truthful full-space declarations and on the supplied
 //! residual evaluation allowance. It does not certify an opaque callback.
 
-use rodas5p_core::directed::{add_up, div_up, mul_up, sub_down, Interval};
+use rodas5p_core::directed::{Interval, add_up, div_up, mul_up, sub_down};
 use serde::Serialize;
 
 use crate::polynomial_resolvent::{

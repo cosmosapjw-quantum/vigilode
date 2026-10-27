@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "workflow": "physmath-research-loop",
+  "workflow_version": "1.0.0",
+  "status": "complete_scoped_prepared_for_publication",
+  "baseline_pr": 91,
+  "baseline_commit": "206298b4068d923bb47c7160b111b7439098660c",
+  "initial_remote_survey": "evidence/PR_SURVEY.json",
+  "final_remote_survey": "evidence/PR_SURVEY_FINAL.json",
+  "parallel_research_and_coding_lanes": {
+    "structural": "structural/LOOP_RECORD.json",
+    "homotopy": "homotopy/RUN_RECORD.json",
+    "adapter": "adapter/LOOP_RECORD.json"
+  },
+  "correction_loops": {
+    "structural": 3,
+    "homotopy": 1,
+    "adapter": 3
+  },
+  "maximum_per_research_task": 3,
+  "production_integration_accounting_repair": {
+    "corrections_used": 1,
+    "maximum": 3,
+    "proof": "theory/FINAL_GATE_FAILURE_REVIEW.md",
+    "reachability_and_reuse": "theory/LAGGED_VALIDATION_SCOPE.json"
+  },
+  "validation": "evidence/VALIDATION_SUMMARY.json",
+  "results": "RESULTS.json",
+  "local_development": "DEVELOPMENT_PLAN.json",
+  "literature": "evidence/LITERATURE_MAP.json",
+  "external_tools_used": [
+    "SciSpace",
+    "Exa",
+    "Wolfram"
+  ],
+  "publication_rule": "The containing commit identifies all in-commit artifacts. Actual push/PR SHA and provider read-back are in the separately delivered publication receipt."
+}

@@ -1,0 +1,130 @@
+\section{Adapter selection and mode arithmetic are separate costs}
+\label{sec:production-adapter}
+
+The adapter now offers exact integer return selection and causal transport
+of an observed entry-step proposal. Both new flags default to false.
+The general production configuration retains persistent RHS-only execution;
+supplied-JVP fallback is an explicitly qualified option. The measured adverse
+cases below are retained in the release evidence.
+
+Let
+\begin{equation}
+ W=N_f+N_{Jv}+N_{f_t}+nN_J+N_{\mathrm{solve}}.
+\end{equation}
+This is the existing accounting objective. For a completed explicit
+candidate of work $E$ and a same-window implicit incumbent of work $I$,
+strict improvement is exactly $E<I$. If the implicit replay is incomplete,
+its charged nonfatal prefix $L$ proves the same preference when $E<L\le I$.
+The implementation checks the complete candidate and finite window identity,
+then compares checked \texttt{u128} sums; ties retain the incumbent.
+
+\paragraph{Exact stopping constants.}
+The native callback guard charges the crossing callback before stopping at
+$L_{\rm cb}>\mathrm{cap}$. Consequently, a completed explicit candidate
+requires an implicit-comparator cap $E$: crossing proves $E<L_{\rm cb}\le I$.
+A productive implicit sentinel of cost $I$ instead bounds its explicit
+challenger by $I-1$. Crossing then makes a strict explicit win impossible.
+These integer boundaries follow from the comparison objective rather than
+an empirical gain margin. Since a native DOPRI attempt performs at most seven
+RHS calls, the sentinel has
+\begin{equation}
+ W_{\rm sentinel}\le 2I+6,\qquad I\ge1.
+\end{equation}
+This is an overhead bound relative to the current implicit window, whose
+cost can itself be unfavorable.
+
+\paragraph{Causal proposal transport.}
+An earlier nonfatal pilot with $m>0$ accepted steps from $a$ to $c>a$
+provides $\bar h=(c-a)/m$. A later pilot may use
+$\max(h_0,h_{\rm checkpoint},\bar h)$, clipped to its native replay interval,
+while retaining the later accepted physical state and every native error
+and work test. This transports a past scalar proposal; route selection still
+requires a fresh successful cost comparison. Zero-accepted and fatal pilots
+provide no proposal. Forty-four actual pilot initializations satisfy this
+causal formula in the recorded trajectories.
+
+\paragraph{Nonlinear exact-state tests.}
+For the autonomous augmentation $c'=1$ and
+\begin{equation}
+ y_j'=-\lambda(c)(e_j+e_j^3/2)+g'(c),\qquad e_j=y_j-g(c),
+\end{equation}
+separation with $z=e_j^{-2}$ gives $z'=2\lambda z+\lambda$ and hence
+\begin{equation}
+ e_j(t)=\frac{e_j(0)e^{-\Lambda(t)}}{
+ \sqrt{1+e_j(0)^2[1-e^{-2\Lambda(t)}]/2}},\qquad
+ \Lambda(t)=\int_0^t\lambda(s)\,ds.
+\end{equation}
+The constant, relaxing and reentrant rates have explicit $\Lambda$ through
+$\log\cosh$. Independent Decimal90 evaluation checks all 17,440 returned
+state components. Exact rational Laurent-polynomial arithmetic verifies the
+inverse-square transformation and the supplied directional Jacobian action.
+All 36 arms pass their original accuracy and callback-accounting contracts.
+
+\begin{table}[tb]
+\caption{Whole-trajectory charged work. All discarded pilots and return
+probes are included. ``Observed'' transports the accepted pilot-step mean.}
+\label{tab:production-adapter-work}
+\begin{ruledtabular}
+\begin{tabular}{lrrrr}
+Case & RHS-only & PR91 & Observed & Observed+sentinel\\
+Easy cubic &79&79&79&79\\
+Stiff cubic &2347&2958&2634&2634\\
+Relaxing nonlinear &10375&11407&16331&12195\\
+Reentrant nonlinear &17113&18600&27546&24440
+\end{tabular}
+\end{ruledtabular}
+\end{table}
+
+The original 20-arm test produced no selective switches: a completed pilot
+could cost 204 against 192 explicit units, and its useful accepted step was
+discarded. The observed-step correction enables entry, but Table~\ref{tab:production-adapter-work}
+shows that this can increase total work after a regime change. Sentinel
+returns recover part of that loss. Exact and ratio-based return decisions
+coincide on this physical cohort; integer near-tie tests distinguish their
+decision boundaries separately.
+
+\begin{table}[tb]
+\caption{Paired timing and instruction slopes for complete qualified
+trajectories. Ranges are five observed block ranges, not confidence intervals.}
+\label{tab:production-adapter-profile}
+\begin{ruledtabular}
+\begin{tabular}{lrr}
+Comparison &Instruction change&Median speedup [range]\\
+Stiff: PR91 to observed & $+0.505\%$ &1.0106 [0.8981,1.4469]\\
+Reentrant: RHS-only to sentinel &$+145.02\%$&0.3404 [0.1265,0.5046]
+\end{tabular}
+\end{ruledtabular}
+\end{table}
+
+Five ABBA/BAAB blocks, recorded before the final branch-style cleanup, use
+one fixed measured executable and 64 full solves per process for stiff cubic and 16
+for reentrant relaxation. Model and result allocation are timed; exact-state
+analysis and JSON serialization follow the timer. Callgrind differences
+between four and twelve repeated solves remove fixed startup/output cost.
+The stiff-cubic work decrease of $10.95\%$ does not produce a stable measured
+time improvement. The reentrant selective route is slower in every paired
+block. In its twelve-solve profile, dispatch function
+\texttt{drive\_windows} has only $0.0225\%$ self instructions, whereas
+\texttt{safe\_l2}, pivoted QR, two-pass MGS and GMRES account for
+$9.77\%$, $3.72\%$, $3.53\%$ and $2.63\%$, respectively. These self costs
+identify mode arithmetic separately from the adapter's choice of which
+mode to execute.
+
+Thirty-five distinct native contracts pass. Three correction passes were used:
+observed-step transport after the negative initial cohort, then initialization
+of its new field in an existing private test fixture, and finally two equivalent
+let-chain rewrites required by production CI. The final rewrite preserves
+left-to-right short-circuit evaluation and changes no policy, numerical
+constant or fixture. Historical timing and profiling retain their original
+source and executable identities. Fatal-callback priority,
+accepted-prefix preservation, strict integer boundaries, forbidden derivative
+work, configuration serialization and all prior relevant return contracts
+remain tested. The final 36-arm correctness audit exactly reproduces all
+17,440 state components, counters and segment decisions in the earlier
+records; only elapsed time is excluded from the comparison and the original
+missing default-false option is normalized. Existing high-precision oracle
+evidence is reused on these identical inputs. No final-source paired timing
+or instruction measurement is inferred from that equality. Further
+development must address cost intervals for small
+Krylov arithmetic, quantified residence loss under changing regimes, and
+complete native-session transfer after winning explicit probes.

@@ -8,6 +8,9 @@ use vigilode::{
     Status, SwitchingConfig, SwitchingSolver, SwitchingStats,
 };
 
+// This timed fixture deliberately retains inline result payloads; introducing
+// a Box would change the allocation work of its historical implicit control.
+#[allow(clippy::large_enum_variant)]
 enum RawStats {
     Explicit(ExplicitStats),
     Implicit(Stats),

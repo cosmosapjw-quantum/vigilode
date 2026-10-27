@@ -1,0 +1,737 @@
+{
+  "schema": "vigilode.lagged-validation-scope.v1",
+  "created_utc": "2026-10-27T15:31:41.378172+00:00",
+  "status": "read_only_scope_complete_native_execution_owned_by_parent",
+  "native_runs_by_reviewer": 0,
+  "integration_correction": {
+    "used": 1,
+    "limit": 3,
+    "scope": "Separate inherited lagged-GMRES accounting repair; adapter numerical corrections remain3/3."
+  },
+  "changed_private_function": "rodas5p_integrators::rodas5p_lagged::Lagged::iterate_gmres",
+  "patch_identity": {
+    "path": "crates/rodas5p-integrators/src/rodas5p_lagged.rs",
+    "before_sha256": "3f726d226fbee4ee093fff751adc9c61cd85a819a53d1ac8c8fad53163fb1e66",
+    "after_sha256": "5d454206bf3377b0e1105ea4f92a86d26f9c8ad202455be595cd98b1743b8db5"
+  },
+  "patch_effect": "Only post-stage WorkCounters reconciliation changed. No callback invocation, numerical arithmetic, stage target, error estimator, controller, work budget or acceptance condition changed.",
+  "pre_repair_snapshot": {
+    "path": "research/production_solver_closure_20261027/evidence/native_final_r1/SOURCE_INPUTS.json",
+    "sha256": "b210655fb19d88891151fec30af62d503270b98b79456cbb12fcaba0429199c4",
+    "runtime_rs_and_crate_manifests_compared": 768,
+    "added_or_deleted_inputs": [],
+    "changed_inputs": [
+      {
+        "path": "crates/rodas5p-integrators/src/rodas5p_lagged.rs",
+        "before_sha256": "3f726d226fbee4ee093fff751adc9c61cd85a819a53d1ac8c8fad53163fb1e66",
+        "after_sha256": "5d454206bf3377b0e1105ea4f92a86d26f9c8ad202455be595cd98b1743b8db5"
+      }
+    ],
+    "root_manifests": [
+      {
+        "path": "Cargo.toml",
+        "sha256": "716ff1b052b1333e0ee5867f266426f6ecbec11578444f2e2b9c02baa03b037e",
+        "unchanged_since_pre_repair_gate": true
+      },
+      {
+        "path": "Cargo.lock",
+        "sha256": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351",
+        "unchanged_since_pre_repair_gate": true
+      },
+      {
+        "path": "rust-toolchain.toml",
+        "sha256": "f53198ae4fdecfd87da36fe431c771b54c51e975d01c0e99f653bc14d5d48211",
+        "unchanged_since_pre_repair_gate": true
+      }
+    ]
+  },
+  "search_scope": {
+    "rust_files_under_crates": 759,
+    "integrators_test_rust_files_including_helpers": 249,
+    "auto_discovered_top_level_integrators_test_sources": 241,
+    "methods": [
+      "Exact public-entrypoint and lagged type/driver-name references across all crates Rust source, tests, helper modules and examples.",
+      "Inspect #[path] and mod/include helper links; follow the diagonal string-dispatch helper from the integration test to the driver.",
+      "Inspect lagged public reexports and private call boundary; inspect production/generic router arms and companion dispatch.",
+      "Inspect dynamic source-reading test separately from runtime call routes."
+    ],
+    "entrypoint_reference_files": [
+      "crates/rodas5p-integrators/examples/reaudit_bound_clients_support/mod.rs",
+      "crates/rodas5p-integrators/src/lib.rs",
+      "crates/rodas5p-integrators/src/rodas5p_lagged.rs",
+      "crates/rodas5p-integrators/tests/a1_zero_tolerance_scale.rs",
+      "crates/rodas5p-integrators/tests/b1_lagged_contracts.rs",
+      "crates/rodas5p-integrators/tests/b1b_gmres_contracts.rs",
+      "crates/rodas5p-integrators/tests/b1c_staleness_contracts.rs",
+      "crates/rodas5p-integrators/tests/b1d_resolvent_contracts.rs",
+      "crates/rodas5p-integrators/tests/n05_diagonal_staleness_contracts.rs",
+      "crates/rodas5p-integrators/tests/reaudit_lagged_failure_work.rs"
+    ],
+    "feature_scope": "All textual Rust references were searched, including feature-gated files. The eight selected targets have no required feature flags. The four unrelated Cargo required-feature targets do not reference the lagged entrypoint.",
+    "limits": [
+      "Source-level call-route audit, not dynamic branch coverage or a formally verified whole-program call graph.",
+      "External downstream applications and code not present in this checkout are outside the search.",
+      "Ignored measurements remain ignored and are not counted as executed post-fix coverage."
+    ]
+  },
+  "call_boundary_proof": {
+    "module_private": true,
+    "changed_method_private": true,
+    "only_runtime_public_entrypoint": "integrate_rodas5p_lagged_observed",
+    "chain": [
+      "integrate_rodas5p_lagged_observed",
+      "Lagged::attempt",
+      "non-exact stage and StageSolver::Gmres",
+      "Lagged::iterate_gmres"
+    ],
+    "direct_refresh_bypass": "The exact-stage branch calls ws.solve without entering iterate_gmres. Richardson calls separate Lagged::iterate.",
+    "nested_module": "stage_target_policy.rs is reexported through the lagged module but has no back-call into Lagged::iterate_gmres; unchanged bound-planner contracts are not affected.",
+    "generic_dispatch": {
+      "source": {
+        "path": "crates/rodas5p-integrators/src/routing.rs",
+        "sha256": "10aded870ead4e2e761046932d0e62beced3caf19f0ca7bdc4fea5381c4361a0",
+        "unchanged_since_pre_repair_gate": true
+      },
+      "arms": [
+        "Banded -> integrate_rodas5p_fast_banded_observed",
+        "Dense -> integrate_rodas5p_fast_observed_with_partial",
+        "MatrixFree -> integrate_rodas5p_mf_fast_observed_gmres_into[_ls_workspace]"
+      ],
+      "lagged_arm_present": false
+    },
+    "facade_and_companion": {
+      "facade_source": {
+        "path": "crates/vigilode/src/solve.rs",
+        "sha256": "53b9b0fa916474e0dc563e55ebe6a972ded0a5a09e6051303a9374d2df47ff44",
+        "unchanged_since_pre_repair_gate": true
+      },
+      "switcher_source": {
+        "path": "crates/vigilode/src/switching.rs",
+        "sha256": "119f2a70d5d8be82816e9c236f4b06644faffe2df545a93b824deeb6ce356bbf",
+        "unchanged_since_pre_repair_gate": true
+      },
+      "companion_source": {
+        "path": "crates/vigilode-coupled/src/lib.rs",
+        "sha256": "7376ba9cc9ec2111cea01c801c0c0e4ce3f53b8e281bb5a5d3221e671366ba1f",
+        "unchanged_since_pre_repair_gate": true
+      },
+      "finding": "No reference to lagged entrypoint/options in facade or companion runtime; their separate full gates are parent-owned."
+    }
+  },
+  "recommended_integrators_targets": [
+    {
+      "target": "reaudit_lagged_failure_work",
+      "path": "crates/rodas5p-integrators/tests/reaudit_lagged_failure_work.rs",
+      "sha256": "24f1c52e58829b0aecd1f93cd326a8baab5d4efaa493f0fab4a7e4c67895faee",
+      "unchanged_since_pre_repair_gate": true,
+      "classification": "direct_failed_jvp_accounting",
+      "reason": "direct entrypoint with GMRES, one recoverable fourth JVP fault; unchanged counter equality, completed columns, partitions, actual callback atomic and accuracy",
+      "required_features": [],
+      "active_test_count": 1,
+      "ignored_test_count": 0,
+      "tests": [
+        {
+          "name": "recoverable_jvp_error_retains_completed_column_and_all_work_partitions",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": true
+        }
+      ]
+    },
+    {
+      "target": "b1b_gmres_contracts",
+      "path": "crates/rodas5p-integrators/tests/b1b_gmres_contracts.rs",
+      "sha256": "314e7927504873ea25191e8d60701a1748800ea84f50ab1861d678150d1262b6",
+      "unchanged_since_pre_repair_gate": true,
+      "classification": "active_gmres_success_ledger_and_surrounding_krylov",
+      "reason": "run helper calls lagged entrypoint with GMRES; explicit dense and supplied-JVP iterative cases, plus forced/direct and standalone monitored-GMRES contracts",
+      "required_features": [],
+      "active_test_count": 8,
+      "ignored_test_count": 1,
+      "tests": [
+        {
+          "name": "richardson_default_is_the_wave1_driver_bit_for_bit",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "gmres_forced_refresh_reproduces_the_fast_driver_on_robertson_and_hires",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "gmres_run_charges_every_refresh_and_counts_every_product",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": true
+        },
+        {
+          "name": "gmres_jvp_path_runs_inside_iterating_stages",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": true
+        },
+        {
+          "name": "monitored_gmres_matches_gmres_into_at_the_last_column_of_a_full_cycle",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "monitored_gmres_matches_gmres_into_over_restarted_cycles_on_a_large_system",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "monitored_gmres_abandons_and_exhausts_without_writing_the_output",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "monitored_gmres_refuses_a_left_preconditioner",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "b1b_gmres_measurement_hires_and_brusselator",
+          "ignored": true,
+          "focused_accounting_or_mode_contract": false
+        }
+      ],
+      "helper_modules": [
+        {
+          "path": "crates/rodas5p-integrators/tests/b1_problems/mod.rs",
+          "sha256": "3a304337a8ab67f749f6334f1e076adf2153ffc564698f96c1a52f6797648743",
+          "unchanged_since_pre_repair_gate": true
+        }
+      ]
+    },
+    {
+      "target": "b1c_staleness_contracts",
+      "path": "crates/rodas5p-integrators/tests/b1c_staleness_contracts.rs",
+      "sha256": "783d08090b8ef575cc553a0d8ac597e7ad6f9a5bb1d18771d3f7d9290a038475",
+      "unchanged_since_pre_repair_gate": true,
+      "classification": "active_gmres_modes_and_numerical_pins",
+      "reason": "run helper selects Richardson/GMRES; Off numerical pins, bounded ledger, and direct-refresh guard cases",
+      "required_features": [],
+      "active_test_count": 6,
+      "ignored_test_count": 1,
+      "tests": [
+        {
+          "name": "staleness_bound_dominates_explicit_t_norm",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "bound_is_exact_for_scalar_step_change",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "unbounded_log_norm_refreshes_every_attempt",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "bounded_off_is_wave2_bitwise",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": true
+        },
+        {
+          "name": "forced_refresh_bounded_equals_fast",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "staleness_ledger_identity",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": true
+        },
+        {
+          "name": "b1c_kill_gate_measurement",
+          "ignored": true,
+          "focused_accounting_or_mode_contract": false
+        }
+      ],
+      "helper_modules": [
+        {
+          "path": "crates/rodas5p-integrators/tests/b1_problems/mod.rs",
+          "sha256": "3a304337a8ab67f749f6334f1e076adf2153ffc564698f96c1a52f6797648743",
+          "unchanged_since_pre_repair_gate": true
+        }
+      ]
+    },
+    {
+      "target": "n05_diagonal_staleness_contracts",
+      "path": "crates/rodas5p-integrators/tests/n05_diagonal_staleness_contracts.rs",
+      "sha256": "c8baa19cddf858d2bab2e47ef4604f3940687a42413340f330cf020af1737416",
+      "unchanged_since_pre_repair_gate": true,
+      "classification": "active_gmres_diagonal_and_refusal_route",
+      "reason": "direct lagged calls select both solvers; diagonal work/accuracy and unsupported-structure direct-refusal guard",
+      "required_features": [],
+      "active_test_count": 3,
+      "ignored_test_count": 0,
+      "tests": [
+        {
+          "name": "diagonal_witness_encloses_row_bound_and_refuses_unproved_structure",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "diagonal_rule_has_no_inverse_construction_solves_and_accounts_structure_scans",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": true
+        },
+        {
+          "name": "unsupported_stored_structure_falls_back_to_direct_refresh_and_counts_refusals",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        }
+      ]
+    },
+    {
+      "target": "reaudit_bound_clients_contract",
+      "path": "crates/rodas5p-integrators/tests/reaudit_bound_clients_contract.rs",
+      "sha256": "14e7f3222c82e4f06938b6d27d64a7327eff0544a52d37752fad216198a2a136",
+      "unchanged_since_pre_repair_gate": true,
+      "classification": "indirect_gmres_dense_client_dispatch",
+      "reason": "#[path] example helper support::run(\"diagonal\",arm,1) -> diagonal -> lagged entrypoint with GMRES; other tests in target use unrelated algebraic/global paths",
+      "required_features": [],
+      "active_test_count": 4,
+      "ignored_test_count": 0,
+      "tests": [
+        {
+          "name": "fixed_cli_and_scopes_do_not_allow_rebudgeting",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "same_algebraic_error_budget_has_exact_32_vs_40_work_witness",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "global_provider_and_replay_bind_same_completed_curve",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "actual_diagonal_driver_preserves_budget_without_resolvent_rhs_solves",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": true
+        }
+      ],
+      "helper_modules": [
+        {
+          "path": "crates/rodas5p-integrators/examples/reaudit_bound_clients_support/mod.rs",
+          "sha256": "9692aeaff5babdafa9b1026d9dec58b812856257a2973a973888ad24e8d1f79f",
+          "unchanged_since_pre_repair_gate": true
+        }
+      ],
+      "indirect_route": [
+        "actual_diagonal_driver_preserves_budget_without_resolvent_rhs_solves",
+        "support::run(\"diagonal\", \"resolvent\"|\"diagonal\", 1)",
+        "support::diagonal",
+        "integrate_rodas5p_lagged_observed(StageSolver::Gmres)"
+      ]
+    },
+    {
+      "target": "b1d_resolvent_contracts",
+      "path": "crates/rodas5p-integrators/tests/b1d_resolvent_contracts.rs",
+      "sha256": "c3f9c2c43e73dc8fd96567571a3c1fcb74e2b111f3cc17fdccffd2598bbb96f3",
+      "unchanged_since_pre_repair_gate": true,
+      "classification": "adjacent_gmres_selected_but_active_cases_bypass_iteration",
+      "reason": "active calls force refresh or zero-weight staleness refresh; iterative resolvent diagnostic is ignored and is not claimed exercised",
+      "required_features": [],
+      "active_test_count": 4,
+      "ignored_test_count": 1,
+      "tests": [
+        {
+          "name": "resolvent_bound_dominates_explicit_t_and_not_b1c",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "nonnormal_closed_form_and_numeric_guards",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "forced_refresh_matches_fast_and_all_solves_are_charged",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "zero_weight_refreshes_and_completes_on_both_rules",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "b1d_kill_gate_diagnostic",
+          "ignored": true,
+          "focused_accounting_or_mode_contract": false
+        }
+      ],
+      "helper_modules": [
+        {
+          "path": "crates/rodas5p-integrators/tests/b1_problems/mod.rs",
+          "sha256": "3a304337a8ab67f749f6334f1e076adf2153ffc564698f96c1a52f6797648743",
+          "unchanged_since_pre_repair_gate": true
+        }
+      ]
+    },
+    {
+      "target": "b1_lagged_contracts",
+      "path": "crates/rodas5p-integrators/tests/b1_lagged_contracts.rs",
+      "sha256": "a00c987461df51e75c14047d92705075d16d7ffed7ab7dd32c6a223701d33948",
+      "unchanged_since_pre_repair_gate": true,
+      "classification": "adjacent_richardson_and_forced_direct",
+      "reason": "all runtime calls use default Richardson or forced direct refresh; no active route to repaired GMRES method",
+      "required_features": [],
+      "active_test_count": 5,
+      "ignored_test_count": 1,
+      "tests": [
+        {
+          "name": "stage_targets_follow_the_preregistered_allocation",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "forced_refresh_reproduces_the_fast_driver_on_robertson_and_hires",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "lagged_run_charges_every_refresh_and_evaluates_the_jacobian_every_attempt",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "b1_lagged_measurement_hires_and_brusselator",
+          "ignored": true,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "lagged_jvp_branch_runs_inside_iterating_stages",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "stage_sensitivities_are_the_verified_values_rounded_up",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        }
+      ]
+    },
+    {
+      "target": "a1_zero_tolerance_scale",
+      "path": "crates/rodas5p-integrators/tests/a1_zero_tolerance_scale.rs",
+      "sha256": "3070b0203c0e3c537dee93457ed7ca9fed5ae8f2be91e1d07c680725e219a933",
+      "unchanged_since_pre_repair_gate": true,
+      "classification": "adjacent_richardson_and_forced_direct",
+      "reason": "two lagged cases use default Richardson or forced direct; remaining seven tests are other native drivers",
+      "required_features": [],
+      "active_test_count": 9,
+      "ignored_test_count": 0,
+      "tests": [
+        {
+          "name": "fast_dense_driver_accepts_a_zero_component_with_zero_atol",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "fast_banded_driver_accepts_a_zero_component_with_zero_atol",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "fast_small_driver_accepts_a_zero_component_with_zero_atol",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "fast_small_batch_driver_accepts_a_zero_component_with_zero_atol",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "matrix_free_fast_driver_accepts_a_zero_component_with_zero_atol",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "protected_sequential_driver_accepts_a_zero_component_with_zero_atol",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "staged_coupled_target_refuses_a_zero_start_weight_with_a_typed_error",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "lagged_driver_with_forced_refresh_accepts_a_zero_component_with_zero_atol",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        },
+        {
+          "name": "lagged_driver_refuses_a_zero_richardson_weight_with_a_typed_error",
+          "ignored": false,
+          "focused_accounting_or_mode_contract": false
+        }
+      ]
+    }
+  ],
+  "selection_totals": {
+    "target_count": 8,
+    "active_tests_in_all_targets": 40,
+    "ignored_tests_not_run": 4,
+    "active_gmres_path_target_count": 5,
+    "active_tests_in_those_five_targets": 22,
+    "adjacent_richardson_or_direct_refresh_targets": 3,
+    "active_tests_in_adjacent_targets": 18,
+    "counts_are_source_inventory_not_after_pass_claim": true
+  },
+  "commands": {
+    "affected_and_adjacent_targets": [
+      "cargo",
+      "test",
+      "--profile",
+      "measurement",
+      "--locked",
+      "--offline",
+      "--no-fail-fast",
+      "-p",
+      "rodas5p-integrators",
+      "--test",
+      "reaudit_lagged_failure_work",
+      "--test",
+      "b1b_gmres_contracts",
+      "--test",
+      "b1c_staleness_contracts",
+      "--test",
+      "n05_diagonal_staleness_contracts",
+      "--test",
+      "reaudit_bound_clients_contract",
+      "--test",
+      "b1d_resolvent_contracts",
+      "--test",
+      "b1_lagged_contracts",
+      "--test",
+      "a1_zero_tolerance_scale",
+      "--",
+      "--test-threads=1"
+    ],
+    "optional_dynamic_source_guard_only": [
+      "cargo",
+      "test",
+      "--profile",
+      "measurement",
+      "--locked",
+      "--offline",
+      "-p",
+      "rodas5p-integrators",
+      "--test",
+      "generic_scope_contracts",
+      "generic_solver_core_does_not_embed_physical_client_bindings",
+      "--",
+      "--exact",
+      "--test-threads=1"
+    ],
+    "execution_lock": "/tmp/vigilode-cargo-20261027.lock",
+    "toolchain": "1.94.1",
+    "instructions": "Parent executes with pinned environment and recorder; no --ignored or wall-time measurement needed for this accounting fix."
+  },
+  "other_references": [
+    {
+      "target": "reaudit_staleness_guards",
+      "source": {
+        "path": "crates/rodas5p-integrators/tests/reaudit_staleness_guards.rs",
+        "sha256": "145fcec3288ad996c710ebde76344d6ad22ce8bd7733aa3e741244a1d097752b",
+        "unchanged_since_pre_repair_gate": true
+      },
+      "classification": "unchanged_pure_bound_functions",
+      "calls_driver": false,
+      "new_native_run_needed_for_counter_patch": false
+    },
+    {
+      "target": "generic_scope_contracts",
+      "source": {
+        "path": "crates/rodas5p-integrators/tests/generic_scope_contracts.rs",
+        "sha256": "d4b64f3c7bf1a7e0a37fa71899c21ef14b7f128384411f8a4621977f72103b6e",
+        "unchanged_since_pre_repair_gate": true
+      },
+      "classification": "dynamic_source_text_reader",
+      "changed_source_text_is_read": true,
+      "calls_lagged_driver": false,
+      "exact_test": "generic_solver_core_does_not_embed_physical_client_bindings",
+      "recommendation": "Optional cheap exact source-token guard is listed separately; it does not establish lagged numerical/counter coverage."
+    },
+    {
+      "example": "reaudit_bound_clients",
+      "source": {
+        "path": "crates/rodas5p-integrators/examples/reaudit_bound_clients.rs",
+        "sha256": "eaf16386fbf1d644a44662c97c0c3cefa4236c9363bbbff10ae44b9d75a1b913",
+        "unchanged_since_pre_repair_gate": true
+      },
+      "helper": "crates/rodas5p-integrators/examples/reaudit_bound_clients_support/mod.rs",
+      "classification": "same diagonal helper already included via reaudit_bound_clients_contract",
+      "new_timing_required": false
+    }
+  ],
+  "evidence_reuse": [
+    {
+      "group": "scalar_homotopy_and_cubic_oracles",
+      "sources": [
+        {
+          "path": "crates/vigilode-coupled/src/rhs_homotopy.rs",
+          "sha256": "167b838b2ddc90175cd66e5db38e0f5d9e4f12277efb33e1104a3c0456f9768c",
+          "unchanged_since_pre_repair_gate": true
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/fixed_point_continuation.rs",
+          "sha256": "6f479a98d9eb3493dafcf0476dea8a6a978dd6e273dcaa928d654a2b1c4266ae",
+          "unchanged_since_pre_repair_gate": true
+        }
+      ],
+      "proof": "Cubic stage dispatch uses GenericHomotopy/ScalarHomotopy/AlgebraicPredictor/RationalPredictor direct-map paths. All their runtime sources match pre-repair snapshot; none references lagged entrypoint, options or private method. The repaired counters are local to a disjoint driver, so these recorded numerical/oracle inputs and derivations are unchanged.",
+      "evidence": [
+        "research/production_solver_closure_20261027/homotopy/ANALYSIS.json",
+        "research/production_solver_closure_20261027/homotopy/PASS1_AUDIT_RESULTS.json"
+      ],
+      "reuse_kind": "Existing numerical/analytical evidence, not a fresh post-fix binary execution or timing claim."
+    },
+    {
+      "group": "structural_mean_field_and_exact_fraction_oracle",
+      "sources": [
+        {
+          "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+          "sha256": "ebc43ae0ef3faada53764f0895c4b6587645d0ee51497a39bfe77d7fcd347330",
+          "unchanged_since_pre_repair_gate": true
+        }
+      ],
+      "proof": "MeanFieldAffine/MeanFieldPlan/MeanFieldEnclosurePlan use their declared affine reduction and own StructuralWork; they do not call the lagged driver. Source hash remains ebc43ae0\u2026 and matches the original structural result owner. Its stage/residual algebra and Fraction input artifacts are unchanged by the private lagged counter hunk.",
+      "evidence": [
+        "research/production_solver_closure_20261027/structural/RESULTS.json",
+        "research/production_solver_closure_20261027/structural/FINAL_EXACT_ORACLE_RESULTS.json"
+      ],
+      "reuse_kind": "Existing source-bound derivations and oracle results. Historical binary timing/profile identities are retained, not relabeled current."
+    },
+    {
+      "group": "long_packet_fraction_oracles",
+      "sources": [
+        {
+          "path": "crates/rodas5p-integrators/src/packet_window.rs",
+          "sha256": "0eb7359dafc437436e0589a12ffc5bea2097a5bd176c422cdbeb0c6495696c80",
+          "unchanged_since_pre_repair_gate": true
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/packet_trajectory.rs",
+          "sha256": "b95337474f56dd0adf3e442e5f6a87c97a7ba651f30e080df5460e38a1b7a361",
+          "unchanged_since_pre_repair_gate": true
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/generic_verified.rs",
+          "sha256": "b8944a94d0909e4746f080abebc8aa33d43c850d704c4c13c2f4ed0f9fcffb1a",
+          "unchanged_since_pre_repair_gate": true
+        },
+        {
+          "path": "crates/rodas5p-integrators/tests/production_audit_packet_local_certificate.rs",
+          "sha256": "0c1aa2b5a20a64b1d4b3354226f25b337a80b6123b337059c92f61e951b6e10c",
+          "unchanged_since_pre_repair_gate": true
+        },
+        {
+          "path": "crates/rodas5p-integrators/tests/production_audit_packet_unequal_reference.rs",
+          "sha256": "e7dd12272e0e10a020793d1e17888250a2be2aaa8b96381dd0b94401cafd509c",
+          "unchanged_since_pre_repair_gate": true
+        }
+      ],
+      "python_oracle_sources": [
+        {
+          "path": "crates/rodas5p-integrators/tests/packet_unequal_fraction_oracle.py",
+          "sha256": "1590bd2caa5c4049e7e42edf1c922525c8f11818d66c236e5230da62c8f6dbae",
+          "matches_PR91_blob": true,
+          "pre_repair_native_source_snapshot_captures_this_python_file": false
+        },
+        {
+          "path": "crates/rodas5p-integrators/tests/packet_curve_output_fraction_oracle.py",
+          "sha256": "3f08a213fac408a37d902b5760ba7c9769e84c384ca40ed35343712a7d022cfd",
+          "matches_PR91_blob": true,
+          "pre_repair_native_source_snapshot_captures_this_python_file": false
+        }
+      ],
+      "actual_prior_passed_tests": [
+        "frozen_one_mode_exact_fraction_and_typed_refusals",
+        "frozen_unequal_frequency_fraction_reference",
+        "fixed_unequal_frequency_fraction_reference",
+        "exact_fraction_oracle_bounds_and_thread_determinism"
+      ],
+      "prior_log": "research/production_solver_closure_20261027/evidence/native_final_r1/stdout.log",
+      "prior_log_sha256": "f952dc000040b6562b0fde7e2490d2651ede12ce2613810ebd8e0fa46460aaa7",
+      "proof": "These tests construct packet/collective candidates and exact Fraction queries, not lagged solves. Runtime/test Rust sources match the pre-repair snapshot; oracle Python files match unchanged PR91 blobs. Both Fraction helpers consume JSON via stdin with standard-library exact arithmetic and make no native lagged call. The isolated counter-only hunk changes neither those inputs nor oracle computations. Their recorded individual passes remain valid evidence although the aggregate native sweep failed later.",
+      "reuse_kind": "Reuse those already completed individual results only. Do not claim the interrupted five-package sweep passed or later unexecuted tests passed."
+    },
+    {
+      "group": "adapter_36_arm_exact_output_audit",
+      "sources": [
+        {
+          "path": "crates/vigilode/src/switching.rs",
+          "sha256": "119f2a70d5d8be82816e9c236f4b06644faffe2df545a93b824deeb6ce356bbf",
+          "unchanged_since_pre_repair_gate": true
+        },
+        {
+          "path": "crates/vigilode/src/solve.rs",
+          "sha256": "53b9b0fa916474e0dc563e55ebe6a972ded0a5a09e6051303a9374d2df47ff44",
+          "unchanged_since_pre_repair_gate": true
+        },
+        {
+          "path": "crates/vigilode/examples/support/production_return_cases.rs",
+          "sha256": "5934fdb19da9a51939c45f42a68c4a65a46718f312defbbc5c78738fa8495d59",
+          "unchanged_since_pre_repair_gate": true
+        }
+      ],
+      "proof": "The switcher reaches the facade routed matrix-free/dense drivers or DOPRI; none selects the separate lagged-GMRES driver. The previously recorded36-arm identity audit is unchanged source-bound evidence.",
+      "evidence": [
+        "research/production_solver_closure_20261027/adapter/FINAL_AUDIT.json"
+      ],
+      "reuse_kind": "Retain c8462ad3\u2026 as its pre-integration-accounting-repair executable identity; no claim of a new final-tree execution or remeasured performance."
+    }
+  ],
+  "counter_proof_reference": "research/production_solver_closure_20261027/theory/FINAL_GATE_FAILURE_REVIEW.md",
+  "coverage_limits": [
+    "Only the existing JVP fixture injects a failed physical callback; no injected dense-product-failure test was found.",
+    "A target selecting GMRES is not automatically proof of entering iteration: forced/zero-weight refresh guards and ignored diagnostics are classified separately.",
+    "Scoping and reused evidence do not satisfy a complete new release acceptance sweep."
+  ],
+  "whole_release_gate": {
+    "status": "pending_local",
+    "full_five_package_sweep_rerun_wholesale_after_repair": false,
+    "statement": "Parent will execute affected/adjacent lagged targets plus current facade and companion full gates. The failed aggregate sweep is preserved. Full current-tree five-package release validation remains a mandatory local task.",
+    "required_packages": [
+      "vigilode",
+      "vigilode-coupled",
+      "rodas5p-core",
+      "rodas5p-krylov",
+      "rodas5p-integrators"
+    ],
+    "suggested_command": [
+      "cargo",
+      "test",
+      "--profile",
+      "measurement",
+      "--locked",
+      "--offline",
+      "--no-fail-fast",
+      "-p",
+      "vigilode",
+      "-p",
+      "vigilode-coupled",
+      "-p",
+      "rodas5p-core",
+      "-p",
+      "rodas5p-krylov",
+      "-p",
+      "rodas5p-integrators",
+      "--lib",
+      "--tests",
+      "--",
+      "--test-threads=1"
+    ]
+  }
+}

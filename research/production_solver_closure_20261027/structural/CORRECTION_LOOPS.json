@@ -1,0 +1,37 @@
+{
+  "task": "structural-production-closure",
+  "maximum_correction_loops": 3,
+  "initial_validation": {
+    "receipt": "INITIAL_NATIVE_EXECUTION.json",
+    "tests_passed": 11,
+    "failed_tests": 0,
+    "benchmark_build": "passed"
+  },
+  "corrections": [
+    {
+      "iteration": 1,
+      "diagnosis": "Independent parent review identified the test/example frozen-control import outside the crate as incompatible with cargo packaging.",
+      "class": "implementation",
+      "change": "Copy byte-identical PR91 source into examples/support and reference it from tests/examples; retain the original research copy. Extend the unexecuted exact-oracle fixture set to large cancellation, subnormal and nonrepresentable rate-difference inputs before the first numerical run.",
+      "validation": "CORRECTION1_EXECUTION.json: 6/6 current production contracts; example built; 21 exact-oracle fixture generations and all 9 trajectory arms completed."
+    },
+    {
+      "iteration": 2,
+      "diagnosis": "Self-review found the dimension limit cast (1_u64<<53) as usize would truncate on 32-bit targets; native 64-bit behavior is unchanged. Initial n64/n2048 timings show gains, so add a tiny n1 adverse performance probe without changing any scientific threshold.",
+      "class": "implementation",
+      "change": "Compare dimension as u128 against 2^53. Update public module documentation to distinguish operational and outward screens. Keep numerical solver and caps unchanged.",
+      "validation": "CORRECTION2_EXECUTION.json: 6/6 contracts PASS, oracle byte-identical to prior21cells, n1 adverse timings retained.",
+      "new_experiment_status": "n1 case is a post-diagnostic expansion, not a preregistered holdout."
+    },
+    {
+      "iteration": 3,
+      "diagnosis": "The post-diagnostic scalar case was slower: fused0.69375x and factorized0.39183x versus PR91. Large per-worker full-counter payloads and dimension-independent triangular enclosure aggregation dominate tiny states.",
+      "class": "implementation and numerical algorithm",
+      "change": "Replace per-worker StructuralWork objects by minimal failure-progress records and exact batch-count identities. Specialize the mathematically exact n=1 projector degeneration: precompute product-rounding amplification with u=2^-53 and eta=2^-1074 so the residual enclosure costs O(s) per step. Preserve original expressions and all scheduled work. No empirical dimension threshold.",
+      "validation": "CORRECTION3_EXECUTION.json: all11distinct nativecontracts PASS, example built, final21exact-rational oraclefixtures generated, fourpairedtimingcells completed; FINAL_EXACT_ORACLE_RESULTS.json confirms all728residualcomponents/168bounds.",
+      "new_experiment_status": "Final four-cell timing and exact-oracle comparison are post-diagnostic confirmation; prior failures/timings retained."
+    }
+  ],
+  "status": "closed_after_three_corrections",
+  "runtime_source_sha256": "ebc43ae0ef3faada53764f0895c4b6587645d0ee51497a39bfe77d7fcd347330"
+}

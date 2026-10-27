@@ -1,0 +1,44 @@
+{
+  "source_commit": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+  "baseline_commit": "206298b4068d923bb47c7160b111b7439098660c",
+  "job_id": 122293696290,
+  "run_id": 40533867036,
+  "native_rerun": false,
+  "classification": "Known retained negative research result executed as an ordinary success-required ignored test",
+  "test": "prothero_robinson_wfiltered_enforce_kill_gate",
+  "observations": {
+    "rtol": 1e-06,
+    "accepted_steps": {
+      "Off": 7,
+      "Enforce": 12,
+      "WFilteredEnforce": 15
+    },
+    "interior_error_tolerance_units": {
+      "Off": 311.467,
+      "Enforce": 1.052,
+      "WFilteredEnforce": 0.35
+    },
+    "historical_ratio_gate": 1.3,
+    "observed_ratio_exact": "15/7",
+    "assertion_failed": true
+  },
+  "interpretation": "The test source already records FAIL on 2026-10-21 and explicitly forbids loosening the threshold. This is not a new candidate success or a newly discovered source regression. The Off arm does not meet the same interior-accuracy objective, so this accepted-step ratio is not a matched-accuracy speed comparison.",
+  "identities": [
+    {
+      "path": "crates/rodas5p-integrators/tests/dense_wfiltered_contracts.rs",
+      "sha256": "b21aad63c8cdd324a6b98b7ca103a4e940efb5976c26010b9e5f5e74a0d9f505",
+      "byte_identical_to_pr91": true
+    },
+    {
+      "path": ".github/workflows/ignored-tests.yml",
+      "sha256": "f9d0009c61c5bec7991719f1fcee2336da7b48d8f1c1d7f4a122ddf68cf05881",
+      "byte_identical_to_pr91": true
+    }
+  ],
+  "local_contract": [
+    "Retain the original negative observation and original 1.3 criterion; do not relabel as PASS.",
+    "Choose an explicit expected-negative regression contract that verifies the recorded failed criterion while retaining separately executed positive correctness contracts; review this policy change rather than blanket-skip the test.",
+    "If optimizing this mode, register a new matched-physical-accuracy experiment and derive any new admissibility constants; do not tune the historical gate.",
+    "Run remaining ignored tests; the stopped job does not establish their outcomes."
+  ]
+}

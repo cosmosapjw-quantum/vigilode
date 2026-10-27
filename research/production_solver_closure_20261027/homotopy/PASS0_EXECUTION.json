@@ -1,0 +1,45 @@
+{
+  "pass": 0,
+  "baseline": "206298b4068d923bb47c7160b111b7439098660c",
+  "source_sha256": "4f7c65aac352676c4c356e10ad6f4a0306f674d01f1e96788f2ae9494deca59d",
+  "executions": [
+    {
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "vigilode-coupled",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "--test",
+        "rhs_homotopy_contracts",
+        "--test",
+        "cubic_solver_production_contracts"
+      ],
+      "started_at": "2026-10-27T14:04:05.399021+00:00",
+      "elapsed_seconds": 12.555966048996197,
+      "exit_code": 0,
+      "log": "pass0_command_0.log"
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "-p",
+        "vigilode-coupled",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "--example",
+        "cubic_production_bench"
+      ],
+      "started_at": "2026-10-27T14:04:17.955815+00:00",
+      "elapsed_seconds": 11.884853043004114,
+      "exit_code": 0,
+      "log": "pass0_command_1.log"
+    }
+  ]
+}

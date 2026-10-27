@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "review_date_local": "2026-10-28",
+  "timezone": "Asia/Seoul",
+  "source_head": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+  "comparison_base": "206298b4068d923bb47c7160b111b7439098660c",
+  "review_kind": "read-only post-push CI diagnosis",
+  "native_runs": false,
+  "runtime_edits": false,
+  "additional_numerical_correction_loops": 0,
+  "status": "OPEN_ACCOUNTING_CONTRACT_REPAIR",
+  "root_cause_status": "SOURCE_LEVEL_INVARIANT_CONFLICT_IDENTIFIED; runtime reproduction not performed here",
+  "ci": {
+    "run_id": 40533866580,
+    "job_id": 122293696537,
+    "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40533866580/job/122293696537",
+    "decoded_log_sha256": "8ed6ce108ae6a3ce649260366be7b5b78a50dcedbd0b530b9bf461208dc9d68c",
+    "test": "external_certificate_and_hard_budget_cover_diagnostic_work",
+    "panic_source": "crates/rodas5p-fair-ab/src/adapters.rs:218",
+    "left": 2,
+    "right": 1,
+    "test_target_result": {
+      "passed": 5,
+      "failed": 1,
+      "ignored": 0
+    }
+  },
+  "identical_source_files": [
+    {
+      "path": "crates/rodas5p-fair-ab/tests/fair_ab_contracts.rs",
+      "base_sha256": "eb7c7bbcdaa9905d5feb357ad3f58f77dc27b4bf175b95eeba945b75bb6e027e",
+      "head_sha256": "eb7c7bbcdaa9905d5feb357ad3f58f77dc27b4bf175b95eeba945b75bb6e027e",
+      "identical": true
+    },
+    {
+      "path": "crates/rodas5p-fair-ab/src/adapters.rs",
+      "base_sha256": "24f73d2c4eb2be97778d5cc36b4291665723f9b5dd206af97f1b7f6646d7e2e9",
+      "head_sha256": "24f73d2c4eb2be97778d5cc36b4291665723f9b5dd206af97f1b7f6646d7e2e9",
+      "identical": true
+    },
+    {
+      "path": "crates/rodas5p-fair-ab/src/budget.rs",
+      "base_sha256": "5629275d9fa62b35f9e31fcdf57e5d7d2cb64dc68fee50a58503d2a00ef27578",
+      "head_sha256": "5629275d9fa62b35f9e31fcdf57e5d7d2cb64dc68fee50a58503d2a00ef27578",
+      "identical": true
+    },
+    {
+      "path": "crates/rodas5p-fair-ab/src/contracts.rs",
+      "base_sha256": "7a7be721ad4bc4837773feb7c90af75c8a6ec0a9de8d3dbddfaa66d71690c7b2",
+      "head_sha256": "7a7be721ad4bc4837773feb7c90af75c8a6ec0a9de8d3dbddfaa66d71690c7b2",
+      "identical": true
+    },
+    {
+      "path": "crates/rodas5p-krylov/src/gmres.rs",
+      "base_sha256": "254f421a3e6325e5492c71597053bb8787a5e3153d5e1563f0b745b73889905e",
+      "head_sha256": "254f421a3e6325e5492c71597053bb8787a5e3153d5e1563f0b745b73889905e",
+      "identical": true
+    },
+    {
+      "path": "crates/rodas5p-krylov/src/common.rs",
+      "base_sha256": "b8a03ade17035487c9e92734d3e4c31dd6b94b43f0d16809fb5178a5e26238a8",
+      "head_sha256": "b8a03ade17035487c9e92734d3e4c31dd6b94b43f0d16809fb5178a5e26238a8",
+      "identical": true
+    },
+    {
+      "path": "crates/rodas5p-core/src/operator.rs",
+      "base_sha256": "989a2d3953c1f6b83138cb93a51072aa829e311c00bc76ee488ea85d125bff0a",
+      "head_sha256": "989a2d3953c1f6b83138cb93a51072aa829e311c00bc76ee488ea85d125bff0a",
+      "identical": true
+    },
+    {
+      "path": "crates/rodas5p-core/src/matrix.rs",
+      "base_sha256": "40a3f19200d2dda72ddaf6d14c96f726fc978f4c83f687ca2d0abcaa2a49760d",
+      "head_sha256": "40a3f19200d2dda72ddaf6d14c96f726fc978f4c83f687ca2d0abcaa2a49760d",
+      "identical": true
+    },
+    {
+      "path": "crates/rodas5p-core/src/norms.rs",
+      "base_sha256": "d9855786d8ab94e1def28e3525fa40e5a44914a3ecf5f1d318e41421f8cfd604",
+      "head_sha256": "d9855786d8ab94e1def28e3525fa40e5a44914a3ecf5f1d318e41421f8cfd604",
+      "identical": true
+    },
+    {
+      "path": "Cargo.lock",
+      "base_sha256": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351",
+      "head_sha256": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351",
+      "identical": true
+    },
+    {
+      "path": "rust-toolchain.toml",
+      "base_sha256": "f53198ae4fdecfd87da36fe431c771b54c51e975d01c0e99f653bc14d5d48211",
+      "head_sha256": "f53198ae4fdecfd87da36fe431c771b54c51e975d01c0e99f653bc14d5d48211",
+      "identical": true
+    }
+  ],
+  "mechanism": [
+    {
+      "source": "crates/rodas5p-core/src/operator.rs",
+      "range": [
+        324,
+        353
+      ],
+      "meaning": "apply_counted validates shape then increments category count before apply_with_work; refusal inside BudgetedOperator still counts as a solver-level attempt."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/budget.rs",
+      "range": [
+        28,
+        44
+      ],
+      "meaning": "reserve increments used only after successful compare_exchange; at limit it returns budget error without incrementing used."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/budget.rs",
+      "range": [
+        101,
+        111
+      ],
+      "meaning": "BudgetedOperator.apply reserves before invoking inner.apply; budget refusal therefore does not enter the physical inner operator."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/contracts.rs",
+      "range": [
+        102,
+        133
+      ],
+      "meaning": "WorkLedger operator category fields copy attempt counters; operator_total sums those attempts."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/src/adapters.rs",
+      "range": [
+        215,
+        218
+      ],
+      "meaning": "Debug assertion equates solver-level attempts to admitted budget reservations, although a rejected attempted call separates them."
+    },
+    {
+      "source": "crates/rodas5p-fair-ab/tests/fair_ab_contracts.rs",
+      "range": [
+        49,
+        61
+      ],
+      "meaning": "Budget 1 test also requires operator_total<=1. With attempt semantics that later assertion remains invalid even if debug assertions are disabled."
+    }
+  ],
+  "exact_accounting_identity": {
+    "scope": "Sequential counted scalar applications to this BudgetedOperator after valid shape checks; no counter overflow; no raw uncounted applications.",
+    "attempts": "A",
+    "admitted_entries": "E=budget.used()",
+    "budget_refusals": "R",
+    "identity": "A=E+R",
+    "hard_budget": "E<=B",
+    "ci_values": {
+      "A": 2,
+      "E": 1,
+      "R": 1,
+      "B": 1
+    },
+    "physical_safety": "reserve precedes inner.apply, so R does not enter the physical operator. Inner failure after reservation still counts in E."
+  },
+  "classification": {
+    "inherited": "All 11 inspected fixture/path/lock/toolchain files byte-identical to PR91",
+    "numerical_solution_failure": "not shown; error path is fail-closed budget refusal",
+    "debug_only_harmless": "false: debug panic is observed, and later runtime test bound also conflates attempts with reservations",
+    "physical_budget_violation": "not shown by this failure; wrapper admission ordering prevents it under inspected contract",
+    "relation_to_pr92_lagged_accounting_fix": "No call-path link. solve_case uses solve_gmres_with_workspace -> core operator, not Lagged; new Lagged hunk not executed by this direct test."
+  },
+  "safe_local_task": {
+    "id": "Q-FAIR-BUDGET",
+    "depends_on": [],
+    "blocks": [
+      "L-RELEASE",
+      "R-QUALIFY"
+    ],
+    "maximum_corrections": 3,
+    "purpose": "Make attempted applications, admitted physical operator entries, and budget refusals distinct and reconcile their exact identity without hiding terminal work.",
+    "actions": [
+      "Reproduce only this focused native target in the pinned debug/test environment, retaining original failing log.",
+      "Specify and implement A=E+R with independently observed categories/entries/refusals; keep preconditioner and diagnostic work separately charged.",
+      "Retain hard bound E<=B, fail-closed status and failed certificate on budget refusal; do not assert A<=B or erase the final attempted refusal.",
+      "Use direct callback-entry atomics to verify B=1 original fixture, refusal during external diagnostic certificate, and admitted inner callback failure.",
+      "Check release as well as test profile: disabling debug_assert is not repair because the returned ledger must be truthful.",
+      "Only after focused accounting contract passes rerun the affected fair-ab suite and existing L-RELEASE workspace gate; keep frozen benchmark claims unchanged unless their consumers changed."
+    ],
+    "acceptance": [
+      "Budget-admitted physical entries never exceed B",
+      "All attempted operations including refused last call remain visible",
+      "A=E+R is exact for stated scope",
+      "BudgetExhausted and failed external certificate retained",
+      "No new numerical tolerance, retry count, or tuned constant",
+      "Inherited data/benchmarks not silently reclassified as measured on repaired code"
+    ],
+    "forbidden_shortcuts": [
+      "delete/disable debug_assert without fixing ledger semantics",
+      "silently subtract all failures from attempt counters",
+      "raise hard budget to avoid refusal",
+      "claim changing build profile fixes correctness",
+      "attribute to Lagged numerical callback fix without path evidence"
+    ]
+  }
+}

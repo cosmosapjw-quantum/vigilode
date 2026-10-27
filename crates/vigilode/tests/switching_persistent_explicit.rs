@@ -100,11 +100,13 @@ fn discarded_implicit_pilot_keeps_native_explicit_session_and_charges_work() {
     let actual = SwitchingSolver::solve(&problem, (0.0, 1.0), &[1.0], &options(), &config).unwrap();
     assert!(actual.success, "{}", actual.message);
     assert_eq!(actual.stats.switches, 0);
-    assert!(actual
-        .stats
-        .segments
-        .iter()
-        .any(|s| s.is_probe && !s.committed && s.method == SwitchingMethod::Rodas5p));
+    assert!(
+        actual
+            .stats
+            .segments
+            .iter()
+            .any(|s| s.is_probe && !s.committed && s.method == SwitchingMethod::Rodas5p)
+    );
     assert_eq!(
         actual.stats.attempts,
         actual
@@ -184,8 +186,8 @@ fn committed_implicit_route_reconstructs_explicit_fsal_state() {
 #[test]
 fn accepted_return_probe_at_global_budget_keeps_fully_accounted_checkpoint() {
     use std::sync::{
-        atomic::{AtomicUsize, Ordering},
         Arc,
+        atomic::{AtomicUsize, Ordering},
     };
 
     let rhs_calls = Arc::new(AtomicUsize::new(0));
@@ -293,8 +295,8 @@ fn exact_final_time_budget_exhaustion_is_success() {
 #[test]
 fn zero_span_forbidden_retains_committed_zero_work_driver_record() {
     use std::sync::{
-        atomic::{AtomicUsize, Ordering},
         Arc,
+        atomic::{AtomicUsize, Ordering},
     };
     let calls = Arc::new(AtomicUsize::new(0));
     let observed = Arc::clone(&calls);

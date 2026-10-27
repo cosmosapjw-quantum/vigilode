@@ -1,0 +1,335 @@
+{
+  "accuracy_cap": 1e-6,
+  "blocks": 5,
+  "diagnostics": [
+    {
+      "all_grid_bits_equal": true,
+      "arm": "pr91",
+      "maximum_common_grid_error": 4.440892098500626e-16,
+      "maximum_pr91_difference": 0.0,
+      "maximum_screen_metric": 4.109126233720062e-17,
+      "screen_kind": "operational original-space f64 residual",
+      "work": {
+        "full_state_causal_accumulations": 3584,
+        "jacobian_evaluations": 0,
+        "jvp_evaluations": 0,
+        "lifted_components": 512,
+        "matrix_factorizations": 0,
+        "newton_updates": 0,
+        "original_space_residual_components": 512,
+        "physical_linear_actions": 512,
+        "rhs_evaluations": 576,
+        "scalar_stage_solves": 0,
+        "shifted_resolvent_actions": 0
+      }
+    },
+    {
+      "all_grid_bits_equal": true,
+      "arm": "fused",
+      "maximum_common_grid_error": 4.440892098500626e-16,
+      "maximum_pr91_difference": 0.0,
+      "maximum_screen_metric": 4.109126233720062e-17,
+      "screen_kind": "operational original-space f64 residual",
+      "work": {
+        "enclosed_lift_components": 0,
+        "enclosed_mean_components": 0,
+        "factorized_residual_stages": 0,
+        "full_state_causal_accumulations": 3584,
+        "jacobian_evaluations": 0,
+        "jvp_evaluations": 0,
+        "lifted_components": 512,
+        "matrix_factorizations": 0,
+        "newton_updates": 0,
+        "original_space_residual_components": 512,
+        "physical_linear_actions": 512,
+        "rhs_evaluations": 576,
+        "scalar_stage_solves": 0,
+        "shifted_resolvent_actions": 0
+      }
+    },
+    {
+      "all_grid_bits_equal": true,
+      "arm": "enclosed",
+      "maximum_common_grid_error": 4.440892098500626e-16,
+      "maximum_pr91_difference": 0.0,
+      "maximum_screen_metric": 1.3020215105146324e-16,
+      "screen_kind": "outward original-space upper bound",
+      "work": {
+        "enclosed_lift_components": 512,
+        "enclosed_mean_components": 128,
+        "factorized_residual_stages": 512,
+        "full_state_causal_accumulations": 0,
+        "jacobian_evaluations": 0,
+        "jvp_evaluations": 0,
+        "lifted_components": 512,
+        "matrix_factorizations": 0,
+        "newton_updates": 0,
+        "original_space_residual_components": 512,
+        "physical_linear_actions": 0,
+        "rhs_evaluations": 64,
+        "scalar_stage_solves": 0,
+        "shifted_resolvent_actions": 0
+      }
+    }
+  ],
+  "dimension": 1,
+  "residual_cap": 1e-9,
+  "same_target_cap": 1e-11,
+  "steps": 64,
+  "threads": 1,
+  "timing": [
+    {
+      "candidate": "fused",
+      "loops_per_batch": 1000,
+      "samples": [
+        {
+          "arm": "pr91",
+          "block": 0,
+          "position": 0,
+          "seconds_per_trajectory": 0.000102823024
+        },
+        {
+          "arm": "fused",
+          "block": 0,
+          "position": 1,
+          "seconds_per_trajectory": 0.000114011188
+        },
+        {
+          "arm": "fused",
+          "block": 0,
+          "position": 2,
+          "seconds_per_trajectory": 0.000088601542
+        },
+        {
+          "arm": "pr91",
+          "block": 0,
+          "position": 3,
+          "seconds_per_trajectory": 0.000092899278
+        },
+        {
+          "arm": "fused",
+          "block": 1,
+          "position": 0,
+          "seconds_per_trajectory": 0.00010017966400000001
+        },
+        {
+          "arm": "pr91",
+          "block": 1,
+          "position": 1,
+          "seconds_per_trajectory": 0.000097403235
+        },
+        {
+          "arm": "pr91",
+          "block": 1,
+          "position": 2,
+          "seconds_per_trajectory": 0.000107446453
+        },
+        {
+          "arm": "fused",
+          "block": 1,
+          "position": 3,
+          "seconds_per_trajectory": 0.00010069890400000001
+        },
+        {
+          "arm": "pr91",
+          "block": 2,
+          "position": 0,
+          "seconds_per_trajectory": 0.000098035011
+        },
+        {
+          "arm": "fused",
+          "block": 2,
+          "position": 1,
+          "seconds_per_trajectory": 0.00009345661
+        },
+        {
+          "arm": "fused",
+          "block": 2,
+          "position": 2,
+          "seconds_per_trajectory": 0.00009153955699999999
+        },
+        {
+          "arm": "pr91",
+          "block": 2,
+          "position": 3,
+          "seconds_per_trajectory": 0.00008900555
+        },
+        {
+          "arm": "fused",
+          "block": 3,
+          "position": 0,
+          "seconds_per_trajectory": 0.00009829065800000001
+        },
+        {
+          "arm": "pr91",
+          "block": 3,
+          "position": 1,
+          "seconds_per_trajectory": 0.000143261411
+        },
+        {
+          "arm": "pr91",
+          "block": 3,
+          "position": 2,
+          "seconds_per_trajectory": 0.00010023072500000001
+        },
+        {
+          "arm": "fused",
+          "block": 3,
+          "position": 3,
+          "seconds_per_trajectory": 0.000099431839
+        },
+        {
+          "arm": "pr91",
+          "block": 4,
+          "position": 0,
+          "seconds_per_trajectory": 0.00010742235
+        },
+        {
+          "arm": "fused",
+          "block": 4,
+          "position": 1,
+          "seconds_per_trajectory": 0.000172723832
+        },
+        {
+          "arm": "fused",
+          "block": 4,
+          "position": 2,
+          "seconds_per_trajectory": 0.000097378599
+        },
+        {
+          "arm": "pr91",
+          "block": 4,
+          "position": 3,
+          "seconds_per_trajectory": 0.00009172741299999999
+        }
+      ]
+    },
+    {
+      "candidate": "enclosed",
+      "loops_per_batch": 1000,
+      "samples": [
+        {
+          "arm": "pr91",
+          "block": 0,
+          "position": 0,
+          "seconds_per_trajectory": 0.000097813157
+        },
+        {
+          "arm": "enclosed",
+          "block": 0,
+          "position": 1,
+          "seconds_per_trajectory": 0.000095585263
+        },
+        {
+          "arm": "enclosed",
+          "block": 0,
+          "position": 2,
+          "seconds_per_trajectory": 0.00007342066
+        },
+        {
+          "arm": "pr91",
+          "block": 0,
+          "position": 3,
+          "seconds_per_trajectory": 0.000104748327
+        },
+        {
+          "arm": "enclosed",
+          "block": 1,
+          "position": 0,
+          "seconds_per_trajectory": 0.000084378458
+        },
+        {
+          "arm": "pr91",
+          "block": 1,
+          "position": 1,
+          "seconds_per_trajectory": 0.000097846982
+        },
+        {
+          "arm": "pr91",
+          "block": 1,
+          "position": 2,
+          "seconds_per_trajectory": 0.000109755431
+        },
+        {
+          "arm": "enclosed",
+          "block": 1,
+          "position": 3,
+          "seconds_per_trajectory": 0.000072556828
+        },
+        {
+          "arm": "pr91",
+          "block": 2,
+          "position": 0,
+          "seconds_per_trajectory": 0.000092697554
+        },
+        {
+          "arm": "enclosed",
+          "block": 2,
+          "position": 1,
+          "seconds_per_trajectory": 0.00008110104799999999
+        },
+        {
+          "arm": "enclosed",
+          "block": 2,
+          "position": 2,
+          "seconds_per_trajectory": 0.000073000271
+        },
+        {
+          "arm": "pr91",
+          "block": 2,
+          "position": 3,
+          "seconds_per_trajectory": 0.000090611429
+        },
+        {
+          "arm": "enclosed",
+          "block": 3,
+          "position": 0,
+          "seconds_per_trajectory": 0.000079728991
+        },
+        {
+          "arm": "pr91",
+          "block": 3,
+          "position": 1,
+          "seconds_per_trajectory": 0.000091639239
+        },
+        {
+          "arm": "pr91",
+          "block": 3,
+          "position": 2,
+          "seconds_per_trajectory": 0.000092739024
+        },
+        {
+          "arm": "enclosed",
+          "block": 3,
+          "position": 3,
+          "seconds_per_trajectory": 0.000080047109
+        },
+        {
+          "arm": "pr91",
+          "block": 4,
+          "position": 0,
+          "seconds_per_trajectory": 0.000092106848
+        },
+        {
+          "arm": "enclosed",
+          "block": 4,
+          "position": 1,
+          "seconds_per_trajectory": 0.000074549952
+        },
+        {
+          "arm": "enclosed",
+          "block": 4,
+          "position": 2,
+          "seconds_per_trajectory": 0.000081255856
+        },
+        {
+          "arm": "pr91",
+          "block": 4,
+          "position": 3,
+          "seconds_per_trajectory": 0.00009011133899999999
+        }
+      ]
+    }
+  ],
+  "timing_scope": "complete trajectory, model+plan+all stages+full original-space verification+endpoint+allocations; pool, diagnostic serialization and observations outside timing"
+}

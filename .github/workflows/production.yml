@@ -114,9 +114,9 @@ jobs:
       - name: Rustdoc without warnings
         env:
           RUSTDOCFLAGS: "-D warnings"
-        run: cargo doc -p vigilode --no-deps --locked
+        run: cargo doc -p vigilode -p vigilode-coupled --no-deps --locked
       - name: Doc tests
-        run: cargo test -p vigilode --doc --locked
+        run: cargo test -p vigilode -p vigilode-coupled --doc --locked
       - name: Build the examples
         run: cargo build -p vigilode --examples --locked
       - name: Run the examples
@@ -124,6 +124,16 @@ jobs:
           set -e
           for ex in robertson dense_output dae_mass banded_fd; do
             cargo run -p vigilode --example "$ex" --locked
+          done
+      - name: Run the serialized RHS-first deployment profiles
+        run: |
+          set -euo pipefail
+          cargo run -p vigilode --example production_from_json --locked -- --template rhs-only > /tmp/vigilode-rhs-only.json
+          cargo run -p vigilode --example production_from_json --locked -- --template selective-jvp > /tmp/vigilode-selective-jvp.json
+          for mode in rhs-only selective-jvp; do
+            for rate in 1 1000; do
+              cargo run -p vigilode --example production_from_json --locked -- "/tmp/vigilode-$mode.json" "$rate"
+            done
           done
 
   semver:

@@ -30,10 +30,10 @@ unsafe impl GlobalAlloc for CountingAlloc {
 static GLOBAL: CountingAlloc = CountingAlloc;
 
 use rodas5p_integrators::polynomial_resolvent::{
-    integrate_exchange_implicit_euler, ExchangeCollisionProvider as Provider,
-    ExchangeImplicitEulerWorkspace as TrajectoryWorkspace, PolynomialPhysicalNorm as Norm,
-    PolynomialProviderWork as Work, PolynomialResolventError as Error,
-    PolynomialResolventWorkspace as Workspace,
+    ExchangeCollisionProvider as Provider, ExchangeImplicitEulerWorkspace as TrajectoryWorkspace,
+    PolynomialPhysicalNorm as Norm, PolynomialProviderWork as Work,
+    PolynomialResolventError as Error, PolynomialResolventWorkspace as Workspace,
+    integrate_exchange_implicit_euler,
 };
 
 fn provider(a: f64, b: f64, blocks: usize, model: u64, epoch: u64) -> Provider {
@@ -107,15 +107,18 @@ fn invalid_provider_and_missing_evidence_fail_without_fabricating_witness() {
     assert!(Provider::new(1.0, 1.0, 0, 1, 1).is_err());
     let p = provider(1.0, 1.0, 1, 1, 1);
     let mut w = Work::default();
-    assert!(p
-        .prepare_implicit_euler(0.1, Norm::Infinity, 0, 1e-12, &mut w)
-        .is_err());
-    assert!(p
-        .prepare_implicit_euler(0.1, Norm::Other(4), 1, 1e-12, &mut w)
-        .is_err());
-    assert!(p
-        .prepare_implicit_euler(f64::MAX, Norm::Infinity, 1, 1e-12, &mut w)
-        .is_err());
+    assert!(
+        p.prepare_implicit_euler(0.1, Norm::Infinity, 0, 1e-12, &mut w)
+            .is_err()
+    );
+    assert!(
+        p.prepare_implicit_euler(0.1, Norm::Other(4), 1, 1e-12, &mut w)
+            .is_err()
+    );
+    assert!(
+        p.prepare_implicit_euler(f64::MAX, Norm::Infinity, 1, 1e-12, &mut w)
+            .is_err()
+    );
     assert_eq!((w.setups_attempted, w.setup_failures), (3, 3));
 }
 

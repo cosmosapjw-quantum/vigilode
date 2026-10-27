@@ -1,0 +1,36 @@
+{
+  "schema": "vigilode.instruction-profile.v1",
+  "started_utc": "2026-10-27T14:20:21.456440+00:00",
+  "binary": "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/structural_production_bench_20261027",
+  "binary_sha256": "c4e03cef7e6dff1b3e99697c6d2bb6a3c1db882ef360fd50445447c0f6d85549",
+  "git_head": "206298b4068d923bb47c7160b111b7439098660c",
+  "host": "7cd56024bcd0",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "arms": [
+    "pr91",
+    "fused",
+    "enclosed"
+  ],
+  "repetitions": [
+    2,
+    6
+  ],
+  "argument_template": [
+    "profile",
+    "2048",
+    "64",
+    "{arm}",
+    "{repetitions}",
+    "1"
+  ],
+  "metric": "(Ir(large)-Ir(small))/(large-small)",
+  "qualification": "frozen native executable asserts each complete solve; scientific audit is a separate receipt",
+  "scope": "guest instruction count; startup subtracted; not native wall time",
+  "valgrind_version": "valgrind-3.22.0",
+  "environment": {
+    "VALGRIND_LIB": "/workspace/scratch/06cfffc081e2/tmp/valgrind_local/usr/libexec/valgrind",
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  }
+}

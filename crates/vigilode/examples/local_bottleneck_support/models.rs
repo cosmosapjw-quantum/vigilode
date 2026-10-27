@@ -1,7 +1,10 @@
 //! Explicit, dimensionless method-of-lines benchmark definitions.
 //! A forward dual evaluation supplies Jv and f_t; it is never invoked by DOPRI5.
+// Shared by several examples and model-only tests, each using a different
+// subset of the fixture/report API.
+#![allow(dead_code)]
 use rayon::prelude::*;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::f64::consts::PI;
 use std::ops::{Add, Div, Mul, Neg, Sub};
 

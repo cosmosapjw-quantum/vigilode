@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "pass": 0,
+  "baseline": "206298b4068d923bb47c7160b111b7439098660c",
+  "arithmetic_tests": {
+    "pass": 8,
+    "fail": 0
+  },
+  "integration_tests": {
+    "pass": 2,
+    "fail": 2,
+    "reason": "no sentinel exercised; valid states and costs but allentrypilotslost"
+  },
+  "benchmark_arms": 20,
+  "accuracy_and_accounting_pass": 20,
+  "selective_switches": 0,
+  "source": [
+    {
+      "source": "crates/vigilode/src/switching.rs",
+      "snapshot": "research/production_solver_closure_20261027/adapter/raw/pass0_source/switching.rs",
+      "sha256": "e44c39213ff92556a59582e95082ea9870df98e5caa286acdae5a1ee64e34150"
+    },
+    {
+      "source": "crates/vigilode/examples/production_return_bench_20261027.rs",
+      "snapshot": "research/production_solver_closure_20261027/adapter/raw/pass0_source/production_return_bench_20261027.rs",
+      "sha256": "0ccb272857df6fd1376d366d8f82396ca7175343b5735e57219d6499f890f2a4"
+    },
+    {
+      "source": "crates/vigilode/examples/support/production_return_cases.rs",
+      "snapshot": "research/production_solver_closure_20261027/adapter/raw/pass0_source/production_return_cases.rs",
+      "sha256": "d6579677c190b42fae612dc601f93e602321a11075d5703067956c2c06fd9cab"
+    },
+    {
+      "source": "crates/vigilode/tests/strict_return_work_contracts.rs",
+      "snapshot": "research/production_solver_closure_20261027/adapter/raw/pass0_source/strict_return_work_contracts.rs",
+      "sha256": "119c1c35583061f7e113fec1f3dbbc1e91f1bcc4f5bf265cd45426aad8062095"
+    }
+  ],
+  "build_profile": "measurement",
+  "rust": "1.94.1",
+  "pipeline1_exit": 101,
+  "pipeline2_exit": 0,
+  "correction_count": 0
+}

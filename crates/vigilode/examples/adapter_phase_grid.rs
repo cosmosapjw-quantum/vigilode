@@ -3,7 +3,7 @@
 //! Timing fields are single-run diagnostics only. The phase residual is
 //! principal-valued at each time and is not unwrapped.
 
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::time::{Duration, Instant};
 use vigilode::{Atol, CallbackError, Dopri5, ExponentialChirpChart, Options, Problem};
 
@@ -105,13 +105,10 @@ fn reference_chart() -> Result<ExponentialChirpChart, String> {
     ExponentialChirpChart::new(OMEGA0, BETA, GAMMA, (0.0, END))
 }
 
-fn exact_state(
-    t: f64,
-    chart: &ExponentialChirpChart,
-) -> Result<([f64; 2], f64, f64), String> {
+fn exact_state(t: f64, chart: &ExponentialChirpChart) -> Result<([f64; 2], f64, f64), String> {
     let phase = chart.phase(t)?;
-    let radius = (-GAMMA * t).exp()
-        / (1.0 + (EPSILON / GAMMA) * (1.0 - (-2.0 * GAMMA * t).exp())).sqrt();
+    let radius =
+        (-GAMMA * t).exp() / (1.0 + (EPSILON / GAMMA) * (1.0 - (-2.0 * GAMMA * t).exp())).sqrt();
     let omega = chart.frequency(t)?;
     let state = [
         radius * phase.cos(),
@@ -163,14 +160,8 @@ fn physical_arm(times: &[f64], physical_atol: f64) -> Result<ArmResult, String> 
     timings.setup = started.elapsed();
 
     let started = Instant::now();
-    let solution = Dopri5::solve_observed(
-        &problem,
-        (0.0, END),
-        &[1.0, -GAMMA],
-        &options,
-        times,
-    )
-    .map_err(|e| e.to_string())?;
+    let solution = Dopri5::solve_observed(&problem, (0.0, END), &[1.0, -GAMMA], &options, times)
+        .map_err(|e| e.to_string())?;
     timings.solve = started.elapsed();
 
     let started = Instant::now();
@@ -222,14 +213,8 @@ fn chart_arm(times: &[f64], physical_atol: f64) -> Result<ArmResult, String> {
     timings.setup = started.elapsed();
 
     let started = Instant::now();
-    let solution = Dopri5::solve_observed(
-        &problem,
-        (0.0, END),
-        &[1.0, 0.0],
-        &options,
-        times,
-    )
-    .map_err(|e| e.to_string())?;
+    let solution = Dopri5::solve_observed(&problem, (0.0, END), &[1.0, 0.0], &options, times)
+        .map_err(|e| e.to_string())?;
     timings.solve = started.elapsed();
 
     let started = Instant::now();
@@ -277,9 +262,7 @@ fn run() -> Result<(), String> {
     };
 
     let timing = |arm: &Option<ArmResult>| arm.as_ref().map(|r| r.timings.json());
-    let candidate_total_seconds = physical
-        .as_ref()
-        .map_or(0.0, |r| r.timings.total_seconds())
+    let candidate_total_seconds = physical.as_ref().map_or(0.0, |r| r.timings.total_seconds())
         + transformed
             .as_ref()
             .map_or(0.0, |r| r.timings.total_seconds());
@@ -313,7 +296,7 @@ fn run() -> Result<(), String> {
             "chart_rejected": transformed.as_ref().map(|r| r.rejected),
             "physical_success": physical.as_ref().map(|r| r.success),
             "chart_success": transformed.as_ref().map(|r| r.success),
-            "time_grid_matches": physical.as_ref().map_or(true, |r| r.grid_matches) && transformed.as_ref().map_or(true, |r| r.grid_matches),
+            "time_grid_matches": physical.as_ref().is_none_or(|r| r.grid_matches) && transformed.as_ref().is_none_or(|r| r.grid_matches),
             "timing_authority": "diagnostic_only",
             "timing_scope": "per-candidate setup constructs arm chart/provider/problem/options; solve integrates the full registered grid; reconstruction converts all chart outputs to physical state; analytic references, phase/error metrics, and JSON serialization are excluded",
             "common_harness_setup_seconds": common_harness_setup_seconds,
@@ -331,20 +314,23 @@ fn run() -> Result<(), String> {
 
     for arm in [&physical, &transformed].into_iter().flatten() {
         if !arm.success || !arm.grid_matches || arm.states.len() != points {
-            return Err("one selected solve failed or did not return the registered time grid".into());
+            return Err(
+                "one selected solve failed or did not return the registered time grid".into(),
+            );
         }
     }
-    for i in 0..points {
-        let t = times[i];
+    for (i, &t) in times.iter().enumerate().take(points) {
         let (reference_state, reference_amplitude, reference_phase) = exact_state(t, &grid_chart)?;
         let physical_state = physical.as_ref().map(|r| r.states[i]);
         let chart_state = transformed.as_ref().map(|r| r.states[i]);
         let physical_metrics = physical_state.map(|state| {
-            let (amplitude, phase) = amplitude_phase(state, t, &grid_chart).expect("valid grid time");
+            let (amplitude, phase) =
+                amplitude_phase(state, t, &grid_chart).expect("valid grid time");
             (state, amplitude, principal_residual(phase, reference_phase))
         });
         let chart_metrics = chart_state.map(|state| {
-            let (amplitude, phase) = amplitude_phase(state, t, &grid_chart).expect("valid grid time");
+            let (amplitude, phase) =
+                amplitude_phase(state, t, &grid_chart).expect("valid grid time");
             (state, amplitude, principal_residual(phase, reference_phase))
         });
         println!(
