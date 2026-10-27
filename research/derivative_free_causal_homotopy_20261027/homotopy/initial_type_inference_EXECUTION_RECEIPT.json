@@ -1,0 +1,29 @@
+{
+  "started_utc": "2026-10-27T12:40:24.667824+00:00",
+  "source": {
+    "crates/vigilode-coupled/src/rhs_homotopy.rs": "1840b7e865f6c5d4d2f93c6314e2498d24565851a52c5926718d7f23e617bb75",
+    "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs": "d64b440fdf1cb5717ab93f0c90f7580ea378d6a0db08cd00a84170100eb581c7",
+    "crates/vigilode-coupled/examples/rhs_homotopy_bench_20261027.rs": "0f3089f22e42eac72289a8645f8b4f81466c6fecbf61eaa78ead9f17cf1c09b4"
+  },
+  "commands": [
+    {
+      "name": "native_contracts",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "vigilode-coupled",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "--test",
+        "rhs_homotopy_contracts",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 101,
+      "elapsed_seconds": 0.7970081829989795
+    }
+  ]
+}

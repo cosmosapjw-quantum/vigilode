@@ -1,15 +1,20 @@
-//! JVP-only all-at-once raw-U RODAS5P stage research implementation.
+//! Causal raw-U RODAS5P solvers and direct-map research implementations.
 //!
 //! This companion crate does not change VigilODE's default dispatcher. A
 //! candidate passes an operational full-space residual screen, NOT a certified
 //! nonlinear/output/continuous-time error bound. The caller owns physical-step
 //! acceptance. No n-by-n state Jacobian is assembled by this candidate path.
+//! The coupled algorithms retain a supplied frozen JVP; `rhs_homotopy` uses
+//! direct map values, and `structural_mean_field` uses an exact declared model
+//! reduction without derivative callbacks or a state-matrix solve.
 #![forbid(unsafe_code)]
 mod adaptive;
 mod algebra;
 mod fallback;
 mod solver;
 mod switching;
+pub mod rhs_homotopy;
+pub mod structural_mean_field;
 pub use adaptive::{
     COUPLED_ADAPTIVE_DRIVER_ID, CoupledIntegrationResult, CoupledTrajectoryAttempt,
     integrate_causal_observed, integrate_coupled_observed, integrate_sequential_raw_observed,
@@ -120,6 +125,11 @@ pub struct Work {
     pub newton_updates: u64,
     /// Newton-free projected fixed-point updates performed by the causal mode.
     pub causal_picard_updates: u64,
+    /// Projected nonlinear remainder evaluations reused at the identical
+    /// represented input within one fixed model epoch.
+    pub causal_rhs_reused: u64,
+    /// Common-factor block solves reused from an unchanged causal RHS prefix.
+    pub causal_block_solves_reused: u64,
     /// Direct projected stages solved using the common diagonal factorization.
     pub causal_forward_stages: u64,
     pub lambda_rejections: u64,
@@ -245,6 +255,7 @@ pub(crate) enum EvaluationMode {
     ResidualFirst,
     CausalForward,
     CausalPicard,
+    CausalPicardReuse,
 }
 
 /// Opt-in residual-first version of `coupled_step` with identical mathematical
@@ -292,14 +303,23 @@ pub enum CausalSchedule {
     /// Simultaneous nonlinear remainder evaluations, bounded by eight updates.
     /// Uses an affine seed and one cached projected diagonal factorization.
     BatchedPicard,
+    /// Same represented Picard recurrence, with bitwise input caches and reuse
+    /// of the unchanged prefix in each common-factor triangular solve.
+    /// Requires deterministic RHS callbacks at a fixed time/state/model epoch.
+    BatchedPicardReuse,
 }
 
 /// Solve the same projected raw-U target without current-stage derivatives or
 /// Newton updates. `Forward` eliminates the nonlinear causal stages directly;
 /// `BatchedPicard` uses affine-preconditioned fixed-point updates with at most
-/// eight updates and a final projected residual test. Both retain original-space
+/// eight updates and a final projected residual test. All schedules retain original-space
 /// validation and basis expansion. Config::max_newton/max_subdivisions/theta
 /// do not control these schedules, which go directly to the lambda=1 target.
+/// `BatchedPicardReuse` follows the same represented recurrence and requires
+/// deterministic numerical callback results at fixed `(model epoch, t, state)`.
+/// Callback-owned observations see its reduced call count. A client must advance
+/// its epoch whenever the numerical model changes; without an epoch the same
+/// fixed-model assumption remains the caller's contract.
 ///
 /// This is a Newton-free corrector, not a fully derivative-free ODE method:
 /// supplied frozen JVPs and a small projected matrix are still used. No automatic
@@ -317,6 +337,7 @@ pub fn coupled_step_causal(
     let mode = match schedule {
         CausalSchedule::Forward => EvaluationMode::CausalForward,
         CausalSchedule::BatchedPicard => EvaluationMode::CausalPicard,
+        CausalSchedule::BatchedPicardReuse => EvaluationMode::CausalPicardReuse,
     };
     match solver::run(p, t, y, h, cfg, execution, mode, &mut out) {
         Ok(candidate) => out.candidate = Some(candidate),

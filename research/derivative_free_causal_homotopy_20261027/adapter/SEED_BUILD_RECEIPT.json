@@ -1,0 +1,68 @@
+{
+  "commands": [
+    {
+      "name": "seed_contracts",
+      "command": [
+        "flock",
+        "/tmp/vigilode-cargo-20261027.lock",
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "--test",
+        "entry_checkpoint_seed_contracts",
+        "--test",
+        "evidence_switch_contracts"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 12.981519034001394,
+      "log": "seed_contracts.log"
+    },
+    {
+      "name": "seed_helper",
+      "command": [
+        "flock",
+        "/tmp/vigilode-cargo-20261027.lock",
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "--lib",
+        "entry_checkpoint_seed_uses_only_valid_start_proposal"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 14.071907630997885,
+      "log": "seed_helper.log"
+    },
+    {
+      "name": "seed_build",
+      "command": [
+        "flock",
+        "/tmp/vigilode-cargo-20261027.lock",
+        "cargo",
+        "build",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "--example",
+        "selective_jvp_20261027"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 13.722742163998191,
+      "log": "seed_build.log"
+    }
+  ],
+  "source_sha256": "8d840747b535ccc8e9a56cb36317daf5c7801d8a94b12deeb8c4f0dff4833bc0",
+  "switching_sha256": "e1f3eab014257af79749810f64e2361faaa82cac9cdc2f99a4d12281e27e6aa8"
+}

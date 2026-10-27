@@ -354,6 +354,9 @@ impl RawStepSession {
                                     Some(crate::CausalSchedule::BatchedPicard) => {
                                         "causal-picard-raw-u"
                                     }
+                                    Some(crate::CausalSchedule::BatchedPicardReuse) => {
+                                        "causal-picard-reuse-raw-u"
+                                    }
                                     None => "coupled-raw-u",
                                 },
                                 target_id: crate::TARGET_ID,

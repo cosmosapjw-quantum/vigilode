@@ -1,0 +1,29 @@
+{
+  "command": [
+    "flock",
+    "/tmp/vigilode-cargo-20261027.lock",
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "-p",
+    "vigilode-coupled",
+    "--test",
+    "causal_reuse_contracts",
+    "--test",
+    "causal_contracts"
+  ],
+  "cwd": "/workspace/scratch/06cfffc081e2/vigilode",
+  "exit_code": 0,
+  "elapsed_seconds": 222.9345988740024,
+  "environment": {
+    "CARGO_HOME": "/workspace/scratch/06cfffc081e2/tmp/cargo_home",
+    "CARGO_TARGET_DIR": "/workspace/scratch/06cfffc081e2/tmp/vigil_target",
+    "CARGO_BUILD_JOBS": "2",
+    "RAYON_NUM_THREADS": "1"
+  },
+  "log": "debug_profile_cancelled.log",
+  "status": "cancelled",
+  "tests_executed": false,
+  "reason": "Wrong debug profile; SIGINT cancellation completed after active compiler jobs. Exit0 alone is not test evidence."
+}

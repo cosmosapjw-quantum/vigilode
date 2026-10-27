@@ -149,6 +149,7 @@ fn all_explicitly_selected_candidate_roots_keep_accuracy_and_work_contracts() {
     for candidate in [
         CandidateRoute::Forward,
         CandidateRoute::Picard,
+        CandidateRoute::PicardReuse,
         CandidateRoute::ResidualFirst,
     ] {
         let rhs = Arc::new(AtomicU64::new(0));

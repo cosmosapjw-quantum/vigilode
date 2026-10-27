@@ -1,0 +1,83 @@
+{
+  "reviewer": "/root/theory_derivative_free",
+  "method": "read-only independent derivation and complementary code review; inherited project context",
+  "review_layers": 1,
+  "native_tests_rerun_by_reviewer": false,
+  "result": "pass_scoped",
+  "code_sha256": {
+    "crates/vigilode-coupled/src/causal.rs": "fc297cd8b42c49f95d999078726186c3f09d15818a9355b2c369640aeef04b41",
+    "crates/vigilode-coupled/tests/causal_reuse_contracts.rs": "1411cc1c8a2d9662a49c1cd26bb98bf3c86d371f9399857e3a6d3cc5fe43b079",
+    "crates/vigilode-coupled/src/rhs_homotopy.rs": "1840b7e865f6c5d4d2f93c6314e2498d24565851a52c5926718d7f23e617bb75",
+    "crates/vigilode-coupled/src/structural_mean_field.rs": "9bb28291d15a75a354861a2fac5046870cc8d5cb4df33319f75c8606ea0ade5f"
+  },
+  "findings": "REVIEW.md",
+  "proofs": "THEORY.md",
+  "exact_execution": "EXACT_RESULTS.json",
+  "cas_corrected": "CAS_CORRECTED_RESPONSE.json",
+  "retained_tool_expression_failure": "CAS_FIRST_RESPONSE.json",
+  "scope_limit": "Structural error returns have no partial work receipt; current costs concern successful solves and do not claim an adaptive failed-fallback total.",
+  "changed_dependency_followup": {
+    "reason": "Actual adapter run exposed repeated cold entry seed; parent requested narrow review of authorized repair",
+    "result": "pass_scoped",
+    "source_sha256": {
+      "crates/vigilode/src/switching.rs": "e1f3eab014257af79749810f64e2361faaa82cac9cdc2f99a4d12281e27e6aa8",
+      "crates/vigilode/tests/entry_checkpoint_seed_contracts.rs": "f76bd0613128623b7a1527757751047d811b9cb44e3ae9dfdb24937b9736707a",
+      "research/derivative_free_causal_homotopy_20261027/adapter/CHECKPOINT_SEED_PROTOCOL.md": "e779118a64f4cca12543d4bb1d0989891e0add445f456f1612f9b1e2cbc3b0eb"
+    },
+    "native_log_inspected": "../adapter/seed_contracts.log",
+    "native_contract_results_observed": {
+      "new": 4,
+      "existing_evidence": 7
+    },
+    "native_tests_rerun_by_reviewer": false,
+    "proof": "THEORY.md section8.1",
+    "remaining_measurement_owner": "root/causal_derivative_free; no benchmark rerun by reviewer"
+  },
+  "derived_constants_followup": {
+    "reason": "User requested analytic/algebraic constants instead of discretionary hyperparameters",
+    "result": "pass_scoped",
+    "scope": "Changed exact-constant consumers and strict entry path; no repeated cache or project-wide review",
+    "source_sha256": {
+      "crates/vigilode-coupled/src/rhs_homotopy.rs": "543b2dd3f8a8e3ffd39bf6b47fda5e7ae74ae32bae34f45c2b2b52bff19caf1e",
+      "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs": "1c3bc00531b59940bf6dfed0939abb0e9a96f7d46233a7b1564dcff52eb8ad9c",
+      "crates/vigilode-coupled/src/structural_mean_field.rs": "1e70ac544c6b8a775c60fc2497566f12b08945b5148cc288c1215f5b47d1f11a",
+      "crates/vigilode-coupled/tests/structural_mean_field_contracts.rs": "57d407b9e95703c1c2587149cd2f20ed44340bcd39b7bf081cd2ac27da27ffa7",
+      "crates/vigilode/src/switching.rs": "bc671345a71be39f8336b0072e386b294c99fcb9d3f2cd956ab35485e51f0967",
+      "crates/vigilode/tests/entry_checkpoint_seed_contracts.rs": "4ba797699e180e9e0ab2cad4619ecf26356156cd19fcd39711c66ff7c35c192a",
+      "crates/rodas5p-core/src/directed.rs": "2adadb6a5d77073e0a7d3d60aedfbf37e124d15a586a880d7d5a8c8d5307a814"
+    },
+    "proof": "THEORY.md section 11; theorems.tex appended sections F/G",
+    "executed_by_reviewer": "exact_constant_checks.py; exit zero",
+    "exact_execution": "EXACT_CONSTANT_RESULTS.json",
+    "native_tests_rerun_by_reviewer": false,
+    "native_logs_inspected": {
+      "../homotopy/exact_constants_contracts.stdout.log": {
+        "passed": 16
+      },
+      "../homotopy/rounding_floor_test.stdout.log": {
+        "passed": 1,
+        "filtered": 16
+      },
+      "../evidence/exact_structural_contract.stdout.log": {
+        "passed": 1,
+        "filtered": 4
+      },
+      "../adapter/exact_arithmetic.log": {
+        "passed": 6
+      },
+      "../adapter/exact_integration.log": {
+        "entry_passed": 5,
+        "existing_evidence_passed": 7
+      }
+    },
+    "independent_parent_structural_audit": "../evidence/EXACT_STRUCTURAL_CONSTANTS.json; 12 cells inspected",
+    "native_cubic_summary": "../homotopy/EXACT_CONSTANTS_SUMMARY.json; 12 successful rows inspected",
+    "resolved_documentation": "Strict entry flag explicitly applies only to positive pilot budget; comment-only change recorded by owner",
+    "remaining_scope_limits": [
+      "Cubic truncation C is a proved safe bound, not the optimal constant",
+      "Generic floating residual dominance remains operational; the sealed cubic consumer supplies the outward physical certificate",
+      "Structural derived residual tolerance is ordinary binary64 and bounds algebraic discrete-trajectory error only",
+      "Strict integer entry compares the existing local work proxy; no future-work or wall-clock theorem"
+    ]
+  }
+}
