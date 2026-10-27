@@ -1,0 +1,25 @@
+{
+  "scope": "Theory-lane bounded checks only; no historical benchmark reruns or native production changes",
+  "python_initial": {
+    "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 theory_lane/shifted_reuse_experiment.py",
+    "tool_chunk_id": "1ad72a",
+    "exit_code": 1,
+    "tool_wall_time_seconds": 0.747345814,
+    "failure": "AssertionError at assert relaxed['converged']; contraction theorem does not remove floating residual floors",
+    "repair": "Keep tolerance=1e-10 and max_iter=512 unchanged; record failed cells and all diagnostic residual tails instead of asserting universal convergence"
+  },
+  "python_completed": {
+    "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 theory_lane/shifted_reuse_experiment.py",
+    "tool_chunk_id": "f07695",
+    "exit_code": 0,
+    "tool_wall_time_seconds": 0.318736051,
+    "results": "SHIFTED_REUSE_RESULTS.json",
+    "cells": 27,
+    "operator_norm_checks_passed": 27,
+    "residual_target_met": 25,
+    "residual_target_unmet": 2,
+    "claimed_native_speedup": false
+  },
+  "rust": {"receipt": "RUST_RECEIPT.json", "tests_passed": 7, "production_integration": false},
+  "cas": {"receipt": "CAS_RECEIPT.json", "scope": "finite exact rational matrix identities, not general theorem proof"}
+}

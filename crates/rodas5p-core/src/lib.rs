@@ -60,7 +60,7 @@ pub use leja_setup_work::{
     CoefficientCacheObservation, LEJA_SETUP_RECEIPT_SCHEMA_V1, LejaSetupReceiptV1, LejaSetupWork,
     LejaSetupWorkSubtotal, OnceLockObservation, SetupCoverage,
 };
-pub use matrix::{DenseMatrix, LuFactorization, direct_solve, inverse};
+pub use matrix::{DenseMatrix, LuFactorization, LuSolveWorkspace, direct_solve, inverse};
 pub use matrix_functions::{
     DensePhiCombinationReport, dense_fused_phi_action, dense_fused_phi_action_report,
     dense_phi_action, dense_phi_combination, dense_phi_combination_report, matrix_exp_pade13,

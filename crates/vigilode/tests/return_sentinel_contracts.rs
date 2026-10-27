@@ -226,6 +226,7 @@ fn losing_sentinel_return_is_bounded_by_current_implicit_work() {
         );
         // Ceiling floor(0.5 W) + 1, checked after each attempt: at most one
         // further DOPRI attempt (seven RHS calls) beyond it.
+        assert_eq!(explicit.comparator_work_ratio.is_some(), explicit.success);
         let ceiling = (0.5 * implicit.work_units).floor() as u64 + 1;
         assert!(
             explicit.rhs_calls <= ceiling + 7,
@@ -266,7 +267,7 @@ fn incomplete_implicit_comparator_above_explicit_work_does_not_retain_implicit()
     );
     assert_eq!(
         explicit.evidence,
-        SwitchingEvidence::ExplicitCheaperOnSameWindow
+        SwitchingEvidence::ExplicitCheaperThanComparatorLowerBound
     );
     assert!(explicit.work_units <= 0.8 * replay.work_units);
     assert!((r.final_state[0] - g(1.0).0).abs() <= 1e-5);

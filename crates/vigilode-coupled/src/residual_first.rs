@@ -72,11 +72,7 @@ fn projected_residual(
     let mut residual = vec![0.0; S * m];
     // Preserve eager evaluation's summation order and rounding.
     for i in 0..S * m {
-        let mut row = vec![0.0; S * m];
-        for j in 0..S * m {
-            row[j] = matrix[(i, j)];
-        }
-        residual[i] = dot(&row, z) - rhs[i];
+        residual[i] = dot(matrix.row(i), z) - rhs[i];
     }
     for i in 0..S {
         for u in 0..m {

@@ -2654,8 +2654,7 @@ impl Rodas5pMfFastWorkspace {
             if problem.autonomous {
                 self.ft.fill(0.0);
             } else {
-                let ft = problem.eval_partial_t(t, y, counters)?;
-                self.ft.copy_from_slice(&ft);
+                problem.eval_partial_t_into(t, y, &mut self.ft, counters)?;
             }
             let jvp = problem.linearize_matrix_free(t, y)?;
             self.cached_y.copy_from_slice(y);

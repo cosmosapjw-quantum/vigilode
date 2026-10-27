@@ -1,7 +1,8 @@
 use std::ops::{Index, IndexMut};
 
 use faer::{
-    Mat,
+    Conj, Mat,
+    dyn_stack::{MemBuffer, MemStack},
     linalg::solvers::{PartialPivLu, Solve},
 };
 
@@ -218,6 +219,34 @@ pub struct LuFactorization {
     lu: PartialPivLu<f64>,
 }
 
+/// Caller-owned scratch for allocation-free solves with fixed-size dense LU
+/// factors. It contains no factorization or matrix identity and may be reused
+/// with any successful factorization of the same dimension.
+pub struct LuSolveWorkspace {
+    n: usize,
+    // Match the alignment and column stride of the allocating `solve` path.
+    rhs: Mat<f64>,
+    scratch: MemBuffer,
+}
+
+impl LuSolveWorkspace {
+    pub fn new(n: usize) -> Self {
+        let requirement = faer::linalg::lu::partial_pivoting::solve::solve_in_place_scratch::<
+            usize,
+            f64,
+        >(n, 1, faer::get_global_parallelism());
+        Self {
+            n,
+            rhs: Mat::zeros(n, 1),
+            scratch: MemBuffer::new(requirement),
+        }
+    }
+
+    pub fn dimension(&self) -> usize {
+        self.n
+    }
+}
+
 impl LuFactorization {
     pub fn new(a: &DenseMatrix) -> CoreResult<Self> {
         if a.nrows != a.ncols {
@@ -233,6 +262,61 @@ impl LuFactorization {
 
     pub fn dimension(&self) -> usize {
         self.n
+    }
+
+    /// Solve in the caller's RHS buffer using reusable permutation scratch.
+    /// This calls the same faer permutation and triangular kernels as `solve`;
+    /// The retained faer RHS has the same layout as the old fresh `Mat`, so
+    /// it changes storage ownership, not kernel arithmetic or tolerance.
+    /// Invalid input is rejected before the RHS is modified. A numerical solve
+    /// failure may leave the RHS modified and must not be treated as a solution.
+    pub fn solve_in_place_with_workspace(
+        &self,
+        rhs: &mut [f64],
+        workspace: &mut LuSolveWorkspace,
+    ) -> CoreResult<()> {
+        if rhs.len() != self.n || workspace.n != self.n {
+            return Err(CoreError::Dimension(
+                "LU RHS/workspace shape mismatch".into(),
+            ));
+        }
+        if !rhs.iter().all(|x| x.is_finite()) {
+            return Err(CoreError::NonFinite("LU RHS contains NaN/Inf".into()));
+        }
+        for (i, value) in rhs.iter().enumerate() {
+            workspace.rhs[(i, 0)] = *value;
+        }
+        faer::linalg::lu::partial_pivoting::solve::solve_in_place_with_conj(
+            self.lu.L(),
+            self.lu.U(),
+            self.lu.P(),
+            Conj::No,
+            workspace.rhs.as_mut(),
+            faer::get_global_parallelism(),
+            MemStack::new(&mut workspace.scratch),
+        );
+        for (i, value) in rhs.iter_mut().enumerate() {
+            *value = workspace.rhs[(i, 0)];
+        }
+        if rhs.iter().all(|v| v.is_finite()) {
+            Ok(())
+        } else {
+            Err(CoreError::LinearSolve("LU produced NaN/Inf".into()))
+        }
+    }
+
+    /// Caller-buffer solve for an immutable factor owner without retained
+    /// scratch. A temporary aligned RHS and permutation scratch are allocated;
+    /// no separate solution matrix or output vector is constructed.
+    pub fn solve_in_place(&self, rhs: &mut [f64]) -> CoreResult<()> {
+        if rhs.len() != self.n {
+            return Err(CoreError::Dimension("LU RHS shape mismatch".into()));
+        }
+        if !rhs.iter().all(|x| x.is_finite()) {
+            return Err(CoreError::NonFinite("LU RHS contains NaN/Inf".into()));
+        }
+        let mut workspace = LuSolveWorkspace::new(self.n);
+        self.solve_in_place_with_workspace(rhs, &mut workspace)
     }
 
     pub fn solve(&self, rhs: &[f64]) -> CoreResult<Vec<f64>> {
