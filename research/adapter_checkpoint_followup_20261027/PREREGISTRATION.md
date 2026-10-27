@@ -131,3 +131,42 @@ with `taskset -c 11`, never overlapping compilation.
 PASS iff G1–G5 hold; otherwise FAIL with the failing item recorded. Timing classes (M3, M4) never change the
 verdict. Not claimed: phase or intermediate-time accuracy, a universal sentinel benefit, a complete RODAS
 session, a dense provider for callers that supplied only JVP, or any parallel speed-up.
+
+## Results (appended after the registered run; nothing above this heading was changed)
+
+Execution commit `f4e971f579f6c4b494d50192b8357b038009a31d` (tree `46a76375`), pushed before the run; input
+hashes `evidence/INPUTS_SHA256.txt` were written before it. `run_followup.sh` exit 0 (17:23–17:34 KST), AMD
+Ryzen 9 5900X, Rust 1.94.1 locked offline, `measurement` profile, `taskset -c 11`, solver thread 1, no NCP.
+Binaries: `evidence/BINARY_SHA256.txt`. Derived numbers: `evidence/RESULTS.json`, rendered `evidence/RESULTS.md`.
+
+**Verdict: PASS** (G1–G5).
+
+| Gate | Outcome |
+|---|---|
+| G1 identity | 26 packet pairs, 52 records, 0 differences after the registered id normalisation |
+| G2 allocations | facade matrix-free allocator events per attempt: transition-39 90.55 → 2.55 (0.028×), case5 90.95 → 2.95 (0.032×) |
+| G3 stale-return | work units 5 099 → 3 335, RHS 2 445 → 2 036; endpoint errors 1.10e-8 / 1.74e-8 (cap 1e-5) |
+| G4 sentinel accuracy | passes on case5, stiff-forced, relaxation, transition-39 |
+| G5 tests | vigilode 33 suites 270 passed; integrators routing 14 passed (1 ignored study); krylov SPD04 5 passed |
+
+Reported, not gated (diagnostic timing, packet qualification rules):
+
+- Sentinel cost on registered recheck cells (work sentinel/adaptive): case5 1.022 (time 1.042, no clear
+  difference), stiff-forced 1.039 (time 1.084, qualified regression), relaxation 1.000, transition-39 1.074
+  (RHS 30 515 → 34 109). The sentinel therefore stays opt-in. On stale-return it is 0.790 [0.784, 0.791] of
+  the adaptive time, faster than direct DOPRI (3.26× slower) and the dense direct RODAS (1.054× slower).
+- Matrix-free workspace, separate processes (candidate/base median): case5 RODAS 0.714, transition-39 RODAS
+  0.801, transition-39 adaptive 0.857, rotation adaptive 0.931, gyro-tight adaptive 0.973; records identical.
+- Same binary, selector versus direct: transition-39 direct MF RODAS/adaptive 1.615 and transition-79 2.571
+  (adaptive faster), case5 direct dense/adaptive 0.137 (dense direct faster; unavailable to a JVP-only
+  caller), rotation direct DOPRI/adaptive 0.626, gyro-tight 0.866.
+- M5 traces (`evidence/TRACE_SUMMARY_f4e971f5.json`): every traced counter equals E1; matrix-free attempts
+  now carry about 3 allocator events each (transition-39 window: 428 over 144 attempts). The tool's own
+  rerun-identity flag reads "DIFFERS" for case5 and transition-39 because it compares segment JSON without the
+  `krylov_workspace` id normalisation; with it, both reruns equal the raw records (checked separately).
+
+Deviations: `tools/summarize_traces.py` was added after the run (reads raw only). Heavy raw (identity
+records, full traces, binaries; 225 MB) is archived locally at
+`~/vigilode-local-archive/adapter-checkpoint-followup-20261027/` (`SHA256SUMS.txt` sha256 `2d120f58…`), not
+pushed. The residual ~3 events per matrix-free attempt (`linearize_matrix_free`, `eval_partial_t`) and the
+transition entry-horizon miss of E1 are open.
