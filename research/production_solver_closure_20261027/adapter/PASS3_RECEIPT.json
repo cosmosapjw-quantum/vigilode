@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "correction_pass": 3,
+  "correction_limit": 3,
+  "status": "pass_scoped",
+  "created_utc": "2026-10-27T14:50:45.657296+00:00",
+  "diagnosis": "Final production CI: two collapsible_if sites in switching.rs, observed-step proposal storage and adaptive-entry validation.",
+  "changes": "Two equivalent let-chain rewrites, preserving left-to-right short-circuit evaluation, predicate order, helper invocation count, bodies and error string. rustfmt switching.rs only. No policy, constant, fixture, tolerance or numerical operation change.",
+  "equivalence_record": "raw/PASS3_SOURCE_EQUIVALENCE.md",
+  "diff": "raw/pass3_branch_cleanup.diff",
+  "pre_correction_switching_sha256": "ebea1dd7b76da45def13f6d9e1137f693786f23308f2e0cc589debc82b658347",
+  "final_switching_sha256": "119f2a70d5d8be82816e9c236f4b06644faffe2df545a93b824deeb6ce356bbf",
+  "source_snapshots": "raw/pass3_final/source",
+  "native_distinct_tests": 35,
+  "native_test_groups": {
+    "switching_library": 16,
+    "comparator_dominance_contracts": 3,
+    "entry_checkpoint_seed_contracts": 5,
+    "return_sentinel_contracts": 7,
+    "strict_return_work_contracts": 4
+  },
+  "contract_receipts": [
+    "raw/pass3_qualified/switching_contracts/RECEIPT.json",
+    "raw/pass3_qualified/return_contracts/RECEIPT.json"
+  ],
+  "native_test_scope": "Both focused commands passed under individually stable source snapshots after the switching freeze. Later inherited-example-only CI changes are qualified by the parent final package gate; these are not additional adapter code corrections.",
+  "final_benchmark_receipt": "raw/pass3_final/audit_36_arms/RECEIPT.json",
+  "final_build_receipt": "raw/pass3_final/build_benchmark/RECEIPT.json",
+  "final_audit": "FINAL_AUDIT.json",
+  "final_audit_sha256": "fdab163f93f9b81945aca1686afa534403f7d7e0e22a0add173f0366f6dd444a",
+  "benchmark_arms": 36,
+  "all_non_timing_outputs_exactly_equal": true,
+  "state_components_exactly_equal": 17440,
+  "prior_oracle_seed_checks_reused": 44,
+  "oracle_scope": "Exact equality transfers existing Decimal90 and causal-seed results. No new independent oracle run or interval certification claimed.",
+  "prior_measured_binary_sha256": "8671afe3561e0b658c857ca7fe4ee5f892781fcadac69b2d491c21c595680702",
+  "prior_measured_binary_preserved_workspace_path": "/workspace/scratch/06cfffc081e2/tmp/adapter_pre_style_8671afe3/production_return_bench_20261027",
+  "final_audit_binary_sha256": "c8462ad3b7f83b683a8d0ab01bfe1a361ccd4367375611f1046a9f7b8dc53e62",
+  "new_paired_timing_or_profile": false,
+  "historical_measurement_scope": "PERFORMANCE.json remains pre-style-cleanup measurements of the original executable; final numerical equality does not establish equal time or instructions.",
+  "unqualified_source_overlap_attempts": [
+    {
+      "receipt": "raw/pass3/switching_contracts/RECEIPT.json",
+      "sha256": "369dea057feda9ec784184a59c1a89db876f80b83478e342a7529c2683f013c7",
+      "actual_command_exit_code": 0,
+      "wrapper_exit_code": 2,
+      "source_changes": [
+        "/workspace/scratch/06cfffc081e2/vigilode/crates/vigilode/examples/adapter_integration_pilot.rs"
+      ],
+      "disposition": "Preserved unqualified receipt; rerun unchanged command after parent example-source freeze. No extra code correction or tuning."
+    },
+    {
+      "receipt": "raw/pass3_qualified/build_benchmark/RECEIPT.json",
+      "sha256": "34db32e7ab38dde94005d54f5546deb9a74f3cf60cfd7b6e0a7fd89a63b399b4",
+      "actual_command_exit_code": 0,
+      "wrapper_exit_code": 2,
+      "source_changes": [
+        "/workspace/scratch/06cfffc081e2/vigilode/crates/vigilode/examples/adapter_checkpoint_trace.rs",
+        "/workspace/scratch/06cfffc081e2/vigilode/crates/vigilode/examples/adapter_phase_grid.rs",
+        "/workspace/scratch/06cfffc081e2/vigilode/crates/vigilode/examples/adaptive_causal_bench.rs",
+        "/workspace/scratch/06cfffc081e2/vigilode/crates/vigilode/examples/local_bottleneck_suite.rs",
+        "/workspace/scratch/06cfffc081e2/vigilode/crates/vigilode/examples/local_bottleneck_support/models.rs",
+        "/workspace/scratch/06cfffc081e2/vigilode/crates/vigilode/examples/nonstiff_bench.rs",
+        "/workspace/scratch/06cfffc081e2/vigilode/crates/vigilode/examples/production_hardening_bench.rs"
+      ],
+      "disposition": "Preserved unqualified receipt; rerun unchanged command after parent example-source freeze. No extra code correction or tuning."
+    }
+  ],
+  "all_research_correction_passes_used": true,
+  "new_algorithmic_tuning": false,
+  "sources": [
+    {
+      "path": "crates/vigilode/src/switching.rs",
+      "sha256": "119f2a70d5d8be82816e9c236f4b06644faffe2df545a93b824deeb6ce356bbf"
+    },
+    {
+      "path": "crates/vigilode/examples/production_return_bench_20261027.rs",
+      "sha256": "2657e4a96ef370eeb1764b19a8bd63ed6590d5a09cae9d8d7f97ddb23ef862d8"
+    },
+    {
+      "path": "crates/vigilode/examples/support/production_return_cases.rs",
+      "sha256": "5934fdb19da9a51939c45f42a68c4a65a46718f312defbbc5c78738fa8495d59"
+    },
+    {
+      "path": "crates/vigilode/tests/strict_return_work_contracts.rs",
+      "sha256": "e852ff7860d9b9ae4f9ae411988ae8d5b99dc3d56b63d6025b0d7842d087e585"
+    }
+  ]
+}

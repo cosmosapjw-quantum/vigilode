@@ -1,0 +1,90 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/production_homotopy; separate native agent, source reading and independent analytic expansion; shared parent context, not blinded",
+  "reviewed_utc": "2026-10-27T14:21:19.432341+00:00",
+  "source": "crates/vigilode-coupled/src/structural_mean_field.rs",
+  "source_sha256": "ebc43ae0ef3faada53764f0895c4b6587645d0ee51497a39bfe77d7fcd347330",
+  "theory_sha256": "2e8e660c6aa7d6c244b8c12b999c66c4213ad1e1b07ea6777e23afeeeb167abd",
+  "checks": [
+    {
+      "id": "S1",
+      "result": "pass_scoped",
+      "statement": "Independently expand v=x-mu*1 and Jv=-d*v+kappa*(mean(x)-mu)*1. Coefficients and signs in the exact residual decomposition agree, including +h*gamma*epsilon_f and the mean mismatch coefficient."
+    },
+    {
+      "id": "S2",
+      "result": "pass_scoped",
+      "statement": "The induced infinity norm follows from one diagonal plus n-1 equal off-diagonal entries. Outward real h*gamma and d-kappa intervals feed every scalar defect and block weight. Triangle composition retains arbitrary full-state lift defects."
+    },
+    {
+      "id": "S3_mean",
+      "result": "pass_scoped",
+      "statement": "Magnitude ordering makes the exact correction the published FastTwoSum Algorithm1.1. Telescoping plus correction/product errors and relative scale error yields the displayed mean enclosure. Exact n<=2^53 makes the reciprocal reference 1/n unambiguous."
+    },
+    {
+      "id": "S3_radius",
+      "result": "pass_scoped",
+      "statement": "Exponent bits compute 2^(e-1076) for normal exponent e, with least-subnormal upward replacement when half-ulp cannot be represented. Greater-magnitude binade spacing bounds both rounding-cell sides, including powers of two and largest finite values."
+    },
+    {
+      "id": "S3_rhs_lift",
+      "result": "pass_scoped",
+      "statement": "Expanding the actual rounded RHS and lift operations gives the listed local radii and |t_i| amplification. Maxima are safe because rounding_radius is monotone in absolute result magnitude."
+    },
+    {
+      "id": "S4",
+      "result": "pass_scoped",
+      "statement": "At n=1, mu=f0 exactly as a real value and the transverse term is zero. The sole collective product error is bounded by 2^-53*|c_i*f0|+eta. Upward cached factor/offset aggregation yields the original full residual bound with no empirical dimension threshold."
+    },
+    {
+      "id": "work",
+      "result": "pass_scoped",
+      "statement": "Every scheduled closure returns outer Ok carrying numerical Result, so map_ordered cannot short-circuit on numerical failures. Direct rows always attempt one RHS and i*n state contributions; remaining scalar counts reconstruct exactly. Failed lifts are joined and charged before first stage-ordered error."
+    },
+    {
+      "id": "compatibility",
+      "result": "pass_scoped",
+      "statement": "Legacy step/sequential_step wrappers intentionally map StructuralFailure to CoreError, dropping only the work payload; their docs explicitly direct retried/adaptive clients to charged variants. Enclosed step directly returns StructuralResult."
+    },
+    {
+      "id": "oracle",
+      "result": "pass_scoped",
+      "statement": "Final correction3 receipt matches the reviewed source. Eleven native contracts pass, all seven recorded commands exit0, and the independent exact Fraction oracle passes all728 original components and168 stage bounds across21 fixtures. The existing8184 radius checks are explicitly reused."
+    }
+  ],
+  "findings": [],
+  "execution_scope": "No native build or benchmark repeated by reviewer. Read final source-matched correction3 native/oracle receipts and the independent oracle code. Final validation completed by structural agent.",
+  "primary_source": {
+    "title": "Accurate Sum and Dot Product",
+    "authors": "Ogita, Rump, Oishi",
+    "year": 2005,
+    "doi": "10.1137/030601818",
+    "url": "https://www.tuhh.de/ti3/paper/rump/OgRuOi05.pdf",
+    "retrieved_with": "Exa search and fetch",
+    "read_sections": [
+      "Algorithm1.1",
+      "Section2",
+      "Section3"
+    ],
+    "applied_conditions": "binary round-to-nearest, magnitude-ordered inputs, finite arithmetic; gradual underflow allowed"
+  },
+  "scope_limits": [
+    "Certificate encloses stage residual for represented model/tableau inputs and actual stages. Temporal truncation and represented endpoint addition are separate.",
+    "Individual channel block norms are sharp; their summed rounding envelope need not be.",
+    "Plan-construction setup and fixed tableau initialization remain outside the per-step work counters as documented.",
+    "The old AlgebraicResidualBudget formulas are ordinary f64 evaluations and are not promoted to an outward global physical certificate."
+  ],
+  "final_receipts": {
+    "native": "structural/CORRECTION3_EXECUTION.json",
+    "native_source_matched": true,
+    "oracle": "structural/FINAL_EXACT_ORACLE_RESULTS.json",
+    "oracle_input_sha256": "56603072497979e3b065a4b72146455fa60821bf84c126126e058139fdb64a5e",
+    "status": "pass_scoped"
+  },
+  "post_review_documentation_amendment": {
+    "old_theory_sha256": "2e8e660c6aa7d6c244b8c12b999c66c4213ad1e1b07ea6777e23afeeeb167abd",
+    "current_theory_sha256": "bec0a344d8e7150d8ac6b65ca509d368262c0a3d1d4b13c1b2d40819335ba064",
+    "change": "removed incorrect prose counter count; no theorem/formula or runtime change; agent reviewer notified root",
+    "runtime_source_unchanged": true
+  }
+}

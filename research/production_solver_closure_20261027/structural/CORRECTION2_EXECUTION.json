@@ -1,0 +1,72 @@
+{
+  "iteration": 2,
+  "started_utc": "2026-10-27T14:13:18.288422+00:00",
+  "sources": {
+    "crates/vigilode-coupled/src/structural_mean_field.rs": "d430f0cafbc73646edd312406bfae70b24a068a802ebb8261d691a7cb0712fd4",
+    "crates/vigilode-coupled/examples/structural_production_bench_20261027.rs": "6f36ea393ef1578d9d0986a7c93e0227b171a79cf5938941c2e0e937a9c875a3",
+    "crates/vigilode-coupled/tests/structural_production_contracts.rs": "51cdbdcf5ca134392a043d0b657619587867217454f57599d25ff78dbfef67e0"
+  },
+  "executions": [
+    {
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "vigilode-coupled",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "--test",
+        "structural_production_contracts",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 14.696722895998391,
+      "output": "correction2_native.log"
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "-p",
+        "vigilode-coupled",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "--example",
+        "structural_production_bench_20261027"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 12.775352953001857,
+      "output": "correction2_build.log"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/structural_production_bench_20261027",
+        "oracle"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.008475971000734717,
+      "output": "EXACT_ORACLE_FINAL_INPUT.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/structural_production_bench_20261027",
+        "bench",
+        "1",
+        "64",
+        "5",
+        "1"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 5.648854318998929,
+      "output": "BENCH_N1_W1.json"
+    }
+  ],
+  "finished_utc": "2026-10-27T14:13:51.430886+00:00",
+  "binary_sha256": "b197fe88528fa379e119e0e7b8256fa1dae419ecf24ff15ba881d05bba66e685",
+  "final_oracle_byte_identical": true
+}

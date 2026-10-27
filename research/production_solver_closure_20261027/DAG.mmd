@@ -1,0 +1,38 @@
+flowchart TD
+    S_PRS["S-PRS · PR 추가분 점검"]
+    R_STRUCT["R-STRUCT · 구조적 잔차 인증"]
+    R_HOMO["R-HOMO · Scalar 근 찾기"]
+    R_ADAPT["R-ADAPT · 전환 비용 판정"]
+    I_PROD["I-PROD · 실행 설정과 API"]
+    V_CLOUD["V-CLOUD · Native 검증과 profile"]
+    P_PUSH["P-PUSH · 게시와 인계"]
+    L_RELEASE["L-RELEASE · 배포 환경 검증"]
+    L_HARDWARE["L-HARDWARE · 정확도 일치 측정"]
+    PR_N01["PR-N01 · Krylov 비용과 연산"]
+    PR_N02["PR-N02 · Cubic 오차 계획"]
+    PR_N03["PR-N03 · 구조적 adaptive 인증"]
+    PR_N04["PR-N04 · Session과 workspace"]
+    PR_N05["PR-N05 · Causal closure와 병렬성"]
+    PR_N06["PR-N06 · 전환 거주 비용 이론"]
+    R_QUALIFY["R-QUALIFY · Client별 release 판정"]
+
+    S_PRS --> R_STRUCT
+    S_PRS --> R_HOMO
+    S_PRS --> R_ADAPT
+    R_STRUCT --> I_PROD
+    R_HOMO --> I_PROD
+    R_ADAPT --> I_PROD
+    I_PROD --> V_CLOUD
+    V_CLOUD --> P_PUSH
+    P_PUSH --> L_RELEASE
+    L_RELEASE --> L_HARDWARE
+    L_RELEASE --> PR_N02
+    L_RELEASE --> PR_N03
+    L_RELEASE --> PR_N04
+    L_HARDWARE --> PR_N01
+    L_HARDWARE --> PR_N05
+    PR_N04 --> PR_N05
+    L_HARDWARE --> PR_N06
+    PR_N01 --> PR_N06
+    L_RELEASE --> R_QUALIFY
+    L_HARDWARE --> R_QUALIFY

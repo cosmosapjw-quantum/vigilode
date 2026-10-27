@@ -173,6 +173,7 @@ mod lawson;
 mod options;
 mod oscillatory_chart;
 mod problem;
+mod production;
 mod records;
 mod selection;
 pub mod selection_evidence;
@@ -193,6 +194,7 @@ pub use oscillatory_chart::*;
 pub use problem::{
     BandJacobianFn, DenseJacobianFn, Jacobian, JvpFn, Problem, RhsFn, TimeDerivativeFn,
 };
+pub use production::{PRODUCTION_CONFIG_SCHEMA, ProductionConfig, ProductionSolver};
 pub use records::*;
 pub use selection::*;
 pub use session::{ExplicitSession, SessionAdvance, SessionCheckpoint, SessionEpochs};

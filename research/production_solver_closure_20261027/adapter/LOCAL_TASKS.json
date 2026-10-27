@@ -1,0 +1,153 @@
+{
+  "schema_version": 1,
+  "lane": "adapter",
+  "baseline_pr": 91,
+  "baseline_commit": "206298b4068d923bb47c7160b111b7439098660c",
+  "current_scoped_status": "complete_with_conditional_work_gain_and_adverse_runtime_evidence",
+  "correction_budget": {
+    "maximum": 3,
+    "used": 2,
+    "remaining": 1
+  },
+  "production_recommendation": {
+    "general_default": "persistent RHS-only",
+    "selective_derivative_scope": "explicit opt-in supplied JVP on independently qualified cases",
+    "strict_return": "available as exact observed-work comparison; current-window bound",
+    "reuse_observed_entry_step": "experimental opt-in; default false",
+    "sentinel": "explicit opt-in; not enabled as universal fastest policy"
+  },
+  "local_prs": [
+    {
+      "id": "A-L1",
+      "title": "Account for small Krylov arithmetic before extending the switcher's cost objective",
+      "dependencies": [
+        "production_solver_closure_20261027"
+      ],
+      "purpose": "Resolve measured mismatch between callback work and total arithmetic: stiff-cubic W -10.95% but Ir +0.505%; reentrant mode Ir +145.02%.",
+      "kind": "theory_and_mode_implementation",
+      "sources": [
+        "crates/rodas5p-krylov/src/small.rs",
+        "crates/rodas5p-krylov/src/gmres_into.rs",
+        "crates/rodas5p-krylov/src/kernels.rs",
+        "crates/vigilode/src/switching.rs"
+      ],
+      "prior_evidence": [
+        "adapter/PERFORMANCE.json",
+        "adapter/raw/performance/reentrant_all_functions.txt",
+        "crates/rodas5p-krylov/tests/givens_production_differential_contracts.rs"
+      ],
+      "derivation_contract": [
+        "Derive operation/storage counts for safe norms, two-pass MGS, triangular or pivoted-QR updates as functions of n and Krylov dimensions.",
+        "Reuse existing Givens work where its residual/rank/stability preconditions hold; retain full-rank-deficient fallback and original residual validation.",
+        "For nonconstant callback costs use measured or supplied cost intervals; selection requires U_candidate+U_switch<L_incumbent, with provenance for each interval."
+      ],
+      "implementation_contract": [
+        "Instrumentation is opt-in and preserves states, accepted/rejected decisions, callback and failure accounting.",
+        "Do not replace a verified algebraic residual with a fitted count model.",
+        "Unit weights remain named work-proxy fields; do not silently relabel them elapsed time."
+      ],
+      "validation_commands": [
+        "cargo test -p rodas5p-krylov --profile measurement --locked --test givens_production_differential_contracts",
+        "cargo test -p vigilode --profile measurement --locked --test strict_return_work_contracts",
+        "cargo run -p vigilode --profile measurement --locked --example production_return_bench_20261027 -- reentrant-nonlinear rhs-only 16"
+      ],
+      "required_artifacts": [
+        "proof of operation counts and applicable rank/residual conditions",
+        "machine-readable counts and per-symbol profile",
+        "paired matched-accuracy timings including adverse cases"
+      ],
+      "acceptance": [
+        "All original accuracy/failure contracts pass.",
+        "Whole-trajectory work and time reported separately.",
+        "A proposed production promotion needs measured improvement on declared cases; retain losing alternatives."
+      ],
+      "maximum_correction_loops": 3
+    },
+    {
+      "id": "A-L2",
+      "title": "Bound exploration and residence loss across changing regimes",
+      "dependencies": [
+        "A-L1"
+      ],
+      "purpose": "Replace extrapolation from short-prefix fitness with a quantified online budget tied to usable cost bounds.",
+      "kind": "theory_then_adapter",
+      "derivation_contract": [
+        "Define replay-safe nonautonomous or augmented-autonomous model class and the temporal variation bound required to transport cost evidence.",
+        "Derive separate bounds for current productive-sentinel overhead and future residence/exploration loss.",
+        "Without an admissible future cost bound retain local comparison status and seek constructive current-window racing or budgeted continuation."
+      ],
+      "implementation_contract": [
+        "Do not enable observed-step seed, smaller probe gaps or a new credit budget merely because one benchmark improves.",
+        "Every rejected/incomplete branch and counterfactual comparison remains charged.",
+        "Retain fatal priority and accepted physical checkpoint; avoid arbitrary cost margins."
+      ],
+      "validation_commands": [
+        "cargo run -p vigilode --profile measurement --locked --example production_return_bench_20261027 -- all observed 1"
+      ],
+      "required_artifacts": [
+        "complete conditional theorem with constants and model assumptions",
+        "DAG from cost-bound inputs to routing decisions",
+        "actual nonlinear stiff/easy/reentrant regression and profiling"
+      ],
+      "acceptance": [
+        "Original20+16-arm evidence retained as historical control.",
+        "No claim of whole-trajectory optimality from one-window E<I.",
+        "Performance qualification includes RHS-only strong baseline."
+      ],
+      "maximum_correction_loops": 3
+    },
+    {
+      "id": "A-L3",
+      "title": "Transfer a winning explicit probe's complete native session",
+      "dependencies": [
+        "production_solver_closure_20261027"
+      ],
+      "purpose": "Eliminate repeated DOPRI startup and workspace allocation after an accepted return without losing controller/FSAL identity.",
+      "kind": "api_and_correctness_optimization",
+      "sources": [
+        "crates/vigilode/src/session.rs",
+        "crates/vigilode/src/switching.rs",
+        "crates/rodas5p-integrators/src/dopri5.rs"
+      ],
+      "derivation_contract": [
+        "Specify owned or continuation-scoped session transfer preserving current state, FSAL vector, controller, accepted clock, schedule and epoch identity.",
+        "Prove the next trial is the same native continuation as if the winning probe had remained active."
+      ],
+      "implementation_contract": [
+        "A state-plus-step snapshot does not satisfy complete session transfer.",
+        "Epoch mismatch, callback failure and budget exhaustion must refuse or preserve the accepted prefix with full work.",
+        "No callbacks after a fatal comparator."
+      ],
+      "validation_commands": [
+        "cargo test -p vigilode --profile measurement --locked --test switching_persistent_explicit",
+        "cargo test -p vigilode --profile measurement --locked --test return_sentinel_contracts",
+        "cargo test -p vigilode --profile measurement --locked --test strict_return_work_contracts"
+      ],
+      "required_artifacts": [
+        "session ownership and identity contract",
+        "bitwise continuation differential tests",
+        "allocation/FSAL/callback profile across repeated switches"
+      ],
+      "acceptance": [
+        "Equivalent native continuation or explicitly qualified rounding behavior.",
+        "No additional mathematical work to establish a cache hit.",
+        "Matched-accuracy timing includes session acquisition/transfer and failure paths."
+      ],
+      "maximum_correction_loops": 3
+    }
+  ],
+  "dag_edges": [
+    [
+      "production_solver_closure_20261027",
+      "A-L1"
+    ],
+    [
+      "A-L1",
+      "A-L2"
+    ],
+    [
+      "production_solver_closure_20261027",
+      "A-L3"
+    ]
+  ]
+}

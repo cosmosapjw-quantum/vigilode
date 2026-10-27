@@ -546,7 +546,32 @@ pub struct CubicDecayAccuracyResult {
     pub extrapolations_accepted: u64,
     pub polish_evaluations: u64,
     pub warm_seed_domain_resets: u64,
+    /// Algebraic cubic inverse candidates, counted separately from polynomial
+    /// evaluations because cube roots and square roots have different costs.
+    pub algebraic_predictors: u64,
+    /// Rational inverse candidates, with no square root or cube root.
+    pub rational_predictors: u64,
+    /// Candidates whose outward original residual needed an iterative repair.
+    pub algebraic_predictor_fallbacks: u64,
     pub failure: Option<String>,
+}
+
+/// Value-only stage implementations for the sealed cubic-decay consumer.
+/// All variants use the same plan and outward original-polynomial certificate.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+pub enum CubicStageSolver {
+    /// Original Vec-valued homotopy implementation, retained as a control.
+    GenericHomotopy(RhsAcceleration),
+    /// The same scalar operations and callback order on stack-valued history.
+    ScalarHomotopy(RhsAcceleration),
+    /// A cancellation-free algebraic inverse, then the original residual
+    /// certificate. Scalar Picard and bisection repair an inaccurate candidate.
+    /// This specializes the declared polynomial, not an arbitrary RHS.
+    AlgebraicPredictor,
+    /// The [1/1] inverse-series rational candidate (1+2 beta)/(1+3 beta).
+    /// Its exact normalized residual is beta^3*(3+8 beta)/(1+3 beta)^3.
+    /// Acceptance and repair use the same outward original-polynomial check.
+    RationalPredictor,
 }
 
 struct CubicStepMap<'a> {
@@ -571,6 +596,164 @@ impl RhsOnlyMap for CubicStepMap<'_> {
         out[0] = -self.plan.h * (self.plan.k * m + nonlinear);
         Ok(())
     }
+}
+
+#[derive(Clone, Copy)]
+struct CubicScalarValue {
+    state: f64,
+    mapped: f64,
+    residual: f64,
+    norm: f64,
+}
+
+fn cubic_scalar_value(
+    map: &CubicStepMap<'_>,
+    anchor: f64,
+    state: f64,
+    out: &mut CubicDecayAccuracyResult,
+) -> Result<CubicScalarValue, String> {
+    if !map.admits(&[state]) {
+        return Err("scalar stage candidate is outside its exact increment bracket".into());
+    }
+    if out
+        .map_evaluations
+        .checked_add(out.interval_polynomial_evaluations)
+        .is_none_or(|v| v >= map.plan.max_polynomial_evaluations)
+    {
+        return Err("polynomial evaluation resource limit reached before scalar dispatch".into());
+    }
+    out.map_evaluations += 1;
+    let mut value = [f64::NAN];
+    map.evaluate(&[state], &mut value)?;
+    if !value[0].is_finite() {
+        return Err("scalar polynomial map overflowed".into());
+    }
+    // Retain the original lambda=1 homotopy arithmetic, including signed zero.
+    let mapped = 0.0 * anchor + 1.0 * value[0];
+    let residual = mapped - state;
+    let norm = 0.0_f64.hypot(residual);
+    if !norm.is_finite() {
+        return Err("scalar polynomial residual overflowed".into());
+    }
+    Ok(CubicScalarValue {
+        state,
+        mapped,
+        residual,
+        norm,
+    })
+}
+
+fn cubic_scalar_stage(
+    map: &CubicStepMap<'_>,
+    seed: f64,
+    acceleration: RhsAcceleration,
+    out: &mut CubicDecayAccuracyResult,
+) -> Result<f64, String> {
+    let mut current = cubic_scalar_value(map, seed, seed, out)?;
+    let mut previous: Option<CubicScalarValue> = None;
+    let mut rejected = 0usize;
+    while current.norm > map.plan.stage_residual_target {
+        let mut selected = cubic_scalar_value(map, seed, current.mapped, out)?;
+        if selected.norm > map.plan.stage_residual_target && acceleration != RhsAcceleration::Picard
+        {
+            if let Some(old) = previous {
+                let exact = acceleration == RhsAcceleration::ResidualDominance;
+                // Legacy heuristic modes retain their existing defaults.
+                if exact
+                    || (rejected < 2
+                        && (acceleration == RhsAcceleration::Screened
+                            || current.norm >= 0.5 * old.norm))
+                {
+                    let scale = current.residual.abs().max(old.residual.abs());
+                    let (mut numerator, mut denominator) = (0.0, 0.0);
+                    if scale > 0.0 {
+                        let dr = current.residual / scale - old.residual / scale;
+                        numerator += (current.residual / scale) * dr;
+                        denominator += dr * dr;
+                    }
+                    let gamma = numerator / denominator;
+                    if gamma.is_finite() && (exact || gamma.abs() <= 1024.0) {
+                        let trial = current.mapped - gamma * (current.mapped - old.mapped);
+                        if trial.is_finite() && map.admits(&[trial]) {
+                            out.extrapolation_trials += 1;
+                            let extrapolated = cubic_scalar_value(map, seed, trial, out)?;
+                            let limit = if exact {
+                                selected.norm
+                            } else {
+                                0.9 * selected.norm
+                            };
+                            if extrapolated.norm <= limit {
+                                selected = extrapolated;
+                                out.extrapolations_accepted += 1;
+                            } else {
+                                rejected += 1;
+                            }
+                        } else {
+                            rejected += 1;
+                        }
+                    }
+                }
+            }
+        }
+        previous = Some(current);
+        current = selected;
+    }
+    Ok(current.state)
+}
+
+fn cubic_model_predictor(
+    map: &CubicStepMap<'_>,
+    rational: bool,
+    out: &mut CubicDecayAccuracyResult,
+) -> Result<f64, String> {
+    let p = map.plan;
+    if rational {
+        out.rational_predictors += 1;
+    } else {
+        out.algebraic_predictors += 1;
+    }
+    // a*m+b*m^3=y; m=(y/a)*s, s+beta*s^3=1.
+    // u^3=z+sqrt(1+z^2), z=3*sqrt(3*beta)/2,
+    // s=3/(u^2+1+u^-2). All sums are positive: no u-u^-1 subtraction.
+    // Under q_B<1 and |y|<=Y+epsilon, beta<1/3 and 0<=z<3/2.
+    let a = 1.0 + (0.5 * p.h) * p.k;
+    let beta = ((0.5 * p.h) * (p.g * (map.y * map.y))) / (a * a * a);
+    let s = if rational {
+        // Coefficients follow by matching 1-beta+3 beta^2 in the inverse
+        // series. The exact residual is beta^3*(3+8 beta)/(1+3 beta)^3.
+        (1.0 + 2.0 * beta) / (1.0 + 3.0 * beta)
+    } else {
+        let z = 1.5 * (3.0 * beta).sqrt();
+        let u = (z + z.hypot(1.0)).cbrt();
+        let u2 = u * u;
+        3.0 / (u2 + 1.0 + 1.0 / u2)
+    };
+    let midpoint = (map.y / a) * s;
+    if !midpoint.is_finite() || !beta.is_finite() {
+        return Err("algebraic cubic predictor overflowed before polynomial dispatch".into());
+    }
+    // Form a small increment by evaluating the RHS at the predicted midpoint,
+    // rather than subtracting two nearly equal endpoint-scale numbers.
+    if out
+        .map_evaluations
+        .checked_add(out.interval_polynomial_evaluations)
+        .is_none_or(|v| v >= p.max_polynomial_evaluations)
+    {
+        return Err(
+            "polynomial evaluation resource limit reached before predictor dispatch".into(),
+        );
+    }
+    out.map_evaluations += 1;
+    let nonlinear = if p.g == 0.0 {
+        0.0
+    } else {
+        p.g * midpoint * midpoint * midpoint
+    };
+    let increment = -p.h * (p.k * midpoint + nonlinear);
+    if !map.admits(&[increment]) {
+        return Err("algebraic cubic predictor is outside its exact increment bracket".into());
+    }
+    Ok(increment)
 }
 
 fn cubic_verified_step(
@@ -620,8 +803,23 @@ pub fn integrate_cubic_decay_accuracy(
     acceleration: RhsAcceleration,
     warm_previous_stage: bool,
 ) -> CubicDecayAccuracyResult {
+    integrate_cubic_decay_accuracy_with_solver(
+        plan,
+        CubicStageSolver::GenericHomotopy(acceleration),
+        warm_previous_stage,
+    )
+}
+
+/// Integrate with an explicitly selected value-only stage implementation.
+/// The algebraic predictor's library cube root is an untrusted candidate;
+/// acceptance comes exclusively from the original outward residual bound.
+pub fn integrate_cubic_decay_accuracy_with_solver(
+    plan: &CubicDecayAccuracyPlan,
+    solver: CubicStageSolver,
+    warm_previous_stage: bool,
+) -> CubicDecayAccuracyResult {
     let mut out = CubicDecayAccuracyResult::default();
-    let run = cubic_integrate(plan, acceleration, warm_previous_stage, &mut out);
+    let run = cubic_integrate(plan, solver, warm_previous_stage, &mut out);
     match run {
         Ok(()) => out.completed = true,
         Err(e) => out.failure = Some(e),
@@ -631,7 +829,7 @@ pub fn integrate_cubic_decay_accuracy(
 
 fn cubic_integrate(
     p: &CubicDecayAccuracyPlan,
-    acceleration: RhsAcceleration,
+    solver: CubicStageSolver,
     warm: bool,
     out: &mut CubicDecayAccuracyResult,
 ) -> Result<(), String> {
@@ -665,22 +863,41 @@ fn cubic_integrate(
             seed = 0.0;
             out.warm_seed_domain_resets += 1;
         }
-        let cfg = RhsHomotopyConfig {
-            lambdas: vec![1.0],
-            residual_l2_tolerance: p.stage_residual_target,
-            max_iterations_per_lambda: usize::try_from(remaining).unwrap_or(usize::MAX),
-            max_map_evaluations: remaining,
-            acceleration,
-            ..RhsHomotopyConfig::default()
+        let mut increment = match solver {
+            CubicStageSolver::GenericHomotopy(acceleration) => {
+                let cfg = RhsHomotopyConfig {
+                    lambdas: vec![1.0],
+                    residual_l2_tolerance: p.stage_residual_target,
+                    max_iterations_per_lambda: usize::try_from(remaining).unwrap_or(usize::MAX),
+                    max_map_evaluations: remaining,
+                    acceleration,
+                    ..RhsHomotopyConfig::default()
+                };
+                let attempt = solve_rhs_homotopy(&map, &[seed], &cfg);
+                out.map_evaluations += attempt.work.map_attempted;
+                out.extrapolation_trials += attempt.work.extrapolation_trials;
+                out.extrapolations_accepted += attempt.work.extrapolations_accepted;
+                attempt
+                    .root
+                    .ok_or_else(|| format!("stage {i}: {:?}", attempt.failure))?[0]
+            }
+            CubicStageSolver::ScalarHomotopy(acceleration) => {
+                cubic_scalar_stage(&map, seed, acceleration, out)?
+            }
+            CubicStageSolver::AlgebraicPredictor => cubic_model_predictor(&map, false, out)?,
+            CubicStageSolver::RationalPredictor => cubic_model_predictor(&map, true, out)?,
         };
-        let attempt = solve_rhs_homotopy(&map, &[seed], &cfg);
-        out.map_evaluations += attempt.work.map_attempted;
-        out.extrapolation_trials += attempt.work.extrapolation_trials;
-        out.extrapolations_accepted += attempt.work.extrapolations_accepted;
-        let mut increment = attempt
-            .root
-            .ok_or_else(|| format!("stage {i}: {:?}", attempt.failure))?[0];
         let mut verified = cubic_verified_step(p, y, increment, out)?;
+        if verified.1 > p.algebraic_step_budget
+            && matches!(
+                solver,
+                CubicStageSolver::AlgebraicPredictor | CubicStageSolver::RationalPredictor
+            )
+        {
+            out.algebraic_predictor_fallbacks += 1;
+            increment = cubic_scalar_stage(&map, seed, RhsAcceleration::Picard, out)?;
+            verified = cubic_verified_step(p, y, increment, out)?;
+        }
         if verified.1 > p.algebraic_step_budget {
             // Monotone bisection is value-only. Its exact bracket comes from
             // F(0)=h*phi(y), F(-2y)=-2y. No guessed radius is introduced.

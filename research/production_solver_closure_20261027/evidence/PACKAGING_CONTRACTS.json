@@ -1,0 +1,76 @@
+{
+  "status": "pass_scoped",
+  "scope": "15 disposable-repository packaging contracts; not solver numerical tests",
+  "archive": "evidence/packaging_tools.tar.xz",
+  "archive_sha256": "811102f5256d52d1226f4664f61eaf6b4d2e6fff55cd5e0001fcf7f77ac2f282",
+  "result": {
+    "schema_version": 1,
+    "scope": "owned toy packaging contracts; actual research archive not created; no native solver run",
+    "status": "pass",
+    "tests": [
+      {
+        "name": "unstaged_first_build_and_verify",
+        "pass": true
+      },
+      {
+        "name": "unchanged_build_inputs_and_new_code_hashed",
+        "pass": true
+      },
+      {
+        "name": "fetched_text_excluded",
+        "pass": true
+      },
+      {
+        "name": "inventory_includes_self_path",
+        "pass": true
+      },
+      {
+        "name": "staged_rebuild_retains_inventory",
+        "pass": true
+      },
+      {
+        "name": "postcommit_rebuild_without_hash_cycle",
+        "pass": true
+      },
+      {
+        "name": "clean_checkout_verify_and_idempotent_extract",
+        "pass": true
+      },
+      {
+        "name": "modified_report_refused",
+        "pass": true
+      },
+      {
+        "name": "modified_unchanged_lock_refused",
+        "pass": true
+      },
+      {
+        "name": "archive_source_overlap_refused",
+        "pass": true
+      },
+      {
+        "name": "changed_local_raw_evidence_not_overwritten",
+        "pass": true
+      },
+      {
+        "name": "symlink_ancestor_refused_without_external_write",
+        "pass": true
+      },
+      {
+        "name": "duplicate_archive_member_refused",
+        "pass": true
+      },
+      {
+        "name": "absolute_manifest_archive_path_refused",
+        "pass": true
+      },
+      {
+        "name": "final_toy_reverification",
+        "pass": true
+      }
+    ],
+    "verifier_sha256": "c8e75ddf21b855ace4e44d38b33fbda7adfe6c4e9f93d1e36054e9327f1f11c8",
+    "builder_sha256": "047146dd6cec6bbe173806ce1bef854576b47eca1d75dd1d085269e0fd3b9bbf",
+    "check_script_sha256": "c207ae2e9c6d0342775d6c0af9dab351af4c15b6a1250cebafffb4740e580b74"
+  }
+}

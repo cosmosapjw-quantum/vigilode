@@ -1,0 +1,46 @@
+{
+  "schema_version": 1,
+  "reviewer": "parent native agent; independent inequality and call-site review, not blinded",
+  "reviewed_utc": "2026-10-27T14:15:57.493868+00:00",
+  "source": "crates/vigilode/src/switching.rs",
+  "source_sha256": "ebea1dd7b76da45def13f6d9e1137f693786f23308f2e0cc589debc82b658347",
+  "scope": [
+    "strict_return_work_preferred",
+    "strict_return_comparator_ceiling",
+    "productive sentinel integer cap",
+    "observed_entry_step and subsequent checkpoint callsite",
+    "fatal callback priority and common attempt budget"
+  ],
+  "findings": [],
+  "checks": [
+    {
+      "id": "R1",
+      "result": "pass_scoped",
+      "evidence": [
+        "adapter/THEORY.md",
+        "adapter/RESULTS.json"
+      ],
+      "detail": "Same-window completed candidate required; exact E<I includes nonfatal comparator prefix L. Ties preserve implicit; checked overflow refuses evidence; fatal replay is handled before comparison."
+    },
+    {
+      "id": "R2",
+      "result": "pass_scoped",
+      "detail": "Comparator cap E with stop Lcb>cap proves E<Lcb. Challenger cap I-1 rules out E<I at crossing. Unrepresentable u64 sentinel declines only the optional stop."
+    },
+    {
+      "id": "R3",
+      "result": "pass_scoped",
+      "detail": "The stated 2I+6 bound follows from I-1 budget and at most seven explicit RHS calls per attempt. It is a current-window overhead bound, not future-time regret."
+    },
+    {
+      "id": "R4",
+      "result": "pass_scoped",
+      "detail": "Accepted positive finite nonfatal pilot mean is retained only as a scalar proposal. A new driver receives the later accepted physical checkpoint; no old pilot state is committed. The flag remains default false."
+    }
+  ],
+  "qualification": [
+    "Counter objective W is not elapsed-time or instruction cost. Stiff-cubic reduces W by10.95% but Ir rises0.505%; no stable time gain.",
+    "Reentrant nonlinear observed strict sentinel is slower than RHS-only in every paired block. The production default remains RHS-only; observed step reuse remains experimental.",
+    "Historical rate/backoff remains an operational probe trigger; strict comparison is grounded in actual same-window records."
+  ]
+}

@@ -1,0 +1,132 @@
+{
+  "started_utc": "2026-10-27T14:12:07.026650+00:00",
+  "exact_oracle": {
+    "status": "pass_scoped",
+    "method": "Python Fraction exact rational evaluation of every component of the full original raw-U equations; no factorized residual identity is used by this oracle",
+    "input_sha256": "cef721d847aa877411f411dff299143be2721f7d74b05a353ee0fa580b38c52f",
+    "cells": 21,
+    "stage_bounds": 168,
+    "original_space_components": 728,
+    "half_ulp_exponent_checks": 8184
+  },
+  "timings": [
+    {
+      "n": 2048,
+      "threads": 1,
+      "results": [
+        {
+          "candidate": "fused",
+          "paired_block_speedups": [
+            1.028985016345896,
+            1.097205959877364,
+            1.5164136908423815,
+            1.1241905888476138,
+            1.2365353233626946
+          ],
+          "median_speedup": 1.1241905888476138,
+          "observed_range": [
+            1.028985016345896,
+            1.5164136908423815
+          ],
+          "loops_per_batch": 2
+        },
+        {
+          "candidate": "enclosed",
+          "paired_block_speedups": [
+            2.1517241934910474,
+            1.7713859174305555,
+            1.8870647111511254,
+            1.6701421934808203,
+            1.721528307759874
+          ],
+          "median_speedup": 1.7713859174305555,
+          "observed_range": [
+            1.6701421934808203,
+            2.1517241934910474
+          ],
+          "loops_per_batch": 2
+        }
+      ],
+      "max_grid_error": 2.397597120840089e-10
+    },
+    {
+      "n": 2048,
+      "threads": 2,
+      "results": [
+        {
+          "candidate": "fused",
+          "paired_block_speedups": [
+            1.4906511814541887,
+            1.4268114556027938,
+            1.735169368415098,
+            1.0153592572924695,
+            2.947713140449268
+          ],
+          "median_speedup": 1.4906511814541887,
+          "observed_range": [
+            1.0153592572924695,
+            2.947713140449268
+          ],
+          "loops_per_batch": 1
+        },
+        {
+          "candidate": "enclosed",
+          "paired_block_speedups": [
+            2.1460330464783945,
+            9.316182407315031,
+            4.126886908801739,
+            2.4179781918631056,
+            2.5705933400001264
+          ],
+          "median_speedup": 2.5705933400001264,
+          "observed_range": [
+            2.1460330464783945,
+            9.316182407315031
+          ],
+          "loops_per_batch": 1
+        }
+      ],
+      "max_grid_error": 2.397597120840089e-10
+    },
+    {
+      "n": 64,
+      "threads": 1,
+      "results": [
+        {
+          "candidate": "fused",
+          "paired_block_speedups": [
+            1.6356707276678037,
+            1.151775370013736,
+            1.1493448419396342,
+            1.0798001193754727,
+            1.311882839602004
+          ],
+          "median_speedup": 1.151775370013736,
+          "observed_range": [
+            1.0798001193754727,
+            1.6356707276678037
+          ],
+          "loops_per_batch": 135
+        },
+        {
+          "candidate": "enclosed",
+          "paired_block_speedups": [
+            1.955944241561147,
+            1.7593029574723078,
+            2.1416110755458506,
+            1.5637955606618505,
+            1.6687405141695997
+          ],
+          "median_speedup": 1.7593029574723078,
+          "observed_range": [
+            1.5637955606618505,
+            2.1416110755458506
+          ],
+          "loops_per_batch": 120
+        }
+      ],
+      "max_grid_error": 2.384490382922877e-10
+    }
+  ],
+  "finished_utc": "2026-10-27T14:12:07.163304+00:00"
+}

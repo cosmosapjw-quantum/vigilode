@@ -1,0 +1,849 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-10-27T14:11:08.219634+00:00",
+  "binary": "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+  "binary_sha256": "8671afe3561e0b658c857ca7fe4ee5f892781fcadac69b2d491c21c595680702",
+  "timing_scope": "same process repeated complete solves including model/result allocations; oracle+JSON after timer",
+  "cases": [
+    {
+      "case": "stiff-cubic",
+      "baseline": "pr91",
+      "candidate": "observed-pr91",
+      "repeats": 64,
+      "timing_blocks": [
+        {
+          "block": 0,
+          "order": [
+            "pr91",
+            "observed-pr91",
+            "observed-pr91",
+            "pr91"
+          ],
+          "baseline_seconds": 0.0032514329609375,
+          "candidate_seconds": 0.0022472188515625,
+          "speedup": 1.4468697424270744
+        },
+        {
+          "block": 1,
+          "order": [
+            "observed-pr91",
+            "pr91",
+            "pr91",
+            "observed-pr91"
+          ],
+          "baseline_seconds": 0.0010319840234374999,
+          "candidate_seconds": 0.0011490654921874999,
+          "speedup": 0.8981072275287725
+        },
+        {
+          "block": 2,
+          "order": [
+            "pr91",
+            "observed-pr91",
+            "observed-pr91",
+            "pr91"
+          ],
+          "baseline_seconds": 0.0012904616953125,
+          "candidate_seconds": 0.0010474576484375,
+          "speedup": 1.23199415006181
+        },
+        {
+          "block": 3,
+          "order": [
+            "observed-pr91",
+            "pr91",
+            "pr91",
+            "observed-pr91"
+          ],
+          "baseline_seconds": 0.0011312470234375,
+          "candidate_seconds": 0.0011193545234374999,
+          "speedup": 1.0106244266235496
+        },
+        {
+          "block": 4,
+          "order": [
+            "pr91",
+            "observed-pr91",
+            "observed-pr91",
+            "pr91"
+          ],
+          "baseline_seconds": 0.0013021918203125,
+          "candidate_seconds": 0.0014005841171875,
+          "speedup": 0.9297490984885788
+        }
+      ],
+      "median_speedup": 1.0106244266235496,
+      "observed_speedup_range": [
+        0.8981072275287725,
+        1.4468697424270744
+      ],
+      "instruction_slopes_per_trajectory": {
+        "pr91": 7799712.625,
+        "observed-pr91": 7839131.25
+      },
+      "instruction_change_percent": 0.5053856070754925,
+      "profiles": [
+        {
+          "policy": "pr91",
+          "repeats": 4,
+          "instructions": 40409409,
+          "file": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_profile_pr91_4.callgrind"
+        },
+        {
+          "policy": "pr91",
+          "repeats": 12,
+          "instructions": 102807110,
+          "file": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_profile_pr91_12.callgrind"
+        },
+        {
+          "policy": "observed-pr91",
+          "repeats": 4,
+          "instructions": 40037400,
+          "file": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_profile_observed-pr91_4.callgrind"
+        },
+        {
+          "policy": "observed-pr91",
+          "repeats": 12,
+          "instructions": 102750450,
+          "file": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_profile_observed-pr91_12.callgrind"
+        }
+      ]
+    },
+    {
+      "case": "reentrant-nonlinear",
+      "baseline": "rhs-only",
+      "candidate": "observed-strict-sentinel",
+      "repeats": 16,
+      "timing_blocks": [
+        {
+          "block": 0,
+          "order": [
+            "rhs-only",
+            "observed-strict-sentinel",
+            "observed-strict-sentinel",
+            "rhs-only"
+          ],
+          "baseline_seconds": 0.0081689435625,
+          "candidate_seconds": 0.0240010133125,
+          "speedup": 0.3403582780500989
+        },
+        {
+          "block": 1,
+          "order": [
+            "observed-strict-sentinel",
+            "rhs-only",
+            "rhs-only",
+            "observed-strict-sentinel"
+          ],
+          "baseline_seconds": 0.006622007687500001,
+          "candidate_seconds": 0.01312311921875,
+          "speedup": 0.5046062279186364
+        },
+        {
+          "block": 2,
+          "order": [
+            "rhs-only",
+            "observed-strict-sentinel",
+            "observed-strict-sentinel",
+            "rhs-only"
+          ],
+          "baseline_seconds": 0.00564708509375,
+          "candidate_seconds": 0.011476951656250001,
+          "speedup": 0.4920370201851263
+        },
+        {
+          "block": 3,
+          "order": [
+            "observed-strict-sentinel",
+            "rhs-only",
+            "rhs-only",
+            "observed-strict-sentinel"
+          ],
+          "baseline_seconds": 0.00414661278125,
+          "candidate_seconds": 0.017680804125,
+          "speedup": 0.2345262552502826
+        },
+        {
+          "block": 4,
+          "order": [
+            "rhs-only",
+            "observed-strict-sentinel",
+            "observed-strict-sentinel",
+            "rhs-only"
+          ],
+          "baseline_seconds": 0.0040009064375,
+          "candidate_seconds": 0.0316337738125,
+          "speedup": 0.12647578696156234
+        }
+      ],
+      "median_speedup": 0.3403582780500989,
+      "observed_speedup_range": [
+        0.12647578696156234,
+        0.5046062279186364
+      ],
+      "instruction_slopes_per_trajectory": {
+        "rhs-only": 39519807.5,
+        "observed-strict-sentinel": 96831168.75
+      },
+      "instruction_change_percent": 145.01933302686254,
+      "profiles": [
+        {
+          "policy": "rhs-only",
+          "repeats": 4,
+          "instructions": 159117483,
+          "file": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_profile_rhs-only_4.callgrind"
+        },
+        {
+          "policy": "rhs-only",
+          "repeats": 12,
+          "instructions": 475275943,
+          "file": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_profile_rhs-only_12.callgrind"
+        },
+        {
+          "policy": "observed-strict-sentinel",
+          "repeats": 4,
+          "instructions": 404912496,
+          "file": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_profile_observed-strict-sentinel_4.callgrind"
+        },
+        {
+          "policy": "observed-strict-sentinel",
+          "repeats": 12,
+          "instructions": 1179561846,
+          "file": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_profile_observed-strict-sentinel_12.callgrind"
+        }
+      ]
+    }
+  ],
+  "executions": [
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_0_0_pr91.json",
+      "status": "reused",
+      "sha256": "c5b6d6313a3005440d8fef0ac1a8fcee688dae363f3fb5c1c8a6d6fe8145a533",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "observed-pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_0_1_observed-pr91.json",
+      "status": "reused",
+      "sha256": "19b77c201c8857be3179a1efbc52488e4828b441e1eeb398393c77f5732ea9dc",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "observed-pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_0_2_observed-pr91.json",
+      "status": "reused",
+      "sha256": "8fcba31277132b61fca25e6c0409b2b6d1a2c7e7484b8025d71a86e1d61dc1a2",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_0_3_pr91.json",
+      "status": "reused",
+      "sha256": "6b92e92856d33a63d24467fe8e8f4e4407f6b8b15e923016bfdd1be942ac8c43",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "observed-pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_1_0_observed-pr91.json",
+      "status": "reused",
+      "sha256": "3628181f703f3ca5e03c035a877e1379878de5dd54a6f7e2ba0c988113421f85",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_1_1_pr91.json",
+      "status": "reused",
+      "sha256": "2c80bf385ed2982944153b95242ef5daf7e4780530d9c41b63b342e8d63420c1",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_1_2_pr91.json",
+      "status": "reused",
+      "sha256": "07539f91dbca5332858e4734e06ec117ca5b87a29554c71a8083c08655e77b7f",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "observed-pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_1_3_observed-pr91.json",
+      "status": "reused",
+      "sha256": "0a0ec55fa4b804fef0ff487be87b528de58be809b1212691415890742097ea5e",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_2_0_pr91.json",
+      "status": "reused",
+      "sha256": "a864f971a5125fb95952456e7c04f2be1858a1dbf6bc22d58dda3ddb92892a06",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "observed-pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_2_1_observed-pr91.json",
+      "status": "reused",
+      "sha256": "87c720edbacc84231529162e9aef35e45bfd53708509245180d3d3ff7cccd03e",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "observed-pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_2_2_observed-pr91.json",
+      "status": "reused",
+      "sha256": "e736a1c08ba8c8950b48ec8ee8d618e0a4906139e41dcbe903b598fb854957c9",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_2_3_pr91.json",
+      "status": "reused",
+      "sha256": "0a4f1caf8dc0e315037aa87afc371421eb474cf9a7a8607a34d5d1f155517553",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "observed-pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_3_0_observed-pr91.json",
+      "status": "reused",
+      "sha256": "ac465bcaae009831e82d3bdfb30e5e196133e7bd65348853c0ca147feae502da",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_3_1_pr91.json",
+      "status": "reused",
+      "sha256": "8a5391c5649494a87481505d1a6090098cb0610067d01426806a1ff2ec0d559b",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_3_2_pr91.json",
+      "status": "reused",
+      "sha256": "930adf7213c8cebe277393667ca8e431a746b86af39ddcf51000ebc2493927cb",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "observed-pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_3_3_observed-pr91.json",
+      "status": "reused",
+      "sha256": "9dfff87b58da34292082610405eb5cfa6f9ec24d8eb07d0a05bff028b64eb79d",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_4_0_pr91.json",
+      "status": "reused",
+      "sha256": "1a6c67fecd3d2f0947eb4df651dc047f0a9cd3e8f6500a64ad1dc99fd90a75ac",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "observed-pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_4_1_observed-pr91.json",
+      "status": "reused",
+      "sha256": "f08a9d40f470ee91c22d951d295e5e251d0081710c482359be6a3d7837de5af5",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "observed-pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_4_2_observed-pr91.json",
+      "status": "reused",
+      "sha256": "037a0cb394d5ad6b3e817d98b732f145c89a63bcc8ebbcd5ef012e735fa312b3",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "pr91",
+        "64"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_time_4_3_pr91.json",
+      "status": "reused",
+      "sha256": "9d57d7338b717a795b09fc96ccc0d481472100501c5d85ae0db9627231edb4e2",
+      "identity_receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/valgrind_local/usr/bin/valgrind.bin",
+        "--tool=callgrind",
+        "--cache-sim=no",
+        "--branch-sim=no",
+        "--callgrind-out-file=/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_profile_pr91_4.callgrind",
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "pr91",
+        "4"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_profile_pr91_4.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_profile_pr91_4.stderr",
+      "exit_code": 0,
+      "wall_seconds": 1.2811283900009585
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/valgrind_local/usr/bin/valgrind.bin",
+        "--tool=callgrind",
+        "--cache-sim=no",
+        "--branch-sim=no",
+        "--callgrind-out-file=/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_profile_pr91_12.callgrind",
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "pr91",
+        "12"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_profile_pr91_12.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_profile_pr91_12.stderr",
+      "exit_code": 0,
+      "wall_seconds": 1.52547053899616
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/valgrind_local/usr/bin/valgrind.bin",
+        "--tool=callgrind",
+        "--cache-sim=no",
+        "--branch-sim=no",
+        "--callgrind-out-file=/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_profile_observed-pr91_4.callgrind",
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "observed-pr91",
+        "4"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_profile_observed-pr91_4.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_profile_observed-pr91_4.stderr",
+      "exit_code": 0,
+      "wall_seconds": 1.046081823995337
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/valgrind_local/usr/bin/valgrind.bin",
+        "--tool=callgrind",
+        "--cache-sim=no",
+        "--branch-sim=no",
+        "--callgrind-out-file=/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_profile_observed-pr91_12.callgrind",
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "stiff-cubic",
+        "observed-pr91",
+        "12"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_profile_observed-pr91_12.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/stiff-cubic_profile_observed-pr91_12.stderr",
+      "exit_code": 0,
+      "wall_seconds": 4.346013162001327
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "rhs-only",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_0_0_rhs-only.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_0_0_rhs-only.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.09191124999779277
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "observed-strict-sentinel",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_0_1_observed-strict-sentinel.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_0_1_observed-strict-sentinel.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.616531510000641
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "observed-strict-sentinel",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_0_2_observed-strict-sentinel.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_0_2_observed-strict-sentinel.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.1925705790054053
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "rhs-only",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_0_3_rhs-only.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_0_3_rhs-only.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.18890274000295904
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "observed-strict-sentinel",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_1_0_observed-strict-sentinel.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_1_0_observed-strict-sentinel.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.19251389400596963
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "rhs-only",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_1_1_rhs-only.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_1_1_rhs-only.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.16630305999569828
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "rhs-only",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_1_2_rhs-only.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_1_2_rhs-only.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.059066322006401606
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "observed-strict-sentinel",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_1_3_observed-strict-sentinel.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_1_3_observed-strict-sentinel.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.2467105609975988
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "rhs-only",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_2_0_rhs-only.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_2_0_rhs-only.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.07049026499589672
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "observed-strict-sentinel",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_2_1_observed-strict-sentinel.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_2_1_observed-strict-sentinel.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.1914389960002154
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "observed-strict-sentinel",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_2_2_observed-strict-sentinel.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_2_2_observed-strict-sentinel.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.2144536359992344
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "rhs-only",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_2_3_rhs-only.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_2_3_rhs-only.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.12289024400524795
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "observed-strict-sentinel",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_3_0_observed-strict-sentinel.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_3_0_observed-strict-sentinel.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.2350036620046012
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "rhs-only",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_3_1_rhs-only.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_3_1_rhs-only.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.07635065200156532
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "rhs-only",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_3_2_rhs-only.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_3_2_rhs-only.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.06611673499719473
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "observed-strict-sentinel",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_3_3_observed-strict-sentinel.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_3_3_observed-strict-sentinel.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.3541087880003033
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "rhs-only",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_4_0_rhs-only.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_4_0_rhs-only.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.08071067999844672
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "observed-strict-sentinel",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_4_1_observed-strict-sentinel.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_4_1_observed-strict-sentinel.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.22812009800691158
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "observed-strict-sentinel",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_4_2_observed-strict-sentinel.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_4_2_observed-strict-sentinel.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.8268182769970736
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "rhs-only",
+        "16"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_4_3_rhs-only.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_time_4_3_rhs-only.stderr",
+      "exit_code": 0,
+      "wall_seconds": 0.06227893500181381
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/valgrind_local/usr/bin/valgrind.bin",
+        "--tool=callgrind",
+        "--cache-sim=no",
+        "--branch-sim=no",
+        "--callgrind-out-file=/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_profile_rhs-only_4.callgrind",
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "rhs-only",
+        "4"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_profile_rhs-only_4.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_profile_rhs-only_4.stderr",
+      "exit_code": 0,
+      "wall_seconds": 2.6105341720030992
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/valgrind_local/usr/bin/valgrind.bin",
+        "--tool=callgrind",
+        "--cache-sim=no",
+        "--branch-sim=no",
+        "--callgrind-out-file=/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_profile_rhs-only_12.callgrind",
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "rhs-only",
+        "12"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_profile_rhs-only_12.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_profile_rhs-only_12.stderr",
+      "exit_code": 0,
+      "wall_seconds": 8.27819688800082
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/valgrind_local/usr/bin/valgrind.bin",
+        "--tool=callgrind",
+        "--cache-sim=no",
+        "--branch-sim=no",
+        "--callgrind-out-file=/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_profile_observed-strict-sentinel_4.callgrind",
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "observed-strict-sentinel",
+        "4"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_profile_observed-strict-sentinel_4.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_profile_observed-strict-sentinel_4.stderr",
+      "exit_code": 0,
+      "wall_seconds": 6.466470078994462
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/valgrind_local/usr/bin/valgrind.bin",
+        "--tool=callgrind",
+        "--cache-sim=no",
+        "--branch-sim=no",
+        "--callgrind-out-file=/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_profile_observed-strict-sentinel_12.callgrind",
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/production_return_bench_20261027",
+        "reentrant-nonlinear",
+        "observed-strict-sentinel",
+        "12"
+      ],
+      "stdout": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_profile_observed-strict-sentinel_12.json",
+      "stderr": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/adapter/raw/performance/reentrant-nonlinear_profile_observed-strict-sentinel_12.stderr",
+      "exit_code": 0,
+      "wall_seconds": 14.01608409400069
+    }
+  ],
+  "completed_utc": "2026-10-27T14:11:53.050825+00:00",
+  "measurement_identity_scope": {
+    "status": "historical_pre_style_cleanup_measurement",
+    "switching_source_sha256": "ebea1dd7b76da45def13f6d9e1137f693786f23308f2e0cc589debc82b658347",
+    "measured_binary_sha256": "8671afe3561e0b658c857ca7fe4ee5f892781fcadac69b2d491c21c595680702",
+    "preserved_binary_workspace_path": "/workspace/scratch/06cfffc081e2/tmp/adapter_pre_style_8671afe3/production_return_bench_20261027",
+    "final_style_cleanup_switching_sha256": "119f2a70d5d8be82816e9c236f4b06644faffe2df545a93b824deeb6ce356bbf",
+    "timing_repeated_after_cleanup": false,
+    "interpretation": "Prior paired timings and instruction slopes remain measurements of the recorded original executable. A later numerical/counter equality audit does not imply identical instruction counts or timings.",
+    "original_metadata_archive": "raw/pass3/before_PERFORMANCE.json",
+    "final_correctness_audit": "FINAL_AUDIT.json",
+    "final_correctness_audit_binary_sha256": "c8462ad3b7f83b683a8d0ab01bfe1a361ccd4367375611f1046a9f7b8dc53e62",
+    "all_non_timing_outputs_exactly_equal": true
+  }
+}
