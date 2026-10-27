@@ -1,0 +1,121 @@
+{
+  "status": "corrected_observation_from_preserved_logs",
+  "audit_utc": "2026-10-27T13:06:39.180912+00:00",
+  "superseded_metadata": {
+    "path": "DEBUG_PROFILE_CANCELLED_RECEIPT.json",
+    "sha256": "2e7c45a0dac2386d61fdb6498c12dc0d4ab91aaec44d4579bcc3e2b3277888b8",
+    "bytes": 807,
+    "filesystem_mtime_utc": "2026-10-27T12:40:09.480550+00:00",
+    "preserved_byte_for_byte": true,
+    "incorrect_fields": [
+      "status=cancelled as a completed-process claim",
+      "tests_executed=false",
+      "reason implying cancellation completed without test execution"
+    ],
+    "supersession_scope": "Only interpretation of the default/debug execution; original command/environment/reported elapsed and exit fields remain historical metadata, not independently re-created observations."
+  },
+  "logs": [
+    {
+      "path": "debug_profile_cancelled.log",
+      "sha256": "303677096d234c589d1ed3eab2bdfb678f56748db482a241381bc389d2d55965",
+      "bytes": 2521,
+      "filesystem_mtime_utc": "2026-10-27T12:38:14.767485+00:00"
+    },
+    {
+      "path": "debug_profile_aborted.log",
+      "sha256": "5537d8000438b7e4848a04475b959f155636e1f5e910ec73c14d8b5d7816565f",
+      "bytes": 4640,
+      "filesystem_mtime_utc": "2026-10-27T12:39:32.670955+00:00"
+    }
+  ],
+  "log_relation": {
+    "short_log_is_exact_proper_byte_prefix_of_full_log": true,
+    "shared_prefix_bytes": 2521,
+    "additional_full_log_bytes": 2119,
+    "interpretation": "Consistent with an earlier incomplete snapshot and a later complete log; the snapshot/copy mechanism was not separately recorded."
+  },
+  "corrected_findings": {
+    "saved_full_log_records_test_execution": true,
+    "cargo_profile": "test [unoptimized + debuginfo]",
+    "cargo_reported_build_duration": "3m 42s",
+    "suites": [
+      {
+        "suite": "causal_contracts",
+        "passed": 6,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 0,
+        "reported_test_seconds": 0.09,
+        "tests": [
+          "budget_failure_preserves_state_and_attempted_work",
+          "full_residual_refuses_incomplete_basis",
+          "forward_saves_work_against_nonlinear_residual_first",
+          "changing_worker_count_keeps_batched_bits_and_counts",
+          "nonlinear_root_uses_no_current_jvp_and_matches_direct_scalar_oracle",
+          "adaptive_causal_flow_reaches_observations_with_independent_exact_solution"
+        ]
+      },
+      {
+        "suite": "causal_reuse_contracts",
+        "passed": 6,
+        "failed": 0,
+        "ignored": 0,
+        "measured": 0,
+        "filtered_out": 0,
+        "reported_test_seconds": 0.08,
+        "tests": [
+          "joined_failure_accounts_for_all_scheduled_callbacks_and_preserves_input",
+          "epoch_change_invalidates_whole_cached_attempt",
+          "inadequate_basis_still_fails_original_space_residual_screen",
+          "smaller_callback_budget_qualifies_identical_target_with_reuse",
+          "cached_parallel_workers_keep_bits_and_observed_callback_counts",
+          "cached_suffix_is_bitwise_identical_on_affine_and_nonlinear_targets"
+        ]
+      }
+    ],
+    "total_passed": 12,
+    "total_failed": 0,
+    "command_recorded_in_old_receipt": [
+      "flock",
+      "/tmp/vigilode-cargo-20261027.lock",
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "vigilode-coupled",
+      "--test",
+      "causal_reuse_contracts",
+      "--test",
+      "causal_contracts"
+    ],
+    "old_receipt_reported_exit_code": 0,
+    "old_receipt_reported_elapsed_seconds": 222.9345988740024,
+    "process_exit_independently_observed_during_this_audit": false
+  },
+  "cancellation_provenance": {
+    "cancellation_request": "Recorded in earlier task narrative and original receipt; retained as a request, not proof of a terminated process.",
+    "delivery_and_effect": "The retained files do not establish exactly when SIGINT was delivered or whether it affected the command. The completed build and both successful suites contradict the earlier tests_executed=false interpretation.",
+    "timing_limits": "File mtimes are artifact metadata, not instrumented command start/finish timestamps. The original 222.9345988740024 s elapsed metadata is compatible with the full log build duration and test summaries, but precise process timing cannot be independently reconstructed from these files."
+  },
+  "authoritative_validation": {
+    "path": "TEST_RECEIPT.json",
+    "sha256": "cc282ad4415aaa2e52280173cb96c340134a513712ffa6925128b82f3b26f451",
+    "bytes": 427,
+    "filesystem_mtime_utc": "2026-10-27T12:40:20.894201+00:00",
+    "log": {
+      "path": "native_tests.log",
+      "sha256": "73d16a66522f29dc61e688bf5d3aa543f0cc7b596b9d2578b5f1c14f7c9108f3",
+      "bytes": 2124,
+      "filesystem_mtime_utc": "2026-10-27T12:40:20.880252+00:00"
+    },
+    "profile": "measurement",
+    "reported_passed_tests": 12,
+    "count_debug_passes_as_additional_independent_contracts": false,
+    "reason": "The debug and measurement logs execute the same two six-test suites. Keep measurement-profile execution as the selected validation record and do not double-count tests.",
+    "debug_and_measurement_passed_test_name_sets_identical": true,
+    "unique_test_name_count": 12
+  },
+  "actions": "Read preserved files and corrected reporting only. No code change, native rerun, log overwrite, or original receipt overwrite."
+}

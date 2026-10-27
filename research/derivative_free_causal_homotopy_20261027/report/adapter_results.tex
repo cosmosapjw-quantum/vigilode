@@ -1,0 +1,54 @@
+The new opt-in checkpoint seed uses the positive finite step proposal stored
+\emph{before} the explicit replay begins. It does not borrow the replay's
+future final proposal. Only the initial pilot proposal changes; the native
+error controller, endpoint, fatal precedence, and charged-work comparison
+remain in force. Default settings are unchanged.
+
+With the original entry ratio $0.8$, the repaired late pilots complete at
+work 160, versus 192 for the explicit matched prefix, but $160/192=5/6>0.8$
+still causes refusal. A separately declared post-diagnosis control therefore
+tested strict local work improvement. The final implementation expresses this
+as $C_{\rm pilot}<C_{\rm explicit}$ in checked integer arithmetic, rather than
+using a nearly-one floating threshold. Equal costs retain the incumbent.
+The break-even constant one follows from minimizing the declared work
+objective; it is not fitted to this example.
+
+The objective is the repository's existing accounting convention,
+\begin{equation}
+ C=N_f+N_{Jv}+N_{f_t}+nN_J+N_{\rm linear\ solve}.
+\end{equation}
+These unit weights define counted work, not a machine-independent time model.
+The strict policy also derives a callback lower-bound ceiling of
+$C_{\rm explicit}-1$. No incomplete or mismatched replay is admitted as a
+winner. Tests distinguish ties and one-unit improvements above $2^{53}$ and
+check overflow and safe ceiling behavior. The prior ratio path remains the
+default; \texttt{strict\_entry\_work\_improvement} is independently opt-in.
+
+\begin{table*}[t]\centering
+\caption{Complete adaptive trajectories, including unsuccessful probes.
+The strict arm combines checkpoint proposal reuse with exact local work
+comparison. Every returned component passes the unchanged $10^{-6}$ cap.}
+\begin{tabular}{r r r r r r r}\toprule
+$r$ & RHS-only work & Initial selective & Seed only & Strict work & Strict RHS & Strict JVP\\\midrule
+1 &79&79&79&79&79&0\\
+1000 &2377&2958&2890&1691&1105&426\\
+10000 &19261&20190&20094&1629&992&445\\
+\bottomrule\end{tabular}\label{tab:adapter}\end{table*}
+
+The two stiff cases reduce total charged work by $28.86\%$ and $91.54\%$
+against the fully RHS-only baseline. Their maximum returned-state errors are
+$1.06542\times10^{-9}$ and $1.31464\times10^{-9}$; these are larger than the
+RHS-only errors but within the identical physical accuracy contract. The easy
+case performs no JVP calls. All twelve arms complete, and the integer policy
+reproduces all prior parity-control numerical outcomes, counters, states,
+and times after excluding only descriptive policy metadata. This comparison
+reports work, not elapsed-time acceleration.
+
+The original six-arm failure, nine-arm seed ablation, and twelve-arm policy
+control remain in the evidence. Selection of the strict policy followed the
+trace diagnosis, so it is an exploratory repair experiment rather than a
+held-out performance study. A local strict-work optimum does not prove an
+optimal future route. Existing pressure, retry/backoff, return margins,
+step-controller factors, and observation windows retain their original
+heuristic or user-configuration status; they are not certified universal
+constants by this change.

@@ -1,0 +1,65 @@
+\section{A direct-RHS homotopy corrector}
+
+For a direct fixed-point map $G$, we implement
+$G_\lambda(x)=(1-\lambda)a+\lambda G(x)$, with a fixed initial anchor $a$ and
+an increasing station sequence ending at $\lambda=1$. The callback exposes
+only map values. The native corrector requests no Jacobian, JVP, finite
+difference derivative, AD, matrix factorization, or Newton solve. Its
+depth-one Anderson trial is
+\begin{align}
+r&=G_\lambda(x)-x,\qquad \Delta r=r-r_{\rm old},\\
+\gamma&=\frac{\langle r,\Delta r\rangle}{\|\Delta r\|^2},\\
+e&=G_\lambda(x)-\gamma\left[G_\lambda(x)-G_\lambda(x_{\rm old})\right].
+\end{align}
+The Picard candidate $p=G_\lambda(x)$ is evaluated first. An admitted trial
+replaces it only if its actual residual satisfies
+$\|r_\lambda(e)\|\le\eta\|r_\lambda(p)\|$, with $0<\eta\le1$.
+All trial evaluations are charged, including rejected trials. History is
+reset at station changes. Anderson acceleration is established methodology;
+the contribution here is the native direct-RHS contract, its safeguard, and
+the measured connection to the solver's stage equations.
+
+On a common invariant closed convex domain, if $G$ is $q$-Lipschitz and
+$\lambda q<1$, then
+\begin{equation}
+\|r_\lambda(x_{j+1})\|\le\lambda q\|r_\lambda(x_j)\|,\qquad
+\|x_j-x_\lambda^*\|\le\frac{\|r_\lambda(x_j)\|}{1-\lambda q}.
+\end{equation}
+Indeed, $r_\lambda(p)=G_\lambda(G_\lambda(x))-G_\lambda(x)$ is bounded by
+$\lambda q\|r_\lambda(x)\|$, and the screen can only improve this bound.
+The second inequality follows from the triangle inequality at the unique
+fixed point. These are exact-arithmetic conditional statements; the code
+reports operational binary64 residuals.
+
+The nonlinear RK consumer solves the implicit-midpoint equation for
+$y'=-ky-gy^3$, $k>0$, $g\ge0$:
+\begin{equation}
+F(K)=K+h\left[k(y+K/2)+g(y+K/2)^3\right]=0.
+\end{equation}
+For the zero-anchor station equation, $F_\lambda'\ge1+\lambda hk/2$;
+hence $|K-K_\lambda^*|\le|F_\lambda(K)|/(1+\lambda hk/2)$, including
+noncontractive Picard regimes. Monotone bisection supplies an independent
+root oracle. The exact ODE solution
+\begin{equation}
+y(t)=\frac{y_0e^{-kt}}{\sqrt{1+(g/k)y_0^2(1-e^{-2kt})}}
+\end{equation}
+also scores every returned grid state.
+
+The native contracts pass $11/11$. At stage residual tolerance $10^{-12}$,
+scalar and 64-vector linear midpoint targets with $hk/2=0.99$ reduce vector
+RHS calls from 2819 and 3029, respectively, to four. A nonlinear scalar target
+uses 37 versus 12 calls; the nonlinear 64-vector target uses 495 versus 16
+with the conditional proposal policy. These are same-stage-target work
+comparisons, not physical-accuracy speedups at those coarse time steps.
+All 24 full midpoint trajectories preserve the expected order two. At 64
+steps the zero-seed Picard arm uses 424 calls and the warm-seed screened arm
+296, a $30.19\%$ reduction, at maximum grid error approximately
+$1.43644\times10^{-5}$.
+
+Negative controls guide dispatch. The RK4 causal target needs 20 calls with
+all-stage Picard, 36 with unconditional screened extrapolation, and only four
+with exact forward evaluation. Intermediate homotopy stations increase the
+easy nonlinear scalar solve from 12 to 28 calls. The noncontractive linear
+Picard control reaches its 4096-update cap, whereas the screened affine
+trial reaches the same root. No default policy or universal acceleration
+claim follows from these finite cases.

@@ -592,6 +592,7 @@ pub(crate) fn run(
         let z = match mode {
             crate::EvaluationMode::CausalForward => causal::forward(&f, &basis, out)?,
             crate::EvaluationMode::CausalPicard => causal::picard(&f, &basis, out)?,
+            crate::EvaluationMode::CausalPicardReuse => causal::picard_reuse(&f, &basis, out)?,
             _ => homotopy(&f, &basis, out)?,
         };
         let (candidate, residuals) = full_check(&f, &basis, &z, out)?;

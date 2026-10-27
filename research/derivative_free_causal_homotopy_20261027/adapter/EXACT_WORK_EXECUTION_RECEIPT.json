@@ -1,0 +1,92 @@
+{
+  "commands": [
+    {
+      "name": "exact_arithmetic",
+      "command": [
+        "flock",
+        "/tmp/vigilode-cargo-20261027.lock",
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "--lib",
+        "comparator_dominance_arithmetic_contract"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 10.641918784000154,
+      "stdout": "exact_arithmetic.log",
+      "stderr": "exact_arithmetic.stderr.log"
+    },
+    {
+      "name": "exact_integration",
+      "command": [
+        "flock",
+        "/tmp/vigilode-cargo-20261027.lock",
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "--test",
+        "entry_checkpoint_seed_contracts",
+        "--test",
+        "evidence_switch_contracts"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 13.526639140000043,
+      "stdout": "exact_integration.log",
+      "stderr": "exact_integration.stderr.log"
+    },
+    {
+      "name": "exact_build",
+      "command": [
+        "flock",
+        "/tmp/vigilode-cargo-20261027.lock",
+        "cargo",
+        "build",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "--example",
+        "selective_jvp_20261027"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 19.940552801002923,
+      "stdout": "exact_build.log",
+      "stderr": "exact_build.stderr.log"
+    },
+    {
+      "name": "exact_experiment",
+      "command": [
+        "flock",
+        "/tmp/vigilode-cargo-20261027.lock",
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/selective_jvp_20261027"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.13679314500041073,
+      "stdout": "EXACT_WORK_RESULTS.json",
+      "stderr": "exact_experiment.stderr.log"
+    }
+  ],
+  "binary_sha256": "1b799273ed603038aa097f29274eca9a7854ed5aa5de7597acb4cbf0343fd320",
+  "example_sha256": "56bc6e61871d468dc1bcac3c088ab0131d4a27678c68e2327324b6c4fd044976",
+  "switching_sha256": "bc3910f22b0694335e8c0906f505b8d3ff81ef0c9acbd66a56234273e2c7002b",
+  "contracts_sha256": "4ba797699e180e9e0ab2cad4619ecf26356156cd19fcd39711c66ff7c35c192a",
+  "post_execution_review_doc_note": {
+    "change": "Public strict-entry API docs explicitly state applicability only to positive implicit_pilot_attempt_budget; zero retains existing pressure-only direct entry. Code unchanged.",
+    "executed_source_snapshot": "switching_exact_executed.rs",
+    "current_switching_sha256": "bc671345a71be39f8336b0072e386b294c99fcb9d3f2cd956ab35485e51f0967",
+    "reviewer": "/root/theory_derivative_free",
+    "new_execution_required": false
+  }
+}

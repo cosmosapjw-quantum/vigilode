@@ -129,7 +129,19 @@ pub struct SwitchingConfig {
     /// batch's deterministic work units. This is not a wall-clock guarantee.
     /// A pilot is also stopped as soon as its charged callback work alone
     /// exceeds this bound, since it could no longer pass.
+    /// Ignored for entry when `strict_entry_work_improvement` is enabled.
     pub entry_cost_ratio: f64,
+    /// Prefer an entry pilot exactly when its completed, qualified replay
+    /// costs strictly less integer work than the accepted explicit prefix.
+    /// Work is the existing proxy `rhs + jvp + ft + n * jacobians + solves`,
+    /// calculated with checked integer arithmetic; ties keep the explicit
+    /// method. This overrides the entry ratio and its callback ceiling only.
+    /// It does not promise future work savings or a wall-clock speedup.
+    /// Applies only when `implicit_pilot_attempt_budget > 0`; zero retains
+    /// pressure-only direct entry.
+    /// Default false, including factories; derivative permission, pressure,
+    /// retry scheduling, error tests and return policy stay unchanged.
+    pub strict_entry_work_improvement: bool,
     /// Keep a native DOPRI session, including controller, FSAL state and
     /// workspace, across contiguous explicit windows. A committed RODAS step
     /// ends that tenure; an accepted explicit recheck may seed the new tenure's
@@ -144,6 +156,14 @@ pub struct SwitchingConfig {
     /// the accepted explicit state and all native error checks are preserved.
     /// The default is false; the adaptive factory enables this opt-in trial.
     pub reuse_entry_pilot_step: bool,
+    /// Start a same-checkpoint implicit entry pilot from the larger of
+    /// `Options::h0` and the explicit checkpoint's already observed proposal.
+    /// Clip the proposal to the accepted replay interval, then retain the
+    /// existing native minimum-step floor; the native driver endpoint-clips
+    /// its actual trial even on shorter tails. All tolerances, work ceilings
+    /// and acceptance tests remain unchanged. This does not use the explicit
+    /// batch's future endpoint proposal. Default false, including factories.
+    pub seed_entry_pilot_from_explicit_checkpoint: bool,
     /// With adaptive entry memory, retry one nonfatal zero-accepted entry
     /// pilot from a later accepted explicit checkpoint. The retry bypasses
     /// backoff once per explicit tenure, while remaining subject to pressure,
@@ -201,9 +221,11 @@ impl Default for SwitchingConfig {
             implicit_pilot_attempt_budget: 0,
             implicit_pilot_limit: 1,
             entry_cost_ratio: 0.8,
+            strict_entry_work_improvement: false,
             carry_explicit_step: false,
             entry_pilot_cooldown_batches: 0,
             reuse_entry_pilot_step: false,
+            seed_entry_pilot_from_explicit_checkpoint: false,
             retry_unresolved_entry_once: false,
             pilot_backoff_factor: 2,
             probe_backoff_factor: 2,
@@ -775,6 +797,18 @@ fn entry_pilot_growth_seed(pilot: &SwitchingSegment, initial_step: f64) -> Optio
     (mean.is_finite() && mean > initial_step).then_some(mean)
 }
 
+fn entry_pilot_checkpoint_seed(
+    explicit: &SwitchingSegment,
+    initial_step: f64,
+    enabled: bool,
+) -> f64 {
+    if enabled && explicit.initial_step.is_finite() && explicit.initial_step > 0.0 {
+        initial_step.max(explicit.initial_step)
+    } else {
+        initial_step
+    }
+}
+
 fn window_target((t0, t1): (f64, f64), window: usize, count: usize) -> f64 {
     if window == count {
         t1
@@ -790,16 +824,9 @@ fn return_work_ceiling(rate: f64, span: f64, ratio: f64) -> u64 {
     ((ratio * rate * span).floor() as u64).saturating_add(1)
 }
 
-// Build the integer proxy before floating conversion. A checked sum keeps
-// overflow from becoming false evidence. One outward adjacent float contains
-// conversion rounding even above binary64's exact-integer range. This
-// deliberately expands exactly represented positive counts too, so equality
-// (or a sub-ulp margin) may be retained at ordinary count magnitudes.
-fn work_enclosure(
-    record: &SwitchingSegment,
-    dimension: usize,
-    callbacks_only: bool,
-) -> Option<(f64, f64)> {
+// The existing work objective, before any floating conversion. Checked
+// arithmetic prevents overflow from becoming evidence for a cheaper method.
+fn integer_work(record: &SwitchingSegment, dimension: usize, callbacks_only: bool) -> Option<u128> {
     let mut cost = (record.jacobian_builds as u128).checked_mul(dimension as u128)?;
     for count in [
         record.rhs_calls,
@@ -813,11 +840,59 @@ fn work_enclosure(
     ] {
         cost = cost.checked_add(count as u128)?;
     }
+    Some(cost)
+}
+
+// One outward adjacent float contains conversion rounding even above
+// binary64's exact-integer range. This deliberately expands exactly
+// represented positive counts too, so equality (or a sub-ulp margin) may
+// be retained at ordinary count magnitudes on the legacy ratio path.
+fn work_enclosure(
+    record: &SwitchingSegment,
+    dimension: usize,
+    callbacks_only: bool,
+) -> Option<(f64, f64)> {
+    let cost = integer_work(record, dimension, callbacks_only)?;
     if cost == 0 {
         return Some((0.0, 0.0));
     }
     let rounded = cost as f64;
     Some((rounded.next_down(), rounded.next_up()))
+}
+
+// For integer callback prefix cost L and incumbent total E, L >= E rules
+// out C_candidate < E. The guard charges the crossing callback and stops
+// on L > cap, hence cap = E - 1 (zero also admits no strict winner).
+fn strict_entry_callback_ceiling(incumbent: &SwitchingSegment, dimension: usize) -> Option<u64> {
+    let ceiling = integer_work(incumbent, dimension, false)?.saturating_sub(1);
+    // u64::MAX is the native unarmed sentinel; decline an unrepresentable
+    // ceiling rather than truncate it. The global attempt cap still applies.
+    (ceiling < u64::MAX as u128).then_some(ceiling as u64)
+}
+
+fn strict_entry_work_preferred(
+    incumbent: &SwitchingSegment,
+    candidate: &SwitchingSegment,
+    dimension: usize,
+) -> bool {
+    // The caller replays from the same physical checkpoint. An accepted
+    // explicit prefix can be valid even if its larger batch hit a budget.
+    if incumbent.accepted_steps == 0
+        || incumbent.reached_time <= incumbent.start_time
+        || !candidate.success
+        || candidate.start_time != incumbent.start_time
+        || candidate.target_time != incumbent.reached_time
+        || candidate.reached_time != incumbent.reached_time
+    {
+        return false;
+    }
+    match (
+        integer_work(incumbent, dimension, false),
+        integer_work(candidate, dimension, false),
+    ) {
+        (Some(incumbent_cost), Some(candidate_cost)) => candidate_cost < incumbent_cost,
+        _ => false,
+    }
 }
 
 fn dominated_comparator_ceiling(
@@ -1548,16 +1623,23 @@ fn drive_windows(
                             {
                                 implicit_pilots += 1;
                                 batches_since_entry_pilot = 0;
-                                local.h0 = opts
-                                    .h0
-                                    .min(record.reached_time - start)
-                                    .max(AdaptiveStepConfig::default().min_step);
+                                local.h0 = entry_pilot_checkpoint_seed(
+                                    &record,
+                                    opts.h0,
+                                    config.seed_entry_pilot_from_explicit_checkpoint,
+                                )
+                                .min(record.reached_time - start)
+                                .max(AdaptiveStepConfig::default().min_step);
                                 local.max_steps =
                                     remaining.min(config.implicit_pilot_attempt_budget);
                                 // Charged callback work alone past this bound
                                 // means the replay cannot pass: stop it there.
-                                let entry_ceiling =
-                                    (config.entry_cost_ratio * record.work_units).floor() as u64;
+                                let entry_ceiling = if config.strict_entry_work_improvement {
+                                    strict_entry_callback_ceiling(&record, problem.dimension)
+                                } else {
+                                    Some((config.entry_cost_ratio * record.work_units).floor()
+                                        as u64)
+                                };
                                 match run(
                                     problem,
                                     start,
@@ -1569,11 +1651,17 @@ fn drive_windows(
                                     false,
                                     t1,
                                     &[],
-                                    Some(entry_ceiling),
+                                    entry_ceiling,
                                 ) {
                                     Ok(mut pilot) => {
                                         charge(&mut result.stats, &pilot.record);
-                                        enter = if config.entry_probe_adaptation.is_some() {
+                                        enter = if config.strict_entry_work_improvement {
+                                            strict_entry_work_preferred(
+                                                &record,
+                                                &pilot.record,
+                                                problem.dimension,
+                                            )
+                                        } else if config.entry_probe_adaptation.is_some() {
                                             // Both records are freshly constructed from the
                                             // same physical checkpoint and accepted prefix.
                                             // This is observed local-tolerance work evidence,
@@ -1615,7 +1703,11 @@ fn drive_windows(
                                         } else {
                                             SwitchingEvidence::ImplicitNotCheaperOnPrefix
                                         };
-                                        pilot.record.decision = if enter {
+                                        pilot.record.decision = if enter
+                                            && config.strict_entry_work_improvement
+                                        {
+                                            "same-checkpoint implicit pilot passed strict integer work comparison"
+                                        } else if enter {
                                             "same-checkpoint implicit pilot passed entry work ratio"
                                         } else if pilot.ceiling_stop {
                                             "same-checkpoint implicit pilot discarded: exceeded entry work ceiling"
@@ -2283,6 +2375,35 @@ mod adaptive_return_productive_contract {
     use super::*;
 
     #[test]
+    fn entry_checkpoint_seed_uses_only_valid_start_proposal() {
+        let p = Problem::new(1, |_, _, out| {
+            out[0] = 0.0;
+            Ok(())
+        });
+        let mut r = SwitchingSolver::solve(
+            &p,
+            (0.0, 0.0),
+            &[0.0],
+            &Options::default(),
+            &SwitchingConfig::default(),
+        )
+        .unwrap();
+        let mut explicit = r.stats.segments.remove(0);
+        explicit.initial_step = 0.03;
+        explicit.proposed_next_step = Some(100.0);
+        assert_eq!(entry_pilot_checkpoint_seed(&explicit, 0.001, false), 0.001);
+        assert_eq!(entry_pilot_checkpoint_seed(&explicit, 0.001, true), 0.03);
+        explicit.proposed_next_step = Some(1e-30);
+        assert_eq!(entry_pilot_checkpoint_seed(&explicit, 0.001, true), 0.03);
+        for invalid in [0.0, -1.0, f64::NAN, f64::INFINITY] {
+            explicit.initial_step = invalid;
+            assert_eq!(entry_pilot_checkpoint_seed(&explicit, 0.001, true), 0.001);
+        }
+        explicit.initial_step = 1e-6;
+        assert_eq!(entry_pilot_checkpoint_seed(&explicit, 0.001, true), 0.001);
+    }
+
+    #[test]
     fn unresolved_retry_is_sticky_but_never_rearms_within_one_explicit_tenure() {
         let p = Problem::new(1, |_, _, out| {
             out[0] = 0.0;
@@ -2657,5 +2778,104 @@ mod comparator_dominance_arithmetic_contract {
         comparator.rhs_calls = 10;
         comparator.linear_solves = 1000;
         assert!(prefix_cost_dominates(&candidate, &comparator, 1, 0.8));
+    }
+
+    fn replay_pair() -> (SwitchingSegment, SwitchingSegment) {
+        let mut incumbent = empty_record();
+        incumbent.start_time = 0.25;
+        // The accepted prefix may stop before the requested batch endpoint.
+        incumbent.target_time = 1.0;
+        incumbent.reached_time = 0.5;
+        incumbent.accepted_steps = 1;
+        incumbent.success = false;
+        let mut candidate = incumbent.clone();
+        candidate.target_time = incumbent.reached_time;
+        candidate.success = true;
+        (incumbent, candidate)
+    }
+
+    #[test]
+    fn strict_entry_keeps_ties_and_resolves_one_unit_above_float_precision() {
+        let (mut incumbent, mut candidate) = replay_pair();
+        // Displayed floating costs deliberately contain no useful difference.
+        incumbent.work_units = 1.0;
+        candidate.work_units = 1.0;
+        for cost in [1, 192, 1 << 53, (1 << 53) + 1, u64::MAX - 1] {
+            incumbent.rhs_calls = cost;
+            candidate.rhs_calls = cost;
+            assert!(!strict_entry_work_preferred(&incumbent, &candidate, 1));
+            candidate.rhs_calls = cost - 1;
+            assert!(strict_entry_work_preferred(&incumbent, &candidate, 1));
+            candidate.rhs_calls = cost + 1;
+            assert!(!strict_entry_work_preferred(&incumbent, &candidate, 1));
+        }
+    }
+
+    #[test]
+    fn strict_entry_counts_all_existing_work_categories_with_checked_arithmetic() {
+        let (mut incumbent, mut candidate) = replay_pair();
+        incumbent.rhs_calls = 5;
+        incumbent.jvp_vectors = 7;
+        incumbent.ft_calls = 11;
+        incumbent.jacobian_builds = 13;
+        incumbent.linear_solves = 19;
+        assert_eq!(integer_work(&incumbent, 17, false), Some(263));
+        assert_eq!(integer_work(&incumbent, 17, true), Some(244));
+        candidate.rhs_calls = 262;
+        assert!(strict_entry_work_preferred(&incumbent, &candidate, 17));
+        candidate.linear_solves = 1;
+        assert!(!strict_entry_work_preferred(&incumbent, &candidate, 17));
+        if usize::BITS == 64 {
+            candidate.rhs_calls = u64::MAX;
+            candidate.jvp_vectors = u64::MAX;
+            candidate.ft_calls = u64::MAX;
+            candidate.jacobian_builds = u64::MAX;
+            candidate.linear_solves = u64::MAX;
+            assert_eq!(integer_work(&candidate, usize::MAX, false), None);
+            assert!(!strict_entry_work_preferred(
+                &incumbent,
+                &candidate,
+                usize::MAX
+            ));
+            assert_eq!(strict_entry_callback_ceiling(&candidate, usize::MAX), None);
+        }
+    }
+
+    #[test]
+    fn strict_entry_requires_qualified_completion_of_the_same_accepted_prefix() {
+        let (mut incumbent, mut candidate) = replay_pair();
+        incumbent.rhs_calls = 192;
+        candidate.rhs_calls = 160;
+        assert!(strict_entry_work_preferred(&incumbent, &candidate, 1));
+        for changed in 0..5 {
+            let mut rejected = candidate.clone();
+            match changed {
+                0 => rejected.success = false,
+                1 => rejected.start_time = 0.0,
+                2 => rejected.target_time = 0.75,
+                3 => rejected.reached_time = 0.375,
+                _ => rejected.start_time = f64::NAN,
+            }
+            assert!(!strict_entry_work_preferred(&incumbent, &rejected, 1));
+        }
+        incumbent.accepted_steps = 0;
+        assert!(!strict_entry_work_preferred(&incumbent, &candidate, 1));
+    }
+
+    #[test]
+    fn strict_entry_callback_ceiling_is_exact_and_never_truncates_large_costs() {
+        let (mut incumbent, _) = replay_pair();
+        for (cost, cap) in [
+            (0, 0),
+            (1, 0),
+            (192, 191),
+            ((1 << 53) + 1, 1 << 53),
+            (u64::MAX, u64::MAX - 1),
+        ] {
+            incumbent.rhs_calls = cost;
+            assert_eq!(strict_entry_callback_ceiling(&incumbent, 1), Some(cap));
+        }
+        incumbent.jvp_vectors = 1;
+        assert_eq!(strict_entry_callback_ceiling(&incumbent, 1), None);
     }
 }

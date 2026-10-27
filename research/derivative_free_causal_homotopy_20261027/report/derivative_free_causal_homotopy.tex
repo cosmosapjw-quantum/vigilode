@@ -1,0 +1,360 @@
+\documentclass[aps,pra,reprint,onecolumn,12pt,notitlepage,superscriptaddress,nofootinbib]{revtex4-2}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,bm,graphicx,booktabs}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\begin{document}
+\title{Derivative-Free Causal Reductions and Screened Homotopy in VigilODE:
+Constructive Theory, Native Implementations, and Qualified Performance}
+\author{VigilODE research audit}
+\noaffiliation
+\date{27 October 2026 (KST)}
+\begin{abstract}
+We audit and implement exact causal reuse, a derivative-free structural
+RODAS5P reduction, an RHS-only homotopy, and selective derivative admission.
+Proofs establish finite causal residual transport, an exact physical quotient,
+sharp accumulated residual norms, and a cubic midpoint physical-error budget.
+The resulting constants replace fitted residual and entry margins in scoped
+paths. Qualified trajectories save 8.89\%, 30.19\%, and 43.75\% of RHS calls
+in separate causal, midpoint, and structural cohorts. A 2,048-variable
+structural trajectory achieves a paired median time ratio of 1.883, including
+full-space validation. An exact integer adapter comparison saves 28.86\%
+and 91.54\% of charged work on two stiff controls. Proof-budget experiments
+include outward polynomial validation and separate warm-seed savings from
+count-neutral acceleration. All negative controls and mathematical scope
+limits are retained; 59 distinct native contracts pass.
+\end{abstract}
+\maketitle
+
+\section{Question, inherited evidence, and execution contract}
+The objective is to reduce the cost of augmented causal Rosenbrock/RK
+execution while retaining Jacobian-, matrix-, and Newton-free constructions
+where the model admits them. Supplied JVP/AD work is a selective alternative
+whose benefit must be established in the relevant workload. The work starts
+from commit \texttt{68a28357d960} (full SHA in the manifest), the PR90
+audit, on a separate research branch. The user-supplied PhysMath Research
+Loop 1.0.0 governs full theory and coding tracks. Three native subagents
+performed disjoint implementation/theory tasks; the parent integrated a
+structural consumer and the adapter experiments. The code review is a
+complementary same-context native-agent review, not a blinded or
+heterogeneous-model validation.
+
+The earlier results supply both constructions and discriminating failures.
+PR65 showed that repeated forward common-$W$ corrections can double solves
+without reducing the sequential span. PR74 supplied the counted coupled
+raw-$U$ target and actual stage parallelism; PR75 established residual-first
+dispatch, charged speculation, and the danger of caps that ignore projected
+solve cost. PR77 and the derivative-free originals supplied exact
+collective/transverse decompositions, physical structural actions, and
+scope-specific continuous-defect analysis. The subsequent causal frontier
+already supplied forward elimination, finite-propagation Picard, and
+residual majorants. PR90 supplied robust prefix-cost comparison and a careful
+separation of residuals, forward errors, and physical accuracy. These
+precedents are reused, rather than re-presented as new results.
+
+\begin{table*}[t]\centering
+\caption{Runtime contracts of the implemented routes. A mathematical physical
+operator supplied by a sealed model is distinguished from a nonlinear
+derivative oracle. A generic map callback can itself hide expensive work;
+the direct-map API does not erase that work.}
+\begin{tabular}{p{.23\textwidth}p{.22\textwidth}p{.23\textwidth}p{.22\textwidth}}\toprule
+Route & Derivative information & Matrix/root work & New construction\\\midrule
+Causal Picard reuse & Existing frozen JVP basis & Existing small projected LU; no Newton & Exact precursor and solve-prefix reuse\\
+Mean-field quotient & Declared physical rates and forcing & Two scalar recurrences; no state matrix or Newton & Exact original-target lift, arbitrary transverse data\\
+RHS-only homotopy & Direct map values & Vector arithmetic and scalar dot products & Actual-residual screened extrapolation and continuation\\
+Selective JVP adapter & Supplied JVP only, after explicit pressure & Existing matrix-free Rosenbrock driver & Checkpoint proposal reuse and exact integer entry comparison\\
+\bottomrule\end{tabular}
+\end{table*}
+
+\input{../theory/theorems.tex}
+
+\section{Native causal implementation and experiments}
+\texttt{BatchedPicardReuse} preserves the original Picard arm for a same-binary
+comparison. The key contains every bit of the projected displacement,
+which also fixes the frozen action subtracted from the remainder. Cache
+entries live within one physical step and basis. Only changed stage inputs
+are dispatched; unchanged affine RHS prefixes reuse the previous solution.
+All scheduled callback outcomes are joined and charged before a failure is
+returned. The model epoch is checked before and after batches, and the
+original-space residual screen remains mandatory. The new
+\texttt{CandidateRoute::PicardReuse} also reaches this path through the
+existing work-aware adaptive selector.
+
+Twelve focused causal contracts passed, including six prior contracts and
+six new contracts. The new tests check represented output/stage/error-vector
+parity, callback counts, budget behavior, joined failures, epoch changes,
+and incomplete-basis refusal. The numerical grid contains 108 successful
+candidate attempts: $n=6,96,6144$, nonlinear coefficients $0,1,10$,
+$h=.01,.1$, one/four workers, and legacy/reuse/forward schedules. Every
+legacy/reuse pair is bit-identical. The maximum difference from an
+independent scalar original-stage oracle is $4.73649\times10^{-14}$,
+below the fixed $2\times10^{-10}$ cap.
+
+For the strong nonlinear $h=.1$ target, legacy Picard uses 58 RHS calls and
+56 block solves, while reuse uses 37 and 35. Both use 10 frozen JVP vectors
+and six Picard updates. Forward elimination uses 16 RHS calls and eight
+solves, so it remains the work-minimal control for this fixture.
+The cached iteration saves work without claiming fewer iteration rounds.
+
+The physically qualified Riccati trajectories use 33 common observations,
+$\mathrm{atol}=10^{-11}$, $\mathrm{rtol}=10^{-7}$, and $[0,.2]$.
+For both $n=6$ and 96, the old/new attempts are 66, accepted steps are 65,
+and no fallback occurs. Observed states and attempt time/step/decision
+records are bit-identical. RHS calls decrease $1868\to1702$ and block
+solves $1456\to1290$; JVP vectors remain 726. The maximum exact-solution
+grid error is $2.68565\times10^{-11}$ under a $3\times10^{-9}$ cap.
+
+A separate five-block timing pass measured the strong nonlinear target.
+At $n=6144$, old/new median ratios are 1.282, 1.279, and 1.395 with one,
+two, and four workers. At $n=96$, the two-worker median is 0.873 and its
+range crosses one. These timed $h=.1$ candidates have embedded WRMS near
+$4.62\times10^4$, so these are root-attempt costs; the outer integrator
+would reject that physical step. They are not accepted-trajectory
+throughput measurements. The complete-candidate peak concurrency includes
+both stage and final validation tasks. This distinction prevents a numerical
+root speedup from being misreported as a physical integration speedup.
+
+\section{Exact derivative-free structural consumer}
+The implemented immutable model is
+\begin{equation}
+ f_i(y)=b_i-dy_i+\kappa\overline y,\qquad d\ge\kappa\ge0.
+\end{equation}
+No derivative callback is accepted by its API. A plan depends only on
+$(h,d,\kappa)$ and the fixed raw-stage tableau; it can be reused across
+states and forcings with those rates. The plan computes sixteen scalar
+stage solves. All eight full-state stages are then lifted independently,
+so the long full-state sequential stage construction has been replaced
+by a constant-size preparation and a parallel lift. Arbitrary initial
+and forcing transverse components are retained.
+
+The strong baseline uses the same physical model and original-stage target.
+It applies the exact shifted resolvent in the collective and transverse channels.
+It is already derivative-free, rather than an artificially expensive
+dense or supplied-JVP comparator. Both arms run the same explicit
+original-space residual check. Consequently the construction cost changes
+from $O(s^2n)$ to $O(s^2+sn)$, while the retained screen still costs
+$O(s^2n)$. No total-complexity claim hides this remaining cost.
+
+Five native structural contracts passed. They include independent
+small-$n$ dense original-stage oracles, arbitrary transverse data,
+$d=\kappa$ and $d=\kappa=0$, one/two-worker bit parity, invalid inputs,
+wrong-rate plan refusal, a closed-form trajectory refinement test, and an
+independent dense test of the sharp residual amplification and its extremizer.
+The affine refinement errors at 4, 8, 16, and 32 steps are
+$1.8290\times10^{-8}$, $3.9703\times10^{-10}$,
+$7.2584\times10^{-12}$, and $1.1899\times10^{-13}$.
+The observed slopes are approximately 5.53, 5.77, and 5.93 on this
+restricted affine problem; these values are not assigned as the generic
+nonlinear method's order.
+
+The complete-trajectory benchmark fixes
+\begin{align}
+ d&=20,\quad\kappa=19,\quad t\in[0,1],\quad h=1/64,\\
+ y_i(0)&=.5+.1\sin(.7i),\qquad
+ b_i=.2+.05\cos(1.9i).
+\end{align}
+All 65 common output states and all components are compared with the
+closed form. The physical grid cap is $10^{-6}$, the same-target difference
+cap is $10^{-11}$, and the operational original-space residual cap is
+$10^{-9}$. None was changed after measurements. At $n=2048$ the largest
+physical grid error is $2.39760\times10^{-10}$ and old/new target difference
+is $8.88178\times10^{-16}$.
+
+Across 64 steps, RHS evaluations decrease $1024\to576$, full-state shifted
+resolvents $512\to0$, and causal component accumulations
+$14{,}680{,}064\to7{,}340{,}032$, with $1{,}048{,}576$ lift components added.
+Both arms retain 512 physical linear validation actions and
+$1{,}048{,}576$ residual components. Fresh plans add 1024 scalar setup solves;
+a reused constant-$h$ plan adds 16. Jacobian callbacks, JVP callbacks,
+state-matrix factorizations, and Newton updates are zero in both structural arms.
+The shared tableau loader performs one fixed $8\times8$ coefficient inversion
+in a process-lifetime cache. It is metadata initialization, not a state-sized
+or per-step solve, and the per-step counters do not include it. Diagnostics
+initialize that cache before all timed batches.
+
+\input{results_table.tex}
+\begin{figure*}[t]\centering
+\includegraphics[width=.98\textwidth]{performance.pdf}
+\caption{New measurements. Left: complete qualified structural trajectory
+ratios including setup, allocation and the same full-space screen; horizontal
+ranges are observed five-block extrema. Right: reductions in actual RHS work
+for three different qualified trajectory cohorts. Each bar is normalized to
+its own matched baseline and is not an across-problem solver ranking.}
+\label{fig:performance}
+\end{figure*}
+
+Table~\ref{tab:structural-time} reports five ABBA/BAAB blocks per pair.
+Native pools are created outside timers; model allocation, plan construction,
+all steps, and full-space validation are inside. Retained observations and
+JSON serialization are outside. At $n=2048$, one worker, fresh plans give a
+median ratio 1.883 with block range $[1.472,1.943]$; reused plans give
+1.891 with $[1.697,2.323]$. The two-worker fresh-plan range includes one.
+These are shared-host observed ratios rather than confidence intervals or a
+universal parallel speed claim.
+
+\subsection{Residual tolerance derived from an accuracy specification}
+The user's subsequent request for proof-derived constants is treated as a
+separate changed-dependency extension; the original timing protocol remains
+intact. The new \texttt{algebraic\_residual\_budget} method derives the sharp
+finite-horizon residual amplification $C_N$ from the two scalar adjoints and
+the two channel stability values proved above. A specified global algebraic
+error budget $E_{\rm alg}$ then gives $\delta=E_{\rm alg}/C_N$ without a fitted
+safety factor. The finite-horizon formula does not assume contraction.
+
+An independent exact-rational audit checks twelve cells, including zero and
+equal rates, forward-impulse/adjoint equality, sign-aligned norm extremizers,
+and the exact 64-step budget identity. For $n=17$, $d=20$, $\kappa=19$,
+$h=1/64$, its values are
+\begin{align}
+A_{17}&=23.233650367216686, &G_{17}&=0.9844964370054083,\\
+C_{64}&=947.2963123944904,
+&\delta(E_{\rm alg}=10^{-8})&=1.0556359049601808\times10^{-11}.
+\end{align}
+The native f64 implementation evaluates the same formulas, with the expected
+last-bit differences. A new, untimed 64-step experiment under the derived
+screen has maximum physical grid error $2.42381\times10^{-10}$ and
+old/new difference $5.55112\times10^{-16}$; successful RHS counts remain
+$1024\to576$. This is a precise algebraic residual-budget construction.
+Its structural f64 constants and sampled residuals are not outward interval
+certificates; evaluation and update roundoff require the separate terms
+stated in the theorem.
+
+The current structural API returns work on successful candidates. Its
+\texttt{CoreResult} failures do not preserve a partial-work object.
+These experiments therefore establish successful standalone trajectory cost.
+Before coupling this API to a failed-attempt adaptive fallback, a charged
+partial-work return contract is an explicit integration obligation.
+
+\input{../homotopy/homotopy_section.tex}
+\input{../homotopy/exact_constants_section.tex}
+\begin{figure*}[t]\centering
+\includegraphics[width=.98\textwidth]{exact_constants.pdf}
+\caption{Proof-derived physical-accuracy experiments for the sealed cubic
+decay model. Every interval polynomial validation is charged. The four-arm
+ablation in the text shows that the work decrease on these fast-contraction
+grids comes from the warm seed; acceleration alone has equal evaluation
+counts. Right: the computed outward error bound and the independent
+closed-form error remain below the requested physical tolerance.}
+\label{fig:exact-constants}
+\end{figure*}
+
+\section{Adapter policy and selective derivative use}
+The adapter is analyzed independently of stage-root cost. The initial
+control uses the existing \texttt{adaptive\_evidence(ProvidedOnly)} policy,
+the PR90 dominance stop, and only a supplied JVP provider. Its equation is
+$y'=-ry$ in sixteen identical components, $y_i(0)=1$, on $[0,1]$, at
+$r=1,1000,10000$. Both arms retain $\mathrm{rtol}=10^{-7}$,
+$\mathrm{atol}=10^{-10}$, $h_0=10^{-4}$ and eight common requested windows.
+Every returned component is scored against $\exp(-rt)$ under $10^{-6}$.
+All six initial solves passed. Callback atomics agree with the aggregate
+RHS/JVP ledger. Jacobian builds and explicit-time derivative calls are zero.
+
+At $r=1$, both routes use 79 RHS calls and zero JVPs. The initial evidence
+policy is therefore truly RHS-only on the easy control. At $r=1000$ and
+10000, however, the initially unmodified selector pays for losing JVP
+pilots and stays explicit. Work rises from 2377 to 2958 and from 19261 to
+20190. This is retained as a concrete adapter failure, rather than treated
+as proof that derivative assistance is intrinsically inefficient.
+
+The trace identifies a cold-start mechanism. At a late $r=1000$ checkpoint,
+the persistent explicit session already proposes approximately
+$3.662\times10^{-3}$, yet the same-checkpoint implicit pilot restarts from
+$10^{-4}$. It exhausts the comparison work cap before completing the matched
+interval. Existing post-pilot step reuse acts only after a pilot wins and
+does not repair this entry reset.
+\input{adapter_results.tex}
+
+\begin{figure*}[t]\centering
+\includegraphics[width=.98\textwidth]{accuracy.pdf}
+\caption{Independent exact-solution refinement checks. The structural affine
+specialization preserves the original raw-stage target and exhibits the
+listed restricted-family slopes. The nonlinear direct-RHS midpoint consumer
+retains its second-order grid convergence, with baseline and improved curves
+overlapping. A root accelerator changes the algebraic solution cost, not
+the order of the chosen time discretization.}
+\label{fig:accuracy}
+\end{figure*}
+
+\section{What the experiments decide}
+The mathematical construction has useful exact structure. An acyclic
+stage graph permits finite residual transport even when a global
+Lipschitz contraction test fails. An exact declared quotient can eliminate
+derivative callbacks and the full-state sequential stage sweep. An
+actual-residual safeguard gives a clear conditional convergence proof for
+a vector-only homotopy correction. These results are sufficient to justify
+the implemented scoped paths and their experiments.
+
+The retained failures identify where more theory or selection work is needed.
+A general nonlinear client need not possess the mean-field quotient.
+A near-closure requires a proved closure-defect term and an original-coordinate
+error transport bound. Replacing the frozen derivative in a Rosenbrock target
+by a convenient physical carrier generally changes the target; higher-order
+conditions must then be derived for that method. The local sampled residual
+is not a whole-domain or continuous-time certificate. General noncontractive
+RHS maps require a root branch/domain argument or other residual-to-error
+information; the cubic midpoint consumer has such a monotonicity argument,
+whereas an arbitrary black-box map does not inherit it.
+
+The successful optimization tasks have a different character. Reusing exact
+inputs, unchanged solve prefixes, scalar plans, and checkpoint proposals
+leaves the numerical targets or adaptive admission contracts intact.
+Their remaining costs are measured. Cache metadata, parallel dispatch, and
+extra residual trials can exceed savings on small/easy inputs, so negative
+cells remain part of policy design.
+
+No new global impossibility theorem is claimed. NG1--NG7 therefore do not
+license promoting a failed fixture into a project-wide no-go result.
+The closed V6/V8 physical campaigns and their global completion ledger are
+unchanged; this unit's completion refers to the constructions, code, and
+specified experiments above.
+
+\section{Reproduction and evidence}
+The research node contains the exact formulas, source snapshots, initial
+and repaired failure logs, native execution receipts, full numerical
+results, summary scripts, and this REVTeX source.
+\texttt{REPRODUCE.md} gives precise commands and the retained evidence
+archive layout. Rust 1.94.1 and the repository's locked offline dependencies
+were used with \texttt{--profile measurement} (optimization level 3,
+LTO disabled, sixteen codegen units). Cargo builds and timings were serialized.
+An initial accidental debug-profile build consumed about 223 seconds.
+A cancellation was requested, but the retained complete log records both
+six-test suites finishing successfully. An earlier cancellation receipt
+incorrectly described the final log as containing no tests. That conflicting
+receipt is preserved and superseded by the provenance reconciliation; the
+separate measurement-profile run remains the selected evidence and the debug
+tests are not counted twice. The selected suites contain 59 distinct passing
+native tests. A final locked offline compile of all targets in the two changed
+crates also passes; it checks compatibility of the new public variants and
+configuration fields and is not an additional timing experiment.
+
+The source-only theory checks independently use exact fractions: 32
+mean-field cells, 832 stage-component equalities, zero exact original-target
+residual, a finite causal inverse with $\|L\|_\infty=13$, and twelve scalar
+affine extrapolation controls. Wolfram verified the nilpotent inverse,
+mean-field resolvent and scalar extrapolation identities. An initial
+unevaluated zero-power expression was corrected and retained as a tool
+expression failure. SciSpace and Exa were used to find primary literature;
+source claims were checked against the original papers.
+
+\begin{thebibliography}{9}
+\bibitem{vdH1991}
+P. J. van der Houwen and B. P. Sommeijer,
+Iterated Runge--Kutta methods on parallel computers,
+SIAM J. Sci. Stat. Comput. \textbf{12}, 1000--1028 (1991).
+\url{https://ir.cwi.nl/pub/1589/1589D.pdf}.
+\bibitem{pollock2021}
+S. Pollock and L. G. Rebholz,
+Anderson acceleration for contractive and noncontractive operators,
+IMA J. Numer. Anal. \textbf{41}, 2841--2872 (2021),
+\href{https://doi.org/10.1093/imanum/draa095}{doi:10.1093/imanum/draa095}.
+\bibitem{tranquilli2014}
+P. Tranquilli and A. Sandu,
+Rosenbrock--Krylov methods for large systems of differential equations,
+SIAM J. Sci. Comput. \textbf{36}, A1313--A1338 (2014),
+\href{https://doi.org/10.1137/130923336}{doi:10.1137/130923336}.
+\bibitem{walker2011}
+H. F. Walker and P. Ni,
+Anderson acceleration for fixed-point iterations,
+SIAM J. Numer. Anal. \textbf{49}, 1715--1735 (2011).
+\end{thebibliography}
+\end{document}

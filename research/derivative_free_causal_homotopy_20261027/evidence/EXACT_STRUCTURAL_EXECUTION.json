@@ -1,0 +1,58 @@
+{
+  "started_utc": "2026-10-27T13:03:06.088037+00:00",
+  "commands": [
+    {
+      "name": "exact_structural_contract",
+      "command": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode-coupled",
+        "--test",
+        "structural_mean_field_contracts",
+        "derived_residual_amplification",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 12.197636607997993
+    },
+    {
+      "name": "exact_structural_build",
+      "command": [
+        "cargo",
+        "build",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode-coupled",
+        "--example",
+        "structural_bound_bench_20261027"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 9.468148477004434
+    },
+    {
+      "name": "exact_structural_diagnostic",
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/structural_bound_bench_20261027"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.024783648004813585
+    }
+  ],
+  "source_sha256": {
+    "crates/vigilode-coupled/src/structural_mean_field.rs": "1e70ac544c6b8a775c60fc2497566f12b08945b5148cc288c1215f5b47d1f11a",
+    "crates/vigilode-coupled/tests/structural_mean_field_contracts.rs": "57d407b9e95703c1c2587149cd2f20ed44340bcd39b7bf081cd2ac27da27ffa7",
+    "crates/vigilode-coupled/examples/structural_bound_bench_20261027.rs": "cab612304040be3a975ac98bc33d0a37cc94d18cc35f76d51f8dca2b94abbdae"
+  },
+  "binary_sha256": "0146e3819f613f2d7a1e15107c72ce67e76fa9a5783892d6d9310a43f9983824",
+  "finished_utc": "2026-10-27T13:03:27.823766+00:00"
+}

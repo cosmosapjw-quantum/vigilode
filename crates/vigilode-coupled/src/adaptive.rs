@@ -470,6 +470,9 @@ fn integrate_with_schedule(
                 Some(crate::CausalSchedule::BatchedPicard) => {
                     "rodas5p-raw-u-causal-picard-adaptive-v1"
                 }
+                Some(crate::CausalSchedule::BatchedPicardReuse) => {
+                    "rodas5p-raw-u-causal-picard-reuse-adaptive-v1"
+                }
                 None => COUPLED_ADAPTIVE_DRIVER_ID,
             }
         },

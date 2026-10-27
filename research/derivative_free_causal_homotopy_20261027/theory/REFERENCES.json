@@ -1,0 +1,54 @@
+{
+  "search_date": "2026-10-27 Asia/Seoul",
+  "tools_used": [
+    "SciSpace.search_papers",
+    "Exa.web_search_exa",
+    "Exa.web_fetch_exa",
+    "Wolfram.wolframcontext",
+    "Wolfram.wolframlanguageevaluator"
+  ],
+  "primary_sources": [
+    {
+      "id": "parallel_rk_1991",
+      "authors": "P. J. van der Houwen and B. P. Sommeijer",
+      "title": "Iterated Runge-Kutta methods on parallel computers",
+      "year": 1991,
+      "url": "https://ir.cwi.nl/pub/1589/1589D.pdf",
+      "retrieved_scope": "Abstract and introduction through section 1.3",
+      "use": "Separate total mk stages and m sequential stages; historical construction, not evidence of current native performance."
+    },
+    {
+      "id": "anderson_2020",
+      "authors": "Sara Pollock and Leo G. Rebholz",
+      "title": "Anderson acceleration for contractive and noncontractive operators",
+      "year": 2021,
+      "version": "arXiv1909.04638v2 (2020)",
+      "url": "https://arxiv.org/pdf/1909.04638",
+      "doi": "10.1093/imanum/draa095",
+      "retrieved_scope": "Sections 1-3 including Algorithm2.2 and equations2.9-2.11",
+      "use": "Depth-one extrapolation formula; distinguish actual residual safeguard from unconditionally inferring nonlinear acceleration."
+    },
+    {
+      "id": "rosenbrock_k",
+      "authors": "Paul Tranquilli and Adrian Sandu",
+      "title": "Rosenbrock-Krylov Methods for Large Systems of Differential Equations",
+      "year": 2014,
+      "version": "arXiv1305.5481v2",
+      "url": "https://arxiv.org/html/1305.5481v2",
+      "doi": "10.1137/130923336",
+      "retrieved_scope": "Abstract/full-text extraction attempt; previous PR90 inspected section1",
+      "use": "Approximate derivative/Krylov construction has coupled order conditions; exact target preservation avoids inventing order inheritance."
+    }
+  ],
+  "queries": [
+    "Which primary papers establish parallel finite convergence of causal Runge Kutta stage fixed point iterations, deferred correction, and Newton-free derivative-free Anderson acceleration for homotopy continuation?",
+    "primary paper parallel iterated Runge Kutta methods triangular stage fixed point finite convergence van der Houwen Sommeijer Anderson acceleration safeguarded homotopy derivative free",
+    "Pollock Rebholz Anderson acceleration contractive noncontractive operators arxiv 1909.00445 Walker Ni 2011 fixed point iterations"
+  ],
+  "discovery_only_not_adopted": [
+    "2026 SDC paper returned by SciSpace; no theorem used",
+    "Newton-Anderson papers returned by SciSpace; incompatible with runtime Newton-free implementation target",
+    "parallel polynomial homotopy paths; different parallelism from one causal stage system"
+  ],
+  "novelty_scope": "Code-specific synthesis and proof of stated specializations; no assertion that projector calculus, nilpotent inverses, Anderson acceleration or parallel RK iteration are new general methods."
+}

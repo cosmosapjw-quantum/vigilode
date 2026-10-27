@@ -11,6 +11,8 @@ pub enum CandidateRoute {
     #[default]
     Forward,
     Picard,
+    /// Same projected target with fixed-input RHS and exact prefix reuse.
+    PicardReuse,
     ResidualFirst,
 }
 impl CandidateRoute {
@@ -18,6 +20,7 @@ impl CandidateRoute {
         match self {
             Self::Forward => Some(CausalSchedule::Forward),
             Self::Picard => Some(CausalSchedule::BatchedPicard),
+            Self::PicardReuse => Some(CausalSchedule::BatchedPicardReuse),
             Self::ResidualFirst => None,
         }
     }
