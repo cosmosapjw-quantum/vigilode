@@ -39,7 +39,9 @@ fn run() -> Result<(), String> {
     let atol = parse_positive_finite_arg(&args, "--atol", DEFAULT_ATOL)?;
     let model = Model::new(10, false)?;
     let initial = model.initial();
-    let exact_start = model.exact(0.0).ok_or("case 10 exact state missing at t=0")?;
+    let exact_start = model
+        .exact(0.0)
+        .ok_or("case 10 exact state missing at t=0")?;
     if model.end != END || initial.len() != 6 || exact_start.len() != 6 {
         return Err("case 10 model descriptor differs from the registered standard setup".into());
     }
@@ -59,14 +61,8 @@ fn run() -> Result<(), String> {
         max_steps: MAX_STEPS,
         ..Default::default()
     };
-    let solution = Dopri5::solve_observed(
-        &problem,
-        (0.0, END),
-        &initial,
-        &options,
-        &times,
-    )
-    .map_err(|e| e.to_string())?;
+    let solution = Dopri5::solve_observed(&problem, (0.0, END), &initial, &options, &times)
+        .map_err(|e| e.to_string())?;
 
     let gamma = 2.04_f64.sqrt();
     let omega = 500.0 / gamma;

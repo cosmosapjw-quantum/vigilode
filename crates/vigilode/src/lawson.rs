@@ -126,6 +126,9 @@ impl LawsonDopri5 {
         )
     }
 
+    // The private common implementation preserves the public solve arguments
+    // and the two optional declared-model contracts without an extra allocation.
+    #[allow(clippy::too_many_arguments)]
     fn solve_impl(
         flow: &DampedRotationFlow,
         residual: &Problem,

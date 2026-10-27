@@ -3,10 +3,10 @@
 //! are excluded from diagnostic solve time. No solver-wide qualification follows.
 use rodas5p_core::CoreResult;
 use rodas5p_integrators::{
-    integrate_dopri5_observed, integrate_lawson_dopri5_observed, DampedRotationBlock,
-    DampedRotationFlow, Dopri5Config, OutputSchedule,
+    DampedRotationBlock, DampedRotationFlow, Dopri5Config, OutputSchedule,
+    integrate_dopri5_observed, integrate_lawson_dopri5_observed,
 };
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::time::Instant;
 
 fn argument(args: &[String], name: &str) -> Result<String, String> {

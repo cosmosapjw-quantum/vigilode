@@ -1,8 +1,8 @@
 //! Untimed same-stage/work comparison for the declared collision provider.
 //! The direct formula is retained; no wall-clock or general router claim follows.
 use rodas5p_integrators::polynomial_resolvent::{
-    integrate_exchange_implicit_euler, ExchangeCollisionProvider, ExchangeImplicitEulerWorkspace,
-    PolynomialPhysicalNorm, PolynomialProviderWork, PolynomialResolventWorkspace,
+    ExchangeCollisionProvider, ExchangeImplicitEulerWorkspace, PolynomialPhysicalNorm,
+    PolynomialProviderWork, PolynomialResolventWorkspace, integrate_exchange_implicit_euler,
 };
 use serde_json::json;
 

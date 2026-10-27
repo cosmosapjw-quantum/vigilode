@@ -17,7 +17,7 @@ impl Model {
             "rapid" => 2.0,
             _ => return Err(format!("unknown model: {name}")),
         };
-        if n == 0 || (matches!(name, "rapid" | "damped" | "nonnormal") && n % 2 != 0) {
+        if n == 0 || (matches!(name, "rapid" | "damped" | "nonnormal") && !n.is_multiple_of(2)) {
             return Err("positive dimension, even for paired systems, is required".into());
         }
         Ok(Self {
@@ -37,14 +37,14 @@ impl Model {
         match self.name.as_str() {
             "logistic" => 0.05 + 0.01 * (i % 8) as f64,
             "rapid" | "damped" => {
-                if i % 2 == 0 {
+                if i.is_multiple_of(2) {
                     1.0
                 } else {
                     0.0
                 }
             }
             "nonnormal" => {
-                if i % 2 == 0 {
+                if i.is_multiple_of(2) {
                     0.0
                 } else {
                     1.0
@@ -104,14 +104,14 @@ impl Model {
                     1.0
                 };
                 envelope
-                    * if i % 2 == 0 {
+                    * if i.is_multiple_of(2) {
                         (self.frequency(i) * t).cos()
                     } else {
                         (self.frequency(i) * t).sin()
                     }
             }
             "nonnormal" => {
-                if i % 2 == 0 {
+                if i.is_multiple_of(2) {
                     30.0 * ((-t).exp() - (-2.0 * t).exp())
                 } else {
                     (-2.0 * t).exp()

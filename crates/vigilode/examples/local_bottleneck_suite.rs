@@ -3,15 +3,15 @@
 //! model construction, the reusable Rayon pool startup, diagnostics and JSON.
 #[path = "local_bottleneck_support/models.rs"]
 mod models;
-use models::{Model, LAYERS, METHODS};
+use models::{LAYERS, METHODS, Model};
 use rayon::prelude::*;
 use serde::Deserialize;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use std::{
     io::{self, Write},
     sync::{
-        atomic::{AtomicU64, Ordering},
         Arc,
+        atomic::{AtomicU64, Ordering},
     },
     time::Instant,
 };
@@ -347,10 +347,10 @@ fn parse_external_reference(
         .as_object()
         .ok_or("external reference provenance must be an object")?;
     for key in ["source", "method"] {
-        if !provenance
+        if provenance
             .get(key)
             .and_then(Value::as_str)
-            .is_some_and(|s| !s.trim().is_empty())
+            .is_none_or(|s| s.trim().is_empty())
         {
             return Err(format!(
                 "external reference provenance.{key} must be nonempty"

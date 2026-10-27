@@ -11,8 +11,8 @@ mod models;
 use models::Model;
 use rodas5p_core::CoreResult;
 use rodas5p_integrators::{
-    AdaptiveStepConfig, Dopri5AttemptErrorNorm, Dopri5Config, Dopri5Session,
-    NativeSessionAdvance, NativeSessionIdentity, NativeSessionMethod, OutputSchedule,
+    AdaptiveStepConfig, Dopri5AttemptErrorNorm, Dopri5Config, Dopri5Session, NativeSessionAdvance,
+    NativeSessionIdentity, NativeSessionMethod, OutputSchedule,
 };
 use serde_json::json;
 
@@ -20,7 +20,10 @@ const HARD_MAX_ATTEMPTS: usize = 200_000;
 
 fn value(args: &[String], key: &str, default: &str) -> Result<String, String> {
     match args.iter().position(|arg| arg == key) {
-        Some(i) => args.get(i + 1).cloned().ok_or_else(|| format!("missing value for {key}")),
+        Some(i) => args
+            .get(i + 1)
+            .cloned()
+            .ok_or_else(|| format!("missing value for {key}")),
         None => Ok(default.to_owned()),
     }
 }
@@ -61,15 +64,8 @@ fn run() -> Result<(), String> {
         adaptive,
         ..Dopri5Config::default()
     };
-    let mut session = Dopri5Session::new(
-        &rhs,
-        (0.0, end),
-        &initial,
-        &config,
-        &schedule,
-        identity,
-    )
-    .map_err(|e| e.to_string())?;
+    let mut session = Dopri5Session::new(&rhs, (0.0, end), &initial, &config, &schedule, identity)
+        .map_err(|e| e.to_string())?;
     session.set_attempt_telemetry(true);
 
     println!(
@@ -100,9 +96,10 @@ fn run() -> Result<(), String> {
         let advance = session
             .advance_to(end, 1, identity)
             .map_err(|e| e.to_string())?;
-        let Some(attempt) = session.last_attempt().filter(|_| {
-            session.checkpoint().attempts == attempts_before + 1
-        }) else {
+        let Some(attempt) = session
+            .last_attempt()
+            .filter(|_| session.checkpoint().attempts == attempts_before + 1)
+        else {
             match advance {
                 NativeSessionAdvance::Complete => break,
                 NativeSessionAdvance::Stopped => {

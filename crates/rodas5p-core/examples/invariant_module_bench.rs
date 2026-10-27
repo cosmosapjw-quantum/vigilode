@@ -54,19 +54,18 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let mode = modes[(offset + repetition) % modes.len()];
                 let start = Instant::now();
                 let (accepted, error, work) = if mode.contains("module") {
-                    let fresh;
-                    if mode == "new_module" {
-                        fresh = Some(InvariantModulePlan::new(
+                    let fresh = if mode == "new_module" {
+                        Some(InvariantModulePlan::new(
                             1,
                             b.clone(),
                             v.clone(),
                             w.clone(),
                             h.clone(),
                             InvariantModuleConfig::default(),
-                        )?);
+                        )?)
                     } else {
-                        fresh = None;
-                    }
+                        None
+                    };
                     let p = fresh.as_ref().unwrap_or(&plan);
                     let mut work = InvariantModuleWork::default();
                     let r = p.evaluate(

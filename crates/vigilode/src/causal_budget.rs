@@ -193,10 +193,10 @@ pub fn assess_causal_budget(
     let mut operations = 0;
     for i in 0..s {
         let mut e = input.residual_seeds[i];
-        for j in 0..i {
+        for (j, &prior_stage_error) in stage_errors.iter().enumerate().take(i) {
             let b = input.propagation[i * s + j];
-            if b != 0.0 && stage_errors[j] != 0.0 {
-                e = add_up(e, mul_up(b, stage_errors[j])?)?;
+            if b != 0.0 && prior_stage_error != 0.0 {
+                e = add_up(e, mul_up(b, prior_stage_error)?)?;
                 operations += 2;
             }
         }
