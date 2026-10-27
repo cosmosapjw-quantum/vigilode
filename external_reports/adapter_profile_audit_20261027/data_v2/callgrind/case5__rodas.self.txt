@@ -1,0 +1,60 @@
+--------------------------------------------------------------------------------
+Profile data file '~/vigilode-integration-followup-20261027/profile_r2/prof/callgrind/case5__rodas.out' (creator: callgrind-3.22.0)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 2127909
+Trigger: Program termination
+Profiled target:  ~/vigilode-integration-followup-20261027/profile_r2/prof_bin repeat-arm case5 rodas 3 (PID 3733117, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       99
+Include dirs:     
+User annotated:   
+Auto-annotation:  on
+
+--------------------------------------------------------------------------------
+Ir                  
+--------------------------------------------------------------------------------
+14,977,193 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                file:function
+--------------------------------------------------------------------------------
+836,553 ( 5.59%)  crates/vigilode/examples/local_bottleneck_support/models.rs:adapter_checkpoint_trace::models::Model::component [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+416,835 ( 2.78%)  crates/vigilode/examples/local_bottleneck_support/models.rs:adapter_checkpoint_trace::models::Model::apply [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+317,214 ( 2.12%)  ./math/../sysdeps/ieee754/dbl-64/s_sin.c:__sincos_fma
+293,058 ( 1.96%)  crates/rodas5p-core/src/operator.rs:<rodas5p_core::operator::ShiftedOperator as rodas5p_core::operator::LinearOperator>::apply_with_work [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+281,211 ( 1.88%)  crates/rodas5p-core/src/norms.rs:rodas5p_core::norms::safe_l2 [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+255,942 ( 1.71%)  crates/rodas5p-core/src/operator.rs:rodas5p_core::operator::apply_counted [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+238,068 ( 1.59%)  ./string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:__memcpy_avx_unaligned_erms [/usr/lib/x86_64-linux-gnu/libc.so.6]
+233,676 ( 1.56%)  crates/rodas5p-krylov/src/kernels.rs:rodas5p_krylov::kernels::two_pass_mgs_into [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+231,228 ( 1.54%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:faer::linalg::qr::col_pivoting::factor::qr_in_place
+227,958 ( 1.52%)  crates/vigilode/src/fd.rs:vigilode::fd::Guard::vector_call [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+220,878 ( 1.47%)  crates/rodas5p-krylov/src/gmres_into.rs:rodas5p_krylov::gmres_into::solve_gmres_into_with_accounting [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+216,678 ( 1.45%)  crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:rodas5p_integrators::rodas5p_matrix_free_fast::Rodas5pMfFastWorkspace::attempt_inner [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+210,342 ( 1.40%)  ~/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faer-0.24.4/src/linalg/qr/col_pivoting/factor.rs:faer::linalg::qr::col_pivoting::factor::qr_in_place [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+205,623 ( 1.37%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/adapters/zip.rs:rodas5p_integrators::rodas5p_matrix_free_fast::Rodas5pMfFastWorkspace::attempt_inner
+204,441 ( 1.37%)  ./math/../sysdeps/ieee754/dbl-64/s_sincos.c:__sincos_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+201,264 ( 1.34%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:rodas5p_core::norms::safe_l2
+193,870 ( 1.29%)  ./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S:__memset_avx2_unaligned_erms [/usr/lib/x86_64-linux-gnu/libc.so.6]
+177,744 ( 1.19%)  crates/vigilode/src/solve.rs:vigilode::solve::build::{{closure}} [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+176,904 ( 1.18%)  crates/rodas5p-core/src/work.rs:rodas5p_core::work::WorkCounters::delta [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+173,664 ( 1.16%)  crates/rodas5p-core/src/operator.rs:<rodas5p_core::operator::ClosureOperator<F> as rodas5p_core::operator::LinearOperator>::apply_with_work [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+163,800 ( 1.09%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:rodas5p_core::work::WorkCounters::delta
+156,771 ( 1.05%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:vigilode::fd::Guard::vector_call
+144,234 ( 0.96%)  crates/rodas5p-krylov/src/small.rs:rodas5p_krylov::small::LeastSquaresWorkspace::solve_into [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+132,624 ( 0.89%)  ~/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.6.0/src/lib.rs:faer::linalg::qr::col_pivoting::factor::qr_in_place
+122,220 ( 0.82%)  ~/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faer-0.24.4/src/linalg/reductions/norm_l2.rs:faer::linalg::reductions::norm_l2::norm_l2 [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+120,090 ( 0.80%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:rodas5p_krylov::small::LeastSquaresWorkspace::solve_into
+117,530 ( 0.78%)  ~/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/sha2-0.10.9/src/sha256/soft.rs:sha2::sha256::soft::compress [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+115,434 ( 0.77%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:pulp::x86::v3::V3::vectorize::imp
+107,502 ( 0.72%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/cmp.rs:faer::linalg::qr::col_pivoting::factor::qr_in_place
+106,398 ( 0.71%)  ~/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faer-0.24.4/src/linalg/zip.rs:faer::linalg::qr::col_pivoting::factor::qr_in_place
+ 99,768 ( 0.67%)  ~/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faer-0.24.4/src/mat/matref.rs:faer::linalg::qr::col_pivoting::factor::qr_in_place
+ 94,464 ( 0.63%)  crates/rodas5p-krylov/src/gmres_into.rs:rodas5p_krylov::gmres_into::arnoldi_column [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 91,188 ( 0.61%)  crates/rodas5p-core/src/operator.rs:rodas5p_core::operator::apply_preconditioner [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 81,378 ( 0.54%)  ~/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/equator-0.6.0/src/lib.rs:faer::linalg::householder::apply_block_householder_sequence_transpose_on_the_left_in_place_with_conj
+ 79,894 ( 0.53%)  ./elf/./elf/dl-lookup.c:do_lookup_x [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]

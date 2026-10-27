@@ -1,0 +1,1812 @@
+{
+ "schema": "vigilode.adapter-light-bench-set.v2",
+ "timing_authority": "diagnostic_only",
+ "rows": [
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 734,
+   "allocations_warm": 478,
+   "arm": "adaptive",
+   "batch_spread": 0.4165521772559187,
+   "case": "rotation",
+   "max_component_absolute_error": 9.257890573044492e-07,
+   "ns_per_solve_batches": [
+    545078.640625,
+    540832.828125,
+    510424.0703125,
+    510343.6953125,
+    520676.5859375,
+    420739.453125,
+    332460.3828125
+   ],
+   "ns_per_solve_median": 510424.0703125,
+   "ns_per_solve_min": 332460.3828125,
+   "repetitions_per_batch": 128,
+   "rhs": 5371,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 892,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 877,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 5263,
+      "segments": 32,
+      "work_units": 5263.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 15,
+      "jvp": 355,
+      "linear_solves": 105,
+      "rhs": 108,
+      "segments": 3,
+      "work_units": 568.0
+     }
+    },
+    "output_rows": 33,
+    "segments": 35,
+    "success": true,
+    "switches": 0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 3,
+   "spreads": [
+    0.4165521772559187,
+    0.6100492413254607,
+    0.6086178894612746
+   ],
+   "spread_ok": false
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 734,
+   "allocations_warm": 478,
+   "arm": "evidence",
+   "batch_spread": 0.02805518991928759,
+   "case": "rotation",
+   "max_component_absolute_error": 9.257890573044492e-07,
+   "ns_per_solve_batches": [
+    332272.5234375,
+    330945.30078125,
+    335334.30859375,
+    340121.91796875,
+    333889.359375,
+    330799.94921875,
+    331965.23046875
+   ],
+   "ns_per_solve_median": 332272.5234375,
+   "ns_per_solve_min": 330799.94921875,
+   "repetitions_per_batch": 256,
+   "rhs": 5371,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 892,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 877,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 5263,
+      "segments": 32,
+      "work_units": 5263.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 15,
+      "jvp": 355,
+      "linear_solves": 105,
+      "rhs": 108,
+      "segments": 3,
+      "work_units": 568.0
+     }
+    },
+    "output_rows": 33,
+    "segments": 35,
+    "success": true,
+    "switches": 0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 2,
+   "spreads": [
+    0.6749572244558705,
+    0.02805518991928759
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 16,
+   "allocations_warm": 16,
+   "arm": "dopri",
+   "batch_spread": 0.05205524701844146,
+   "case": "rotation",
+   "max_component_absolute_error": 9.277089911829961e-07,
+   "ns_per_solve_batches": [
+    210435.79296875,
+    211363.671875,
+    210517.5859375,
+    214231.30078125,
+    221587.65625,
+    217091.765625,
+    216687.52734375
+   ],
+   "ns_per_solve_median": 214231.30078125,
+   "ns_per_solve_min": 210435.79296875,
+   "repetitions_per_batch": 256,
+   "rhs": 5251,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 875,
+    "success": true,
+    "work_units": 5251.0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 3,
+   "spreads": [
+    0.05205524701844146,
+    0.18854654452329195,
+    0.8067973521403036
+   ],
+   "spread_ok": false
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 78,
+   "allocations_warm": 78,
+   "arm": "adaptive",
+   "batch_spread": 0.032365226615876486,
+   "case": "decay",
+   "max_component_absolute_error": 3.3869719251455876e-09,
+   "ns_per_solve_batches": [
+    7935.062255859375,
+    7961.8056640625,
+    7976.0330810546875,
+    8145.3447265625,
+    8193.208374023438,
+    7981.08642578125,
+    7961.0035400390625
+   ],
+   "ns_per_solve_median": 7976.0330810546875,
+   "ns_per_solve_min": 7935.062255859375,
+   "repetitions_per_batch": 8192,
+   "rhs": 103,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 17,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 17,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 103,
+      "segments": 8,
+      "work_units": 103.0
+     }
+    },
+    "output_rows": 9,
+    "segments": 8,
+    "success": true,
+    "switches": 0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 2,
+   "spreads": [
+    0.07068433684765062,
+    0.032365226615876486
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 16,
+   "allocations_warm": 16,
+   "arm": "dopri",
+   "batch_spread": 0.1319675916150092,
+   "case": "decay",
+   "max_component_absolute_error": 8.038381682506923e-09,
+   "ns_per_solve_batches": [
+    4792.698547363281,
+    4861.48291015625,
+    4723.4971923828125,
+    4269.851013183594,
+    4454.32080078125,
+    4332.651184082031,
+    4483.1605224609375
+   ],
+   "ns_per_solve_median": 4483.1605224609375,
+   "ns_per_solve_min": 4269.851013183594,
+   "repetitions_per_batch": 16384,
+   "rhs": 97,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 16,
+    "success": true,
+    "work_units": 97.0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 3,
+   "spreads": [
+    0.40637565864414626,
+    0.1319675916150092,
+    0.9277292944678409
+   ],
+   "spread_ok": false
+  },
+  {
+   "accuracy_cap": 0.0001,
+   "allocations_cold_first_call": 851,
+   "allocations_warm": 595,
+   "arm": "adaptive",
+   "batch_spread": 0.01730110930771772,
+   "case": "case5",
+   "max_component_absolute_error": 5.4831391427256904e-08,
+   "ns_per_solve_batches": [
+    290221.375,
+    289848.2109375,
+    293816.7421875,
+    290821.2578125,
+    294873.421875,
+    290123.734375,
+    290455.99609375
+   ],
+   "ns_per_solve_median": 290455.99609375,
+   "ns_per_solve_min": 289848.2109375,
+   "repetitions_per_batch": 256,
+   "rhs": 680,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 106,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 64,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 385,
+      "segments": 2,
+      "work_units": 385.0
+     },
+     "probe-dopri-discarded": {
+      "attempts": 16,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 97,
+      "segments": 1,
+      "work_units": 97.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 6,
+      "jvp": 156,
+      "linear_solves": 41,
+      "rhs": 38,
+      "segments": 2,
+      "work_units": 237.0
+     },
+     "rodas-committed": {
+      "attempts": 20,
+      "jvp": 640,
+      "linear_solves": 160,
+      "rhs": 160,
+      "segments": 3,
+      "work_units": 980.0
+     }
+    },
+    "output_rows": 11,
+    "segments": 8,
+    "success": true,
+    "switches": 1
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 2,
+   "spreads": [
+    0.06086029055246776,
+    0.01730110930771772
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 0.0001,
+   "allocations_cold_first_call": 871,
+   "allocations_warm": 615,
+   "arm": "evidence",
+   "batch_spread": 0.01478768189213755,
+   "case": "case5",
+   "max_component_absolute_error": 5.4823083184274424e-08,
+   "ns_per_solve_batches": [
+    356840.875,
+    355334.171875,
+    357458.9921875,
+    353816.38671875,
+    359097.07421875,
+    358497.47265625,
+    357100.42578125
+   ],
+   "ns_per_solve_median": 357100.42578125,
+   "ns_per_solve_min": 353816.38671875,
+   "repetitions_per_batch": 256,
+   "rhs": 1456,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 235,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 192,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 1153,
+      "segments": 6,
+      "work_units": 1153.0
+     },
+     "probe-dopri-discarded": {
+      "attempts": 16,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 97,
+      "segments": 1,
+      "work_units": 97.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 7,
+      "jvp": 188,
+      "linear_solves": 49,
+      "rhs": 46,
+      "segments": 2,
+      "work_units": 286.0
+     },
+     "rodas-committed": {
+      "attempts": 20,
+      "jvp": 640,
+      "linear_solves": 160,
+      "rhs": 160,
+      "segments": 3,
+      "work_units": 980.0
+     }
+    },
+    "output_rows": 15,
+    "segments": 12,
+    "success": true,
+    "switches": 1
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 1,
+   "spreads": [
+    0.01478768189213755
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 0.0001,
+   "allocations_cold_first_call": 445,
+   "allocations_warm": 189,
+   "arm": "rodas",
+   "batch_spread": 0.01953128785168336,
+   "case": "case5",
+   "max_component_absolute_error": 1.0381916881740949e-07,
+   "ns_per_solve_batches": [
+    342612.12109375,
+    343025.12890625,
+    343617.9609375,
+    342175.51953125,
+    345637.5859375,
+    343055.53515625,
+    348875.8359375
+   ],
+   "ns_per_solve_median": 343055.53515625,
+   "ns_per_solve_min": 342175.51953125,
+   "repetitions_per_batch": 256,
+   "rhs": 307,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 39,
+    "direct_factorizations": 0,
+    "jvp_vectors": 1206,
+    "linear_iterations": 582,
+    "linear_solves": 312,
+    "success": true,
+    "work_units": 1859.0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 1,
+   "spreads": [
+    0.01953128785168336
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 0.0001,
+   "allocations_cold_first_call": 319,
+   "allocations_warm": 63,
+   "arm": "rodas-dense",
+   "batch_spread": 0.05432071022670837,
+   "case": "case5",
+   "max_component_absolute_error": 1.0381910309220643e-07,
+   "ns_per_solve_batches": [
+    59601.88525390625,
+    60662.408203125,
+    61151.826171875,
+    60926.4599609375,
+    61807.783203125,
+    58512.55810546875,
+    59886.591796875
+   ],
+   "ns_per_solve_median": 60662.408203125,
+   "ns_per_solve_min": 58512.55810546875,
+   "repetitions_per_batch": 2048,
+   "rhs": 307,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 39,
+    "direct_factorizations": 39,
+    "jvp_vectors": 0,
+    "linear_iterations": 0,
+    "linear_solves": 312,
+    "success": true,
+    "work_units": 721.0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 3,
+   "spreads": [
+    0.13539975356631323,
+    0.5208934366897225,
+    0.05432071022670837
+   ],
+   "spread_ok": false
+  },
+  {
+   "accuracy_cap": 0.0001,
+   "allocations_cold_first_call": 454,
+   "allocations_warm": 198,
+   "arm": "rodas-fd",
+   "batch_spread": 0.23796545331459848,
+   "case": "case5",
+   "max_component_absolute_error": 1.0381973336581751e-07,
+   "ns_per_solve_batches": [
+    44515.595703125,
+    44826.796875,
+    51684.64990234375,
+    53624.63671875,
+    55205.91064453125,
+    44923.810546875,
+    44782.61669921875
+   ],
+   "ns_per_solve_median": 44923.810546875,
+   "ns_per_solve_min": 44515.595703125,
+   "repetitions_per_batch": 2048,
+   "rhs": 409,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 39,
+    "direct_factorizations": 39,
+    "jvp_vectors": 0,
+    "linear_iterations": 0,
+    "linear_solves": 312,
+    "success": true,
+    "work_units": 823.0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 3,
+   "spreads": [
+    0.3849146072232928,
+    0.23796545331459848,
+    0.2995141559581531
+   ],
+   "spread_ok": false
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 598,
+   "allocations_warm": 342,
+   "arm": "adaptive",
+   "batch_spread": 0.023798728041407206,
+   "case": "stiff-forced",
+   "max_component_absolute_error": 7.326026452147971e-10,
+   "ns_per_solve_batches": [
+    39870.8271484375,
+    39040.1806640625,
+    39165.03955078125,
+    39103.1064453125,
+    39173.89404296875,
+    38938.7490234375,
+    39234.91259765625
+   ],
+   "ns_per_solve_median": 39165.03955078125,
+   "ns_per_solve_min": 38938.7490234375,
+   "repetitions_per_batch": 2048,
+   "rhs": 394,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 58,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 32,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 193,
+      "segments": 1,
+      "work_units": 193.0
+     },
+     "probe-dopri-discarded": {
+      "attempts": 4,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 25,
+      "segments": 1,
+      "work_units": 25.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 8,
+      "jvp": 0,
+      "linear_solves": 64,
+      "rhs": 64,
+      "segments": 1,
+      "work_units": 144.0
+     },
+     "rodas-committed": {
+      "attempts": 14,
+      "jvp": 0,
+      "linear_solves": 112,
+      "rhs": 112,
+      "segments": 3,
+      "work_units": 252.0
+     }
+    },
+    "output_rows": 10,
+    "segments": 6,
+    "success": true,
+    "switches": 1
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 1,
+   "spreads": [
+    0.023798728041407206
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 598,
+   "allocations_warm": 342,
+   "arm": "evidence",
+   "batch_spread": 0.059114172995879566,
+   "case": "stiff-forced",
+   "max_component_absolute_error": 7.326025341924947e-10,
+   "ns_per_solve_batches": [
+    46320.96826171875,
+    44339.66845703125,
+    43990.52490234375,
+    44006.77587890625,
+    46236.31201171875,
+    46662.0361328125,
+    45192.39794921875
+   ],
+   "ns_per_solve_median": 45192.39794921875,
+   "ns_per_solve_min": 43990.52490234375,
+   "repetitions_per_batch": 2048,
+   "rhs": 456,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 66,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 32,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 193,
+      "segments": 1,
+      "work_units": 193.0
+     },
+     "probe-dopri-discarded": {
+      "attempts": 5,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 31,
+      "segments": 1,
+      "work_units": 31.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 8,
+      "jvp": 0,
+      "linear_solves": 64,
+      "rhs": 64,
+      "segments": 1,
+      "work_units": 144.0
+     },
+     "rodas-committed": {
+      "attempts": 21,
+      "jvp": 0,
+      "linear_solves": 168,
+      "rhs": 168,
+      "segments": 3,
+      "work_units": 378.0
+     }
+    },
+    "output_rows": 10,
+    "segments": 6,
+    "success": true,
+    "switches": 1
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 3,
+   "spreads": [
+    0.059114172995879566,
+    0.20245901368834773,
+    0.07250680800489753
+   ],
+   "spread_ok": false
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 319,
+   "allocations_warm": 63,
+   "arm": "rodas",
+   "batch_spread": 0.007340601364526158,
+   "case": "stiff-forced",
+   "max_component_absolute_error": 8.148821617481872e-10,
+   "ns_per_solve_batches": [
+    11020.379150390625,
+    11015.166748046875,
+    10972.340698242188,
+    10946.48876953125,
+    10939.835571289062,
+    10982.512451171875,
+    10958.086547851562
+   ],
+   "ns_per_solve_median": 10972.340698242188,
+   "ns_per_solve_min": 10939.835571289062,
+   "repetitions_per_batch": 8192,
+   "rhs": 112,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 14,
+    "direct_factorizations": 14,
+    "jvp_vectors": 0,
+    "linear_iterations": 0,
+    "linear_solves": 112,
+    "success": true,
+    "work_units": 252.0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 1,
+   "spreads": [
+    0.007340601364526158
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 620,
+   "allocations_warm": 364,
+   "arm": "adaptive",
+   "batch_spread": 0.2641107283603761,
+   "case": "relaxation",
+   "max_component_absolute_error": 4.767275352257627e-09,
+   "ns_per_solve_batches": [
+    107223.052734375,
+    86284.1435546875,
+    85108.6865234375,
+    85203.435546875,
+    84751.0107421875,
+    84773.3388671875,
+    84744.935546875
+   ],
+   "ns_per_solve_median": 85108.6865234375,
+   "ns_per_solve_min": 84744.935546875,
+   "repetitions_per_batch": 1024,
+   "rhs": 722,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 101,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 35,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 212,
+      "segments": 4,
+      "work_units": 212.0
+     },
+     "probe-dopri-committed": {
+      "attempts": 6,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 37,
+      "segments": 1,
+      "work_units": 37.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 10,
+      "jvp": 0,
+      "linear_solves": 80,
+      "rhs": 80,
+      "segments": 2,
+      "work_units": 180.0
+     },
+     "rodas-committed": {
+      "attempts": 50,
+      "jvp": 0,
+      "linear_solves": 400,
+      "rhs": 393,
+      "segments": 2,
+      "work_units": 879.0
+     }
+    },
+    "output_rows": 10,
+    "segments": 9,
+    "success": true,
+    "switches": 2
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 3,
+   "spreads": [
+    0.2641107283603761,
+    0.39471235727703435,
+    0.5939459470264505
+   ],
+   "spread_ok": false
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 555,
+   "allocations_warm": 299,
+   "arm": "evidence",
+   "batch_spread": 0.010752654161273354,
+   "case": "relaxation",
+   "max_component_absolute_error": 4.809206144429368e-09,
+   "ns_per_solve_batches": [
+    81283.916015625,
+    80582.5751953125,
+    80968.3408203125,
+    80420.35546875,
+    80479.65625,
+    80736.3017578125,
+    80417.439453125
+   ],
+   "ns_per_solve_median": 80582.5751953125,
+   "ns_per_solve_min": 80417.439453125,
+   "repetitions_per_batch": 1024,
+   "rhs": 675,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 95,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 35,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 212,
+      "segments": 4,
+      "work_units": 212.0
+     },
+     "probe-dopri-committed": {
+      "attempts": 6,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 37,
+      "segments": 1,
+      "work_units": 37.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 4,
+      "jvp": 0,
+      "linear_solves": 32,
+      "rhs": 32,
+      "segments": 1,
+      "work_units": 72.0
+     },
+     "rodas-committed": {
+      "attempts": 50,
+      "jvp": 0,
+      "linear_solves": 400,
+      "rhs": 394,
+      "segments": 2,
+      "work_units": 882.0
+     }
+    },
+    "output_rows": 10,
+    "segments": 8,
+    "success": true,
+    "switches": 2
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 2,
+   "spreads": [
+    0.22312272701288105,
+    0.010752654161273354
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 620,
+   "allocations_warm": 364,
+   "arm": "adaptive-sentinel",
+   "batch_spread": 0.014273933954315414,
+   "case": "relaxation",
+   "max_component_absolute_error": 4.767275352257627e-09,
+   "ns_per_solve_batches": [
+    83952.359375,
+    84135.6630859375,
+    84251.3115234375,
+    85012.4228515625,
+    84301.4833984375,
+    84473.5166015625,
+    83809.8251953125
+   ],
+   "ns_per_solve_median": 84251.3115234375,
+   "ns_per_solve_min": 83809.8251953125,
+   "repetitions_per_batch": 1024,
+   "rhs": 722,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 101,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 35,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 212,
+      "segments": 4,
+      "work_units": 212.0
+     },
+     "probe-dopri-committed": {
+      "attempts": 6,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 37,
+      "segments": 1,
+      "work_units": 37.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 10,
+      "jvp": 0,
+      "linear_solves": 80,
+      "rhs": 80,
+      "segments": 2,
+      "work_units": 180.0
+     },
+     "rodas-committed": {
+      "attempts": 50,
+      "jvp": 0,
+      "linear_solves": 400,
+      "rhs": 393,
+      "segments": 2,
+      "work_units": 879.0
+     }
+    },
+    "output_rows": 10,
+    "segments": 9,
+    "success": true,
+    "switches": 2
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 2,
+   "spreads": [
+    0.1245005367063794,
+    0.014273933954315414
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 319,
+   "allocations_warm": 63,
+   "arm": "rodas",
+   "batch_spread": 0.045773103605991565,
+   "case": "relaxation",
+   "max_component_absolute_error": 9.17396314470409e-09,
+   "ns_per_solve_batches": [
+    51241.0615234375,
+    51245.2685546875,
+    51659.798828125,
+    53583.236328125,
+    51550.4716796875,
+    51478.3154296875,
+    51226.9140625
+   ],
+   "ns_per_solve_median": 51478.3154296875,
+   "ns_per_solve_min": 51226.9140625,
+   "repetitions_per_batch": 1024,
+   "rhs": 462,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 59,
+    "direct_factorizations": 59,
+    "jvp_vectors": 0,
+    "linear_iterations": 0,
+    "linear_solves": 472,
+    "success": true,
+    "work_units": 1032.0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 1,
+   "spreads": [
+    0.045773103605991565
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 3297,
+   "allocations_warm": 3041,
+   "arm": "adaptive",
+   "batch_spread": 0.05582370651939618,
+   "case": "transition-39",
+   "max_component_absolute_error": 2.1908541647519542e-10,
+   "ns_per_solve_batches": [
+    6190193.375,
+    6195912.875,
+    6351299.9375,
+    6544673.5625,
+    6259319.875,
+    6349993.75,
+    6484834.0
+   ],
+   "ns_per_solve_median": 6349993.75,
+   "ns_per_solve_min": 6190193.375,
+   "repetitions_per_batch": 16,
+   "rhs": 30515,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 4942,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 4488,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 26929,
+      "segments": 142,
+      "work_units": 26929.0
+     },
+     "probe-dopri-discarded": {
+      "attempts": 16,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 97,
+      "segments": 1,
+      "work_units": 97.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 35,
+      "jvp": 1056,
+      "linear_solves": 257,
+      "rhs": 265,
+      "segments": 9,
+      "work_units": 1613.0
+     },
+     "rodas-committed": {
+      "attempts": 403,
+      "jvp": 12896,
+      "linear_solves": 3224,
+      "rhs": 3224,
+      "segments": 3,
+      "work_units": 19747.0
+     }
+    },
+    "output_rows": 148,
+    "segments": 155,
+    "success": true,
+    "switches": 1
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 3,
+   "spreads": [
+    0.29518739923222553,
+    0.3962178517567817,
+    0.05582370651939618
+   ],
+   "spread_ok": false
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 4989,
+   "allocations_warm": 4733,
+   "arm": "evidence",
+   "batch_spread": 0.01173236961823819,
+   "case": "transition-39",
+   "max_component_absolute_error": 1.7988249667588718e-08,
+   "ns_per_solve_batches": [
+    14825819.0,
+    14816273.75,
+    14900923.0,
+    14773956.5,
+    14758993.25,
+    14835928.0,
+    14727093.0
+   ],
+   "ns_per_solve_median": 14816273.75,
+   "ns_per_solve_min": 14727093.0,
+   "repetitions_per_batch": 4,
+   "rhs": 184724,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 30779,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 30747,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 184483,
+      "segments": 963,
+      "work_units": 184483.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 32,
+      "jvp": 960,
+      "linear_solves": 233,
+      "rhs": 241,
+      "segments": 8,
+      "work_units": 1466.0
+     }
+    },
+    "output_rows": 964,
+    "segments": 971,
+    "success": true,
+    "switches": 0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 1,
+   "spreads": [
+    0.01173236961823819
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 3297,
+   "allocations_warm": 3041,
+   "arm": "adaptive-sentinel",
+   "batch_spread": 0.017742437529223703,
+   "case": "transition-39",
+   "max_component_absolute_error": 2.1908541647519542e-10,
+   "ns_per_solve_batches": [
+    6520004.0,
+    6475858.375,
+    6461471.25,
+    6517319.0,
+    6442247.625,
+    6451150.625,
+    6405361.75
+   ],
+   "ns_per_solve_median": 6461471.25,
+   "ns_per_solve_min": 6405361.75,
+   "repetitions_per_batch": 8,
+   "rhs": 34109,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 5541,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 4488,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 26929,
+      "segments": 142,
+      "work_units": 26929.0
+     },
+     "probe-dopri-discarded": {
+      "attempts": 615,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 3691,
+      "segments": 1,
+      "work_units": 3691.0
+     },
+     "probe-rodas-committed": {
+      "attempts": 94,
+      "jvp": 3008,
+      "linear_solves": 752,
+      "rhs": 752,
+      "segments": 1,
+      "work_units": 4606.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 35,
+      "jvp": 1056,
+      "linear_solves": 257,
+      "rhs": 265,
+      "segments": 9,
+      "work_units": 1613.0
+     },
+     "rodas-committed": {
+      "attempts": 309,
+      "jvp": 9888,
+      "linear_solves": 2472,
+      "rhs": 2472,
+      "segments": 2,
+      "work_units": 15141.0
+     }
+    },
+    "output_rows": 148,
+    "segments": 155,
+    "success": true,
+    "switches": 1
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 2,
+   "spreads": [
+    0.107410380377866,
+    0.017742437529223703
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 3571,
+   "allocations_warm": 3315,
+   "arm": "rodas",
+   "batch_spread": 0.03247329103856944,
+   "case": "transition-39",
+   "max_component_absolute_error": 2.698808954093579e-10,
+   "ns_per_solve_batches": [
+    9785099.875,
+    9786204.5,
+    10103646.25,
+    9809488.5,
+    9787998.0,
+    9908125.5,
+    9886774.0
+   ],
+   "ns_per_solve_median": 9809488.5,
+   "ns_per_solve_min": 9785099.875,
+   "repetitions_per_batch": 8,
+   "rhs": 8853,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 1111,
+    "direct_factorizations": 0,
+    "jvp_vectors": 35552,
+    "linear_iterations": 17776,
+    "linear_solves": 8888,
+    "success": true,
+    "work_units": 54369.0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 2,
+   "spreads": [
+    0.30485285548602203,
+    0.03247329103856944
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 2232,
+   "allocations_warm": 1976,
+   "arm": "adaptive",
+   "batch_spread": 0.016348976378868344,
+   "case": "transition-79",
+   "max_component_absolute_error": 2.463961923382385e-09,
+   "ns_per_solve_batches": [
+    3707806.6875,
+    3697983.8125,
+    3726088.625,
+    3674663.0,
+    3710710.3125,
+    3665630.375,
+    3678981.8125
+   ],
+   "ns_per_solve_median": 3697983.8125,
+   "ns_per_solve_min": 3665630.375,
+   "repetitions_per_batch": 16,
+   "rhs": 29327,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 4844,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 4705,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 28231,
+      "segments": 150,
+      "work_units": 28231.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 35,
+      "jvp": 1052,
+      "linear_solves": 256,
+      "rhs": 264,
+      "segments": 9,
+      "work_units": 1607.0
+     },
+     "rodas-committed": {
+      "attempts": 104,
+      "jvp": 3328,
+      "linear_solves": 832,
+      "rhs": 832,
+      "segments": 1,
+      "work_units": 5096.0
+     }
+    },
+    "output_rows": 153,
+    "segments": 160,
+    "success": true,
+    "switches": 1
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 1,
+   "spreads": [
+    0.016348976378868344
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 3316,
+   "allocations_warm": 3060,
+   "arm": "rodas",
+   "batch_spread": 0.04198997957663128,
+   "case": "transition-79",
+   "max_component_absolute_error": 8.443580279404728e-10,
+   "ns_per_solve_batches": [
+    9697485.0,
+    9742577.375,
+    9577685.625,
+    9778531.375,
+    9946956.125,
+    9809110.25,
+    9537865.5
+   ],
+   "ns_per_solve_median": 9742577.375,
+   "ns_per_solve_min": 9537865.5,
+   "repetitions_per_batch": 8,
+   "rhs": 8446,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 1065,
+    "direct_factorizations": 0,
+    "jvp_vectors": 34080,
+    "linear_iterations": 17040,
+    "linear_solves": 8520,
+    "success": true,
+    "work_units": 52037.0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 1,
+   "spreads": [
+    0.04198997957663128
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 0.0001,
+   "allocations_cold_first_call": 1356,
+   "allocations_warm": 1100,
+   "arm": "adaptive",
+   "batch_spread": 0.05872187771531471,
+   "case": "gyro-tight",
+   "max_component_absolute_error": 3.896784764681471e-05,
+   "ns_per_solve_batches": [
+    2875221.6875,
+    2878615.59375,
+    2873974.625,
+    2879896.09375,
+    2950607.4375,
+    3043087.53125,
+    2890510.46875
+   ],
+   "ns_per_solve_median": 2879896.09375,
+   "ns_per_solve_min": 2873974.625,
+   "repetitions_per_batch": 32,
+   "rhs": 24554,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 4091,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 4071,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 24427,
+      "segments": 128,
+      "work_units": 24427.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 20,
+      "jvp": 644,
+      "linear_solves": 125,
+      "rhs": 127,
+      "segments": 5,
+      "work_units": 896.0
+     }
+    },
+    "output_rows": 129,
+    "segments": 133,
+    "success": true,
+    "switches": 0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 3,
+   "spreads": [
+    0.06946808326934874,
+    0.05872187771531471,
+    0.37246269066431636
+   ],
+   "spread_ok": false
+  },
+  {
+   "accuracy_cap": 0.0001,
+   "allocations_cold_first_call": 16,
+   "allocations_warm": 16,
+   "arm": "dopri",
+   "batch_spread": 0.005104734060235391,
+   "case": "gyro-tight",
+   "max_component_absolute_error": 3.899609760221745e-05,
+   "ns_per_solve_batches": [
+    2436270.25,
+    2433406.09375,
+    2423874.09375,
+    2426209.40625,
+    2423926.6875,
+    2434799.34375,
+    2428364.75
+   ],
+   "ns_per_solve_median": 2428364.75,
+   "ns_per_solve_min": 2423874.09375,
+   "repetitions_per_batch": 32,
+   "rhs": 24403,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 4067,
+    "success": true,
+    "work_units": 24403.0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 2,
+   "spreads": [
+    0.22772484292400483,
+    0.005104734060235391
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 0.0001,
+   "allocations_cold_first_call": 18624,
+   "allocations_warm": 18368,
+   "arm": "rodas",
+   "batch_spread": 0.022697307459843264,
+   "case": "gyro-tight",
+   "max_component_absolute_error": 1.177401899804531e-05,
+   "ns_per_solve_batches": [
+    155558933.0,
+    156339944.0,
+    154922435.0,
+    154997095.0,
+    154637758.0,
+    155156906.0,
+    158159402.0
+   ],
+   "ns_per_solve_median": 155156906.0,
+   "ns_per_solve_min": 154637758.0,
+   "repetitions_per_batch": 1,
+   "rhs": 75314,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 9454,
+    "direct_factorizations": 0,
+    "jvp_vectors": 378160,
+    "linear_iterations": 226896,
+    "linear_solves": 75632,
+    "success": true,
+    "work_units": 529106.0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 1,
+   "spreads": [
+    0.022697307459843264
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 0.0001,
+   "allocations_cold_first_call": 318,
+   "allocations_warm": 62,
+   "arm": "rodas-dense",
+   "batch_spread": 0.017064306368467858,
+   "case": "gyro-tight",
+   "max_component_absolute_error": 1.1774019875232522e-05,
+   "ns_per_solve_batches": [
+    19315049.75,
+    19158447.25,
+    19125670.75,
+    18996449.75,
+    19073013.75,
+    19015180.0,
+    18989582.0
+   ],
+   "ns_per_solve_median": 19073013.75,
+   "ns_per_solve_min": 18989582.0,
+   "repetitions_per_batch": 4,
+   "rhs": 75314,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 9454,
+    "direct_factorizations": 9454,
+    "jvp_vectors": 0,
+    "linear_iterations": 0,
+    "linear_solves": 75632,
+    "success": true,
+    "work_units": 205762.0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 3,
+   "spreads": [
+    0.06910650775821506,
+    0.5962966110638441,
+    0.017064306368467858
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 0.0001,
+   "allocations_cold_first_call": 36861,
+   "allocations_warm": 36605,
+   "arm": "rodas-fd",
+   "batch_spread": 0.016605441836368872,
+   "case": "gyro-tight",
+   "max_component_absolute_error": 1.1774147574444838e-05,
+   "ns_per_solve_batches": [
+    19737342.5,
+    19610376.0,
+    19699258.5,
+    19582671.25,
+    19678835.0,
+    19909447.0,
+    19602721.75
+   ],
+   "ns_per_solve_median": 19678835.0,
+   "ns_per_solve_min": 19582671.25,
+   "repetitions_per_batch": 4,
+   "rhs": 139252,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 9452,
+    "direct_factorizations": 9452,
+    "jvp_vectors": 0,
+    "linear_iterations": 0,
+    "linear_solves": 75616,
+    "success": true,
+    "work_units": 269684.0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 1,
+   "spreads": [
+    0.016605441836368872
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 0.0001,
+   "allocations_cold_first_call": 790,
+   "allocations_warm": 534,
+   "arm": "adaptive",
+   "batch_spread": 0.004846022526549436,
+   "case": "gyro-default",
+   "max_component_absolute_error": 0.03159893935321256,
+   "ns_per_solve_batches": [
+    896173.09375,
+    897183.125,
+    898666.390625,
+    896467.09375,
+    896027.359375,
+    894323.515625,
+    894750.40625
+   ],
+   "ns_per_solve_median": 896173.09375,
+   "ns_per_solve_min": 894323.515625,
+   "repetitions_per_batch": 64,
+   "rhs": 6745,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 1123,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 1111,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 6667,
+      "segments": 40,
+      "work_units": 6667.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 12,
+      "jvp": 385,
+      "linear_solves": 75,
+      "rhs": 78,
+      "segments": 3,
+      "work_units": 538.0
+     }
+    },
+    "output_rows": 41,
+    "segments": 43,
+    "success": true,
+    "switches": 0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 1,
+   "spreads": [
+    0.004846022526549436
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 0.0001,
+   "allocations_cold_first_call": 16,
+   "allocations_warm": 16,
+   "arm": "dopri",
+   "batch_spread": 0.013385724716048665,
+   "case": "gyro-default",
+   "max_component_absolute_error": 0.031681416255663064,
+   "ns_per_solve_batches": [
+    668216.5546875,
+    671440.75,
+    666539.71875,
+    662518.6328125,
+    664221.453125,
+    662523.484375,
+    670904.5859375
+   ],
+   "ns_per_solve_median": 666539.71875,
+   "ns_per_solve_min": 662518.6328125,
+   "repetitions_per_batch": 128,
+   "rhs": 6631,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 1105,
+    "success": true,
+    "work_units": 6631.0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 1,
+   "spreads": [
+    0.013385724716048665
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 598,
+   "allocations_warm": 342,
+   "arm": "adaptive",
+   "batch_spread": 0.03276591430820793,
+   "case": "stale-return",
+   "max_component_absolute_error": 1.0995778065847617e-08,
+   "ns_per_solve_batches": [
+    280194.19140625,
+    280279.8984375,
+    280862.67578125,
+    281662.69921875,
+    284318.63671875,
+    281016.83203125,
+    289401.96484375
+   ],
+   "ns_per_solve_median": 281016.83203125,
+   "ns_per_solve_min": 280194.19140625,
+   "repetitions_per_batch": 256,
+   "rhs": 2445,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 324,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 32,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 193,
+      "segments": 1,
+      "work_units": 193.0
+     },
+     "probe-dopri-discarded": {
+      "attempts": 16,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 97,
+      "segments": 1,
+      "work_units": 97.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 4,
+      "jvp": 0,
+      "linear_solves": 32,
+      "rhs": 32,
+      "segments": 1,
+      "work_units": 72.0
+     },
+     "rodas-committed": {
+      "attempts": 272,
+      "jvp": 0,
+      "linear_solves": 2176,
+      "rhs": 2123,
+      "segments": 3,
+      "work_units": 4737.0
+     }
+    },
+    "output_rows": 10,
+    "segments": 6,
+    "success": true,
+    "switches": 1
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 1,
+   "spreads": [
+    0.03276591430820793
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 685,
+   "allocations_warm": 429,
+   "arm": "adaptive-sentinel",
+   "batch_spread": 0.012362918955182784,
+   "case": "stale-return",
+   "max_component_absolute_error": 1.73570059436301e-08,
+   "ns_per_solve_batches": [
+    222484.98828125,
+    222857.72265625,
+    221895.125,
+    224646.63671875,
+    222172.76171875,
+    222561.65625,
+    222589.08984375
+   ],
+   "ns_per_solve_median": 222561.65625,
+   "ns_per_solve_min": 221895.125,
+   "repetitions_per_batch": 256,
+   "rhs": 2036,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 299,
+    "by_kind": {
+     "dopri-committed": {
+      "attempts": 118,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 710,
+      "segments": 4,
+      "work_units": 710.0
+     },
+     "probe-dopri-committed": {
+      "attempts": 45,
+      "jvp": 0,
+      "linear_solves": 0,
+      "rhs": 271,
+      "segments": 1,
+      "work_units": 271.0
+     },
+     "probe-rodas-discarded": {
+      "attempts": 89,
+      "jvp": 0,
+      "linear_solves": 704,
+      "rhs": 694,
+      "segments": 3,
+      "work_units": 1553.0
+     },
+     "rodas-committed": {
+      "attempts": 47,
+      "jvp": 0,
+      "linear_solves": 376,
+      "rhs": 361,
+      "segments": 2,
+      "work_units": 801.0
+     }
+    },
+    "output_rows": 10,
+    "segments": 10,
+    "success": true,
+    "switches": 2
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 1,
+   "spreads": [
+    0.012362918955182784
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 16,
+   "allocations_warm": 16,
+   "arm": "dopri",
+   "batch_spread": 0.01917712483896372,
+   "case": "stale-return",
+   "max_component_absolute_error": 1.522711901014162e-08,
+   "ns_per_solve_batches": [
+    722038.6328125,
+    725299.859375,
+    733981.515625,
+    721823.3046875,
+    723130.53125,
+    720134.890625,
+    721980.0078125
+   ],
+   "ns_per_solve_median": 722038.6328125,
+   "ns_per_solve_min": 720134.890625,
+   "repetitions_per_batch": 128,
+   "rhs": 10195,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 1699,
+    "success": true,
+    "work_units": 10195.0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 1,
+   "spreads": [
+    0.01917712483896372
+   ],
+   "spread_ok": true
+  },
+  {
+   "accuracy_cap": 1e-05,
+   "allocations_cold_first_call": 319,
+   "allocations_warm": 63,
+   "arm": "rodas",
+   "batch_spread": 0.011048586829897969,
+   "case": "stale-return",
+   "max_component_absolute_error": 1.1784011322291121e-08,
+   "ns_per_solve_batches": [
+    234136.58203125,
+    232704.0390625,
+    233486.0234375,
+    232659.89453125,
+    232393.41796875,
+    232136.95703125,
+    234708.0078125
+   ],
+   "ns_per_solve_median": 232704.0390625,
+   "ns_per_solve_min": 232136.95703125,
+   "repetitions_per_batch": 256,
+   "rhs": 2046,
+   "schema": "vigilode.adapter-light-bench.v2",
+   "summary": {
+    "attempts": 262,
+    "direct_factorizations": 262,
+    "jvp_vectors": 0,
+    "linear_iterations": 0,
+    "linear_solves": 2096,
+    "success": true,
+    "work_units": 4566.0
+   },
+   "timing_authority": "diagnostic_only",
+   "timing_scope": "solver call only; result destruction included; summary built outside timing",
+   "attempts": 1,
+   "spreads": [
+    0.011048586829897969
+   ],
+   "spread_ok": true
+  }
+ ]
+}
