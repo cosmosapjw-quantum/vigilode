@@ -291,6 +291,25 @@ fn discarded_pilots_back_off_geometrically_and_rearm_on_a_work_rate_jump() {
         "entry at {entry}, transition at {ts}"
     );
     assert!((r.final_state[0] - (400.0_f64).cos()).abs() < 1e-4);
+    // Negative control: with the trend re-arm disabled (a ratio no finite
+    // jump reaches), the grown cooldown delays the entry by many batches.
+    let no_rearm = SwitchingConfig {
+        rearm_rate_ratio: 1e300,
+        ..c.clone()
+    };
+    let r = SwitchingSolver::solve(&p, (0.0, 1.0), &[1.0], &options(1e-4), &no_rearm).unwrap();
+    assert!(r.success, "{}", r.message);
+    let late_entry = r
+        .stats
+        .segments
+        .iter()
+        .find(|s| s.committed && s.method == SwitchingMethod::Rodas5p)
+        .map(|s| s.start_time)
+        .expect("the stiff phase must still enter RODAS eventually");
+    assert!(
+        late_entry - ts > 1e-3,
+        "without re-arm the entry came at {late_entry}"
+    );
 }
 
 #[test]
@@ -320,13 +339,19 @@ fn discarded_probes_back_off_and_are_work_bounded_on_a_persistently_stiff_proble
             .unwrap();
         let implicit_rate = previous.work_units / (previous.reached_time - previous.start_time);
         let cap = c.return_cost_ratio * implicit_rate * (probe.target_time - probe.start_time);
-        // At most one explicit attempt (7 RHS) past the return ceiling.
+        // One unit of rounding slack plus at most one explicit attempt
+        // (7 RHS) past the return ceiling.
         assert!(
-            (probe.rhs_calls as f64) <= cap.floor() + 7.0,
+            (probe.rhs_calls as f64) <= cap.floor() + 8.0,
             "probe charged {} RHS against return cap {cap}",
             probe.rhs_calls
         );
     }
+    assert!(
+        probes.iter().any(|(_, p)| p.decision.contains("ceiling")),
+        "the return ceiling must have ended at least one recheck: {:?}",
+        probes.iter().map(|(_, p)| p.decision).collect::<Vec<_>>()
+    );
     assert!((r.final_state[0] - 4.0_f64.cos()).abs() < 1e-6);
 }
 
@@ -348,9 +373,12 @@ fn return_to_explicit_still_happens_after_a_stiff_to_smooth_transition() {
         .iter()
         .find(|s| s.is_probe && s.committed && s.method == SwitchingMethod::Dopri5)
         .unwrap_or_else(|| panic!("no committed return probe: {:?}", r.stats.segments));
-    // Capped back-off: the return happens within two grown intervals.
+    // The first recheck after the transition is discarded at most once
+    // (window 5 is still stiff), so the return comes within one grown
+    // interval of the transition, well inside the span.
     let window = 4.0 / 16.0;
-    let limit = ts + (2 * c.probe_interval * c.probe_backoff_factor) as f64 * window;
+    let limit = ts + (c.probe_interval * c.probe_backoff_factor) as f64 * window;
+    assert!(limit < 4.0);
     assert!(
         returned.start_time >= ts && returned.start_time <= limit,
         "returned at {} (transition {ts}, limit {limit})",
@@ -437,14 +465,76 @@ fn explicit_batch_loop_allocation_is_bounded() {
     let batches = r.stats.segments.len();
     assert!(batches > 40, "{batches} batches");
     // Each committed batch keeps its public driver record (boxed stats with
-    // the fixed options/tolerance vectors, the committed state and its
-    // output row); nothing else in the loop may allocate.
-    let per_batch = 12;
-    let setup = 48;
+    // the fixed tolerance vector), the committed state and its output row:
+    // four allocations plus amortized growth (measured 376 for 64 batches).
+    // The pre-change loop cloned the statistics twice, the record once and
+    // a String decision per batch, at least seven per batch, which this
+    // bound refuses.
+    let per_batch = 6;
+    let setup = 32;
     assert!(
         allocations <= per_batch * batches + setup,
         "{allocations} allocations for {batches} batches"
     );
+}
+
+#[test]
+fn bounded_pilot_on_a_declared_band_is_discarded_not_refused() {
+    // A dense Jacobian with a declared band is verified before any step with
+    // two Jacobian evaluations (2n = 16 charged units). The explicit batch of
+    // one attempt gives an entry ceiling of floor(0.8 * 7) = 5, so a ceiling
+    // that counted the verification would refuse the route and abort the
+    // whole solve; the bounded pilot must instead be discarded normally.
+    let n = 8;
+    let p = Problem::new(n, |_, y, out| {
+        for i in 0..y.len() {
+            out[i] = -10_000.0 * y[i];
+        }
+        Ok(())
+    })
+    .jacobian(Jacobian::dense(move |_, _, j| {
+        for i in 0..n {
+            j[i * n + i] = -10_000.0;
+        }
+        Ok(())
+    }))
+    .banded(0, 0)
+    .autonomous();
+    // One persistent explicit session: each one-attempt batch shows
+    // pressure, so both permitted pilots run on the first two batches.
+    let c = SwitchingConfig {
+        fallback: DerivativeFallback::ProvidedOnly,
+        window_count: 2,
+        explicit_attempt_budget: 1,
+        pressure_steps: 1,
+        implicit_pilot_attempt_budget: 8,
+        implicit_pilot_limit: 2,
+        carry_explicit_step: true,
+        ..Default::default()
+    };
+    let r = SwitchingSolver::solve(&p, (0.0, 0.01), &vec![1.0; n], &options(1e-6), &c).unwrap();
+    assert!(r.success, "{}", r.message);
+    assert!(r.stats.accounting_complete, "{}", r.message);
+    assert!(
+        !r.message.contains("refused") && !r.message.contains("without a work record"),
+        "{}",
+        r.message
+    );
+    let pilots = pilots(&r);
+    assert!(!pilots.is_empty(), "{:?}", r.stats.segments);
+    for (_, pilot) in &pilots {
+        assert!(!pilot.committed);
+        assert!(
+            pilot.jacobian_builds >= 1,
+            "verification and driver builds are charged"
+        );
+    }
+    assert!(
+        pilots.iter().any(|(_, s)| s.decision.contains("ceiling")),
+        "{:?}",
+        pilots.iter().map(|(_, s)| s.decision).collect::<Vec<_>>()
+    );
+    conserved(&r);
 }
 
 #[test]

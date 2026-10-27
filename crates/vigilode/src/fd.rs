@@ -24,7 +24,6 @@ pub(crate) struct FatalRecord {
 /// Per-solve state shared by every wrapped callback: the fatal-error latch
 /// and the facade's own work counters. Vector-output callbacks also enforce
 /// finite inputs and complete finite output writes before a stage can use them.
-#[derive(Default)]
 pub(crate) struct Guard {
     poisoned: AtomicBool,
     fatal: Mutex<Option<FatalRecord>>,
@@ -35,29 +34,65 @@ pub(crate) struct Guard {
     fd_builds: AtomicU64,
     fd_rhs_calls: AtomicU64,
     charged_units: AtomicU64,
-    ceiling: Option<u64>,
+    /// Work ceiling in callback units; `NO_CEILING` until armed.
+    ceiling: AtomicU64,
     ceiling_hit: AtomicBool,
 }
 
-impl Guard {
-    /// A guard that stops the run once the charged callback work exceeds
-    /// `ceiling`: RHS, JVP and time-derivative calls cost one unit each, a
-    /// dense or band Jacobian the units its caller charges (`n`).
-    pub(crate) fn with_ceiling(ceiling: u64) -> Self {
+const NO_CEILING: u64 = u64::MAX;
+
+impl Default for Guard {
+    fn default() -> Self {
         Self {
-            ceiling: Some(ceiling),
-            ..Self::default()
+            poisoned: AtomicBool::new(false),
+            fatal: Mutex::new(None),
+            fatal_errors: AtomicU64::new(0),
+            recoverable_errors: AtomicU64::new(0),
+            short_circuited_calls: AtomicU64::new(0),
+            short_circuited_rhs_calls: AtomicU64::new(0),
+            fd_builds: AtomicU64::new(0),
+            fd_rhs_calls: AtomicU64::new(0),
+            charged_units: AtomicU64::new(0),
+            ceiling: AtomicU64::new(NO_CEILING),
+            ceiling_hit: AtomicBool::new(false),
         }
+    }
+}
+
+impl Guard {
+    /// Stop the run once the charged callback work exceeds `ceiling`: RHS,
+    /// JVP and time-derivative calls cost one unit each, a dense or band
+    /// Jacobian the units its caller charges (`n`). Calls charged before
+    /// arming count toward the total.
+    pub(crate) fn arm_ceiling(&self, ceiling: u64) {
+        self.ceiling
+            .store(ceiling.min(NO_CEILING - 1), Ordering::Release);
     }
 
     /// The ceiling and the charged work, once the ceiling was exceeded.
     pub(crate) fn ceiling_hit(&self) -> Option<(u64, u64)> {
         self.ceiling_hit.load(Ordering::Acquire).then(|| {
             (
-                self.ceiling.unwrap_or(0),
+                self.ceiling.load(Ordering::Relaxed),
                 self.charged_units.load(Ordering::Relaxed),
             )
         })
+    }
+
+    /// Charge `units` of completed callback work; the call that takes the
+    /// total past an armed ceiling latches the terminal signal.
+    fn charge(&self, callback: Callback, t: f64, units: u64) -> CoreResult<()> {
+        let charged = self.charged_units.fetch_add(units, Ordering::Relaxed) + units;
+        let ceiling = self.ceiling.load(Ordering::Acquire);
+        if charged > ceiling {
+            self.ceiling_hit.store(true, Ordering::Release);
+            self.poisoned.store(true, Ordering::Release);
+            return Err(CoreError::FatalCallback(format!(
+                "{callback:?} callback at t = {t:e} completed, but the charged \
+                 callback work {charged} exceeds the work ceiling {ceiling}"
+            )));
+        }
+        Ok(())
     }
 
     /// Evaluate a vector-output callback. An invalid numerical stage is
@@ -131,22 +166,12 @@ impl Guard {
             )));
         }
         match user() {
-            Ok(()) => {
-                if let Some(ceiling) = self.ceiling {
-                    let charged = self.charged_units.fetch_add(units, Ordering::Relaxed) + units;
-                    if charged > ceiling {
-                        self.ceiling_hit.store(true, Ordering::Release);
-                        self.poisoned.store(true, Ordering::Release);
-                        return Err(CoreError::FatalCallback(format!(
-                            "{callback:?} callback at t = {t:e} completed, but the charged \
-                             callback work {charged} exceeds the work ceiling {ceiling}"
-                        )));
-                    }
-                }
-                Ok(())
-            }
+            Ok(()) => self.charge(callback, t, units),
             Err(CallbackError::Recoverable(message)) => {
                 self.recoverable_errors.fetch_add(1, Ordering::Relaxed);
+                // The call entered user code and is counted by the driver,
+                // so it is charged as well; past the ceiling it is terminal.
+                self.charge(callback, t, units)?;
                 Err(CoreError::NonFinite(format!(
                     "recoverable {callback:?} callback error at t = {t:e}: {message}"
                 )))

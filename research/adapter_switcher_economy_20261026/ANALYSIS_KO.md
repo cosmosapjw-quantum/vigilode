@@ -43,3 +43,18 @@
 ## 5. 재현
 
 `tools/run_campaign.sh BIN RAW`, `tools/analyze.py RAW OUT.json BIN COMMIT`, `tools/compare.py BEFORE AFTER OUT.md GATES.json`. before = 패킷 binary(`BINARY_SHA256_FINAL.json`과 동일 해시), after = `636cdc7a` measurement 빌드, before-2 = 패킷 binary 재실행(drift 대조). 원자료 648개 파일의 정렬 해시 요약은 `evidence/HOST.json`에 있고 저장소 밖(세션 scratch)에 남겼다. NCP·네트워크 미사용.
+
+## 6. 적대적 리뷰(독립 에이전트 3개 lens)와 수정 루프 (2026-10-27)
+
+리뷰는 24건을 냈고 그중 3건만 독립 검증까지 끝났다(세션 한도). 나머지 21건은 코드로 직접 재검토했다. 확정·수정(단일 수정 루프, 임계값·게이트 변경 없음):
+
+- **MAJOR (확정)** `Jacobian::Dense` + 선언된 band 경로에서 entry ceiling이 route 검증(band fill + dense 참조, 2n 단위) 안에서 걸리면 `StructureRefused`로 올라와 pilot이 아니라 **adapter 전체 solve가 중단**되고 accounting이 깨진다. 수정: ceiling은 driver 작업만 제한하도록 검증 비용(2n) 위에서 arm. 결정 보존은 유지된다(상한 ≥ cap이면 통과 pilot은 절대 정지되지 않음). 회귀 계약 `bounded_pilot_on_a_declared_band_is_discarded_not_refused`.
+- **MINOR (확정)** 합쳐진 implicit batch의 창 endpoint가 시계 분해능 아래에서 같아지면 facade가 run을 거부. 수정: landing을 strictly increasing으로 dedupe.
+- **MINOR (확정)** `Recoverable` 오류를 낸 callback은 driver가 세지만 ceiling에 청구되지 않았다. 수정: 청구(여전히 ≤ work_units, 결정 보존).
+- **MINOR (확정)** return ceiling의 곱(`ratio·rate·span`)과 return 판정의 나눗셈(`work/span ≤ ratio·rate`) 사이 반올림 비대칭. 수정: ceiling에 1 단위 slack.
+- **MINOR (확정)** recheck hysteresis 기준이 "마지막 창의 rate"에서 "합쳐진 batch 평균 rate"로 바뀌었다 — 문서화(아래 amendment). recheck re-arm은 "즉시" 발동이 아니라 **back-off를 해제**하는 것이며 실제 recheck는 진행 중인 implicit run이 끝나는 등록된 지점에서 일어난다 — 문서 수정.
+- **MINOR (확정)** 테스트 공백: 늦은 전이 테스트에 re-arm 비활성 음성 대조(진입 지연 > 1e-3) 추가; recheck ceiling이 실제로 발동했는지 단언; 전이 후 복귀 상한을 span 안으로(3.5 < 4.0) 조임; 할당 상한을 측정값으로(새 376 대 기존 568 / 64 batch) 6/batch로 조여 기존 루프를 거부하게 함.
+- **MINOR (확정)** 비교기 `compare.py`가 측정 후 수정됨(등록된 report-only 셀 규칙 구현). EXEC_SHA 시점 도구로는 G3가 그 셀에서 False. 결과 섹션에 공개.
+- **MINOR (확정)** 커밋된 분석 JSON은 `segments` 행을 제거한 압축본(원본은 archive에 SHA와 함께 보존). 공개.
+- **반박/범위 밖**: "carry=false recheck도 session 경로"(의도된 변경, 공개); "pilot 예산 16으로는 창당 16 attempt 초과 문제는 복귀 불가"(기존 설계); "ceiling의 verdict-identity 대조 실험 없음"(수학적 논증만, 명시); "implicit 셀 오차 증가"(1.6e-10→7.3e-10, 9.9e-10→1.3e-8: seed된 큰 스텝의 결과, cap 대비 4자리 여유).
+- 새 테스트 작성 중 발견한 **기존** 한계: `carry_explicit_step=false`에서 남은 span이 driver 최소 스텝(1e-14) 아래면 `local.h0.min(remaining)`이 거부되어 solve가 실패로 끝난다. 이번 범위 밖, 후속 과제.

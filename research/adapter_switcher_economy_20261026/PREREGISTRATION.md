@@ -142,7 +142,50 @@ attempts, at most 5 committed implicit batches, at most 30 discarded recheck att
 `evidence`: at most 80 attempts. Case10 (either tolerance): at most 24 discarded pilot attempts. Rotation
 `pressure-only`: attempts not above before. Every error at or below its cap. Direct cells identical.
 
-## Results (appended after the recorded run; the registered text above is unchanged)
+## Amendment after the adversarial review (2026-10-27; the registered text above is unchanged)
+
+An independent three-lens review of commit `636cdc7a` (see `ANALYSIS_KO.md`, section 6) confirmed one
+MAJOR defect and several MINOR items. The single fix loop changed code only where the review showed a
+defect or an unsupported claim; no gate, threshold, cap or bound registered above changed, and the
+second recorded run below supersedes the first.
+
+- Entry ceiling and route verification. A `Jacobian::Dense` provider with a declared band is verified
+  before any step by a band fill and a dense reference (`2n` charged units). A ceiling that counted
+  that verification could end a bounded pilot as `StructureRefused`, which the adapter cannot treat as
+  a discarded trial; the whole solve then stopped with incomplete accounting. The ceiling is now armed
+  above the verification charge (`Guard::arm_ceiling` after the plan is known), so it bounds driver
+  work only. Decision preservation is unchanged: any ceiling at or above the cap never stops a pilot
+  that would pass. Regression contract `bounded_pilot_on_a_declared_band_is_discarded_not_refused`.
+- Coalesced landings are deduplicated (strictly increasing), so window endpoints below the clock
+  resolution collapse onto their neighbour instead of refusing the native run.
+- A callback that returns a recoverable error is charged like a completed call (the driver counts
+  it), still never above its work units.
+- The return ceiling carries one unit of slack for the rounding difference between the product
+  `return_cost_ratio * rate * window` and the rate comparison that decides the return.
+- Recheck hysteresis baseline: with coalesced tenure, `implicit_rate` is the mean rate of the whole
+  implicit run, not of its last window. The recheck re-arm cancels the back-off; the recheck itself
+  still happens where the current implicit run ends, as scheduled. Both are documented behaviour, not
+  a registered claim.
+- Tests: the late-transition contract gained a negative control with the re-arm disabled (entry more
+  than 1e-3 after the transition); the recheck contract asserts that the return ceiling actually ended
+  a recheck; the stiff-to-smooth contract's bound is now inside the span (3.5 < 4.0); the allocation
+  bound is 6 per batch plus 32, measured 376 allocations for 64 batches after and 568 before (packet
+  head, same loop), so the bound refuses the pre-change loop.
+- Disclosures: `tools/compare.py` at `636cdc7a` mis-gated the registered report-only cell
+  (`suite:c10:switching`, default tolerance; every method fails its cap there); the committed
+  comparator applies the registered rule (a cap is gated only where a direct candidate attains it);
+  with the `636cdc7a` comparator G3 reads False on that one cell and nothing else. The committed
+  analysis JSONs omit the per-segment `segments` arrays; the full analyzer outputs and all raw files
+  are archived with hashes (`evidence/HOST.json`). Legacy (`carry_explicit_step == false`) rechecks
+  now run in a scoped native session so their RHS work can be bounded; their committed-return path is
+  unchanged in kind. The decision-preserving argument of the ceilings is mathematical (charged units
+  are a lower bound of work units); no separate verdict-identity run was made. The adapter's explicit
+  attempt budget for rechecks (16) is a pre-existing design limit: a window that needs more explicit
+  attempts than that cannot be returned to. A pre-existing edge found while writing the regression
+  contract and left for a follow-up: with `carry_explicit_step == false`, a remaining span below the
+  driver's minimum step is refused by the per-batch driver instead of being treated as reached.
+
+## Results, run 1 (L-0170, superseded by run 2 below)
 
 **Verdict: PASS** (G1-G5; see `evidence/GATES.json`, `evidence/COMPARISON.md`, `evidence/TESTS.txt`). Execution commit `636cdc7a49011af3c10f8cf474cc4bb46e249700`; binaries in `evidence/BINARY_SHA256.json`; host and raw manifests in `evidence/HOST.json`. The timing table is **marked unreliable** by the registered drift rule: `bench:rotation:dopri` read 0.225 ms in the before campaign and 0.412 ms in the before-2 control (1.83x), so no wall-time ratio below is a claim; the counter columns carry the result.
 

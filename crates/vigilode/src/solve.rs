@@ -167,10 +167,7 @@ impl Rodas5p {
         let schedule =
             OutputSchedule::new(times).map_err(|e| SolveError::InvalidInput(e.to_string()))?;
 
-        let guard = Arc::new(match work_ceiling {
-            Some(ceiling) => Guard::with_ceiling(ceiling),
-            None => Guard::default(),
-        });
+        let guard = Arc::new(Guard::default());
         let sequential = sequential_route(problem, opts);
         let (ode, plan, jacobian_record) = build(problem, &guard, sequential)?;
         // Dense output without a mass matrix (and not `Enforce`) runs the
@@ -193,6 +190,19 @@ impl Rodas5p {
             (Plan::Routed { declaration: None }, AtolSpec::Vector(_)) => Plan::DenseFast,
             (plan, _) => plan,
         };
+        if let Some(ceiling) = work_ceiling {
+            // The ceiling bounds driver work. A declared band on a dense
+            // provider is verified before any step with a band fill and a
+            // dense reference, `2n` charged units; the ceiling starts above
+            // them so a bounded trial can never end as a structure refusal.
+            let verification = match &plan {
+                Plan::Routed {
+                    declaration: Some(_),
+                } => 2 * problem.dimension as u64,
+                _ => 0,
+            };
+            guard.arm_ceiling(ceiling.saturating_add(verification));
+        }
 
         let run = match plan {
             Plan::Routed { declaration } => {

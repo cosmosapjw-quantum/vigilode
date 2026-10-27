@@ -622,9 +622,12 @@ fn drive_windows(
             });
             // A recheck can only return when its work rate stays within the
             // hysteresis of the implicit rate: RHS work past that bound ends it.
+            // One unit of slack covers the rounding difference between this
+            // product and the rate comparison that decides the return.
             let return_ceiling = if probe {
-                implicit_rate
-                    .map(|rate| (config.return_cost_ratio * rate * (target - start)).floor() as u64)
+                implicit_rate.map(|rate| {
+                    (config.return_cost_ratio * rate * (target - start)).floor() as u64 + 1
+                })
             } else {
                 None
             };
@@ -635,14 +638,16 @@ fn drive_windows(
                         None => Err("explicit tenure has no active native session".into()),
                     }
                 } else {
-                    let landings: Vec<f64> = if windows > 1 {
-                        (window..window + windows - 1)
-                            .map(|w| window_target((t0, t1), w, config.window_count))
-                            .filter(|t| *t > start)
-                            .collect()
-                    } else {
-                        Vec::new()
-                    };
+                    // Interior window endpoints of a coalesced batch, strictly
+                    // increasing: endpoints below the clock resolution collapse
+                    // onto their neighbour instead of refusing the native run.
+                    let mut landings: Vec<f64> = Vec::new();
+                    for w in window..window + windows.saturating_sub(1) {
+                        let t = window_target((t0, t1), w, config.window_count);
+                        if t > start && landings.last().is_none_or(|last| t > *last) {
+                            landings.push(t);
+                        }
+                    }
                     run(
                         problem,
                         start,
