@@ -1,0 +1,132 @@
+{
+  "schema_version": 1,
+  "review_role": "independent_source_and_proof_review",
+  "reviewer": "current_toolchain",
+  "date_utc": "2026-10-27",
+  "status": "PASS_AFTER_TARGETED_CLARIFICATIONS",
+  "scope": "Continuation and probe-cost note, exact-check scope, current controller/callback implementation",
+  "execution": {
+    "cargo": "NOT_RUN",
+    "timing": "NOT_RUN",
+    "historical_benchmarks": "NOT_RERUN",
+    "python_theory_suite": "READ_ONLY_EXISTING_RESULTS"
+  },
+  "baseline_head": "e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824",
+  "proof_assessments": [
+    {
+      "id": "continuation_equivalence",
+      "assessment": "VALID_WITH_STATED_ASSUMPTIONS",
+      "basis": "Deterministic state-transition induction, same barriers/callback environment/arithmetic order, full controller/cache/identity/resource state retained. This does not establish a persistent RODAS session in present code."
+    },
+    {
+      "id": "geometric_step_count",
+      "assessment": "VALID_IN_EXACT_ARITHMETIC",
+      "basis": "Minimal geometric partial sum; current output barriers are explicitly excluded. The 144 checks are finite rational instances, not a floating-point log/ceil implementation guarantee."
+    },
+    {
+      "id": "raw_pi_clipping",
+      "assessment": "VALID_RAW_FORMULA_WITH_CORRECTED_NATIVE_WRAPPER_MAPPING",
+      "basis": "The raw factor ratio is kappa^(1-q*a). Native accepted-step wrapper already restores the request for slivers and bounds informative clipped proposals."
+    },
+    {
+      "id": "neumann_noncommuting",
+      "assessment": "VALID_WITH_STATED_ASSUMPTIONS",
+      "basis": "Q=W^-1(W-Wprime), Wprime=W(I-Q), inverse=(I-Q)^-1 W^-1. Ordered multiplication is correct; the exact fixture explicitly has WQ != QW. Tail requires a subordinate norm and eta<1."
+    },
+    {
+      "id": "sequential_probe_overshoot",
+      "assessment": "VALID_FOR_DECLARED_CALLBACK_UNITS",
+      "basis": "Post-work check gives B+U. DOPRI workspace.trial performs at most seven RHS calls (six with a valid first derivative); root probe loop checks after one attempt and handles a terminal outcome first. RODAS Guard charges successful/recoverable RHS/JVP/time calls by one and supplied Jacobians by n; declared-band verification allowance is 2n. Concurrent in-flight callbacks require the stated extra allowance."
+    }
+  ],
+  "findings": [
+    {
+      "id": "TR-01",
+      "severity": "medium",
+      "kind": "documentation_code_mapping",
+      "disposition": "CLOSED_BY_AUTHOR_AND_TARGETED_READBACK",
+      "object": "Theorem 3 and present-controller interpretation",
+      "observed_defect": "Raw PI/integral factor scaling was adjacent to claims about current behavior without explaining the existing request-restoration wrapper.",
+      "impact": "Could misdiagnose repeated proposal shrinkage as an unimplemented repair and duplicate or weaken existing clipping policy.",
+      "minimal_correction": "Explain the accepted-sliver and informative-clip branches and restrict kappa^(1-q*a) to raw factor diagnostics.",
+      "exact_counterexample": {
+        "controller": "integral",
+        "q": 5,
+        "safety": "9/10",
+        "E_h": 1,
+        "kappa": "1/4",
+        "raw_unclipped_factor": "9/10",
+        "raw_clipped_factor": "18/5",
+        "factor_bounds_active": false,
+        "raw_proposal_ratio": 1,
+        "actual_restoration_wrapper_ratio": "10/9"
+      },
+      "source": "crates/rodas5p-integrators/src/adaptive.rs::next_step_after_attempt_impl",
+      "resolution": "Current note now states the native piecewise restoration rule and limits the raw clipping identity."
+    },
+    {
+      "id": "TR-02",
+      "severity": "low",
+      "kind": "certificate_scope",
+      "disposition": "CLOSED_BY_AUTHOR_AND_TARGETED_READBACK",
+      "object": "Theorem 4 residual validation wording",
+      "observed_defect": "A true residual alone does not quantify forward solve error without inverse/output sensitivity.",
+      "impact": "A future reuse implementation could overstate solution accuracy from a small residual on an ill-conditioned operator.",
+      "minimal_correction": "Under Theorem 4 use ||e|| <= ||W^-1||/(1-eta) ||r||, or a separately certified output sensitivity; otherwise describe residual accuracy only. Account for approximate inverse actions separately.",
+      "exact_counterexample": "Wprime=diag(epsilon,1), b=0, xhat=(1,0): residual norm epsilon, forward error norm 1.",
+      "resolution": "Current note supplies the inverse-sensitivity residual bound, an ill-conditioned counterexample, and a separate obligation for approximate inverse actions."
+    }
+  ],
+  "certificate_limits": [
+    "The exact-arithmetic Python cases instantiate algebraic proofs; they do not certify arbitrary floating-point trajectories, stiffness classification, stability, global error, or speed.",
+    "The one noncommuting fixture catches multiplication-order mistakes but the general Neumann result follows from the stated proof and assumptions, not its seven tested degrees.",
+    "The current cap is neither a wall-clock bound nor a cumulative exploration-credit bound; both distinctions are correctly stated.",
+    "Fatal callbacks are not added to Guard.charged_units in the Fatal branch; future credit settlement must use actual execution accounting as the note says.",
+    "A finite polynomial or approximate causal inverse action requires its own action-error/defect/output bound; it cannot silently replace exact W^-1 in Theorem 4."
+  ],
+  "sources": [
+    {
+      "path": "research/adapter_integration_20261027/theory/CONTINUATION_AND_PROBE_COST_KO.md",
+      "sha256": "5f55490770f62c9887b4eb348b275fdc2070dd61836446f004ca88ea73e19934"
+    },
+    {
+      "path": "research/adapter_integration_20261027/theory/check_theory.py",
+      "sha256": "599749d733ba16a2671e997c514381f8dc8d0239e3866a154dad62e7c181ec40"
+    },
+    {
+      "path": "research/adapter_integration_20261027/theory/THEORY_CHECKS.json",
+      "sha256": "eded224e2bd53db99d340e30254efcffc0773d83d1e9aa5a98545cde61b1b3eb"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/adaptive.rs",
+      "sha256": "3a04609dc5a7141d6bdfe6ebccec441d1d2c8a9960305ea58873914e10703c40"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/dopri5.rs",
+      "sha256": "b8466fe8164e830b361506702c8a3cd10af8dd4aad95d5a8f43c386341af5f65"
+    },
+    {
+      "path": "crates/vigilode/src/switching.rs",
+      "sha256": "51796ed3dcc4d92e351858d6a1408f13456b0465472989eac05d3d244ed41137"
+    },
+    {
+      "path": "crates/vigilode/src/fd.rs",
+      "sha256": "3ae23baa73ab7c5932ef8691e4448d2acb4d10c736c24e22ace827b2abff383d"
+    },
+    {
+      "path": "crates/vigilode/src/solve.rs",
+      "sha256": "40d23b18920ba0de1d23a28fe0fe44a4bda89bd8f7a82b217fab963c278fd44d"
+    },
+    {
+      "path": "crates/vigilode/src/session.rs",
+      "sha256": "0efaca5f0e36229370f3fea31bfdc9532acc003864eed9643732013478984295"
+    },
+    {
+      "path": "research/adapter_integration_20261027/theory/THEORY_CONTRACTS.json",
+      "sha256": "844f12ca201ec41cc5b36e0e2c60d31f6aa47c24c9bc49a5c305f0b2a63056ed"
+    }
+  ],
+  "blocking_findings_remaining": 0,
+  "scope_note": "This is a source/proof review of the named continuation/cost material, not a production-readiness certificate or review of all current integration code.",
+  "source_identity": "working_tree_file_bytes_at_final_review_readback"
+}

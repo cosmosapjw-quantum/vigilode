@@ -1,0 +1,120 @@
+{
+  "schema": "vigilode.joint-validation.v1",
+  "status": "PASS_SCOPED",
+  "broad_production": "HOLD",
+  "base_remote_commit": "4fe67602502440d76aa9dd245c6b1d67558c14bf",
+  "final_source_manifest": "validation/facade_final_r3/SOURCE_INPUTS.json",
+  "final_source_manifest_sha256": "eae90f33bd65eecaf344c1e4b0b9f0d89350244d165a396588aa28a3e36f01e4",
+  "current_source_matches_manifest": true,
+  "native_tests": {
+    "passed": 234,
+    "failed": 0,
+    "suites": 29,
+    "scope": "vigilode facade library and integration tests; not every workspace crate test rerun"
+  },
+  "receipts": {
+    "validation/facade_final_r3": {
+      "path": "validation/facade_final_r3/RECEIPT.json",
+      "sha256": "f2f32aa9095c3d9fbc14a57fa581d42d1f004bd71bf11ae79b1095e5259a644f",
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    "validation/measurement_final_r3": {
+      "path": "validation/measurement_final_r3/RECEIPT.json",
+      "sha256": "763775aed5db938e665e432fcede3ffa513df00571712e489edc9c1bb22dd36c",
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    "validation/transient_pending_repair": {
+      "path": "validation/transient_pending_repair/RECEIPT.json",
+      "sha256": "157c87bb73d5ac7d622e9067428521f018b0191781b2aad3e50dbb769362fb3b",
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    "causal/native": {
+      "path": "causal/native/RECEIPT.json",
+      "sha256": "10a5ea510d39d47f1c5228a5d00afeb3096e0aa882477444db7ac48462a1d3e7",
+      "exit_code": 0,
+      "source_unchanged": true
+    },
+    "execution/native": {
+      "path": "execution/native/RECEIPT.json",
+      "sha256": "98241806cfa094b1f18badfdbe5479ed2c110bbb49b06fbb1639108b48be4c6d",
+      "exit_code": 0,
+      "source_unchanged": true
+    }
+  },
+  "native_switching": {
+    "processes": 162,
+    "timed_rows": 135,
+    "cases": 9,
+    "all_exit_zero": true,
+    "all_endpoint_caps_satisfied": true,
+    "run": "switching/native_r2/RUN.json",
+    "run_sha256": "348774e656979d75985e9390e056d8614675b5f7c82016baf2c3458f70d4b5f3",
+    "binary_sha256": "fe4b9d29a6af28ee07b15f2820156da80164f8fd750139df09296e2c390aa9d7",
+    "thresholds_changed_after_first_pilot": false,
+    "fresh_post_repair_onsets": [
+      0.43,
+      0.87
+    ]
+  },
+  "reused_lanes": [
+    {
+      "lane": "causal",
+      "receipt": "causal/native/RECEIPT.json",
+      "differences_from_final_build": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/tests/adaptive_entry_contracts.rs"
+      ],
+      "reason": "Neither actual pilot calls SwitchingSolver; lane implementation, common comparison/causal code, numerical dependencies and example source are unchanged. Retain original timing/source scope instead of remeasuring unchanged evidence."
+    },
+    {
+      "lane": "execution",
+      "receipt": "execution/native/RECEIPT.json",
+      "differences_from_final_build": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/tests/adaptive_entry_contracts.rs"
+      ],
+      "reason": "Neither actual pilot calls SwitchingSolver; lane implementation, common comparison/causal code, numerical dependencies and example source are unchanged. Retain original timing/source scope instead of remeasuring unchanged evidence."
+    }
+  ],
+  "exact_arithmetic": {
+    "theory_cases_or_prefixes": 5365,
+    "additional_noncontractive_example": true,
+    "independent_assertions": 994,
+    "independent_positive_cost_admissions": 34,
+    "theory": "theory/CHECK_RESULTS.json",
+    "independent": "review/EXACT_ORACLE_CHECK.json",
+    "scope": "Finite arithmetic checks supplement written proofs; no statistical future-cost or global-ODE certificate"
+  },
+  "independent_review": "review/REVIEW.json",
+  "preserved_scientific_failures": [
+    {
+      "path": "switching/native",
+      "case": "case5",
+      "rhs": 2463
+    },
+    {
+      "path": "validation/transient_repair",
+      "case": "case5",
+      "rhs": 2763,
+      "exit_code": 101
+    }
+  ],
+  "environment_failures_preserved": [
+    "validation/initial_compile",
+    "validation/facade_r1",
+    "validation/measurement_build",
+    "validation/measurement_build_r2",
+    "validation/measurement_final"
+  ],
+  "ncp_used": false,
+  "local_user_raw_bytes_accessed": false,
+  "cargo_lock_changed": false,
+  "formatting_check": {
+    "scope": "authored Rust/Python/Markdown/JSON/TOML",
+    "raw_evidence_unchanged": true,
+    "excluded_whitespace": "Verbatim process logs and generated SVG paths retain their emitted whitespace."
+  }
+}

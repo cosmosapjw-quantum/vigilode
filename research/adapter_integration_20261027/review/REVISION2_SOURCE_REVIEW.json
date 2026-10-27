@@ -1,0 +1,103 @@
+{
+  "schema": "vigilode.revision2_source_review.v1",
+  "date": "2026-10-27",
+  "reviewer": "current_evidence_audit subagent; independent of implementation",
+  "scope": "Targeted read-only source delta against archived revision 1; no Cargo or solver execution",
+  "prior_receipt": {
+    "path": "research/adapter_integration_20261027/review/FINAL_SOURCE_REVIEW.json",
+    "sha256": "bc81eb715b0cba9dadf86560a090fe9a67755246dce655cff042e41176776df2",
+    "untouched": true
+  },
+  "source_sha256": "3990de517383c1eb1b3a794104e8b54114adfc65e286391343f28ca8a121fcac",
+  "revision1_source_matches_prior_review": true,
+  "reviewed_files": [
+    {
+      "path": "crates/vigilode/src/switching.rs",
+      "revision1_archive_sha256": "f60158f20e2d526c7587fed9850e6059a3a19d9debd093378f45c57336aae177",
+      "revision2_sha256": "3990de517383c1eb1b3a794104e8b54114adfc65e286391343f28ca8a121fcac",
+      "changed_since_archive": true
+    },
+    {
+      "path": "crates/vigilode/tests/switching_integration_contracts.rs",
+      "revision1_archive_sha256": "bbbb79d8fcc441215f856e88cf5bfa9924db4416d99072995eefb0d8e88f708c",
+      "revision2_sha256": "31fc27e27e65532a3bf14c88fa42cf25fdb158d7ad03b882c9df606dfb157c5f",
+      "changed_since_archive": true
+    },
+    {
+      "path": "crates/vigilode/tests/adaptive_entry_contracts.rs",
+      "revision1_archive_sha256": "6764bf0dda1fd372a4282bb276545fb734179024b4c2b04960bb41173f226ec4",
+      "revision2_sha256": "d0257c40960af736134fc1731fc8c51911aceac5c7f162660e790cdce09e0a9c",
+      "changed_since_archive": true
+    }
+  ],
+  "decision": "NO_NEW_BLOCKING_SOURCE_DEFECT_FOUND",
+  "new_blocking_findings": [],
+  "checks": [
+    {
+      "id": "R2-01",
+      "subject": "One-shot flag lifetime",
+      "result": "SOURCE_REVIEW_PASS",
+      "argument": "retry_zero_progress_once sets both used and pending only if used was false. compared(false) clears pending but never clears used. schedule does not clear used. Only a new default memory or a successful method transition resets the flag. Therefore at most one actually executed entry comparison per explicit tenure can carry UnresolvedEntryRetry."
+    },
+    {
+      "id": "R2-02",
+      "subject": "Sticky request and later checkpoint",
+      "result": "SOURCE_REVIEW_PASS",
+      "argument": "reason checks pending first; schedule leaves it pending. Pressure/admissibility/positive progress/remaining budget checks surround actual pilot execution. Only compared consumes the request. The previous explicit batch commits before another loop iteration, so the expedited pilot replays a later accepted prefix and cannot repeatedly retry the old checkpoint without productive explicit progression."
+    },
+    {
+      "id": "R2-03",
+      "subject": "Trigger qualification",
+      "result": "SOURCE_REVIEW_PASS",
+      "argument": "The request is armed only inside adaptive memory, with the option enabled, enter=false, fatal=false, success=false and accepted_steps=0. A completed uneconomical pilot, a partially progressed pilot, fatal callback or legacy policy cannot arm this exception."
+    },
+    {
+      "id": "R2-04",
+      "subject": "Global and local budgets",
+      "result": "SOURCE_REVIEW_PASS",
+      "argument": "A pending request only bypasses adaptive cooldown, not the remaining>0/positive-prefix guards. local.max_steps remains min(global remaining, implicit_pilot_attempt_budget); the callback work ceiling and charge() occur normally. Existing global budget termination is unchanged. The at-most-one claim is about the special bypass, not the total difference in later pilot counts versus baseline."
+    },
+    {
+      "id": "R2-05",
+      "subject": "Fatal handling",
+      "result": "SOURCE_REVIEW_PASS",
+      "argument": "Fatal pilot is excluded before arming retry, cannot produce a growth seed, and reaches the existing terminal branch preserving accepted explicit state. No retry call can occur after that branch breaks the windows loop. Existing fatal integration contract uses adaptive_evidence, which now enables the new retry option."
+    },
+    {
+      "id": "R2-06",
+      "subject": "Growth-only pilot mean",
+      "result": "SOURCE_REVIEW_PASS",
+      "argument": "entry_pilot_growth_seed rejects unsuccessful or zero-accepted records, nonfinite means and mean<=opts.h0. The caller also requires economical entry and nonfatal pilot. A returned mean is positive because the validated initial_step is positive. The resulting proposed h is clipped to the next span and native minimum as before. This does not imply actual trials are never reduced by endpoint clipping or rejection."
+    },
+    {
+      "id": "R2-07",
+      "subject": "State and algorithm invariants",
+      "result": "SOURCE_REVIEW_PASS",
+      "argument": "The new fields change scheduling and proposal reuse only. Pilot states/caches are not committed or transplanted. The accepted explicit trajectory, native error acceptance, callback permission and full accounting paths retain their previous structure."
+    },
+    {
+      "id": "R2-08",
+      "subject": "Anti-storm tests",
+      "result": "SOURCE_REVIEW_PASS_TESTS_NOT_EXECUTED_BY_REVIEWER",
+      "argument": "Private state-machine test keeps a pending request across three schedule observations, then repeats losing comparisons and rearm calls 100 times with used remaining true and pending false. Integration fixture uses an always-recoverable Jacobian to create repeated zero-accepted pilots and asserts exactly one UnresolvedEntryRetry, later accepted checkpoint, bit-equal explicit t/y versus retry-disabled run, exact max_steps exhaustion at 70 and aggregate work reconciliation."
+    },
+    {
+      "id": "R2-09",
+      "subject": "Growth-only test boundaries",
+      "result": "SOURCE_REVIEW_PASS_TESTS_NOT_EXECUTED_BY_REVIEWER",
+      "argument": "Private fixture covers pilot mean below h0, equal to h0, above h0, zero accepted count and unsuccessful pilot. Existing integration test verifies proposal-only transfer and complete accounting for enabled/disabled seed behavior."
+    },
+    {
+      "id": "R2-10",
+      "subject": "Legacy defaults",
+      "result": "SOURCE_REVIEW_PASS",
+      "argument": "Both new options are false in default/evidence_driven factories and enabled only by adaptive factory or explicit caller choice. retry_unresolved_entry_once has no effect without adaptive memory. Forbidden path still avoids method competition."
+    }
+  ],
+  "remaining_limits": [
+    "A single expedited comparison per explicit tenure can change future method choices and thus total work; it does not bound the total work difference relative to retry-disabled execution by one pilot. Current revision documentation explicitly makes this distinction.",
+    "Growth-only initial seeding may still trigger a rejected step after a regime change. Source review establishes preservation of native acceptance checks, not speedup or global accuracy.",
+    "Historical return-screen false negatives and productive-probe reporting semantics from prior review remain separate matters.",
+    "Parent runtime tests and revision2 benchmark receipts, not this read-only review, determine experimental performance."
+  ]
+}

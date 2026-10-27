@@ -1,0 +1,49 @@
+
+running 17 tests
+test fd::tests::dense_difference_is_accurate_to_the_increment ... ok
+test fd::tests::a_fatal_error_latches_and_short_circuits ... ok
+test fd::tests::finite_boundary_uses_a_signed_representable_increment ... ok
+test fd::tests::nonfinite_difference_entries_fail_before_factorization ... ok
+test fd::tests::grouped_band_equals_the_band_of_the_dense_difference ... ok
+test fd::tests::vector_callback_detects_stale_output_on_reused_buffer ... ok
+test fd::tests::vector_callback_refuses_invalid_input_without_entering_user_code ... ok
+test solve::tests::failure_reason_follows_the_driver_stop_and_last_rejection ... ok
+test switching::adaptive_return_productive_contract::comparison_memory_renews_on_joint_drift_in_either_direction ... ok
+test events::tests::missing_extension_is_an_explicit_failure_without_calling_event ... ok
+test events::tests::missing_interior_does_not_implicate_the_event_callback ... ok
+test solution::tests::truncate_after_inside_a_step ... ok
+test solution::tests::truncate_after_on_a_step_boundary ... ok
+test solution::tests::truncate_after_edges ... ok
+test switching::adaptive_return_productive_contract::stale_old_rate_cannot_replace_a_cheaper_same_window_implicit_candidate ... ok
+test solution::tests::at_is_none_beyond_the_last_output ... ok
+test solution::tests::truncate_after_on_both_extension_stores ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+
+running 10 tests
+test adaptive_factory_and_frontdoor_preserve_derivative_permission ... ok
+test invalid_adaptation_is_refused_before_callbacks ... ok
+test return_to_explicit_requires_same_checkpoint_comparison ... ok
+test adaptive_probes_remain_inside_global_attempt_budget ... ok
+test completed_fast_transients_renew_uneconomical_startup_comparisons ... FAILED
+test fatal_return_comparator_does_not_publish_the_discarded_probe_state ... ok
+test exhausted_return_comparison_budget_keeps_previous_committed_state ... ok
+test adaptive_sentinel_never_exhausts_its_observation_right_in_stable_regime ... ok
+test stable_rotation_reuses_negative_evidence_and_reduces_discarded_work ... ok
+test shifted_smooth_stiffness_onsets_renew_old_negative_evidence ... ok
+
+failures:
+
+---- completed_fast_transients_renew_uneconomical_startup_comparisons stdout ----
+
+thread 'completed_fast_transients_renew_uneconomical_startup_comparisons' (113) panicked at crates/vigilode/tests/adaptive_entry_contracts.rs:493:13:
+new=2763 old=1887
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    completed_fast_transients_renew_uneconomical_startup_comparisons
+
+test result: FAILED. 9 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.07s
+

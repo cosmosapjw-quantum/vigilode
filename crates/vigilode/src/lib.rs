@@ -161,6 +161,7 @@
 
 mod automatic;
 mod capabilities;
+pub mod causal_budget;
 mod cofactor_chart;
 mod error;
 mod events;
@@ -174,6 +175,7 @@ mod oscillatory_chart;
 mod problem;
 mod records;
 mod selection;
+pub mod selection_evidence;
 mod session;
 mod solution;
 mod solve;
@@ -181,6 +183,7 @@ mod switching;
 
 pub use automatic::*;
 pub use capabilities::{Capabilities, FacadeRoute, OutputAccuracy};
+pub use causal_budget::*;
 pub use cofactor_chart::*;
 pub use error::{CallbackError, SolveError, Unsupported};
 pub use events::{Direction, EventRecord};

@@ -1,0 +1,99 @@
+{
+  "schema_version": 1,
+  "source_baselines": ["e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824", "bc99943c5a74b174500ed9d858caea215ebf1d4b"],
+  "scope": "Adaptive integration continuation and cost-bounded method comparison",
+  "reused_proofs": {
+    "path": "research/joint_controller_20261025/theory/DERIVATIONS_KO.md",
+    "items": ["causal output error budget", "polynomial resolvent", "qualified same-interval cost comparison", "prepaid cumulative exploration invariant"],
+    "reason_not_rederived": "The assumptions and proof obligations are unchanged. New source semantics are audited separately."
+  },
+  "results": [
+    {
+      "id": "CONTINUATION_STATE",
+      "status": "proved_conditional",
+      "statement": "Preserving the complete deterministic integrator state preserves the attempt trace under identical forced stops and callback outcomes.",
+      "required_state": ["accepted t/y", "proposed h", "accepted-error history", "rejection history", "last actual h", "workspace", "valid caches", "epochs", "budget/terminal state"],
+      "implemented": "DOPRI5 session; RODAS native coalesced invocation within a batch",
+      "not_implemented": "General persistent RODAS session across method-comparison batches",
+      "tests": ["pause after acceptance and rejection", "same forced-stop trace", "epoch drift invalidation"]
+    },
+    {
+      "id": "RESTART_COST",
+      "status": "proved_conditional_exact_count",
+      "statement": "For zero estimator, geometric growth and endpoint-only clipping, n(L)=ceil(log_g(1+(g-1)L/h0)).",
+      "does_not_claim": "The no-interior-barrier count equals current coalesced RODAS cost.",
+      "check": "check_theory.py"
+    },
+    {
+      "id": "RAW_CLIPPED_CONTROLLER",
+      "status": "proved_conditional_symbolically_checked",
+      "assumptions": ["E(h)=C*h^q with C>0", "previous error held fixed", "controller factor unclamped"],
+      "ratio": "kappa^(1-q*a)",
+      "integral_ratio": "1",
+      "current_pi_ratio": "kappa^0.3",
+      "zero_error_or_saturated_ratio_when_factor_equal": "kappa",
+      "native_wrapper_already_implemented": "Accepted forced slivers with kappa<0.5 restore requested_h without recording the accepted error; informative clipped samples bound/restore the request using predicted unclipped error.",
+      "does_not_claim": "The raw ratio diagnoses an unresolved native clipping bug. The actual wrapper changes the final proposal.",
+      "implementation_action": "Preserve existing clipping restoration; record proposal and actual trial separately; investigate loss of native proposal at facade restarts."
+    },
+    {
+      "id": "STRUCTURAL_OPERATOR_REUSE",
+      "status": "proved_conditional_future_candidate",
+      "formula": "Wprime=W*(I-Q); Q=gamma*inverse(W)*(hprime*Jprime-h*J)",
+      "requirement": "A valid induced-norm bound ||Q||<=eta<1, or original-target residual combined with a separately certified inverse/output sensitivity bound. Residual alone is not a forward error certificate.",
+      "residual_forward_error_bound": "||x-xhat|| <= ||inverse(W)||/(1-eta)*||b-Wprime*xhat|| under the stated Neumann assumptions",
+      "tail_bound": "eta^(m+1)/(1-eta)*||inverse(W)||",
+      "derivative_free_compatible": true,
+      "automatic_stale_factor_reuse": false,
+      "approximate_inverse_action_obligation": "The theorem uses exact inverse(W); a supplied approximate action R needs its own certified action/output error or a certified defect norm ||I-R*Wprime||<1.",
+      "check": "noncommuting exact rational 2x2 fixture in THEORY_CHECKS.json"
+    },
+    {
+      "id": "POST_WORK_CEILING",
+      "status": "proved_conditional_source_audited",
+      "serial_bound": "charged<=cap+maximum_single_checked_unit",
+      "dopri_unit": "one entire native attempt; at most 7 RHS calls, 6 with valid FSAL; completion is processed before ceiling check",
+      "rodas_unit": "one callback; Jacobian weight n, RHS/JVP/ft weight 1",
+      "rodas_extra_allowance": "2*n for declared-structure verification where applicable",
+      "parallel_bound_requirement": "Include all already in-flight callback weights",
+      "not_guaranteed": ["strict charged<=cap", "wall-clock bound", "cumulative prepaid exploration bound"],
+      "next_action": "Reserve ceiling+overshoot+verification before running if integrating the existing cumulative credit policy."
+    },
+    {
+      "id": "ENTRY_PILOT_STEP_REUSE",
+      "status": "implementation_candidate_with_ablation_required",
+      "option": "reuse_entry_pilot_step",
+      "distinction": "Transfers mean accepted h from a successful entry pilot; later implicit-window mean seeding already existed.",
+      "seed": "max(user_h0, (pilot_end-pilot_start)/pilot_accepted_steps), only using a finite positive mean from a positive accepted count and winning completed pilot",
+      "common_facade_clamp": "local_h0=max(min(seed,batch_target-start),native_min_step), followed by native actual-landing clipping; the nondecrease guarantee is relative to disabled reuse at the same checkpoint and batch span",
+      "revision_1_superseded_variant": "Unconditionally using the mean could lower user_h0 and caused a case5 work regression.",
+      "unchanged_contract": ["accepted checkpoint", "native error test", "rejection processing", "callback failure processing"],
+      "benefit": "Can remove repeated small-initial-step growth; conditional on the seed remaining representative locally.",
+      "risk": "A stale mean can increase rejections after a transition.",
+      "required_comparison": "Same case, checkpoint policy, accuracy target and work accounting with seed reuse disabled."
+    },
+    {
+      "id": "UNRESOLVED_STARTUP_RETRY",
+      "status": "revision_2_conditional_bound_and_implementation_contract",
+      "trigger": "The first qualifying zero-accepted, incomplete, nonfatal implicit pilot anywhere in an explicit tenure; not necessarily the tenure's first actual pilot.",
+      "action": "At arming set used=true and pending=true; retain pending across ineligible prefixes; in serial control flow compared() clears pending after the actual comparison returns, while Err terminates the solve. Used prevents rearming within the tenure.",
+      "per_tenure_special_calls_bound": 1,
+      "per_special_call_serial_cost_bound": "declared_ceiling + maximum_checked_unit + separately_charged_verification",
+      "cost_bound_unit": "The same charged callback units as the ceiling, not elapsed time or an aggregate proxy with additional linear-algebra costs.",
+      "rodas_maximum_checked_unit": "max(1, dimension), with in-flight allowance required for concurrent callbacks",
+      "selection_criterion_unchanged": "Only a completed, economical actual same-checkpoint pilot permits method entry.",
+      "not_claimed": ["Total pilot count differs from baseline by at most one", "Fixed physical-time retry deadline", "Universal speed improvement", "Global cumulative exploration-credit guarantee"],
+      "required_tests": ["first qualifying zero-progress loss may occur after earlier completed pilots", "used is set at arming; repeated failures cannot rearm within same tenure", "ineligible prefixes retain pending; compared() clears it after return; Err terminates", "fatal callbacks retain terminal semantics", "uneconomical completed pilots do not trigger startup exception", "ordinary later-regime sentinels remain available", "all work and accepted checkpoint accounting is preserved"],
+      "derivation": "REVISION2_STARTUP_RETRY_KO.md"
+    }
+  ],
+  "production_validation_requirements": [
+    "Same-checkpoint and same-interval comparison",
+    "Matched endpoint accuracy",
+    "Total cost includes discarded candidates and recoverable/fatal callbacks",
+    "Accepted state matches returned time after interruption",
+    "Optional unused implicit providers do not block viable explicit execution",
+    "Separate serial and parallel in-flight cost assumptions",
+    "No statistical false-positive claim without a specified population and ground truth"
+  ]
+}

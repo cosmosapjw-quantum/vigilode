@@ -1,0 +1,173 @@
+   Compiling version_check v0.9.5
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling unicode-ident v1.0.24
+   Compiling autocfg v1.5.1
+   Compiling num-traits v0.2.19
+   Compiling bytemuck v1.25.2
+   Compiling nano-gemm-codegen v0.2.1
+   Compiling libm v0.2.16
+   Compiling num-complex v0.4.6
+   Compiling paste v1.0.15
+   Compiling bitflags v2.13.1
+   Compiling raw-cpuid v11.6.0
+   Compiling pulp v0.22.3
+   Compiling cfg-if v1.0.4
+   Compiling pulp-wasm-simd-flag v0.1.1
+   Compiling reborrow v0.5.5
+   Compiling dyn-stack-macros v0.1.3
+   Compiling dyn-stack v0.13.2
+   Compiling syn v1.0.109
+   Compiling once_cell v1.21.4
+   Compiling seq-macro v0.3.6
+   Compiling generic-array v0.14.7
+   Compiling nano-gemm-core v0.2.1
+   Compiling gemm-common v0.19.0
+   Compiling libc v0.2.189
+   Compiling typenum v1.20.1
+   Compiling interpol v0.2.1
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling syn v2.0.119
+   Compiling syn v3.0.3
+   Compiling serde_core v1.0.229
+   Compiling defer v0.2.1
+   Compiling crossbeam-utils v0.8.22
+   Compiling private-gemm-x86 v0.1.20
+   Compiling equator-macro v0.2.1
+   Compiling crossbeam-epoch v0.9.20
+   Compiling zmij v1.0.23
+   Compiling num_cpus v1.17.0
+   Compiling equator v0.2.2
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling gemm-f64 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling gemm-c64 v0.19.0
+   Compiling qd v0.8.0
+   Compiling serde_json v1.0.151
+   Compiling serde v1.0.229
+   Compiling thiserror v2.0.19
+   Compiling equator-macro v0.6.0
+   Compiling crossbeam-deque v0.8.7
+   Compiling generativity v1.2.1
+   Compiling equator v0.6.0
+   Compiling faer-traits v0.24.0
+   Compiling gemm v0.19.0
+   Compiling digest v0.10.7
+   Compiling nano-gemm v0.2.2
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.19
+   Compiling rayon-core v1.13.0
+   Compiling memchr v2.8.3
+   Compiling cpufeatures v0.2.17
+   Compiling itoa v1.0.18
+   Compiling sha2 v0.10.9
+   Compiling faer v0.24.4
+   Compiling hex v0.4.3
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-joint/crates/rodas5p-integrators)
+   Compiling either v1.17.0
+   Compiling rayon v1.12.0
+   Compiling rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-joint/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-joint/crates/rodas5p-krylov)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-joint/crates/vigilode)
+warning: `rodas5p-integrators` (lib) generated 1 warning
+warning: constant `METHODS` is never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:100:11
+    |
+100 | pub const METHODS: [&str; 4] = ["dopri5", "rodas5p-mf", "rodas5p-dense", "switching"];
+    |           ^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `LAYERS` is never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:101:11
+    |
+101 | pub const LAYERS: [&str; 3] = ["serial", "data", "ensemble"];
+    |           ^^^^^^
+
+warning: multiple methods are never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:194:12
+    |
+111 | impl Model {
+    | ---------- methods in this implementation
+...
+194 |     pub fn name(&self) -> &'static str {
+    |            ^^^^
+...
+197 |     pub fn variant(&self) -> &'static str {
+    |            ^^^^^^^
+...
+200 |     pub fn autonomous(&self) -> bool {
+    |            ^^^^^^^^^^
+...
+203 |     pub fn exact_kind(&self) -> &'static str {
+    |            ^^^^^^^^^^
+...
+210 |     pub fn metadata(&self) -> Value {
+    |            ^^^^^^^^
+...
+213 |     pub fn parameters(&self) -> Value {
+    |            ^^^^^^^^^^
+...
+876 |     pub fn diagnostics(&self, y: &[f64]) -> Value {
+    |            ^^^^^^^^^^^
+
+warning: constant `NAMES` is never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:905:7
+    |
+905 | const NAMES: [&str; 24] = [
+    |       ^^^^^
+
+warning: constant `VARIANTS` is never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:931:7
+    |
+931 | const VARIANTS: [&str; 24] = [
+    |       ^^^^^^^^
+
+warning: `vigilode` (test "local_bottleneck_models") generated 5 warnings
+    Finished `test` profile [unoptimized] target(s) in 1m 17s
+     Running unittests src/lib.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/vigilode-3170004f02da2a6b)
+     Running tests/adaptive_entry_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/adaptive_entry_contracts-d07a5dcfed2a8fbd)
+     Running tests/automatic_adapter_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/automatic_adapter_contracts-840c9186f8236a5f)
+     Running tests/capabilities_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/capabilities_contracts-8ce891f74b31fae4)
+     Running tests/causal_budget_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/causal_budget_contracts-2746ec048d601a3d)
+     Running tests/cofactor_chart_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/cofactor_chart_contracts-73cd15f655b6f318)
+     Running tests/events_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/events_contracts-90f79fac2862838e)
+     Running tests/evidence_switch_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/evidence_switch_contracts-685afee5eec84606)
+     Running tests/execution_identity_drift.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/execution_identity_drift-1d328dad8af3103e)
+     Running tests/execution_policy_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/execution_policy_contracts-b09ac18ae92170e1)
+     Running tests/explicit_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/explicit_contracts-1bbc40c084403daa)
+     Running tests/explicit_ensemble_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/explicit_ensemble_contracts-df712dad4ab0abe1)
+     Running tests/explicit_hardening_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/explicit_hardening_contracts-106c1f3fbda1bfb0)
+     Running tests/facade_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/facade_contracts-f1a506c68880d0c4)
+     Running tests/frontier_affine_facade.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/frontier_affine_facade-668a13fd6e660d79)
+     Running tests/frontier_fatal_session_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/frontier_fatal_session_contracts-9a115b9eb5520027)
+     Running tests/frontier_switch_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/frontier_switch_contracts-54caf36eb1e3b991)
+     Running tests/lawson_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/lawson_contracts-b416af73ea6ad7e5)
+     Running tests/local_bottleneck_models.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/local_bottleneck_models-072349b64449369f)
+     Running tests/oscillatory_chart_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/oscillatory_chart_contracts-f331967325a8dbd1)
+     Running tests/p0_api_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/p0_api_contracts-d570af96f9e9fd6b)
+     Running tests/p0_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/p0_contracts-d28f15a3f1c2e90f)
+     Running tests/production_rhs_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/production_rhs_contracts-1e308162c85cf618)
+     Running tests/production_selection_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/production_selection_contracts-dcdd5af32f530e73)
+     Running tests/production_session_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/production_session_contracts-965a4ed1867acaf8)
+     Running tests/records_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/records_contracts-8f37f02f674fcd15)
+     Running tests/selection_evidence_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/selection_evidence_contracts-1981cd524f4a8016)
+     Running tests/switching_contracts.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/switching_contracts-fd6a20d6a1da0808)
+     Running tests/switching_persistent_explicit.rs (/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/switching_persistent_explicit-e1de9fd73d1114ae)

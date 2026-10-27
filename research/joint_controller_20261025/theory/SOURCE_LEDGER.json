@@ -1,0 +1,157 @@
+{
+  "schema": "vigilode.joint-theory-sources.v1",
+  "access_date": "2026-10-25",
+  "base_commit": "4fe67602502440d76aa9dd245c6b1d67558c14bf",
+  "published_prior_results": "Reused with unchanged hypotheses; no historical scientific campaign rerun.",
+  "code_sources": [
+    {
+      "path": "crates/rodas5p-integrators/src/causal_majorant.rs",
+      "sha256": "765e27db9f0ab5839ce0d213ad82f940a9e06394e2211fd678b51dc401649b91"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/causal.rs",
+      "sha256": "5cd8362c91cb13dc654a2305ffeaa1f4923225d21b857dd6d6bd54156add91dc"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/solver.rs",
+      "sha256": "f467a19966a88d1b1de66cfef17c2c0fdf1033caeb87a1da2319457f9c70029c"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+      "sha256": "6c479a18abe4725e3658398519442248f0a25cb5838fcc73504c46f56214851e"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+      "sha256": "06f18e574c6606064b10f4f3efe37b14f4ba20f43ed9e270bde6a94c4de18c53"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/fourier_path_certificate.rs",
+      "sha256": "bfa329099f5503c9472f8d63120db740e54531dff0188dbb55e21b94aa31edb2"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/fourier_path_candidate.rs",
+      "sha256": "130d9593f34d93637cd1af7de0b73375a5ac9540ece9910a68c052a2c56efeb3"
+    },
+    {
+      "path": "crates/vigilode/src/lawson.rs",
+      "sha256": "9388f257c0bda1ad29c6592b1e5b0ec788aafe1d3c0d202552fb925279618fe0"
+    }
+  ],
+  "literature": [
+    {
+      "id": "L-PETZOLD",
+      "title": "Automatic Selection of Methods for Solving Stiff and Nonstiff Systems of Ordinary Differential Equations",
+      "authors": [
+        "Linda R. Petzold"
+      ],
+      "year": 1983,
+      "doi": "10.1137/0904010",
+      "url": "https://doi.org/10.1137/0904010",
+      "access": "Reused previously checked publisher abstract; Exa rediscovered author PDF",
+      "scope": "Automatic method selection by computational efficiency."
+    },
+    {
+      "id": "L-RANOCHA",
+      "title": "Stability of step size control based on a posteriori error estimates",
+      "authors": [
+        "Hendrik Ranocha",
+        "Jan Giesselmann"
+      ],
+      "year": 2024,
+      "doi": "10.1007/s44207-024-00001-0",
+      "url": "https://arxiv.org/html/2307.12677v3",
+      "access": "SciSpace discovery then Exa primary author manuscript sections1,2,2.1",
+      "scope": "Residual-to-error transport; estimator reliability and controller dynamics."
+    },
+    {
+      "id": "L-EINKEMMER",
+      "title": "An adaptive step size controller for iterative implicit methods",
+      "authors": [
+        "Lukas Einkemmer"
+      ],
+      "year": 2018,
+      "doi": "10.1016/j.apnum.2018.06.002",
+      "url": "https://www.sciencedirect.com/science/article/abs/pii/S0168927418301387",
+      "access": "Exa publisher introduction and section summaries, not full paper",
+      "scope": "Minimizing measured cost rather than always maximizing accuracy-admissible step size."
+    },
+    {
+      "id": "L-ENRIGHT",
+      "title": "Robust and Reliable Defect Control for Runge-Kutta Methods",
+      "authors": [
+        "W.H. Enright",
+        "Wayne B. Hayes"
+      ],
+      "year": 2007,
+      "doi": "10.1145/1206040.1206041",
+      "url": "https://www.cs.toronto.edu/~wayne/research/papers/enright.pdf",
+      "access": "Exa author-hosted manuscript introduction",
+      "scope": "Continuous defect monitoring with inexpensive extra RHS evaluations."
+    },
+    {
+      "id": "L-LAWSON",
+      "title": "On the convergence of Lawson methods for semilinear stiff problems",
+      "authors": [
+        "Marlis Hochbruck",
+        "Jan Leibold",
+        "Alexander Ostermann"
+      ],
+      "year": 2020,
+      "doi": "10.1007/s00211-020-01120-4",
+      "url": "https://doi.org/10.1007/s00211-020-01120-4",
+      "access": "Reused prior author manuscript extraction research/adapter_research_20261025/sources/exa_lawson.json",
+      "scope": "Regularity/boundary dependence of full-order convergence."
+    }
+  ],
+  "claims": [
+    {
+      "id": "T1",
+      "basis": "derived; existing nilpotent causal_majorant engineering reused",
+      "location": "DERIVATIONS_KO.md section1",
+      "new_connection": "Caller-buffer output adjoint allowance and source/norm identity."
+    },
+    {
+      "id": "T2",
+      "basis": "derived; existing finite causal propagation reused",
+      "location": "DERIVATIONS_KO.md section2",
+      "new_connection": "Measured update-count plus original-target output certificate for scheduling."
+    },
+    {
+      "id": "T3",
+      "basis": "derived; existing polynomial quotient implementation reused",
+      "location": "DERIVATIONS_KO.md section3",
+      "new_connection": "Actual h-dependent inner-solver eligibility and bounded cost prediction."
+    },
+    {
+      "id": "T4",
+      "basis": "derived conditional deterministic cost theorem",
+      "location": "DERIVATIONS_KO.md section5",
+      "new_connection": "Qualified empirical envelope distinct from guaranteed future-cost interval."
+    },
+    {
+      "id": "T5",
+      "basis": "derived; planned algorithm not yet integrated",
+      "location": "DERIVATIONS_KO.md section6",
+      "new_connection": "Prepaid exploration bound with failed probe charge."
+    },
+    {
+      "id": "T6",
+      "basis": "derived for implemented cooldown conditions",
+      "location": "DERIVATIONS_KO.md section6 negative-comparison reuse",
+      "new_connection": "Logarithmic early comparison count with finite expiry."
+    }
+  ],
+  "no_go_claims": [],
+  "limitations": [
+    "No statistical novelty claim.",
+    "Empirical timing min/max is not a certified future interval.",
+    "Stage residual bounds concern algebraic solution perturbation; outer ODE LTE remains separate.",
+    "Symbolic structure and lift bounds need no runtime derivatives; existing coupled basis still uses JVP."
+  ],
+  "verification": {
+    "script": "check_derivations.py",
+    "result": "CHECK_RESULTS.json",
+    "command": "python3 research/joint_controller_20261025/theory/check_derivations.py research/joint_controller_20261025/theory/CHECK_RESULTS.json",
+    "exit_code": 0
+  }
+}

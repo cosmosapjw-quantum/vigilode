@@ -1,0 +1,44 @@
+{
+  "schema": "vigilode.joint-theory-checks.v1",
+  "status": "pass_scoped",
+  "method": "Python Fraction exact rational arithmetic; finite illustrative cases",
+  "seed": 20261025,
+  "python": "3.12.14",
+  "checks": {
+    "triangular_bound_and_adjoint_exact": {
+      "cases": 400,
+      "pass": true
+    },
+    "noncontractive_saturating_example": {
+      "stages": 8,
+      "subdiagonal": 2,
+      "last_error_exact": "51/20000000",
+      "pass": true
+    },
+    "nonlinear_finite_causal_propagation": {
+      "cases": 75,
+      "pass": true
+    },
+    "quotient_polynomial_identity": {
+      "cases": 390,
+      "pass": true
+    },
+    "cost_interval_sufficiency": {
+      "cases": 3000,
+      "switches": 1147,
+      "pass": true
+    },
+    "prepaid_probe_prefix_invariant": {
+      "prefixes": 1000,
+      "admitted": 162,
+      "pass": true,
+      "productive_exact": "1541/2",
+      "probe_exact": "2051/50"
+    },
+    "damping_structure_step_radius": {
+      "cases": 500,
+      "pass": true
+    }
+  },
+  "script_sha256": "f4e2149bbb3a388e4e47f45fc8e622f6d244b58f5bcbda7137062ee1c33e4f52"
+}
