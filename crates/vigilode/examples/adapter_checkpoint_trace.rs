@@ -316,6 +316,9 @@ fn catalog_problem(m: &models::Model, dense: bool) -> Problem {
 struct Fixture {
     problem: Problem,
     dense_problem: Option<Problem>,
+    // Diagnostic control only: the same RHS with the facade's default
+    // finite-difference Jacobian (no provider), for allocation audits.
+    fd_problem: Option<Problem>,
     y0: Vec<f64>, end: f64, reference: Vec<f64>, cap: f64, uncertainty: f64,
     options: Options, report_only: bool,
 }
@@ -325,6 +328,7 @@ fn fixture(case: &str) -> Fixture {
     let (mut problem, mut y0, mut end, mut reference, mut cap, mut uncertainty) =
         if gyro { model("decay") } else { model(case) };
     let mut dense_problem = None;
+    let mut fd_problem = None;
     let mut options = Options { rtol: 1e-7, atol: Atol::Scalar(1e-10), h0: 1e-7,
         max_steps: 100_000, ..Default::default() };
     if case.starts_with("transition-") || case == "relaxation" || case == "stale-return" { options.h0 = 1e-4; }
@@ -332,13 +336,25 @@ fn fixture(case: &str) -> Fixture {
         let m = models::Model::new(if gyro { 10 } else { 5 }, false).unwrap();
         problem = catalog_problem(&m, false);
         dense_problem = Some(catalog_problem(&m, true));
+        let (mr, mt) = (m.clone(), m.clone());
+        let fd = Problem::new(m.n, move |t, y, out| {
+            rec(t);
+            mr.apply(t, y, None, false, out, false);
+            Ok(())
+        });
+        fd_problem = Some(if m.autonomous() { fd.autonomous() } else {
+            fd.time_derivative(move |t, y, out| {
+                mt.apply(t, y, None, true, out, false);
+                Ok(())
+            })
+        });
         y0 = m.initial(); end = m.end; cap = 1e-4;
         options.h0 = 1e-4;
         options.rtol = 1e-6; options.atol = Atol::Scalar(1e-9);
         if gyro { reference = m.exact(end).unwrap(); uncertainty = 1e-13; }
         if case == "gyro-tight" { options.rtol = 1e-9; options.atol = Atol::Scalar(1e-12); }
     }
-    Fixture { problem, dense_problem, y0, end, reference, cap, uncertainty, options,
+    Fixture { problem, dense_problem, fd_problem, y0, end, reference, cap, uncertainty, options,
         report_only: case == "gyro-default" }
 }
 
@@ -554,19 +570,150 @@ fn trace_rodas(f: &Fixture, start: f64, target: f64, y: &[f64], h0: f64, max_att
         "allocations_total": alloc, "total_ns_min_of_3_diagnostic": ns, "attempt_rows": rows})
 }
 
+// The solver call of one arm alone, result dropped (timed/profiled path).
+fn solve_only(f: &Fixture, arm: &str) {
+    let span = (0.0, f.end);
+    match arm {
+        "dopri" => { std::hint::black_box(Dopri5::solve(&f.problem, span, &f.y0, &f.options).expect("dopri")); }
+        "rodas" | "rodas-dense" | "rodas-fd" => {
+            let p = match arm {
+                "rodas-dense" => f.dense_problem.as_ref().unwrap_or(&f.problem),
+                "rodas-fd" => f.fd_problem.as_ref().expect("fd control"),
+                _ => &f.problem,
+            };
+            std::hint::black_box(Rodas5p::solve(p, span, &f.y0, &f.options).expect("rodas"));
+        }
+        _ => {
+            let c = switching_config(arm);
+            std::hint::black_box(SwitchingSolver::solve(&f.problem, span, &f.y0, &f.options, &c).expect("switching"));
+        }
+    }
+}
+
+fn switching_config(arm: &str) -> SwitchingConfig {
+    let mut c = if arm == "evidence" {
+        SwitchingConfig::evidence_driven(DerivativeFallback::ProvidedOnly)
+    } else {
+        SwitchingConfig::adaptive_evidence(DerivativeFallback::ProvidedOnly)
+    };
+    if arm == "adaptive-sentinel" { c.return_sentinel_interval = 1; }
+    c
+}
+
+// One registered arm: (rhs, max component error, work summary).
+fn solve_arm(f: &Fixture, arm: &str) -> (u64, f64, Value) {
+    let span = (0.0, f.end);
+    let err = |y: &[f64]| y.iter().zip(&f.reference).map(|(a, b)| (a - b).abs()).fold(0.0, f64::max);
+    match arm {
+        "dopri" => {
+            let r = Dopri5::solve(&f.problem, span, &f.y0, &f.options).expect("dopri");
+            let c = vigilode::WorkRecord::from(&r.stats.counters);
+            (c.rhs_calls, err(&r.final_state), json!({"attempts": r.stats.attempts,
+                "work_units": work_units(&c, f.y0.len()), "success": r.success}))
+        }
+        "rodas" | "rodas-dense" | "rodas-fd" => {
+            let p = match arm {
+                "rodas-dense" => f.dense_problem.as_ref().unwrap_or(&f.problem),
+                "rodas-fd" => f.fd_problem.as_ref().expect("fd control"),
+                _ => &f.problem,
+            };
+            let r = Rodas5p::solve(p, span, &f.y0, &f.options).expect("rodas");
+            let c = r.stats.counters;
+            (c.rhs_calls, err(r.final_state().unwrap_or(&[])), json!({"attempts": r.stats.attempts,
+                "work_units": work_units(&c, f.y0.len()), "jvp_vectors": c.jvp_vectors,
+                "linear_solves": c.linear_solves, "linear_iterations": c.linear_iterations,
+                "direct_factorizations": c.direct_factorizations, "success": r.is_success()}))
+        }
+        _ => {
+            let c = switching_config(arm);
+            let r = SwitchingSolver::solve(&f.problem, span, &f.y0, &f.options, &c).expect("switching");
+            let mut kinds = serde_json::Map::new();
+            for s in &r.stats.segments {
+                let k = format!("{}{}{}", if s.is_probe { "probe-" } else { "" },
+                    if s.method == vigilode::SwitchingMethod::Dopri5 { "dopri" } else { "rodas" },
+                    if s.committed { "-committed" } else { "-discarded" });
+                let e = kinds.entry(k).or_insert(json!({"segments": 0, "attempts": 0, "rhs": 0,
+                    "jvp": 0, "linear_solves": 0, "work_units": 0.0}));
+                e["segments"] = json!(e["segments"].as_u64().unwrap() + 1);
+                e["attempts"] = json!(e["attempts"].as_u64().unwrap() + s.attempts as u64);
+                e["rhs"] = json!(e["rhs"].as_u64().unwrap() + s.rhs_calls);
+                e["jvp"] = json!(e["jvp"].as_u64().unwrap() + s.jvp_vectors);
+                e["linear_solves"] = json!(e["linear_solves"].as_u64().unwrap() + s.linear_solves);
+                e["work_units"] = json!(e["work_units"].as_f64().unwrap() + s.work_units);
+            }
+            (r.stats.rhs_calls, err(&r.final_state), json!({"attempts": r.stats.attempts,
+                "segments": r.stats.segments.len(), "switches": r.stats.switches,
+                "output_rows": r.t.len(), "success": r.success, "by_kind": kinds}))
+        }
+    }
+}
+
 fn main() {
     let a: Vec<String> = std::env::args().collect();
     if a.len() < 2 {
         eprintln!("usage: adapter_checkpoint_trace CASE ARM [START TARGET DOPRI_H0 RODAS_H0]...");
         std::process::exit(2);
     }
+    if a[1] == "bench" || a[1] == "repeat-arm" {
+        // Light benchmark / profiler loop of one registered arm. `bench`
+        // calibrates to >= 50 ms batches and reports seven batches;
+        // `repeat-arm` runs a fixed count for an external profiler.
+        let f = fixture(&a[2]);
+        let arm = a[3].as_str();
+        // Only the solver call is timed or profiled; the summary is built
+        // once, outside every timed batch (harness v2).
+        let once = || {
+            let a0 = allocations();
+            solve_only(&f, arm);
+            allocations() - a0
+        };
+        if a[1] == "repeat-arm" {
+            let n: usize = a[4].parse().unwrap();
+            let clock = Instant::now();
+            for _ in 0..n {
+                once();
+            }
+            eprintln!("repeat-arm {} {} n={} ns/solve={}", a[2], arm, n,
+                clock.elapsed().as_nanos() as f64 / n as f64);
+            return;
+        }
+        let cold = once();
+        let warm = once();
+        let (rhs, err, summary) = solve_arm(&f, arm);
+        let mut n = 1usize;
+        loop {
+            let clock = Instant::now();
+            for _ in 0..n { once(); }
+            if clock.elapsed().as_secs_f64() >= 0.05 || n >= 1 << 20 { break; }
+            n *= 2;
+        }
+        let mut per = Vec::new();
+        for _ in 0..7 {
+            let clock = Instant::now();
+            for _ in 0..n { once(); }
+            per.push(clock.elapsed().as_nanos() as f64 / n as f64);
+        }
+        let mut sorted = per.clone();
+        sorted.sort_by(f64::total_cmp);
+        println!("{}", json!({"schema": "vigilode.adapter-light-bench.v2", "case": a[2], "arm": arm,
+            "repetitions_per_batch": n, "ns_per_solve_batches": per, "ns_per_solve_median": sorted[3],
+            "ns_per_solve_min": sorted[0], "batch_spread": (sorted[6] - sorted[0]) / sorted[3],
+            "allocations_cold_first_call": cold, "allocations_warm": warm, "rhs": rhs,
+            "max_component_absolute_error": err, "accuracy_cap": f.cap, "summary": summary,
+            "timing_scope": "solver call only; result destruction included; summary built outside timing",
+            "timing_authority": "diagnostic_only"}));
+        return;
+    }
     if a[1] == "repeat-rodas" {
         // Allocation-site profiling aid: one fixture, one provider, K attempts, R repeats.
         let f = fixture(&a[2]);
-        let dense = a[3] == "dense";
         let mut o = f.options.clone();
         o.max_steps = a[4].parse().unwrap();
-        let p = if dense { f.dense_problem.as_ref().unwrap() } else { &f.problem };
+        let p = match a[3].as_str() {
+            "dense" => f.dense_problem.as_ref().unwrap(),
+            "fd" => f.fd_problem.as_ref().unwrap(),
+            _ => &f.problem,
+        };
         let mut attempts = 0;
         for _ in 0..a[5].parse::<usize>().unwrap() {
             let a0 = allocations();
