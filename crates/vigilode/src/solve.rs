@@ -16,7 +16,7 @@ use rodas5p_integrators::{
     integrate_rodas5p_fast_banded_dense_observed_with_atol, integrate_rodas5p_fast_banded_observed,
     integrate_rodas5p_fast_banded_observed_with_atol, integrate_rodas5p_fast_dense_observed,
     integrate_rodas5p_fast_dense_observed_with_atol, integrate_rodas5p_fast_observed_with_atol,
-    integrate_rodas5p_routed_observed,
+    integrate_rodas5p_routed_observed_with_options,
 };
 
 use crate::{
@@ -212,14 +212,20 @@ impl Rodas5p {
                         .map_err(|e| SolveError::InvalidInput(e.to_string()))?,
                     None => ode,
                 };
-                let routed =
-                    integrate_rodas5p_routed_observed(&ode, t_span, y0, &adaptive, &schedule)
-                        .map_err(|e| match e {
-                            RoutingError::Structure(s) => {
-                                SolveError::StructureRefused(s.to_string())
-                            }
-                            RoutingError::Integration(c) => driver_error(c, &guard),
-                        })?;
+                // The matrix-free route keeps its small GMRES least-squares
+                // buffers (SPD04/SP02, bitwise the same as the allocating
+                // solve); `driver_work.krylov_workspace` records the choice.
+                let routing = RoutingOptions {
+                    krylov_ls_workspace: true,
+                    ..RoutingOptions::default()
+                };
+                let routed = integrate_rodas5p_routed_observed_with_options(
+                    &ode, t_span, y0, &adaptive, &schedule, &routing,
+                )
+                .map_err(|e| match e {
+                    RoutingError::Structure(s) => SolveError::StructureRefused(s.to_string()),
+                    RoutingError::Integration(c) => driver_error(c, &guard),
+                })?;
                 let partial = routed.partial.clone();
                 let (driver_id, attempts, accepted, rejected, driver_work) = match &routed.run {
                     RoutedRun::Banded(r) => (

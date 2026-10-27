@@ -43,6 +43,7 @@ use crate::{
     rodas5p_matrix_free_fast::{
         RODAS5P_MF_FAST_DRIVER_ID, Rodas5pMfFastResult,
         integrate_rodas5p_mf_fast_observed_gmres_into,
+        integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace,
     },
 };
 
@@ -221,6 +222,12 @@ pub enum RoutingError {
 #[derive(Clone, Debug)]
 pub struct RoutingOptions {
     pub matrix_free: LinearSolverConfig,
+    /// Solve the matrix-free route's small GMRES least-squares problems in a
+    /// reused workspace (research nodes SPD04 `L-0087`, SP02 `L-0104`): the
+    /// same faer kernels, bitwise the same results, no per-solve allocation.
+    /// Default false keeps the routed default and its record identical.
+    /// Struct literals must now name this field or use `..Default::default()`.
+    pub krylov_ls_workspace: bool,
 }
 
 impl Default for RoutingOptions {
@@ -238,6 +245,7 @@ impl Default for RoutingOptions {
                 maxiter: 200,
                 ..LinearSolverConfig::default()
             },
+            krylov_ls_workspace: false,
         }
     }
 }
@@ -490,14 +498,12 @@ pub fn integrate_rodas5p_routed_observed_with_options(
             (RoutedRun::Dense(run), partial)
         }
         RoutedDriver::MatrixFree => {
-            let run = integrate_rodas5p_mf_fast_observed_gmres_into(
-                problem,
-                t_span,
-                y0,
-                &options.matrix_free,
-                adaptive,
-                output,
-            )?;
+            let integrate = if options.krylov_ls_workspace {
+                integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace
+            } else {
+                integrate_rodas5p_mf_fast_observed_gmres_into
+            };
+            let run = integrate(problem, t_span, y0, &options.matrix_free, adaptive, output)?;
             let partial = run.partial.clone();
             (RoutedRun::MatrixFree(run), partial)
         }

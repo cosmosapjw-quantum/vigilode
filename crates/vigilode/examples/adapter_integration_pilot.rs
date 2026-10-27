@@ -120,6 +120,48 @@ fn model(name: &str) -> (Problem, Vec<f64>, f64, Vec<f64>, f64, f64) {
                 1e-12,
             )
         }
+        // Stiff relaxation to a smooth path, then a nonstiff accuracy-limited
+        // oscillation. The exact solution is y=g(t) for every lambda(t), so
+        // the implicit history is cheap while the current explicit route wins.
+        "stale-return" => {
+            fn lam(t: f64) -> (f64, f64) {
+                let q = (200.0 * (t - 0.5)).tanh();
+                (1.0 + 4999.5 * (1.0 - q), -4999.5 * 200.0 * (1.0 - q * q))
+            }
+            fn g(t: f64) -> (f64, f64, f64) {
+                let (a, w) = (1e-2, 150.0);
+                let q = (200.0 * (t - 0.5)).tanh();
+                let (s, s1, s2) = (0.5 * (1.0 + q), 100.0 * (1.0 - q * q), -40000.0 * q * (1.0 - q * q));
+                let (sn, cs) = (w * t).sin_cos();
+                (t.cos() + a * s * sn,
+                 -t.sin() + a * (s1 * sn + s * w * cs),
+                 -t.cos() + a * (s2 * sn + 2.0 * s1 * w * cs - s * w * w * sn))
+            }
+            let (g1, _, _) = g(1.0);
+            (
+                Problem::new(1, |t, y, o| {
+                    let (l, _) = lam(t);
+                    let (g0, g1, _) = g(t);
+                    o[0] = -l * (y[0] - g0) + g1;
+                    Ok(())
+                })
+                .jacobian(Jacobian::dense(|t, _, j| {
+                    j[0] = -lam(t).0;
+                    Ok(())
+                }))
+                .time_derivative(|t, y, o| {
+                    let (l, lp) = lam(t);
+                    let (g0, g1, g2) = g(t);
+                    o[0] = -lp * (y[0] - g0) + l * g1 + g2;
+                    Ok(())
+                }),
+                vec![g(0.0).0],
+                1.0,
+                vec![g1],
+                1e-5,
+                1e-14,
+            )
+        }
         _ if name.starts_with("transition-") => {
             let tau: f64 = name
                 .strip_prefix("transition-")
@@ -213,7 +255,7 @@ fn fixture(case: &str) -> Fixture {
     let mut dense_problem = None;
     let mut options = Options { rtol: 1e-7, atol: Atol::Scalar(1e-10), h0: 1e-7,
         max_steps: 100_000, ..Default::default() };
-    if case.starts_with("transition-") || case == "relaxation" { options.h0 = 1e-4; }
+    if case.starts_with("transition-") || case == "relaxation" || case == "stale-return" { options.h0 = 1e-4; }
     if case == "case5" || gyro {
         let m = models::Model::new(if gyro { 10 } else { 5 }, false).unwrap();
         problem = catalog_problem(&m, false);
@@ -234,12 +276,16 @@ enum Raw { Switching(SwitchingSolution), Explicit(ExplicitSolution), Implicit(So
 fn solve(f: &Fixture, arm: &str) -> Result<Raw, String> {
     let span = (0.0, f.end);
     match arm {
-        "evidence" | "adaptive" | "adaptive-unseeded" | "adaptive-no-startup-retry" => {
+        "evidence" | "adaptive" | "adaptive-unseeded" | "adaptive-no-startup-retry"
+        | "adaptive-sentinel" | "adaptive-probe-unbudgeted" => {
             let mut config = if arm.starts_with("adaptive") {
                 SwitchingConfig::adaptive_evidence(DerivativeFallback::ProvidedOnly)
             } else { SwitchingConfig::evidence_driven(DerivativeFallback::ProvidedOnly) };
             if arm == "adaptive-unseeded" { config.reuse_entry_pilot_step = false; }
             if arm == "adaptive-no-startup-retry" { config.retry_unresolved_entry_once = false; }
+            if arm == "adaptive-sentinel" { config.return_sentinel_interval = 1; }
+            // Diagnostic control only: isolates the historical-rate screen.
+            if arm == "adaptive-probe-unbudgeted" { config.probe_attempt_budget = usize::MAX; }
             SwitchingSolver::solve(&f.problem, span, &f.y0, &f.options, &config)
                 .map(Raw::Switching).map_err(|e| e.to_string())
         }

@@ -156,6 +156,19 @@ pub struct SwitchingConfig {
     pub probe_backoff_factor: usize,
     /// Work-rate trend ratio, above one, that re-arms a backed-off trial.
     pub rearm_rate_ratio: f64,
+    /// Every `k`-th due explicit recheck of an implicit tenure (the first
+    /// included) is a same-window sentinel; zero disables it. A sentinel runs
+    /// the implicit window first as the productive advance and bounds the
+    /// explicit return by `return_cost_ratio` times that current implicit
+    /// work (plus one callback unit) instead of the previous window's rate and
+    /// `probe_attempt_budget`. Its explicit trial is discarded unless it wins
+    /// the same-window work comparison. A losing sentinel costs at most
+    /// `(1 + return_cost_ratio) W + 1` units plus one DOPRI attempt, where `W`
+    /// is the implicit window's work (Jacobian builds weigh `n`), and its
+    /// attempts draw on the global `max_steps` without a separate cap; the
+    /// committed implicit window keeps `is_probe = true` as the root of a
+    /// comparison. Callbacks must be replay safe.
+    pub return_sentinel_interval: usize,
     /// Optional adaptive negative-evidence reuse. None preserves the legacy
     /// rate-rearmed backoff/lifetime-count policy. When present, adaptive
     /// memory replaces entry `pilot_backoff_factor` and `rearm_rate_ratio`
@@ -188,6 +201,7 @@ impl Default for SwitchingConfig {
             pilot_backoff_factor: 2,
             probe_backoff_factor: 2,
             rearm_rate_ratio: 2.0,
+            return_sentinel_interval: 0,
             entry_probe_adaptation: None,
         }
     }
@@ -510,6 +524,7 @@ impl SwitchingSolver {
             probe_discards: 0,
             implicit_rate_at_discard: None,
             implicit_seed: None,
+            tenure_rechecks: 0,
         });
         while progress.as_ref().unwrap().next_window <= config.window_count {
             let current = progress.as_mut().unwrap();
@@ -606,6 +621,8 @@ struct DriveState {
     /// Mean accepted step of the last completed implicit batch; the initial
     /// proposal of the next implicit batch of the same tenure.
     implicit_seed: Option<f64>,
+    /// Due explicit rechecks in the current implicit tenure.
+    tenure_rechecks: usize,
 }
 
 #[derive(Default)]
@@ -812,6 +829,7 @@ fn drive_windows(
         mut probe_discards,
         mut implicit_rate_at_discard,
         mut implicit_seed,
+        mut tenure_rechecks,
     } = progress;
     let fallback = config.fallback != DerivativeFallback::Forbidden;
     // One mutable copy of the request serves every batch of this call.
@@ -852,6 +870,7 @@ fn drive_windows(
                     probe_discards,
                     implicit_rate_at_discard,
                     implicit_seed,
+                    tenure_rechecks,
                 };
             }
             let remaining = opts.max_steps - result.stats.attempts;
@@ -860,6 +879,208 @@ fn drive_windows(
                 break 'windows;
             }
             let start = result.final_time;
+            if probe
+                && config.return_sentinel_interval > 0
+                && tenure_rechecks % config.return_sentinel_interval == 0
+            {
+                // Same-window sentinel. The implicit window runs first and is
+                // the productive advance unless the explicit return beats it;
+                // the return is bounded by that current work, never by the
+                // previous window's rate or the fixed probe attempt budget.
+                tenure_rechecks += 1;
+                since_probe = 0;
+                probe = false;
+                let mut implicit_opts = opts.clone();
+                implicit_opts.h0 = implicit_seed
+                    .unwrap_or(opts.h0)
+                    .min(target - start)
+                    .max(AdaptiveStepConfig::default().min_step);
+                implicit_opts.max_steps = remaining;
+                let mut implicit = match run(
+                    problem,
+                    start,
+                    target,
+                    &result.final_state,
+                    &implicit_opts,
+                    SwitchingMethod::Rodas5p,
+                    true,
+                    false,
+                    t1,
+                    &[],
+                    None,
+                ) {
+                    Ok(batch) => batch,
+                    Err(message) => {
+                        result.stats.accounting_complete = false;
+                        result.message = message;
+                        break 'windows;
+                    }
+                };
+                charge(&mut result.stats, &implicit.record);
+                if implicit.fatal || !implicit.record.success {
+                    // Exactly an ordinary implicit window's stop: keep the
+                    // accepted prefix, no explicit trial after a failure.
+                    implicit.record.decision = if implicit.fatal {
+                        "fatal sentinel implicit window; stop without fallback"
+                    } else {
+                        "sentinel implicit window stopped; preserve partial accepted state"
+                    };
+                    commit(
+                        &mut result,
+                        &mut implicit.record,
+                        implicit.state,
+                        implicit.landings,
+                    );
+                    result.message = implicit.record.decision.into();
+                    result.stats.segments.push(implicit.record);
+                    break 'windows;
+                }
+                let remaining = opts.max_steps - result.stats.attempts;
+                let mut explicit = if remaining > 0 {
+                    local.h0 = explicit_step
+                        .unwrap_or(opts.h0)
+                        .min(target - start)
+                        .max(AdaptiveStepConfig::default().min_step);
+                    local.max_steps = remaining;
+                    match run(
+                        problem,
+                        start,
+                        target,
+                        &result.final_state,
+                        &local,
+                        SwitchingMethod::Dopri5,
+                        true,
+                        config.carry_explicit_step,
+                        t1,
+                        &[],
+                        Some(return_work_ceiling(
+                            implicit.record.work_units,
+                            1.0,
+                            config.return_cost_ratio,
+                        )),
+                    ) {
+                        Ok(batch) => Some(batch),
+                        Err(message) => {
+                            // The completed implicit window is accepted state;
+                            // the trial left no work record.
+                            result.stats.accounting_complete = false;
+                            implicit.record.decision =
+                                "sentinel explicit return failed without work record; stop";
+                            implicit.record.evidence = SwitchingEvidence::ImplicitWindowCompleted;
+                            commit(
+                                &mut result,
+                                &mut implicit.record,
+                                implicit.state,
+                                implicit.landings,
+                            );
+                            result.message = message;
+                            result.stats.segments.push(implicit.record);
+                            break 'windows;
+                        }
+                    }
+                } else {
+                    None
+                };
+                if let Some(explicit) = explicit.as_mut() {
+                    charge(&mut result.stats, &explicit.record);
+                    explicit.record.comparator_work_ratio = (implicit.record.work_units > 0.0)
+                        .then_some(explicit.record.work_units / implicit.record.work_units);
+                    if explicit.fatal {
+                        // The implicit window completed before the trial and is
+                        // the productive advance; the fatal trial is never
+                        // published, and no further driver runs.
+                        explicit.record.decision = "fatal sentinel explicit return; keep completed implicit window and stop";
+                        implicit.record.decision = explicit.record.decision;
+                        implicit.record.evidence = SwitchingEvidence::ImplicitWindowCompleted;
+                        result.message = explicit.record.decision.into();
+                        commit(
+                            &mut result,
+                            &mut implicit.record,
+                            std::mem::take(&mut implicit.state),
+                            std::mem::take(&mut implicit.landings),
+                        );
+                        result.stats.segments.push(implicit.record);
+                        result.stats.segments.push(explicit.record.clone());
+                        break 'windows;
+                    }
+                }
+                let explicit_wins = explicit.as_ref().is_some_and(|e| {
+                    e.record.success
+                        && qualified_work_preferred(
+                            &implicit.record,
+                            &e.record,
+                            true,
+                            config.return_cost_ratio,
+                            result.stats.segments.len() as u64,
+                        )
+                });
+                if explicit_wins {
+                    let mut explicit = explicit.expect("a winning explicit return exists");
+                    implicit.record.decision =
+                        "sentinel implicit comparator discarded after qualified explicit win";
+                    result.stats.segments.push(implicit.record);
+                    explicit.record.decision =
+                        "explicit return passed sentinel same-window comparison";
+                    explicit.record.evidence = SwitchingEvidence::ExplicitCheaperOnSameWindow;
+                    explicit_step = explicit.record.proposed_next_step;
+                    commit(
+                        &mut result,
+                        &mut explicit.record,
+                        explicit.state,
+                        explicit.landings,
+                    );
+                    result.stats.segments.push(explicit.record);
+                    method = SwitchingMethod::Dopri5;
+                    entry_memory = EntryProbeMemory::default();
+                    batches_since_entry_pilot = usize::MAX;
+                    result.stats.switches += 1;
+                    implicit_windows = 0;
+                    pilot_discards = 0;
+                    explicit_rate_at_discard = None;
+                    probe_discards = 0;
+                    implicit_rate_at_discard = None;
+                    implicit_seed = None;
+                    tenure_rechecks = 0;
+                    continue;
+                }
+                let rate_before = implicit_rate;
+                if explicit.is_some() {
+                    implicit.record.evidence = SwitchingEvidence::ImplicitPreferredOnSameWindow;
+                    implicit.record.decision =
+                        "sentinel implicit comparator retained as productive implicit advance";
+                } else {
+                    implicit.record.evidence = SwitchingEvidence::ImplicitWindowCompleted;
+                    implicit.record.decision =
+                        "sentinel implicit window completed; budget left no explicit trial";
+                }
+                implicit_rate = Some(implicit.record.work_units / (target - start));
+                implicit_windows += 1;
+                since_probe += 1;
+                implicit_seed = (implicit.record.accepted_steps > 0).then(|| {
+                    (implicit.record.reached_time - start) / implicit.record.accepted_steps as f64
+                });
+                explicit_step = None;
+                commit(
+                    &mut result,
+                    &mut implicit.record,
+                    implicit.state,
+                    implicit.landings,
+                );
+                result.stats.segments.push(implicit.record);
+                if let Some(mut explicit) = explicit {
+                    explicit.record.decision = if explicit.ceiling_stop {
+                        "sentinel explicit return discarded: exceeded current same-window implicit work"
+                    } else {
+                        "sentinel explicit return discarded; retain implicit route"
+                    };
+                    explicit.record.evidence = SwitchingEvidence::ExplicitReturnNotSupported;
+                    probe_discards += 1;
+                    // As the ordinary path: the anchor is the rate before this recheck.
+                    implicit_rate_at_discard = rate_before;
+                    result.stats.segments.push(explicit.record);
+                }
+                continue;
+            }
             // A replay pilot is rooted at the identical accepted physical
             // checkpoint. It may never replace the already tested explicit
             // candidate, and every discarded trial is charged. Eligibility is
@@ -986,6 +1207,7 @@ fn drive_windows(
             }
             if probe {
                 since_probe = 0;
+                tenure_rechecks += 1;
                 let rate = record.work_units / (target - start);
                 let mut economical = record.success
                     && implicit_rate.is_some_and(|old| rate <= config.return_cost_ratio * old);
@@ -1029,21 +1251,33 @@ fn drive_windows(
                                     result.stats.segments.push(replay.record);
                                     break 'windows;
                                 }
+                                // A nonfatal incomplete comparator's charged work is a
+                                // lower bound on completing this same deterministic run
+                                // (replay-safe callbacks; counters only grow; a budget
+                                // stop is a prefix), so an explicit return below that
+                                // bound wins without its output.
                                 economical = qualified_work_preferred(
                                     &replay.record,
                                     &record,
-                                    replay.record.success,
+                                    true,
                                     config.return_cost_ratio,
                                     result.stats.segments.len() as u64,
                                 );
                                 record.comparator_work_ratio = (replay.record.work_units > 0.0)
                                     .then_some(record.work_units / replay.record.work_units);
-                                replay.record.decision = if !replay.record.success {
-                                    "same-window implicit comparator incomplete; retain implicit route"
-                                } else if economical {
-                                    "same-window implicit comparator discarded after qualified explicit win"
-                                } else {
-                                    "same-window implicit comparator retained as productive implicit advance"
+                                replay.record.decision = match (replay.record.success, economical) {
+                                    (false, false) => {
+                                        "same-window implicit comparator incomplete; retain implicit route"
+                                    }
+                                    (false, true) => {
+                                        "same-window implicit comparator incomplete above explicit work; discarded"
+                                    }
+                                    (true, true) => {
+                                        "same-window implicit comparator discarded after qualified explicit win"
+                                    }
+                                    (true, false) => {
+                                        "same-window implicit comparator retained as productive implicit advance"
+                                    }
                                 };
                                 return_comparator = Some(replay);
                             }
@@ -1058,7 +1292,12 @@ fn drive_windows(
                     }
                 }
                 if economical {
-                    record.decision = if return_comparator.is_some() {
+                    record.decision = if return_comparator
+                        .as_ref()
+                        .is_some_and(|replay| !replay.record.success)
+                    {
+                        "explicit return passed same-window lower-bound comparison"
+                    } else if return_comparator.is_some() {
                         "explicit return passed actual same-window work comparison"
                     } else {
                         "explicit probe completed within return work-rate hysteresis"
@@ -1080,6 +1319,7 @@ fn drive_windows(
                     probe_discards = 0;
                     implicit_rate_at_discard = None;
                     implicit_seed = None;
+                    tenure_rechecks = 0;
                 } else if fatal {
                     record.decision = "fatal explicit probe; stop without another driver";
                     commit(&mut result, &mut record, state, landings);
@@ -1301,6 +1541,7 @@ fn drive_windows(
                             probe_discards = 0;
                             implicit_rate_at_discard = None;
                             implicit_seed = entry_seed;
+                            tenure_rechecks = 0;
                         } else {
                             record.decision = "implicit entry not supported by bounded pilot evidence; retain explicit route";
                         }
@@ -1369,6 +1610,7 @@ fn drive_windows(
         probe_discards,
         implicit_rate_at_discard,
         implicit_seed,
+        tenure_rechecks,
     }
 }
 
@@ -2016,6 +2258,7 @@ mod adaptive_return_productive_contract {
             probe_discards: 0,
             implicit_rate_at_discard: None,
             implicit_seed: None,
+            tenure_rechecks: 0,
         };
         let r = drive_windows(&p, (0.0, 1e-15), &opts, &config, state, None).result;
         assert_eq!(r.final_time, 1e-15, "{}", r.message);
@@ -2151,6 +2394,7 @@ mod adaptive_return_productive_contract {
             probe_discards: 0,
             implicit_rate_at_discard: None,
             implicit_seed: None,
+            tenure_rechecks: 0,
         };
         let after = drive_windows(&p, (0.0, 0.01), &opts, &config, state, None);
         let r = after.result;

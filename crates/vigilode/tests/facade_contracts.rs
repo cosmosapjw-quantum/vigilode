@@ -14,7 +14,8 @@ use rodas5p_integrators::{
     RODAS5P_FAST_DRIVER_ID, RODAS5P_MF_FAST_DRIVER_ID, RoutedDriver, RoutingOptions,
     integrate_rodas5p_fast_banded_observed, integrate_rodas5p_fast_banded_observed_with_atol,
     integrate_rodas5p_fast_observed, integrate_rodas5p_fast_observed_with_atol,
-    integrate_rodas5p_mf_fast_observed_gmres_into, integrate_rodas5p_routed_observed,
+    integrate_rodas5p_mf_fast_observed_gmres_into,
+    integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace, integrate_rodas5p_routed_observed,
     robertson_problem,
 };
 use vigilode::{
@@ -929,7 +930,7 @@ fn banded_routes_record_band_work() {
 fn matrix_free_route_records_state_reuses_and_policy_ids() {
     let opts = stiff_example_opts();
     let sol = Rodas5p::solve(&two_timescale_facade(), (0.0, 1.0), &[1.0, 1.0], &opts).unwrap();
-    let direct = integrate_rodas5p_mf_fast_observed_gmres_into(
+    let direct = integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace(
         &two_timescale_direct(),
         (0.0, 1.0),
         &[1.0, 1.0],
@@ -938,6 +939,36 @@ fn matrix_free_route_records_state_reuses_and_policy_ids() {
         &OutputSchedule::new(vec![0.0, 1.0]).unwrap(),
     )
     .unwrap();
+    // The facade's reused least-squares workspace is bitwise the allocating
+    // legacy solve: same states, attempts and every counter.
+    let legacy = integrate_rodas5p_mf_fast_observed_gmres_into(
+        &two_timescale_direct(),
+        (0.0, 1.0),
+        &[1.0, 1.0],
+        &RoutingOptions::default().matrix_free,
+        &adaptive_for(&opts),
+        &OutputSchedule::new(vec![0.0, 1.0]).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(direct.krylov_workspace, "krylov-ws-ls-workspace-v1");
+    assert_eq!(legacy.krylov_workspace, "krylov-ws-legacy-v1");
+    assert_eq!(direct.observed.t, legacy.observed.t);
+    assert_eq!(direct.observed.y, legacy.observed.y);
+    assert_eq!(direct.observed.counters, legacy.observed.counters);
+    assert_eq!(
+        (
+            direct.attempts,
+            direct.accepted_steps,
+            direct.rejected_steps
+        ),
+        (
+            legacy.attempts,
+            legacy.accepted_steps,
+            legacy.rejected_steps
+        )
+    );
+    assert_eq!(sol.t, direct.observed.t);
+    assert_eq!(sol.y, direct.observed.y);
     let DriverWork::MatrixFree {
         state_reuses,
         gcrodr_policy,
