@@ -109,6 +109,12 @@ pub struct SwitchingConfig {
     pub probe_attempt_budget: usize,
     /// Recheck work/time must be at most this fraction of the last implicit rate.
     pub return_cost_ratio: f64,
+    /// Stop a same-window implicit return comparator once its charged callback
+    /// work alone proves that the already completed explicit candidate is
+    /// cheaper by `return_cost_ratio`. The partial implicit state is discarded;
+    /// this proves a work lower bound, not implicit endpoint admissibility.
+    /// Opt in separately; false retains full-comparator execution.
+    pub stop_dominated_return_comparator: bool,
     /// Refuse a possible dense fallback above this dimension, before callbacks.
     pub max_dense_dimension: usize,
     /// Attempts permitted for an implicit pilot from the same checkpoint and
@@ -190,6 +196,7 @@ impl Default for SwitchingConfig {
             probe_interval: 4,
             probe_attempt_budget: 16,
             return_cost_ratio: 0.8,
+            stop_dominated_return_comparator: false,
             max_dense_dimension: 64,
             implicit_pilot_attempt_budget: 0,
             implicit_pilot_limit: 1,
@@ -283,6 +290,9 @@ pub enum SwitchingEvidence {
     /// Successful explicit return trial beat an actual implicit trial from
     /// the same physical checkpoint to the identical window endpoint.
     ExplicitCheaperOnSameWindow,
+    /// Completed explicit candidate beats a conservative lower bound on the
+    /// same-window implicit comparator's cost. Its partial state is discarded.
+    ExplicitCheaperThanComparatorLowerBound,
     /// A same-window implicit comparison was cheaper and its accepted state
     /// was committed directly, avoiding a duplicate implicit solve.
     ImplicitPreferredOnSameWindow,
@@ -362,8 +372,13 @@ pub struct SwitchingSegment {
     /// Absent at full-span completion and for the implicit driver, whose
     /// controller is not exported here.
     pub proposed_next_step: Option<f64>,
-    /// Pilot work divided by its explicit comparator, when a matched-prefix
-    /// comparison was performed. Includes all charged attempts, not just accepts.
+    /// Matched-comparison work ratio: implicit/explicit on entry and
+    /// explicit/implicit on return. An incomplete implicit comparator supplies
+    /// a cost lower bound, so its return ratio bounds the completed ratio from
+    /// above. An incomplete challenger (entry or sentinel explicit probe)
+    /// has no completed-work ratio and leaves this field absent. Includes
+    /// all charged attempts, not just
+    /// accepted steps.
     pub comparator_work_ratio: Option<f64>,
     /// Scheduling evidence for the optional adaptive entry policy. This is
     /// separate from the actual competitive result in `evidence`.
@@ -775,6 +790,79 @@ fn return_work_ceiling(rate: f64, span: f64, ratio: f64) -> u64 {
     ((ratio * rate * span).floor() as u64).saturating_add(1)
 }
 
+// Build the integer proxy before floating conversion. A checked sum keeps
+// overflow from becoming false evidence. One outward adjacent float contains
+// conversion rounding even above binary64's exact-integer range. This
+// deliberately expands exactly represented positive counts too, so equality
+// (or a sub-ulp margin) may be retained at ordinary count magnitudes.
+fn work_enclosure(
+    record: &SwitchingSegment,
+    dimension: usize,
+    callbacks_only: bool,
+) -> Option<(f64, f64)> {
+    let mut cost = (record.jacobian_builds as u128).checked_mul(dimension as u128)?;
+    for count in [
+        record.rhs_calls,
+        record.jvp_vectors,
+        record.ft_calls,
+        if callbacks_only {
+            0
+        } else {
+            record.linear_solves
+        },
+    ] {
+        cost = cost.checked_add(count as u128)?;
+    }
+    if cost == 0 {
+        return Some((0.0, 0.0));
+    }
+    let rounded = cost as f64;
+    Some((rounded.next_down(), rounded.next_up()))
+}
+
+fn dominated_comparator_ceiling(
+    candidate: &SwitchingSegment,
+    dimension: usize,
+    ratio: f64,
+) -> Option<u64> {
+    let (_, upper) = work_enclosure(candidate, dimension, false)?;
+    let threshold = (upper / ratio).next_up().ceil();
+    // The native guard reserves u64::MAX as the unarmed sentinel. Declining
+    // an unrepresentable cap falls back to the existing bounded attempt path.
+    (threshold.is_finite() && threshold < (u64::MAX - 1) as f64).then_some(threshold as u64)
+}
+
+// A displayed incomplete-comparator ratio is an upper bound too, so its
+// arithmetic must have the same outward semantics as the admission test.
+fn prefix_ratio_upper(
+    candidate: &SwitchingSegment,
+    comparator: &SwitchingSegment,
+    dimension: usize,
+) -> Option<f64> {
+    let (_, upper) = work_enclosure(candidate, dimension, false)?;
+    let (lower, _) = work_enclosure(comparator, dimension, false)?;
+    if lower <= 0.0 {
+        return None;
+    }
+    let ratio = (upper / lower).next_up();
+    ratio.is_finite().then_some(ratio)
+}
+
+fn prefix_cost_dominates(
+    candidate: &SwitchingSegment,
+    comparator: &SwitchingSegment,
+    dimension: usize,
+    ratio: f64,
+) -> bool {
+    let Some((_, upper)) = work_enclosure(candidate, dimension, false) else {
+        return false;
+    };
+    let Some((lower, _)) = work_enclosure(comparator, dimension, false) else {
+        return false;
+    };
+    candidate.success && upper <= (ratio * lower).next_down()
+}
+
 fn qualified_work_preferred(
     incumbent: &SwitchingSegment,
     candidate: &SwitchingSegment,
@@ -983,7 +1071,8 @@ fn drive_windows(
                 };
                 if let Some(explicit) = explicit.as_mut() {
                     charge(&mut result.stats, &explicit.record);
-                    explicit.record.comparator_work_ratio = (implicit.record.work_units > 0.0)
+                    explicit.record.comparator_work_ratio = (explicit.record.success
+                        && implicit.record.work_units > 0.0)
                         .then_some(explicit.record.work_units / implicit.record.work_units);
                     if explicit.fatal {
                         // The implicit window completed before the trial and is
@@ -1225,6 +1314,16 @@ fn drive_windows(
                             .min(target - start)
                             .max(AdaptiveStepConfig::default().min_step);
                         replay_opts.max_steps = remaining.min(config.implicit_pilot_attempt_budget);
+                        let comparator_ceiling = config
+                            .stop_dominated_return_comparator
+                            .then(|| {
+                                dominated_comparator_ceiling(
+                                    &record,
+                                    problem.dimension,
+                                    config.return_cost_ratio,
+                                )
+                            })
+                            .flatten();
                         match run(
                             problem,
                             start,
@@ -1236,7 +1335,7 @@ fn drive_windows(
                             false,
                             t1,
                             &[],
-                            None,
+                            comparator_ceiling,
                         ) {
                             Ok(mut replay) => {
                                 charge(&mut result.stats, &replay.record);
@@ -1256,16 +1355,41 @@ fn drive_windows(
                                 // (replay-safe callbacks; counters only grow; a budget
                                 // stop is a prefix), so an explicit return below that
                                 // bound wins without its output.
-                                economical = qualified_work_preferred(
-                                    &replay.record,
-                                    &record,
-                                    true,
-                                    config.return_cost_ratio,
-                                    result.stats.segments.len() as u64,
-                                );
-                                record.comparator_work_ratio = (replay.record.work_units > 0.0)
-                                    .then_some(record.work_units / replay.record.work_units);
+                                // Only a completed comparator is output-qualified.
+                                // An incomplete comparator instead contributes a
+                                // monotone prefix-cost lower bound; this separate
+                                // predicate never labels its output admissible.
+                                let prefix_preferred = !replay.record.success
+                                    && prefix_cost_dominates(
+                                        &record,
+                                        &replay.record,
+                                        problem.dimension,
+                                        config.return_cost_ratio,
+                                    );
+                                let dominated_comparator = config.stop_dominated_return_comparator
+                                    && replay.ceiling_stop
+                                    && prefix_preferred;
+                                economical = if replay.record.success {
+                                    qualified_work_preferred(
+                                        &replay.record,
+                                        &record,
+                                        true,
+                                        config.return_cost_ratio,
+                                        result.stats.segments.len() as u64,
+                                    )
+                                } else {
+                                    prefix_preferred
+                                };
+                                record.comparator_work_ratio = if replay.record.success {
+                                    (replay.record.work_units > 0.0)
+                                        .then_some(record.work_units / replay.record.work_units)
+                                } else {
+                                    prefix_ratio_upper(&record, &replay.record, problem.dimension)
+                                };
                                 replay.record.decision = match (replay.record.success, economical) {
+                                    _ if dominated_comparator => {
+                                        "implicit comparator stopped after callback cost proves explicit dominance"
+                                    }
                                     (false, false) => {
                                         "same-window implicit comparator incomplete; retain implicit route"
                                     }
@@ -1302,7 +1426,12 @@ fn drive_windows(
                     } else {
                         "explicit probe completed within return work-rate hysteresis"
                     };
-                    record.evidence = if return_comparator.is_some() {
+                    record.evidence = if return_comparator
+                        .as_ref()
+                        .is_some_and(|replay| !replay.record.success)
+                    {
+                        SwitchingEvidence::ExplicitCheaperThanComparatorLowerBound
+                    } else if return_comparator.is_some() {
                         SwitchingEvidence::ExplicitCheaperOnSameWindow
                     } else {
                         SwitchingEvidence::ExplicitCheaperThanPreviousWindow
@@ -1462,7 +1591,7 @@ fn drive_windows(
                                                     <= config.entry_cost_ratio * record.work_units
                                         };
                                         pilot.record.comparator_work_ratio =
-                                            if record.work_units > 0.0 {
+                                            if pilot.record.success && record.work_units > 0.0 {
                                                 Some(pilot.record.work_units / record.work_units)
                                             } else {
                                                 None
@@ -2464,5 +2593,69 @@ mod adaptive_return_productive_contract {
                 .map(|s| s.linear_solves)
                 .sum::<u64>()
         );
+    }
+}
+
+#[cfg(test)]
+mod comparator_dominance_arithmetic_contract {
+    use super::*;
+
+    fn empty_record() -> SwitchingSegment {
+        let problem = Problem::new(1, |_, _, out| {
+            out[0] = 0.0;
+            Ok(())
+        });
+        SwitchingSolver::solve(
+            &problem,
+            (0.0, 0.0),
+            &[0.0],
+            &Options::default(),
+            &SwitchingConfig::default(),
+        )
+        .unwrap()
+        .stats
+        .segments
+        .remove(0)
+    }
+
+    #[test]
+    fn outward_cost_check_never_promotes_an_inexact_boundary() {
+        let mut candidate = empty_record();
+        let mut comparator = candidate.clone();
+        candidate.success = true;
+        candidate.rhs_calls = (1u64 << 53) + 1;
+        comparator.rhs_calls = 2 * ((1u64 << 53) + 1);
+        // The exact integer ratio is one half; the displayed enclosure
+        // must not round below it even though neither integer is exact f64.
+        assert!(prefix_ratio_upper(&candidate, &comparator, 1).unwrap() >= 0.5);
+        assert!(!prefix_cost_dominates(&candidate, &comparator, 1, 0.5));
+        comparator.rhs_calls += 16;
+        assert!(prefix_cost_dominates(&candidate, &comparator, 1, 0.5));
+        candidate.success = false;
+        assert!(!prefix_cost_dominates(&candidate, &comparator, 1, 0.5));
+        candidate.success = true;
+        candidate.rhs_calls = 80;
+        comparator.rhs_calls = 160;
+        assert!(!prefix_cost_dominates(&candidate, &comparator, 1, 0.5));
+        comparator.rhs_calls = 161;
+        assert!(prefix_cost_dominates(&candidate, &comparator, 1, 0.5));
+    }
+
+    #[test]
+    fn ceiling_uses_upper_candidate_cost_and_prefix_lower_bound() {
+        let mut candidate = empty_record();
+        let mut comparator = candidate.clone();
+        candidate.success = true;
+        candidate.rhs_calls = 20;
+        candidate.linear_solves = 3;
+        let ceiling = dominated_comparator_ceiling(&candidate, 1, 0.8).unwrap();
+        assert!(ceiling >= 29);
+        comparator.rhs_calls = ceiling + 1;
+        assert!(prefix_cost_dominates(&candidate, &comparator, 1, 0.8));
+        // Already-spent linear solves are also a valid completion-cost
+        // lower bound even though the stopping guard meters only callbacks.
+        comparator.rhs_calls = 10;
+        comparator.linear_solves = 1000;
+        assert!(prefix_cost_dominates(&candidate, &comparator, 1, 0.8));
     }
 }

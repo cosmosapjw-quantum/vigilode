@@ -1,0 +1,22 @@
+   Compiling rodas5p-core v0.1.0 (/workspace/scratch/06cfffc081e2/vigilode/crates/rodas5p-core)
+error[E0432]: unresolved import `rodas5p_core::LuSolveWorkspace`
+ --> crates/rodas5p-core/examples/lu_workspace_bench.rs:3:50
+  |
+3 | use rodas5p_core::{DenseMatrix, LuFactorization, LuSolveWorkspace};
+  |                                                  ^^^^^^^^^^^^^^^^ no `LuSolveWorkspace` in the root
+
+error[E0599]: no method named `solve_in_place_with_workspace` found for struct `LuFactorization` in the current scope
+  --> crates/rodas5p-core/examples/lu_workspace_bench.rs:35:8
+   |
+35 |     lu.solve_in_place_with_workspace(&mut output, &mut ws)?;
+   |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `LuFactorization`
+
+error[E0599]: no method named `solve_in_place_with_workspace` found for struct `LuFactorization` in the current scope
+  --> crates/rodas5p-core/examples/lu_workspace_bench.rs:60:20
+   |
+60 |                 lu.solve_in_place_with_workspace(&mut output, &mut ws)?;
+   |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ method not found in `LuFactorization`
+
+Some errors have detailed explanations: E0432, E0599.
+For more information about an error, try `rustc --explain E0432`.
+error: could not compile `rodas5p-core` (example "lu_workspace_bench") due to 3 previous errors

@@ -96,7 +96,9 @@ fn entry_pilots_are_separated_bounded_and_fully_charged() {
             previous = Some(committed_explicit);
             assert!(!s.committed);
             assert!(s.attempts <= c.implicit_pilot_attempt_budget);
-            assert!(s.comparator_work_ratio.is_some());
+            // Incomplete pilots expose raw prefix work, not a misleading
+            // completed-method comparison ratio.
+            assert_eq!(s.comparator_work_ratio.is_some(), s.success);
             assert!(matches!(
                 s.evidence,
                 SwitchingEvidence::ImplicitPilotIncomplete

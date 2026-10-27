@@ -38,8 +38,8 @@ mod exact_band_cache;
 use exact_band_cache::ExactBandCache;
 
 use rodas5p_core::{
-    CoreError, CoreResult, DenseMatrix, LuFactorization, WorkCounters, rodas5p_coefficients,
-    scaled_error_component,
+    CoreError, CoreResult, DenseMatrix, LuFactorization, LuSolveWorkspace, WorkCounters,
+    rodas5p_coefficients, scaled_error_component,
 };
 use serde::Serialize;
 
@@ -735,6 +735,8 @@ pub(crate) struct Workspace {
     /// `W` for faer, and its factorization.
     w_dense: DenseMatrix,
     faer_lu: Option<LuFactorization>,
+    /// Aligned RHS and scratch, retained across same-dimension refactorizations.
+    faer_solve_workspace: Option<LuSolveWorkspace>,
     /// The Jacobian at the state of the current attempt, kept across steps
     /// (the in-place Jacobian callback rewrites its own pattern).
     pub(crate) jacobian: DenseMatrix,
@@ -839,6 +841,7 @@ impl Workspace {
             pivots: vec![0; n],
             w_dense: DenseMatrix::zeros(0, 0),
             faer_lu: None,
+            faer_solve_workspace: None,
             jacobian: DenseMatrix::zeros(dense, dense),
             lu_chosen: false,
             f0: vec![0.0; n],
@@ -874,6 +877,7 @@ impl Workspace {
                 }
             } else {
                 self.w_dense = DenseMatrix::zeros(n, n);
+                self.faer_solve_workspace = Some(LuSolveWorkspace::new(n));
                 Rodas5pFastLu::Faer
             };
     }
@@ -967,12 +971,13 @@ impl Workspace {
                 );
             }
             Rodas5pFastLu::Faer => {
-                let x = self
-                    .faer_lu
+                self.faer_lu
                     .as_ref()
                     .expect("factored")
-                    .solve(&self.stage_rhs)?;
-                self.stage_rhs.copy_from_slice(&x);
+                    .solve_in_place_with_workspace(
+                        &mut self.stage_rhs,
+                        self.faer_solve_workspace.as_mut().expect("faer scratch"),
+                    )?;
             }
             Rodas5pFastLu::Banded => {
                 let n = self.n;
@@ -1017,12 +1022,10 @@ impl Workspace {
                 );
             }
             Rodas5pFastLu::Faer => {
-                let x = self
-                    .faer_lu
+                self.faer_lu
                     .as_ref()
                     .ok_or_else(|| CoreError::LinearSolve("RODAS5P fast LU not factored".into()))?
-                    .solve(b)?;
-                b.copy_from_slice(&x);
+                    .solve_in_place(b)?;
             }
             Rodas5pFastLu::Banded | Rodas5pFastLu::Client => {
                 return Err(CoreError::InvalidInput(
@@ -1044,7 +1047,7 @@ impl Workspace {
     /// W-filtered interior estimate). It charges no [`WorkCounters`]; the
     /// caller does. A banded solve takes `&mut self` because the band
     /// kernel counts its operations: they are added to [`BandedWork`]
-    /// `solve_operations`. The faer path allocates its solution once. A
+    /// `solve_operations`. The faer path reuses its permutation scratch. A
     /// client solver, which charges its own work, is refused.
     pub(crate) fn solve_into(&mut self, b: &mut [f64]) -> CoreResult<()> {
         if b.len() != self.n {
@@ -1064,12 +1067,13 @@ impl Workspace {
                 );
             }
             Rodas5pFastLu::Faer => {
-                let x = self
-                    .faer_lu
+                self.faer_lu
                     .as_ref()
                     .ok_or_else(|| CoreError::LinearSolve("RODAS5P fast LU not factored".into()))?
-                    .solve(b)?;
-                b.copy_from_slice(&x);
+                    .solve_in_place_with_workspace(
+                        b,
+                        self.faer_solve_workspace.as_mut().expect("faer scratch"),
+                    )?;
             }
             Rodas5pFastLu::Banded => {
                 let n = self.n;
@@ -1202,7 +1206,9 @@ impl Workspace {
             for ((e, a), b) in error.iter().zip(y).zip(&self.y_new) {
                 let scale = atol + rtol * a.abs().max(b.abs());
                 if !(scale >= 0.0 && scale.is_finite()) {
-                    return Err(CoreError::InvalidInput("RODAS5P error scale overflow".into()));
+                    return Err(CoreError::InvalidInput(
+                        "RODAS5P error scale overflow".into(),
+                    ));
                 }
                 let z = scaled_error_component(*e, scale);
                 sum += z * z;
@@ -1212,7 +1218,9 @@ impl Workspace {
             {
                 let scale = atol_i + rtol * a.abs().max(b.abs());
                 if !(scale >= 0.0 && scale.is_finite()) {
-                    return Err(CoreError::InvalidInput("RODAS5P error scale overflow".into()));
+                    return Err(CoreError::InvalidInput(
+                        "RODAS5P error scale overflow".into(),
+                    ));
                 }
                 let z = scaled_error_component(*e, scale);
                 sum += z * z;
@@ -2557,24 +2565,46 @@ mod tests {
         let problem = OdeProblem::new(
             "finite constant boundary state",
             1,
-            Arc::new(|_, _, out| { out.fill(0.0); Ok(()) }),
+            Arc::new(|_, _, out| {
+                out.fill(0.0);
+                Ok(())
+            }),
             None,
             Some(Arc::new(|_, _| DenseMatrix::new(1, 1, vec![0.0]))),
-            None, None, true, None, None,
-        ).unwrap();
+            None,
+            None,
+            true,
+            None,
+            None,
+        )
+        .unwrap();
         for vector in [false, true] {
             let mut workspace = Workspace::new(1, FastLuPolicy::Legacy).unwrap();
-            if vector { workspace.atol_vector = vec![1e308]; }
+            if vector {
+                workspace.atol_vector = vec![1e308];
+            }
             let mut counters = WorkCounters::default();
             // States, errors and configured tolerances are finite, but their
             // scale sum overflows. It must not silently become a zero norm.
-            assert!(matches!(workspace.attempt_for_tests(
-                &problem, 0.0, &[1e308], 1e-3, 1e308, 1.0, &mut counters,
-            ), Err(CoreError::InvalidInput(_))));
+            assert!(matches!(
+                workspace.attempt_for_tests(
+                    &problem,
+                    0.0,
+                    &[1e308],
+                    1e-3,
+                    1e308,
+                    1.0,
+                    &mut counters,
+                ),
+                Err(CoreError::InvalidInput(_))
+            ));
             // Removing the relative contribution leaves a valid finite scale.
-            assert_eq!(workspace.attempt_for_tests(
-                &problem, 0.0, &[1e308], 1e-3, 1e308, 0.0, &mut counters,
-            ).unwrap(), 0.0);
+            assert_eq!(
+                workspace
+                    .attempt_for_tests(&problem, 0.0, &[1e308], 1e-3, 1e308, 0.0, &mut counters,)
+                    .unwrap(),
+                0.0
+            );
         }
     }
 
