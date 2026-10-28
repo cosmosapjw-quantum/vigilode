@@ -55,10 +55,6 @@ fn rhs(c: &Calls) {
 fn jvp(c: &Calls) {
     c.jvp.fetch_add(1, Ordering::Relaxed);
 }
-fn ft(c: &Calls) {
-    c.ft.fetch_add(1, Ordering::Relaxed);
-}
-
 fn model(
     name: &str,
     span: f64,
