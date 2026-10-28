@@ -369,7 +369,7 @@ fn certify_slab(
     }
     let endpoint = propagate(incoming, delta, h)?;
     let whole = incoming.max(endpoint);
-    if !(margin > whole) {
+    if margin.partial_cmp(&whole) != Some(std::cmp::Ordering::Greater) {
         return Err(SlabFailure::Domain);
     }
     let maximum = maximum.max(whole);
