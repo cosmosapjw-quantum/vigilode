@@ -730,7 +730,8 @@ impl OdeProblem {
     }
 
     /// Fast-driver form of `eval_partial_t_into`. The two RHS vectors are
-    /// prepared by the workspace, so the fallback performs no heap allocation.
+    /// borrowed from the workspace's stage buffers, so the fallback performs
+    /// no heap allocation.
     /// Both scratch buffers are reset before their callbacks: `eval_rhs`
     /// starts from zeros, whereas `eval_rhs_into` intentionally does not.
     pub(crate) fn eval_partial_t_into_with_scratch(

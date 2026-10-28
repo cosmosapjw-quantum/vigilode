@@ -1248,9 +1248,6 @@ pub struct Rodas5pMfFastWorkspace {
     gmres_into_cycles: u64,
     f0: Vec<f64>,
     ft: Vec<f64>,
-    /// Prepared RHS buffers for the non-autonomous finite-difference f_t.
-    ft_fp: Vec<f64>,
-    ft_fm: Vec<f64>,
     u: Vec<f64>,
     stage_state: Vec<f64>,
     stage_rhs: Vec<f64>,
@@ -1398,8 +1395,6 @@ impl Clone for Rodas5pMfFastWorkspace {
             gmres_into_cycles: self.gmres_into_cycles,
             f0: self.f0.clone(),
             ft: self.ft.clone(),
-            ft_fp: self.ft_fp.clone(),
-            ft_fm: self.ft_fm.clone(),
             u: self.u.clone(),
             stage_state: self.stage_state.clone(),
             stage_rhs: self.stage_rhs.clone(),
@@ -1495,8 +1490,6 @@ impl Rodas5pMfFastWorkspace {
             gmres_into_cycles: 0,
             f0: vec![0.0; n],
             ft: vec![0.0; n],
-            ft_fp: vec![0.0; n],
-            ft_fm: vec![0.0; n],
             u: vec![0.0; s * n],
             stage_state: vec![0.0; n],
             stage_rhs: vec![0.0; n],
@@ -2665,8 +2658,8 @@ impl Rodas5pMfFastWorkspace {
                     t,
                     y,
                     &mut self.ft,
-                    &mut self.ft_fp,
-                    &mut self.ft_fm,
+                    &mut self.stage_state,
+                    &mut self.stage_rhs,
                     counters,
                 )?;
             }
