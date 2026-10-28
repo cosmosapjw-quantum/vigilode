@@ -1,0 +1,49 @@
+{
+  "schema": "vigilode.science-execution-go.v1",
+  "unit_id": "V8_SOURCE_CHEMICAL_JACOBIAN_REMAINDER_20261028",
+  "status": "GO",
+  "issued_utc": "2026-10-28 05:24:05 UTC",
+  "authority": "Root Astra; user full-loop and bounded automatic execution authorization persists",
+  "contract_sha256": "65d9256b79c2c396181e451400eb55ebbf8626e7688645db9236c010ede6c8fa",
+  "proposal_sha256": "f0879fd7bf5f0abef3f3ceebf7e07bfa15ab3c236472119914aa8caebf9329ad",
+  "budget_frozen_sha256": "15374a2585c657e2f95c4aaeff609cb3c58e01cb3acdc3fd839b88e9c74920de",
+  "preexecution_review": {
+    "decision": "PASS_SCOPED_PREEXECUTION",
+    "sha256": "0701ccbb8ac76506ef90c8f94ec9cfe062887450c03083dc2d71d10e6f137e2b",
+    "file": "reviews/PREEXECUTION_REVIEW.json"
+  },
+  "checkpoint_A": {
+    "bytes": 8777657,
+    "members": 330,
+    "sha256": "41f29558c12d015b365e4963e1067fe266b8abe3a79f834e056a8983120a0a88",
+    "Drive": "18ND9InedP3nkouvTQW4FbYHQad_9bp5T",
+    "Dropbox": "id:BSpOijBcT10AAAAAAEDJZw",
+    "actual_dual_ACK": true
+  },
+  "latest": {
+    "central": "df806909aee8f25efcfa4faeefca77a5271f546c",
+    "AGENTS": "429a5a13ee75b1222bc50627f8d5973d01dd21c4",
+    "DAG": "3ac8afed156cb310751286f7542b5dcd264b5af8",
+    "VigilODE_integrated": "e935878fefe795a1b7e88aba64e5e30ef7be1578",
+    "return_target": "0a7c46fed9e6e922e4c08dba01c36fa5956d43e3",
+    "classification": "New integrated results; source theory/check unchanged. Fixed BASS source and new contract unaffected.",
+    "fresh_evidence": "intake/GO_PREFLIGHT_0..3.json",
+    "completed": 28,
+    "total": 88
+  },
+  "allowed": {
+    "suite": "one invocation of python -B code/run_bounded.py suite --go SCIENCE_EXECUTION_GO.json",
+    "figure": "one invocation of python -B code/run_bounded.py figure --go SCIENCE_EXECUTION_GO.json only after suite PASS",
+    "CAS": "one Wolfram evaluation of unchanged code/EXACT_CHECKS.wl SHA d162da5f0953f0103e5cf909092693a6300ae11b8575073322113bbff321ed67 outer20s/internal17s; preserve complete output and elapsed tool wall; remote CPU null",
+    "cwd": "/workspace/scratch/c80b466b133e/vigilode_next8_20261028",
+    "local_total_CPU_s": 60,
+    "local_total_wall_s": 90,
+    "memory_bytes_per_process": 805306368
+  },
+  "execution_owner": "/root/next7_impl",
+  "old_campaigns": "CLOSED_NO_REPLAY",
+  "owner_dirty_unknown_reserved": "UNKNOWN_PRESERVED",
+  "physical_owner_RHS_Jacobian_ODE_NCP_native_norm_lift_build_calls_allowed": 0,
+  "on_failure": "Preserve all first-source/raw/results and actual costs; report concrete failure. No automatic rerun; one focused repair requires root direction and remaining/new explicit allocation.",
+  "scientific_admission": "NOT_YET"
+}

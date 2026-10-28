@@ -1,0 +1,52 @@
+{
+  "schema": "vigilode.native-metric.theory-review-corrections.v1",
+  "unit": "V8_NATIVE_METRIC_DERIVATIVE_ROUNDING_BOUNDS_20261028",
+  "status": "APPLIED_BY_AUTHOR_NOT_INDEPENDENT_ADMISSION",
+  "recovery_trigger": "Parent reported complete workspace loss during tool-catalog change before stage-A upload acknowledgement.",
+  "reviewer_identity": "Independent review relayed by /root; this recovery author does not invent reviewer identity or verdict.",
+  "corrections": [
+    {
+      "id": "R_PRECISION_FLOOR",
+      "affected_claim": "Convergence of a norm bound under common-leaf refinement.",
+      "preserved": "Exact squared U_m decreases under common dyadic refinement. For a fixed nonzero polynomial, sqrt(U_m)-sqrt(T)=O(h_m).",
+      "corrected": "Upward-rounded B_(m,p)-sqrt(T) is bounded by E_m/(2 sqrt(T)) + 2^(-p) sqrt(T+E_m) for T>0, so the guaranteed error is O(h_m)+O(2^(-p)).",
+      "fixed_precision": "At fixed p=40, mesh refinement alone does not generally imply convergence to the exact supremum.",
+      "zero_case": "T=0 implies zero row polynomials, U_m=0, and exact zero output; no division by sqrt(T).",
+      "limit_case": "An exact-limit assertion follows when h_m->0 and p->infinity, or from separately verified exact attainment.",
+      "applied_file": "theory/THEORY_KO.md",
+      "section": "5",
+      "new_scientific_execution": false
+    },
+    {
+      "id": "R_UNARY_DERIVATIVE_API",
+      "affected_claim": "E.derivative(H_j,k) in proposed pseudocode.",
+      "preserved": "Differentiate globally in theta, divide by physical Delta^k, then substitute into a cell.",
+      "corrected": "Existing function signature is derivative(p). For k=2 call derivative(derivative(H_j)).",
+      "applied_files": [
+        "theory/THEORY_KO.md",
+        "theory/THEORY_DRAFT_KO.md",
+        "theory/SOURCE_INVENTORY_KO.md"
+      ],
+      "original_proposed_contract": "Preserved byte-for-byte as a historical proposal, with its notation explicitly corrected here."
+    }
+  ],
+  "proposal_status": "PROPOSED_CONTRACT.json retains its original historical status; root must reconstruct and freeze the authoritative contract.",
+  "execution_scope": {
+    "author_recovery_project_imports": 0,
+    "author_recovery_scientific_tests": 0,
+    "author_recovery_native_calls": 0,
+    "author_recovery_CAS_calls": 0,
+    "author_recovery_remote_writes": 0,
+    "read_write_hash_metadata_cost": "UNMEASURED_NOT_ZERO",
+    "root_or_other_agent_prior_execution": "UNKNOWN_PRESERVED_BY_THIS_AUTHOR",
+    "prior_campaigns": "CLOSED_NO_REPLAY",
+    "owner_dirty_reserved_unknown_budget": "UNKNOWN_PRESERVED"
+  },
+  "counts": {
+    "last_parent_observed_central_completed": 28,
+    "total": 88,
+    "author_delta": 0
+  },
+  "publication": "Last parent-observed HOLD_TOOL_CALL_REJECTED_NO_ACK; this recovery does not create an ACK.",
+  "author": "/root/next6_theory"
+}

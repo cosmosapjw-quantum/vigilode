@@ -1,0 +1,343 @@
+{
+  "schema": "vigilode.independent-scientific-review.v1",
+  "unit_id": "V8_SOURCE_CHEMICAL_JACOBIAN_REMAINDER_20261028",
+  "decision": "PASS_SCOPED",
+  "stage": "Same-pass R6/C9 final actual-output review",
+  "reviewer": {
+    "agent": "/root/next7_review",
+    "role": "Nonauthor of theory and implementation; intake author only",
+    "requested_tier": "Astra",
+    "observed_runtime_model": "UNOBSERVED_RUNTIME_METADATA"
+  },
+  "preexecution_review": "reviews/PREEXECUTION_REVIEW.json",
+  "output_readback": "reviews/OUTPUT_READBACK.json",
+  "scope": "Admit reviewed source-derived six-variable real-arithmetic chemical polynomial, exact entry projections over declared independent rate-box × physical-simplex family, and fixed-coefficient native-metric remainder/Hessian bound. No full-model physical/provider/trajectory promotion.",
+  "actual_evidence": {
+    "suite": {
+      "groups": 10,
+      "failures": 0,
+      "errors": 0,
+      "returncode": 0,
+      "invocations": 1,
+      "independent_representation": "Nine-state conservative adjacent-transition fluxes and full derivative, restricted by neutral elimination",
+      "entry_ranges": 36,
+      "attaining_witnesses": 72,
+      "state_vertices": 24,
+      "independent_corner_evaluations": 192,
+      "corner_description": "8 corners of a three-varying-rate subset ×24 states; all36 ranges agree",
+      "zero_width_specialization_pass": true,
+      "continuum_basis": "Reviewed whole-state affine/rate-linear proof, not finite sampling",
+      "feedback_control": {
+        "correct": "-44/7",
+        "omitted": "-29/7",
+        "discrepancy": "-15/7"
+      },
+      "metric_control": {
+        "sigma_squared": "495/2",
+        "sQ": "9/4",
+        "Gamma_squared_sufficient": "4455/8",
+        "Gamma_upper": "1621655892953/68719476736",
+        "uniform_u_times2_Gamma": "1621655892953/34359738368",
+        "H_restricted_sharp_squared": "297/8",
+        "H_restricted_and_full_positive_e_distinct": true
+      },
+      "zeroQ_and_Hessian_factor2_pass": true
+    },
+    "serialized_witness_review": {
+      "all36_target_indices_present": true,
+      "all72_records_have6_states_and12_rates": true,
+      "all_saved_values_match_their_endpoints": true,
+      "all_states_match_saved_vertex_indices": true,
+      "all_rates_are_saved_box_endpoints": true,
+      "independent_oracle_attainment": "Verified by reviewed test04 in actual passing first suite; reviewer read stored outputs without replay."
+    },
+    "source_RN": {
+      "status": "SOURCE_RECONSTRUCTED_UNDER_RN",
+      "normalization_hex": "0x1.5317e461b6decp+0",
+      "ratio_mass_product_normalization_inventory_assigned_scale_hex_traces_present": true,
+      "zero_inventory_fallback_distinguished": true,
+      "original_owner_scale_array_observed": false,
+      "original_source_manifest_body_recovered": false,
+      "source_initialization_calls": 0,
+      "scope": "Conditional scalar RN reconstruction from pinned literals, exact real isotope sums; no owner/runtime rounding attestation or actual effective-rate enclosure."
+    },
+    "CAS": {
+      "invocations": 1,
+      "checks": 24,
+      "all_named_flags_true": true,
+      "all_pass": true,
+      "input_matches_reviewed_frozen_WL": true,
+      "timeConstraint_s": 20,
+      "internal_limit_s": 17,
+      "tool_wall_s": 8.983,
+      "remote_CPU_s": null,
+      "full_received_raw_preserved": true,
+      "provider_abbreviation": "Long zero-residue arrays include ellipsis; all24 named flags and all_pass are present. Review does not claim complete unabridged expanded arrays or request replay."
+    },
+    "figure": {
+      "decision": "PASS_SCOPED_DIAGNOSTIC_FIGURE",
+      "actual_png_viewed_by_reviewer": true,
+      "path": "results/chemical_feedback_remainder.png",
+      "svg": "results/chemical_feedback_remainder.svg",
+      "input_hash_matches_saved_suite": true,
+      "hostile_audit": [
+        "Both panels, axes, legends and footer legible; no material overlap or clipping.",
+        "Left lines show −1−2HII and omitted-feedback −1−HII; saved production values equal plotted reference values.",
+        "Right positive log-log values use s=1,2,3,4,6,8 and exact quadratic reference; all saved values match reference.",
+        "Synthetic weights/diagnostic rates, T_H=1−2^-53, no native callback/owner observation/ODE trajectory are explicit.",
+        "Visual coincidence supports the stated algebraic control, not physical accuracy or solver convergence."
+      ]
+    },
+    "source_identity": {
+      "all_reviewed_frozen_source_hashes_unchanged": true,
+      "first_suite_source_snapshot_matches": true,
+      "mutable_budget_change": "Expected accounting update only; frozen budget unchanged",
+      "native_metric_and_lift_reimplemented": false,
+      "old_tests_replayed": false
+    }
+  },
+  "costs": {
+    "suite": {
+      "CPU_s": 0.8077329999999999,
+      "wall_s": 0.8178742639975098,
+      "max_RSS_KiB": 19988,
+      "cap_CPU_s": 45,
+      "cap_wall_s": 60
+    },
+    "figure": {
+      "CPU_s": 2.2322979999999997,
+      "wall_s": 2.2717860590018972,
+      "max_RSS_KiB": 72768,
+      "cap_CPU_s": 10,
+      "cap_wall_s": 15
+    },
+    "local_total": {
+      "CPU_s": 3.0400309999999995,
+      "wall_s": 3.089660322999407,
+      "cap_CPU_s": 60,
+      "cap_wall_s": 90
+    },
+    "CAS_tool_wall_s": 8.983,
+    "CAS_remote_CPU_s": null,
+    "process_memory_cap_bytes": 805306368,
+    "execution_repairs": 0,
+    "reruns": 0,
+    "old_campaign_replays": 0,
+    "unused_allocation": "CLOSED_NO_TRANSFER",
+    "unknown_owner_dirty_reserved_budget": "UNKNOWN_PRESERVED",
+    "metadata_model_network_costs": "UNMEASURED_NOT_ZERO",
+    "packaging": "SEPARATE_MEASUREMENT"
+  },
+  "findings": {
+    "must_fix": [],
+    "preexecution_closed": [
+      "WL16 weak arbitrary control replaced with actual feedback discrepancy",
+      "Single extra square bracket corrected before first invocation; originals preserved, no failed scientific execution"
+    ],
+    "remaining_scientific_obligations": [
+      "Actual rate/clock/geometry corridor enclosure",
+      "Owner-prepared scale observation and actual callback rounding",
+      "Full30 omitted geometry/Thomson/tau/time blocks",
+      "Whole-domain and actual ODE solution enclosure"
+    ],
+    "scope_of_remaining": "External to this admitted finite algebra unit; do not reopen this closed suite to manufacture missing physical premises."
+  },
+  "ceilings": {
+    "bass_commit": "cc602e209e7deeb511ab2a1f3b2268d55206c43c",
+    "binding_id": "8cb268e8de741e284cf494013f1e0748d27f03c5e77ba0c64413ae92af082d16",
+    "chemical_rows_columns_reduced30": [
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+    ],
+    "full30_missing_blocks": "OPEN_NOT_ZERO",
+    "actual_effective_rate_enclosure_verified": false,
+    "actual_model_enclosure_verified": false,
+    "owner_prepared_scale_array_observed": false,
+    "whole_domain_certificate": false,
+    "actual_ode_solution_enclosure": false,
+    "query_rounding_bound": null,
+    "actual_query_rounding_bound": null,
+    "VerifiedModelProvider": null,
+    "V7fullrestore": "NOT_RUN",
+    "production": "HOLD",
+    "globalphysicalcompletion": null,
+    "L4": false,
+    "REI25": "SEPARATE_BINDING",
+    "strong_no_go_claimed": false,
+    "central_count": "28/88",
+    "central_delta": 0
+  },
+  "physical_calls_actual": {
+    "rhs": 0,
+    "jacobian": 0,
+    "ode": 0,
+    "ncp": 0,
+    "native_norm": 0,
+    "lift": 0,
+    "native_build": 0
+  },
+  "reviewer_actions": {
+    "science_imports": 0,
+    "tests_or_recomputations": 0,
+    "CAS": 0,
+    "figure_generation": 0,
+    "actual_image_views": 1,
+    "owner_native_calls": 0,
+    "remote_mutations": 0,
+    "method": "Prior proof/source review plus saved raw/log/data readback, metadata hashes and actual image inspection."
+  },
+  "next_action": "Root scoped admission and packaging/publication decisions. Scientific campaign closed; no additional tests/CAS/figure requested. Later central metadata review is a separately scoped metadata action.",
+  "source_hashes": [
+    {
+      "path": "UNIT_CONTRACT.md",
+      "bytes": 9355,
+      "sha256": "65d9256b79c2c396181e451400eb55ebbf8626e7688645db9236c010ede6c8fa"
+    },
+    {
+      "path": "EXECUTION_BUDGET_FROZEN.json",
+      "bytes": 2756,
+      "sha256": "15374a2585c657e2f95c4aaeff609cb3c58e01cb3acdc3fd839b88e9c74920de"
+    },
+    {
+      "path": "EXECUTION_BUDGET.json",
+      "bytes": 2756,
+      "sha256": "15374a2585c657e2f95c4aaeff609cb3c58e01cb3acdc3fd839b88e9c74920de"
+    },
+    {
+      "path": "policy/CURRENT_ROUTING_DECISION.md",
+      "bytes": 1425,
+      "sha256": "83c2d22824b22401f670494303f5cbd6f3050b53803c0bfc52df37b59afcf6f3"
+    },
+    {
+      "path": "deps/PRIOR_MATRIX_IDENTITY.json",
+      "bytes": 6458,
+      "sha256": "0bc7584273b198db36125b3c3aeb0d02582b14fc9c63e60e0f3f120ffa3aaaaa"
+    },
+    {
+      "path": "deps/SOURCE_BYTE_IDENTITY.json",
+      "bytes": 3927,
+      "sha256": "9d401f1cc76275757bd166083a74d7ef860fc7b0c2b7257ef63275efc2e1ef3c"
+    },
+    {
+      "path": "code/EXACT_CHECKS.wl",
+      "bytes": 4610,
+      "sha256": "d162da5f0953f0103e5cf909092693a6300ae11b8575073322113bbff321ed67"
+    },
+    {
+      "path": "code/IMPLEMENTATION_MAP.md",
+      "bytes": 6322,
+      "sha256": "574ae46f6b56d7f11e6926a1eea152182eed133fe3442f7ad19dfae7319e16ab"
+    },
+    {
+      "path": "code/chemical_polynomial.py",
+      "bytes": 15696,
+      "sha256": "ff4b00b35305872f02aff88892e5b7567b5492ca14ef3feaa5e443c30e540b16"
+    },
+    {
+      "path": "code/plot_saved_results.py",
+      "bytes": 3152,
+      "sha256": "e5e942e516ab22e51b496db346021a2fff4e09dadf773e472660c3f72e3935ac"
+    },
+    {
+      "path": "code/run_bounded.py",
+      "bytes": 5166,
+      "sha256": "534e6acb638c1562b8f3d20f86732045e0d544c3f7923cf8995b928be45ab340"
+    },
+    {
+      "path": "tests/test_chemical_polynomial.py",
+      "bytes": 17209,
+      "sha256": "514398fe7dd586723010bb754a05dc0d27d1aa33d846bda28e37ab0bb596b60d"
+    },
+    {
+      "path": "theory/THEORY_KO.md",
+      "bytes": 30297,
+      "sha256": "f0050ea5065f01cfc3d281caed6b101469830eaf5fc45dbe4cc3bb8dcd1de6c3"
+    }
+  ],
+  "actual_evidence_hashes": [
+    {
+      "path": "reviews/PREEXECUTION_REVIEW.json",
+      "bytes": 10333,
+      "sha256": "0701ccbb8ac76506ef90c8f94ec9cfe062887450c03083dc2d71d10e6f137e2b"
+    },
+    {
+      "path": "reviews/OUTPUT_READBACK.json",
+      "bytes": 2199,
+      "sha256": "6673b668e08855c697cd59999f824d7bcb1a572faca510e8b432d62129ceb7c0"
+    },
+    {
+      "path": "results/first_suite_data.json",
+      "bytes": 956203,
+      "sha256": "27147e065d650aa06cf31e24ab995f2e017f49ec2f781affa58d4ca711d642ed"
+    },
+    {
+      "path": "results/suite_first.measurement.json",
+      "bytes": 710,
+      "sha256": "b7515878272b04897b5c8dbeee8653127430d2b5722c9e4ffdb83b34c2330f27"
+    },
+    {
+      "path": "results/suite_first.stdout.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "results/suite_first.stderr.txt",
+      "bytes": 1309,
+      "sha256": "1560ee38dd37723bd6e406e137c7edd9b04d88576c89205b420091151f4ec8d7"
+    },
+    {
+      "path": "results/figure_first.measurement.json",
+      "bytes": 705,
+      "sha256": "7d9d241f191d211c74b14ada97bbbed57984b61adcbf28fec96f1a354711da90"
+    },
+    {
+      "path": "results/figure_first.stdout.txt",
+      "bytes": 428,
+      "sha256": "53992e172e623cf508b26e84e5606a0ca8fa8cbfd39106a49e07b697636015e0"
+    },
+    {
+      "path": "results/figure_first.stderr.txt",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "results/chemical_feedback_remainder.png",
+      "bytes": 176872,
+      "sha256": "75e74c2a9b0b664ad56ba845738f1a5c41ef0b50f7254c026cdf81bbfee4223a"
+    },
+    {
+      "path": "results/chemical_feedback_remainder.svg",
+      "bytes": 96414,
+      "sha256": "cce2114fce441b7510d7d92d2cb45d8ab0972b8f54489c0b7316e0623d516755"
+    },
+    {
+      "path": "results/figure_data_source.json",
+      "bytes": 456,
+      "sha256": "6d0897024e3d1c4f63e8be137b7af2dc642025587da737ff98565fe288365382"
+    },
+    {
+      "path": "results/wolfram_first_raw.json",
+      "bytes": 10654,
+      "sha256": "2103c3f45388f2f6546cfc5238197a1e2dfc78ec5f8bd04f78c5f40e47a7cef6"
+    },
+    {
+      "path": "results/wolfram_first_input.wl",
+      "bytes": 4610,
+      "sha256": "d162da5f0953f0103e5cf909092693a6300ae11b8575073322113bbff321ed67"
+    },
+    {
+      "path": "results/SOURCE_CONTROL_RESULT_SUMMARY.json",
+      "bytes": 10475,
+      "sha256": "622210828073c4303239db6aa8f8e377706d2b226e7709d72b5b722364450062"
+    },
+    {
+      "path": "EXECUTION_BUDGET.json",
+      "bytes": 3693,
+      "sha256": "3977203680263872de791e2ec8b020a70674035bf8e0b09e1c2821da8b8c22ce"
+    }
+  ]
+}

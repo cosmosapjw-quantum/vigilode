@@ -1,0 +1,7 @@
+# Current routing and reuse
+
+The user requested the full theory and coding research loop and supplied physmath1.0.0. The installed1.3.0 single-next-stage default is replaced for this request by R1–R10/C1–C10 with reuse of unchanged evidence. Current central AGENTS429a assigns Astra to scientific contracts/admission and a lower-tier worker to code, tests, execution and packaging. The existing compatible next7_impl worker is reused; no fresh clone/worktree or old campaign replay is introduced. Its requested tier is gpt-6.1-sol; provider-side runtime model attestation is not available and is not invented.
+
+The root freezes UNIT_CONTRACT.md and new finite local/CAS allowances; unknown owner/reserved budgets remain UNKNOWN_PRESERVED. Source reader next7_vigilode may author the formal theory from this contract but does not run code. Backup reader next7_review has not authored this unit's theory or implementation and may independently review it. Current task evidence, raw source and actual measurement are the acceptance basis; no unrelated security or identity gate is added.
+
+The owner's new explicit GitHub retry instruction replaces the previous wait-only operational default. A meaningful blob write returned ACK, followed by tree and commit ACK. Continue dependent guarded publication and readback, recording any failure without inferring success. Historical failures and old status files remain unchanged.
