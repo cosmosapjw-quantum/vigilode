@@ -61,7 +61,7 @@
       "id": "C6",
       "status": "pending",
       "evidence_refs": [],
-      "reason": "Await published-source execution/independent code review"
+      "reason": "Initial execution failed in Decimal diagnostic reference; corrected test-only reference awaits published-source rerun"
     },
     {
       "id": "C7",
@@ -73,7 +73,7 @@
       "id": "C8",
       "status": "pending",
       "evidence_refs": [],
-      "reason": "Await published-source execution/independent code review"
+      "reason": "Retained exact stationary equality failure; no epsilon allowance added; rerun pending"
     },
     {
       "id": "C9",
@@ -96,13 +96,16 @@
     "../code/defect_composition.py",
     "../code/test_defect_composition.py"
   ],
-  "test_count_methods": 11,
+  "test_count_methods": 12,
   "native_rust_changes": false,
   "original_residual_double_count_rule": "residual is direct original residual OR a separately proved reconstruction budget, not their sum",
   "execution": {
-    "status": "not_run",
-    "command": "python3 -m unittest discover -s research/synchronized_production_20261029/code -p test_defect_composition.py -v",
-    "reason": "Root publication required before science execution"
+    "status": "failed",
+    "source": "7fce5a4cbf5e1de3dd25de3b247f638bc551be24",
+    "command": "python3 -m unittest discover -s research/synchronized_production_20261029/code -p test_*.py -v",
+    "exit_code": 1,
+    "result": "24 total methods,23 pass; DEFECT10/11pass, one Decimal diagnostic failure",
+    "raw_stderr": "/workspace/scratch/f9615df1ce94/lane-checks01/proof-oracles/stderr.txt"
   },
   "checks": [
     {
@@ -114,8 +117,8 @@
     {
       "id": "decimal-decay",
       "domain": "numerics",
-      "result": "not_run",
-      "reason": "Decimal80 exponential comparison diagnostic only; symbolic proof D8 is mathematical authority"
+      "result": "fail",
+      "reason": "Decimal80 rounding at stationary comparison; corrected exact boundary branch pending rerun"
     }
   ],
   "claims": [
@@ -138,5 +141,19 @@
     "finding": "compose accessed later malformed Slab before validation",
     "correction": "validate all slab types before iteration; targeted malformed second slab control",
     "scientific_effect": "none; typed error consistency"
-  }
+  },
+  "failures": [
+    {
+      "class": "numerics",
+      "scope": "Decimal80 diagnostic reference, not exact certificate or native solver",
+      "source": "7fce5a4cbf5e1de3dd25de3b247f638bc551be24",
+      "observed": "stationary incoming=delta/beta=1/16; Decimal q*E+(1-q)*w gives0.0625+1e-81; Fraction endpoint exactly1/16",
+      "cause": "two rounded products and cancellation at equality",
+      "correction_episode": 2,
+      "correction": "exact stationary branch; exact Fraction amplitude E0-delta/beta before Decimal conversion; new exact stationary mutation rejects endpoint/whole underbound2^-300 invisible to Decimal80",
+      "physical_criteria_changed": false,
+      "helper_arithmetic_changed": false,
+      "rerun_status": "not_run; await corrected source publication"
+    }
+  ]
 }

@@ -102,8 +102,8 @@ def main():
         commands = [
             ('proof-oracles', [sys.executable, '-m', 'unittest', 'discover', '-s', str(NODE/'code'), '-p', 'test_*.py', '-v']),
             ('libraries', ['cargo', 'test', *common, '-p', 'vigilode', '-p', 'rodas5p-krylov', '-p', 'vigilode-coupled', '--lib']),
-            ('facade-contracts', ['cargo', 'test', *common, '-p', 'vigilode', '--test', '*']),
-            ('krylov-contracts', ['cargo', 'test', *common, '-p', 'rodas5p-krylov', '--test', '*']),
+            ('facade-contracts', ['cargo', 'test', *common, '-p', 'vigilode', '--test', '*', '--no-fail-fast']),
+            ('krylov-contracts', ['cargo', 'test', *common, '-p', 'rodas5p-krylov', '--test', '*', '--no-fail-fast']),
             ('time-fd-contract', ['cargo', 'test', *common, '-p', 'rodas5p-integrators', '--test', 'time_fd_workspace_contracts']),
             ('focused-clippy', ['cargo', 'clippy', *common, '-p', 'vigilode', '-p', 'rodas5p-krylov', '--all-targets', '--no-deps', '--', '-D', 'warnings']),
             ('time-fd-clippy', ['cargo', 'clippy', *common, '-p', 'rodas5p-integrators', '--test', 'time_fd_workspace_contracts', '--no-deps', '--', '-D', 'warnings']),

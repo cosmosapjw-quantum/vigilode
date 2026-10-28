@@ -103,10 +103,33 @@ class DefectCompositionTests(unittest.TestCase):
                         q = (-decimal(b.beta * h)).exp()
                         self.assertLessEqual(decimal(b.decay_lower), q)
                         self.assertLessEqual(q, decimal(b.decay_upper))
-                        w = decimal(b.delta / b.beta)
-                        ref = q * decimal(initial) + (1 - q) * w
+                        equilibrium = b.delta / b.beta
+                        if initial == equilibrium:
+                            # This comparison IVP is exactly stationary. A pair
+                            # of rounded Decimal products is not its authority.
+                            self.assertEqual(b.endpoint, initial)
+                            self.assertEqual(b.whole, initial)
+                            ref = decimal(initial)
+                        else:
+                            # Form the cancellation-prone amplitude exactly.
+                            ref = decimal(equilibrium) + q * decimal(initial - equilibrium)
                         self.assertLessEqual(ref, decimal(b.endpoint))
                         self.assertLessEqual(max(decimal(initial), ref), decimal(b.whole))
+
+    def test_stationary_reference_rejects_subdecimal_corruption(self):
+        # Independently known constant solutions of E'=-beta E+delta.
+        # Exact Fraction checks must reject defects hidden at Decimal80.
+        with localcontext() as ctx:
+            ctx.prec = 80
+            for gamma, constant in ((Q(0), Q(1, 16)), (Q(1), Q(1, 14))):
+                for h in (Q(1, 1024), Q(1, 2), Q(2), Q(8)):
+                    b = certify(slab(gamma=gamma, t1=h), constant)
+                    self.assertEqual(-b.beta * constant + b.delta, 0)
+                    self.assertTrue(constant <= b.endpoint and constant <= b.whole)
+                    for field in ("endpoint", "whole"):
+                        corrupted = replace(b, **{field: getattr(b, field) - Q(1, 2**300)})
+                        self.assertEqual(decimal(constant), decimal(getattr(corrupted, field)))
+                        self.assertFalse(constant <= corrupted.endpoint and constant <= corrupted.whole)
 
     def test_bound_monotone_in_incoming(self):
         bounds = [certify(slab(), Q(i, 128)).endpoint for i in range(33)]

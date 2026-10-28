@@ -344,8 +344,15 @@ oracle contract subject to those explicit definitions.
 
 The parent independently read D1–D10 and admitted the exact research consumer
 after these clarifications. R1–R10 are complete within this conditional theory
-scope. The implementation is `../code/defect_composition.py`; eleven methods in
-`../code/test_defect_composition.py` await published-source execution. Coding
+scope. The implementation is `../code/defect_composition.py`; twelve methods in
+`../code/test_defect_composition.py` cover the conditional contract. The first
+published-source run passed ten of eleven DEFECT methods; the Decimal80
+diagnostic rounded a stationary comparison value upward by `1e-81` while
+the exact Fraction bound was correct. Global correction episode 2 uses the
+exact stationary reference and exact pre-subtraction of the nonstationary
+amplitude; a new mutation control rejects an underbound of `2^-300` even
+when Decimal80 rounds it to the same value. No physical criterion or helper
+arithmetic changed; corrected execution is tracked separately. Coding
 C1–C10 and actual execution are tracked separately in
 `DEFECT_CODING_WORKFLOW.json`. Native physical production remains unqualified.
 The coding records will update evidence status without rewriting the retained

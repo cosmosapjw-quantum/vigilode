@@ -1,7 +1,7 @@
 {
   "schema": "vigilode.synchronized-corrections.v1",
   "global_maximum": 3,
-  "global_used": 1,
+  "global_used": 2,
   "episodes": [
     {
       "id": 1,
@@ -25,6 +25,36 @@
         "source-bound runner status/identity/budget gates"
       ],
       "execution": "not_run_at_registration"
+    },
+    {
+      "id": 2,
+      "source_before": "7fce5a4cbf5e1de3dd25de3b247f638bc551be24",
+      "scope": "Observed test failures and build provenance correction",
+      "diagnosis": [
+        "Decimal80 stationary reference rounded1/16 upward by1e-81; exact endpoint1/16 was correct",
+        "RecordedOperator test wrapper missed required token traitmethod",
+        "shared target yielded byte-identical stale baseline candidate executables; isolated rebuild produced changed executable hashes"
+      ],
+      "changes": [
+        "exact Fraction stationary check and exact-subtraction reference; no tolerance epsilon",
+        "delegate recorded testoperator identity/application toDenseOperator",
+        "isolated fresh target and per-binary build bindings; suspect executablebindings removed beforebenchmark",
+        "no-fail-fast runs all integration targets despite independently retained failures"
+      ],
+      "owners": {
+        "PR-N01": {
+          "before": 1,
+          "after": 2
+        },
+        "joint_exact_helper": {
+          "corrections_used": 1,
+          "historical_task_reset": false
+        }
+      },
+      "native_solver_changed": false,
+      "first_receipt_root": "lane-checks01",
+      "build_receipts": "runtime/build_candidate and runtime/build_candidate_isolated",
+      "execution": "pending_source2"
     }
   ],
   "inherited_counters": [
@@ -92,7 +122,7 @@
       "id": "PR-N01",
       "maximum": 3,
       "source": "cumulative_validation_20261028/SUMMARY.json",
-      "used": 1,
+      "used": 2,
       "used_at_baseline": 0
     },
     {

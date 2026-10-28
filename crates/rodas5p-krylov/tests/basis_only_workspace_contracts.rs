@@ -4,7 +4,7 @@
 use std::sync::Mutex;
 
 use rodas5p_core::{
-    CoreResult, DenseMatrix, IdentityPreconditioner, LinearOperator, Preconditioner,
+    CoreResult, DenseMatrix, DenseOperator, IdentityPreconditioner, LinearOperator, Preconditioner,
     PreconditionerSide, WorkCounters,
 };
 use rodas5p_krylov::{
@@ -13,7 +13,7 @@ use rodas5p_krylov::{
 };
 
 struct RecordedOperator {
-    matrix: DenseMatrix,
+    inner: DenseOperator,
     calls: Mutex<Vec<Vec<u64>>>,
 }
 
@@ -27,7 +27,7 @@ impl RecordedOperator {
             }
         }
         Self {
-            matrix,
+            inner: DenseOperator::new(matrix).unwrap(),
             calls: Mutex::default(),
         }
     }
@@ -39,12 +39,20 @@ impl RecordedOperator {
 
 impl LinearOperator for RecordedOperator {
     fn dimension(&self) -> usize {
-        self.matrix.nrows()
+        self.inner.dimension()
     }
 
     fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
         self.calls.lock().unwrap().push(bits(x));
-        self.matrix.matvec_into(x, y)
+        self.inner.apply(x, y)
+    }
+
+    fn token(&self) -> u64 {
+        self.inner.token()
+    }
+
+    fn exact_identity(&self) -> Option<rodas5p_core::ExactOperatorIdentity> {
+        self.inner.exact_identity()
     }
 }
 
