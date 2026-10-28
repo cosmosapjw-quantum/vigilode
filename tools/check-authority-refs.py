@@ -71,6 +71,11 @@ GITHUB_OBJECT_RE = re.compile(
     r"https://(?:api\.)?github\.com/(?:repos/)?([\w.-]+/[\w.-]+)/"
     r"(?:commit|commits|tree|blob)/([0-9a-f]{40})(?![0-9a-fA-F])"
 )
+DEPENDENCY_REVISION_KEY_RE = re.compile(r"^(.+)_git_revision$")
+DEPENDENCY_REPOSITORIES = {
+    "numpy": "numpy/numpy",
+    "scipy": "scipy/scipy",
+}
 ALLOW_LINE_RE = re.compile(r"^([0-9a-f]{40})\s+(\S.*)$")
 
 
@@ -107,6 +112,15 @@ def canonical_repository(value: str) -> str | None:
     if name.endswith(".git"):
         name = name[:-4]
     return name if re.fullmatch(r"[\w.-]+/[\w.-]+", name) else None
+
+
+def dependency_revision_repository(key: str, inherited_repository: str) -> str:
+    """Bind dependency-qualified revisions to their own repository fail-closed."""
+    match = DEPENDENCY_REVISION_KEY_RE.fullmatch(key)
+    if match is None:
+        return inherited_repository
+    dependency = match.group(1).casefold()
+    return DEPENDENCY_REPOSITORIES.get(dependency, "<invalid-repository>")
 
 
 @dataclass(frozen=True)
@@ -198,9 +212,10 @@ def json_value_citations(
                     continue
                 # A second authority is a second obligation.  It must not
                 # inherit a weaker relation such as object-exists.
+                child_repository = dependency_revision_repository(str(key), primary.repository)
                 out.extend(json_value_citations(
                     path, sub, key_path + [str(key)], text, line_offset,
-                    primary.repository, "git-object", "published-source", False,
+                    child_repository, "git-object", "published-source", False,
                     github_capture,
                 ))
             return out
@@ -208,8 +223,9 @@ def json_value_citations(
         if isinstance(named_repo, str):
             repository = canonical_repository(named_repo) or "<invalid-repository>"
         for key, sub in value.items():
+            child_repository = dependency_revision_repository(str(key), repository)
             out.extend(json_value_citations(path, sub, key_path + [str(key)], text, line_offset,
-                                            repository, object_kind, required_relation, typed_record, github_capture))
+                                            child_repository, object_kind, required_relation, typed_record, github_capture))
     elif isinstance(value, list):
         for sub in value:
             out.extend(json_value_citations(path, sub, key_path, text, line_offset,

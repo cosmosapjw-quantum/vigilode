@@ -354,6 +354,39 @@ class AuthorityRefsTests(unittest.TestCase):
         self.assertIn("source.source_blob", proc.stdout)
         self.assertNotIn("reachable", proc.stdout)
 
+    def test_dependency_qualified_revisions_override_parent_repository(self):
+        self.write("research/node/receipt.json", json.dumps({"runner": {
+            "source_repository": "scipy/scipy",
+            "runtime": {"identity": {
+                "numpy_git_revision": self.published,
+                "scipy_git_revision": self.local_only,
+            }},
+        }}))
+        self.commit_all()
+        proc = self.check("--list")
+        self.assertEqual(proc.returncode, 1, proc.stdout)
+        self.assertIn("runner.runtime.identity.numpy_git_revision", proc.stdout)
+        self.assertIn("repository=numpy/numpy", proc.stdout)
+        self.assertIn("runner.runtime.identity.scipy_git_revision", proc.stdout)
+        self.assertIn("repository=scipy/scipy", proc.stdout)
+        self.assertNotIn("numpy_git_revision; repository=scipy/scipy", proc.stdout)
+
+    def test_unknown_dependency_revision_fails_closed(self):
+        self.write("research/node/receipt.json", json.dumps({"runner": {
+            "source_repository": "scipy/scipy",
+            "runtime": {"identity": {
+                "mystery_git_revision": ABSENT,
+                "untrusted_package_git_revision": self.published,
+            }},
+        }}))
+        self.commit_all()
+        proc = self.check("--list")
+        self.assertEqual(proc.returncode, 1, proc.stdout)
+        self.assertIn("runner.runtime.identity.mystery_git_revision", proc.stdout)
+        self.assertIn("runner.runtime.identity.untrusted_package_git_revision", proc.stdout)
+        self.assertIn("invalid-repository", proc.stdout)
+        self.assertIn("repository=<invalid-repository>", proc.stdout)
+
     def test_markdown_github_commit_url_binds_external_repository(self):
         self.write("docs/NOTE.md", f"Source https://github.com/test/external/commit/{self.published}\n")
         self.commit_all()
