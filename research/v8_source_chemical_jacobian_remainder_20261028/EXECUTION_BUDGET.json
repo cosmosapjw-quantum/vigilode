@@ -1,0 +1,99 @@
+{
+  "schema": "vigilode.execution-budget.v1",
+  "unit_id": "V8_SOURCE_CHEMICAL_JACOBIAN_REMAINDER_20261028",
+  "status": "CLOSED_PASS_SCOPED_ROOT_ADMITTED",
+  "authorization": "Current full-loop request and new root UNIT_CONTRACT.md; genuinely new finite algebra allocation; prior closed budgets not reused",
+  "local_scientific_total_caps": {
+    "CPU_s": 60,
+    "wall_s": 90
+  },
+  "primary_suite": {
+    "max_invocations": 1,
+    "cpu_cap_s": 45,
+    "wall_cap_s": 60,
+    "memory_bytes": 805306368,
+    "actual_invocations": 1,
+    "actual_CPU_s": 0.8077329999999999,
+    "actual_wall_s": 0.8178742639975098,
+    "status": "CLOSED_PASS_NO_REPLAY",
+    "actual_max_RSS_KiB": 19988,
+    "returncode": 0,
+    "evidence": "results/suite_first.measurement.json"
+  },
+  "saved_results_figure": {
+    "max_invocations": 1,
+    "cpu_cap_s": 10,
+    "wall_cap_s": 15,
+    "memory_bytes": 805306368,
+    "actual_invocations": 1,
+    "actual_CPU_s": 2.2322979999999997,
+    "actual_wall_s": 2.2717860590018972,
+    "status": "CLOSED_PASS_NO_REPLAY",
+    "actual_max_RSS_KiB": 72768,
+    "returncode": 0,
+    "evidence": "results/figure_first.measurement.json"
+  },
+  "remote_symbolic": {
+    "max_evaluator_invocations": 1,
+    "time_constraint_s": 20,
+    "internal_time_constraint_s": 17,
+    "actual_invocations": 1,
+    "remote_CPU_s": null,
+    "tool_wall_s": 8.983,
+    "status": "CLOSED_PASS_NO_REPLAY",
+    "checks": 24,
+    "all_true": true,
+    "evidence": "results/wolfram_first_raw.json"
+  },
+  "physical_calls_allowed": {
+    "rhs": 0,
+    "jacobian": 0,
+    "ode": 0,
+    "ncp": 0,
+    "native_norm": 0,
+    "lift": 0,
+    "native_build": 0
+  },
+  "physical_calls_actual": {
+    "rhs": 0,
+    "jacobian": 0,
+    "ode": 0,
+    "ncp": 0,
+    "native_norm": 0,
+    "lift": 0,
+    "native_build": 0
+  },
+  "old_campaigns": "CLOSED_NO_REPLAY_NO_ALLOWANCE_TRANSFER",
+  "unknown_owner_dirty_and_reserved_budget": "UNKNOWN_PRESERVED",
+  "repair": "One focused repair only after concrete failure and explicit root direction; preserve first source/raw/results/cumulative costs; no automatic retry",
+  "before_execution": "Actual nonauthor preexecution source review, backed-up checkpoint and explicit matching root GO",
+  "requested_execution_model": "gpt-6.1-sol",
+  "observed_execution_model": "UNOBSERVED_RUNTIME_METADATA",
+  "metadata_model_network_costs": "UNMEASURED_NOT_ZERO",
+  "packaging_costs": "MEASURE_SEPARATELY_NOT_SCIENTIFIC_BUDGET",
+  "input_identity": {
+    "contract": "UNIT_CONTRACT.md",
+    "contract_sha256": "65d9256b79c2c396181e451400eb55ebbf8626e7688645db9236c010ede6c8fa",
+    "source_byte_identity": "deps/SOURCE_BYTE_IDENTITY.json",
+    "source_byte_identity_sha256": "9d401f1cc76275757bd166083a74d7ef860fc7b0c2b7257ef63275efc2e1ef3c",
+    "prior_matrix_identity": "deps/PRIOR_MATRIX_IDENTITY.json",
+    "prior_matrix_identity_sha256": "0bc7584273b198db36125b3c3aeb0d02582b14fc9c63e60e0f3f120ffa3aaaaa"
+  },
+  "expected_commands": {
+    "suite": "python -B code/run_bounded.py suite --go SCIENCE_EXECUTION_GO.json",
+    "figure": "python -B code/run_bounded.py figure --go SCIENCE_EXECUTION_GO.json",
+    "Wolfram": "One evaluator invocation on unchanged code/EXACT_CHECKS.wl with timeConstraint20/internal17; full raw and elapsed tool wall saved; remote CPU null"
+  },
+  "updated_utc": "2026-10-28T05:25:38.122932+00:00",
+  "actual_local_totals": {
+    "CPU_s": 3.0400309999999995,
+    "wall_s": 3.089660322999407,
+    "processes": 2,
+    "repair_reruns": 0,
+    "old_campaign_replays": 0
+  },
+  "scientific_admission": "PASS_SCOPED",
+  "unused_allocation": "CLOSED_NO_TRANSFER",
+  "frozen_budget_unchanged": true,
+  "root_admission": "ADMISSION.json"
+}

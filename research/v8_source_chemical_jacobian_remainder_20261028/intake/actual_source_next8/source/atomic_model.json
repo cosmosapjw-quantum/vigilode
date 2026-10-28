@@ -1,0 +1,86 @@
+{
+  "schema": "rec.atomic.model.v1",
+  "state_convention": "Y_i=n_i/n_b, A dot Y = 1; free electron n_e=n_b q dot Y",
+  "species_order": [
+    "n",
+    "H1I",
+    "H1II",
+    "DI",
+    "DII",
+    "TI",
+    "TII",
+    "He3I",
+    "He3II",
+    "He3III",
+    "He4I",
+    "He4II",
+    "He4III",
+    "Li6I",
+    "Li6II",
+    "Li6III",
+    "Li6IV",
+    "Li7I",
+    "Li7II",
+    "Li7III",
+    "Li7IV"
+  ],
+  "inventory_number_ratios_to_H1": {
+    "n": 0.0,
+    "H1": 1.0,
+    "D": 2.5e-05,
+    "T": 0.0,
+    "He3": 1e-05,
+    "He4": 0.08112582781456953,
+    "Li6": 1e-14,
+    "Li7": 5e-10
+  },
+  "inventory_status": "Conditional pilot inputs, not an inferred BBN posterior or isotope-resolved atomic-rate measurement",
+  "initial_H1_D_ionized_fraction": 0.0002,
+  "initial_helium_charge": 0,
+  "initial_lithium_charge": 1,
+  "zero_inventory_scale": 1e-20,
+  "isotope_rate_policy": "ElementalElectronicEquality explicitly enabled for H1/D/T, He3/He4, Li6/Li7; no isotope shift or isotope-resolved fit claimed",
+  "photon_field": {
+    "energy_min_eV": 5.0,
+    "energy_max_eV": 200.0,
+    "base_log_bins": 64,
+    "number_power_index": -2.5,
+    "late_Gamma_HI_s": 1e-12,
+    "frame": "External local isotropic number flux, bin-integrated m^-2 s^-1; flux is c times photon number density",
+    "quadrature": "Split base logarithmic bins at all thresholds and LiI inner-shell edge; geometric bin-centre cross sections times exact integrated number power law",
+    "ion_yield": "Every absorbed photon creates one electron and advances q by one. For neutral Li inner-shell absorption this is explicit coarse-graining, not source-validated final charge/Auger/fluorescence yield.",
+    "radiative_transfer": "Prescribed optically thin UV; no attenuation or recombination-photon feedback"
+  },
+  "weak_decay": {
+    "neutron_mean_lifetime_s": 878.4,
+    "neutron_source": "PDG2024 neutron listing; mean lifetime, not half-life",
+    "tritium_half_life_years": 12.32,
+    "julian_year_s": 31557600.0,
+    "tritium_source": "Khatri and Sunyaev2011, arXiv1009.3932",
+    "maps": [
+      "n -> H1II + e + anti_nu",
+      "TI -> He3II + e + anti_nu",
+      "TII -> He3III + e + anti_nu"
+    ],
+    "ion_electron_spectator_approximation": "T retains its pre-existing bound electron count; no shake-off or bound-state beta branching",
+    "pilot_initial_n_T": "zero, hence actual pilot decay populations and flux are zero"
+  },
+  "excluded_processes": [
+    "collisional ionization of every element",
+    "charge exchange",
+    "negative ions and molecules",
+    "nuclear fusion",
+    "photonuclear reactions above the finite UV support",
+    "Be7 active state (standard prehistory conversion to Li7 is represented by chosen initial Li7 inventory)",
+    "excited-level population kinetics",
+    "Auger/direct double photoionization and fluorescence yields",
+    "secondary ionization",
+    "thermal or radiation energy closure"
+  ],
+  "flags": {
+    "physical": "CONDITIONAL_PRELIMINARY_ONLY",
+    "global_convergence": "NOT_RUN",
+    "production": "NOT_APPROVED",
+    "old_REC_U5_HOLD": "UNCHANGED"
+  }
+}

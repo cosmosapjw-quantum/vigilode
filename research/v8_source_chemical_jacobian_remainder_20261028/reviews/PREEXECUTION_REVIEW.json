@@ -1,0 +1,213 @@
+{
+  "schema": "vigilode.nonauthor-preexecution-review.v1",
+  "unit_id": "V8_SOURCE_CHEMICAL_JACOBIAN_REMAINDER_20261028",
+  "decision": "PASS_SCOPED_PREEXECUTION",
+  "reviewer": {
+    "agent": "/root/next7_review",
+    "role": "Nonauthor theory/code source reviewer; authored sibling intake only",
+    "requested_tier": "Astra",
+    "observed_runtime_model": "UNOBSERVED_RUNTIME_METADATA"
+  },
+  "scope": "Read-only source/math/controls/resource review. No scientific imports, tests, CAS, figure generation, owner/native calls or implementation edits by reviewer. Not an executed-control PASS or final scientific admission.",
+  "policy": {
+    "central_AGENTS_git_blob": "429a5a13ee75b1222bc50627f8d5973d01dd21c4",
+    "routing": "policy/CURRENT_ROUTING_DECISION.md",
+    "selected_user_track": "Explicit physmath1.0 R1-R10/C1-C10 overrides installed1.3 bare-next-stage default",
+    "review_stages": [
+      "R6",
+      "C9 source portion"
+    ],
+    "no_recursive_review_tree": true
+  },
+  "reviewed_claims": [
+    {
+      "id": "source_to_polynomial",
+      "decision": "PASS_SOURCE",
+      "evidence": [
+        "UNIT_CONTRACT.md",
+        "theory/THEORY_KO.md sections3-5",
+        "deps/source_bytes/atomic_network.py",
+        "deps/source_bytes/coupled.py",
+        "deps/source_bytes/compact_system.py",
+        "deps/source_bytes/affine_system.py",
+        "code/chemical_polynomial.py:polynomial"
+      ],
+      "reason": "Adjacent upward/downward fluxes, isotope scale cancellation, all-isotope electron weights, n/T zero restriction, source x=ln(a/a_ref) divide-by-H, six charged coordinates23..28 and non-unit T_H=1-2^-53 are retained. P/Q blocks and b agree with source topology."
+    },
+    {
+      "id": "feedback_and_signed_identity",
+      "decision": "PASS_PROOF_SOURCE",
+      "reason": "J=P+(e^Tz)Q+(Qz)e^T includes population-dependent electron feedback. Signed polynomial trials support exact R(d)=(e^Td)Qd and D2[d,h]=(e^Td)Qh+(e^Th)Qd; physical claims retain separate membership conditions."
+    },
+    {
+      "id": "entry_vertex_theorem",
+      "decision": "PASS_PROOF_SOURCE",
+      "reason": "Each scalar J entry is affine in whole state at fixed rates, and linear in twelve rates at a fixed state vertex. Product-simplex barycentric decomposition and endpoint sign optimization prove exact 36 scalar ranges with72 attaining witnesses over declared24-vertex×independent-rate-box family, including boundaries/zero widths. No determinant/eigenvalue/RHS-extremum or simultaneous-attainment transfer."
+    },
+    {
+      "id": "native_metric_remainder",
+      "decision": "PASS_PROOF_SOURCE",
+      "reason": "Qbar is a named polynomial coefficient operator, not completion of missing full Jacobian blocks. Existing metric, Ginv, generalized_upper and scalar sqrt are reused. Gamma>=sqrt((ebar^T Ginv ebar)*sQ), remainder Gamma and Hessian2Gamma factors are correct. Unit-scale sigma²=(33/2)wH²+66wHe²+165wLi²; fixed positive weights unit case495/2 and H-only Q sQ=9/4 yield4455/8. Uniform u×2 exact scaling matches inherited scale-aware dyadic sqrt."
+    },
+    {
+      "id": "RN_inventory",
+      "decision": "PASS_CONDITIONAL_SOURCE",
+      "reason": "Static source literals are parsed without importing owner code. Ratios, mass products, exact-sum rounded normalization, divisions and zero-inventory assigned-scale fallback have hex traces. Exact real isotope sums are distinct from callback arithmetic. SOURCE_RECONSTRUCTED_UNDER_RN remains conditional on declared RN/fsum semantics and does not assert observation of original owner scale array or recovery of original source_manifest."
+    },
+    {
+      "id": "independent_controls",
+      "decision": "PASS_DESIGN_SOURCE",
+      "reason": "Ten groups independently assemble9-state fluxes and derivatives then eliminate neutrals. All72 witnesses checked for simplex/rate endpoints/attainment;8 rate corners×24 states check all36 ranges without endpoint-sign algorithm; fixed-rate, interior, conservation, non-unit H, signed remainder/Hessian, zero Q, metric rescaling, serialization and scope controls are present. Small9-term norm expression is a test oracle, not a replacement native evaluator."
+    },
+    {
+      "id": "Wolfram24",
+      "decision": "PASS_CORRECTED_SOURCE",
+      "reason": "One frozen24-check exact program separately assembles9-state flux, differentiates, checks affinity/polarization/dual metric and actual feedback discrepancy−15/7. Unique symbols prevent accidental global assignments. Internal17s and outer20s intended limits. No execution/result claimed."
+    },
+    {
+      "id": "figure",
+      "decision": "PASS_DESIGN_SOURCE_PENDING_ACTUAL_IMAGE",
+      "reason": "Saved-JSON-only plot accepts existing rational numerator/denominator dictionaries and labels synthetic diagnostic rates/weights, non-unit H and no native trajectory. Actual image hostile inspection remains C9 output obligation."
+    },
+    {
+      "id": "resources",
+      "decision": "PASS_SOURCE",
+      "reason": "One suite45CPU/60wall plus one figure10CPU/15wall, each768MiB, fit local60CPU/90wall allocation. Exclusive invocation/result markers and first-source/raw preservation; GO required, no automatic retry. One CAS call; remoteCPU unknown. Packaging separately measured. Prior CLOSED/unknown owner allowances unchanged."
+    }
+  ],
+  "findings": [
+    {
+      "id": "WL16_WEAK_CONTROL",
+      "severity": "nonblocking_control_quality",
+      "status": "CLOSED_BEFORE_EXECUTION",
+      "object": "Original authored Wolfram check16",
+      "observation": "Arbitrary numeric inequality did not itself test feedback omission.",
+      "correction": "Lower-tier replaced it with actual J−(P+(e^Tz)Q) evaluated at H=1/7,kappa=3,wH=5, expected−15/7.",
+      "impact": "Independent Python feedback control already checked this quantity; new WL control now directly reflects its label."
+    },
+    {
+      "id": "WL16_EXTRA_BRACKET",
+      "severity": "execution_blocking_syntax",
+      "status": "CLOSED_BEFORE_EXECUTION",
+      "object": "Initially frozen code/EXACT_CHECKS.wl line58",
+      "observation": "One extra closing square bracket followed Thread/Join.",
+      "correction": "Root-authorized lower-tier removed exactly one bracket; reviewer reread corrected line and refreshed proposal hashes. Original WL/proposal preserved in code/preexecution_original/.",
+      "record": "code/PREEXECUTION_CORRECTION.json",
+      "scientific_invocations_consumed": 0,
+      "failed_scientific_execution": false
+    }
+  ],
+  "open_execution_obligations": [
+    "Root backed-up checkpoint and explicit GO before any science invocation",
+    "Actual one primary suite results and all72 serialized witness evidence",
+    "Actual saved figure and reviewer image inspection",
+    "Actual frozen Wolfram24 response, elapsed tool wall and remote CPU null",
+    "Same-pass final C9 decision and root scoped admission"
+  ],
+  "ceilings": {
+    "rate_enclosure": "EXTERNAL_NOT_VERIFIED",
+    "owner_prepared_scale_array_observed": false,
+    "full30_missing_blocks": "OPEN_NOT_ZERO",
+    "full_model_provider": false,
+    "whole_domain_certificate": false,
+    "actual_ode_solution_enclosure": false,
+    "query_rounding_bound": null,
+    "actual_query_rounding_bound": null,
+    "VerifiedModelProvider": null,
+    "V7fullrestore": "NOT_RUN",
+    "production": "HOLD",
+    "globalphysicalcompletion": null,
+    "L4": false,
+    "REI25": "SEPARATE_BINDING",
+    "strong_no_go_claimed": false,
+    "central_count": "28/88",
+    "central_delta": 0
+  },
+  "reuse": {
+    "prior_matrix_dependency_files": 28,
+    "all_manifest_hashes_match": true,
+    "matrix_bounds_byte_equal_next7": true,
+    "old_test_replay": false
+  },
+  "proposal": {
+    "path": "code/EXECUTION_PROPOSAL.json",
+    "sha256": "f0879fd7bf5f0abef3f3ceebf7e07bfa15ab3c236472119914aa8caebf9329ad",
+    "all_listed_hashes_checked": true
+  },
+  "reviewer_execution": {
+    "science_imports": 0,
+    "tests": 0,
+    "CAS": 0,
+    "figure_generation": 0,
+    "owner_or_native_calls": 0,
+    "remote_writes": 0
+  },
+  "next_action": "PASS permits root to complete checkpoint backup then issue its bounded execution GO; no further generic source review gate needed.",
+  "reviewed_source_hashes": [
+    {
+      "path": "UNIT_CONTRACT.md",
+      "bytes": 9355,
+      "sha256": "65d9256b79c2c396181e451400eb55ebbf8626e7688645db9236c010ede6c8fa"
+    },
+    {
+      "path": "EXECUTION_BUDGET_FROZEN.json",
+      "bytes": 2756,
+      "sha256": "15374a2585c657e2f95c4aaeff609cb3c58e01cb3acdc3fd839b88e9c74920de"
+    },
+    {
+      "path": "EXECUTION_BUDGET.json",
+      "bytes": 2756,
+      "sha256": "15374a2585c657e2f95c4aaeff609cb3c58e01cb3acdc3fd839b88e9c74920de"
+    },
+    {
+      "path": "policy/CURRENT_ROUTING_DECISION.md",
+      "bytes": 1425,
+      "sha256": "83c2d22824b22401f670494303f5cbd6f3050b53803c0bfc52df37b59afcf6f3"
+    },
+    {
+      "path": "deps/PRIOR_MATRIX_IDENTITY.json",
+      "bytes": 6458,
+      "sha256": "0bc7584273b198db36125b3c3aeb0d02582b14fc9c63e60e0f3f120ffa3aaaaa"
+    },
+    {
+      "path": "deps/SOURCE_BYTE_IDENTITY.json",
+      "bytes": 3927,
+      "sha256": "9d401f1cc76275757bd166083a74d7ef860fc7b0c2b7257ef63275efc2e1ef3c"
+    },
+    {
+      "path": "code/EXACT_CHECKS.wl",
+      "bytes": 4610,
+      "sha256": "d162da5f0953f0103e5cf909092693a6300ae11b8575073322113bbff321ed67"
+    },
+    {
+      "path": "code/IMPLEMENTATION_MAP.md",
+      "bytes": 6322,
+      "sha256": "574ae46f6b56d7f11e6926a1eea152182eed133fe3442f7ad19dfae7319e16ab"
+    },
+    {
+      "path": "code/chemical_polynomial.py",
+      "bytes": 15696,
+      "sha256": "ff4b00b35305872f02aff88892e5b7567b5492ca14ef3feaa5e443c30e540b16"
+    },
+    {
+      "path": "code/plot_saved_results.py",
+      "bytes": 3152,
+      "sha256": "e5e942e516ab22e51b496db346021a2fff4e09dadf773e472660c3f72e3935ac"
+    },
+    {
+      "path": "code/run_bounded.py",
+      "bytes": 5166,
+      "sha256": "534e6acb638c1562b8f3d20f86732045e0d544c3f7923cf8995b928be45ab340"
+    },
+    {
+      "path": "tests/test_chemical_polynomial.py",
+      "bytes": 17209,
+      "sha256": "514398fe7dd586723010bb754a05dc0d27d1aa33d846bda28e37ab0bb596b60d"
+    },
+    {
+      "path": "theory/THEORY_KO.md",
+      "bytes": 30297,
+      "sha256": "f0050ea5065f01cfc3d281caed6b101469830eaf5fc45dbe4cc3bb8dcd1de6c3"
+    }
+  ]
+}

@@ -1,0 +1,288 @@
+{
+  "schema": "rec.atomic.coefficients.v1",
+  "units": {
+    "cross_section": "m2 after Mb*1e-22",
+    "rr_dr": "m3/s after cm3/s*1e-6",
+    "energy": "eV or J explicitly",
+    "temperature": "K"
+  },
+  "photo_VF1996": {
+    "1:0": {
+      "Z": 1,
+      "N_electrons": 1,
+      "Eth_eV": 13.6,
+      "Emax_eV": 50000.0,
+      "E0_eV": 0.4298,
+      "sigma0_Mb": 54750.0,
+      "ya": 32.88,
+      "P": 2.963,
+      "yw": 0,
+      "y0": 0,
+      "y1": 0
+    },
+    "2:0": {
+      "Z": 2,
+      "N_electrons": 2,
+      "Eth_eV": 24.59,
+      "Emax_eV": 50000.0,
+      "E0_eV": 13.61,
+      "sigma0_Mb": 949.2,
+      "ya": 1.469,
+      "P": 3.188,
+      "yw": 2.039,
+      "y0": 0.4434,
+      "y1": 2.136
+    },
+    "2:1": {
+      "Z": 2,
+      "N_electrons": 1,
+      "Eth_eV": 54.42,
+      "Emax_eV": 50000.0,
+      "E0_eV": 1.72,
+      "sigma0_Mb": 13690.0,
+      "ya": 32.88,
+      "P": 2.963,
+      "yw": 0,
+      "y0": 0,
+      "y1": 0
+    },
+    "3:0": {
+      "Z": 3,
+      "N_electrons": 3,
+      "Eth_eV": 5.392,
+      "Emax_eV": 64.39,
+      "E0_eV": 3.107,
+      "sigma0_Mb": 62.45,
+      "ya": 15.01,
+      "P": 4.895,
+      "yw": 0,
+      "y0": 0,
+      "y1": 0
+    },
+    "3:1": {
+      "Z": 3,
+      "N_electrons": 2,
+      "Eth_eV": 75.64,
+      "Emax_eV": 50000.0,
+      "E0_eV": 20.06,
+      "sigma0_Mb": 320.1,
+      "ya": 7.391,
+      "P": 2.916,
+      "yw": 0,
+      "y0": 0,
+      "y1": 0
+    },
+    "3:2": {
+      "Z": 3,
+      "N_electrons": 1,
+      "Eth_eV": 122.5,
+      "Emax_eV": 50000.0,
+      "E0_eV": 3.871,
+      "sigma0_Mb": 6083,
+      "ya": 32.88,
+      "P": 2.963,
+      "yw": 0,
+      "y0": 0,
+      "y1": 0
+    }
+  },
+  "LiI_partial": {
+    "PH1_1s": [
+      64.39,
+      27.4,
+      156.4,
+      33.82,
+      1.49,
+      0
+    ],
+    "PH1_2s": [
+      5.392,
+      3.466,
+      47.74,
+      20.35,
+      4.423,
+      0
+    ],
+    "PH2_2s": [
+      3.107,
+      62.45,
+      15.01,
+      4.895,
+      0,
+      0,
+      0
+    ],
+    "branch_rule": "2s PH2 below64.39,PH1 at or above64.39;1s PH1 at or above64.39;sum partials once",
+    "cross_section_reference_Mb": {
+      "E5.392_2s": 1.4983248303083303,
+      "E13.6_2s": 0.9494109630812783,
+      "E40_2s": 0.1458116877275859,
+      "edge_left_2s": 0.05189110135229765,
+      "edge_right_2s": 0.05099580193561293,
+      "edge_right_1s": 3.4600130371367306,
+      "E80_2s": 0.030971341445678712,
+      "E80_1s": 2.406165919296005,
+      "E_Delta_2s": 0.02235068085223219,
+      "E_Delta_1s": 1.8291181295370338
+    }
+  },
+  "rr": {
+    "1:1": {
+      "A_cm3_s": 7.982e-11,
+      "B": 0.748,
+      "T0_K": 3.148,
+      "T1_K": 703600.0,
+      "C": 0.0,
+      "T2_K": 0.0,
+      "supported_Tmin_K": 3.0,
+      "supported_Tmax_K": 1000000000.0,
+      "source_id": "VF1996_RR"
+    },
+    "2:1": {
+      "A_cm3_s": 3.294e-11,
+      "B": 0.691,
+      "T0_K": 15.54,
+      "T1_K": 36760000.0,
+      "C": 0.0,
+      "T2_K": 0.0,
+      "supported_Tmin_K": 3.0,
+      "supported_Tmax_K": 1000000.0,
+      "source_id": "VF1996_RR"
+    },
+    "2:2": {
+      "A_cm3_s": 1.891e-10,
+      "B": 0.7524,
+      "T0_K": 9.37,
+      "T1_K": 2774000.0,
+      "C": 0.0,
+      "T2_K": 0.0,
+      "supported_Tmin_K": 3.0,
+      "supported_Tmax_K": 1000000000.0,
+      "source_id": "VF1996_RR"
+    },
+    "3:1": {
+      "Z": 3,
+      "initial_electrons": 2,
+      "initial_charge": 1,
+      "final_charge": 0,
+      "M": 1,
+      "W": 1,
+      "A_cm3_s": 8.7e-12,
+      "B": 0.364,
+      "T0_K": 147.0,
+      "T1_K": 7153000.0,
+      "C": 0.1508,
+      "T2_K": 715400.0,
+      "supported_Tmin_K": 10,
+      "supported_Tmax_K": 10000000,
+      "source_line": 69,
+      "source_id": "Badnell_RR_20230511"
+    },
+    "3:2": {
+      "Z": 3,
+      "initial_electrons": 1,
+      "initial_charge": 2,
+      "final_charge": 1,
+      "M": 1,
+      "W": 2,
+      "A_cm3_s": 9.349e-11,
+      "B": 0.6916,
+      "T0_K": 34.7,
+      "T1_K": 7329000.0,
+      "C": 0.0351,
+      "T2_K": 629300.0,
+      "supported_Tmin_K": 40,
+      "supported_Tmax_K": 40000000,
+      "source_line": 38,
+      "source_id": "Badnell_RR_20230511"
+    },
+    "3:3": {
+      "Z": 3,
+      "initial_electrons": 0,
+      "initial_charge": 3,
+      "final_charge": 2,
+      "M": 1,
+      "W": 1,
+      "A_cm3_s": 2.867e-10,
+      "B": 0.7493,
+      "T0_K": 21.08,
+      "T1_K": 6268000.0,
+      "C": 0.0,
+      "T2_K": 0.0,
+      "supported_Tmin_K": 90,
+      "supported_Tmax_K": 90000000,
+      "source_line": 6,
+      "source_id": "Badnell_RR_20230511"
+    }
+  },
+  "dr": {
+    "2:1": {
+      "c_cm3_s_K32": [
+        0.001417,
+        0.0002235,
+        -2.185e-05
+      ],
+      "E_K": [
+        463300.0,
+        553200.0,
+        888700.0
+      ],
+      "supported_Tmin_K": 10.0,
+      "supported_Tmax_K": 10000000.0,
+      "source_id": "Badnell_DR_20230512",
+      "source_row": "Z=2,N=1,M=1,W=2"
+    },
+    "3:1": {
+      "Z": 3,
+      "initial_electrons": 2,
+      "initial_charge": 1,
+      "final_charge": 0,
+      "M": 1,
+      "W": 1,
+      "supported_Tmin_K": 10,
+      "supported_Tmax_K": 10000000,
+      "c_cm3_s_K32": [
+        2.941e-05,
+        6.068e-05,
+        -7.753e-07
+      ],
+      "source_line_c": 36,
+      "E_K": [
+        634500.0,
+        702400.0,
+        827100.0
+      ],
+      "source_line_E": 1357,
+      "source_id": "Badnell_DR_20230512"
+    },
+    "3:2": {
+      "Z": 3,
+      "initial_electrons": 1,
+      "initial_charge": 2,
+      "final_charge": 1,
+      "M": 1,
+      "W": 2,
+      "supported_Tmin_K": 40,
+      "supported_Tmax_K": 40000000,
+      "c_cm3_s_K32": [
+        0.0001451,
+        0.005789,
+        1.889e-05
+      ],
+      "source_line_c": 5,
+      "E_K": [
+        852900.0,
+        1056000.0,
+        11700000.0
+      ],
+      "source_line_E": 1326,
+      "source_id": "Badnell_DR_20230512"
+    }
+  },
+  "runtime_temperature_domain_K": [
+    100.0,
+    1000000.0
+  ],
+  "RR_convention": "case A; escaping recombination photons are not fed back into the externally prescribed spectrum",
+  "inactive_ci": "All collisional ionization omitted from this finite retained-process pilot; no omission bound."
+}

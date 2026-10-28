@@ -1,0 +1,73 @@
+{
+  "schema": "rei.axbi.background_family.v1",
+  "node_id": "AX03",
+  "frozen_base": "1865fcec018ba0d2478321c9c2fac39490669697",
+  "scientific_authority": "/root/ax_authority",
+  "cosmology": {
+    "H0_km_s_Mpc": 67.4,
+    "Mpc_cm": 3.085677581491367e+24,
+    "H0_per_s": 2.1842852410855026e-18,
+    "Omega_m": 0.315,
+    "Omega_b": 0.049309230511847414,
+    "Omega_r": 9.2e-05,
+    "Omega_lambda": 0.6849080000000001,
+    "X_He4": 0.2454,
+    "Tcmb0_K": 2.7255,
+    "source": "https://arxiv.org/abs/1807.06209",
+    "radiation_scope": "rounded approximate isotropic radiation background"
+  },
+  "clock": {
+    "a_ref": 0.047619047619047616,
+    "a_end": 0.2,
+    "b_ref": 0,
+    "time_ref_s": 0,
+    "label": "elapsed proper seconds from zbar20; not absolute cosmic age"
+  },
+  "q_amp": 0.01,
+  "q_ref_family": [
+    0,
+    0.005,
+    -0.005,
+    0.01,
+    -0.01
+  ],
+  "q_ref_definition": "s_ref/H_FLRW(a_ref), fixed signed case parameter",
+  "Sigma_definition": "s/H instantaneous",
+  "primary": "H=hypot(H_FLRW,s); s=q_ref H_FLRW(a_ref)(a_ref/a)^3",
+  "same_h": {
+    "family": "SameHDiagnostic",
+    "q_ref": 0.01,
+    "mean_H": "H_FLRW(a)",
+    "scope": "counterfactual; not primary physical-density-fixed family"
+  },
+  "metric": "a_perp=a exp(-b); a_parallel=a exp(2b); H_perp=H-s; H_parallel=H+2s; sigma_squared=3s\u00b2",
+  "numerical_policy": {
+    "method": "composite Simpson ln(a), direct point evaluation; bounded64 clock bisection",
+    "default_panels": 4096,
+    "allowed_even_panels": [
+      2,
+      65536
+    ],
+    "clock_refinement_relative_target": 1e-07,
+    "b_refinement_absolute_target": 1e-09,
+    "constraint_shear_relative_target": 1e-12
+  },
+  "physical_scope": "conditional stress-free prescribed EoR family; not CMB-admitted primordial shear",
+  "feedback_scope": {
+    "estimate": "delta_s=a^-3 integral a\u00b3(8piG/3c\u00b2)DeltaP dt; sampled trapezoidal perturbative diagnostic",
+    "required_stress_components": [
+      "actual ionizing radiation quadrupole",
+      "initially isotropic CMB free-stream anisotropic stress"
+    ],
+    "max_abs_delta_s_over_H_ceiling": 0.0001,
+    "max_extra_energy_over_background_ceiling": 0.0001,
+    "actual_history_status": "NOT_MEASURED",
+    "effect_precision": "must be assessed separately against abundance response"
+  },
+  "parity": {
+    "baseline": "reflection-even IC/emissivity and symmetric microphysics; axisymmetry alone insufficient",
+    "normalized_J1_tolerance": 1e-12,
+    "quadrupole": "retained in RT",
+    "exact_scalar_plus_minus_symmetry": false
+  }
+}

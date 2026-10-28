@@ -1,0 +1,135 @@
+{
+  "schema": "vigilode.root-admission.v1",
+  "unit_id": "V8_SOURCE_CHEMICAL_JACOBIAN_REMAINDER_20261028",
+  "decision": "PASS_SCOPED",
+  "status": "CLOSED_SCIENTIFIC_ALLOCATION_DELIVERY_PENDING",
+  "issued_utc": "2026-10-28 05:28:50 UTC",
+  "authority": "Root Astra",
+  "workflow": "USER_FULL_PHYSMATH_1.0.0_R1_R10_C1_C10",
+  "accepted_claims": [
+    {
+      "id": "SOURCE_CHEMICAL_POLYNOMIAL",
+      "scope": "Fixed BASS cc602 source topology, isotope equality/nT-zero reduction, actual neutral totals, fixed external effective coefficients and exact represented weights; F=b+Pz+(e^Tz)Qz; feedback J, Hessian and exact quadratic remainder"
+    },
+    {
+      "id": "EXACT_ENTRY_RANGES",
+      "scope": "36 scalar entry extrema and72 attaining witnesses over declared independent nonnegative12-rate box times physical H×He×Li product simplex with24vertices; not a simultaneous entrywise attaining matrix or actual correlated rate image"
+    },
+    {
+      "id": "FIXED_NATIVE_METRIC_REMAINDER",
+      "scope": "Named frozen-Q polynomial coefficient operator only; existing metric/PSD/sqrt machinery reused; remainder Gamma*rho^2,Hessian2Gamma; B6 carrier mismatch adds deltaJ*rho"
+    }
+  ],
+  "source": {
+    "bass_commit": "cc602e209e7deeb511ab2a1f3b2268d55206c43c",
+    "binding_id": "8cb268e8de741e284cf494013f1e0748d27f03c5e77ba0c64413ae92af082d16",
+    "norm_blob": "95efe19477aba8efe378a1f5e083c09b2cdffb69",
+    "chemical_indices_reduced30": [
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+    ],
+    "REI25": "SEPARATE_BINDING",
+    "H_total": "9007199254740991/9007199254740992"
+  },
+  "independent_review": {
+    "decision": "PASS_SCOPED",
+    "path": "reviews/INDEPENDENT_REVIEW.json",
+    "sha256": "db5d3c0f52839a6ca375a5c5551d0f324812173928b738f505e6decb2ff8c554"
+  },
+  "actual_evidence": {
+    "Python_groups_passed": 10,
+    "Python_groups_total": 10,
+    "errors": 0,
+    "failures": 0,
+    "entry_ranges": 36,
+    "attaining_witnesses": 72,
+    "independent_rate_corner_evaluations": 192,
+    "CAS_checks_true": 24,
+    "CAS_checks_total": 24,
+    "CAS_invocations": 1,
+    "figures_generated_one_invocation": [
+      "PNG",
+      "SVG"
+    ],
+    "negative_feedback_discrepancy": "-15/7",
+    "metric_control": {
+      "sigma_squared": "495/2",
+      "sQ": "9/4",
+      "Gamma_squared": "4455/8",
+      "H_restricted_sharp_squared": "297/8"
+    },
+    "result_path": "results/first_suite_data.json",
+    "result_sha256": "27147e065d650aa06cf31e24ab995f2e017f49ec2f781affa58d4ca711d642ed",
+    "full_received_CAS_raw_preserved": true,
+    "CAS_long_zero_arrays_provider_abbreviated": true
+  },
+  "actual_costs": {
+    "suite_CPU_s": 0.807733,
+    "suite_wall_s": 0.8178742639975098,
+    "figure_CPU_s": 2.232298,
+    "figure_wall_s": 2.2717860590018972,
+    "local_CPU_s": 3.0400309999999995,
+    "local_wall_s": 3.089660322999407,
+    "CAS_tool_wall_s": 8.983,
+    "CAS_remote_CPU_s": null,
+    "execution_repairs": 0,
+    "old_campaign_replays": 0,
+    "metadata_model_network_costs": "UNMEASURED_NOT_ZERO",
+    "packaging": "SEPARATE_MEASUREMENTS"
+  },
+  "actual_physical_owner_calls": {
+    "RHS": 0,
+    "Jacobian": 0,
+    "ODE": 0,
+    "NCP": 0,
+    "native_norm": 0,
+    "native_lift": 0,
+    "build": 0
+  },
+  "open_obligations": [
+    "Actual source effective-rate enclosures across declared clock/geometry tube",
+    "Original owner-prepared scale array observation and source-manifest-body recovery; current witness is source reconstructed under RN/fsum assumptions",
+    "Callback arithmetic/evaluation and query rounding",
+    "Chemical geometry columns -Fchem*(grad log H)^T; geometry and Thomson/tau rows",
+    "Full30 Jacobian/lognorm and complete residual/initial/inherited/source bounds on linking/continuation domain",
+    "Actual accepted-step/capsule inclusion and ODE solution enclosure",
+    "Continuous-angle positivity"
+  ],
+  "ceilings": {
+    "query_rounding_bound": null,
+    "actual_query_rounding_bound": null,
+    "whole_domain_certificate": false,
+    "actual_ode_solution_enclosure": false,
+    "VerifiedModelProvider": null,
+    "V7fullrestore": "NOT_RUN",
+    "production": "HOLD",
+    "globalphysicalcompletion": null,
+    "L4": false
+  },
+  "canonical": {
+    "repo": "cosmosapjw-quantum/rei_bianchi",
+    "branch": "research/orchestration-sandbox-20261022",
+    "head": "df806909aee8f25efcfa4faeefca77a5271f546c",
+    "completed": 28,
+    "total": 88,
+    "unit_delta": 0
+  },
+  "preservation": {
+    "prior_campaigns": "CLOSED_NO_REPLAY",
+    "owner_dirty_unknown_reserved_budget": "UNKNOWN_PRESERVED",
+    "native_physical_norm_and_D1_D5": "REUSED_UNCHANGED",
+    "first_source_and_raw": "PRESERVED",
+    "preexecution_WL_typo": "FIXED_BEFORE_FIRST_INVOCATION_ORIGINAL_PRESERVED",
+    "no_new_strong_no_go": true
+  },
+  "delivery": {
+    "checkpoint_A": "DUAL_ACK",
+    "prior_results_Git": "PUBLISHED_COMMIT_0a7c46_PR241",
+    "current_unit_Git": "PENDING_FINAL_PAYLOAD_AND_GUARDED_PUBLICATION",
+    "final_SOURCE_and_receipt": "PENDING"
+  }
+}

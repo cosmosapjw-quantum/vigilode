@@ -1,0 +1,307 @@
+{
+  "schema": "vigilode.chemical-actual-control-summary.v1",
+  "unit_id": "V8_SOURCE_CHEMICAL_JACOBIAN_REMAINDER_20261028",
+  "status": "ACTUAL_EXECUTION_PASS_PENDING_FINAL_REVIEW_AND_ROOT_ADMISSION",
+  "groups": 10,
+  "errors": 0,
+  "failures": 0,
+  "entry_extrema": 36,
+  "attaining_witnesses": 72,
+  "all72_independently_attained": true,
+  "state_vertices": 24,
+  "rate_variables": 12,
+  "small_corner_oracle": {
+    "all36_entry_intervals_equal": true,
+    "corners": 8,
+    "independent_evaluations": 192,
+    "rate_variables": [
+      0,
+      7,
+      11
+    ],
+    "state_vertices": 24,
+    "zero_width_specialization_equal": true
+  },
+  "feedback_negative_control": {
+    "caught": true,
+    "correct": {
+      "denominator": "7",
+      "numerator": "-44"
+    },
+    "exact_discrepancy": {
+      "denominator": "7",
+      "numerator": "-15"
+    },
+    "omitted_feedback": {
+      "denominator": "7",
+      "numerator": "-29"
+    }
+  },
+  "totals": {
+    "H": {
+      "denominator": "9007199254740992",
+      "numerator": "9007199254740991"
+    },
+    "H_hex": "0x1.fffffffffffffp-1",
+    "He": {
+      "denominator": "1",
+      "numerator": "1"
+    },
+    "Li": {
+      "denominator": "1",
+      "numerator": "1"
+    },
+    "source_zero_state_H_photo_offset": {
+      "denominator": "117093590311632896",
+      "numerator": "9007199254740991"
+    }
+  },
+  "metric_reference": {
+    "sigma_squared": {
+      "denominator": "2",
+      "numerator": "495"
+    },
+    "sQ_upper": {
+      "denominator": "4",
+      "numerator": "9"
+    },
+    "Gamma_squared_sufficient": {
+      "denominator": "8",
+      "numerator": "4455"
+    },
+    "Gamma": {
+      "denominator": "68719476736",
+      "numerator": "1621655892953"
+    },
+    "uniform_u_times2_Gamma": {
+      "denominator": "34359738368",
+      "numerator": "1621655892953"
+    },
+    "H_restricted_sharp_Gamma_squared": {
+      "denominator": "8",
+      "numerator": "297"
+    },
+    "full_positive_weights_and_1D_sharp_distinct": true
+  },
+  "inventory_reconstruction": {
+    "status": "SOURCE_RECONSTRUCTED_UNDER_RN",
+    "normalization_hex": "0x1.5317e461b6decp+0",
+    "weights_exact_real_sums": [
+      {
+        "denominator": "73786976294838206464",
+        "numerator": "55707194969995441833"
+      },
+      {
+        "denominator": "1180591620717411303424",
+        "numerator": "72315782171336981971"
+      },
+      {
+        "denominator": "633825300114114700748351602688",
+        "numerator": "239259384275030202243"
+      }
+    ],
+    "original_owner_scale_array_observed": false,
+    "original_source_manifest_body_recovered": false,
+    "native_source_initialization_calls": 0
+  },
+  "CAS": {
+    "invocations": 1,
+    "checks": 24,
+    "all_true": true,
+    "tool_wall_s": 8.983,
+    "remote_CPU_s": null,
+    "full_received_raw_preserved": true,
+    "long_residue_arrays_provider_abbreviated_with_ellipsis": true
+  },
+  "suite": {
+    "unit_id": "V8_SOURCE_CHEMICAL_JACOBIAN_REMAINDER_20261028",
+    "kind": "suite",
+    "invocation": 1,
+    "command": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+      "-B",
+      "/workspace/scratch/c80b466b133e/vigilode_next8_20261028/tests/test_chemical_polynomial.py"
+    ],
+    "returncode": 0,
+    "timed_out": false,
+    "wall_s": 0.8178742639975098,
+    "child_user_cpu_s": 0.8000679999999999,
+    "child_system_cpu_s": 0.007665,
+    "child_maxrss_kib": 19988,
+    "status": "PASS",
+    "physical_calls_allowed": {
+      "rhs": 0,
+      "jacobian": 0,
+      "ode": 0,
+      "ncp": 0,
+      "native_norm": 0,
+      "lift": 0,
+      "native_build": 0
+    },
+    "first_source_and_raw_logs_preserved": true
+  },
+  "figure": {
+    "unit_id": "V8_SOURCE_CHEMICAL_JACOBIAN_REMAINDER_20261028",
+    "kind": "figure",
+    "invocation": 1,
+    "command": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+      "-B",
+      "/workspace/scratch/c80b466b133e/vigilode_next8_20261028/code/plot_saved_results.py"
+    ],
+    "returncode": 0,
+    "timed_out": false,
+    "wall_s": 2.2717860590018972,
+    "child_user_cpu_s": 2.134467,
+    "child_system_cpu_s": 0.09783099999999999,
+    "child_maxrss_kib": 72768,
+    "status": "PASS",
+    "physical_calls_allowed": {
+      "rhs": 0,
+      "jacobian": 0,
+      "ode": 0,
+      "ncp": 0,
+      "native_norm": 0,
+      "lift": 0,
+      "native_build": 0
+    },
+    "first_source_and_raw_logs_preserved": true
+  },
+  "actual_local_totals": {
+    "CPU_s": 3.0400309999999995,
+    "wall_s": 3.089660322999407,
+    "processes": 2,
+    "repair_reruns": 0,
+    "old_campaign_replays": 0
+  },
+  "first_sources_raw_and_result_preserved": true,
+  "execution_repairs": 0,
+  "scientific_scope": "Exact supplied six-variable source chemical polynomial and declared independent rate-box entry ranges; named fixed-Q remainder coefficient bound",
+  "actual_rate_enclosure_verified": false,
+  "actual_model_enclosure_verified": false,
+  "partial_block_coverage": {
+    "actual_effective_rate_enclosure_verified": false,
+    "columns_reduced30": [
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+    ],
+    "full_Jacobian_missing_blocks": "OPEN_NOT_ZERO",
+    "open_not_zero": [
+      "chemical geometry columns -Fchem*(grad log H)^T",
+      "geometry rows",
+      "Thomson/tau rows",
+      "time variation",
+      "rate preparation bounds",
+      "callback rounding"
+    ],
+    "rows_reduced30": [
+      23,
+      24,
+      25,
+      26,
+      27,
+      28
+    ],
+    "scope": "CHEMICAL_PARTIAL_6_BY_6_ONLY",
+    "source": {
+      "bass_commit": "cc602e209e7deeb511ab2a1f3b2268d55206c43c",
+      "binding_id": "8cb268e8de741e284cf494013f1e0748d27f03c5e77ba0c64413ae92af082d16",
+      "files": [
+        {
+          "bytes": 3002,
+          "git_blob": "baa8272d507375cdbcb11ec89af1a6282dca6b0b",
+          "git_blob_matches": true,
+          "name": "affine_system.py",
+          "path": "research/sandbox_affine_chemistry_20261022/code/affine_system.py",
+          "raw": "raw/affine_system.py.json",
+          "read_scope": "FULL_BODY",
+          "ref": "cc602e209e7deeb511ab2a1f3b2268d55206c43c",
+          "repository": "cosmosapjw-quantum/bass",
+          "sha256": "e4427768a3b5030036eb10dd83c876a23317afa963ce549d333e88c1e11f07c7",
+          "url": "https://github.com/cosmosapjw-quantum/bass/blob/cc602e209e7deeb511ab2a1f3b2268d55206c43c/research/sandbox_affine_chemistry_20261022/code/affine_system.py"
+        },
+        {
+          "bytes": 3085,
+          "git_blob": "73285c1585f8edca92487effe95e68448f3163b8",
+          "git_blob_matches": true,
+          "name": "atomic_model.json",
+          "path": "research/rei_hheli_compact_pilot_20261022/vendor/rec_hheli/data/atomic_model.json",
+          "raw": "raw/atomic_model.json.json",
+          "read_scope": "FULL_BODY",
+          "ref": "cc602e209e7deeb511ab2a1f3b2268d55206c43c",
+          "repository": "cosmosapjw-quantum/bass",
+          "sha256": "9cc399e9e33ece544109f442f50b00c463cde96e406965e796240eaabd49c614",
+          "url": "https://github.com/cosmosapjw-quantum/bass/blob/cc602e209e7deeb511ab2a1f3b2268d55206c43c/research/rei_hheli_compact_pilot_20261022/vendor/rec_hheli/data/atomic_model.json"
+        },
+        {
+          "bytes": 15617,
+          "git_blob": "e3a0603176304f64b953c0b2faf898d6b75eceb5",
+          "git_blob_matches": true,
+          "name": "atomic_network.py",
+          "path": "research/rei_hheli_compact_pilot_20261022/vendor/rec_hheli/code/atomic_network.py",
+          "raw": "raw/atomic_network.py.json",
+          "read_scope": "FULL_BODY",
+          "ref": "cc602e209e7deeb511ab2a1f3b2268d55206c43c",
+          "repository": "cosmosapjw-quantum/bass",
+          "sha256": "baecce07aded483fa60006cc576feff67d068c0d70394f7095abacc6d47eaa80",
+          "url": "https://github.com/cosmosapjw-quantum/bass/blob/cc602e209e7deeb511ab2a1f3b2268d55206c43c/research/rei_hheli_compact_pilot_20261022/vendor/rec_hheli/code/atomic_network.py"
+        },
+        {
+          "bytes": 5200,
+          "git_blob": "4769767f1fb6a13856c86e0c36484a95282be570",
+          "git_blob_matches": true,
+          "name": "compact_system.py",
+          "path": "research/rei_hheli_compact_pilot_20261022/code/compact_system.py",
+          "raw": "raw/compact_system.py.json",
+          "read_scope": "FULL_BODY",
+          "ref": "cc602e209e7deeb511ab2a1f3b2268d55206c43c",
+          "repository": "cosmosapjw-quantum/bass",
+          "sha256": "3ebf56b5a8f1f392681365ec0769364329f293f944a0de4a5add441c8cbc1c49",
+          "url": "https://github.com/cosmosapjw-quantum/bass/blob/cc602e209e7deeb511ab2a1f3b2268d55206c43c/research/rei_hheli_compact_pilot_20261022/code/compact_system.py"
+        },
+        {
+          "bytes": 12781,
+          "git_blob": "7d1a346081528f7f9449fdcb1032cf84a9aabb44",
+          "git_blob_matches": true,
+          "name": "coupled.py",
+          "path": "research/rei_hheli_compact_pilot_20261022/vendor/rec_hheli/code/coupled.py",
+          "raw": "raw/coupled.py.json",
+          "read_scope": "FULL_BODY",
+          "ref": "cc602e209e7deeb511ab2a1f3b2268d55206c43c",
+          "repository": "cosmosapjw-quantum/bass",
+          "sha256": "09a3325c584b895f8c1de44d3b64a458ec7e27f8eec843c7e15aa246a6088d47",
+          "url": "https://github.com/cosmosapjw-quantum/bass/blob/cc602e209e7deeb511ab2a1f3b2268d55206c43c/research/rei_hheli_compact_pilot_20261022/vendor/rec_hheli/code/coupled.py"
+        }
+      ],
+      "method": "STATIC_SOURCE_BYTES_ONLY_NEVER_IMPORT_OWNER_MODULES",
+      "schema": "vigilode.static-chemical-source-bytes.v1",
+      "source_identity_path": "intake/actual_source_next8/SOURCE_IDENTITIES.json",
+      "source_identity_sha256": "316b3abcbec11facbf0a8142de37069e878381783f154dd14190700ac950e9c6"
+    },
+    "source_formulation": "Real arithmetic on frozen represented coefficients; effective rates supplied externally"
+  },
+  "ceilings": {
+    "whole_domain_certificate": false,
+    "actual_ode_solution_enclosure": false,
+    "VerifiedModelProvider": null,
+    "V7fullrestore": "NOT_RUN",
+    "production": "HOLD",
+    "globalphysicalcompletion": null,
+    "L4": false
+  },
+  "physical_calls_actual": {
+    "rhs": 0,
+    "jacobian": 0,
+    "ode": 0,
+    "ncp": 0,
+    "native_norm": 0,
+    "lift": 0,
+    "native_build": 0
+  },
+  "runtime_model": "UNOBSERVED_RUNTIME_METADATA",
+  "next_action": "Independent actual output and PNG review then root scoped admission; no further scientific invocation requested"
+}
