@@ -1,0 +1,50 @@
+{
+  "schema": "spherical-information.mesh-validation.v1",
+  "runs": [
+    {
+      "command": [
+        "python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "src",
+        "-p",
+        "test_spherical_mesh.py",
+        "-v"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.4788293189922115,
+      "stdout": "results/mesh_run_0.stdout.log",
+      "stderr": "results/mesh_run_0.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "3a4bc2b596bd5f70ab9f32cc503583383f4691297a1c7dad90059661d55e5fae"
+    },
+    {
+      "command": [
+        "python3",
+        "src/spherical_mesh.py",
+        "--output",
+        "results/mesh_results.json"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 8.38495102399611,
+      "stdout": "results/mesh_run_1.stdout.log",
+      "stderr": "results/mesh_run_1.stderr.log",
+      "stdout_sha256": "c95e4d709ee24d9c75ffcf34562d3de378c65d29e208cb29bc4ec4008308ed55",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "source_sha256": {
+    "src/spherical_mesh.py": "9465f2a5ba0c66544213b6507d93765ecd8ee4bfb89ed604e9b1c4e7ed5c8b24",
+    "src/test_spherical_mesh.py": "d2b319df96afca8816ec779add868ee79c678fa2fc32fe220f64ca504de91b29"
+  },
+  "result_sha256": "4ffbf4c431f7d7cd91d59fa96b65444450ea2e19c3fd75ef36ee7cb945181f8e",
+  "tests_passed": 8,
+  "finite_grid_records": 20,
+  "observable_checks": 120,
+  "all_observable_bounds_pass": true,
+  "all_direct_entropy_budgets_pass": true,
+  "floating_point_check_slack": "2e-13*max(1,integrated energy); analytic bound is derived, floating computation is not interval certified",
+  "revision_note": "single-fine-cell mean now copies exact input; original positive results preserved in mesh_results_initial.json"
+}

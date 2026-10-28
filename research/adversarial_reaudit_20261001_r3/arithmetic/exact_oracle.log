@@ -1,0 +1,159 @@
+{
+  "nilpotent": [
+    {
+      "id": "nilpotent_partial_underflow",
+      "formula": "[b0+h^3*off*b2/6, h^2*b2/2]; A^2=0, b0 aligned with kernel",
+      "exact_decimal": [
+        "1.6666666666666616977991606826580784676079142000064443286281451060389016504784491938825777387553972761720932805E-27",
+        "4.9999999999999849338893597501300744240190350125568166942068947859175137516889153848488848252978566846177929756E-327"
+      ],
+      "rounded": [
+        1.6666666666666616e-27,
+        0.0
+      ],
+      "original": {
+        "fused": {
+          "output": [
+            9.999999999999999e-301,
+            0.0
+          ],
+          "relative_component0_error": 1.0,
+          "error_above_declared_relative_budget": true
+        },
+        "prefix": {
+          "output": [
+            9.999999999999999e-301,
+            0.0
+          ],
+          "relative_component0_error": 1.0,
+          "error_above_declared_relative_budget": true
+        },
+        "dense": {
+          "output": [
+            0.0,
+            0.0
+          ],
+          "relative_component0_error": 1.0,
+          "error_above_declared_relative_budget": true
+        }
+      },
+      "nilpotent_candidate_relative_error": 6.528332571792047e-17,
+      "guard": "Err: weighting underflow requires propagated error bound",
+      "candidate_scope": "this 2D nilpotent structure only; fail-closed weighting guard is general but conservative"
+    },
+    {
+      "id": "nilpotent_negative_h",
+      "formula": "[b0+h^3*off*b2/6, h^2*b2/2]; A^2=0, b0 aligned with kernel",
+      "exact_decimal": [
+        "-1.6666666666666616977991606826580784676079142000064443286281451060389016504784491938825777387553972761720932805E-27",
+        "4.9999999999999849338893597501300744240190350125568166942068947859175137516889153848488848252978566846177929756E-327"
+      ],
+      "rounded": [
+        -1.6666666666666616e-27,
+        0.0
+      ],
+      "original": {
+        "fused": {
+          "output": [
+            9.999999999999999e-301,
+            0.0
+          ],
+          "relative_component0_error": 1.0,
+          "error_above_declared_relative_budget": true
+        },
+        "prefix": {
+          "output": [
+            9.999999999999999e-301,
+            0.0
+          ],
+          "relative_component0_error": 1.0,
+          "error_above_declared_relative_budget": true
+        },
+        "dense": {
+          "output": [
+            0.0,
+            0.0
+          ],
+          "relative_component0_error": 1.0,
+          "error_above_declared_relative_budget": true
+        }
+      },
+      "nilpotent_candidate_relative_error": 6.528332571792047e-17,
+      "guard": "Err: weighting underflow requires propagated error bound",
+      "candidate_scope": "this 2D nilpotent structure only; fail-closed weighting guard is general but conservative"
+    },
+    {
+      "id": "zero_operator_partial_underflow",
+      "formula": "[b0+h^3*off*b2/6, h^2*b2/2]; A^2=0, b0 aligned with kernel",
+      "exact_decimal": [
+        "1.0000000000000000250590918352087596856961468077037052499253423199004660431840514846763028121819501008949623063E-300",
+        "4.9999999999999849338893597501300744240190350125568166942068947859175137516889153848488848252978566846177929756E-327"
+      ],
+      "rounded": [
+        1e-300,
+        0.0
+      ],
+      "original": {
+        "fused": {
+          "output": [
+            9.999999999999999e-301,
+            0.0
+          ],
+          "relative_component0_error": 1.6578092116916188e-16,
+          "error_above_declared_relative_budget": false
+        },
+        "prefix": {
+          "output": [
+            9.999999999999999e-301,
+            0.0
+          ],
+          "relative_component0_error": 1.6578092116916188e-16,
+          "error_above_declared_relative_budget": false
+        },
+        "dense": {
+          "output": [
+            9.999999999999999e-301,
+            0.0
+          ],
+          "relative_component0_error": 1.6578092116916188e-16,
+          "error_above_declared_relative_budget": false
+        }
+      },
+      "nilpotent_candidate_relative_error": 0.0,
+      "guard": "Err: weighting underflow requires propagated error bound",
+      "candidate_scope": "this 2D nilpotent structure only; fail-closed weighting guard is general but conservative"
+    }
+  ],
+  "power_summary": {
+    "count": 520,
+    "within_8_ulp_count": 520,
+    "maximum_ulp": 2,
+    "special_note": "subnormal relative error is not O(eps); compare absolute ulps instead"
+  },
+  "other_oracles": [
+    {
+      "id": "dense_amplified_mixed_range",
+      "exact_decimal_precision": 110,
+      "expected": [
+        "10142.320547350045348710637970482229717543464363788037514752197599790142827964090308213849424631402361549226327",
+        "0.000098596765437597713743853260718187677813881535345184541486264216270991968500637075998788009671976247486664913286"
+      ],
+      "actual": [
+        0.0,
+        9.859676543760618e-05
+      ],
+      "mixed_range": true,
+      "output_below_input_half_precision": true,
+      "classification": "documented labelled limitation; not a separate new finding"
+    },
+    {
+      "id": "original_budget",
+      "exact_numerator": "2505590639513609676395827429376",
+      "exact_denominator": "2505618534107015908629993881161",
+      "exact_decimal": "0.99998886718268302813982710414019336391944680288184770121886129743353131603364657961982570109812932148304443228",
+      "actual": 0.9999888671826829,
+      "relative_error": 1.558160896863323e-16,
+      "wrms5_rejected": true
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+   Compiling rodas5p-krylov v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.40s
+     Running tests/a05_dense_global_output.rs (target/debug/deps/a05_dense_global_output-e259d7a60d25c1b8)
+
+running 4 tests
+test invalid_scalar_rhs_shapes_do_not_charge_or_enter_callbacks ... ok
+test scalar_rhs_attempts_are_counted_on_err_and_nonfinite_output ... ok
+test batch_callback_failure_success_and_scalar_fallback_are_accounted ... ok
+test zero_span_dense_entry_rejects_invalid_adaptive_and_linear_config ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/a11_gray_scott_log_norm.rs (target/debug/deps/a11_gray_scott_log_norm-7ad223ab4a7e9b8c)
+
+running 3 tests
+test generic_max_diagonal_is_not_a_logarithmic_norm_bound ... ok
+test gray_scott_reaction_block_bounds_enclose_tube_values ... ok
+test gray_scott_log_norm_refuses_malformed_or_incomplete_tubes ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/packet_trajectory_contracts.rs (target/debug/deps/packet_trajectory_contracts-b2b63b4d95d00dce)
+
+running 6 tests
+test test_negative_admission_gates ... ok
+test test_vg3_inherited_radii_propagation ... ok
+test test_vg1_zero_online_solver_counters_across_trajectory ... ok
+test test_vg2_multiwindow_overlap_and_dahlquist_linear_limit ... ok
+test test_vg3_transactional_atomicity_on_step_rejection ... ok
+test test_vg3_output_policy_separation ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/packet_window_contracts.rs (target/debug/deps/packet_window_contracts-308dfee491eaba91)
+
+running 6 tests
+test test_negative_refusal_contracts ... ok
+test test_vg2_dahlquist_linear_boundary_zero_defect ... ok
+test test_vg1_zero_online_solver_counters_contract ... ok
+test test_vg3_certificate_mode_bounds_enclosure_consistency ... ok
+test test_vg3_reconstruction_initial_state_consistency ... ok
+test test_vg2_picard_sweeps_convergence_and_defect_reduction ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_audit_collective_direct.rs (target/debug/deps/production_audit_collective_direct-7c4a75a8187ac14f)
+
+running 5 tests
+test refuses_nonzero_carrier_metadata_and_nonexact_weight_normalization ... ok
+test refuses_when_wb2_inverse_witness_is_unavailable ... ok
+test residual_witness_refuses_mismatched_source_identity_without_indexing ... ok
+test reviewer_regression_residual_uses_candidate_mean ... ok
+test woodbury_solve_matches_dense_frozen_stage_and_residual_witness ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+
+     Running tests/production_audit_packet.rs (target/debug/deps/production_audit_packet-1678bd1aadabbee6)
+
+running 16 tests
+test candidate_cannot_be_reused_with_a_different_compiled_packet ... ok
+test certificate_uses_actual_weight_sum_and_spectral_support_and_charges_work ... ok
+test coefficient_overflow_is_refused_and_subnormal_stays_diagnostic_only ... ok
+test admitted_small_uncertainty_remains_supported ... ok
+test inherited_uncertainty_must_fit_proved_unit_energy_domain ... ok
+test kappa_zero_packet_refuses_damped_model ... ok
+test model_identity_compares_exact_float_bits_including_signed_zero ... ok
+test mutable_config_is_validated_at_run_boundary ... ok
+test nonfinite_candidate_cannot_receive_certificate ... ok
+test multimode_high_precision_linear_oracle_is_close_at_intermediate_and_endpoints ... ok
+test public_packet_descriptor_mutation_is_refused_by_certificate_and_output ... ok
+test dense_output_restricts_normalized_time_waveform ... ok
+test subunit_weight_does_not_shrink_the_free_mode_error_bound ... ok
+test subunit_weight_inherited_radius_uses_microscopic_lipschitz_factor ... ok
+test trajectory_tail_uses_force_bound_not_already_scaled_model_error ... ok
+test tiny_nonempty_interval_is_actually_advanced ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_audit_split.rs (target/debug/deps/production_audit_split-d078fa7b7d0d2cfe)
+
+running 4 tests
+test sparse_descriptor_is_checked_after_public_field_mutation ... ok
+test sparse_matvec_rejects_short_vectors ... ok
+test periodic_gray_scott_two_cell_linear_split_matches_full_rhs ... ok
+test split_nan_callback_fails_closed ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

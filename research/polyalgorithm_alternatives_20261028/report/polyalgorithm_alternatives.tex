@@ -1,0 +1,552 @@
+\documentclass[aps,pra,reprint,onecolumn,11pt,notitlepage,nofootinbib]{revtex4-2}
+\usepackage{amsmath,amssymb,graphicx,booktabs,array}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\eps}{\varepsilon}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\emergencystretch=2em
+\begin{document}
+\title{VigilODE polyalgorithm extensions:
+Fused polynomial actions, finite-step error constants, and causal certification}
+\author{VigilODE research supplement}
+\noaffiliation
+\date{28 October 2026}
+\begin{abstract}
+We investigate the six remaining development tasks following PR92, reusing
+the existing conditioned resolvent, joint polynomial action, signed-adjoint
+certificate, causal cache, and homotopy implementation. Three parallel theory
+lanes produce seventeen concrete alternatives. The leading constructions are
+a fused vector-coefficient Clenshaw action, a cubic midpoint defect bound with
+constant $1/12$ and rational decay accumulation, variable-step two-channel
+transport, and value-only continuation margins. We distinguish established
+results, new project-specific derivations, finite exact-arithmetic checks,
+and unimplemented floating-point obligations. Three programs, published before
+execution, pass their declared exact-rational checks. On the stated targets,
+fusion changes operator products from $5m$ to $m$, and the cubic planning
+example changes its minimum dyadic grid from 512 to 256. These are operation
+and planning results, not measured solver speedups. Runtime defaults, Rust
+source, prior negative evidence, and unresolved deployment qualification are
+preserved.
+\end{abstract}
+\maketitle
+
+\section{Question, source identity, and useful reuse}
+The inspected runtime baseline is PR92, commit
+\par\noindent\texttt{7eb2dd0ffda39afb2871d76700a720986ff09fe0}.
+\par The initial remote survey
+found no later pull request. Task labels PR-N01 through PR-N06 denote planned
+development tasks, not GitHub pull-request numbers. This supplement executes
+the requested literature and constructive-exploration stages R2/R4 of
+PhysMath Research Loop 1.3.0, with supporting derivations and checks. It does
+not restart earlier ten-stage campaigns or their correction budgets.
+
+Several proposed optimizations are already present. PR68 added joint actions
+in Chebyshev and Laguerre bases; PR69 preserved an unsuccessful continuous-scaling
+experiment. The latest code subsequently added signed output-adjoint
+Laguerre certification and guarded Leja/Chebyshev/Laguerre routing.
+The coupled solver already shares one projected factorization across eight
+stages. Causal finite propagation and a nilpotent error majorant were already
+proved in PR91. These are baselines to reuse, not new achievements here.
+
+\begin{table}[h]
+\caption{Existing capabilities and the proposed increment. Source paths are
+relative to the repository's \texttt{crates/} directory.}
+\begin{tabular}{L{0.29\linewidth}L{0.30\linewidth}L{0.30\linewidth}}
+\toprule
+Current source & Already available & Proposed increment\\
+\midrule
+\texttt{rodas5p-core/} polynomial action and router & Coefficient enclosures,
+complete-total admission, exact cache keys, charged refusals & Fused-only
+backward execution with its own local-error certificate\\
+\texttt{rodas5p-integrators/} conditioned polynomial & Full-space relation,
+conditioned chart, original residual & Prefer cheap structure; extend by a
+proved perturbation bound\\
+\texttt{vigilode-coupled/} causal and structural modules & Shared factor,
+prefix reuse, represented-stage residual enclosure & Physical and
+variable-step transport; carrier-specific endpoint budgets\\
+\texttt{vigilode/} session and switcher & Scoped persistent session,
+same-window work comparison & Retain winning session; conditional future
+residence with an explicit cost-variation certificate\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The current guarded polynomial provider is an immutable \emph{dense symmetric}
+operator. Its mathematical results do not automatically certify an opaque
+matrix-free callback. Matrix-free, Jacobian-free, and derivative-free are
+different properties. A model-declared generator can satisfy all three;
+a supplied JVP remains derivative-assisted even without a stored matrix.
+
+\section{Critical use of the supplied literature}
+Robust numerical algebraic geometry studies parameter uncertainty and
+exceptional algebraic strata\cite{robust}. Searching for nearby parameters
+can clarify the structure of an uncertain polynomial system, but changing
+an ODE parameter would change the original integration target. We reuse
+explicit branch and parameter contracts, without importing parameter
+regularization as an implicit acceptance rule.
+
+The numerical nonlinear algebra survey distinguishes regular parameter
+paths, root tracking, and certification\cite{nonlinear}. Its Newton-based
+tracking and Jacobian-based Krawczyk method do not substantiate a
+derivative-free implementation. A generic complex continuation theorem also
+does not identify the prescribed real physical branch.
+
+Kunkel--Mehrmann require regularity, derivative-array rank conditions,
+coordinate choices and reconstruction for inherent ODEs\cite{dae}. Their
+geometric symmetry construction is for linear time-varying DAEs. The paper
+explicitly notes that it is inapplicable to its nonlinear pendulum example,
+despite a self-adjoint Jacobian pair. A declared analytic reduction is a
+useful future provider; generic RHS-only nonlinear DAE support remains open.
+
+The ETH notes describe Hamiltonian composition and the Runge--Kutta
+identities for invariants\cite{eth}. They motivate distinct structure-preserving
+routes, while leaving adaptive selection and inexact-stage effects to be
+analyzed separately.
+
+\section{Fused backward polynomial actions}
+For five distinct inputs and an output that requests only their sum, write
+\begin{equation}
+ F_m=\sum_{j=0}^{4}\sum_{k=0}^{m}c_{kj}P_k(X)w_j
+     =\sum_{k=0}^{m}P_k(X)d_k,
+ \qquad d_k=\sum_{j=0}^{4}c_{kj}w_j .
+ \label{eq:fuse}
+\end{equation}
+The coefficient vectors can be formed on demand. The existing forward
+implementation uses five vector recurrences for distinct inputs. Equation
+\eqref{eq:fuse} permits one backward recurrence.
+
+\subsection{Laguerre identity and error transfer}
+Set $b_{m+1}=b_{m+2}=0$ and evaluate
+\begin{equation}
+ b_k=d_k+\frac{(2k+1)I-X}{k+1}b_{k+1}
+           -\frac{k+1}{k+2}b_{k+2},\qquad k=m,\ldots,0.
+ \label{eq:lag}
+\end{equation}
+Then $b_0=F_m$ for ordinary Laguerre polynomials. If each computed recurrence
+has additive local defect $\delta_k$, including coefficient-vector formation,
+operator-action error and rounded arithmetic, the exact identity is
+\begin{equation}
+ \widehat b_0-F_m=\sum_{k=0}^{m}L_k(X)\delta_k.
+ \label{eq:lagdef}
+\end{equation}
+\textit{Proof.} The transfer of an impulse at position $k$ obeys the
+Laguerre recurrence, with initial polynomials $1$ and $1-x$. It is therefore
+$L_k(x)$. Superposition proves the action and perturbation identities,
+including vector-valued coefficients. If $X$ is self-adjoint in the declared
+Hilbert norm and $\sigma(X)\subset[0,L]$, the spectral theorem and DLMF
+18.14.8\cite{dlmf} imply
+\begin{equation}
+ \norm{\widehat b_0-F_m}\le e^{L/2}\sum_k\norm{\delta_k}.
+ \label{eq:lagbound}
+\end{equation}
+This bound is independent of degree in its transfer factor, but local
+defects can grow with intermediate vectors. Large $L$ can make the bound
+unhelpful. It is not valid to apply this factor to defects from the old
+forward execution; the local defects depend on the evaluation direction.
+
+For Chebyshev polynomials, use
+\begin{equation}
+ b_k=d_k+2Xb_{k+1}-b_{k+2}\quad(k\ge1),\qquad
+ F_m=d_0+Xb_1-b_2.
+\end{equation}
+Telescoping gives the defect transfer $\sum_k T_k(X)\delta_k$. On a
+self-adjoint represented chart contained in $[-1,1]$, its bound is
+$\sum_k\norm{\delta_k}$. If rounding expands the interval, use the
+corresponding $\cosh(k\operatorname{arcosh}(1+\eta))$ growth bound.
+
+\subsection{Cost and admission}
+At degree $m$, the fused-only distinct-input target changes operator products
+from $5m$ to $m$. Coefficient-vector assembly still costs $O(5mn)$ scalar
+operations. The current same-vector input already uses $m$ actions; callers
+requesting all individual columns cannot use the shortcut. There is no
+factor-five elapsed-time claim.
+
+The new complete budget must include truncation, coefficient enclosures,
+source combinations, recurrence defects, normalization, underflow and output
+assembly. The current signed-adjoint Bernstein envelopes remain the
+comparator. Their existing resource cap is not removed by an unimplemented
+bound. A later matrix-free port needs immutable provider identity and a
+certified action-error enclosure; any extra action or matrix storage used
+for that certificate belongs in the cost.
+
+\section{Resolvents, hybrids, and nonnormal alternatives}
+\subsection{Exact Chebyshev degree}
+For self-adjoint positive $A$, $\sigma(A)\subset[a,b]$, $0<a<b$, set
+$c=(a+b)/2$, $d=(b-a)/2$, and
+\begin{equation}
+ p_m(z)=\frac{T_m((c-z)/d)}{T_m(c/d)},\qquad
+ q_{m-1}(z)=\frac{1-p_m(z)}{z}.
+\end{equation}
+Since $p_m(0)=1$, $q_{m-1}$ is polynomial. Updating
+$x_m=x_0+q_{m-1}(A)r_0$ gives $r_m=p_m(A)r_0$ and
+\begin{align}
+ \norm{r_m}&\le\delta_m\norm{r_0}, &
+ \delta_m&=\frac{1}{T_m(c/d)}=\frac{2q^m}{1+q^{2m}},\\
+ q&=\frac{\sqrt{b/a}-1}{\sqrt{b/a}+1}, &
+ m_{\min}&=\left\lceil\frac{\operatorname{arcosh}(1/\eps)}
+ {\operatorname{arcosh}(c/d)}\right\rceil .
+\end{align}
+The spectral theorem gives the norm bound. Alternation of $T_m$ gives the
+minimax residual polynomial: a strictly better polynomial would have a
+difference with $m$ roots between the extrema and an additional root at
+zero outside the interval. This exceeds its degree.
+
+An outward integer check must validate the chosen degree; rounded logarithms
+alone are insufficient. For $[a,b]=[1,9]$, $q=1/2$ and the exact smallest
+degree for $\delta_m\le10^{-8}$ is 28. If $a=b$, self-adjointness gives
+$A=aI$, so a scalar solve is the appropriate route.
+
+These methods eliminate orthogonalization and basis storage, but still
+require dependent operator applications. Compare against CG, the existing
+shared coupled basis, and specialized direct relations, not only a weak
+GMRES implementation. Polynomial preconditioners can have useful fixed
+linearity properties\cite{wathen}, while Laguerre short recurrences trade
+inner products and storage against approximation behavior\cite{laguerre}.
+
+\subsection{Reuse an approximate structural inverse}
+Let $P$ satisfy $\norm{D}\le\theta<1$ for $D=I-AP$. Define
+\begin{equation}
+ Q_r=P\sum_{j=0}^{r-1}D^j .
+ \qquad AQ_r=I-D^r,
+ \qquad \norm{f-AQ_rf}\le\theta^r\norm{f}.
+\end{equation}
+The finite geometric sum proves this identity without requiring $AP=PA$.
+For $A=A_0+E$, a sufficient bound is
+$\theta\le\norm{I-A_0P}+\norm{E}\norm{P}$.
+Existing exact exchange, block and quotient inverses can therefore serve as
+cheap near-structure correction operators. Freeze the polynomial plan
+within a standard linear outer solver, or use an explicitly flexible method.
+
+\subsection{Nonnormality and numerical range}
+For $N=\left(\begin{smallmatrix}0&1\\0&0\end{smallmatrix}\right)$,
+$A=I+KN$, and $p(z)=1-z$, all eigenvalues equal one but
+$\norm{p(A)}_2=|K|$. Eigenvalue placement alone does not justify the SPD
+bound. Yet $A^{-1}=I-KN$ is exact: the same example favors the existing
+declared low-degree relation route.
+
+A verified numerical range permits the established constant
+\cite{crouzeix}
+\begin{equation}
+ \norm{g(A)}_M\le(1+\sqrt2)\sup_{z\in W_M(A)}|g(z)|.
+\end{equation}
+If $C=(cI-A)/d$ has numerical range inside a filled Bernstein ellipse of
+parameter $R$, with $1\le R<\zeta=\xi+\sqrt{\xi^2-1}$, $\xi=c/d>1$, then
+\begin{equation}
+ \norm{p_m(A)}_M\le(1+\sqrt2)
+ \frac{R^m+R^{-m}}{\zeta^m+\zeta^{-m}}.
+\end{equation}
+The ellipse identity for $T_m$ and the maximum principle prove this bound.
+It is a first Chebyshev/Faber branch requiring no general Faber engine.
+General Leja/Faber choices need scalar and operator-domain error bounds
+\cite{leja,faber}. Matrix-function experiments show that the best backend
+depends on its integrator and problem\cite{dek}; a universal ordering is
+not inferred.
+
+\section{A finite-step cubic constant and a smaller justified grid}
+Consider $z'=-\phi(z)$, $\phi(z)=kz+gz^3$, $k>0$, $g\ge0$, $z(0)=Y\ge0$.
+Let $L(u)=k+3gu^2$, $D_h=1+hk/2$, and
+$F_u(K)=K+h\phi(u+K/2)$. For the exact endpoints $u=z(t)$, $v=z(t+h)$,
+\begin{equation}
+ |F_u(v-u)|\le\frac{L(u)^2\phi(u)h^3}{12},\qquad
+ |M_h(u)-v|\le\frac{L(u)^2\phi(u)h^3}{12D_h}.
+ \label{eq:cubic}
+\end{equation}
+These are finite-step inequalities for every $h>0$.
+
+\textit{Proof.} The exact trajectory is decreasing and convex, with
+$0\le z''\le L(u)\phi(u)$. If $\ell(s)$ is its endpoint chord and
+$m=(u+v)/2$, then
+$0\le\ell(s)-z(t+s)\le L(u)\phi(u)s(h-s)/2$.
+Define nonnegative quantities
+\begin{align}
+ A&=\int_0^h[\phi(\ell(s))-\phi(z(t+s))],ds,\\
+ B&=\int_0^h\phi(\ell(s)),ds-h\phi(m)
+   =\frac{ghm(u-v)^2}{4}.
+\end{align}
+The residual is $A-B$. Integrating the chord kernel gives
+$A\le L(u)^2\phi(u)h^3/12$. Since $u-v\le h\phi(u)$ and
+\begin{equation}
+ L(u)^2-3gu\phi(u)=k^2+3kgu^2+6g^2u^4\ge0,
+\end{equation}
+the same upper bound holds for $B$. Use $|A-B|\le\max(A,B)$.
+Finally $F_u'(K)\ge D_h$ on the real line proves the endpoint bound.
+Derivatives enter this analytic proof, not the runtime callback contract.
+
+The midpoint map is globally nonexpansive because
+\begin{equation}
+ M_h'(x)=\frac{1-(h/2)\phi'(m)}{1+(h/2)\phi'(m)},\qquad |M_h'(x)|\le1.
+\end{equation}
+Thus numerical error is transported separately from the exact trajectory
+used in the local truncation term. Since
+$z_j\le Ye^{-kjh}\le Yq^j$, $q=(1+kh)^{-1}$, and the polynomial
+$L(x)^2\phi(x)$ has nonnegative coefficients, a cumulative bound is
+\begin{equation}
+ \mathcal T_N=\frac{h^3}{12D_h}\left[
+ k^3Y S_N(q)+7k^2gY^3S_N(q^3)
+ +15kg^2Y^5S_N(q^5)+9g^3Y^7S_N(q^7)\right],
+ \label{eq:sum}
+\end{equation}
+where $S_N(r)=\sum_{j<N}r^j$. For dyadic $N$, the updates
+$(p,s)\mapsto(p^2,s(1+p))$, starting with $(r,1)$, compute this sum with
+$O(\log N)$ positive operations. No transcendental library is needed.
+
+\begin{table}[h]
+\caption{Registered exact-rational planning example:
+$k=1$, $g=1/2$, $Y=T=1$, $\eps=10^{-5}$. Displayed decimals are diagnostic;
+admission comparisons were exact.}
+\begin{tabular}{lrr}
+\toprule
+Bound & Truncation bound at $N=256$ & Minimum dyadic $N$\\
+\midrule
+Inherited constant $1/8$ & $1.7846536915\,10^{-5}$ & 512\\
+Constant $1/12$ only & $1.1897691277\,10^{-5}$ & 512\\
+$1/12$ and rational decay & $3.3853071299\,10^{-6}$ & 256\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The remaining budget must cover root error, update rounding and clock
+displacement through the complete prefix gate. An admissible residual
+threshold alone does not pay all these terms. The inherited Picard fallback
+also retains its contraction gate. A separate bracketed monotone backend
+could relax that backend-specific restriction, but must not silently call
+an unqualified noncontractive fallback.
+
+\section{Structural and causal error transport}
+For $P=11^T/n$, $Q=I-P$, $J=-dQ-(d-\kappa)P$, $d\ge\kappa\ge0$, a discrete
+step has $S_k=\sigma_{k,t}Q+\sigma_{k,c}P$. Fixed projectors permit
+\begin{equation}
+ \prod_{\ell>k}S_\ell=p_{k,t}Q+p_{k,c}P,
+ \qquad p_{k,r}=\prod_{\ell>k}\sigma_{\ell,r}.
+\end{equation}
+At each $h_k$, the existing scalar stage matrices $L_k(r)$ give adjoints
+$w_{k,r}=L_k(r)^{-T}\beta$. A full-stage residual $\rho_{k,i}$ contributes
+$(w_{k,t,i}Q+w_{k,c,i}P)\rho_{k,i}$ to the endpoint. The exact induced
+infinity norm of a two-channel block is
+\begin{equation}
+ \nu_n(t,c)=\left|t+\frac{c-t}{n}\right|
+       +(n-1)\left|\frac{c-t}{n}\right|.
+\end{equation}
+Unrolling the error recurrence and applying this norm gives the
+variable-step residual transport, with sharp independent-block row sums.
+Temporal defects, endpoint arithmetic and clock discrepancy remain separate
+terms. Products over an accepted grid are an a posteriori statement, not a
+certificate for an unknown future adaptive grid.
+
+For the declared affine model $y'=b+Jy$, the exact flow is
+\begin{align}
+ F_\Delta(y)={}&e^{-d\Delta}Qy+e^{-(d-\kappa)\Delta}Py\\
+ &+\Delta\varphi_1(-d\Delta)Qb
+  +\Delta\varphi_1(-(d-\kappa)\Delta)Pb.
+\end{align}
+If $\zeta_k=\widehat y_{k+1}-F_{\Delta_k}(\widehat y_k)$ is enclosed,
+\begin{equation}
+ E_{k+1}\le e^{-(d-\kappa)\Delta_k}E_k+\norm{\zeta_k}_\infty.
+\end{equation}
+The exponential has nonnegative entries and row sum
+$e^{-(d-\kappa)t}$, proving the scalar factor. This also suggests a direct
+flow route when it is cheaper than executing and certifying eight stages.
+Validated exponential/$\varphi$ arithmetic is still required.
+
+For the general raw-$U$ causal equations,
+\begin{equation}
+ WU_i=h\gamma f\left(y+\sum_{j<i}a_{ij}U_j\right)
+       +\gamma\sum_{j<i}c_{ij}U_j,\qquad W=I-h\gamma J_0,
+\end{equation}
+let $\norm{W^{-1}}\le\omega$ and let $L_i$ bound the RHS Lipschitz constant
+on the relevant stage domains. Then
+\begin{equation}
+ e\le\omega\sum_{\ell=0}^{s-1}B^\ell\rho,
+ \qquad B_{ij}=\omega(h\gamma L_i|a_{ij}|+|\gamma c_{ij}|),\quad j<i.
+\end{equation}
+Subtract the stage equations to obtain $e\le\omega\rho+Be$; strict lower
+triangularity gives $B^s=0$. This instantiates the already-proved causal
+majorant. It does not need a global contraction factor below one.
+
+For a carrier-aware affine stage matrix with inverse block bounds $D$ and
+nonlinear remainder majorant $N$, the sharper form is
+$e\le\sum_{\ell<s}(DN)^\ell D\rho$.
+Endpoint weights convert this to a state error budget. A changed carrier's
+temporal or stiff-uniform order remains a separate question.
+
+\section{Continuation, session reuse and temporal residence}
+For $G_\lambda=(1-\lambda)a+\lambda G$ on a closed ball
+$\overline B(c,r)$, suppose $G$ is $q$-Lipschitz and certified quantities
+satisfy $e\ge\norm{G_\lambda(c)-c}$, $b\ge\norm{G(c)-a}$. The next
+station $\mu=\lambda+\delta\le1$ leaves the ball invariant if
+\begin{equation}
+ (\lambda+\delta)qr+e+\delta b\le r.
+\end{equation}
+This follows by adding and subtracting $G_\mu(c)$ and $G_\lambda(c)$.
+When the denominator is nonzero and the margin positive,
+\begin{equation}
+ \delta\le\frac{(1-\lambda q)r-e}{qr+b},\qquad \mu q<1
+\end{equation}
+provides a value-only Banach station and residual-to-root constant
+$1/(1-\mu q)$. The strict contraction check is separate. If $q\ge1$, this
+does not establish the endpoint $\lambda=1$. If the endpoint is already
+contractive, intermediate stations may add unnecessary cost.
+
+For a monotone scalar residual, a certified bracket and
+$F(v)-F(u)\ge m(v-u)$ give uniqueness and error $|F(x)|/m$ without
+runtime derivatives. Small residual alone cannot choose between the two
+roots of $x^2-p=0$.
+
+Session reuse has a different role. Preserving every state component read
+by a deterministic integrator, its callback bindings, output landings and
+arithmetic order implies pause/resume trace equality by induction. This
+requires FSAL validity, controller history, buffers, cumulative budgets and
+epochs; a $(t,y,h)$ snapshot is insufficient. The first candidate is to
+continue a winning probe inside the existing scoped session rather than
+introducing a self-referential owned callback design.
+
+Finally, same-window cost evidence does not establish future residence.
+Under an explicit future variation certificate
+$C_B(0)-C_A(0)\ge d>0$ and
+$|(C_B-C_A)(j)-(C_B-C_A)(j-1)|\le V$, telescoping gives
+\begin{equation}
+ C_B(j)-C_A(j)\ge d-jV,\qquad
+ \sum_{j=1}^{m}(C_B(j)-C_A(j))\ge md-\frac{Vm(m+1)}2.
+\end{equation}
+Require $mV<d$ and the latter bound greater than switching/calibration cost
+$S$. For continuous rates with Lipschitz constant $L>0$, the corresponding
+bound is $dH-LH^2/2$ for $H\le d/L$. If $L=0$, all $H\ge0$ preserve the
+advantage and strict payback is $dH>S$.
+Smooth ODE coefficients do not supply such a work certificate: adaptive
+acceptance thresholds can cause discrete jumps. Trace-margin certification
+and its cost remain a separate research task.
+
+\section{Geometric alternatives and two exact counterexamples}
+Declared separable Hamiltonians admit force-only splitting without
+Jacobian/JVP/Newton evaluations. For oscillator Verlet,
+\begin{equation}
+ M(h)=\begin{pmatrix}1-z^2/2&h\\
+ -h\omega^2(1-z^2/4)&1-z^2/2\end{pmatrix},\qquad z=h\omega.
+\end{equation}
+The determinant is one, and the fixed-step power-bounded interval is
+$0<h\omega<2$. The endpoint has a nontrivial Jordan block. Yet
+$\omega=1$, $h_1=1$, $h_2=19/10$ obey the individual interval and satisfy
+\begin{equation}
+ \det(M(h_2)M(h_1))=1,\qquad
+ \operatorname{tr}(M(h_2)M(h_1))=-9661/4000<-2.
+\end{equation}
+The periodic product is unstable. Moreover, the exact free-particle flow
+with state-dependent $h(q,p)=\epsilon q$ has determinant $1+\epsilon p$,
+so state-dependent selection can destroy symplecticity itself.
+
+An inexact RK stage can nevertheless have a useful invariant-drift
+certificate. Let $I(y)=y^TCy$, $C=C^T$, and $y^TCf(y)=0$.
+For $F_i=f(Y_i)+\eta_i$, stage defects
+$\delta_i=Y_i-y-h\sum_j a_{ij}F_j$, and $z=y+h\sum_i b_iF_i$,
+direct quadratic expansion gives
+\begin{align}
+ I(z)-I(y)={}&-h^2\sum_{ij}(b_i a_{ij}+b_j a_{ji}-b_i b_j)F_i^TCF_j\nonumber\\
+ &-2h\sum_i b_i\delta_i^TCF_i+2h\sum_i b_iY_i^TC\eta_i.
+\end{align}
+For a symplectic RK tableau the first term vanishes. Endpoint error $r$
+adds $2z^TCr+r^TCr$. This bounds invariant drift; it does not make an
+inexact input-output map exactly symplectic.
+
+Other concrete branches in the catalog are an exact small invariant block
+plus a polynomial complement, predetermined affine prefix scans, and a
+declared regular DAE reduction provider. They retain their own structural
+and reconstruction hypotheses.
+
+\section{Verification, development priorities and remaining obligations}
+The three checker programs and their protocol were published before execution:
+\par\noindent\texttt{866668348f840bd43558859d2795576e292b6ca7}.
+\par
+All passed. Polynomial checks cover degrees 0--8 and all impulse positions,
+the exact degree-28 example and a Jordan counterexample. Homotopy checks
+include 108 cubic algebra fixtures, exact grid decisions, continuation-ball
+and branch controls, and conditional residence. Four geometry checks compare
+scalar adjoints with independently assembled full block matrices, verify a
+nonlinear causal majorant with norm greater than one, check invariant drift,
+and reproduce the Verlet counterexamples.
+
+These checks do not replace the written proofs. They do not validate new
+binary64 kernels or measure native performance. Earlier exploratory CAS
+checks are explicitly identified; the later registration does not apply
+retroactively to them. One bounded cross-lane review corrected the explicit
+$L=0$ wording in the continuous residence statement. No checker source or
+runtime arithmetic changed after the registered run.
+
+\begin{table}[h]
+\caption{Six task contracts. All native implementations remain pending.}
+\begin{tabular}{L{0.10\linewidth}L{0.38\linewidth}L{0.39\linewidth}}
+\toprule
+Task & First implementation candidate & Remaining theoretical/validation bridge\\
+\midrule
+N01 & Fused-only backward Clenshaw; retain current coefficient/admission code &
+New local-defect enclosure, complete cost, matrix-free authority; nonnormal witness\\
+N02 & $1/12$ rational-decay outward planner & Prefix/update/clock budget,
+minimum-grid and range-boundary oracles\\
+N03 & Variable-step two-channel transport; direct-flow comparator & Physical
+defect enclosure and charged adaptive consumer\\
+N04 & Retain winning scoped session and workspace capacity & Full trace
+identity, generic domain and branch certificate\\
+N05 & Raw-$U$ residual-to-endpoint budget and work/span comparison & Nonlinear
+closure, carrier order, domain and stiff-uniform accuracy\\
+N06 & Distinguish observed cost from certified variation & Counterfactual
+future trace/variation certificate and its acquisition cost\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The refreshed machine-readable plan preserves 23 inherited nodes, 34 edges,
+eight native suites, seven unresolved qualification tasks and existing
+correction budgets. Seventeen candidate records refine the six tasks rather
+than creating seventeen new mandatory PRs. The deployment sequence remains
+release qualification, matched-accuracy hardware measurements, and actual
+client qualification. Earlier Givens, fair-AB, SUNDIALS, lint/API, negative
+control and authority-reference issues are not declared resolved here.
+
+The polyalgorithm first filters candidates by target, structure, derivative
+permission and physical certificate. Only then does it compare total setup,
+actions, memory, verification, retries and failed work. Hardware service
+times are measured quantities; exact numerical constants cannot determine
+a universal fastest policy. Theory can fix the admissible region and error
+budget while local evidence decides the economic choice within that region.
+
+Complete proofs, candidate contracts, exact outputs, source-bound receipts,
+the Korean report and local Codex handoff are stored in
+\texttt{research/polyalgorithm\_alternatives\_20261028/}. The unchanged
+PR92 evidence retains its original scope. This supplement supplies a concrete
+implementation basis without claiming a general nonlinear closure theorem
+or a new production speedup.
+
+\begin{thebibliography}{99}
+\bibitem{robust} E. R. Cobian, J. D. Hauenstein, and C. W. Wampler,
+\textit{Robust Numerical Algebraic Geometry},
+\href{https://arxiv.org/pdf/2403.18749}{arXiv:2403.18749}.
+\bibitem{nonlinear} D. J. Bates et al., \textit{Numerical Nonlinear Algebra},
+\href{https://arxiv.org/html/2302.08585v2}{arXiv:2302.08585v2}.
+\bibitem{dae} P. Kunkel and V. Mehrmann, \textit{Discretization of inherent
+ODEs and the geometric integration of DAEs with symmetries},
+\href{https://arxiv.org/pdf/2205.08105}{arXiv:2205.08105}.
+\bibitem{eth} H. Ammari, \textit{Geometrical numerical integration methods
+for differential equations}, ETH Lecture 5,
+\href{https://people.math.ethz.ch/~grsam/FS18/NAII/files/slides/ODE-Lecture5.pdf}{lecture notes}.
+\bibitem{dlmf} NIST Digital Library of Mathematical Functions,
+\href{https://dlmf.nist.gov/18.14.E8}{Eq.18.14.8} and
+\href{https://dlmf.nist.gov/18.12.E13}{Eq.18.12.13}.
+\bibitem{wathen} A. J. Wathen and T. Rees,
+\textit{Chebyshev semi-iteration in Preconditioning}, Oxford Report08/14,
+\href{https://www.cs.ox.ac.uk/files/1540/NA-08-14.pdf}{author report} (2008).
+\bibitem{laguerre} B. N. Sheehan, Y. Saad, and R. B. Sidje,
+\textit{Computing exp(-tau A)b with Laguerre polynomials}, ETNA
+\textbf{37}, 147--165 (2010).
+\bibitem{crouzeix} M. Crouzeix and C. Palencia,
+\textit{The numerical range as a spectral set},
+\href{https://arxiv.org/pdf/1702.00668}{arXiv:1702.00668} (2017).
+\bibitem{leja} M. Caliari, P. Kandolf, A. Ostermann, and S. Rainer,
+\textit{The Leja method revisited: backward error analysis for the matrix exponential},
+\href{https://arxiv.org/pdf/1506.08665}{arXiv:1506.08665} (2016).
+\bibitem{faber} B. Beckermann and L. Reichel,
+\textit{Error estimation and evaluation of matrix functions via the Faber transform},
+\href{https://pro.univ-lille.fr/fileadmin/user_upload/pages_pros/bernhard_beckermann/abs/paper15.pdf}{author manuscript}.
+\bibitem{dek} P. J. Deka, M. Tokman, and L. Einkemmer,
+\textit{A comparison of Leja- and Krylov-based iterative schemes for Exponential Integrators},
+\href{https://arxiv.org/pdf/2211.08948}{arXiv:2211.08948} (2022).
+\end{thebibliography}
+\end{document}

@@ -1,0 +1,204 @@
+{
+  "claim_ceiling": {
+    "future_launch_requires": [
+      "Reviewed frozen clean source identity",
+      "Frozen binary and build receipt",
+      "Exact final one-case plan and separate independent launch approval"
+    ],
+    "publication_approved_by_this_review": false,
+    "scientific_admission": "HOLD",
+    "solver_launch_approved": false,
+    "source_preparation": "BLOCKED_REPAIR_REQUIRED",
+    "timing_authority": "diagnostic_only"
+  },
+  "created_utc": "2026-10-25T12:14:23.065142+00:00",
+  "decision": "BLOCKED_REPAIR_REQUIRED",
+  "evidence_files": [
+    {
+      "path": "/tmp/vigilode-timeout-runner-v2-repair.9LZeVn8B/HANDOFF.json",
+      "sha256": "b5307f56cb416a2d001ae328e0c8e9abecbc63353050d616f90c3752af9ce6ad"
+    },
+    {
+      "path": "/tmp/vigilode-timeout-runner-v2-repair.9LZeVn8B/FINAL_CHECKS.json",
+      "sha256": "1c8df6b0a54b63d2f2dd48d6e2008e42fa96091462a453261d7ccc5a66ad8bfb"
+    },
+    {
+      "path": "/tmp/vigilode-timeout-runner-v2-repair.9LZeVn8B/FIRST_RED.json",
+      "sha256": "314ecd6ae7cd2c609fa43bc421094aea9e929859266716ca219c5ff13558c4b3"
+    },
+    {
+      "path": "/tmp/vigilode-timeout-runner-v2-repair.9LZeVn8B/repair-first-red.log",
+      "sha256": "de3b5265166622a2f47a159f1dcefc41b27f6fa24f71a6cda8b3f9138d6d31b1"
+    },
+    {
+      "path": "/tmp/vigilode-timeout-runner-v2-repair.9LZeVn8B/v2-final.log",
+      "sha256": "2c114c4a8a89b3b9c1bdec0e219f65d7a9df10a777089edc8816380b72c82727"
+    },
+    {
+      "path": "/tmp/vigilode-timeout-runner-v2-repair.9LZeVn8B/legacy-final.log",
+      "sha256": "624cf8b52b15678825f68c76d9165c7ddbccc262e600ae04612d76e438aff4c9"
+    },
+    {
+      "path": "/tmp/vigilode-timeout-runner-v2-repair.9LZeVn8B/timeout-runner-v2-repaired.patch",
+      "sha256": "45138429e843cbf9154bd60c57537b33946a5c31329f420ea9452dc35a29ea88"
+    }
+  ],
+  "findings": [
+    {
+      "consequence": "Later admission may accept 960 seconds for an interrupted child whose unresolved lifetime was longer. Group absence now does not prove an earlier exit time. Full cumulative-cost preservation after controller SIGKILL remains unestablished.",
+      "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+      "id": "TRV2-F01-R1",
+      "line_end": 590,
+      "line_start": 575,
+      "minimal_falsifier": "Create a v2 START 3600 seconds in the past, PROCESS, no RECEIPT, and a legacy reconciliation with exact hashes, absent pgid and charge 960. It must not permit cumulative admission. A sufficient dated reconciliation may permit later admission while leaving the original task consumed.",
+      "missing_control": "No added test exercises typed v2 START plus PROCESS, absent RECEIPT, and legacy reconciliation charging less than unresolved elapsed time. The four new methods cover the existing-receipt and snapshot paths.",
+      "observed_behavior": "V2 detection occurs only inside the receipt.exists() branch. With no receipt, typed v2 START falls through to the legacy reconciliation, which requires charged_new_seconds >= 960 but no reconciled timestamp or charge covering the interval through verified cleanup. A valid hash-bound start/process and current absent group suffice.",
+      "priority": "P1",
+      "read_only_probe": {
+        "accepted": true,
+        "charged_new_seconds": 960.0,
+        "group_currently_absent": true,
+        "interpretation": "Demonstrates an accepted underbounded reconciliation, not a claim that a real reviewed solver consumed 3600 seconds.",
+        "method": "Actual attempt_terminal with mocked filesystem snapshots and killpg absence, no child launch or persistent mutation.",
+        "reconciled_timestamp_present_or_required": false,
+        "reconciliation_status": "FAILED_INTERRUPTED_RECONCILED",
+        "start_process_hashes_match": true,
+        "start_schema": "vigilode.timeout-diagnostic-start.v1",
+        "started_seconds_before_probe": 3600,
+        "terminal_receipt_present": false
+      },
+      "related_locations": [
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+          "line_end": 603,
+          "line_start": 592
+        },
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+          "line_end": 614,
+          "line_start": 606
+        },
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+          "line_end": 1077,
+          "line_start": 1071
+        }
+      ],
+      "required_condition_for_closure": "V2 missing-receipt attempts must remain blocked or use a hash-bound reconciliation with dated absence/cost evidence covering the unresolved interval or an independently proved earlier terminal time. Legacy v1 semantics, original task/binding and first failures must remain intact.",
+      "severity": "MAJOR",
+      "title": "V2 attempts without a terminal receipt still use the weaker legacy cost reconciliation",
+      "trigger": "A v2 controller is killed after START/PROCESS but before RECEIPT, leaving its solver group alive beyond the controller watchdog. The group is later stopped and a legacy RECONCILIATION.json is supplied."
+    }
+  ],
+  "next_transition": {
+    "additional_repair_authorized_by_this_review": false,
+    "required_input": "Controller/owner decision on the residual v2 missing-receipt reconciliation requirement and any further bounded repair. No automatic second repair loop is authorized.",
+    "status": "HOLD_AFTER_ONE_BOUNDED_REPAIR"
+  },
+  "prior_findings": [
+    {
+      "evidence": [
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+          "line_end": 79,
+          "line_start": 76,
+          "result": "json_snapshot hashes and parses one bytes object."
+        },
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+          "line_end": 793,
+          "line_start": 786,
+          "result": "bound_json uses the single snapshot for catalog, approval, build and predecessor data; original receipt uses this helper at 928-929."
+        },
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+          "line_end": 674,
+          "line_start": 655,
+          "result": "Preliminary/locked v2 bytes cannot change silently; locked raw bytes are carried to execution."
+        },
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+          "line_end": 1226,
+          "line_start": 1194,
+          "result": "Plan hash derives from parsed raw snapshot; subsequent checks compare path bytes to that snapshot."
+        }
+      ],
+      "id": "TRV2-F02",
+      "read_only_probes": [
+        {
+          "probe": "same_byte_bound_json",
+          "read_bytes_calls": 1,
+          "read_text_calls": 0,
+          "returned": {
+            "marker": "verified A"
+          }
+        },
+        {
+          "durable_writes": 0,
+          "probe": "cached_plan_A_replacement_B",
+          "result": "execution plan changed after locked snapshot",
+          "spawns": 0
+        }
+      ],
+      "status": "CLOSED_FOR_V2"
+    },
+    {
+      "closed_path": "An existing v2 receipt with missing/unproved/failed cleanup is now routed to diagnostic_terminal and blocked without exact reconciliation. The reconciliation binds START/PROCESS/RECEIPT hashes, original task and pgid; enforces a dated conservative cost bound; checks live group absence; preserves original evidence and binding.",
+      "evidence": [
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+          "line_end": 574,
+          "line_start": 564
+        },
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+          "line_end": 847,
+          "line_start": 796
+        },
+        {
+          "file": "research/local_frontier_native_diffsol_20261024/timeout_runner_followup/test_timeout_runner_v2.py",
+          "line_end": 512,
+          "line_start": 457
+        }
+      ],
+      "id": "TRV2-F01",
+      "remaining_finding": "TRV2-F01-R1",
+      "status": "PARTIALLY_CLOSED_RESIDUAL_BLOCKER"
+    }
+  ],
+  "prior_review": {
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/INDEPENDENT_TIMEOUT_RUNNER_V2_REVIEW_20261025.json",
+    "sha256": "9ab4a3c88d76d1b5a39e629e952ce581a9a252ba661b41c774ea482832170bb1"
+  },
+  "reviewer": {
+    "implemented_reviewed_change": false,
+    "observed_runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+    "requested_model": "gpt-6-astra",
+    "requested_reasoning_effort": "xhigh",
+    "role": "costroute-research-review",
+    "task": "/root/timeout_runner_v2_independent_review"
+  },
+  "schema": "vigilode.timeout-diagnostic-runner-v2-independent-source-rereview.v1",
+  "scope": {
+    "baseline_head": "b61b694b11b7de78cbb32405eb74ca3f78e72224",
+    "baseline_tree": "faaffd5f7819574469d537c7ea9548ef9ed67866",
+    "checkout": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout",
+    "files_sha256": {
+      "research/local_frontier_native_diffsol_20261024/continuation_runner.py": "14e48266a182946413ccf95f91b41e1a97904ba8fd36d77f6718806daa1cea09",
+      "research/local_frontier_native_diffsol_20261024/timeout_runner_followup/README.md": "5013a927447eb0e0d92249bb8f857b3ffd0633ef980abe9f9f49f5e987ab0888",
+      "research/local_frontier_native_diffsol_20261024/timeout_runner_followup/test_timeout_runner_v2.py": "b082a5380af394d35419b4ede6e0801872533468722db0c937dc9a6b4944f0e3"
+    },
+    "method": "Read-only source/diff/test/log inspection and in-memory mocked-IO probes. No suite rerun, source edit, build, solver, commit or push. Only this new review receipt is written.",
+    "repair_count_reviewed": 1
+  },
+  "worker_test_evidence": {
+    "claim_ceiling": "Scoped synthetic/regression evidence only; no solver or scientific admission.",
+    "diff_check_exit_code": 0,
+    "first_red": "4 methods; failures=11, errors=1; preserved",
+    "legacy_exit_code": 0,
+    "legacy_tests": 27,
+    "status": "RETAINED_WORKER_LOGS_INSPECTED_NOT_INDEPENDENTLY_RERUN",
+    "v2_exit_code": 0,
+    "v2_tests": 27
+  }
+}

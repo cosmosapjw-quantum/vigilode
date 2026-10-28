@@ -1,0 +1,280 @@
+{
+  "schema": "vigilode.facade-reaudit.v1",
+  "date": "2026-10-21",
+  "baseline_commit": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+  "baseline_parents": [
+    "cc2e1a0",
+    "f2f20c1"
+  ],
+  "scope": [
+    "P0 facade",
+    "events",
+    "FD Jacobian",
+    "DAE contract",
+    "sequential midpoint failure facade wiring"
+  ],
+  "decision": "PASS_SCOPED_FACADE_REPAIRS",
+  "production_interpretation": {
+    "local_estimate_ode_api": "targeted_contracts_pass",
+    "global_error_certificate": "not_claimed",
+    "wall_time_speedup": "not_claimed",
+    "index1_dae": "requires_consistent_initial_data; no automatic index determination or initialization",
+    "terminal_events": "postprocessing, all integration work retained"
+  },
+  "findings": [
+    {
+      "id": "F-FAC-01",
+      "prior_id": "O-01",
+      "severity": "high",
+      "status": "fixed_and_tested",
+      "cause": "enforcing sequential estimate errors were accepted",
+      "fix": "integrator reject/retry by dense_transaction_audit; facade estimate_failures, stats v4, 3-route regression",
+      "evidence": "evidence/facade/targeted_retry.log"
+    },
+    {
+      "id": "F-FAC-02",
+      "prior_id": "O-09",
+      "severity": "medium",
+      "status": "fixed_and_fault_injection_tested",
+      "cause": "missing event state silently skipped or replaced or mislabeled as user nonfinite",
+      "fix": "EventInterpolationFailed with per-step rollback",
+      "observed_in_normal_solver_run": false,
+      "evidence": "evidence/facade/targeted_retry.log"
+    },
+    {
+      "id": "F-FAC-03",
+      "severity": "medium",
+      "status": "fixed_and_exact_oracle_tested",
+      "cause": "forward FD shift overflows for finite positive boundary state",
+      "fix": "backward signed increment only on overflow; reject nonfinite derivatives before factorization",
+      "oracle": "f(y)=2^-1023*y, y=[f64::MAX,-f64::MAX] exact diagonal Jacobian, dense and banded",
+      "evidence": "evidence/facade/targeted_retry.log"
+    },
+    {
+      "id": "F-FAC-04",
+      "severity": "low",
+      "status": "fixed",
+      "cause": "stale public banded routing and singular-mass precondition documentation",
+      "fix": "document actual fast-banded-dense routing, correct Unsupported error, require consistent index-1 initial data"
+    }
+  ],
+  "theorems": [
+    {
+      "id": "T-FAC-1",
+      "status": "proved_exact_arithmetic",
+      "statement": "Signed represented FD increment preserves O(abs(delta)) truncation bound M*abs(delta)/2 under C2 bound on the perturbation segment",
+      "proof": "facade.md",
+      "floating_point_scope": "does not certify callback or rounding error; exact power-of-two oracle is one independent test"
+    },
+    {
+      "id": "T-FAC-2",
+      "status": "proved_code_level_cost_reduction",
+      "statement": "Same event callback/root arithmetic order; remove E*N two-half Vec allocation requests and N-1 next-buffer requests for N>=1 fully scanned accepted steps",
+      "proof": "facade.md",
+      "complexity": "O(E*N + root evaluations) unchanged; state interpolation allocations remain",
+      "wall_clock_claim": false
+    }
+  ],
+  "execution": [
+    {
+      "name": "baseline_events",
+      "command": "source ../runtime/env.sh; cargo test -p vigilode --locked --offline --test events_contracts -- --test-threads=1",
+      "status": "PASS",
+      "tests_passed": 15,
+      "log": "evidence/facade/baseline_events.log"
+    },
+    {
+      "name": "targeted_first",
+      "command": "cargo test -p vigilode --locked --offline --lib --test events_contracts --test p0_contracts --test p0_api_contracts --test facade_contracts -- --test-threads=1",
+      "status": "COMPILE_FAILURE",
+      "exit_code": 101,
+      "error": "E0463 cannot find crate vigilode; cascading inference errors",
+      "cause": "unresolved; overlapping dependency source updates are a hypothesis only",
+      "log": "evidence/facade/targeted.log"
+    },
+    {
+      "name": "scoped_rebuild",
+      "command": "cargo clean -p vigilode",
+      "status": "EXECUTED",
+      "effect": "518 package files /318MiB removed; no full target/cache purge",
+      "log": "evidence/facade/clean.log"
+    },
+    {
+      "name": "targeted_retry",
+      "command": "cargo test -p vigilode --locked --offline -j 1 --lib --test events_contracts --test p0_contracts --test p0_api_contracts --test facade_contracts -- --test-threads=1",
+      "status": "PASS",
+      "exit_code": 0,
+      "tests_passed": 81,
+      "suites": {
+        "lib": 13,
+        "events_contracts": 15,
+        "facade_contracts": 20,
+        "p0_api_contracts": 9,
+        "p0_contracts": 24
+      },
+      "log": "evidence/facade/targeted_retry.log"
+    },
+    {
+      "name": "clippy",
+      "command": "cargo clippy -p vigilode --all-targets --locked --offline --no-deps -j 1 -- -D warnings",
+      "status": "PASS",
+      "exit_code": 0,
+      "log": "evidence/facade/clippy.log",
+      "scope": "vigilode; dependency warnings not denied"
+    },
+    {
+      "name": "doctests",
+      "command": "cargo test -p vigilode --locked --offline --doc -j 1",
+      "status": "PASS",
+      "exit_code": 0,
+      "tests_passed": 2,
+      "compile_fail_tests": 1,
+      "log": "evidence/facade/doctests.log"
+    }
+  ],
+  "research_loop": {
+    "R1": {
+      "status": "performed",
+      "evidence": "facade.md"
+    },
+    "R2": {
+      "status": "performed",
+      "evidence": "facade.md"
+    },
+    "R3": {
+      "status": "performed",
+      "evidence": "facade.md"
+    },
+    "R4": {
+      "status": "performed",
+      "evidence": "facade.md"
+    },
+    "R5": {
+      "status": "performed",
+      "evidence": "facade.md"
+    },
+    "R6": {
+      "status": "performed",
+      "evidence": "facade.md"
+    },
+    "R7": {
+      "status": "performed",
+      "evidence": "facade.md"
+    },
+    "R8": {
+      "status": "performed",
+      "evidence": "facade.md"
+    },
+    "R9": {
+      "status": "performed",
+      "evidence": "facade.md"
+    },
+    "R10": {
+      "status": "performed",
+      "evidence": "facade.md"
+    }
+  },
+  "coding_loop": {
+    "C1": {
+      "status": "performed",
+      "evidence": "facade.md"
+    },
+    "C2": {
+      "status": "performed",
+      "evidence": "facade.md"
+    },
+    "C3": {
+      "status": "performed",
+      "evidence": "facade.md"
+    },
+    "C4": {
+      "status": "performed",
+      "evidence": "facade.md"
+    },
+    "C5": {
+      "status": "performed",
+      "evidence": "facade.md"
+    },
+    "C6": {
+      "status": "performed",
+      "evidence": "evidence/facade/targeted_retry.log"
+    },
+    "C7": {
+      "status": "performed",
+      "evidence": "evidence/facade/targeted_retry.log"
+    },
+    "C8": {
+      "status": "performed",
+      "evidence": "evidence/facade/targeted_retry.log"
+    },
+    "C9": {
+      "status": "performed",
+      "evidence": "evidence/facade/facade_peer_review.json"
+    },
+    "C10": {
+      "status": "performed",
+      "evidence": "facade.md"
+    }
+  },
+  "next_steps": [
+    {
+      "priority": 1,
+      "id": "FAC-N1",
+      "task": "In-loop terminal event transaction",
+      "acceptance": "same accepted root/output within interpolation accuracy; no RHS after committed terminal event; failed steps/events rollback; all attempted work retained"
+    },
+    {
+      "priority": 2,
+      "id": "FAC-N2",
+      "task": "Caller-scratch Solution::at_into and root state reuse",
+      "acceptance": "bitwise equivalence to at(); warmed root-iteration allocations zero excluding stored event records; full failed cost retained"
+    },
+    {
+      "priority": 3,
+      "id": "FAC-N3",
+      "task": "Facade-owned Stats mirrors",
+      "acceptance": "field-complete byte-identical serialization, compile bench, dense+event golden fixture, semver review"
+    },
+    {
+      "priority": 4,
+      "id": "FAC-N4",
+      "task": "Sequential vector absolute tolerance",
+      "acceptance": "uniform vector bitwise equals scalar; heterogeneous zero-scale rule, every stage/interior weight uses vector; never silently substitutes scalar"
+    }
+  ],
+  "source_files": {
+    "crates/vigilode/Cargo.toml": "84ad4d7f1352dd84a8b2304112a86831faef8b65126ca1d50ea6d6f72c74d82a",
+    "crates/vigilode/examples/banded_fd.rs": "4adbeab948f5450a27821546a4bf6e227e4b14e81eb216c0a2769acf49f8ea3b",
+    "crates/vigilode/examples/dae_mass.rs": "8790487a8ab726cbd20c5a5c7c2dd3209f47162b8f430b5d21b7d30b7a13848e",
+    "crates/vigilode/examples/dense_output.rs": "fc4ec8cfd22e5fddb08927e178bc762de0c7eb40000fbcf61dec250c76d96d58",
+    "crates/vigilode/examples/robertson.rs": "7ef3691686ad69c1973174345a39611f6e66be7ad6bdc908b5a19698aa2c6473",
+    "crates/vigilode/src/error.rs": "70ee7afed7b03017452883f11d8d10614ed0142a63ae72e8a0f2d4a8095985f0",
+    "crates/vigilode/src/events.rs": "88f422c2fbe42c8a989d2b4839b98a81cb420f40e72e9ffbc23efa18b90030c3",
+    "crates/vigilode/src/fd.rs": "043a30a6dba922cd40b7f706b1535013f822180dda7529a7e2d163248da18664",
+    "crates/vigilode/src/lib.rs": "38b6a6199891ac0f14be4896b142d95ab3c50d17cf48a517b6839e6c7dc83955",
+    "crates/vigilode/src/options.rs": "b0355bd34c7038ff18fd37e15315835b8bc6fb4b01e7e0a59308e1f779269b1e",
+    "crates/vigilode/src/problem.rs": "80508cd74c613bde767873a93e46697b9d04597a1e95e2204a6f9332695cbc8e",
+    "crates/vigilode/src/solution.rs": "72e6b331c41355428615e107831eb7665a0113309f975aa46d3e1167e28c3ef4",
+    "crates/vigilode/src/solve.rs": "cb779319f0b65ad3d7096c46359846c514a291a3b5d5b254e70da3f1c9df1bf6",
+    "crates/vigilode/tests/events_contracts.rs": "b577a86334b96e505b529193168a7239c995785fcafca6bb85af0dae3069cae1",
+    "crates/vigilode/tests/facade_contracts.rs": "8445a1a9d28440b129f0c7c7c09e05fe53a8fb54922d7e7f9fb472d5b508e742",
+    "crates/vigilode/tests/golden/robertson_stats.json": "1024678d0141d83b0e3342764ab47f0de6640cac195273a3e2c531c0d128da06",
+    "crates/vigilode/tests/p0_api_contracts.rs": "0b5af0250b5cd1aeac0c0331cd0acab9f361d886f0d971e7b0f1c7cbaa416b90",
+    "crates/vigilode/tests/p0_contracts.rs": "b335cb546089e473eacf3d02c5e9c7f2da07ccb69f583391183fb9f62e610ae9"
+  },
+  "evidence_files": {
+    "evidence/facade/baseline_events.log": "084490ef33d30bb38ebe2bd86c2853342aece0570a9a01370d399539bc768e21",
+    "evidence/facade/clean.log": "cd39c4469a366c8541ce746a804f9faa3babb69cfc821c1ebb7001b98873b3e0",
+    "evidence/facade/clippy.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "evidence/facade/clippy.log": "c69132f03589f024caa0e0b11b37321b5bc40395a30161c6b03be09f6a47b3f4",
+    "evidence/facade/dense_peer_review.json": "efec10490a79a28cae40d0cfefbc302b087d3c57a2a024a3efc4cd698fe2e9e1",
+    "evidence/facade/doctests.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "evidence/facade/doctests.log": "85a94359b4e733f27c7117becadb6e7c0296e9c2bd65f5773dfdbb57c2ec5439",
+    "evidence/facade/facade_peer_review.json": "1bfcb725bcb3d0ced47b26fac5987cb829afc75eecfc1645996d0591bfe69ea4",
+    "evidence/facade/targeted.exit": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+    "evidence/facade/targeted.log": "8a34866a462aec5d6c64cd48b962800f87efbbb1416b46cce9340eefcabd054c",
+    "evidence/facade/targeted_retry.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "evidence/facade/targeted_retry.log": "74475e58b248667594358e65aaabd579ffbce2b1f74933ec5dc983b1f0584278"
+  },
+  "independent_review": "evidence/facade/facade_peer_review.json"
+}

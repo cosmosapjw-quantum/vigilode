@@ -1,0 +1,34 @@
+--------------------------------------------------------------------------------
+Profile data file 'research/production_solver_closure_20261027/homotopy/instruction_profile_r1/scalar_40.callgrind' (creator: callgrind-3.22.0)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 13626250
+Trigger: Program termination
+Profiled target:  /workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench --arm scalar 40 (PID 12, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       85
+Include dirs:     
+User annotated:   
+Auto-annotation:  on
+
+--------------------------------------------------------------------------------
+Ir                  
+--------------------------------------------------------------------------------
+81,543,524 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                   file:function
+--------------------------------------------------------------------------------
+42,967,040 (52.69%)  ???:rodas5p_core::directed::Interval::mul [/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench]
+ 4,702,680 ( 5.77%)  ???:rodas5p_core::directed::Interval::add [/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench]
+ 4,641,720 ( 5.69%)  ???:vigilode_coupled::rhs_homotopy::integrate_cubic_decay_accuracy_with_solver [/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench]
+ 4,567,040 ( 5.60%)  ???:vigilode_coupled::rhs_homotopy::cubic_verified_step [/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench]
+ 3,687,264 ( 4.52%)  ???:fma [/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench]
+ 3,532,760 ( 4.33%)  ???:vigilode_coupled::rhs_homotopy::cubic_scalar_value [/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench]
+ 2,949,120 ( 3.62%)  ???:rodas5p_core::directed::Interval::sub [/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench]
+ 2,782,488 ( 3.41%)  ???:rodas5p_core::directed::add_up [/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench]
+

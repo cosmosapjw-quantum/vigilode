@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "command": "python3 r4/decision/independent_exact_spotchecks.py",
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "preregistration_commit": "b2914f3e3c03eda60a8547619db6284aac8250a2",
+  "script_timing": "Reviewer-authored after candidate evidence, within preregistered bounded independent validation; not represented as a precommitted candidate experiment",
+  "first_attempt": {
+    "exit_code": 1,
+    "failure_class": "REVIEWER_SERIALIZATION",
+    "reason": "Python integer string conversion exceeds4300digits while serializing an exact Fraction; exact arithmetic itself completed to that point",
+    "script": "independent_exact_spotchecks.initial.py",
+    "stderr": "independent_exact_spotchecks.initial_serialization_error.stderr"
+  },
+  "repair": "Represent exceptionally large exact Fraction by numerator/denominator bit lengths; exact comparisons and inputs unchanged",
+  "final_exit_code": 0,
+  "final_check_count": 36,
+  "script_sha256": "44af6406dcd70dcf6755e9202244d6541e6ca50dd231cb1248ac164dc582fc3c",
+  "output_sha256": "2cd33827f28b5392e862cbadae7f7e45392fc5dea337259aa999c2a338a61b54"
+}

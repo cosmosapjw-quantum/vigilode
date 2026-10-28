@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "node_id": "A02",
+  "bounded_unit": "A02-TXN-01",
+  "packet_kind": "FROZEN_PREIMPLEMENTATION_RESEARCH_CONTRACT",
+  "status": "READY_FOR_REVIEW",
+  "scientific_admission": "NOT_ADMITTED",
+  "implementation_authorized": false,
+  "independent_proof_review_required_before_implementation": true,
+  "source_base_commit": "6b722a918deb0ab178b8e77090cac1280dbb3051",
+  "observed_head": "7e2873887ed6038b47b667c976435810851c5dba",
+  "source_bindings": "evidence/continuation_a02_research/SOURCE_BINDINGS.json",
+  "source_bindings_sha256": "3bb2295ac206fe8680f82c741885587189f7a4ea771ba9bbdaf0de7f429878eb",
+  "contract": "A02_VERIFIED_TRAJECTORY_CONTRACT.md",
+  "contract_sha256": "3fb06e7977ac4b0fd4eba9379aad647c1203204bd4573a87058a87bad1593105",
+  "protected_conventions": {
+    "kappa": 0,
+    "omega": "exact_real(width)*exact_real(xi_j)",
+    "carrier": "metadata_only",
+    "weights": "actual stored positive weights; retain exact real sum S",
+    "physical_tolerances": "existing TrajectoryConfig mean_tolerance and mode_tolerance unchanged",
+    "initial_energy_admission": "retain existing outward S*E_global <= 1 check",
+    "requested_grid": "original finite binary64 global observation times; do not restrict final domain to exact dyadic offsets"
+  },
+  "prerequisites": [
+    {
+      "id": "A01-LCERT-01",
+      "required_verdict": "PASS_SCOPED",
+      "required_scope": "nonlinear kappa=0 zero-tube local flow; continuous residual of the same represented curve; returned-center displacement and immutable owner/view",
+      "current_review_verdict": "NOT_ASSUMED_BY_THIS_PACKET"
+    },
+    {
+      "id": "A02-NEW-LEMMAS",
+      "required_verdict": "INDEPENDENT_PROOF_REVIEW_PASS",
+      "current_verdict": "PENDING",
+      "claims": [
+        "separate weighted and marginal inherited bounds",
+        "exact-flow T1 composition with zero-tube local certificate",
+        "component Duhamel min bound",
+        "non-dyadic global-time temporal lift",
+        "returned-center weighted seed and window-jump composition"
+      ]
+    }
+  ],
+  "derived_claims": [
+    {
+      "id": "A02-D1",
+      "statement": "Re-expanding a weighted ball B into marginal disks B/sqrt(w_j) and recomputing its weighted norm yields sqrt(N)*B, even in a zero-residual stationary system.",
+      "proof_location": "contract section 2",
+      "status": "DERIVED_PENDING_INDEPENDENT_REVIEW"
+    },
+    {
+      "id": "A02-D2",
+      "statement": "E*=max(E_global,E_center); G(u)=exp(S^2*abs(chi)*E* * u); exact-flow weighted perturbation <=G(u)*e_k.",
+      "proof_location": "contract section 4",
+      "status": "DERIVED_PENDING_INDEPENDENT_REVIEW"
+    },
+    {
+      "id": "A02-D3",
+      "statement": "Q=3*abs(chi)*S^(3/2)*E*; p_j=min(G*e_k/sqrt(w_j),r_kj+u*Q*G*e_k).",
+      "proof_location": "contract section 4",
+      "status": "DERIVED_PENDING_INDEPENDENT_REVIEW"
+    },
+    {
+      "id": "A02-D4",
+      "statement": "For outward exact offset interval D and local query u, Delta>=max(abs(D.lo-u),abs(D.hi-u)); V_w=sqrt(E_global)*(Omega_max+S^2*abs(chi)*E_global); add V_w*Delta.",
+      "proof_location": "contract section 5",
+      "status": "DERIVED_PENDING_INDEPENDENT_REVIEW"
+    },
+    {
+      "id": "A02-D5",
+      "statement": "e_next>=B_local(u)+G(u)*e_k+K_time+delta_w, where delta_w bounds exact represented polynomial minus the identical committed binary64 centers.",
+      "proof_location": "contract section 6",
+      "status": "DERIVED_PENDING_INDEPENDENT_REVIEW"
+    }
+  ],
+  "reused_claims": [
+    {
+      "id": "T1",
+      "source": "THEOREMS.json",
+      "proof_source": "../../docs/reviews/20261018_production_audit/THEORY_KO.md",
+      "scope": "energy conservation and full weighted logarithmic norm; no legacy arithmetic authority inferred"
+    },
+    {
+      "id": "REPRESENTED_RESIDUAL",
+      "source": "../../crates/rodas5p-integrators/src/packet_curve.rs",
+      "scope": "same frozen Y produces M_Y and full continuous residual; never substitute candidate P for M_Y"
+    }
+  ],
+  "accepted_state_invariants": [
+    "component disks around actual committed centers",
+    "weighted ball around actual committed centers",
+    "fixed original global energy upper bound",
+    "immutable model/window/time/output binding",
+    "all requested observations and endpoint satisfy unchanged tolerances before commit",
+    "rejection preserves accepted state and output cursor bitwise; all attempted work retained"
+  ],
+  "open_design_choices": [
+    {
+      "id": "A02-DC1",
+      "question": "How to obtain returned-center weighted evaluation displacement without confusing existing weighted_radius accessor?",
+      "options": [
+        "narrow reviewed accessor addition",
+        "charged separate evaluation before moving curve plus bit identity with local view"
+      ],
+      "resolution": "INDEPENDENT_REVIEW_REQUIRED_BEFORE_IMPLEMENTATION"
+    },
+    {
+      "id": "A02-DC2",
+      "question": "First complete bounded API implementation shape",
+      "options": [
+        "private prepared-window plus transactional advance_verified"
+      ],
+      "resolution": "CORE_CONTRACT_FIXED; source signatures may be mechanical after proof acceptance"
+    }
+  ],
+  "acceptance_matrix": [
+    {
+      "id": "AT01",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8"
+    },
+    {
+      "id": "AT02",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8"
+    },
+    {
+      "id": "AT03",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8"
+    },
+    {
+      "id": "AT04",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8"
+    },
+    {
+      "id": "AT05",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8"
+    },
+    {
+      "id": "AT06",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8"
+    },
+    {
+      "id": "AT07",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8"
+    },
+    {
+      "id": "AT08",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8"
+    },
+    {
+      "id": "AT09",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8"
+    },
+    {
+      "id": "AT10",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8"
+    },
+    {
+      "id": "AT11",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8"
+    },
+    {
+      "id": "AT12",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8"
+    }
+  ],
+  "execution_status": {
+    "code_modified": false,
+    "tests_modified": false,
+    "tests_run": false,
+    "builds_run": false,
+    "files_created": "research contract, decision, and source-binding evidence only"
+  },
+  "claim_ceilings": {
+    "A02": "HOLD_PENDING_PROOF_IMPLEMENTATION_VALIDATION",
+    "full_A01": "UNCHANGED",
+    "packet_kappa0_global": "HOLD",
+    "packet_damped": "HOLD",
+    "leja_total": "UNCHANGED_HOLD",
+    "generic_global_output": "UNCHANGED_HOLD",
+    "matched_accuracy_speed": "HOLD",
+    "overall_production": "HOLD",
+    "timing_authority": "DIAGNOSTIC_ONLY",
+    "allocation_claim": "NOT_MEASURED_FOR_A02"
+  },
+  "next_executable_action": "Independent read-only proof and source-contract review; only accepted contract may be given to a lower-tier implementation worker."
+}

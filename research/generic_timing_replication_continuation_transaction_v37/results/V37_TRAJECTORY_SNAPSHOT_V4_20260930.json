@@ -1,0 +1,40 @@
+{
+  "schema": "vigilode-trajectory-snapshot-v1",
+  "version": 4,
+  "date": "2026-09-30",
+  "finding": "F-003; audit 2026-09-30 PHI-P1/PHI-P2",
+  "supersedes": "research/generic_timing_replication_continuation_transaction_v37/results/V37_TRAJECTORY_SNAPSHOT_V3_20260929.json",
+  "family": "semilinear-advection-diffusion-ramped",
+  "profile_under_test": "stage-growth-calibration-192",
+  "provenance": {
+    "code": "branch claude/jolly-wozniak-7wl15h-wu21-audit0930 on the integration head ff84ed6",
+    "cargo_profile": "dev with CARGO_PROFILE_DEV_DEBUG=0",
+    "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+    "RAYON_NUM_THREADS": 1,
+    "command": "cargo test -p rodas5p-integrators --test v37_continuation_transaction_contracts -- --ignored",
+    "values_sha256": "f39c34badd46eebc136a25b598dec04a6c89a4fd91c1e45d33ab90a207add634",
+    "values_sha256_of": "compact sorted-key JSON of `values`"
+  },
+  "attribution": {
+    "method": "the same replay with only crates/rodas5p-integrators/src/exponential.rs reverted to ff84ed6 (every other WU-21 change applied)",
+    "with exponential.rs at ff84ed6": "V3 values: 2 recommendations (attempts 12 and 17), attempt 12 exhausts the 80-JVP cap, attempt 17 completes with 48; prefix 116, continuation 128",
+    "with the time-normalized augmentation": "attempt 12 is no longer recommended; attempt 17 is recommended and completes with 48 JVP vectors; prefix 129, continuation 48",
+    "cause": "the fused-phi prefix session now runs on the time-normalized operator [[hA, h^k b_k], [0, J]]; its Arnoldi residual history, from which the frozen zeta34 statistic is formed, differs, and at attempt 12 the statistic no longer passes the frozen tau 13.397"
+  },
+  "interpretation": "The frozen v3.x policy (tau = 13.397) was calibrated on residual telemetry of the earlier, non-normalized augmentation, whose early acceptance the 2026-09-30 audit showed to be wrong on a scalar A = -1 (PHI-P1). Under the corrected operator the sealed v3.7 claim that this consumed replay exhausts its continuation does not reproduce at head; it stays valid at its sealed commit. The completing row's shadow full-E error is 0.048 with reference local error 1.7e-3 (safe). No unsafe recommendation; no accuracy or speed claim follows.",
+  "values": {
+    "recommendations": 1,
+    "shadow_full_e_completions": 1,
+    "continuation_budget_exhaustions": 0,
+    "recommended_rows": [
+      {
+        "target_attempt_index": 17,
+        "continuation_outcome": "complete",
+        "continuation_jvp_vectors": 48
+      }
+    ],
+    "report_continuation_jvp_vectors": 48,
+    "report_prefix_jvp_vectors": 129
+  },
+  "note": "A numerical change that moves these values adds a V5 snapshot file; this file is never edited."
+}

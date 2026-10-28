@@ -1,0 +1,98 @@
+{
+  "schema_version": 1,
+  "node": "A09",
+  "next_steps": [
+    {
+      "id": "A09-N1",
+      "priority": 1,
+      "task": "Replace dense inverse verification with source-bound diagonal-plus-low-rank collective structure",
+      "source_target": "actual_k_homotopy.rs W=I-h gamma J, unchanged represented entries",
+      "acceptance": [
+        "outward inverse residual remains below one",
+        "all-entry Fraction fixture passes unchanged",
+        "d+A*r<=r and r<=R remain mandatory",
+        "full setup+candidate+certificate cost lower on declared dimension range"
+      ],
+      "expected_complexity": "Candidate structure may reduce dense O(n^3) inverse cost; improvement must be proved for admitted rank and measured including certification",
+      "dependencies": [
+        "A09-H5"
+      ]
+    },
+    {
+      "id": "A09-N2",
+      "priority": 1,
+      "task": "Connect H5 stage-output token to accepted-step and ODE-global verification",
+      "acceptance": [
+        "immutable model/J/tableau binding survives accepted-step transition",
+        "continuous ODE defect is independently bounded",
+        "retry/fallback costs retained",
+        "stage-target accuracy is never labeled ODE accuracy"
+      ],
+      "dependencies": [
+        "A05",
+        "A09-H5"
+      ]
+    },
+    {
+      "id": "A09-N3",
+      "priority": 1,
+      "task": "Reduce damped unequal-frequency verifier subdivision with exact moment reuse and higher-order freezing",
+      "acceptance": [
+        "same original damped ODE source",
+        "same requested budget",
+        "all final verification and setup charged",
+        "independent unequal-frequency references still enclosed"
+      ],
+      "dependencies": [
+        "A03",
+        "A09-window"
+      ]
+    },
+    {
+      "id": "A09-N4",
+      "priority": 2,
+      "task": "Reuse vector prefix scratch/coarse setup and parallelize per-node modes where profitable",
+      "acceptance": [
+        "fixed represented tree/order",
+        "one-vs-four-thread reproducibility",
+        "explicit allocation/copy accounting",
+        "end-to-end speed includes final verifier"
+      ],
+      "dependencies": [
+        "A09-window",
+        "A07"
+      ]
+    },
+    {
+      "id": "A09-N5",
+      "priority": 2,
+      "task": "Choose direct lambda=1 or continuation using full cost break-even condition",
+      "acceptance": [
+        "identical original source and endpoint budgets",
+        "predictor/stage/setup/failure/verification costs included",
+        "continuation chosen only if saved fine rounds exceed all added work",
+        "direct target remains available"
+      ],
+      "dependencies": [
+        "A07",
+        "A09-window"
+      ]
+    },
+    {
+      "id": "A09-N6",
+      "priority": 2,
+      "task": "Compose finite-horizon blocks with carried verified boundary radius",
+      "acceptance": [
+        "outward boundary radius transport",
+        "every requested endpoint budget unchanged",
+        "resource limits produce typed refusal",
+        "dense/relative guarantees remain separately declared"
+      ],
+      "dependencies": [
+        "A01",
+        "A03",
+        "A09-window"
+      ]
+    }
+  ]
+}

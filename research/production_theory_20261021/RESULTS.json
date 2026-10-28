@@ -1,0 +1,358 @@
+{
+ "claim1_T1_numbers": {
+  "a_values_at_z0": {
+   "abs_m": [
+    0.5773402226052463,
+    0.23704567103155313,
+    6.246364263671219,
+    5.965853135260998,
+    3.7294152753025394,
+    4.567822998568431,
+    1.0109942639901013,
+    1.0
+   ],
+   "claimed_abs": [
+    0.577,
+    0.237,
+    6.246,
+    5.966,
+    3.729,
+    4.568,
+    1.011,
+    1.0
+   ],
+   "claimed_sum": 23.335,
+   "pass": true,
+   "signed_m": [
+    0.5773402226052463,
+    0.23704567103155313,
+    6.246364263671219,
+    5.965853135260998,
+    -3.7294152753025394,
+    -4.567822998568431,
+    -1.0109942639901013,
+    1.0
+   ],
+   "sum_abs": 23.334835830430087
+  },
+  "b_coefficient_sums": {
+   "claimed": [
+    100.456,
+    15.401,
+    24.467,
+    18.847,
+    13.655,
+    14.583,
+    1.011,
+    1.0
+   ],
+   "claimed_sum": 189.418,
+   "observed": [
+    100.45606553817441,
+    15.400572371661072,
+    24.466847072798437,
+    18.846807066649845,
+    13.654570478493046,
+    14.582510222111315,
+    1.0109942639901013,
+    1.0
+   ],
+   "pass": true,
+   "sum": 189.41836701387822
+  },
+  "c_scalar_exact_sums": {
+   "by_z": {
+    "-1": {
+     "abs_m": [
+      0.013493895004768636,
+      0.07038655427056804,
+      4.742455321075764,
+      4.762870859084733,
+      3.010359293498922,
+      3.706092967828435,
+      0.6883165293044705,
+      0.8251250149919533
+     ],
+     "sum": 17.819100435059614
+    },
+    "-1/10": {
+     "abs_m": [
+      0.49074252183187506,
+      0.21703211301943187,
+      6.06926318081447,
+      5.836454472188856,
+      3.6533061034803165,
+      4.479843274544831,
+      0.9694655698981895,
+      0.9792460968466795
+     ],
+     "sum": 22.69535333262465
+    },
+    "-10": {
+     "abs_m": [
+      0.0646402027899901,
+      0.00025354717609401726,
+      0.8120091101926982,
+      1.025191537465826,
+      0.6790316181932267,
+      0.8190662350066517,
+      0.10389947215221727,
+      0.32057697372507543
+     ],
+     "sum": 3.8246686967017793
+    },
+    "-100": {
+     "abs_m": [
+      0.004239960729105772,
+      0.0013937901304075957,
+      0.014390906417709046,
+      0.023266732081620074,
+      0.016077471207180078,
+      0.018981430927439025,
+      0.0020525184277621553,
+      0.04505771738714518
+     ],
+     "sum": 0.12546052730836893
+    },
+    "-1000": {
+     "abs_m": [
+      6.28624031629877e-05,
+      1.8880822375223965e-05,
+      0.00015208927025435023,
+      0.0002571945746468146,
+      0.00017904556089809296,
+      0.0002106560269400568,
+      2.2296881820146683e-05,
+      0.00469621228400915
+     ],
+     "sum": 0.0055992378241068235
+    },
+    "-3": {
+     "abs_m": [
+      0.2574614719282681,
+      0.02617094284693937,
+      2.873165626462372,
+      3.0921780667696614,
+      1.9857405960414298,
+      2.4343711147553657,
+      0.377817044047592,
+      0.6113169352262443
+     ],
+     "sum": 11.658221798077873
+    }
+   },
+   "claimed_sums": {
+    "-1": 17.819,
+    "-10": 3.825,
+    "-100": 0.125
+   },
+   "pass": true
+  },
+  "pass": true
+ },
+ "claim2_preconditioned_sensitivity": {
+  "gate": "max |entry| <= 6.25 and abs-sum in [1, 23.34]",
+  "grid": "z = -10^t, t = linspace(-4, 8, 400), mpmath 50 digits on exact-rational polynomial coefficients",
+  "max_abs_entry": 6.2463155204088,
+  "max_abs_entry_at_t": -4.0,
+  "max_abs_sum": 23.33468129965487,
+  "max_abs_sum_at_t": -4.0,
+  "min_abs_sum": 1.0000019396874424,
+  "min_abs_sum_at_t": 8.0,
+  "pass": true,
+  "signed_sum_max": 4.718234839034131,
+  "signed_sum_min": 1.0000001723924996
+ },
+ "claim3_lemma3_R": {
+  "R_in_terms_of_x": "x/((1+2*gamma*x)*(1-exp(-x))), x=-z/2",
+  "R_max_on_grid": 2.35862893306501,
+  "R_min_on_grid": 1.0000000007612488,
+  "grid_derivative_positive_and_bounds_ok": true,
+  "limit_x_to_0": "1",
+  "limit_x_to_inf": "25000000000000000/10596878159714507",
+  "limits_ok": true,
+  "method": "grid check of dR/dx > 0 on 10^4 log-spaced points x in [1e-8, 1e4], mpmath 50 digits; NOT a symbolic proof",
+  "min_dR_dx_at_x": 10000.0,
+  "min_dR_dx_on_grid": 5.5631304438913886e-08,
+  "pass": true,
+  "upper_1_over_2gamma": 2.3591853773539593
+ },
+ "claim4_corollary2a": {
+  "bound_with_factor_2_holds_on_exact_rational_grid": true,
+  "exact_error_ratio_1_minus_W_over_P": "10596878159714507*lam*(-h + ho)/(10596878159714507*ho*lam - 50000000000000000)",
+  "extra_random_symmetric_nsd_3x3_worst_ratio_to_bound": 0.4999941314633327,
+  "grid_size": 5520,
+  "pass": true,
+  "plan_identity_T_equals_I_minus_Pinv_W": false,
+  "plan_identity_T_equals_minus_(I_minus_Pinv_W)": true,
+  "plan_remark": "T = (1-h/ho)(P^-1 - I) equals P^-1 W - I, the negative of I - P^-1 W; norms agree so the bound is unaffected",
+  "ratio_form_E_over_(1-h/ho)": "t/(t + 1)",
+  "sup_ratio_error_over_abs_1_minus_h_over_hold_on_exact_grid": 0.999999999999,
+  "symbolic": "|1 - W/P| = |1 - h/h_old| * t/(1+t) with t = h_old*gamma*|lam| >= 0, hence <= |1 - h/h_old| < 2|1 - h/h_old|"
+ },
+ "claim5_T9_example": {
+  "alloc": [
+   18,
+   6,
+   6,
+   6
+  ],
+  "alloc_equals_B_exactly": true,
+  "alloc_lhs_exact": "1/16",
+  "alloc_total": 36,
+  "common_k": 17,
+  "common_k_minus_1_exceeds_B": true,
+  "common_residual_at_k": "4099/131072",
+  "common_residual_at_k-1": "4099/65536",
+  "common_total": 68,
+  "exhaustive_integer_optimum_total": 36,
+  "exhaustive_optimum_count_ordered": 1,
+  "exhaustive_optimum_example": [
+   18,
+   6,
+   6,
+   6
+  ],
+  "pass": true,
+  "sum_a": 4099
+ },
+ "claim6_stage_homotopy_det": {
+  "J0": [
+   [
+    "21/8",
+    "-23/8",
+    "11/4"
+   ],
+   [
+    "-19/4",
+    "-5/4",
+    "-27/8"
+   ],
+   [
+    "25/8",
+    "-15/4",
+    "3/2"
+   ]
+  ],
+  "detW": "59042712576741615237860528280209722455714632268299991659/64000000000000000000000000000000000000000000000000000000",
+  "detW_float": 0.9225423840115877,
+  "h": "1/10",
+  "linear_exact_rational": [
+   {
+    "diag_blocks_equal_W": true,
+    "exact_det_equals_detW^8": true,
+    "lambda": "1",
+    "theta": "0",
+    "upper_blocks_zero": true
+   },
+   {
+    "diag_blocks_equal_W": true,
+    "exact_det_equals_detW^8": true,
+    "lambda": "1",
+    "theta": "1/2",
+    "upper_blocks_zero": true
+   },
+   {
+    "diag_blocks_equal_W": true,
+    "exact_det_equals_detW^8": true,
+    "lambda": "1",
+    "theta": "1",
+    "upper_blocks_zero": true
+   },
+   {
+    "diag_blocks_equal_W": true,
+    "exact_det_equals_detW^8": true,
+    "lambda": "1/2",
+    "theta": "0",
+    "upper_blocks_zero": true
+   },
+   {
+    "diag_blocks_equal_W": true,
+    "exact_det_equals_detW^8": true,
+    "lambda": "1/2",
+    "theta": "1/2",
+    "upper_blocks_zero": true
+   },
+   {
+    "diag_blocks_equal_W": true,
+    "exact_det_equals_detW^8": true,
+    "lambda": "0",
+    "theta": "1",
+    "upper_blocks_zero": true
+   }
+  ],
+  "nonlinear_numeric_50_digits": [
+   {
+    "lambda": "1",
+    "max_abs_err_diag_blocks_vs_W": 0.0,
+    "max_rel_err_det_vs_detW^8": 2.0376523817195106e-50,
+    "pass": true,
+    "theta": "0"
+   },
+   {
+    "lambda": "1",
+    "max_abs_err_diag_blocks_vs_W": 0.0,
+    "max_rel_err_det_vs_detW^8": 2.0376523817195106e-50,
+    "pass": true,
+    "theta": "1/2"
+   },
+   {
+    "lambda": "1",
+    "max_abs_err_diag_blocks_vs_W": 0.0,
+    "max_rel_err_det_vs_detW^8": 2.0376523817195106e-50,
+    "pass": true,
+    "theta": "1"
+   },
+   {
+    "lambda": "1/2",
+    "max_abs_err_diag_blocks_vs_W": 0.0,
+    "max_rel_err_det_vs_detW^8": 2.0376523817195106e-50,
+    "pass": true,
+    "theta": "0"
+   },
+   {
+    "lambda": "1/2",
+    "max_abs_err_diag_blocks_vs_W": 0.0,
+    "max_rel_err_det_vs_detW^8": 2.0376523817195106e-50,
+    "pass": true,
+    "theta": "1/2"
+   },
+   {
+    "lambda": "0",
+    "max_abs_err_diag_blocks_vs_W": 0.0,
+    "max_rel_err_det_vs_detW^8": 2.0376523817195106e-50,
+    "pass": true,
+    "theta": "1"
+   }
+  ],
+  "pass": true
+ },
+ "gamma": "10596878159714507/50000000000000000",
+ "m_polynomials_in_w_degree": [
+  8,
+  7,
+  6,
+  5,
+  4,
+  3,
+  2,
+  1
+ ],
+ "node": "production_theory_20261021",
+ "schema": "vigilode-production-theory-verification-v1",
+ "seed": 20261021,
+ "summary": {
+  "claim1_T1_numbers": true,
+  "claim2_preconditioned_sensitivity": true,
+  "claim3_lemma3_R": true,
+  "claim4_corollary2a": true,
+  "claim5_T9_example": true,
+  "claim6_stage_homotopy_det": true
+ },
+ "versions": {
+  "mpmath": "1.3.0",
+  "numpy": "2.5.3",
+  "python": "3.13.16",
+  "sympy": "1.14.0"
+ }
+}

@@ -1,0 +1,458 @@
+{
+  "status": "pass_scoped",
+  "scope": "full 64-step trajectories; five descriptive paired blocks, observed range not confidence interval",
+  "rows": [
+    {
+      "dimension": 1,
+      "threads": 1,
+      "steps": 64,
+      "blocks": 5,
+      "diagnostics": [
+        {
+          "all_grid_bits_equal": true,
+          "arm": "pr91",
+          "maximum_common_grid_error": 4.440892098500626e-16,
+          "maximum_pr91_difference": 0.0,
+          "maximum_screen_metric": 4.109126233720062e-17,
+          "screen_kind": "operational original-space f64 residual",
+          "work": {
+            "full_state_causal_accumulations": 3584,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "lifted_components": 512,
+            "matrix_factorizations": 0,
+            "newton_updates": 0,
+            "original_space_residual_components": 512,
+            "physical_linear_actions": 512,
+            "rhs_evaluations": 576,
+            "scalar_stage_solves": 0,
+            "shifted_resolvent_actions": 0
+          }
+        },
+        {
+          "all_grid_bits_equal": true,
+          "arm": "fused",
+          "maximum_common_grid_error": 4.440892098500626e-16,
+          "maximum_pr91_difference": 0.0,
+          "maximum_screen_metric": 4.109126233720062e-17,
+          "screen_kind": "operational original-space f64 residual",
+          "work": {
+            "enclosed_lift_components": 0,
+            "enclosed_mean_components": 0,
+            "factorized_residual_stages": 0,
+            "full_state_causal_accumulations": 3584,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "lifted_components": 512,
+            "matrix_factorizations": 0,
+            "newton_updates": 0,
+            "original_space_residual_components": 512,
+            "physical_linear_actions": 512,
+            "rhs_evaluations": 576,
+            "scalar_stage_solves": 0,
+            "shifted_resolvent_actions": 0
+          }
+        },
+        {
+          "all_grid_bits_equal": true,
+          "arm": "enclosed",
+          "maximum_common_grid_error": 4.440892098500626e-16,
+          "maximum_pr91_difference": 0.0,
+          "maximum_screen_metric": 1.3020215105146324e-16,
+          "screen_kind": "outward original-space upper bound",
+          "work": {
+            "enclosed_lift_components": 512,
+            "enclosed_mean_components": 128,
+            "factorized_residual_stages": 512,
+            "full_state_causal_accumulations": 0,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "lifted_components": 512,
+            "matrix_factorizations": 0,
+            "newton_updates": 0,
+            "original_space_residual_components": 512,
+            "physical_linear_actions": 0,
+            "rhs_evaluations": 64,
+            "scalar_stage_solves": 0,
+            "shifted_resolvent_actions": 0
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "candidate": "fused",
+          "paired_block_speedups": [
+            0.9659921269507596,
+            1.0197687590046938,
+            1.0110510073433037,
+            1.2314842250854237,
+            0.7373119977583615
+          ],
+          "median_speedup": 1.0110510073433037,
+          "observed_range": [
+            0.7373119977583615,
+            1.2314842250854237
+          ],
+          "loops_per_batch": 1000
+        },
+        {
+          "candidate": "enclosed",
+          "paired_block_speedups": [
+            1.198546656852967,
+            1.3228536315280939,
+            1.189535457512859,
+            1.153978993103474,
+            1.169521145193766
+          ],
+          "median_speedup": 1.189535457512859,
+          "observed_range": [
+            1.153978993103474,
+            1.3228536315280939
+          ],
+          "loops_per_batch": 1000
+        }
+      ],
+      "raw": "FINAL_BENCH_N1_W1.json",
+      "raw_sha256": "66a90f7f443ea788ee35612d3def8de562c4a1e9794038585ffd0759679828a9"
+    },
+    {
+      "dimension": 2048,
+      "threads": 1,
+      "steps": 64,
+      "blocks": 5,
+      "diagnostics": [
+        {
+          "all_grid_bits_equal": true,
+          "arm": "pr91",
+          "maximum_common_grid_error": 2.397597120840089e-10,
+          "maximum_pr91_difference": 0.0,
+          "maximum_screen_metric": 3.191891195797325e-16,
+          "screen_kind": "operational original-space f64 residual",
+          "work": {
+            "full_state_causal_accumulations": 7340032,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "lifted_components": 1048576,
+            "matrix_factorizations": 0,
+            "newton_updates": 0,
+            "original_space_residual_components": 1048576,
+            "physical_linear_actions": 512,
+            "rhs_evaluations": 576,
+            "scalar_stage_solves": 0,
+            "shifted_resolvent_actions": 0
+          }
+        },
+        {
+          "all_grid_bits_equal": true,
+          "arm": "fused",
+          "maximum_common_grid_error": 2.397597120840089e-10,
+          "maximum_pr91_difference": 0.0,
+          "maximum_screen_metric": 3.191891195797325e-16,
+          "screen_kind": "operational original-space f64 residual",
+          "work": {
+            "enclosed_lift_components": 0,
+            "enclosed_mean_components": 0,
+            "factorized_residual_stages": 0,
+            "full_state_causal_accumulations": 7340032,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "lifted_components": 1048576,
+            "matrix_factorizations": 0,
+            "newton_updates": 0,
+            "original_space_residual_components": 1048576,
+            "physical_linear_actions": 512,
+            "rhs_evaluations": 576,
+            "scalar_stage_solves": 0,
+            "shifted_resolvent_actions": 0
+          }
+        },
+        {
+          "all_grid_bits_equal": true,
+          "arm": "enclosed",
+          "maximum_common_grid_error": 2.397597120840089e-10,
+          "maximum_pr91_difference": 0.0,
+          "maximum_screen_metric": 1.1836574495221259e-15,
+          "screen_kind": "outward original-space upper bound",
+          "work": {
+            "enclosed_lift_components": 1048576,
+            "enclosed_mean_components": 262144,
+            "factorized_residual_stages": 512,
+            "full_state_causal_accumulations": 0,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "lifted_components": 1048576,
+            "matrix_factorizations": 0,
+            "newton_updates": 0,
+            "original_space_residual_components": 1048576,
+            "physical_linear_actions": 0,
+            "rhs_evaluations": 64,
+            "scalar_stage_solves": 0,
+            "shifted_resolvent_actions": 0
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "candidate": "fused",
+          "paired_block_speedups": [
+            1.219764091731663,
+            0.7094992617114455,
+            1.1989981584758072,
+            0.618610820041744,
+            0.8404797526180551
+          ],
+          "median_speedup": 0.8404797526180551,
+          "observed_range": [
+            0.618610820041744,
+            1.219764091731663
+          ],
+          "loops_per_batch": 4
+        },
+        {
+          "candidate": "enclosed",
+          "paired_block_speedups": [
+            3.6137063560502343,
+            2.062922159335423,
+            2.226847125685553,
+            1.2255881748061848,
+            1.9450789500588608
+          ],
+          "median_speedup": 2.062922159335423,
+          "observed_range": [
+            1.2255881748061848,
+            3.6137063560502343
+          ],
+          "loops_per_batch": 3
+        }
+      ],
+      "raw": "FINAL_BENCH_N2048_W1.json",
+      "raw_sha256": "2df4eceac72387b20046ff4d0ec7daa75e223751380f0b541a2c1eb35434ed99"
+    },
+    {
+      "dimension": 2048,
+      "threads": 2,
+      "steps": 64,
+      "blocks": 5,
+      "diagnostics": [
+        {
+          "all_grid_bits_equal": true,
+          "arm": "pr91",
+          "maximum_common_grid_error": 2.397597120840089e-10,
+          "maximum_pr91_difference": 0.0,
+          "maximum_screen_metric": 3.191891195797325e-16,
+          "screen_kind": "operational original-space f64 residual",
+          "work": {
+            "full_state_causal_accumulations": 7340032,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "lifted_components": 1048576,
+            "matrix_factorizations": 0,
+            "newton_updates": 0,
+            "original_space_residual_components": 1048576,
+            "physical_linear_actions": 512,
+            "rhs_evaluations": 576,
+            "scalar_stage_solves": 0,
+            "shifted_resolvent_actions": 0
+          }
+        },
+        {
+          "all_grid_bits_equal": true,
+          "arm": "fused",
+          "maximum_common_grid_error": 2.397597120840089e-10,
+          "maximum_pr91_difference": 0.0,
+          "maximum_screen_metric": 3.191891195797325e-16,
+          "screen_kind": "operational original-space f64 residual",
+          "work": {
+            "enclosed_lift_components": 0,
+            "enclosed_mean_components": 0,
+            "factorized_residual_stages": 0,
+            "full_state_causal_accumulations": 7340032,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "lifted_components": 1048576,
+            "matrix_factorizations": 0,
+            "newton_updates": 0,
+            "original_space_residual_components": 1048576,
+            "physical_linear_actions": 512,
+            "rhs_evaluations": 576,
+            "scalar_stage_solves": 0,
+            "shifted_resolvent_actions": 0
+          }
+        },
+        {
+          "all_grid_bits_equal": true,
+          "arm": "enclosed",
+          "maximum_common_grid_error": 2.397597120840089e-10,
+          "maximum_pr91_difference": 0.0,
+          "maximum_screen_metric": 1.1836574495221259e-15,
+          "screen_kind": "outward original-space upper bound",
+          "work": {
+            "enclosed_lift_components": 1048576,
+            "enclosed_mean_components": 262144,
+            "factorized_residual_stages": 512,
+            "full_state_causal_accumulations": 0,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "lifted_components": 1048576,
+            "matrix_factorizations": 0,
+            "newton_updates": 0,
+            "original_space_residual_components": 1048576,
+            "physical_linear_actions": 0,
+            "rhs_evaluations": 64,
+            "scalar_stage_solves": 0,
+            "shifted_resolvent_actions": 0
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "candidate": "fused",
+          "paired_block_speedups": [
+            1.0315539541427905,
+            1.0326642516584559,
+            1.276144202457042,
+            1.2126768388728992,
+            1.2396167302453576
+          ],
+          "median_speedup": 1.2126768388728992,
+          "observed_range": [
+            1.0315539541427905,
+            1.276144202457042
+          ],
+          "loops_per_batch": 3
+        },
+        {
+          "candidate": "enclosed",
+          "paired_block_speedups": [
+            2.1524716407588436,
+            0.7447179962226778,
+            1.4761901633959926,
+            2.328034417014171,
+            2.304550201887878
+          ],
+          "median_speedup": 2.1524716407588436,
+          "observed_range": [
+            0.7447179962226778,
+            2.328034417014171
+          ],
+          "loops_per_batch": 2
+        }
+      ],
+      "raw": "FINAL_BENCH_N2048_W2.json",
+      "raw_sha256": "e66f21812c2f2f53bb0c2f1a5321d5cd157a27af9af02a222f0fc40dd7a33dd3"
+    },
+    {
+      "dimension": 64,
+      "threads": 1,
+      "steps": 64,
+      "blocks": 5,
+      "diagnostics": [
+        {
+          "all_grid_bits_equal": true,
+          "arm": "pr91",
+          "maximum_common_grid_error": 2.384490382922877e-10,
+          "maximum_pr91_difference": 0.0,
+          "maximum_screen_metric": 2.636779683484747e-16,
+          "screen_kind": "operational original-space f64 residual",
+          "work": {
+            "full_state_causal_accumulations": 229376,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "lifted_components": 32768,
+            "matrix_factorizations": 0,
+            "newton_updates": 0,
+            "original_space_residual_components": 32768,
+            "physical_linear_actions": 512,
+            "rhs_evaluations": 576,
+            "scalar_stage_solves": 0,
+            "shifted_resolvent_actions": 0
+          }
+        },
+        {
+          "all_grid_bits_equal": true,
+          "arm": "fused",
+          "maximum_common_grid_error": 2.384490382922877e-10,
+          "maximum_pr91_difference": 0.0,
+          "maximum_screen_metric": 2.636779683484747e-16,
+          "screen_kind": "operational original-space f64 residual",
+          "work": {
+            "enclosed_lift_components": 0,
+            "enclosed_mean_components": 0,
+            "factorized_residual_stages": 0,
+            "full_state_causal_accumulations": 229376,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "lifted_components": 32768,
+            "matrix_factorizations": 0,
+            "newton_updates": 0,
+            "original_space_residual_components": 32768,
+            "physical_linear_actions": 512,
+            "rhs_evaluations": 576,
+            "scalar_stage_solves": 0,
+            "shifted_resolvent_actions": 0
+          }
+        },
+        {
+          "all_grid_bits_equal": true,
+          "arm": "enclosed",
+          "maximum_common_grid_error": 2.384490382922877e-10,
+          "maximum_pr91_difference": 0.0,
+          "maximum_screen_metric": 1.1802240658564118e-15,
+          "screen_kind": "outward original-space upper bound",
+          "work": {
+            "enclosed_lift_components": 32768,
+            "enclosed_mean_components": 8192,
+            "factorized_residual_stages": 512,
+            "full_state_causal_accumulations": 0,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "lifted_components": 32768,
+            "matrix_factorizations": 0,
+            "newton_updates": 0,
+            "original_space_residual_components": 32768,
+            "physical_linear_actions": 0,
+            "rhs_evaluations": 64,
+            "scalar_stage_solves": 0,
+            "shifted_resolvent_actions": 0
+          }
+        }
+      ],
+      "comparisons": [
+        {
+          "candidate": "fused",
+          "paired_block_speedups": [
+            1.1864874678253652,
+            1.1608340398472798,
+            0.9151701298386777,
+            1.2663742840843248,
+            1.1684223277898282
+          ],
+          "median_speedup": 1.1684223277898282,
+          "observed_range": [
+            0.9151701298386777,
+            1.2663742840843248
+          ],
+          "loops_per_batch": 114
+        },
+        {
+          "candidate": "enclosed",
+          "paired_block_speedups": [
+            1.6892138053054029,
+            1.9984968435029729,
+            1.6485048600474879,
+            1.7834256647615103,
+            1.864449008524527
+          ],
+          "median_speedup": 1.7834256647615103,
+          "observed_range": [
+            1.6485048600474879,
+            1.9984968435029729
+          ],
+          "loops_per_batch": 139
+        }
+      ],
+      "raw": "FINAL_BENCH_N64_W1.json",
+      "raw_sha256": "ec94672ad31af4ab163d93b83e008af14b0319f722b1d4d90758a908aa813e62"
+    }
+  ]
+}

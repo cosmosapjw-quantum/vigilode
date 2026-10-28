@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "date_kst": "2026-10-21",
+  "base_commit": "7a63876a97fc17f640771ec06658269947049994",
+  "benchmark_source_commit": "de4c10a9f41321beef2313a3d7fb503bab35d714",
+  "broad_production": "HOLD",
+  "arbitrary_callback_global_accuracy": "HOLD",
+  "general_speed_superiority": "HOLD",
+  "new_ncp_campaign": "NOT_RUN",
+  "validation": {
+    "result": "PASS_SCOPED",
+    "native_tests": 19,
+    "python_tests": 15,
+    "commands_passed": 9,
+    "commands_total": 9,
+    "source_files_bound": 484,
+    "source_unchanged": true,
+    "evidence": "evidence/final_03/SUMMARY.json",
+    "entire_workspace_suite": "NOT_RUN_REUSE_UNCHANGED_PRIOR_EVIDENCE"
+  },
+  "audit": {
+    "artifact_integrity": "PASS",
+    "files_verified": 759,
+    "measurement_attempts": 1070,
+    "rotation_sweep": {
+      "old_report_passes": 0,
+      "corrected_passes": 7,
+      "total": 140,
+      "native_passing_internal_rtol": 1e-10,
+      "native_recorded_scaled_error": 0.3876828073,
+      "evidence_scope": "saved sampled-grid summary; endpoint independently recomputed"
+    },
+    "timing_promotion": "HOLD_MIXED_SCOPES_AND_UNPAIRED_BLOCKS",
+    "vode_configuration": "SciPy real VODE wraps DVODE; BDF functional iteration MF20 in archived run"
+  },
+  "decisions": [
+    {
+      "id": "analytic_heat",
+      "verdict": "optimization_possible",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "contract": "Opt-in native analytic stencil, same fast-driver trajectory, dimension edge cases checked",
+      "guaranteed_work_reduction": "n extra derivative RHS per Jacobian -> 0",
+      "timing_speedup": null
+    },
+    {
+      "id": "bordered_schur",
+      "verdict": "specialized_for_specific_cases_only",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "contract": "Admitted diagonally dominant band block, invertible Schur, true residual; fixed bandwidth/border for linear-n complexity",
+      "actual_gmres_api_test": true,
+      "full_ode_driver_factory": false
+    },
+    {
+      "id": "positive_remap",
+      "verdict": "specialized_for_specific_cases_only",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "contract": "Nonnegative cell integrals, equal physical measure/domain, first-order overlap, transactional output",
+      "full_amr": false
+    },
+    {
+      "id": "lrs_physics_oracle",
+      "verdict": "specialized_for_specific_cases_only",
+      "basis": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "contract": "LRS non-tilted Bianchi I; scalar unpolarized cold elastic Thomson; Python reference only",
+      "live_bass_rei_integration": false
+    }
+  ],
+  "remaining_gates": [
+    "NEXT_STEPS.json",
+    "BASS_REI_DAG.json"
+  ],
+  "source_scope": "VigilODE branch contains all new code/review artifacts; BASS/rei repositories are read-only dependencies"
+}

@@ -1,0 +1,108 @@
+{
+  "schema_version": 1,
+  "reviewer": "/root/dag_a12_independent/dense_independent",
+  "nodes": [
+    "A05",
+    "A11"
+  ],
+  "review_status": "PASS_SCOPED",
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/generic_verified.rs": "0a014a6d55fcb494524b3105547eeb21fd2ab1b1557c1bf14838f7def14b7e17",
+    "crates/rodas5p-integrators/src/gray_scott_verified.rs": "190d1013040688debdee17e5be45e711a7b09403e6b8d26896fb849aa96001df",
+    "crates/rodas5p-integrators/src/gray_scott.rs": "366a20843c7931238f458b62760f146ecf34068ba306fc43acd39258390653ad",
+    "crates/rodas5p-integrators/src/dense_output_v2.rs": "1a46db7831523e3ba3e44169f6456061ee716b4f1073d2076d9c0ef1e0a26bae",
+    "crates/rodas5p-integrators/src/bound_collective.rs": "d85fcfd962f3075ce5630a640adfca1e487f9a2968f2ee6962ba8f2b2f8d5103",
+    "crates/rodas5p-integrators/src/bound_pr101.rs": "16a42eb8135387488fe2a9e43d0cc92793f08ae8f8d0cbed11febfd54d6e6f2d",
+    "crates/rodas5p-integrators/tests/all_dag_a05_verified.rs": "67b99a5a52406a45731dbbcb0bdd0c8144de03b75941d86383233e0d9b881973",
+    "crates/rodas5p-integrators/tests/all_dag_a11_verified.rs": "dabd453f1cc05ca829df66483877492a3539f044cea61b02d93a7d95fd527d62"
+  },
+  "blocking_findings": [],
+  "checks": [
+    {
+      "id": "D01",
+      "status": "PASS",
+      "claim": "The endpoint radius is attached to the exact stored step.y_new, since the real represented blend evaluates to it at theta=1 and both endpoint accessors copy it."
+    },
+    {
+      "id": "D02",
+      "status": "PASS",
+      "claim": "The residual is evaluated over the real polynomial enclosure; the full tube is used for the logarithmic norm. Signed comparison transport closes the tube and preserves endpoint inheritance."
+    },
+    {
+      "id": "D03",
+      "status": "PASS",
+      "claim": "The Gray-Scott reaction symmetric part retains both offdiagonal terms, and the symmetric periodic diffusion is negative semidefinite, including duplicate neighbors on grid=2."
+    },
+    {
+      "id": "D04",
+      "status": "PASS",
+      "claim": "Factory-owned callbacks/constants/grid and crate-private provider capability bind the certificate to the generated model."
+    },
+    {
+      "id": "D05",
+      "status": "PASS",
+      "claim": "Candidate, full tube and all due outputs are staged before visible state/radius/output commit; rejected attempted work is retained."
+    },
+    {
+      "id": "D06",
+      "status": "PASS",
+      "claim": "Requested physical-time output intervals enclose the real polynomial; returned binary64-center displacement is included."
+    },
+    {
+      "id": "D07",
+      "status": "PASS",
+      "claim": "The Gray-Scott fused stencils preserve original scalar order while eliminating two temporary Laplacian vectors per RHS or JVP callback; no elapsed-speed conclusion follows."
+    }
+  ],
+  "scope_limits": [
+    {
+      "id": "L01",
+      "severity": "scope",
+      "detail": "A run enforces atol at requested output times and atol/2 for the real continuous curve. A later standalone segment.evaluate(t) query returns a rounded-center radius without enforcing the original run budget; callers must check it."
+    },
+    {
+      "id": "L02",
+      "severity": "scope",
+      "detail": "Generic means the shared driver over the three admitted immutable model families; arbitrary OdeProblem callbacks are typed unsupported. Pure-relative verification is not implemented."
+    },
+    {
+      "id": "L03",
+      "severity": "performance",
+      "detail": "Natural interval residual dependency and fixed tube schedule can require very small steps. Neither broad production readiness nor measured speedup follows from these focused tests."
+    }
+  ],
+  "execution_evidence": [
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A05/evidence/focused_final.log",
+      "observed": "7 passed; 0 failed; PR101 101 outputs, 492 accepted, 292 rejected, max sampled error 8.382183835919932e-15",
+      "sha256": "93c46145b05c1192f549536c545006d15c573b670235984e562e317579e29b36"
+    },
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A11/evidence/first_compile_attempt.log",
+      "observed": "Historical first compile failure retained; unrelated actual_k_homotopy type mismatch repaired before final successful A11 run."
+    },
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A11/evidence/native_tests.log",
+      "observed": "7 new A11 tests + 3 changed-helper regressions passed. Exact homogeneous: 34 accepted/21 rejected. Nonlinear: 11 outputs, 6 accepted/2 rejected, max RK4 discrepancy 8.938889858629839e-15; two-RK4 spread 9.506558148265855e-15. Provider work 24*C+5.",
+      "sha256": "beec3f36841bcd53d0b1db9fd58dec06c0b72296558f00155947413acf23b637"
+    },
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A11/evidence/doc_tests.log",
+      "observed": "Read actual compile-fail doc test log.",
+      "sha256": "69952dd3a53890fd6b0172747a3ae5252c0a780300f3a24d167ebe9e0f3c32bd"
+    },
+    {
+      "path": "research/all_dag_completion_20261018/nodes/A11/evidence/nonlinear_trajectory.json",
+      "observed": "Native nonlinear trajectory example, explicit centers and radius at each requested output.",
+      "sha256": "bf9401b6190b4d936529f85383cf316bc47ecbd5fa0f67de240fd752f91b15a4"
+    }
+  ],
+  "new_native_runs_by_reviewer": 0,
+  "independent_review_method": "Source and mathematical derivation review, plus inspection of actual author test code and retained logs. Existing unchanged campaigns were not rerun.",
+  "eligible_scope": [
+    "A05 shared capability-bound continuous-residual driver on admitted PR101/collective/Gray-Scott models at checked absolute budgets",
+    "A11 generated periodic Gray-Scott continuous trajectories with full symmetric logarithmic norm over actual verified tubes"
+  ],
+  "no_broad_production_promotion": true,
+  "no_measured_speed_promotion": true
+}

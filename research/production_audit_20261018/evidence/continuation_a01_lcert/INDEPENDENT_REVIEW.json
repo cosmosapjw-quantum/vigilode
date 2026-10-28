@@ -1,0 +1,50 @@
+{
+  "schema": "vigilode-a01-lcert-review-v1",
+  "decision": "PASS_SCOPED",
+  "subnode": "A01-LCERT-01",
+  "reviewed_implementation_sha": "6b722a918deb0ab178b8e77090cac1280dbb3051",
+  "reviewed_documentation_sha": "7e2873887ed6038b47b667c976435810851c5dba",
+  "documentation_tree": "9275e35d3d5afe1ae4e40e1c0d9aca1034994ca6",
+  "documentation_file_sha256": "f84db841371cb192e8c6105c4ca9b3e2ce32397dcb7ff426b00a5647ce472873",
+  "scope": "kappa=0 rotating-frame frozen represented local window solution inclusion for mode and mean disks",
+  "coverage": {
+    "one_mode_fraction_disk_checks": 6,
+    "unequal_frequency_arms": 4,
+    "unequal_frequency_requested_times": 5,
+    "unequal_frequency_disk_checks": 80,
+    "reviewer_subnormal_fraction_checks": 24,
+    "compile_fail_privacy_immutability_checks": 4,
+    "allocator_positive_control_allocations": 3,
+    "warmed_success_allocations": 0,
+    "typed_refusal_and_work_checks": "PASS",
+    "identity_and_owner_state_checks": "PASS"
+  },
+  "work_evidence": {
+    "N3_success_certificate_ops": 110,
+    "N1_success_certificate_ops": 52,
+    "overflow_refusal_attempted_ops": 7,
+    "counters_scope": "enumerated work counters only; not total FLOPs or full trajectory cost"
+  },
+  "weighted_radius_semantics": {
+    "value": "B_w around exact frozen polynomial Y(t)",
+    "excludes": "returned-center polynomial evaluation displacement",
+    "mode_radii_include_displacement": true,
+    "A02_requirement": "compute outward delta_w >= sqrt(sum_j w_j delta_j^2) and add to B_w before using a returned-center weighted ball"
+  },
+  "overall_A01": "HOLD",
+  "legacy_compute_certificate": "NOT_PROMOTED",
+  "trajectory_or_production_authority": "NOT_IMPLIED",
+  "evidence": [
+    "INDEPENDENT_REVIEW_KO.md",
+    "reviewer_readonly_20261018/",
+    "execution_identity.json",
+    "repair_accounting/execution_identity.json",
+    "followup_subnormal_initial/execution_identity.json",
+    "documentation_followup/source_identity.json"
+  ],
+  "limitations": [
+    "Full legacy compute_certificate arithmetic remains unresolved.",
+    "A02 must maintain a separate weighted uncertainty seed and include center displacement.",
+    "No physical tolerance satisfaction, global trajectory, damped packet, speed, or overall production claim."
+  ]
+}

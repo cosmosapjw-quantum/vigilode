@@ -1,0 +1,270 @@
+{
+  "schema_version": 1,
+  "node_id": "A02",
+  "bounded_unit": "A02-TXN-01",
+  "packet_kind": "FROZEN_PREIMPLEMENTATION_RESEARCH_CONTRACT",
+  "status": "HOLD_PENDING_INDEPENDENT_SUPPLEMENT_REVIEW",
+  "scientific_admission": "NOT_ADMITTED",
+  "implementation_authorized": false,
+  "independent_proof_review_required_before_implementation": true,
+  "source_base_commit": "6b722a918deb0ab178b8e77090cac1280dbb3051",
+  "observed_head": "7e2873887ed6038b47b667c976435810851c5dba",
+  "source_bindings": "evidence/continuation_a02_research/supplement_02/SOURCE_BINDINGS.json",
+  "source_bindings_sha256": "1170fad132e157c3a6c8aae085d3abe1791700e41ada31dbda21f389f25b0639",
+  "contract": "A02_VERIFIED_TRAJECTORY_CONTRACT.md",
+  "contract_sha256": "566130e113b172a7352072dfc0dc71fd92960e6b24ae72e2a4684cde0d048e78",
+  "protected_conventions": {
+    "kappa": 0,
+    "omega": "exact_real(width)*exact_real(xi_j)",
+    "carrier": "metadata_only",
+    "weights": "actual stored positive weights; retain exact real sum S",
+    "physical_tolerances": "T_FIXED 1e-5/1e-5; T_INHERITED 1e-4/1e-4; T_REJECTION 2e-4/2e-4; exact source lines and fixture mappings frozen in supplement manifest; no local A01 physical-tolerance reuse claim",
+    "initial_energy_admission": "retain existing outward S*E_global <= 1 check",
+    "requested_grid": "original finite binary64 global observation times; do not restrict final domain to exact dyadic offsets"
+  },
+  "prerequisites": [
+    {
+      "id": "A01-LCERT-01",
+      "required_verdict": "PASS_SCOPED",
+      "required_scope": "nonlinear kappa=0 zero-tube local flow; continuous residual of the same represented curve; returned-center displacement and immutable owner/view",
+      "current_review_verdict": "NOT_ASSUMED_BY_THIS_PACKET"
+    },
+    {
+      "id": "A02-NEW-LEMMAS",
+      "required_verdict": "INDEPENDENT_PROOF_REVIEW_PASS",
+      "current_verdict": "PENDING",
+      "claims": [
+        "separate weighted and marginal inherited bounds",
+        "exact-flow T1 composition with zero-tube local certificate",
+        "component Duhamel min bound",
+        "non-dyadic global-time temporal lift",
+        "returned-center weighted seed and window-jump composition"
+      ]
+    }
+  ],
+  "derived_claims": [
+    {
+      "id": "A02-D1",
+      "statement": "Re-expanding a weighted ball B into marginal disks B/sqrt(w_j) and recomputing its weighted norm yields sqrt(N)*B, even in a zero-residual stationary system.",
+      "proof_location": "contract section 2",
+      "status": "PRIOR_INDEPENDENT_REVIEW_READY_PROOF_UNCHANGED"
+    },
+    {
+      "id": "A02-D2",
+      "statement": "E*=max(E_global,E_center); G(u)=exp(S^2*abs(chi)*E* * u); exact-flow weighted perturbation <=G(u)*e_k.",
+      "proof_location": "contract section 4",
+      "status": "PRIOR_INDEPENDENT_REVIEW_READY_PROOF_UNCHANGED"
+    },
+    {
+      "id": "A02-D3",
+      "statement": "Q=3*abs(chi)*S^(3/2)*E*; p_j=min(G*e_k/sqrt(w_j),r_kj+u*Q*G*e_k).",
+      "proof_location": "contract section 4",
+      "status": "PRIOR_INDEPENDENT_REVIEW_READY_PROOF_UNCHANGED"
+    },
+    {
+      "id": "A02-D4",
+      "statement": "For outward exact offset interval D and local query u, Delta>=max(abs(D.lo-u),abs(D.hi-u)); V_w=sqrt(E_global)*(Omega_max+S^2*abs(chi)*E_global); add V_w*Delta.",
+      "proof_location": "contract section 5",
+      "status": "PRIOR_INDEPENDENT_REVIEW_READY_PROOF_UNCHANGED"
+    },
+    {
+      "id": "A02-D5",
+      "statement": "e_next>=B_local(u)+G(u)*e_k+K_time+delta_w, where delta_w bounds exact represented polynomial minus the identical committed binary64 centers.",
+      "proof_location": "contract section 6",
+      "status": "PRIOR_INDEPENDENT_REVIEW_READY_PROOF_UNCHANGED"
+    }
+  ],
+  "reused_claims": [
+    {
+      "id": "T1",
+      "source": "THEOREMS.json",
+      "proof_source": "../../docs/reviews/20261018_production_audit/THEORY_KO.md",
+      "scope": "energy conservation and full weighted logarithmic norm; no legacy arithmetic authority inferred"
+    },
+    {
+      "id": "REPRESENTED_RESIDUAL",
+      "source": "../../crates/rodas5p-integrators/src/packet_curve.rs",
+      "scope": "same frozen Y produces M_Y and full continuous residual; never substitute candidate P for M_Y"
+    }
+  ],
+  "accepted_state_invariants": [
+    "component disks around actual committed centers",
+    "weighted ball around actual committed centers",
+    "fixed original global energy upper bound",
+    "immutable model/window/time/output binding",
+    "all requested observations and endpoint satisfy unchanged tolerances before commit",
+    "rejection preserves accepted state and output cursor bitwise; all attempted work retained",
+    "retained window owns immutable original t,c,r,e,E_global,E_center,physical end/H and model/config/grid seed",
+    "stale prepared generation/full-seed commit is typed refused; retained historical query remains seed-local after later commits"
+  ],
+  "open_design_choices": [
+    {
+      "id": "A02-DC1",
+      "question": "How to obtain returned-center weighted evaluation displacement without confusing existing weighted_radius accessor?",
+      "options": [
+        "narrow reviewed accessor addition",
+        "charged separate evaluation before moving curve plus bit identity with local view"
+      ],
+      "resolution": "CLOSED_BY_SUPPLEMENT_02_AND_INDEPENDENT_DELTA_REVIEW"
+    },
+    {
+      "id": "A02-DC2",
+      "question": "First complete bounded API implementation shape",
+      "options": [
+        "private prepared-window plus transactional advance_verified"
+      ],
+      "resolution": "CORE_CONTRACT_FIXED; private prepared-window plus transactional advance_verified"
+    }
+  ],
+  "acceptance_matrix": [
+    {
+      "id": "AT01",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8",
+      "frozen_input_definition": "evidence/continuation_a02_research/supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json#/acceptance_inputs/AT01"
+    },
+    {
+      "id": "AT02",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8",
+      "frozen_input_definition": "evidence/continuation_a02_research/supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json#/acceptance_inputs/AT02"
+    },
+    {
+      "id": "AT03",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8",
+      "frozen_input_definition": "evidence/continuation_a02_research/supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json#/acceptance_inputs/AT03"
+    },
+    {
+      "id": "AT04",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8",
+      "frozen_input_definition": "evidence/continuation_a02_research/supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json#/acceptance_inputs/AT04"
+    },
+    {
+      "id": "AT05",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8",
+      "frozen_input_definition": "evidence/continuation_a02_research/supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json#/acceptance_inputs/AT05"
+    },
+    {
+      "id": "AT06",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8",
+      "frozen_input_definition": "evidence/continuation_a02_research/supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json#/acceptance_inputs/AT06"
+    },
+    {
+      "id": "AT07",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8",
+      "frozen_input_definition": "evidence/continuation_a02_research/supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json#/acceptance_inputs/AT07"
+    },
+    {
+      "id": "AT08",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8",
+      "frozen_input_definition": "evidence/continuation_a02_research/supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json#/acceptance_inputs/AT08"
+    },
+    {
+      "id": "AT09",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8",
+      "frozen_input_definition": "evidence/continuation_a02_research/supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json#/acceptance_inputs/AT09"
+    },
+    {
+      "id": "AT10",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8",
+      "frozen_input_definition": "evidence/continuation_a02_research/supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json#/acceptance_inputs/AT10"
+    },
+    {
+      "id": "AT11",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8",
+      "frozen_input_definition": "evidence/continuation_a02_research/supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json#/acceptance_inputs/AT11"
+    },
+    {
+      "id": "AT12",
+      "status": "NOT_RUN",
+      "definition_location": "A02_VERIFIED_TRAJECTORY_CONTRACT.md section 8",
+      "frozen_input_definition": "evidence/continuation_a02_research/supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json#/acceptance_inputs/AT12"
+    }
+  ],
+  "execution_status": {
+    "contract_review": "READY_FOR_BOUNDED_IMPLEMENTATION",
+    "code_modified_for_A02": false,
+    "tests_run_for_A02": false,
+    "builds_run_for_A02": false,
+    "numerical_execution": "NOT_RUN"
+  },
+  "claim_ceilings": {
+    "A02": "HOLD_PENDING_PROOF_IMPLEMENTATION_VALIDATION",
+    "full_A01": "UNCHANGED",
+    "packet_kappa0_global": "HOLD",
+    "packet_damped": "HOLD",
+    "leja_total": "UNCHANGED_HOLD",
+    "generic_global_output": "UNCHANGED_HOLD",
+    "matched_accuracy_speed": "HOLD",
+    "overall_production": "HOLD",
+    "timing_authority": "DIAGNOSTIC_ONLY",
+    "allocation_claim": "NOT_MEASURED_FOR_A02",
+    "A02_implementation_contract": "READY_FOR_BOUNDED_IMPLEMENTATION",
+    "A02_numerical_validation": "NOT_RUN",
+    "A02_scientific_admission": "HOLD",
+    "zero_allocation": "NOT_MEASURED_FOR_A02",
+    "full_trajectory_production": "HOLD"
+  },
+  "next_executable_action": "Commit and verify this v2 contract/input freeze. Implement only A02-TXN-01 under the reviewed contract and supplement_02 overlay. Bind the implementation source and run preregistration to a new pushed EXEC_SHA before any AT01-AT12 numerical execution; then run the frozen acceptance matrix and independent review.",
+  "implementation_approved": true,
+  "frozen_acceptance_inputs": "evidence/continuation_a02_research/supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json",
+  "frozen_acceptance_inputs_sha256": "1679dd7542028d3c103b321ca4293d1fcf4aa4f7622ee663c3cef3ba5557abb3",
+  "preregistration": "evidence/continuation_a02_research/supplement_02/PREREGISTRATION.md",
+  "preregistration_sha256": "122fa856eeff067349a106ca42071725f004a0a81df4e9c1b90468d94f689bbc",
+  "prior_review": {
+    "reviewer_agent": "/root/a01_unequal_reference_review",
+    "verdict": "HOLD",
+    "mathematics_D1_D5": "READY",
+    "implementation_contract": "HOLD_C1_C2",
+    "provenance": "parent handoff, dedicated reviewer artifact not present",
+    "preserved_input": "evidence/continuation_a02_research/supplement_01/PRIOR_REVIEW_HANDOFF.json",
+    "sha256": "ffbb97a899f7cec88291b7d9841b9d8655f59d0be577d892142f1adfcb4c09a4"
+  },
+  "supplement_findings": [
+    {
+      "id": "AT08_OVERFLOW",
+      "status": "CLOSED_BY_REVIEWED_V2",
+      "evidence": "supplement_02/INDEPENDENT_DELTA_REVIEW.json"
+    },
+    {
+      "id": "ORIGINAL_AT08_DOMAIN_REFUSAL",
+      "status": "PRESERVED_AS_SEPARATE_REFUSAL_ARM",
+      "evidence": "supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json"
+    },
+    {
+      "id": "DC1",
+      "status": "CLOSED_BY_REVIEWED_V2",
+      "evidence": "supplement_02/AMENDMENT_KO.md"
+    },
+    {
+      "id": "AT06_ORDER",
+      "status": "CLOSED_BY_REVIEWED_V2",
+      "evidence": "supplement_02/AMENDMENT_KO.md"
+    }
+  ],
+  "proof_preservation": {
+    "range": "contract section 2 through section 6, ending before section 7",
+    "prior_sha256": "ecc8841db6ad2b2f40c7245102372e31e31120e38ecdb68b91ed0cfa4ddcdcb5",
+    "supplement_sha256": "ecc8841db6ad2b2f40c7245102372e31e31120e38ecdb68b91ed0cfa4ddcdcb5",
+    "same_bytes": true
+  },
+  "decision_status": "READY_FOR_BOUNDED_IMPLEMENTATION",
+  "current_delta_review": {
+    "path": "evidence/continuation_a02_research/supplement_02/INDEPENDENT_DELTA_REVIEW.json",
+    "sha256": "14767f947e47f933d38911b2b3ed56ac829ce5d729ceddcd273c998d16dc434e",
+    "verdict": "READY_FOR_BOUNDED_IMPLEMENTATION",
+    "reviewer": "/root/a02_supplement_review",
+    "remaining_contract_blockers": [],
+    "amendment_frozen_head": "9e35f12c85abff34d85185f866180b616a8ba208",
+    "review_observed_head": "59d95eb7404882f024eb8bd3856f2ce4f1f830c9"
+  }
+}

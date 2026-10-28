@@ -1,0 +1,296 @@
+{
+  "schema_version": "1.0",
+  "review_id": "LOOP12_EXTENSION_INDEPENDENT_DECISION_20261011",
+  "reviewer_role": "independent decision reviewer",
+  "reviewer_agent": "/root/loop12_extension_review",
+  "independence": {
+    "candidate_generation": false,
+    "validation_design": false,
+    "author_self_review": false,
+    "scope": "Two candidate proof documents, claim manifests, exact-check source and reported outputs; bounded correction feedback only."
+  },
+  "harness": {
+    "family": "GPT-6 Astra",
+    "version": "4.0.0",
+    "selection_basis": "continuation of parent-selected harness",
+    "actual_model_identity": "UNKNOWN",
+    "performance": "NOT_EVALUATED",
+    "template_state_inherited": false
+  },
+  "reviewed_inputs_sha256": {
+    "DAMPING_WINDOWS_KO.md": "aec53bf2b66b9ba6172bbc99c82f40f740d661e899a370fbe83db43b52484230",
+    "CLAIMS_DAMPING.json": "5daf8982b74cc429b63419a0d4d3615f408ebbae7a46324bb0c3f269d065991d",
+    "check_damping_exact.py": "f6deb13389869054f28860f29d688c8e6bb0ee62ccdaa992a1a6e03812c44128",
+    "DAMPING_EXACT_CHECKS.json": "bb715ec55ab065d7d7610eecbf9c270242d1548d0bd607a5f9b589195f18a0de",
+    "RANK_GEOMETRY_KO.md": "d4811f0f40f1c00041de793dc49aa23f1568e2eed9c2820bef88d80c529a12a7",
+    "CLAIMS_RANK.json": "8cc6d8af15f890ea66cd2248707b85e6abd2af1c546cf94c682fb793aa5c5820",
+    "check_rank_exact.py": "0fb7148594561ac3e81d8abaabd07f6c33450c9db8594224305a01c7d185e017",
+    "RANK_EXACT_CHECKS.json": "3e5da3edd57b9699c89b8154d5bcd57781b075bba9155729f09beefe72d6afcd"
+  },
+  "read_scope": {
+    "canonical_harness": "PROJECT_INSTRUCTIONS.md, docs/MODEL_ROUTING.md, template state/RESEARCH_STATE.md, independent decision gate",
+    "new_candidates": "Both complete proof documents and manifests; both exact-check programs and reported outputs; final changed sections read again.",
+    "context": "Attachment RESEARCH_NOTE_KO.md including sections 4-9; previous GLOBAL_ACCURACY/HOMOTOPY/POLYNOMIAL scope boundaries only."
+  },
+  "decision": "PROMOTE_CONDITIONAL_THEORY",
+  "claims": [
+    {
+      "claim_id": "DW-A",
+      "title": "Common damping transform and exact energy",
+      "decision": "PROMOTE",
+      "scope": "conditional derived mathematical theorem for report and native implementation design",
+      "reason": "Cubic homogeneity gives exp(-2*kappa*t) nonlinear weight. Weighted energy cancels the real part of the imaginary collective force, gives global finite-dimensional existence, and preserves all independent initial data.",
+      "material_premises_and_limits": "Declared common damping/frequency, positive normalized weights, real chi; not heterogeneous damping.",
+      "proof_file": "DAMPING_WINDOWS_KO.md",
+      "proof_sha256": "aec53bf2b66b9ba6172bbc99c82f40f740d661e899a370fbe83db43b52484230",
+      "evidence_status": [
+        "derived"
+      ],
+      "production_promotion": false,
+      "actual_global_execution_promotion": false,
+      "measured_speed_promotion": false
+    },
+    {
+      "claim_id": "DW-B",
+      "title": "Uniform-kappa homotopy coefficient convergence",
+      "decision": "PROMOTE",
+      "scope": "conditional derived mathematical theorem for report and native implementation design",
+      "reason": "Weighted l1 of continuous-function coefficients is a Banach algebra; formal/real coefficient conjugation is isometric. DW6 gives an actual self-map and contraction; coefficient tail gives DW7. Induction yields degree <=(3ell+1)p+ell and exponent index <=ell.",
+      "material_premises_and_limits": "Strict ball and contraction margins, exact descriptor; all evaluator/representation errors charged. No holomorphy of |u|^2u in complex time is asserted.",
+      "proof_file": "DAMPING_WINDOWS_KO.md",
+      "proof_sha256": "aec53bf2b66b9ba6172bbc99c82f40f740d661e899a370fbe83db43b52484230",
+      "evidence_status": [
+        "derived"
+      ],
+      "production_promotion": false,
+      "actual_global_execution_promotion": false,
+      "measured_speed_promotion": false
+    },
+    {
+      "claim_id": "DW-C",
+      "title": "Mixed damped integral representation",
+      "decision": "PROMOTE",
+      "scope": "conditional derived mathematical theorem for report and native implementation design",
+      "reason": "Binomial expansion and phi integral produce DW10. Positive beta integral and repeated-node divided difference have the same factorial normalization, including a=0.",
+      "material_premises_and_limits": "Nonnegative integer degrees, a,t>=0; interval scalar evaluator remains to implement, and cancellation may force more precision.",
+      "proof_file": "DAMPING_WINDOWS_KO.md",
+      "proof_sha256": "aec53bf2b66b9ba6172bbc99c82f40f740d661e899a370fbe83db43b52484230",
+      "evidence_status": [
+        "derived"
+      ],
+      "production_promotion": false,
+      "actual_global_execution_promotion": false,
+      "measured_speed_promotion": false
+    },
+    {
+      "claim_id": "DW-D",
+      "title": "Original-mode error with inherited uncertainty",
+      "decision": "PROMOTE",
+      "scope": "conditional derived mathematical theorem for report and native implementation design",
+      "reason": "Subtract original and approximate Volterra maps; weighted Gronwall with monotone H yields DW11. Exact propagator splitting yields DW12 without dropping inherited initial errors or changing the target.",
+      "material_premises_and_limits": "True and candidate whole-window tube, exact-descriptor residual, all moment/phase/evaluator/output errors charged once; no endpoint-only residual authority.",
+      "proof_file": "DAMPING_WINDOWS_KO.md",
+      "proof_sha256": "aec53bf2b66b9ba6172bbc99c82f40f740d661e899a370fbe83db43b52484230",
+      "evidence_status": [
+        "derived"
+      ],
+      "production_promotion": false,
+      "actual_global_execution_promotion": false,
+      "measured_speed_promotion": false
+    },
+    {
+      "claim_id": "DW-E",
+      "title": "O(n) multiwindow error propagation",
+      "decision": "PROMOTE",
+      "scope": "conditional derived mathematical theorem for report and native implementation design",
+      "reason": "Comparing two exact flows gives the diagonal-plus-rank-one majorant. P^2=P gives the product; local eta uses zero inherited error to prevent double counting. The sufficient damping condition bounds norm amplification by one.",
+      "material_premises_and_limits": "Same weights and model identity, certified R_n enclosing both reference starts, actual accepted grid, complete local errors; actual multiwindow execution remains HOLD.",
+      "proof_file": "DAMPING_WINDOWS_KO.md",
+      "proof_sha256": "aec53bf2b66b9ba6172bbc99c82f40f740d661e899a370fbe83db43b52484230",
+      "evidence_status": [
+        "derived"
+      ],
+      "production_promotion": false,
+      "actual_global_execution_promotion": false,
+      "measured_speed_promotion": false
+    },
+    {
+      "claim_id": "DW-F",
+      "title": "Same-map arithmetic improvement with full output costs",
+      "decision": "PROMOTE",
+      "scope": "conditional derived mathematical theorem for report and native implementation design",
+      "reason": "Linearity of moment aggregation preserves each homotopy coefficient in exact arithmetic. Complete cost inequality yields strict work reduction; corrected upper complexity includes per-output shared scalar algebra, all evaluator costs and n*(p+1) IO.",
+      "material_premises_and_limits": "Same representation and comparator, actual upper/lower counters including failures and output schedule; no benefit over an already aggregated comparator and no bit-complexity or elapsed-time claim.",
+      "proof_file": "DAMPING_WINDOWS_KO.md",
+      "proof_sha256": "aec53bf2b66b9ba6172bbc99c82f40f740d661e899a370fbe83db43b52484230",
+      "evidence_status": [
+        "derived"
+      ],
+      "production_promotion": false,
+      "actual_global_execution_promotion": false,
+      "measured_speed_promotion": false
+    },
+    {
+      "claim_id": "R1",
+      "title": "Exact rank-r Volterra equivalence",
+      "decision": "PROMOTE",
+      "scope": "conditional derived mathematical theorem for report and native implementation design",
+      "reason": "Variation of constants establishes both directions. The original initial vector stays in the free profile and reconstruction. Kernel invariance is necessary and sufficient for Markov closure when V* has full row rank.",
+      "material_premises_and_limits": "Explicit known D,U,V*, direct F and a valid solution domain; no free diagonalization or discarded fibre data.",
+      "proof_file": "RANK_GEOMETRY_KO.md",
+      "proof_sha256": "d4811f0f40f1c00041de793dc49aa23f1568e2eed9c2820bef88d80c529a12a7",
+      "evidence_status": [
+        "derived"
+      ],
+      "production_promotion": false,
+      "actual_global_execution_promotion": false,
+      "measured_speed_promotion": false
+    },
+    {
+      "claim_id": "R2",
+      "title": "Multiple-cluster matrix packet and factorial tail",
+      "decision": "PROMOTE",
+      "scope": "conditional derived mathematical theorem for report and native implementation design",
+      "reason": "Real detuning Taylor integral remainder needs no exp(width*T) factor; rank-one norm bounds sum to B_a/A_a. Finite shift realization reproduces the packet, and zero-width closure is exact.",
+      "material_premises_and_limits": "Exact cluster membership and common damping per cluster, actual rank and widths; n-independent tail order requires uniformly bounded constants, not only small r.",
+      "proof_file": "RANK_GEOMETRY_KO.md",
+      "proof_sha256": "d4811f0f40f1c00041de793dc49aa23f1568e2eed9c2820bef88d80c529a12a7",
+      "evidence_status": [
+        "derived"
+      ],
+      "production_promotion": false,
+      "actual_global_execution_promotion": false,
+      "measured_speed_promotion": false
+    },
+    {
+      "claim_id": "R3",
+      "title": "All-original-mode error from reduced residual",
+      "decision": "PROMOTE",
+      "scope": "conditional derived mathematical theorem for report and native implementation design",
+      "reason": "Original kernel norm B and full-channel Lipschitz bound yield exp(BLT) error transport; per-mode reconstruction includes each actual initial amplitude and u_j gain.",
+      "material_premises_and_limits": "Continuous-time residual and true/candidate common domain supplied independently; rounding, phase, quadrature, initial uncertainty and physical norm changes retained.",
+      "proof_file": "RANK_GEOMETRY_KO.md",
+      "proof_sha256": "d4811f0f40f1c00041de793dc49aa23f1568e2eed9c2820bef88d80c529a12a7",
+      "evidence_status": [
+        "derived"
+      ],
+      "production_promotion": false,
+      "actual_global_execution_promotion": false,
+      "measured_speed_promotion": false
+    },
+    {
+      "claim_id": "R4",
+      "title": "Factorial Volterra convergence and no-fold branch",
+      "decision": "PROMOTE",
+      "scope": "conditional derived mathematical theorem for report and native implementation design",
+      "reason": "Repeated causal integrals have simplex volume t^s/s!, proving convergence without BLT<1. The same estimate gives a bounded linearized inverse and C1 implicit-function branch. Certified per-sweep function defects sum with exp(BLT) amplification.",
+      "material_premises_and_limits": "Global Lipschitz for global existence; local version needs a separate existence/common-tube witness. Arbitrary fixed projection does not inherit convergence or small defects automatically.",
+      "proof_file": "RANK_GEOMETRY_KO.md",
+      "proof_sha256": "d4811f0f40f1c00041de793dc49aa23f1568e2eed9c2820bef88d80c529a12a7",
+      "evidence_status": [
+        "derived"
+      ],
+      "production_promotion": false,
+      "actual_global_execution_promotion": false,
+      "measured_speed_promotion": false
+    },
+    {
+      "claim_id": "R5",
+      "title": "Projected same-map identity and nonempty strict work example",
+      "decision": "PROMOTE",
+      "scope": "conditional derived mathematical theorem for report and native implementation design",
+      "reason": "After correction, identical Pi is applied to free profile and shared integrals. Linearity yields exact equality. Specified rank-2 example counts <=16904 scalar operations versus >=49152 comparator integration multiplications, leaving 32248 for noncommon overhead.",
+      "material_premises_and_limits": "Same target/projection/forcing approximation/accuracy/output; comparator actually materializes full profiles. Ordinary scalar unit-cost model only; shared setup counted at every output.",
+      "proof_file": "RANK_GEOMETRY_KO.md",
+      "proof_sha256": "d4811f0f40f1c00041de793dc49aa23f1568e2eed9c2820bef88d80c529a12a7",
+      "evidence_status": [
+        "derived"
+      ],
+      "production_promotion": false,
+      "actual_global_execution_promotion": false,
+      "measured_speed_promotion": false
+    },
+    {
+      "claim_id": "R6",
+      "title": "Polynomial quotient closure and invariant ideal admission",
+      "decision": "PROMOTE",
+      "scope": "conditional derived mathematical theorem for report and native implementation design",
+      "reason": "Differentiate V*D^k y and insert q_D(D)=0 to obtain rd-dimensional exact closure. Invariant ideal identities give h′=B h and projected dynamics by chain rule.",
+      "material_premises_and_limits": "Full-space exact annihilator and full initial moments; no small minimal degree from distinct spectrum, no cheap Groebner discovery or global regular quotient promise.",
+      "proof_file": "RANK_GEOMETRY_KO.md",
+      "proof_sha256": "d4811f0f40f1c00041de793dc49aa23f1568e2eed9c2820bef88d80c529a12a7",
+      "evidence_status": [
+        "derived"
+      ],
+      "production_promotion": false,
+      "actual_global_execution_promotion": false,
+      "measured_speed_promotion": false
+    }
+  ],
+  "findings": [
+    {
+      "id": "ER-F1",
+      "severity": "material mathematical scope error",
+      "claim": "R5",
+      "original_issue": "Unprojected shared reconstruction was claimed identical to arbitrary projected full profile.",
+      "counterexample": "D=0, constant forcing, Pi=degree-0 truncation: projected profile remains initial constant; unprojected output has a linear-in-time forcing term.",
+      "resolution": "Same-map endpoint applies Pi to free profile and shared integrals; unprojected original-target reconstruction is a distinct output.",
+      "status": "RESOLVED_IN_REVIEWED_BYTES"
+    },
+    {
+      "id": "ER-F2",
+      "severity": "cost accounting ambiguity",
+      "claim": "R5",
+      "original_issue": "Common integration-weight preparation could be conflated with application cost.",
+      "resolution": "Preparation alone may cancel; actual applications counted. Comparator lower bound skips multiplication by one; additions also counted.",
+      "status": "RESOLVED_IN_REVIEWED_BYTES"
+    },
+    {
+      "id": "ER-F3",
+      "severity": "material complexity omission",
+      "claim": "DW-F",
+      "original_issue": "Multi-output upper bound charged per-mode output but omitted repeated shared ordinary scalar coefficient setup.",
+      "resolution": "Adds R_out*(p+1)*(Q+1)*(D+1)^2 plus total evaluator cost over all outputs; strict gate includes these costs.",
+      "status": "RESOLVED_IN_REVIEWED_BYTES"
+    },
+    {
+      "id": "ER-F4",
+      "severity": "boundary-case complexity error",
+      "claim": "DW-F",
+      "original_issue": "n*p loses mandatory O(n) work at admitted p=0.",
+      "resolution": "Input/reconstruction and per-output terms now n*(p+1).",
+      "status": "RESOLVED_IN_REVIEWED_BYTES"
+    }
+  ],
+  "scope_decisions": [
+    {
+      "scope": "native production default or dispatch",
+      "decision": "HOLD",
+      "reason": "No source-bound native implementation or native validation supplied for these new paths."
+    },
+    {
+      "scope": "actual global multiwindow trajectory",
+      "decision": "HOLD",
+      "reason": "The DW-E/R3 transport theorems are approved, but no executed native trajectory and complete outward witness were supplied."
+    },
+    {
+      "scope": "measured elapsed speed or bit complexity",
+      "decision": "HOLD",
+      "reason": "Only conditional arithmetic-count and representational complexity results; no matching measured baseline or bit-complexity proof."
+    },
+    {
+      "scope": "unqualified projected/unprojected identity",
+      "decision": "REJECT",
+      "reason": "ER-F1 counterexample; corrected theorem distinguishes them."
+    }
+  ],
+  "validation_evidence": {
+    "candidate_exact_diagnostics": "Author programs and recorded outputs inspected; internally consistent limited algebra fixtures. They do not replace the general proofs.",
+    "reviewer_runtime_reexecution": false,
+    "historical_campaign_replays": 0,
+    "formal_proof_assistant_verification": false,
+    "native_execution": false,
+    "independent_math_review_completed": true
+  },
+  "stop_condition": "All material proof/cost findings resolved in hash-bound candidate bytes; no recursive review or extra campaign required."
+}

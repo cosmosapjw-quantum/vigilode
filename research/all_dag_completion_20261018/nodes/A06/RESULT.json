@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "node": "A06",
+  "owner_agent": "dag_a06_direct",
+  "status": "IMPLEMENTED_SCOPED_VALIDATION_AND_INDEPENDENT_REVIEW_PASSED",
+  "original_scope": "Strong rank-two direct baseline; native factorization, Schur enclosure, full residual, all stages, O(N) work",
+  "reused": [
+    "WB1 frozen rank-two representation",
+    "all-stage K-coordinate induction",
+    "native adaptive landing driver",
+    "O(N) workspace and fixed-stage cost"
+  ],
+  "new_contributions": [
+    "Certified Schur inverse norm fallback beyond WB2 q<1 domain",
+    "Opt-in residual and solution-error witness for every native stage",
+    "Stale witness invalidation and exact work retention",
+    "Structured linear work retained in benchmark JSON"
+  ],
+  "admission": {
+    "carrier": 0,
+    "weight_sum": "exact represented binary64 sum equals 1",
+    "s": "finite nonnegative",
+    "model": "immutable CollectiveModel",
+    "schur": "outward determinant excludes zero",
+    "arithmetic": "finite directed operations or explicit refusal"
+  },
+  "proof": {
+    "id": "A06-S",
+    "formula": "||A^-1||_w <= p+s*p^2*L*B_S; p<=1/a, L>=3|chi||m|^2, B_S>=||S2^-1||_2",
+    "file": "REPORT_KO.md",
+    "novelty": "constructive project-specific extension of standard Woodbury bound; no priority claim"
+  },
+  "complexity": {
+    "factorize": "O(N)",
+    "per_rhs": "O(N)",
+    "per_residual_witness": "O(N)",
+    "complete_eight_stage_attempt": "O(N)",
+    "workspace": "O(N)",
+    "elapsed_speed_claim": false
+  },
+  "validation": {
+    "native_tests": {
+      "passed": 14,
+      "failed": 0,
+      "log": "evidence/native_tests.log"
+    },
+    "calibrated_allocation_test": {
+      "passed": 1,
+      "failed": 0,
+      "positive_control": "PASS",
+      "warmed_plain_attempts": 10,
+      "warmed_certified_attempts": 10,
+      "measured_additional_allocations_each": 0,
+      "log": "evidence/allocation_test.log"
+    },
+    "first_failed_attempt": {
+      "log": "evidence/native_tests_attempt_01.log",
+      "cause": "Fixture xi=-2 violated model admission",
+      "repair": "Represent same omega=-2 by xi=-1,width=2",
+      "solver_or_tolerance_changed": false
+    },
+    "example_compile": {
+      "status": "PASS",
+      "exit_code": 0,
+      "log": "evidence/example_check.log"
+    },
+    "format_and_diff": {
+      "rustfmt": "PASS",
+      "git_diff_check": "PASS"
+    }
+  },
+  "commands": [
+    "cargo test --locked --offline -p rodas5p-integrators --test all_dag_a06_direct --test production_audit_collective_direct --test collective_rodas5p_contracts",
+    "cargo test --locked --offline -p rodas5p-integrators --test collective_rodas5p_allocation_contract",
+    "cargo check --locked --offline -p rodas5p-integrators --example collective_structured_compare"
+  ],
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/collective_direct.rs": "388a1c6144a7e57327bf63be8e5bfd0a0815e8d9feaea90ed1972d1575040f49",
+    "crates/rodas5p-integrators/src/collective_rodas5p.rs": "9e84ec5cd53496c2951a91c418b76069384fbfb48d0e3bc5a94fcb5d0aadd7b3",
+    "crates/rodas5p-integrators/examples/collective_structured_compare.rs": "e8c610beebd8b1debe42e61d42e1300da754a5bb83a266960861f5d62847e6c6",
+    "crates/rodas5p-integrators/tests/all_dag_a06_direct.rs": "bbb4095c9c825f7896200200c09914680685509a2cc22e246d102278c698f18f",
+    "crates/rodas5p-integrators/tests/production_audit_collective_direct.rs": "a13ff0f4ea1851eb470c1ea7ecabcd06b3bba8e38399cc90a49f74bb54bdadae",
+    "crates/rodas5p-integrators/tests/collective_rodas5p_contracts.rs": "c6a6874d2f662fc973de15b115e3c29808cf65c4fc8a8441087ea130f65e57ef",
+    "crates/rodas5p-integrators/tests/collective_rodas5p_allocation_contract.rs": "ac59fd4bb9010c84e93dfc103e5f20941650a87433ed5445124f889831e5a195"
+  },
+  "remaining_gates": [
+    "Independent source-bound delta review",
+    "A07 final-source matched-accuracy campaign before any elapsed speed claim"
+  ],
+  "production_scope": {
+    "frozen_linear_certificate": "IMPLEMENTED",
+    "global_ode_accuracy": "NOT_CLAIMED_BY_A06",
+    "measured_speed": "HOLD",
+    "general_nonexact_weight_sum": "EXPLICITLY_UNSUPPORTED"
+  },
+  "local_handoff": "Compile and execute listed checks; hardware timing only after root final source freeze. No hidden A06 core implementation remains.",
+  "evidence_sha256": {
+    "native_tests_attempt_01.log": "c6306c439266b8a3ee02ecd083fedac8c830d1f12dce8320de27e2a79e5d8cf7",
+    "example_check.log": "0aee81ecd1f1a1e15d79327b8914bb64d1923cd0ccd569d22db5252a6816a82d",
+    "allocation_test.log": "59801be54a701c22abd23f3469c92e33ab681829a2ec0e358722283494672e3a",
+    "native_tests.log": "18a9963d3a6ee068ae05498a50e99b9614ac7fe74caae5acf69ec3ef04c239cd"
+  },
+  "author_checkpoint_status": "IMPLEMENTED_TARGETED_TESTS_PASS_PENDING_INDEPENDENT_DELTA_REVIEW",
+  "integrated_execution": {
+    "record": "research/all_dag_completion_20261018/FINAL_EXECUTION.json",
+    "source_authority": "research/all_dag_completion_20261018/SOURCE_MANIFEST.json",
+    "independent_review": "research/all_dag_completion_20261018/nodes/A12/REVIEW.json",
+    "broad_production": "HOLD"
+  }
+}

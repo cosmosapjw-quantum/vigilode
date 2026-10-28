@@ -1,0 +1,37 @@
+{
+  "schema": "vigilode.causal-completion.v1",
+  "status": "implementation-verified",
+  "public_api": [
+    "coupled_step_causal",
+    "RawStepSession::new_causal",
+    "integrate_causal_observed"
+  ],
+  "schedules": [
+    "Forward",
+    "BatchedPicard"
+  ],
+  "native_regression_tests_passed": 66,
+  "source_pins": "evidence/CAUSAL_CODE_PINS.json",
+  "regression": "results/causal_regression_receipt.json",
+  "diagnostic_benchmark": "results/causal_benchmark_summary_preliminary.json",
+  "scope": {
+    "state_equation": "same projected raw-U RODAS5P target, full original-space validation unchanged",
+    "current_stage_derivative_calls": 0,
+    "newton_updates": 0,
+    "frozen_jvp": "retained for basis and full-space verification",
+    "small_matrix": "retained",
+    "overall_derivative_free": false,
+    "general_production_qualified": false
+  },
+  "remaining": [
+    "whole-trajectory work-precision comparison",
+    "broad nonnormal/nonlinear varying-rank corpus"
+  ],
+  "independent_review_fixes": [
+    "Actual per-block solve count added while full projected solve count retained",
+    "Failure task-completion semantics documented separately from actual callback counts",
+    "Final summary regenerated from source-pinned raw timing; preliminary summary preserved separately"
+  ],
+  "final_benchmark": "results/causal_benchmark_summary.json",
+  "final_benchmark_source": "548526add83a38a996875b3bd2f3cd3357465ed6"
+}

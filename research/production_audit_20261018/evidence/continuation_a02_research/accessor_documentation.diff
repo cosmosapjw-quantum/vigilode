@@ -1,0 +1,26 @@
+diff --git a/crates/rodas5p-integrators/src/packet_curve_output.rs b/crates/rodas5p-integrators/src/packet_curve_output.rs
+index b30edb0..e7bdbd4 100644
+--- a/crates/rodas5p-integrators/src/packet_curve_output.rs
++++ b/crates/rodas5p-integrators/src/packet_curve_output.rs
+@@ -51,6 +51,10 @@ impl PacketCertifiedView<'_> {
+     pub fn mean_radius(&self) -> f64 {
+         self.inner.mean_radius()
+     }
++    /// Base T1 radius `B_w` around the exact frozen polynomial. It excludes
++    /// displacement from evaluating the returned binary64 centers; use the
++    /// mode radii for returned-center enclosures. It is not a weighted ball
++    /// around `modes()`.
+     pub fn weighted_radius(&self) -> f64 {
+         self.inner.weighted_radius()
+     }
+@@ -164,6 +168,10 @@ impl PacketCurveOutputView<'_> {
+     pub fn mean_radius(&self) -> f64 {
+         self.mean_radius
+     }
++    /// Base T1 radius `B_w` around the exact frozen polynomial. It excludes
++    /// displacement from evaluating the returned binary64 centers; use the
++    /// mode radii for returned-center enclosures. It is not a weighted ball
++    /// around `modes()`.
+     pub fn weighted_radius(&self) -> f64 {
+         self.weighted_radius
+     }

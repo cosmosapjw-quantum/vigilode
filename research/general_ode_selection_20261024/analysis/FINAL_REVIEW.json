@@ -1,0 +1,142 @@
+{
+  "schema": "vigilode.general-ode-final-package-review.v1",
+  "reviewer": "independent_subagent_runtime_1024",
+  "observed_utc": "2026-10-23T20:17:08.828736+00:00",
+  "verdict": "PASS_SCOPED_PACKAGE_CONSISTENCY",
+  "blocking_findings": [],
+  "checks": {
+    "test_total_201": true,
+    "test_components_154_44_1_2": true,
+    "core_24_rows_8_cases_3_tolerances": true,
+    "core_24_endpoint_passes": true,
+    "session_6_workload_scopes_24_modes": true,
+    "session_all_common_error_cap": true,
+    "session31samples_per_mode": true,
+    "restart_gain_range_matches_decisions": true,
+    "persistent_slower_than_facade_one_shot": true,
+    "all18_frozen_source_hashes_match": true,
+    "run_receipt_hashes_and_local_scope_match": true,
+    "ncp_disabled_in_decision_and_validation": true,
+    "external_design_excludes_application_and_internal_labels": true,
+    "external_comparisons_not_claimed": true,
+    "broad_production_status_remains_hold": true
+  },
+  "test_receipts": [
+    {
+      "receipt_prefix": "evidence/tests/vigilode-final-clean",
+      "expected_passed": 154,
+      "observed_passed": 154,
+      "all_results_ok": true,
+      "exit_code": 0,
+      "stdout_sha256": "b2de179f143b5cd6c8b88293d98a5bb4c24c25c5da656f2e0820154790f1f4b6"
+    },
+    {
+      "receipt_prefix": "evidence/tests/native-final",
+      "expected_passed": 44,
+      "observed_passed": 44,
+      "all_results_ok": true,
+      "exit_code": 0,
+      "stdout_sha256": "67a0183edac64931dc7f1581ebb864bb7c7b474ab0d5eb70bb31b9bc648287b3"
+    },
+    {
+      "receipt_prefix": "evidence/tests/norm-unit",
+      "expected_passed": 1,
+      "observed_passed": 1,
+      "all_results_ok": true,
+      "exit_code": 0,
+      "stdout_sha256": "a40f9f7f0839236d4a4295044ba7930751bd11d69ef082484a9efad715a34574"
+    },
+    {
+      "receipt_prefix": "evidence/tests/doc-final",
+      "expected_passed": 2,
+      "observed_passed": 2,
+      "all_results_ok": true,
+      "exit_code": 0,
+      "stdout_sha256": "0adcb07e01ccba1a0229610c0b1a99b93b22b315664d846752006b2ed2c967a9"
+    }
+  ],
+  "numerical_evidence": {
+    "core_endpoint_rows": 24,
+    "core_cases": 8,
+    "core_tolerances": 3,
+    "session_workload_scopes": 6,
+    "session_mode_rows": 24,
+    "restart_over_persistent_median_ratio_range": [
+      1.5843539080428537,
+      3.082892880845031
+    ],
+    "persistent_over_facade_one_shot_relative_overhead_range": [
+      0.01032803159374529,
+      0.16720058111004077
+    ],
+    "gain_comparator": "restart per observation, not one-shot",
+    "statistical_scope": "observed medians on one host; no confidence interval or external-comparator superiority"
+  },
+  "run_receipt_checks": [
+    {
+      "run": "core-survey",
+      "exit_code": 0,
+      "local_runtime_command": true,
+      "numeric_threads": 1,
+      "stdout_hash_matches": true,
+      "stderr_hash_matches": true,
+      "source_identity_matches": true
+    },
+    {
+      "run": "session-65",
+      "exit_code": 0,
+      "local_runtime_command": true,
+      "numeric_threads": 1,
+      "stdout_hash_matches": true,
+      "stderr_hash_matches": true,
+      "source_identity_matches": true
+    },
+    {
+      "run": "session-1025",
+      "exit_code": 0,
+      "local_runtime_command": true,
+      "numeric_threads": 1,
+      "stdout_hash_matches": true,
+      "stderr_hash_matches": true,
+      "source_identity_matches": true
+    }
+  ],
+  "source_hash_checks": {
+    "Cargo.lock": true,
+    "Cargo.toml": true,
+    "crates/rodas5p-integrators/src/dopri5.rs": true,
+    "crates/rodas5p-integrators/src/rodas5p_fast.rs": true,
+    "crates/rodas5p-integrators/tests/frontier_session_contracts.rs": true,
+    "crates/vigilode/examples/production_core_survey.rs": true,
+    "crates/vigilode/examples/production_session_bench.rs": true,
+    "crates/vigilode/src/error.rs": true,
+    "crates/vigilode/src/explicit.rs": true,
+    "crates/vigilode/src/fd.rs": true,
+    "crates/vigilode/src/lib.rs": true,
+    "crates/vigilode/src/selection.rs": true,
+    "crates/vigilode/src/session.rs": true,
+    "crates/vigilode/src/solve.rs": true,
+    "crates/vigilode/tests/production_rhs_contracts.rs": true,
+    "crates/vigilode/tests/production_selection_contracts.rs": true,
+    "crates/vigilode/tests/production_session_contracts.rs": true,
+    "rust-toolchain.toml": true
+  },
+  "reviewed_artifact_hashes": {
+    "REPORT_KO.md": "c0842549cef503c472e0fbd93c7ea0f7d761f0207b047e4a783635bd2aa3be7e",
+    "DECISIONS.json": "986603d2d2a13d3076aa0f90147e61b6fe79f8265fb61797cc3806b70e5000a3",
+    "VALIDATION.json": "db2906e8b8c1933c800f0c717591da865f7d1a921a491cac72babaf13af2d06c",
+    "SOURCE_IDENTITY.json": "c2a1db028c2cdc15146e92d2821f0f67897700151254974e71295489690b02a7",
+    "analysis/SESSION_BENCHMARK.json": "6bfdeb5d6039f311576a535d1a7e78e73efffac472b94f00912e989e20bc6e66",
+    "analysis/CORE_SURVEY.json": "6c58850a3d00b7b9046c7c657452fa383a90b65e514206c1b31f2d024e5ae835",
+    "analysis/BRANCH_AUDIT.json": "686db1d1f9a26ece89245560eac99ec91b8e4da48b3e6a9dcbe91435c757a495"
+  },
+  "no_ncp_or_application_research_scope": "New receipts use task-local binaries with one numerical thread. New package and changes concern general ODE only; historical application references describe exclusions. This review cannot prove absence of unrecorded external actions.",
+  "limitations": [
+    "No new compiler, test or benchmark was executed by this reviewer.",
+    "The endpoint survey uses the stated100-times-scale cap; it does not prove global tolerance satisfaction.",
+    "Broad production suitability and same-error VODE/DVODE/diffsol/Julia superiority remain unestablished.",
+    "Timing samples within one process are not independent process or host replications."
+  ],
+  "nonblocking_editorial_note": "REPORT_KO says invalid target/epoch is refused; precisely, active-session targets are validated but terminal calls return the sticky result after epoch validation without inspecting target. The public API documentation already states this.",
+  "branch_audit_hash_refresh": true
+}

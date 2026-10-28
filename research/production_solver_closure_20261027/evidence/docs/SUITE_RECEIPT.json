@@ -1,0 +1,39 @@
+{
+  "suite": "docs",
+  "commands": [
+    {
+      "command": [
+        "cargo",
+        "doc",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "-p",
+        "vigilode-coupled",
+        "--no-deps"
+      ],
+      "exit_code": 0,
+      "receipt": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/evidence/docs/command_00/RECEIPT.json"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "-p",
+        "vigilode-coupled",
+        "--doc"
+      ],
+      "exit_code": 0,
+      "receipt": "/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/evidence/docs/command_01/RECEIPT.json"
+    }
+  ]
+}

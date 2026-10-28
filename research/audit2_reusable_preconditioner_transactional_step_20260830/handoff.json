@@ -1,0 +1,111 @@
+{
+  "schema": "vigilode-reusable-preconditioner-transactional-step-handoff/v1",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "authority": {
+    "stack_base_branch": "research/audit2-matrix-free-common-w-20260830",
+    "stack_base_head": "17fcd447c1dadcea978f241ff3ba94635f9c2bd4",
+    "stack_base_tree": "1152e0c74235afd7ae30c3b6de6315634fa49a59",
+    "stack_base_pr": 35,
+    "required_base_state": "OPEN_DRAFT_UNMERGED",
+    "recovered_archive_sha256": "c112309cab3e431ca563dd11dc1f67d95df0bfa85c8081251c33bea16ca44cfb",
+    "recovered_archive_completeness": "INCOMPLETE_TRANSCRIPT_RECOVERY_SNAPSHOT"
+  },
+  "publication": {
+    "branch": "research/audit2-reusable-preconditioner-transactional-step-20260830",
+    "implementation_head": "a2115e2dcaeb418185a3bccda62e60b6c4ff16ab",
+    "implementation_tree": "e560b501edff43043bfdd376a3490b924e504c65",
+    "implementation_head_role": "EXACT_CHECKOUT_FOR_LOCAL_ONLY_VALIDATION",
+    "final_branch_head_tree": "RECORDED_IN_POST_COMMIT_PR_RECEIPT",
+    "draft_pr": "RECORDED_IN_POST_COMMIT_PR_RECEIPT",
+    "pr_base": "research/audit2-matrix-free-common-w-20260830",
+    "checks": "RECORDED_IN_POST_COMMIT_PR_RECEIPT",
+    "scientific_merge": "FORBIDDEN",
+    "mock_connectivity": {
+      "pr": "https://github.com/cosmosapjw-quantum/vigilode/pull/37",
+      "checks": [
+        "audit2-feature-and-usage=SUCCESS",
+        "fresh-clone-build=SUCCESS"
+      ],
+      "merge_sha": "5467b8d6954d7acb87385e591470670588c2f970",
+      "scientific_value": "NONE"
+    }
+  },
+  "claim_ceiling": "EXPLORATORY_NONAUTHORITATIVE_REUSABLE_PRECONDITIONER_TRANSACTIONAL_STEP_SUBSTRATE",
+  "implementation": {
+    "feature_gate": "audit2-research",
+    "production_default_changed": false,
+    "reusable_preconditioner_family": "exact-finite-nonidentity-jacobi-diagonal-only",
+    "reuse_identity": [
+      "caller-declared frozen-W semantic SHA-256",
+      "runtime ExactOperatorIdentity",
+      "provider/revision/configuration bits",
+      "exact returned inverse-diagonal bits"
+    ],
+    "transaction": {
+      "candidate": "matrix-free common-W correction plus outer and independent gates",
+      "fallback": "isolated sequential-JF identity-preconditioned solve from immutable StepContext",
+      "state_policy": "commit candidate or accepted fallback only; otherwise preserve base state",
+      "work_policy": "monotone across setup, candidate, failures, fallback and rejection",
+      "cache_policy": "pending lease commits with admitted candidate or rolls back before fallback"
+    },
+    "pr35_p2_duplicate_preparation": "CLOSED_BY_SINGLE_PREPARED_BATCH_RHS_IN_THIS_NODE",
+    "pr35_receipt": "PRESERVED_AS_HISTORICAL_AT_PR35_HEAD"
+  },
+  "changed_paths": [
+    "README.md",
+    "crates/rodas5p-integrators/src/audit2_matrix_free_research.rs",
+    "crates/rodas5p-integrators/src/audit2_reusable_transaction_research.rs",
+    "crates/rodas5p-integrators/src/lib.rs",
+    "crates/rodas5p-integrators/tests/audit2_reusable_preconditioner_transaction_contracts.rs",
+    "tools/check-audit2-readiness.sh",
+    "tools/test_a1_receipt_ci_scope.py",
+    "research/audit2_reusable_preconditioner_transactional_step_20260830/**"
+  ],
+  "host_expectations": {
+    "dedicated_reusable_transaction_tests": 13,
+    "matrix_free_common_w_tests": 6,
+    "original_target_bridge_tests": 15,
+    "readiness": "PASS; 77 Rust tests and 20 Python tests",
+    "clippy_D_warnings": "PASS after replacing 11 useless temporary Vec allocations in tests",
+    "format": "PASS",
+    "diff_check": "PASS"
+  },
+  "contract_cases": [
+    "same binding reuse and changed binding invalidation",
+    "mathematical identity bits are rejected despite a false provider self-report",
+    "mutable provider drift invalidates reuse and cannot alter the cache-owned map",
+    "terminal setup failure preserves committed binding and partial setup work",
+    "invalid input fails before setup or work",
+    "single prepared target samples a stateful batch RHS once",
+    "atomic candidate state and preconditioner commit",
+    "late preconditioner apply failure rolls back and uses isolated fallback",
+    "nonfinite derived output bound cannot admit a candidate",
+    "candidate and fallback rejection preserves base state while work remains monotone"
+  ],
+  "remaining_local_only_node": {
+    "name": "FROZEN_REAL_CLIENT_VALIDATION",
+    "prompt": "CODEX_START_HERE.md",
+    "execution": "HOST_CODEX_ONLY",
+    "remote_mutation_authorized": false,
+    "requirements": [
+      "real executable client and checksum",
+      "independent reference and uncertainty authority",
+      "precommitted output, embedded and original-target budgets",
+      "same-W reuse and changed-W invalidation",
+      "candidate admission, rejection, late failure and terminal rejection cases",
+      "immutable state and monotone work receipts"
+    ]
+  },
+  "forbidden_claims": [
+    "speed or timing improvement",
+    "scalability",
+    "Krylov-basis or subspace reuse",
+    "general or production preconditioner",
+    "production/default dispatcher activation",
+    "real-client accuracy before the local-only authority protocol",
+    "dense-output correctness",
+    "general event handling",
+    "end-to-end whole-integration transactionality",
+    "holdout, comparator ranking, PM-7/K0 closure, scientific merge, tag or release"
+  ]
+}

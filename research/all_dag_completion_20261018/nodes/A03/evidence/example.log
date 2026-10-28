@@ -1,0 +1,14 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-readonly/crates/rodas5p-integrators)
+warning: method `candidate_problem` is never used
+  --> crates/rodas5p-integrators/src/bound_collective.rs:40:19
+   |
+39 | impl BoundCollectiveProblem {
+   | --------------------------- method in this implementation
+40 |     pub(crate) fn candidate_problem(&self) -> &OdeProblem {
+   |                   ^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 18.33s
+     Running `/workspace/scratch/0dc1e721cf82/runtime/all-dag-target/debug/examples/damped_packet_run`

@@ -1,0 +1,107 @@
+{
+  "a04_total_status": "HOLD",
+  "checks": {
+    "correct_uniform_bound_encloses_all_components": true,
+    "correct_uniform_component_bound": true,
+    "exact_witness_tail": true,
+    "false_historical_component_bound": true,
+    "historical_componentwise_claim_refuted": true,
+    "historical_norm_inequality_holds": true,
+    "nilpotent_series_terminated_exactly": true
+  },
+  "decision": "HISTORICAL_COMPONENTWISE_T2_SUPERSEDED",
+  "preregistration_sha256": "e5982b97e0086242e8bd28941dca7f4478363864278afc369533073dbf139155",
+  "python": "3.12.3",
+  "schema": "vigilode-a04-t2-exact-tail-research-v1",
+  "scope": "Exact lemma falsification and corrected norm implication only; no native stopping-rule or total-action admission claim.",
+  "script_sha256": "b4c1f0a13639b206089ddbf7101b2802207da514f83bba6cebbf3ab355001995",
+  "source_head_observed_at_execution": "6b722a918deb0ab178b8e77090cac1280dbb3051",
+  "source_sha256": {
+    "crates/rodas5p-core/src/directed.rs": "2adadb6a5d77073e0a7d3d60aedfbf37e124d15a586a880d7d5a8c8d5307a814",
+    "crates/rodas5p-core/src/leja_action.rs": "25904301d40f11d6a5fee1d27aac7454ca02874a9e995634e7909af2e4ae97e8",
+    "crates/rodas5p-core/src/polynomial_action.rs": "656d494fd74783090676e1d3a18aaaa5dbd5df99c0541745979aeb6e26394a48",
+    "docs/reviews/20261011_py05/LEJA_TOTAL_BOUND.md": "a6bfee9ed0283d5a0fc24629ab6e0495b38ba7236670d5f343a3a1884c438613",
+    "docs/reviews/20261018_production_audit/SOLVER_AUDIT_KO.md": "f9b4d1cab5730da6e632268f50f9a2a6a2938a7b05bdd23d0b7ebb4a9d759fc7"
+  },
+  "total_leja_authority": "EstimateOnly",
+  "witness": {
+    "N": 2,
+    "correct_uniform_component_bound": "1/4",
+    "failed_historical_components": [
+      3
+    ],
+    "historical_component_bounds": [
+      "0",
+      "0",
+      "1/4",
+      "0"
+    ],
+    "matrix": [
+      [
+        "0",
+        "0",
+        "0",
+        "0"
+      ],
+      [
+        "1",
+        "0",
+        "0",
+        "0"
+      ],
+      [
+        "0",
+        "1",
+        "0",
+        "0"
+      ],
+      [
+        "0",
+        "0",
+        "1",
+        "0"
+      ]
+    ],
+    "norm_inf": "1",
+    "norm_one": "1",
+    "q": "1/3",
+    "tail": [
+      "0",
+      "0",
+      "0",
+      "1/6"
+    ],
+    "terms_0_through_4": [
+      [
+        "1",
+        "0",
+        "0",
+        "0"
+      ],
+      [
+        "0",
+        "1",
+        "0",
+        "0"
+      ],
+      [
+        "0",
+        "0",
+        "1/2",
+        "0"
+      ],
+      [
+        "0",
+        "0",
+        "0",
+        "1/6"
+      ],
+      [
+        "0",
+        "0",
+        "0",
+        "0"
+      ]
+    ]
+  }
+}

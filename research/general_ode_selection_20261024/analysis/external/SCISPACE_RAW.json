@@ -1,0 +1,692 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Found 10 relevant papers on 'What are the original Dormand–Prince embedded Runge–Kutta 5(4) method and RODAS5P Rosenbrock method papers, including their order and stability conditions and the limitations of embedded error estimators for stiff or oscillatory ordinary differential equations?'.\n\n\n1. Méthodes de Runge-Kutta et Rosenbrock pour équations différentielles algébriques et systèmes différentiels raides\n   ID: mmw9unrqdioz\n   2025 · Roche, Michel\n   DOI: 10.13097/archive-ouverte/unige:187311\n   Abstract: De nombreux problèmes pratiques conduisent à des systèmes d'équations différentielles qui se formulent implicitement par F(Y, Y') = 0 où ∂F / ∂Y' est singulière. Ces systèmes, appelés habituellement <i>équations différentielles algébriques</i>, apparaissent souvent comme des équations différentielles définies sur des variétés. De tels problèmes surgissent très naturellement dans des applications diverses, par exemple dans les systèmes mécaniques avec contraintes, en cinétique chimique, pour des simulations de circuits électriques ou encore dans la théorie du contrôle. Dans cette thèse on étudie les propriétés (ordre, convergence, estimation de l'erreur locale) des méthodes de <i>Runge-Kutta</i> et <i>Rosenbrock</i> appliquées à certaines classes d'équations différentielles algébriques. Ces méthodes permettent une sélection du pas très simple, présentent des avantages pour le calcul en parallèle (Runge-Kutta) ou sont faciles à programmer (Rosenbrock). On inclut aussi une analyse de ces méthodes lorsqu'elles sont appliquées à des <i>équations différentielles raides</i> qui se présentent sous une forme dite \"à perturbations singulières\". \n\n2. Singly-Implicit Runge--Kutta Methods for Stiff, Ordinary Differential-Equations\n   ID: 4ql9js7r2eyt\n   2025 · Christopher Kennedy, Mark H. Carpenter\n   DOI: 10.64631/asul7117\n   Abstract: Singly-Implicit Runge–Kutta (SIRK) methods are designed for integrating systems of stiff, first-order ordinary differential equations (ODEs). The accuracy and stability properties of the new SIRKs are similar to those of the Radau IIA methods, at potentially reduced implementation costs. Nine stiffly-accurate, L-stable and internally L-stable SIRK methods, having stage-orders of three or four, with orders three through six are given, each with an embedded method. A stage-order five method is included as well. The accuracies of the new SIRKs and Radau IIA methods, are compared on three singular perturbation problems. Order reduction of the SIRKs is generally minimal and they perform nearly as well as Radau IIA methods. There is evidence that SIRKs can be implemented at costs commensurate with diagonally implicit methods (i.e, DIRK/SDIRK/ESDIRK), making them highly competitive integrators. Efficient implementation of SIRKs at scale however, is not reported herein. \n\n3. Embedded Schemes of the Runge-Kutta Type for the Direct Solution of Fourth-Order Ordinary Differential Equations\n   ID: 1hefw9t2tp5f\n   2024 · F. A. Fawzi, Nizam G. Ghawadri · Iraqi journal for computer science and mathematics\n   DOI: 10.52866/2788-7421.1210\n   Abstract: This paper introduces an innovative approach for solving fourth-order ordinary differential equations (ODEs) of the form. We present the embedded Runge-Kutta (RK) Direct Explicit (ERKDGF) method, a family of embedded direct explicit RK type methods tailored specifically for this purpose. Through meticulous application of Taylor expansion, we have derived algebraic equations with order conditions up to the sixth order, ensuring the accuracy and reliability of our proposed integrator. We have developed two key variants within this method, namely RKDF5(4) and ERKDGF5(4), with orders five and four, respectively. Our approach is strategically designed, with the higher-order method ensuring exceptional accuracy, and the lowerorder counterpart providing optimal error estimates. To facilitate practical implementation, we have devised a variable step-size code based on these methods, which was applied to solve a set of fourth-order problems. Our method's performance was rigorously assessed through numerical experiments, with comparisons to existing embedded RK pairs that necessitate problem reduction into a system of first-order ODEs. The results unequivocally demonstrate the effciency of our ERKDGF method, both in terms of accuracy and the number of function evaluations required. This research marks a significant advancement in the field, offering a robust and effcient solution for directly solving fourth-order ordinary differential equations. \n\n4. Embedded singly diagonally implicit runge-kutta methods (4,5) in (5,6). for the integration of stiff systems of odes\n   ID: tydfny6yxg\n   1998 · Fudziah Ismail, Mohamed B. Suleman · International Journal of Computer Mathematics\n   DOI: 10.1080/00207169808804644\n   Abstract: In this paper, fourth order, five-stage embedded in fifth order six-stage Singly Diagonally Implicit Runge-Kutta (SDIRK) methods are derived, and their regions of stability are determined. Numerical results of these methods are presented and compared with the results obtained when the same systems are solved using Rabeh's third order three-stage embedded in fourth order four-stage SDIRK method. Also presented are the stability regions of the methods.\n\n5. An embedded 5(4) explicit Runge-Kutta-Nyström method with dissipation of high order\n   ID: 2o8rpbe2pr\n   2013 · Munirah Mohamad, Norazak Senu, Mohamed Suleiman\n   DOI: 10.1063/1.4801147\n   Abstract: A new 5(4) embedded explicit Runge-Kutta-Nystrom (RKN) method with dissipation of high order is developed to solve integration of initial-value problems for second-order ordinary differential equations possessing oscillating solutions. The fifth order formula has dispersive order eight and dissipative order nine. The fourth-order embedded formula is obtained to control the local truncation errors. Numerical experiments indicate that the new method is more efficient than the existing embedded explicit RKN methods.\n\n6. Derivation of Efficient, Continuous, Explicit Runge-Kutta Methods.\n   ID: 2ukj3f9d5f\n   1992 · Brynjulf Owren, Marino Zennaro · SIAM Journal on Scientific Computing\n   Abstract: Continuous, explicit Runge–Kutta methods with the minimal number of stages are considered. These methods are continuously differentiable if and only if one of the stages is the FSAL evaluation. A characterization of a subclass of these methods is developed for orders 3, 4, and 5. It is shown how the free parameters of these methods can be used either to minimize the continuous truncation error coefficients or to maximize the stability region. As a representative for these methods the fifth-order method with minimized error coefficients is chosen, supplied with an error estimation method, and analysed by using the DETEST software. The results are compared with a similar implementation of the Dormand–Prince 5(4) pair with interpolant, showing a significant advantage in the new method for the chosen problems.\n\n7. Singly diagonally implicit runge-kutta methods with an explicit first stage\n   ID: 1d4veuds5t\n   2004 · Anne Kværnø · Bit Numerical Mathematics\n   DOI: 10.1023/B:BITN.0000046811.70614.38\n   Abstract: The purpose of this paper is to construct methods for solving stiff ODEs, in particular singular perturbation problems. We consider embedded pairs of singly diagonally implicit Runge–Kutta methods with an explicit first stage (ESDIRKs). Stiffly accurate pairs of order 3/2, 4/3 and 5/4 are constructed.\n\n8. Embedded dirk methods for the numerical integration of stiff systems of odes\n   ID: 1sexnpz3p1\n   1987 · Ala H. Al-Rabeh · International Journal of Computer Mathematics\n   DOI: 10.1080/00207168708803557\n   Abstract: In this paper, the optimal order of embedded pairs of Diagonally Implicit Runge-Kutta (DIRK) methods is examined. It is shown that a q-stage DIRK method of order p embedded in a q + 1 stage DIRK method of order p + 1 cannot have p = q + 1. Thus adopting embedding techniques to estimate the local truncation error results in giving up an order of accuracy for q<6. Embedded pairs of orders two and three for the basic method are derived with the additional stage being either explicit or implicit. Numerical results indicate that significant savings are realized when the extra stage is explicit. An analysis of A and L-stability properties of q-stage order q DIRK methods with unequal diagonal elements is presented. Necessary and sufficient conditions for A and L-stability are derived. To assess the potential of such methods, a number of embedded DIRK formulas are implemented. Numerical results for selected test problems are presented.\n\n9. Embedded methods of order six for special systems of ordinary differential equations\n   ID: 1buetc0h7s\n   2017 · Igor V. Olemskoy, Alexey S. Eremin, Nikolai A. Kovrizhnykh · Applied mathematical sciences\n   DOI: 10.12988/AMS.2017.610260\n   Abstract: An embedded pair of Runge–Kutta methods of orders six and four for structurally partitioned systems of ordinary differential equations is constructed. The Dormand–Prince approach to automatic step-size control is used. The coefficients of the constructed methods are presented. The method has seven stages, however the First-Same-as-Last technique further reduces the computational cost. Thus the presented scheme is more effective than existing classical methods of order six. Mathematics Subject Classification: 65L05, 65L06\n\n10. Explicit Runge–Kutta Methods for Stiff Problems with a Gap in Their Eigenvalue Spectrum\n   ID: 3j6tdybgng\n   2018 · Philippe Bocher, Juan I. Montijano, Luis Rández · Journal of Scientific Computing\n   DOI: 10.1007/S10915-018-0737-3\n   Abstract: In this paper we consider the numerical solution of stiff problems in which the eigenvalues are separated into two clusters, one containing the “stiff”, or fast, components and one containing the slow components, that is, there is a gap in their eigenvalue spectrum. By using exponential fitting techniques we develop a class of explicit Runge–Kutta methods, that we call stability fitted methods, for which the stability domain has two regions, one close to the origin and the other one fitting the large eigenvalues. We obtain the size of their stability regions as a function of the order and the fitting conditions. We also obtain conditions that the coefficients of these methods must satisfy to have a given stiff order for the Prothero–Robinson test equation. Finally, we construct an embedded pair of stability fitted methods of orders 2 and 1 and show its performance by means of several numerical experiments."
+    }
+  ],
+  "structuredContent": {
+    "searchTerm": "What are the original Dormand–Prince embedded Runge–Kutta 5(4) method and RODAS5P Rosenbrock method papers, including their order and stability conditions and the limitations of embedded error estimators for stiff or oscillatory ordinary differential equations?",
+    "papers": [
+      {
+        "id": 4085636462,
+        "title": "Méthodes de Runge-Kutta et Rosenbrock pour équations différentielles algébriques et systèmes différentiels raides",
+        "is_archived": false,
+        "full_slug": "methodes-de-runge-kutta-et-rosenbrock-pour-equations-mmw9unrqdioz",
+        "journal": null,
+        "conference_series": null,
+        "date": "2025-08-29T00:00:00Z",
+        "is_oa": null,
+        "publication_type": "Journal Article",
+        "doi": "10.13097/archive-ouverte/unige:187311",
+        "unique_id": "mmw9unrqdioz",
+        "abstract": "De nombreux problèmes pratiques conduisent à des systèmes d'équations différentielles qui se formulent implicitement par F(Y, Y') = 0 où ∂F / ∂Y' est singulière. Ces systèmes, appelés habituellement <i>équations différentielles algébriques</i>, apparaissent souvent comme des équations différentielles définies sur des variétés. De tels problèmes surgissent très naturellement dans des applications diverses, par exemple dans les systèmes mécaniques avec contraintes, en cinétique chimique, pour des simulations de circuits électriques ou encore dans la théorie du contrôle. Dans cette thèse on étudie les propriétés (ordre, convergence, estimation de l'erreur locale) des méthodes de <i>Runge-Kutta</i> et <i>Rosenbrock</i> appliquées à certaines classes d'équations différentielles algébriques. Ces méthodes permettent une sélection du pas très simple, présentent des avantages pour le calcul en parallèle (Runge-Kutta) ou sont faciles à programmer (Rosenbrock). On inclut aussi une analyse de ces méthodes lorsqu'elles sont appliquées à des <i>équations différentielles raides</i> qui se présentent sous une forme dite \"à perturbations singulières\". ",
+        "authors": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "Roche, Michel",
+              "full_slug": null
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "metrics": {
+          "citations": {
+            "total": null
+          }
+        },
+        "tldr": null,
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 4072954421,
+        "title": "Singly-Implicit Runge--Kutta Methods for Stiff, Ordinary Differential-Equations",
+        "is_archived": false,
+        "full_slug": "singly-implicit-runge-kutta-methods-for-stiff-ordinary-4ql9js7r2eyt",
+        "journal": null,
+        "conference_series": null,
+        "date": "2025-09-01T00:00:00Z",
+        "is_oa": null,
+        "publication_type": "Journal Article",
+        "doi": "10.64631/asul7117",
+        "unique_id": "4ql9js7r2eyt",
+        "abstract": "Singly-Implicit Runge–Kutta (SIRK) methods are designed for integrating systems of stiff, first-order ordinary differential equations (ODEs). The accuracy and stability properties of the new SIRKs are similar to those of the Radau IIA methods, at potentially reduced implementation costs. Nine stiffly-accurate, L-stable and internally L-stable SIRK methods, having stage-orders of three or four, with orders three through six are given, each with an embedded method. A stage-order five method is included as well. The accuracies of the new SIRKs and Radau IIA methods, are compared on three singular perturbation problems. Order reduction of the SIRKs is generally minimal and they perform nearly as well as Radau IIA methods. There is evidence that SIRKs can be implemented at costs commensurate with diagonally implicit methods (i.e, DIRK/SDIRK/ESDIRK), making them highly competitive integrators. Efficient implementation of SIRKs at scale however, is not reported herein. ",
+        "authors": {
+          "total": 2,
+          "data": [
+            {
+              "display_name": "Christopher Kennedy",
+              "full_slug": null
+            },
+            {
+              "display_name": "Mark H. Carpenter",
+              "full_slug": null
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "metrics": {
+          "citations": {
+            "total": null
+          }
+        },
+        "tldr": "This study introduces nine new Singly-Implicit Runge-Kutta methods for stiff ODEs, offering accuracy and stability comparable to Radau IIA methods at potentially lower implementation costs, making them competitive integrators for stiff systems.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 4050553052,
+        "title": "Embedded Schemes of the Runge-Kutta Type for the Direct Solution of Fourth-Order Ordinary Differential Equations",
+        "is_archived": false,
+        "full_slug": "embedded-schemes-of-the-runge-kutta-type-for-the-direct-1hefw9t2tp5f",
+        "journal": {
+          "display_name": "Iraqi journal for computer science and mathematics",
+          "official_page": null,
+          "issn": "2788-7421",
+          "alias": [
+            "IJCSM"
+          ],
+          "id": 4000046511,
+          "slug": "iraqi-journal-for-computer-science-and-mathematics",
+          "unique_id": "6zzyq28d",
+          "full_slug": "iraqi-journal-for-computer-science-and-mathematics-6zzyq28d"
+        },
+        "conference_series": null,
+        "date": "2024-11-25T00:00:00Z",
+        "is_oa": null,
+        "publication_type": "Journal Article",
+        "doi": "10.52866/2788-7421.1210",
+        "unique_id": "1hefw9t2tp5f",
+        "abstract": "This paper introduces an innovative approach for solving fourth-order ordinary differential equations (ODEs) of the form. We present the embedded Runge-Kutta (RK) Direct Explicit (ERKDGF) method, a family of embedded direct explicit RK type methods tailored specifically for this purpose. Through meticulous application of Taylor expansion, we have derived algebraic equations with order conditions up to the sixth order, ensuring the accuracy and reliability of our proposed integrator. We have developed two key variants within this method, namely RKDF5(4) and ERKDGF5(4), with orders five and four, respectively. Our approach is strategically designed, with the higher-order method ensuring exceptional accuracy, and the lowerorder counterpart providing optimal error estimates. To facilitate practical implementation, we have devised a variable step-size code based on these methods, which was applied to solve a set of fourth-order problems. Our method's performance was rigorously assessed through numerical experiments, with comparisons to existing embedded RK pairs that necessitate problem reduction into a system of first-order ODEs. The results unequivocally demonstrate the effciency of our ERKDGF method, both in terms of accuracy and the number of function evaluations required. This research marks a significant advancement in the field, offering a robust and effcient solution for directly solving fourth-order ordinary differential equations. ",
+        "authors": {
+          "total": 2,
+          "data": [
+            {
+              "display_name": "F. A. Fawzi",
+              "full_slug": null
+            },
+            {
+              "display_name": "Nizam G. Ghawadri",
+              "full_slug": null
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "metrics": {
+          "citations": {
+            "total": null
+          }
+        },
+        "tldr": "This paper introduces the ERKDGF method, a family of embedded Runge-Kutta methods for directly solving fourth-order ODEs, with two variants (RKDF5(4) and ERKDGF5(4)) achieving exceptional accuracy and optimal error estimates through variable step-size coding.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 1964390829,
+        "title": "Embedded singly diagonally implicit runge-kutta methods (4,5) in (5,6). for the integration of stiff systems of odes",
+        "is_archived": false,
+        "full_slug": "embedded-singly-diagonally-implicit-runge-kutta-methods-4-5-tydfny6yxg",
+        "journal": {
+          "display_name": "International Journal of Computer Mathematics",
+          "official_page": "https://www.tandfonline.com/toc/gcom20/current",
+          "issn": "0020-7160",
+          "alias": null,
+          "id": 124867444,
+          "slug": "international-journal-of-computer-mathematics",
+          "unique_id": "x5k2uf45",
+          "full_slug": "international-journal-of-computer-mathematics-x5k2uf45"
+        },
+        "conference_series": null,
+        "date": "1998-01-01T00:00:00Z",
+        "is_oa": false,
+        "publication_type": "Journal Article",
+        "doi": "10.1080/00207169808804644",
+        "unique_id": "tydfny6yxg",
+        "abstract": "In this paper, fourth order, five-stage embedded in fifth order six-stage Singly Diagonally Implicit Runge-Kutta (SDIRK) methods are derived, and their regions of stability are determined. Numerical results of these methods are presented and compared with the results obtained when the same systems are solved using Rabeh's third order three-stage embedded in fourth order four-stage SDIRK method. Also presented are the stability regions of the methods.",
+        "authors": {
+          "total": 2,
+          "data": [
+            {
+              "display_name": "Fudziah Ismail",
+              "id": 2155660015,
+              "slug": "fudziah-ismail",
+              "unique_id": "1c8hln2fbn",
+              "full_slug": "fudziah-ismail-1c8hln2fbn",
+              "affiliation_full_slug": "universiti-putra-malaysia-2fkavo9l"
+            },
+            {
+              "display_name": "Mohamed B. Suleman",
+              "id": 2946929262,
+              "slug": "mohamed-b-suleman",
+              "unique_id": "fat16qyn23",
+              "full_slug": "mohamed-b-suleman-fat16qyn23",
+              "affiliation_full_slug": "universiti-putra-malaysia-2fkavo9l"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "Universiti Putra Malaysia",
+              "city": "Seri Kembangan",
+              "region": null,
+              "country": "Malaysia",
+              "id": 130343225,
+              "slug": "universiti-putra-malaysia",
+              "unique_id": "2fkavo9l",
+              "full_slug": "universiti-putra-malaysia-2fkavo9l"
+            }
+          ]
+        },
+        "fulltext_url": null,
+        "fulltext_url_no_follow": true,
+        "paper_urls": {
+          "order": [
+            "Html"
+          ],
+          "data": {
+            "Html": [
+              "https://www.tandfonline.com/doi/abs/10.1080/00207169808804644",
+              "https://core.ac.uk/display/153827190"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": 8
+          }
+        },
+        "tldr": "In this paper, fourth order, five-stage embedded in fifth order six-stage Singly Diagonally Implicit Runge-Kutta (SDIRK) methods are derived, and their regions of stability are determined.",
+        "podcast": null,
+        "podcast_generation_allowed": false,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 2089191477,
+        "title": "An embedded 5(4) explicit Runge-Kutta-Nyström method with dissipation of high order",
+        "is_archived": false,
+        "full_slug": "an-embedded-5-4-explicit-runge-kutta-nystrom-method-with-2o8rpbe2pr",
+        "journal": null,
+        "conference_series": null,
+        "date": "2013-04-22T00:00:00Z",
+        "is_oa": true,
+        "publication_type": "Proceedings Article",
+        "doi": "10.1063/1.4801147",
+        "unique_id": "2o8rpbe2pr",
+        "abstract": "A new 5(4) embedded explicit Runge-Kutta-Nystrom (RKN) method with dissipation of high order is developed to solve integration of initial-value problems for second-order ordinary differential equations possessing oscillating solutions. The fifth order formula has dispersive order eight and dissipative order nine. The fourth-order embedded formula is obtained to control the local truncation errors. Numerical experiments indicate that the new method is more efficient than the existing embedded explicit RKN methods.",
+        "authors": {
+          "total": 4,
+          "data": [
+            {
+              "display_name": "Munirah Mohamad",
+              "id": 2465250848,
+              "slug": "munirah-mohamad",
+              "unique_id": "pyxubt6wr1",
+              "full_slug": "munirah-mohamad-pyxubt6wr1"
+            },
+            {
+              "display_name": "Norazak Senu",
+              "id": 1535119040,
+              "slug": "norazak-senu",
+              "unique_id": "5eropbo3a4",
+              "full_slug": "norazak-senu-5eropbo3a4"
+            },
+            {
+              "display_name": "Mohamed Suleiman",
+              "id": 2161037385,
+              "slug": "mohamed-suleiman",
+              "unique_id": "2e5ap9hmt4",
+              "full_slug": "mohamed-suleiman-2e5ap9hmt4"
+            },
+            {
+              "display_name": "Fudziah Ismail",
+              "id": 2155660015,
+              "slug": "fudziah-ismail",
+              "unique_id": "1c8hln2fbn",
+              "full_slug": "fudziah-ismail-1c8hln2fbn"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "fulltext_url": "/pdf/an-embedded-5-4-explicit-runge-kutta-nystrom-method-with-2o8rpbe2pr.pdf",
+        "fulltext_url_no_follow": false,
+        "paper_urls": {
+          "order": [
+            "Html",
+            "Others"
+          ],
+          "data": {
+            "Html": [
+              "http://ui.adsabs.harvard.edu/abs/2013AIPC.1522..362M/abstract",
+              "https://aip.scitation.org/doi/10.1063/1.4801147"
+            ],
+            "Others": [
+              "http://scitation.aip.org/content/aip/proceeding/aipcp/10.1063/1.4801147"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": 2
+          }
+        },
+        "tldr": "In this article, a 5(4) embedded explicit Runge-Kutta-Nystrom (RKN) method with dissipation of high order was developed to solve integration of initial value problems for second-order ODEs possessing oscillating solutions.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 3046372653,
+        "title": "Derivation of Efficient, Continuous, Explicit Runge-Kutta Methods.",
+        "is_archived": false,
+        "full_slug": "derivation-of-efficient-continuous-explicit-runge-kutta-2ukj3f9d5f",
+        "journal": {
+          "display_name": "SIAM Journal on Scientific Computing",
+          "official_page": "http://www.siam.org/journals/sisc.php",
+          "issn": "1064-8275",
+          "alias": [
+            "SIAM Journal on Scientific Computing"
+          ],
+          "id": 165512578,
+          "slug": "siam-journal-on-scientific-computing",
+          "unique_id": "162j53kf",
+          "full_slug": "siam-journal-on-scientific-computing-162j53kf"
+        },
+        "conference_series": null,
+        "date": "1992-01-01T00:00:00Z",
+        "is_oa": true,
+        "publication_type": "Journal Article",
+        "doi": null,
+        "unique_id": "2ukj3f9d5f",
+        "abstract": "Continuous, explicit Runge–Kutta methods with the minimal number of stages are considered. These methods are continuously differentiable if and only if one of the stages is the FSAL evaluation. A characterization of a subclass of these methods is developed for orders 3, 4, and 5. It is shown how the free parameters of these methods can be used either to minimize the continuous truncation error coefficients or to maximize the stability region. As a representative for these methods the fifth-order method with minimized error coefficients is chosen, supplied with an error estimation method, and analysed by using the DETEST software. The results are compared with a similar implementation of the Dormand–Prince 5(4) pair with interpolant, showing a significant advantage in the new method for the chosen problems.",
+        "authors": {
+          "total": 2,
+          "data": [
+            {
+              "display_name": "Brynjulf Owren",
+              "id": 1412103543,
+              "slug": "brynjulf-owren",
+              "unique_id": "3h17x2amif",
+              "full_slug": "brynjulf-owren-3h17x2amif"
+            },
+            {
+              "display_name": "Marino Zennaro",
+              "id": 2152241962,
+              "slug": "marino-zennaro",
+              "unique_id": "1li8igegx1",
+              "full_slug": "marino-zennaro-1li8igegx1"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "fulltext_url": null,
+        "fulltext_url_no_follow": true,
+        "paper_urls": {
+          "order": [
+            "Html"
+          ],
+          "data": {
+            "Html": [
+              "https://dblp.uni-trier.de/db/journals/siamsc/siamsc13.html#OwrenZ92"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": 1
+          }
+        },
+        "tldr": "In this paper, a characterization of a subclass of Runge-Kutta methods is developed for orders 3, 4, and 5, and the free parameters of these methods can be used either to minimize the continuous truncation error coefficients or to maximize the stability region.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 2079038427,
+        "title": "Singly diagonally implicit runge-kutta methods with an explicit first stage",
+        "is_archived": false,
+        "full_slug": "singly-diagonally-implicit-runge-kutta-methods-with-an-1d4veuds5t",
+        "journal": {
+          "display_name": "Bit Numerical Mathematics",
+          "official_page": "http://www.csc.kth.se/BIT",
+          "issn": "0006-3835",
+          "alias": null,
+          "id": 125499977,
+          "slug": "bit-numerical-mathematics",
+          "unique_id": "lwt5ypjd",
+          "full_slug": "bit-numerical-mathematics-lwt5ypjd"
+        },
+        "conference_series": null,
+        "date": "2004-08-01T00:00:00Z",
+        "is_oa": true,
+        "publication_type": "Journal Article",
+        "doi": "10.1023/B:BITN.0000046811.70614.38",
+        "unique_id": "1d4veuds5t",
+        "abstract": "The purpose of this paper is to construct methods for solving stiff ODEs, in particular singular perturbation problems. We consider embedded pairs of singly diagonally implicit Runge–Kutta methods with an explicit first stage (ESDIRKs). Stiffly accurate pairs of order 3/2, 4/3 and 5/4 are constructed.",
+        "authors": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "Anne Kværnø",
+              "id": 1270630667,
+              "slug": "anne-kvaerno",
+              "unique_id": "d6keqcmzkb",
+              "full_slug": "anne-kvaerno-d6keqcmzkb",
+              "affiliation_full_slug": "norwegian-university-of-science-and-technology-o808qjvg"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "Norwegian University of Science and Technology",
+              "city": "Trondheim",
+              "region": null,
+              "country": "Norway",
+              "id": 204778367,
+              "slug": "norwegian-university-of-science-and-technology",
+              "unique_id": "o808qjvg",
+              "full_slug": "norwegian-university-of-science-and-technology-o808qjvg"
+            }
+          ]
+        },
+        "fulltext_url": "/pdf/singly-diagonally-implicit-runge-kutta-methods-with-an-1d4veuds5t.pdf",
+        "fulltext_url_no_follow": false,
+        "paper_urls": {
+          "order": [
+            "Html"
+          ],
+          "data": {
+            "Html": [
+              "https://link.springer.com/article/10.1023/B:BITN.0000046811.70614.38"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": 122
+          }
+        },
+        "tldr": "Stiffly accurate pairs of singly diagonally implicit Runge–Kutta methods with an explicit first stage (ESDIRKs) for solving stiff ODEs, in particular singular perturbation problems.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 1965307407,
+        "title": "Embedded dirk methods for the numerical integration of stiff systems of odes",
+        "is_archived": false,
+        "full_slug": "embedded-dirk-methods-for-the-numerical-integration-of-stiff-1sexnpz3p1",
+        "journal": {
+          "display_name": "International Journal of Computer Mathematics",
+          "official_page": "https://www.tandfonline.com/toc/gcom20/current",
+          "issn": "0020-7160",
+          "alias": null,
+          "id": 124867444,
+          "slug": "international-journal-of-computer-mathematics",
+          "unique_id": "x5k2uf45",
+          "full_slug": "international-journal-of-computer-mathematics-x5k2uf45"
+        },
+        "conference_series": null,
+        "date": "1987-01-01T00:00:00Z",
+        "is_oa": false,
+        "publication_type": "Journal Article",
+        "doi": "10.1080/00207168708803557",
+        "unique_id": "1sexnpz3p1",
+        "abstract": "In this paper, the optimal order of embedded pairs of Diagonally Implicit Runge-Kutta (DIRK) methods is examined. It is shown that a q-stage DIRK method of order p embedded in a q + 1 stage DIRK method of order p + 1 cannot have p = q + 1. Thus adopting embedding techniques to estimate the local truncation error results in giving up an order of accuracy for q<6. Embedded pairs of orders two and three for the basic method are derived with the additional stage being either explicit or implicit. Numerical results indicate that significant savings are realized when the extra stage is explicit. An analysis of A and L-stability properties of q-stage order q DIRK methods with unequal diagonal elements is presented. Necessary and sufficient conditions for A and L-stability are derived. To assess the potential of such methods, a number of embedded DIRK formulas are implemented. Numerical results for selected test problems are presented.",
+        "authors": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "Ala H. Al-Rabeh",
+              "id": 2666434650,
+              "slug": "ala-h-al-rabeh",
+              "unique_id": "39jhooo7i3",
+              "full_slug": "ala-h-al-rabeh-39jhooo7i3"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "fulltext_url": null,
+        "fulltext_url_no_follow": true,
+        "paper_urls": {
+          "order": [],
+          "data": {
+            "Unknown": [
+              "http://www.tandfonline.com/doi/abs/10.1080/00207168708803557?queryID=%24%7BresultBean.queryID%7D",
+              "http://cat.inist.fr/?aModele=afficheN&cpsidt=7659282"
+            ]
+          }
+        },
+        "metrics": {
+          "citations": {
+            "total": 11
+          }
+        },
+        "tldr": "In this article, the optimal order of embedded pairs of Diagonally Implicit Runge-Kutta (DIRK) methods is examined, and an analysis of A and L-stability properties of q-stage order q DIRK methods with unequal diagonal elements is presented.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 2564859833,
+        "title": "Embedded methods of order six for special systems of ordinary differential equations",
+        "is_archived": false,
+        "full_slug": "embedded-methods-of-order-six-for-special-systems-of-1buetc0h7s",
+        "journal": {
+          "display_name": "Applied mathematical sciences",
+          "official_page": "http://www.m-hikari.com/ams/index.html",
+          "issn": "0066-5452",
+          "alias": [
+            "Applied mathematical sciences (Print)"
+          ],
+          "id": 2764390947,
+          "slug": "applied-mathematical-sciences",
+          "unique_id": "1afraz6q",
+          "full_slug": "applied-mathematical-sciences-1afraz6q"
+        },
+        "conference_series": null,
+        "date": "2017-01-01T00:00:00Z",
+        "is_oa": false,
+        "publication_type": "Journal Article",
+        "doi": "10.12988/AMS.2017.610260",
+        "unique_id": "1buetc0h7s",
+        "abstract": "An embedded pair of Runge–Kutta methods of orders six and four for structurally partitioned systems of ordinary differential equations is constructed. The Dormand–Prince approach to automatic step-size control is used. The coefficients of the constructed methods are presented. The method has seven stages, however the First-Same-as-Last technique further reduces the computational cost. Thus the presented scheme is more effective than existing classical methods of order six. Mathematics Subject Classification: 65L05, 65L06",
+        "authors": {
+          "total": 3,
+          "data": [
+            {
+              "display_name": "Igor V. Olemskoy",
+              "id": 365989691,
+              "slug": "igor-v-olemskoy",
+              "unique_id": "249r77hc7v",
+              "full_slug": "igor-v-olemskoy-249r77hc7v"
+            },
+            {
+              "display_name": "Alexey S. Eremin",
+              "id": 2000614537,
+              "slug": "alexey-s-eremin",
+              "unique_id": "2p47vt16gm",
+              "full_slug": "alexey-s-eremin-2p47vt16gm"
+            },
+            {
+              "display_name": "Nikolai A. Kovrizhnykh",
+              "id": 2564274280,
+              "slug": "nikolai-a-kovrizhnykh",
+              "unique_id": "1tih6g4rej",
+              "full_slug": "nikolai-a-kovrizhnykh-1tih6g4rej"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "fulltext_url": null,
+        "fulltext_url_no_follow": true,
+        "paper_urls": {
+          "order": [
+            "Html"
+          ],
+          "data": {
+            "Html": [
+              "https://pureportal.spbu.ru/ru/publications/embedded-methods-of-order-six-for-special-systems-of-ordinary-dif"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": 3
+          }
+        },
+        "tldr": "An embedded pair of Runge–Kutta methods of orders six and four for structurally partitioned systems of ordinary differential equations is constructed and the Dormand–Prince approach to automatic step-size control is used.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 2803620469,
+        "title": "Explicit Runge–Kutta Methods for Stiff Problems with a Gap in Their Eigenvalue Spectrum",
+        "is_archived": false,
+        "full_slug": "explicit-runge-kutta-methods-for-stiff-problems-with-a-gap-3j6tdybgng",
+        "journal": {
+          "display_name": "Journal of Scientific Computing",
+          "official_page": "https://www.springer.com/journal/10915",
+          "issn": "0885-7474",
+          "alias": null,
+          "id": 151550017,
+          "slug": "journal-of-scientific-computing",
+          "unique_id": "102qdcew",
+          "full_slug": "journal-of-scientific-computing-102qdcew"
+        },
+        "conference_series": null,
+        "date": "2018-05-23T00:00:00Z",
+        "is_oa": false,
+        "publication_type": "Journal Article",
+        "doi": "10.1007/S10915-018-0737-3",
+        "unique_id": "3j6tdybgng",
+        "abstract": "In this paper we consider the numerical solution of stiff problems in which the eigenvalues are separated into two clusters, one containing the “stiff”, or fast, components and one containing the slow components, that is, there is a gap in their eigenvalue spectrum. By using exponential fitting techniques we develop a class of explicit Runge–Kutta methods, that we call stability fitted methods, for which the stability domain has two regions, one close to the origin and the other one fitting the large eigenvalues. We obtain the size of their stability regions as a function of the order and the fitting conditions. We also obtain conditions that the coefficients of these methods must satisfy to have a given stiff order for the Prothero–Robinson test equation. Finally, we construct an embedded pair of stability fitted methods of orders 2 and 1 and show its performance by means of several numerical experiments.",
+        "authors": {
+          "total": 4,
+          "data": [
+            {
+              "display_name": "Philippe Bocher",
+              "id": 2803265735,
+              "slug": "philippe-bocher",
+              "unique_id": "4phd706f0j",
+              "full_slug": "philippe-bocher-4phd706f0j",
+              "affiliation_full_slug": "ghent-university-14limu0t"
+            },
+            {
+              "display_name": "Juan I. Montijano",
+              "id": 2118689190,
+              "slug": "juan-i-montijano",
+              "unique_id": "32ephfqph0",
+              "full_slug": "juan-i-montijano-32ephfqph0",
+              "affiliation_full_slug": "university-of-zaragoza-2o4xp35u"
+            },
+            {
+              "display_name": "Luis Rández",
+              "id": 2003033048,
+              "slug": "luis-randez",
+              "unique_id": "1rjktbbl1v",
+              "full_slug": "luis-randez-1rjktbbl1v",
+              "affiliation_full_slug": "university-of-zaragoza-2o4xp35u"
+            },
+            {
+              "display_name": "Marnix Van Daele",
+              "id": 2040421614,
+              "slug": "marnix-van-daele",
+              "unique_id": "9sbpvp48mh",
+              "full_slug": "marnix-van-daele-9sbpvp48mh",
+              "affiliation_full_slug": "ghent-university-14limu0t"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 2,
+          "data": [
+            {
+              "display_name": "Ghent University",
+              "city": "Ghent",
+              "region": null,
+              "country": "Belgium",
+              "id": 32597200,
+              "slug": "ghent-university",
+              "unique_id": "14limu0t",
+              "full_slug": "ghent-university-14limu0t"
+            },
+            {
+              "display_name": "University of Zaragoza",
+              "city": "Zaragoza",
+              "region": null,
+              "country": "Spain",
+              "id": 255234318,
+              "slug": "university-of-zaragoza",
+              "unique_id": "2o4xp35u",
+              "full_slug": "university-of-zaragoza-2o4xp35u"
+            }
+          ]
+        },
+        "fulltext_url": null,
+        "fulltext_url_no_follow": true,
+        "paper_urls": {
+          "order": [
+            "Html",
+            "Others"
+          ],
+          "data": {
+            "Html": [
+              "https://link.springer.com/article/10.1007/s10915-018-0737-3",
+              "https://biblio.ugent.be/publication/8618005"
+            ],
+            "Others": [
+              "https://link.springer.com/10.1007/s10915-018-0737-3"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": 6
+          }
+        },
+        "tldr": "This paper considers the numerical solution of stiff problems in which the eigenvalues are separated into two clusters, one containing the “stiff”, or fast, components andOne containing the slow components, that is, there is a gap in their eigenvalue spectrum.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      }
+    ]
+  },
+  "isError": false
+}

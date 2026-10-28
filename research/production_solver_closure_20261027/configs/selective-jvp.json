@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "options": {
+    "rtol": 1e-7,
+    "atol": {
+      "kind": "scalar",
+      "value": 1e-10
+    },
+    "h0": 0.0001,
+    "max_steps": 50000,
+    "dense_output": false,
+    "interior_error": "w-filtered-enforce",
+    "tier": "protected"
+  },
+  "switching": {
+    "fallback": "provided-only",
+    "window_count": 8,
+    "explicit_attempt_budget": 32,
+    "pressure_steps": 24,
+    "rejection_fraction": 0.3,
+    "implicit_residence": 2,
+    "probe_interval": 4,
+    "probe_attempt_budget": 16,
+    "return_cost_ratio": 0.8,
+    "stop_dominated_return_comparator": true,
+    "strict_return_work_improvement": true,
+    "max_dense_dimension": 64,
+    "implicit_pilot_attempt_budget": 64,
+    "implicit_pilot_limit": 8,
+    "entry_cost_ratio": 0.8,
+    "strict_entry_work_improvement": true,
+    "carry_explicit_step": true,
+    "entry_pilot_cooldown_batches": 4,
+    "reuse_entry_pilot_step": true,
+    "seed_entry_pilot_from_explicit_checkpoint": true,
+    "reuse_observed_entry_step": false,
+    "retry_unresolved_entry_once": true,
+    "pilot_backoff_factor": 2,
+    "probe_backoff_factor": 2,
+    "rearm_rate_ratio": 2.0,
+    "return_sentinel_interval": 0,
+    "entry_probe_adaptation": {
+      "max_backoff_batches": 64,
+      "work_rate_growth": 2.0,
+      "step_shrink_ratio": 0.5,
+      "rejection_fraction_increase": 0.2
+    }
+  },
+  "replay_safe_callbacks": true
+}

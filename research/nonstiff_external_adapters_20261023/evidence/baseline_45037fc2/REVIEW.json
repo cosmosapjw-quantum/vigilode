@@ -1,0 +1,43 @@
+{
+  "schema": "vigilode.nonstiff.independent-review.v1",
+  "task": "fixed-source local nonstiff reproduction",
+  "source_commit": "45037fc24e8f8101605f309e1fdb3a9a4e3df56d",
+  "source_tree": "b43b69b1ec5b86f3577d7cd6efdefe2d3acb9bad",
+  "decision": "PASS_SCOPED_LOCAL_REPRODUCTION",
+  "requested_reviewer_model": "gpt-6-astra",
+  "requested_reasoning_effort": "xhigh",
+  "observed_runtime": "NOT_INDEPENDENTLY_OBSERVED",
+  "read_only": true,
+  "solver_or_test_reruns": false,
+  "remaining_blockers": [],
+  "remaining_major_findings": [],
+  "resolved_minor": "Ensemble elapsed wording now excludes archive creation, which follows SUMMARY elapsed recording.",
+  "tests_passed": 25,
+  "main_warmups": 144,
+  "main_timed_runs": 432,
+  "main_valid_replays": 576,
+  "ensemble_warmups": 4,
+  "ensemble_timed_runs": 12,
+  "ensemble_valid_replays": 16,
+  "independently_recomputed_comparisons": 48,
+  "eligible_comparisons": 43,
+  "excluded_comparisons_kept_null": 5,
+  "independently_rescored_selected_large_vector_states": true,
+  "all_ensemble_raw_state_digests_recomputed": true,
+  "ensemble_state_equality_across_workers_warmups_repeats": true,
+  "archive_membership_checked": {
+    "main": 1152,
+    "ensemble": 32
+  },
+  "independent_archive_verification": "Membership, archive/key artifact hashes and sampled member bytes; controller separately checked all entries.",
+  "reviewed_report_sha256": "028eb0622d8e6f3239c20590f83447af90a534628c4db312f77ec0cbc33b58bb",
+  "timing_authority": "diagnostic_only",
+  "statistical_authority": "HOLD",
+  "general_production": "HOLD",
+  "claim_ceiling": "Registered finite sampled-error comparisons only; actual errors need not equal, no uniform-time certification or universal speedup.",
+  "external_not_run": [
+    "diffsol",
+    "julia"
+  ],
+  "vode_16384_cliff_cause": "NOT_MEASURED"
+}

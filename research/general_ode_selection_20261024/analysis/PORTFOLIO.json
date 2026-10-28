@@ -1,0 +1,669 @@
+{
+  "schema": "vigilode.general-ode-portfolio.v1",
+  "observed_utc": "2026-10-23T19:56:43.212858+00:00",
+  "source_base_commit": "057fecf0698fa262d881f101625e6b0bb93791cf",
+  "native_followup_commit": "1cdf2c3071498888f2d8ff3ddc0629cb3cf443ef",
+  "standalone_development_tip": "c03ca90f19a9e64ba7751c069325a48b54b39c2e",
+  "scope": "general-purpose smooth ODE solver; excludes BASS/rei physics and specialized application acceptance criteria",
+  "decision": "SELECT_CONSERVATIVE_CORE_BROAD_PRODUCTION_HOLD",
+  "new_solver_runs": 0,
+  "new_performance_claims": false,
+  "evidence_policy": "Reuse published unchanged results once; source-bound evidence is not recertification of modified code. No NCP.",
+  "sources": {
+    "N": {
+      "path": "research/nonstiff_explicit_20261023/DECISIONS.json",
+      "sha256": "417c038f68c4d8a335fb9f1c80a3c9646796d83a2bef0ea8e66d3f6d2ee460b0"
+    },
+    "F": {
+      "path": "research/production_frontier_20261023/DECISIONS.json",
+      "sha256": "31537dcad56275594ffa339e161c2d4f265ed200facbf474da0fedd49102e545"
+    },
+    "S": {
+      "path": "research/production_frontier_20261023/analysis/SWITCHING.json",
+      "sha256": "ebc979bb7a1d80556ac177cc728aa9d8e346de818bfb4ef82f0aaa61304ee19d"
+    },
+    "A": {
+      "path": "research/production_frontier_20261023/analysis/AFFINE_QUOTIENT.json",
+      "sha256": "2d589bf57841814b4a08866799be2467f99cdb6051f6429235819c7a52b0645e"
+    },
+    "C": {
+      "path": "research/production_frontier_20261023/analysis/CAUSAL_FINDINGS.json",
+      "sha256": "92dafa09b38769a9fd3e49c24d27c5fed28f707eab366fbc324bcc3fbe5d6976"
+    },
+    "T": {
+      "path": "research/production_frontier_20261023/results/CAUSAL_THREADS_AUDIT.json",
+      "sha256": "e9c4ba25993bae877d7381602bd10932c43c79a333f3b1226fc455a93ef00e4a"
+    },
+    "L": {
+      "path": "research/production_frontier_followup_20261023/LP01_CYCLIC_ANALYSIS.json",
+      "sha256": "44d4568e97f020de58ce2c43267879e7b19336faf1b3c101a51ad30ab373b032"
+    },
+    "U": {
+      "path": "research/production_frontier_followup_20261023/SUMMARY.json",
+      "sha256": "e76809ad020822603fb5b7d06be7d188df61f3e528d904726fb60bd3181a44a4"
+    },
+    "D": {
+      "path": "research/production_frontier_followup_20261023/DECISIONS.json",
+      "sha256": "d2cea6f08b2ecaab814d54ff40fe488931e6f06ca6b7944f391c50fba4de1da0"
+    },
+    "I": {
+      "path": "research/component_triage_20261019/COMPONENTS.json",
+      "sha256": "d455351c9888062c2560a722a96bca6eb547f2a96f4a7eff23c7af79a85da746"
+    },
+    "P": {
+      "path": "research/production_audit_20261018/DECISION.json",
+      "sha256": "7ab0e4b068d488c891e6e5ee301a4d02fc71c338c380241fb93c6db69ec2af5b"
+    },
+    "K": {
+      "path": "research/coupled_stage_adoption_20261022/DECISIONS.json",
+      "sha256": "b8762735e97683afe54d1b9d928670fec0ae2cd14d18ee0d4d02dfa59940571a"
+    },
+    "Q": {
+      "path": "research/production_frontier_20261023/analysis/POLYNOMIAL_CANDIDATES.json",
+      "sha256": "2855599ea5e2bcf351a759ce83668eaddd25a125dfb786b272d99d2e24fbdcdd"
+    }
+  },
+  "search": {
+    "kind": "bounded_three_policy_branch_and_prune",
+    "not_claimed": "statistical Monte Carlo tree search or exhaustive global optimization",
+    "objective": [
+      "correct declared capability",
+      "error contract",
+      "robust finite-budget termination",
+      "single-thread full-solve cost",
+      "code complexity"
+    ],
+    "candidates": [
+      {
+        "id": "P0",
+        "policy": "automatic broad switching by stiffness pressure",
+        "decision": "PRUNE_CURRENT_DEFAULT",
+        "basis": [
+          "S"
+        ],
+        "reason": "same evidence includes severe FD/transition regressions; no future-horizon guarantee"
+      },
+      {
+        "id": "P1",
+        "policy": "capability-first explicit DOPRI5 or protected RODAS5P from declared problem and derivative policy",
+        "decision": "SELECT_SCOPED",
+        "basis": [
+          "N",
+          "I",
+          "U"
+        ],
+        "reason": "smallest core with demonstrated complementary stiff/nonstiff roles; fail instead of inventing capability"
+      },
+      {
+        "id": "P2",
+        "policy": "enable causal, quotient, polynomial or homotopy whenever approximate structure detected",
+        "decision": "RESTRICT_EXPLICIT_OPT_IN",
+        "basis": [
+          "A",
+          "C",
+          "L",
+          "I",
+          "P"
+        ],
+        "reason": "structure and cost are unproved for arbitrary callbacks; current benefits have narrow domains"
+      }
+    ]
+  },
+  "selection_contract": {
+    "declaration_first": true,
+    "no_hidden_derivatives": true,
+    "no_default_threads": true,
+    "no_silent_tolerance_relaxation": true,
+    "unknown_problem": "DOPRI5 may be a budgeted RHS-only trial; finite failure is not stiffness diagnosis and does not authorize derivatives.",
+    "nonstiff": "DOPRI5; no Jacobian, matrix factorization or Newton iterations.",
+    "stiff": "Protected RODAS5P with explicitly permitted derivative route and current facade capabilities; reject when unavailable.",
+    "structured_specialization": "Explicit separate API, current structure witness and same-error measured benefit; never inferred only from a few RHS probes.",
+    "events_mass_dense": "Use exact current capability checks. General selector must not advertise unsupported combinations or online terminal-event semantics.",
+    "compatibility": "Existing methods remain callable; classification removes automatic/mainline adoption, not archival evidence or references.",
+    "ordinary_accuracy_contract": "Local tolerance/error estimates plus documented sampling; no universal global-error promise.",
+    "production_qualification": "Qualify the promised endpoint identity-mass surface from current-code robustness/error evidence and failure contracts. Events, dense output, mass/DAE, persistent resume and global certificates are optional when explicitly refused or excluded; BASS/rei/PDE physics is not a release prerequisite.",
+    "implemented_surface": "GeneralOde selects DOPRI5 or protected RODAS5P; rejects mass, events and dense_output; default Unknown/derivatives Forbidden/dense resource ceiling64/matrix-free disabled. Ceiling64 is policy, not measured crossover."
+  },
+  "families": [
+    {
+      "id": "EXPLICIT",
+      "name": "DOPRI5 embedded 5(4)",
+      "disposition": "SELECT_SCOPED_CORE",
+      "eligible_for_new_general_selector": true,
+      "api": [
+        "vigilode::Dopri5",
+        "Dopri5Session"
+      ],
+      "scope": "Declared nonstiff; unknown only as explicitly budgeted trial, not qualified stiff solve.",
+      "evidence": [
+        "N",
+        "L",
+        "U"
+      ],
+      "reason": "RHS-only path avoids all Jacobian, matrix and Newton work; selected nonstiff smooth forward identity-mass scope has actual-error evidence.",
+      "next_action": "Complete public persistent-session integration; exercise discontinuity reset and finite-budget failure; preserve FSAL invalidation.",
+      "performance": "90 configurations / 360 runs; local native RODAS comparison 2.73–8.93x at sampled cap 1e-6; stiff negative control requires 186085 RHS calls and is about277x slower than RODAS."
+    },
+    {
+      "id": "RODAS_DENSE",
+      "name": "Protected RODAS5P dense; sequential compatibility API",
+      "disposition": "SELECT_SCOPED_CORE",
+      "eligible_for_new_general_selector": true,
+      "api": [
+        "vigilode::Rodas5p",
+        "integrate_rodas5p_fast_observed_*",
+        "integrate_adaptive_observed_with_config"
+      ],
+      "scope": "New selector: smooth stiff identity-mass endpoint ODEs with supported atol and authorized derivatives. Existing sequential/mass/dense-output methods remain separate method-specific compatibility APIs, not the selected surface.",
+      "evidence": [
+        "N",
+        "I",
+        "P",
+        "U"
+      ],
+      "reason": "Existing protected fallback has the widest implicit capability surface. Finite-difference Jacobians are derivative approximations and form matrices; they are not derivative-free.",
+      "next_action": "Bind selected route to current facade capability report and explicit derivative policy; surface early native fatal failures and partial results consistently.",
+      "performance": "not newly measured"
+    },
+    {
+      "id": "RODAS_BANDED",
+      "name": "RODAS5P declared-band direct solve",
+      "disposition": "SELECT_SCOPED_CORE",
+      "eligible_for_new_general_selector": true,
+      "api": [
+        "Problem::banded",
+        "integrate_rodas5p_fast_banded_observed_*"
+      ],
+      "scope": "User-declared correct band structure and supported output contract.",
+      "evidence": [
+        "I"
+      ],
+      "reason": "Band declarations can reduce factorization work; the declaration must be correct and no O(N) claim is valid unless bandwidth is bounded.",
+      "next_action": "Reject incompatible vector-atol/mass/dense combinations using existing capabilities; benchmark with fixed dimension and increasing bandwidth.",
+      "performance": "not newly measured"
+    },
+    {
+      "id": "RODAS_MATRIX_FREE",
+      "name": "RODAS5P supplied-JVP GMRES/LGMRES/GCRODR",
+      "disposition": "SELECT_SCOPED_CORE",
+      "eligible_for_new_general_selector": true,
+      "api": [
+        "Jacobian::jvp",
+        "integrate_rodas5p_mf_fast_observed_*",
+        "integrate_sequential_matrix_free_adaptive_dense_observed"
+      ],
+      "scope": "Supplied authorized JVP; only facade-supported combinations. No unconditional stiff large-N speed claim.",
+      "evidence": [
+        "I",
+        "F"
+      ],
+      "reason": "Avoids forming the full Jacobian, but still uses derivative actions and Krylov basis storage. These are not matrix-free in the sense of having no auxiliary matrices.",
+      "next_action": "Retain residual verification and fail-safe iteration limits; profile preconditioned and unpreconditioned costs before selecting by dimension.",
+      "performance": "not newly measured"
+    },
+    {
+      "id": "RODAS_SMALL",
+      "name": "Compile-time small-N RODAS5P",
+      "disposition": "SPECIALIZED_OPT_IN",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "SmallProblem",
+        "integrate_rodas5p_fast_small_*"
+      ],
+      "scope": "Compile-time dimension; user-selected static layout.",
+      "evidence": [
+        "I"
+      ],
+      "reason": "Useful specialized layout without evidence of a universal size threshold or current winner for every callback.",
+      "next_action": "Measure complete solve including setup against protected dense at fixed actual-error cap; retain only winning declared sizes.",
+      "performance": "not newly measured"
+    },
+    {
+      "id": "SWITCHING",
+      "name": "Pressure / bounded-pilot explicit-implicit switching",
+      "disposition": "OPTIMIZATION_POSSIBLE",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "vigilode::switching"
+      ],
+      "scope": "Experimental opt-in; authorized derivatives; fixed endpoint semantics.",
+      "evidence": [
+        "S",
+        "U"
+      ],
+      "reason": "Pilot fixes one regime while penalizing others; persistent native sessions now exist but are not fully connected to switching.",
+      "next_action": "Wire checkpoint/session ownership; include all failed/pilot work; require future-horizon break-even evidence before enabling automatic entry.",
+      "performance": "Rapid JVP about9.46x better than old pilot-free switch, rapid FD about2.03x slower and transition FD about3.05x slower; 105/120 rows pass common cap1e-5."
+    },
+    {
+      "id": "LAWSON_GENERIC",
+      "name": "Lawson DOPRI5 generic residual",
+      "disposition": "RESEARCH_ONLY",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "LawsonDopri5::solve_observed",
+        "integrate_lawson_dopri5_observed"
+      ],
+      "scope": "Declared constant damped-rotation split; no arbitrary-matrix exact-action claim.",
+      "evidence": [
+        "A",
+        "L"
+      ],
+      "reason": "Splitting algebra alone does not pay for extra transforms; generic forcing and slow cases can lose badly. Latest long-cycle timing is explicitly inconclusive.",
+      "next_action": "Only reopen for a declared cheap exact linear action and measured small residual, with endpoint/phase errors and all transforms counted.",
+      "performance": "Latest cyclic36/36 pass sampled caps but timing_authority=diagnostic_only; no speed promotion."
+    },
+    {
+      "id": "LAWSON_AFFINE",
+      "name": "Affine quotient Lawson / exact harmonic endpoint",
+      "disposition": "SPECIALIZED_OPT_IN",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "DampedRotationFlow::affine_into",
+        "DampedRotationFlow::harmonic_into",
+        "LawsonDopri5::solve_affine_observed"
+      ],
+      "scope": "Fixed damped-rotation blocks, constant affine forcing or declared fixed harmonic forcing.",
+      "evidence": [
+        "A",
+        "L"
+      ],
+      "reason": "Constant affine and harmonic structure admits cheap entire-function actions; that structure is user evidence, not inferred from arbitrary RHS samples.",
+      "next_action": "Require fixed provider/parameter epoch and declared forcing type; benchmark setup-inclusive selected domain versus strongest direct exact action.",
+      "performance": "Prior affine/full-RHS ratios4.36x,22.71x,1.58x on selected stiff/rapid/shared128 cases; losses4.25x zero,5.09x slow and44.58x generic forcing prohibit automatic adoption. Latest LP01 timings remain inconclusive."
+    },
+    {
+      "id": "COUPLED_FORWARD",
+      "name": "Projected augmented causal forward RODAS",
+      "disposition": "SPECIALIZED_OPT_IN",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "vigilode-coupled causal-forward"
+      ],
+      "scope": "Autonomous identity-mass endpoint-observed ODEs with supplied base JVP and valid projected residual check.",
+      "evidence": [
+        "C",
+        "K",
+        "T"
+      ],
+      "reason": "Causality permits common-factor triangular elimination with no current-stage Newton/JVP; supplied base JVP, projection and original residual fallback remain.",
+      "next_action": "Compare complete trajectories against protected dense and best supplied-JVP driver, not only residual-first coupled baseline; quantify projection/fallback crossover.",
+      "performance": "6/7 groups1.17–2.79x versus residual-first; broad group0.99856x with33/35fallbacks. Earlier coupled-vs-economy few-mode ratio0.422 shows why baseline identity matters."
+    },
+    {
+      "id": "COUPLED_PICARD",
+      "name": "Parallel causal Picard / residual-first schedules",
+      "disposition": "PRUNE_AUTOMATIC_RETAIN_RESEARCH",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "vigilode-coupled causal-picard",
+        "vigilode-coupled residual-first"
+      ],
+      "scope": "Research expensive-RHS crossover; residual-first remains regression/control.",
+      "evidence": [
+        "C",
+        "T"
+      ],
+      "reason": "Serial forward is faster on all seven eligible groups. Two threads show no material1.2x gain on the tested cheap RHS workload.",
+      "next_action": "Reopen only when batched expensive RHS cost exceeds measured synchronization/extra-sweep cost; preserve bitwise/error parity and failed attempts.",
+      "performance": "84 bitwise pairs,42 same-configuration thread settings; no general threading speed gain."
+    },
+    {
+      "id": "SABR",
+      "name": "SABR block-GMRES / forward / nilpotent",
+      "disposition": "RESEARCH_ONLY",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "IntegrationMethod::Sabr",
+        "SabrConfig"
+      ],
+      "scope": "Declared research configurations.",
+      "evidence": [
+        "I"
+      ],
+      "reason": "Standalone alternative block formulation is exported; current selection evidence does not establish complete-trajectory benefit over protected drivers.",
+      "next_action": "Require original stage residual and same-error full solve against protected dense/JVP; do not use projected residual alone.",
+      "performance": "not newly measured"
+    },
+    {
+      "id": "HOMOTOPY",
+      "name": "Homotopy and nonlinear / actual-K root clients",
+      "disposition": "RESEARCH_ONLY",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "integrate_homotopy_adaptive_observed",
+        "nonlinear_homotopy",
+        "actual_k_homotopy",
+        "quadratic_branch"
+      ],
+      "scope": "Research root-finding; no claim that continuation automatically parallelizes time integration.",
+      "evidence": [
+        "I"
+      ],
+      "reason": "Root/client validation is not end-to-end ODE efficiency evidence; continuation work and certification overhead must be charged.",
+      "next_action": "Use only when a concrete nonlinear stage client beats direct protected solve at identical error; quantify continuation steps, rejected roots and all fallback work.",
+      "performance": "not newly measured"
+    },
+    {
+      "id": "TRANSACTIONAL",
+      "name": "Transactional Q1/Q2, lagged and candidate corrections",
+      "disposition": "RESEARCH_ONLY",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "integrate_transactional_q1_q2_adaptive_observed",
+        "rodas5p_lagged",
+        "CandidateCatalog"
+      ],
+      "scope": "Experimental solver candidates; not default dispatch.",
+      "evidence": [
+        "I"
+      ],
+      "reason": "Rollback contracts are useful infrastructure but do not themselves establish a faster selected solver.",
+      "next_action": "Keep original residual checks and fallback; demand a nonempty winning domain before adding a selector branch.",
+      "performance": "not newly measured"
+    },
+    {
+      "id": "EXPONENTIAL_KRYLOV",
+      "name": "Pexprb/exprb exponential Krylov and fused phi",
+      "disposition": "RESEARCH_ONLY",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "integrate_pexprb54s4_fused_adaptive_observed",
+        "exprb2_step",
+        "exprb43_step",
+        "krylov_phi_action"
+      ],
+      "scope": "Declared smooth semilinear problems.",
+      "evidence": [
+        "I"
+      ],
+      "reason": "Semilinear capabilities exist, but open rival/accuracy assumptions and basis/action costs prevent general adoption.",
+      "next_action": "Use protected dense-fast and strongest applicable exact structured comparator; include phi truncation and transform work in trajectory accuracy.",
+      "performance": "not newly measured"
+    },
+    {
+      "id": "LAGUERRE",
+      "name": "Laguerre polynomial action and adjoint",
+      "disposition": "RESEARCH_COMPONENT_ONLY",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "rodas5p-core::polynomial_action Laguerre exports"
+      ],
+      "scope": "Action-level domain only; not selected general integrator.",
+      "evidence": [
+        "I"
+      ],
+      "reason": "Component opt-in validation was published; no actual ODE speed benefit follows from a lower polynomial degree alone.",
+      "next_action": "Reuse component proof; measure full integration only if a concrete operator/spectral enclosure predicts fewer total actions than Krylov and Chebyshev.",
+      "performance": "not newly measured"
+    },
+    {
+      "id": "LEJA",
+      "name": "Leja action",
+      "disposition": "PRUNE_AUTOMATIC_RETAIN_RESEARCH",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "rodas5p-core::leja_action"
+      ],
+      "scope": "Research action; no total-binary64 certificate or default solver.",
+      "evidence": [
+        "I",
+        "P"
+      ],
+      "reason": "Prior measured cost was worse than Chebyshev in the tested h*rho>=40 niche; total floating certificate remains EstimateOnly.",
+      "next_action": "Do not repeat unchanged niche; reopen only with different admissible geometry/cost and complete operator-arithmetic bounds if certification is advertised.",
+      "performance": "not newly measured"
+    },
+    {
+      "id": "POLYNOMIAL_ROUTER",
+      "name": "Chebyshev/Taylor/Laguerre polynomial action router",
+      "disposition": "RESEARCH_COMPONENT_ONLY",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "rodas5p-core::polynomial_action::RoutePolicy"
+      ],
+      "scope": "Action kernels and explicit stabilized research; no unrestricted oscillatory stabilization.",
+      "evidence": [
+        "I",
+        "N"
+      ],
+      "reason": "Prior router winning niche was empty; first-order Chebyshev stability on selfadjoint negative operators is not equal-accuracy ODE speed evidence.",
+      "next_action": "Keep kernels available; choose by validated operator domain and full cost, never by polynomial family name.",
+      "performance": "not newly measured"
+    },
+    {
+      "id": "LOW_DEGREE_RESOLVENT",
+      "name": "Low-degree quotient resolvent",
+      "disposition": "SPECIALIZED_COMPONENT_ONLY",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "polynomial_resolvent",
+        "two-state collision witness provider"
+      ],
+      "scope": "Declared low-degree relation with q(1) separation and witness; no autonomous selector adoption.",
+      "evidence": [
+        "Q",
+        "D"
+      ],
+      "reason": "Polynomial division reduces work when a valid low-degree annihilation identity holds; current provider is a two-state homogeneous collision client and is not a generic matrix solver.",
+      "next_action": "Bind operator epoch/dimension/coefficient/norm witness; recheck original residual; integrate only with a demonstrated matching general-ODE client.",
+      "performance": "Four published actions use1,1,2,2 operator actions; compared Neumann20success/65failure cases are kernel tests, not trajectory timing."
+    },
+    {
+      "id": "NEUMANN",
+      "name": "Unconditional Neumann inverse iteration",
+      "disposition": "PRUNE_NONCONTRACTIVE_DOMAIN",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "polynomial_resolvent Neumann baseline",
+        "nilpotent / fixed-point action candidates"
+      ],
+      "scope": "Contractive declared operators only; not a global impossibility statement.",
+      "evidence": [
+        "Q",
+        "F"
+      ],
+      "reason": "Three tested noncontractive cases fail; a convergent-series proof requires an actual contraction bound.",
+      "next_action": "Retain only if preconditioned norm/contraction condition is established and cheaper than safeguarded solve.",
+      "performance": "not newly measured"
+    },
+    {
+      "id": "PACKET_COLLECTIVE",
+      "name": "Collective low-rank / packet trajectory solvers",
+      "disposition": "SPECIALIZED_COMPONENT_ONLY",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "collective_direct",
+        "collective_rodas5p",
+        "packet_trajectory",
+        "damped_packet",
+        "BoundCollectiveProblem"
+      ],
+      "scope": "Declared low-rank collective autonomous model; no automatic arbitrary-RHS routing.",
+      "evidence": [
+        "I",
+        "P"
+      ],
+      "reason": "Low-rank direct action is a necessary strong comparator. Earlier packet module promotion does not establish general speed or complete floating certificates.",
+      "next_action": "Compare against Woodbury/collective direct plus protected fast; bind exact structure and outward arithmetic before claiming certified error.",
+      "performance": "not newly measured"
+    },
+    {
+      "id": "REFERENCE_BDF_RADAU",
+      "name": "Native BDF1/BDF2 / Radau1/Radau3 references",
+      "disposition": "REFERENCE_ONLY",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "integrate_bdf_adaptive_observed",
+        "integrate_radau_adaptive_observed"
+      ],
+      "scope": "Reference/experimental methods, not selected user default.",
+      "evidence": [
+        "I"
+      ],
+      "reason": "Low-order in-repo reference methods are not replacements for mature external VODE/DVODE, diffsol or Julia comparison.",
+      "next_action": "Retain verification role; do not spend production optimization budget without a specific advantage.",
+      "performance": "not newly measured"
+    },
+    {
+      "id": "INDEPENDENT_ENSEMBLE",
+      "name": "Independent trajectory batching",
+      "disposition": "SPECIALIZED_OPT_IN",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "Dopri5Ensemble",
+        "rodas5p_fast_small_batch",
+        "stage_batch"
+      ],
+      "scope": "User-supplied independent IVPs and explicit worker budget.",
+      "evidence": [
+        "N",
+        "I"
+      ],
+      "reason": "Independent trajectories can run concurrently without reducing one trajectory temporal dependency; batch throughput differs from single-thread latency.",
+      "next_action": "Report throughput and latency separately; benchmark callback cost/ensemble size and worker overhead; no default spawned pool for one trajectory.",
+      "performance": "Nonstiff four-configuration/sixteen-run local ensemble evidence exists; 1/2worker ratios2.10–2.39 are not a universal scaling theorem."
+    },
+    {
+      "id": "PARALLEL_STAGE_THEORY",
+      "name": "Fixed-point RK sweep and stage parallelization",
+      "disposition": "RESEARCH_ONLY",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "parallel",
+        "stage_batch",
+        "causal Picard schedules"
+      ],
+      "scope": "Theoretical/experimental stage parallelism; exact-arithmetic finite propagation is not a wall-clock guarantee.",
+      "evidence": [
+        "N",
+        "T",
+        "I"
+      ],
+      "reason": "A sixteen-stage/four-sweep RK construction increases RHS work15 versus6 and only reduces span5 versus6; speed needs expensive parallel callbacks.",
+      "next_action": "Reject unconditional implementation priority; calculate crossover with actual callback and synchronization cost first.",
+      "performance": "not newly measured"
+    },
+    {
+      "id": "VERIFIED_ERROR",
+      "name": "Continuous residual / global budget / affine norm support",
+      "disposition": "SUPPORT_ONLY",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "ContinuousResidualProvider",
+        "physical_error_budget",
+        "generic_verified",
+        "AffineErrorNorm"
+      ],
+      "scope": "Optional advanced accuracy service; neither standalone ODE family nor performance candidate.",
+      "evidence": [
+        "P",
+        "U",
+        "D"
+      ],
+      "reason": "Optional certified-error infrastructure has additional enclosure/growth assumptions; local tolerance is not a whole-trajectory guarantee. New physical budget has no general facade hook.",
+      "next_action": "Document estimate versus bound; integrate only with typed validated bound providers; do not make application-specific physics a general-ODE release prerequisite.",
+      "performance": "not newly measured"
+    },
+    {
+      "id": "GRAPH_SUBFLOW",
+      "name": "RKL / Markov-Poisson / geometry subflows",
+      "disposition": "OUT_OF_SELECTED_SCOPE",
+      "eligible_for_new_general_selector": false,
+      "api": [
+        "graph / PDE research helpers",
+        "conservative_remap",
+        "gray_scott"
+      ],
+      "scope": "No BASS/rei research or specialized physics work in this review.",
+      "evidence": [
+        "F"
+      ],
+      "reason": "These are problem-specific semigroup/spatial operators, not a general ODE algorithm selected by this review. Domain research is excluded from the present release denominator.",
+      "next_action": "Retain separate research artifacts; revisit only as explicit method-of-lines clients under ordinary ODE contract.",
+      "performance": "not newly measured"
+    }
+  ],
+  "next_actions": [
+    {
+      "id": "PORT-1",
+      "priority": 1,
+      "task": "Conservative selector implemented in this work; retain focused correctness checks and review rather than reopening policy selection.",
+      "acceptance": "Selection tests prove no callback invocation, no hidden derivative route, no unsupported dense/mass/atol/event claim, and no experimental default.",
+      "implementation_status": "SOURCE_REVIEW_PASS_RUNTIME_RESULTS_OWNED_BY_INTEGRATION_REPORT"
+    },
+    {
+      "id": "PORT-2",
+      "priority": 2,
+      "task": "If resumable public solves or switching are selected for a later release, connect public persistent sessions and cache ownership; endpoint-only release does not require this optional feature.",
+      "acceptance": "Independent continuation equals uninterrupted selected-engine solve within documented tolerance; native fatal terminates promptly and retains accepted state/work."
+    },
+    {
+      "id": "PORT-3",
+      "priority": 2,
+      "task": "Run one preregistered current-code comparison after selector/session changes.",
+      "acceptance": "Compare DOPRI5 and protected RODAS to only VODE/DVODE,diffsol,Julia using actual error at retained outputs; preserve failed cases. Repeated interleaved timing includes setup and output costs."
+    },
+    {
+      "id": "PORT-4",
+      "priority": 2,
+      "task": "Reopen one structured specialization only if a concrete workload establishes a crossover.",
+      "acceptance": "Exclude timing-inconclusive LP01 as speed authority; include the strongest protected/structured baseline, all actions, failures and fallback costs."
+    },
+    {
+      "id": "PORT-5",
+      "priority": 3,
+      "task": "Optimize large-vector DOPRI and declared-band/JVP memory traffic.",
+      "acceptance": "Profile first; no unsafe validation removal. Retain error/finite checks and demonstrate end-to-end same-error improvement."
+    }
+  ],
+  "benchmark_admission": {
+    "comparators": [
+      "VODE/DVODE",
+      "diffsol",
+      "Julia"
+    ],
+    "minimum_requirements": [
+      "same physical state/error norm",
+      "retained output grid and identical endpoint semantics",
+      "reference error allowance",
+      "failures and timeouts retained",
+      "single-thread run first",
+      "setup and allocation costs recorded",
+      "interleaved repetitions",
+      "no pooling distinct source or timing protocols"
+    ],
+    "proposed_engineering_threshold_not_theorem": {
+      "median_speed_ratio_baseline_over_candidate": 1.2,
+      "worst_supported_control_slowdown_limit": 2.0,
+      "condition": "A predeclared scoped switch must exclude losing regimes without observing the reference answer. These thresholds are proposed acceptance policy, not claims proved by existing data."
+    },
+    "optimization_possible": "A measured bottleneck has a concrete bounded fix; lack of evidence alone is HOLD/research, not speed potential.",
+    "prune_meaning": "Exclude current automatic/default/mainline priority; preserve source and evidence. A new admissible workload can reopen the candidate."
+  },
+  "critical_limits": [
+    "No claim of fully derivative-free stiff general solver.",
+    "Latest LP01 cyclic timing is INCONCLUSIVE; accuracy sampling does not provide continuous phase proof.",
+    "Causal speedup baseline is residual-first coupled path, not necessarily the fastest protected solver.",
+    "No unconditional two-thread acceleration from cheap-RHS evidence.",
+    "No new measurements here; new code requires its own targeted correctness checks."
+  ],
+  "implementation_review": {
+    "files": [
+      "crates/vigilode/src/selection.rs",
+      "crates/vigilode/tests/production_selection_contracts.rs"
+    ],
+    "status": "NO_BLOCKING_LOGIC_DEFECT_FOUND_BY_INDEPENDENT_SOURCE_REVIEW",
+    "new_runtime_tests_by_this_analysis": 0,
+    "checked": [
+      "Dense callback+declaredband still consumes dense resource ceiling.",
+      "Unknown/nonstiff cannot invoke implicit fallback.",
+      "ProvidedOnly refuses FD Jacobian and nonautonomous absent partial time derivative.",
+      "Matrix-free is explicit permission and inherits vector-atol refusal.",
+      "Mass/events/dense-output refused before dispatch.",
+      "Partial selected results remain available and ensure_success returns typed failed result."
+    ],
+    "nonblocking_note": "Resource ceiling doc should describe dense materialization as well as factorization.",
+    "limitations": "This source review does not replace runtime tests, full numerical coverage or current performance evidence."
+  }
+}

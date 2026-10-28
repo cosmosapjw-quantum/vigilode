@@ -1,0 +1,60 @@
+{
+  "schema_version": 1,
+  "status": "IMPLEMENTATION_VERIFIED",
+  "tests": {
+    "command": "python -B -m unittest discover -s research/adapter_research_20261025/selection_benchmark -p 'test_*.py' -v",
+    "exit_code": 0,
+    "passed": 22,
+    "failed": 0,
+    "log": "TEST.log"
+  },
+  "cli_smoke": {
+    "status": "PASS",
+    "input": "SYNTHETIC_CONTRACT_INPUT.json",
+    "output": "SYNTHETIC_CONTRACT_OUTPUT.json",
+    "data_kind": "synthetic_contract_test"
+  },
+  "scientific_performance_measurement": "NOT_RUN_THIS_COMPONENT_IS_AN_ANALYZER",
+  "native_switcher_ingest": {
+    "status": "NOT_IMPORTED",
+    "reason": "Current runner output lacks source/host/build metadata and actual matched decision checkpoint records; retain original whole-trajectory measurements separately."
+  },
+  "runtime": {
+    "python": "3.12.14"
+  },
+  "skill_context_used": {
+    "version": "physmath-research-loop1.3.0",
+    "package": "c38/physmath-research-loop",
+    "selected_stages": [
+      "C3",
+      "C5",
+      "C6",
+      "C8",
+      "C10"
+    ],
+    "read": [
+      "SKILL.md",
+      "references/CODING_LOOP.md",
+      "references/POLICY_INTEGRATION.md"
+    ],
+    "boundary": "selection benchmark analyzer and local protocol only; no native solver mutation or performance claim"
+  },
+  "files": {
+    "TEST.log": "3f8167265bafbbbf6090b9a6e2ebf7186720c5443d40c03fc363a228ead7a494",
+    "analyze_selection.py": "c1e789038a5b1492f51a1ed79a6260cd7342f56c331f906f206855233ee804ab",
+    "selection_window.schema.json": "1702a0ff082c72e7a51cbd9ede1b1425c9500c8c2561e4afe5cac521adbe57ea",
+    "README.md": "5a1ac0de0a8b460f9a27fe77a1d3b4a79a3567241f8296712988d362f6d9fb01",
+    "SYNTHETIC_CONTRACT_INPUT.json": "72f1db9e9e5487f28900251e705192d51b9edf595153ed8a03f014b1a7d367b4",
+    "capture_run_metadata.py": "1485d7367490d344d9f122fe0d87c7124595bd930c6e919c68d10103377e3824",
+    "NATIVE_IMPORT_CONTRACT.json": "08cead4709cf1ff1fd61acdac561a2fd19bb5aa8d5271e52acef26363eefd0b6",
+    "METADATA_SMOKE.json": "3157077de9c05070149af2cadc627ab92df70c851f7c1c7af2a88f5457c0f8ea",
+    "SYNTHETIC_CONTRACT_OUTPUT.json": "f3cf2a0d5a62c41bf1abd28812d7a4cddf37055df962c340093dc2e5064e4d82",
+    "PROTOCOL_KO.md": "bc9fc399fd21ae375a9cab80e01bdc0799b917e62a860c613f94b5dee0199d7f",
+    "test_analyze_selection.py": "78fb99b12595cbc1cd5d39fc4d648a2470d88cb0786772cc1ebbfaa14fe0cdda"
+  },
+  "metadata_capture_smoke": {
+    "status": "PASS",
+    "record": "METADATA_SMOKE.json",
+    "scope": "actual read/hash/command/create-only behavior on synthetic source fixture"
+  }
+}

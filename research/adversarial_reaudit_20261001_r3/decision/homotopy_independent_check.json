@@ -1,0 +1,50 @@
+{
+  "status": "PASS_WITHIN_PROJECTED_TARGET_SCOPE",
+  "reference": "Reviewer-selected 2D quadratic dyadic fixture; separately authored exact rational triangular-root recurrence and inverse",
+  "source_coefficients": "native binary64 bits; alpha/l explicitly projected strict lower, not exact native full-block target",
+  "J": [
+    [
+      -2.0,
+      3.0
+    ],
+    [
+      0.0,
+      -0.5
+    ]
+  ],
+  "y": [
+    0.125,
+    -0.0625
+  ],
+  "h": 0.25,
+  "q": [
+    0.25,
+    0.125
+  ],
+  "rows": [
+    {
+      "candidate": "q1",
+      "stage_bound": true,
+      "output_bound": true,
+      "embedded_bound": true,
+      "doubling_radius_closes": true,
+      "doubling_stage_bound": true,
+      "output_wrms_upper": 0.3154315454350467
+    },
+    {
+      "candidate": "q2",
+      "stage_bound": true,
+      "output_bound": true,
+      "embedded_bound": true,
+      "doubling_radius_closes": true,
+      "doubling_stage_bound": true,
+      "output_wrms_upper": 0.04858427616287464
+    }
+  ],
+  "claim_ceiling": [
+    "Strict-lower projected quadratic target only",
+    "Exact native full-block and sequential arithmetic parity not established",
+    "ODE truncation/global error not certified",
+    "Python serial certificate is no wall-speed measurement"
+  ]
+}

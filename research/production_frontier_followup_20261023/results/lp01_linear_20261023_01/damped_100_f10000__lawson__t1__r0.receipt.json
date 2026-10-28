@@ -1,0 +1,39 @@
+{
+  "row": "damped_100_f10000__lawson__t1__r0",
+  "case": "damped_100_f10000",
+  "method": "lawson",
+  "tolerance_index": "1",
+  "warmup": true,
+  "repeat": 0,
+  "timing_authority": "diagnostic_only",
+  "cpu_affinity": [
+    0
+  ],
+  "thread_environment": {
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "command": [
+    "/mnt/extdrive/vigilode-frontier-20261023/target/measurement/examples/frontier_long_phase",
+    "--case",
+    "damped_100_f10000",
+    "--method",
+    "lawson",
+    "--tolerance-index",
+    "1"
+  ],
+  "process_cap_seconds": 90.0,
+  "rss_limit_bytes": 1073741824,
+  "rss_sampling_interval_seconds": 0.02,
+  "rss_monitor": "sum sampled /proc VmRSS over process group and discovered descendants; shared pages may count twice",
+  "peak_sampled_rss_bytes": 3796992,
+  "peak_resident_processes": 1,
+  "exit_code": 0,
+  "status": "PASS_SAMPLED",
+  "process_elapsed_seconds": 0.18373893317766488,
+  "solve_seconds": 0.006659651,
+  "stdout_sha256": "f453d8d43937986cc5fdf189b498431dad2207df1b27bd4198e064fa6860b0ed",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+}

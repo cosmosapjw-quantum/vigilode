@@ -1,0 +1,76 @@
+{
+  "schema": "vigilode.adapter-next-development.v1",
+  "scope": "General-purpose ODE solver; local execution; no NCP",
+  "ordering": "Correctness and same-contract total cost before broader default adoption",
+  "items": [
+    {
+      "id": "return-evidence-renewal",
+      "priority": 1,
+      "problem": "Historical implicit rate still screens explicit returns and can suppress a real current-window win.",
+      "files": ["crates/vigilode/src/switching.rs", "crates/vigilode/tests/adaptive_entry_contracts.rs"],
+      "implementation": "Add an explicitly budgeted occasional same-checkpoint return comparison that bypasses only the historical-rate screen. Reserve its maximum attempt/callback cost before starting; retain all fatal and checkpoint rules. Keep ordinary cheap checks between these sentinels.",
+      "mathematical_contract": "Qualified comparison uses identical checkpoint, interval, physical error requirement and cost units. A scheduling heuristic is not a stiffness certificate. Reserve post-callback overshoot as well as the nominal limit.",
+      "acceptance": ["Adversarial old-implicit=10, current-explicit=20, current-implicit=100 example is recognized when the sentinel is due", "Actual time-varying ODE counterpart passes common full-state error cap", "No unbounded probing, unauthorized derivatives, fatal retry or uncharged work", "Total selected-run cost is compared with sentinel disabled and an appropriate direct route"],
+      "default_policy": "Opt in until measured benefit exceeds comparison overhead."
+    },
+    {
+      "id": "persistent-implicit-session",
+      "priority": 2,
+      "problem": "Implicit coalescing and mean-step warm starts still recreate state between native calls.",
+      "files": ["crates/vigilode/src/solve.rs", "crates/vigilode/src/session.rs", "crates/rodas5p-integrators/src/adaptive.rs", "crates/vigilode/src/switching.rs"],
+      "implementation": "Expose an accepted-checkpoint RODAS session preserving the proposal, previous accepted error, last rejected trial, rejection_pending state, workspace, counters and eligible caches. Invalidate numerical caches on model/provider/metric/mesh identity changes; workspace capacity may remain.",
+      "mathematical_contract": "For fixed callback environment, arithmetic order and identical forced landing times, preserving complete state gives the same attempt sequence as uninterrupted execution. A mean h alone does not meet this contract.",
+      "acceptance": ["Split/resume and uninterrupted runs match accepted/rejected sequence and full counters at identical landing times", "Fatal/recoverable callbacks and budget exhaustion preserve last accepted state", "Measure 1, 8 and 64 pause windows with allocation counts and total elapsed cost", "Reuse no factorization merely because dimensions match"],
+      "default_policy": "Adopt only after equivalence tests and incremental benefit beyond current coalescing."
+    },
+    {
+      "id": "provider-aware-economics",
+      "priority": 2,
+      "problem": "RHS count and the fixed work proxy do not represent dense factorization, JVP, allocation and callback costs equally.",
+      "files": ["crates/vigilode/src/problem.rs", "crates/vigilode/src/automatic.rs", "crates/vigilode/src/selection_evidence.rs", "crates/vigilode/src/execution_policy.rs"],
+      "implementation": "Allow a caller to offer multiple authorized equivalent providers with distinct identities and resource ceilings. Calibrate costs only when remaining useful work can amortize calibration, and include calibration/transition charges in selection records. Preserve the ability to supply only JVP without materializing a dense matrix.",
+      "mathematical_contract": "Compare candidate upper cost plus future transition per remaining call against incumbent lower cost. Empirical intervals remain empirical; no universal dense/matrix-free crossover is assumed.",
+      "acceptance": ["Use one physical problem and identical observation contract for backend comparisons", "Record RHS/JVP/Jacobian/factorization/solve/allocation work separately", "Check provider equivalence independently of cost", "Zero matrix and derivative calls when forbidden", "A direct dense control is not counted as available when the caller supplied only JVP"],
+      "default_policy": "No implicit provider substitution or unconditional JVP preference."
+    },
+    {
+      "id": "structural-method-integration",
+      "priority": 3,
+      "problem": "The project's derivative-free algebraic and oscillatory constructions remain separate from the ordinary automatic selector.",
+      "files": ["crates/vigilode/src/oscillatory_chart.rs", "crates/vigilode/src/cofactor_chart.rs", "crates/vigilode-coupled/src/causal.rs", "crates/vigilode/src/selection_evidence.rs"],
+      "implementation": "Add a declared structure-provider interface for quotient flow, involution/chirp and cofactor lifts. Connect each provider's original-state error/reconstruction bound, model/chart epoch, setup cost and fallback to the existing qualified comparison. Retain causal-forward as the first comparison for homotopy/Picard alternatives.",
+      "mathematical_contract": "Certify the original lambda=1 residual and physical error, not only transformed residual. Operator reuse via Q=gamma*W^{-1}(h'J'-hJ) requires a justified norm bound below one or residual-to-error sensitivity control.",
+      "acceptance": ["Include noncommuting carriers, wrong charge support, stale epochs and nearly singular quotient denominators", "Compare with the strongest authorized direct route, including setup and certification", "Derivative-free routes remain derivative-free; projected causal JVP/small-LU and general homotopy correction are labeled accurately", "Reuse unchanged prior proofs and add tests only for new interface hypotheses"],
+      "default_policy": "Specialized adaptive candidates, not compulsory general-path preprocessing."
+    },
+    {
+      "id": "output-and-global-error",
+      "priority": 1,
+      "problem": "Current short pilots qualify endpoint error; default gyromotion misses its physical cap and intermediate-time behavior is not covered.",
+      "files": ["crates/vigilode/examples/adapter_integration_pilot.rs", "crates/vigilode/src/explicit.rs", "crates/vigilode/src/solve.rs"],
+      "implementation": "Register component-scaled trajectory and phase diagnostics at common observation times, keeping endpoint-only and observed-output APIs distinct. Reuse analytic references and independent external references. Never remove required observations to improve timing.",
+      "acceptance": ["Tight and default tolerance cohorts both remain visible", "Phase, amplitude and all-component error at shared times", "Accuracy-qualified work-precision curves for selected route versus relevant direct control", "VODE/DVODE, Diffsol and Julia comparisons only where the complete problem/output/error contract matches"],
+      "default_policy": "Do not infer global accuracy from a successful endpoint or local tolerance alone."
+    },
+    {
+      "id": "execution-cost-adaptation",
+      "priority": 3,
+      "problem": "Prior calibration-inclusive execution experiments did not beat the strongest direct control; small problems can lose to thread and synchronization overhead.",
+      "files": ["crates/vigilode/src/execution_policy.rs", "crates/vigilode-coupled/src/causal.rs"],
+      "implementation": "Keep serial execution as the small-work baseline. Test parallel stage or ensemble execution only after a cost estimate includes extra waves, worker startup, synchronization and certificate costs. Reset evidence when worker/model/layout identities change.",
+      "acceptance": ["Compare the adapter's selected execution against one relevant serial/parallel alternative", "Use actual model callbacks and separately label synthetic expensive RHS", "Report total solve cost with calibration included", "Do not claim serial stage emulation demonstrates parallel wall-time speedup"],
+      "default_policy": "Specialized opt-in until an amortized total-cost win is observed."
+    },
+    {
+      "id": "availability-schema-and-preflight",
+      "priority": 2,
+      "problem": "Optional provider availability is now handled correctly but its explanation is textual and declaration checks are duplicated.",
+      "files": ["crates/vigilode/src/automatic.rs", "crates/vigilode/src/switching.rs", "crates/vigilode/tests/automatic_availability_contracts.rs"],
+      "implementation": "Extract shared pure declaration validation; add structured requested-permission, effective-permission and unavailability fields with an explicit schema change. Preserve current callback-free preflight and native observed-state equivalence.",
+      "acceptance": ["All existing availability/fatal/budget tests remain valid", "Malformed declarations are not silently downgraded", "Unknown future restrictions are explicit errors", "Downstream consumers need not parse decision strings"],
+      "default_policy": "Compatibility-focused follow-up; do not change default derivative permissions."
+    }
+  ],
+  "local_execution": {"timed_cells_parallel": 1, "compilation_overlaps_timing": false, "preserve_failures": true, "ncp": false, "raw_data_source": "User's local receipts plus this published packet"},
+  "model_routing": {"routine_build_parse_reproduce": "6 luna low where available", "focused_unresolved_math_or_scientific_diagnosis": "astra ultra with relevant research skills/plugins only when needed", "note": "Routing preference, not a claim that this packet's native tests were run by a specific model."}
+}

@@ -1,0 +1,27 @@
+A07 report-only repair using retained raw campaign rows; no benchmark or allocator rerun.
+
+Preserved pre-repair artifacts:
+  validated_pre_median_repair.json SHA-256 971817dedb6978efdc1067f0a3eebefa40ad74beb7fee568f3df3908b5c7f840
+  REPORT_pre_median_repair.md SHA-256 f51abc62b596adfa1bbd5bd1a85f7d4cccd5c5ff1373b2bace2933ac43103fa6
+  RUN_RECORD_pre_repair.json is preserved alongside.
+
+Validator repairs:
+- Paired point ratios now use statistics.median, matching bootstrap calculations; the prior upper-middle statistic was wrong for even sample counts.
+- Reference center must be a finite 101x3 matrix and exactly equal to radau_ladder[-1].states.
+
+Hostile/reference checks:
+- Valid 101x3 center equality accepted.
+- Truncated one-state center rejected.
+- Full-size but different center rejected.
+- python3 -m py_compile validate_report.py exit 0.
+
+Revalidation command used retained cold.jsonl, warm.jsonl, alloc_native.jsonl, alloc_diffsol.jsonl with the unchanged manifest/grid/reference. Exit code 4 remains because strict row validation and empirical reference gate pass, but Diffsol accuracy upper bound is 3.3037774057537246 > 1. No samples were rerun and no model/tolerance changed.
+
+Correct paired ratio medians:
+- cold, 10 paired ratios: 0.9195676453507838
+- warm, 20 ABBA/BAAB block ratios: 1.4194023547437313
+Bootstrap intervals unchanged from retained ratios: cold [0.6677305256409933,1.327452564133345]; warm [1.402230958217182,1.4501800614107307].
+
+Environment provenance:
+- The original manifest remains unchanged and records all RAYON/BLAS/OpenMP thread variables as null because manifest capture itself was not invoked with those variables exported.
+- A supplementary execution_environment_receipt.json records the exact build and measurement environment assignments, exact argv/cwd/output paths, command-log hashes, campaign-row hashes, manifest SHA, and canonical RUN_RECORD core hash. RUN_RECORD references the receipt SHA.

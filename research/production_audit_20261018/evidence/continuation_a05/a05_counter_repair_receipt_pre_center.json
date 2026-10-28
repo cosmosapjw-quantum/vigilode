@@ -1,0 +1,43 @@
+{
+  "scope": "A05 represented quartic interval operation accounting",
+  "source_identity": {
+    "base_head": "de990927d0f9197f0e37fcaeccee33bea6c7b8af",
+    "checkout_head_at_validation": "c3036c63da02ca9b04cd39ccf580cd67d00ccb0c",
+    "branch": "audit/production-readiness-20261018",
+    "working_tree_was_dirty": true,
+    "files": {
+      "crates/rodas5p-integrators/src/dense_output_v2.rs": "b17eebcdabfdc1741abe8d3be1f7ad1a72b55a1c28ef4f7f6dab43a2de2198e7",
+      "crates/rodas5p-integrators/src/lib.rs": "bb8f86fc41585a66fb898a75261ec8b974bc6549b82ab4bccb2c2c27f4e502d4",
+      "crates/rodas5p-integrators/tests/a05_dense_global_output.rs": "15203683d1675260c9fe5a9c4112bb6213bc4f7e0cec9f606000791114607e2f"
+    }
+  },
+  "repair": {
+    "value_shared_interval_ops_precharged": 1,
+    "value_interval_ops_per_component_precharged": 9,
+    "derivative_shared_interval_ops_precharged": 2,
+    "derivative_interval_ops_per_component_precharged": 14,
+    "global_residual_or_trajectory_authority_added": false,
+    "allocation_evidence": "Source inspection: from_step allocates endpoint, coefficient, and identity vectors; successful evaluate methods use caller-owned output and have no heap allocation in their success path. Error construction may allocate. No allocator-instrumented zero-allocation claim."
+  },
+  "validation": {
+    "test_command": "cargo test --locked --offline -p rodas5p-integrators --test a05_dense_global_output -- --nocapture",
+    "test_exit_code": 0,
+    "test_result": "10 passed, 0 failed",
+    "test_log": "a05_counter_repair_test.log",
+    "test_log_sha256": "c4e9ff4b6632e11a7661e4c7123b437463e0d25cfd12e4cd4ec9b8caef8abde7",
+    "clippy_command": "cargo clippy --locked --offline -p rodas5p-integrators --all-targets -- -D warnings",
+    "clippy_exit_code": 0,
+    "clippy_log": "a05_counter_repair_clippy.log",
+    "clippy_log_sha256": "0da5db8112ea293f61eb2e63890a0ca29e7ea7b5b56adf59fd15cf94389c88b0",
+    "format_command": "rustfmt --edition 2024 --check crates/rodas5p-integrators/src/dense_output_v2.rs crates/rodas5p-integrators/tests/a05_dense_global_output.rs",
+    "rustfmt_exit_code": 0,
+    "git_diff_check_exit_code": 0,
+    "format_log": "a05_counter_repair_format.log",
+    "format_log_sha256": "ba8c68bf7ed328493976b7d04262960ce1ebff02a7aff9e8e7bdaeaa6c101cf9"
+  },
+  "decision": {
+    "represented_quartic_interval_component": "PASS_WITH_SCOPE",
+    "global_continuous_output_and_trajectory_authority": "HOLD",
+    "reason": "No interval RHS/log-norm interface or verified continuous residual/gain tube is available."
+  }
+}

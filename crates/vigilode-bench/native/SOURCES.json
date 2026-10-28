@@ -1,0 +1,78 @@
+{
+  "schema": "vigilode-bench.sources.v1",
+  "verification": "build.rs runs `sha256sum -c native/SHA256SUMS` before compiling; tests/sources.rs checks that this file and SHA256SUMS agree",
+  "files": [
+    {
+      "path": "netlib/vode.f",
+      "sha256": "76b3858bb1e32f416a29363dcf56e0889ac25aceb5911289f3f25fe275634e95",
+      "origin": "Netlib DVODE, frozen copy from branch research/benchmark-results-20261019-dual (commit 64b9852124b67eedbb8575b42c01127e4b86283b), research/strict_solver_comparison_20261019/refined_runs/39261895983/sources/vode.f",
+      "pinned_hash_file": "refined_runs/39261895983/NETLIB_SHA256SUMS",
+      "modified": false
+    },
+    {
+      "path": "netlib/dgefa.f",
+      "sha256": "764bd0a87dba77464eeac5c232a264b9de0aee192c8db152799b939579d95317",
+      "origin": "Netlib LINPACK, same pinned location",
+      "pinned_hash_file": "refined_runs/39261895983/NETLIB_SHA256SUMS",
+      "modified": false
+    },
+    {
+      "path": "netlib/dgesl.f",
+      "sha256": "2ef2289c6cb929825fff0fc9a9fd57c556c3cde97b21351cfdff140be645fbda",
+      "origin": "Netlib LINPACK, same pinned location",
+      "pinned_hash_file": "refined_runs/39261895983/NETLIB_SHA256SUMS",
+      "modified": false
+    },
+    {
+      "path": "netlib/dgbfa.f",
+      "sha256": "5aa49203557431ba5dd15719985c9d31915f936f2e34d5e30afd467326071873",
+      "origin": "Netlib LINPACK, same pinned location",
+      "pinned_hash_file": "refined_runs/39261895983/NETLIB_SHA256SUMS",
+      "modified": false
+    },
+    {
+      "path": "netlib/dgbsl.f",
+      "sha256": "f46ceaa18dd52ded3257b9e1a94a85786835ec9af21c7ca3f83687f2d4b13ddf",
+      "origin": "Netlib LINPACK, same pinned location",
+      "pinned_hash_file": "refined_runs/39261895983/NETLIB_SHA256SUMS",
+      "modified": false
+    },
+    {
+      "path": "hairer/radau_decsol.f",
+      "sha256": "dfb5925c1cb210df7ef2f8027c29b7049ffa60180d8ee96489c89817f828b22c",
+      "origin": "Assimulo 3.0 sdist (https://files.pythonhosted.org/packages/28/ef/4d8b15a0842410bb4ca8f500dadd5ff76fb3e34559f956a51c19b8a4912b/Assimulo-3.0.tar.gz, sha256 61cdca4562745078c966cc4fab44d8bc0db11a9e6856b45c470ac65c16af9e8a), assimulo/thirdparty/hairer/radau_decsol.f",
+      "note": "Hairer-Wanner RADAU5 (version of July 9, 1996, last correction January 18, 2002) with DECSOL, as redistributed by Assimulo; Assimulo's SOLOUT passes an extra WERR(N) argument",
+      "modified": false
+    },
+    {
+      "path": "hairer/rodas_decsol.f",
+      "sha256": "ac7606807fb24e9333d4262a25c23a3e21b0895d918263a69de8680261f32a93",
+      "origin": "Assimulo 3.0 sdist (same archive), assimulo/thirdparty/hairer/rodas_decsol.f",
+      "note": "Hairer-Wanner RODAS order 4(3) with DECSOL; its DECSOL symbols duplicate radau_decsol.f and are localized in the compiled object by objcopy (no source change)",
+      "modified": false
+    },
+    {
+      "path": "hairer/LICENSE_HAIRER",
+      "sha256": "f46c4e2dc21adb6d894eb7962834a0dd04cb695e0b69267bf18c132324213d8b",
+      "origin": "Assimulo 3.0 sdist (same archive), assimulo/thirdparty/hairer/LICENSE_HAIRER",
+      "modified": false
+    }
+  ],
+  "system_libraries": [
+    {
+      "name": "SUNDIALS CVODE",
+      "version": "6.4.1",
+      "package": "libsundials-dev (Ubuntu 24.04), headers /usr/include, libraries /usr/lib/x86_64-linux-gnu",
+      "linked": ["sundials_cvode", "sundials_nvecserial", "sundials_sunmatrixdense", "sundials_sunmatrixband", "sundials_sunlinsoldense", "sundials_sunlinsolband"]
+    },
+    {
+      "name": "GNU Fortran",
+      "version": "13.3.0",
+      "package": "gfortran (Ubuntu 13.3.0-6ubuntu2~24.04.1)"
+    },
+    {
+      "name": "reference BLAS",
+      "package": "libblas (used by DVODE/LINPACK level-1 calls)"
+    }
+  ]
+}

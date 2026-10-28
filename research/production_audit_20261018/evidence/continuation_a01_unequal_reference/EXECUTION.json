@@ -1,0 +1,33 @@
+{
+  "node": "A01-UFREF-01",
+  "scope": "independent unequal-frequency packet oracle at committed packet implementation identity",
+  "branch": "audit/production-readiness-20261018",
+  "source_head": "d087dab9a8dacff0b195566c4a649273acdb476c",
+  "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet_unequal_reference -- --nocapture",
+  "test_exit_code": 0,
+  "oracle_exit_code": 0,
+  "oracle_result": {
+    "status": "PASS",
+    "arms": 4,
+    "modes": 3,
+    "requested_times": 5,
+    "disk_checks": 80,
+    "orders": [40, 48],
+    "exact_zero_residual_coefficients": 1056,
+    "negative_endpoint_controls": "both rejected",
+    "allocation_calibration_clone_allocations": 3,
+    "oracle_input_sha256": "ae524daf9bf6539edbe7cc1b5b4d31276da2d73ff0d5392cc15cace0f5220651"
+  },
+  "worktree_overlay_at_execution": {
+    "crates/rodas5p-integrators/src/dense_output_v2.rs": "ffae5416d4dbe3e026665e25e32c64d2ce7a61cb5a731ab2f50f21b93fc22be3",
+    "crates/rodas5p-integrators/src/lib.rs": "9e736f1e23270d534891f6d7c45998677416b821ffb183ff68fdfffd8f6fc18c",
+    "crates/rodas5p-integrators/src/bound_pr101.rs": "c7a80e6d9984bcd92ce3063e2895f8d6ebdcc30341e482402567e8e4244ab8ee"
+  },
+  "packet_source_files_at_head": {
+    "crates/rodas5p-integrators/src/packet_window.rs": "efb1895c1690894816e002156545a753a89851d20fc7c810d22de4b24002c571",
+    "crates/rodas5p-integrators/src/collective_model.rs": "1cbcd3bfb6f1251e3f8dfcf3559d9db373610da89bebd7dab0432265a51a3a56",
+    "crates/rodas5p-integrators/tests/production_audit_packet_unequal_reference.rs": "27481dd471f4b7ccead862e1064321b9dbd03019a2281226fc24a07f10b3fc14",
+    "crates/rodas5p-integrators/tests/packet_unequal_fraction_oracle.py": "1e89fb1b04c842152075bc3f3fe25a3287c090119002555bc7540e3d268c75b6"
+  },
+  "claim_ceiling": "The packet source files and test/oracle are committed at source_head; unrelated dense-output overlays were present in the shared workspace and are explicitly fingerprinted. This closes only the unequal-frequency high-precision reference subunit, not packet outward-roundoff certification or full A01."
+}

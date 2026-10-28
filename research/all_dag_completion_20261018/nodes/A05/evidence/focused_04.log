@@ -1,0 +1,51 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-readonly/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.93s
+     Running tests/a05_dense_global_output.rs (/workspace/scratch/0dc1e721cf82/runtime/all-dag-target/debug/deps/a05_dense_global_output-e259d7a60d25c1b8)
+
+running 15 tests
+test construction_refusal_charges_attempted_span_work_before_exact_sum_overflow ... ok
+test batch_callback_failure_success_and_scalar_fallback_are_accounted ... ok
+test invalid_scalar_rhs_shapes_do_not_charge_or_enter_callbacks ... ok
+test dense_segment_refuses_bad_spans_and_unavailable_residual_provider ... ok
+test derivative_refusal_charges_attempted_interval_work_before_overflow ... ok
+test continuous_provider_refusal_preserves_attempted_work ... ok
+test immutable_quartic_segment_encloses_its_endpoint_and_interior_centers ... ok
+test continuous_segment_residual_checks_interval_curve_and_fixed_tube ... ok
+test dense_segment_arithmetic_counters_match_attempted_scalar_operations ... ok
+test nonfinite_log_norm_and_workspace_capacity_refusals_keep_attempted_work ... ok
+test immutable_segment_center_matches_the_existing_public_dense_convention ... ok
+test signed_one_sided_gain_uses_outward_residual_integral_and_refuses_overflow ... ok
+test represented_clock_delta_controls_normalization_not_step_metadata ... ok
+test scalar_rhs_attempts_are_counted_on_err_and_nonfinite_output ... ok
+test zero_span_dense_entry_rejects_invalid_adaptive_and_linear_config ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/all_dag_a05_verified.rs (/workspace/scratch/0dc1e721cf82/runtime/all-dag-target/debug/deps/all_dag_a05_verified-1ca488de4868d921)
+
+running 5 tests
+test generic_zero_span_still_validates_configuration_and_model_domain ... ok
+test unbound_point_problem_cannot_request_verified_authority ... ok
+test one_failed_trial_exposes_only_initial_committed_output ... ok
+A05_GENERIC_COLLECTIVE accepted=30 rejected=20 provider_ops=1750
+test collective_two_components_use_same_generic_verified_driver ... ok
+A05_GENERIC_PR101 outputs=101 accepted=492 rejected=292 rhs=6272 dense_ops=567711 max_error=8.382183835919932e-15
+test generic_pr101_original_101_point_witness_and_continuous_inheritance ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+     Running tests/production_audit_pr101_cloud.rs (/workspace/scratch/0dc1e721cf82/runtime/all-dag-target/debug/deps/production_audit_pr101_cloud-d44c4044afbd8bde)
+
+running 7 tests
+test invalid_domain_configuration_and_pure_relative_are_explicit_refusals ... ok
+test native_candidate_failure_has_one_outer_rejection ... ok
+PR101_ORACLE={"h":9.76562500000000000e-4,"residual":1.55697273700166152e-4,"radius":1.55697273700169781e-10,"lambda":-1000000,"eta":10}
+test cancellation_preserving_defect_encloses_fraction_oracle_fixture ... ok
+test refused_attempt_commits_no_state_segment_or_output ... ok
+test nonzero_start_inherited_uncertainty_and_adjacent_outputs ... ok
+test nonzero_nonlinear_orbit_uses_expanding_transport ... ok
+PR101_GLOBAL={"outputs":101,"accepted":492,"rejected":292,"max_error":8.38218383591993188e-15,"rhs":6272,"verification_ops":574094}
+test nonlinear_pr101_101_outputs_satisfy_original_absolute_tolerance ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+

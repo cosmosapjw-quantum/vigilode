@@ -1,0 +1,287 @@
+{
+  "schema_version": 1,
+  "scope": "Retrospective policy indexing only; no new native experiment or runtime edit; corrected Python checks use an isolated temporary index seeded from the full published HEAD and add the three pending policy files; shared index unchanged.",
+  "base_commit": "206298b4068d923bb47c7160b111b7439098660c",
+  "published_evidence_commit": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+  "ledger_id": "L-0173",
+  "ledger_verdict": "INCONCLUSIVE",
+  "prospective_registration_satisfied": false,
+  "prior_ledger_rows": 169,
+  "prior_ledger_bytes": 468008,
+  "prior_ledger_prefix_sha256": "51757a53cb790ed640d05500a9dfc88ad6fd72a747e01f277decd96af56d3a20",
+  "prior_ledger_prefix_preserved": true,
+  "files_sha256": {
+    "research/production_solver_closure_20261027/PREREGISTRATION.md": "19c856556dbb541fe84091abcfd139b0e1091e4c0bc874fa416048947a2f12a0",
+    "research/LEDGER.jsonl": "cc323c0bf83b50d7a1602bba6b4538c2b72257f67e25e5a933a9ba10bc131925"
+  },
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "tools/check-research-node.py",
+        "--base",
+        "206298b4068d923bb47c7160b111b7439098660c"
+      ],
+      "started_utc": "2026-10-27T21:15:52.292515+00:00",
+      "wall_seconds": 3.727392412998597,
+      "exit_code": 0,
+      "stdout_artifact": {
+        "scratch_path": "/tmp/production_policy_check_logs/corrected_full_tree_00.stdout.txt",
+        "sha256": "89ec7f0f728046b22d81822d1c3c2e4ad838d34af225b832ac0aa0baf7f925cf",
+        "bytes": 141
+      },
+      "stdout_summary": "check-research-node: PASS (170 ledger rows, base=206298b4068d923bb47c7160b111b7439098660c, new nodes=['production_solver_closure_20261027'])",
+      "stderr_artifact": {
+        "scratch_path": "/tmp/production_policy_check_logs/corrected_full_tree_00.stderr.txt",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "stderr_summary": ""
+    },
+    {
+      "argv": [
+        "python3",
+        "tools/check-authority-refs.py"
+      ],
+      "started_utc": "2026-10-27T21:15:56.019971+00:00",
+      "wall_seconds": 22.261315714000375,
+      "exit_code": 1,
+      "stdout_artifact": {
+        "scratch_path": "/tmp/production_policy_check_logs/corrected_full_tree_01.stdout.txt",
+        "sha256": "0723eb32f38f3436d37d44ae345fe8bb8d4964b93d7cdc78ef2239c0d03be431",
+        "bytes": 1880963
+      },
+      "stdout_summary": "check-authority-refs: FAIL (10004 citations, 795 distinct SHAs: missing=689, missing+allowlisted=27, non-commit=73, reachable=6)",
+      "stderr_artifact": {
+        "scratch_path": "/tmp/production_policy_check_logs/corrected_full_tree_01.stderr.txt",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "bytes": 0
+      },
+      "stderr_summary": ""
+    }
+  ],
+  "status": "research_node_pass; full_authority_scan_fail_in_incomplete_local_history; prospective_chronology_unsatisfied",
+  "previous_attempt": {
+    "status": "failure_retained",
+    "commands": [
+      {
+        "argv": [
+          "python3",
+          "tools/test_check_research_node.py",
+          "-v"
+        ],
+        "started_utc": "2026-10-27T15:58:42.843959+00:00",
+        "wall_seconds": 9.281497044998105,
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "test_bad_verdict_fails (__main__.ResearchNodeTests.test_bad_verdict_fails) ... ok\ntest_edited_ledger_row_fails (__main__.ResearchNodeTests.test_edited_ledger_row_fails) ... ok\ntest_exempt_node_needs_no_preregistration_but_still_needs_a_ledger_row (__main__.ResearchNodeTests.test_exempt_node_needs_no_preregistration_but_still_needs_a_ledger_row) ... ok\ntest_exemption_needs_a_reason_and_a_tracked_node (__main__.ResearchNodeTests.test_exemption_needs_a_reason_and_a_tracked_node) ... ok\ntest_missing_preregistration_fails (__main__.ResearchNodeTests.test_missing_preregistration_fails) ... ok\ntest_new_node_without_ledger_row_fails (__main__.ResearchNodeTests.test_new_node_without_ledger_row_fails) ... ok\ntest_new_node_without_numeric_results_fails (__main__.ResearchNodeTests.test_new_node_without_numeric_results_fails) ... ok\ntest_nodes_present_when_ledger_was_introduced_are_frozen (__main__.ResearchNodeTests.test_nodes_present_when_ledger_was_introduced_are_frozen) ... ok\ntest_output_hash_mismatch_fails (__main__.ResearchNodeTests.test_output_hash_mismatch_fails) ... ok\ntest_output_rebound_by_superseding_row_checks_only_the_later_digest (__main__.ResearchNodeTests.test_output_rebound_by_superseding_row_checks_only_the_later_digest) ... ok\ntest_removed_ledger_row_fails (__main__.ResearchNodeTests.test_removed_ledger_row_fails) ... ok\ntest_schema_rejects_unknown_field_and_dangling_supersedes (__main__.ResearchNodeTests.test_schema_rejects_unknown_field_and_dangling_supersedes) ... ok\ntest_stall_rule_allows_two_and_is_broken_by_a_numeric_result (__main__.ResearchNodeTests.test_stall_rule_allows_two_and_is_broken_by_a_numeric_result) ... ok\ntest_stall_rule_triggers_on_third_node_without_numeric_result (__main__.ResearchNodeTests.test_stall_rule_triggers_on_third_node_without_numeric_result) ... ok\ntest_unrecorded_command_cannot_pass (__main__.ResearchNodeTests.test_unrecorded_command_cannot_pass) ... ok\ntest_valid_new_node_passes (__main__.ResearchNodeTests.test_valid_new_node_passes) ... ok\n\n----------------------------------------------------------------------\nRan 16 tests in 9.146s\n\nOK\n"
+      },
+      {
+        "argv": [
+          "python3",
+          "tools/test_check_authority_refs.py",
+          "-v"
+        ],
+        "started_utc": "2026-10-27T15:58:52.125597+00:00",
+        "wall_seconds": 2.3795194140038802,
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": "test_allowlist_entry_without_reason_fails (__main__.AuthorityRefsTests.test_allowlist_entry_without_reason_fails) ... ok\ntest_allowlisted_sha_passes (__main__.AuthorityRefsTests.test_allowlisted_sha_passes) ... ok\ntest_missing_sha_in_json_key_fails (__main__.AuthorityRefsTests.test_missing_sha_in_json_key_fails) ... ok\ntest_non_authority_context_and_sha256_and_trees_are_ignored (__main__.AuthorityRefsTests.test_non_authority_context_and_sha256_and_trees_are_ignored) ... ok\ntest_paths_limits_scope (__main__.AuthorityRefsTests.test_paths_limits_scope) ... ok\ntest_reachable_sha_passes (__main__.AuthorityRefsTests.test_reachable_sha_passes) ... ok\ntest_unreachable_local_only_sha_fails (__main__.AuthorityRefsTests.test_unreachable_local_only_sha_fails) ... ok\ntest_untracked_files_are_not_scanned (__main__.AuthorityRefsTests.test_untracked_files_are_not_scanned) ... ok\n\n----------------------------------------------------------------------\nRan 8 tests in 2.246s\n\nOK\n"
+      },
+      {
+        "argv": [
+          "python3",
+          "tools/check-research-node.py",
+          "--base",
+          "206298b4068d923bb47c7160b111b7439098660c"
+        ],
+        "started_utc": "2026-10-27T15:58:54.506120+00:00",
+        "wall_seconds": 3.56077283200284,
+        "exit_code": 1,
+        "stdout": "FAIL: tools/research_node_exemptions.txt: exemption for research/adversarial_reaudit_20260930_r2/, which is not a tracked node\ncheck-research-node: FAIL (170 ledger rows, base=206298b4068d923bb47c7160b111b7439098660c, new nodes=none)\n",
+        "stderr": ""
+      },
+      {
+        "argv": [
+          "python3",
+          "tools/check-authority-refs.py"
+        ],
+        "started_utc": "2026-10-27T15:58:58.067014+00:00",
+        "wall_seconds": 0.09676639099780004,
+        "exit_code": 0,
+        "stdout": "check-authority-refs: PASS (0 citations, 0 distinct SHAs: none)\n",
+        "stderr": ""
+      }
+    ],
+    "interpretation": "The prior temporary-index invocation was invalid as a full-tree validation: its checker output saw no tracked nodes and 0 citations. Preserve its failing research-node result and vacuous authority PASS; neither establishes current-tree policy validity."
+  },
+  "validator_environment_correction": {
+    "temporary_index_seed": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+    "preparation_commands": [
+      {
+        "argv": [
+          "git",
+          "read-tree",
+          "78bb8775bf553ad2b514575a0ef4a025446f5d28"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      },
+      {
+        "argv": [
+          "git",
+          "add",
+          "--",
+          "research/LEDGER.jsonl",
+          "research/PRODUCTION_SOLVER_CLOSURE_POLICY_20261027.json",
+          "research/production_solver_closure_20261027/PREREGISTRATION.md"
+        ],
+        "exit_code": 0,
+        "stdout": "",
+        "stderr": ""
+      }
+    ],
+    "tracked_path_count": 16793,
+    "shared_index_sha256_before": "8274185168200c28bfab9cdafab6efa04868e28a1ee5ca7442382bf512eeba20",
+    "shared_index_sha256_after": "8274185168200c28bfab9cdafab6efa04868e28a1ee5ca7442382bf512eeba20",
+    "shared_index_unchanged": true
+  },
+  "registration_binding_checks": [
+    {
+      "kind": "inputs_sha256",
+      "path": "research/production_solver_closure_20261027/structural/PROTOCOL.md",
+      "sha256": "280e65b0aee58f66287993386dc2827fc6ff84e8774f0f98e084d1572c79cf8a",
+      "matches_current_and_published": true
+    },
+    {
+      "kind": "inputs_sha256",
+      "path": "research/production_solver_closure_20261027/structural/CORRECTION3_EXECUTION.json",
+      "sha256": "358ef33731d31b7d59298ed22a92f6f2cc1bf2d71670ec6b2379e994c2e1b383",
+      "matches_current_and_published": true
+    },
+    {
+      "kind": "inputs_sha256",
+      "path": "research/production_solver_closure_20261027/homotopy/PROTOCOL.md",
+      "sha256": "35689b636f722cc46b8fee09d2af7a3457217e39f9adda3ad90ef3c76de9c5e2",
+      "matches_current_and_published": true
+    },
+    {
+      "kind": "inputs_sha256",
+      "path": "research/production_solver_closure_20261027/homotopy/PASS1_EXECUTION.json",
+      "sha256": "7d1ed9566a6e92d611fb31b0542ac729942fb393ff2c4d5937972eb7e87d00c7",
+      "matches_current_and_published": true
+    },
+    {
+      "kind": "inputs_sha256",
+      "path": "research/production_solver_closure_20261027/adapter/PROTOCOL.md",
+      "sha256": "da3441a23be1d043f046fa319857a000545f37e5c0181a45a2acf307b38c4c9a",
+      "matches_current_and_published": true
+    },
+    {
+      "kind": "inputs_sha256",
+      "path": "research/production_solver_closure_20261027/adapter/PASS3_RECEIPT.json",
+      "sha256": "12c6298f5a8809cb3b6e96b73730ffeca22593b77860cac2f3b6b08def5589ae",
+      "matches_current_and_published": true
+    },
+    {
+      "kind": "inputs_sha256",
+      "path": "docs/RESEARCH_LEDGER.md",
+      "sha256": "ea6cfa9be1609783f5c1dd57cc8ce2b7ec22abc32bbe477d4611572dff21de5a",
+      "matches_current_and_published": true
+    },
+    {
+      "kind": "inputs_sha256",
+      "path": "docs/TIMING_DESIGN_CONTRACT.md",
+      "sha256": "990cd3f7af736080432cfe229672a857bc876b90cb7b1f88628f88dcf9e108e5",
+      "matches_current_and_published": true
+    },
+    {
+      "kind": "outputs_sha256",
+      "path": "research/production_solver_closure_20261027/structural/FINAL_BENCHMARK_SUMMARY.json",
+      "sha256": "863872f342f2f123d7994c275d7dd873766ea8c4b1f68076da19d97be66f819b",
+      "matches_current_and_published": true
+    },
+    {
+      "kind": "outputs_sha256",
+      "path": "research/production_solver_closure_20261027/structural/FINAL_EXACT_ORACLE_RESULTS.json",
+      "sha256": "8118773fbb6ed188658a00d3fb3a0d2eb44dd6211d93317c09a57b48d2bff9b6",
+      "matches_current_and_published": true
+    },
+    {
+      "kind": "outputs_sha256",
+      "path": "research/production_solver_closure_20261027/structural/instruction_profile/SUMMARY.json",
+      "sha256": "85e5f7a1c260c544020145e1937b00606b422a8021a654e446383483e39ddfaf",
+      "matches_current_and_published": true
+    },
+    {
+      "kind": "outputs_sha256",
+      "path": "research/production_solver_closure_20261027/homotopy/ANALYSIS.json",
+      "sha256": "4645c4fb54c9dbf348eb827eae227cd4451c91efa71afa30f8cd7a2dbc469351",
+      "matches_current_and_published": true
+    },
+    {
+      "kind": "outputs_sha256",
+      "path": "research/production_solver_closure_20261027/homotopy/instruction_profile_r1/SUMMARY.json",
+      "sha256": "9586823311ad3324610d3e1ff6c425a5bc308169ecc3937a0e5452baeed126c9",
+      "matches_current_and_published": true
+    },
+    {
+      "kind": "outputs_sha256",
+      "path": "research/production_solver_closure_20261027/adapter/RESULTS.json",
+      "sha256": "228d71d6d8bad7a40f7bd4f975859c02c1430d9a8e57b5465c28d50c07b0f0b5",
+      "matches_current_and_published": true
+    },
+    {
+      "kind": "outputs_sha256",
+      "path": "research/production_solver_closure_20261027/adapter/PERFORMANCE.json",
+      "sha256": "8842d6d22ce4040e8ca12b2cf7d5b7c1ccbe79400bcb6396f4a0ea896a4f1a58",
+      "matches_current_and_published": true
+    },
+    {
+      "kind": "outputs_sha256",
+      "path": "research/production_solver_closure_20261027/adapter/FINAL_AUDIT.json",
+      "sha256": "fdab163f93f9b81945aca1686afa534403f7d7e0e22a0add173f0366f6dd444a",
+      "matches_current_and_published": true
+    }
+  ],
+  "reviewed_at_utc": "2026-10-27T21:17:05.438472+00:00",
+  "reviewed_at_kst": "2026-10-28T06:17:05.438510+09:00",
+  "authority_full_tree_limit": {
+    "result": "FAIL",
+    "citations": 10004,
+    "distinct_shas": 795,
+    "missing": 689,
+    "missing_allowlisted": 27,
+    "non_commit": 73,
+    "reachable": 6,
+    "interpretation": "This local checkout does not contain the historic objects/remote refs required for the repository-wide authority scan. Missing locally is not evidence that cited revisions are unpublished. A fresh full-history/all-remote-ref clone is required to distinguish actual publication failures. No allowlist or checker is changed, and the full scan is not claimed to pass."
+  },
+  "local_git_environment": {
+    "is_shallow_repository": "true",
+    "remote_branch_names": [
+      "origin/research/adapter-checkpoint-followup-20261027",
+      "origin/research/adapter-integration-20261027",
+      "origin/research/adapter-switcher-perf-20261026",
+      "origin/research/derivative-free-causal-homotopy-20261027",
+      "origin/research/production-solver-closure-20261027",
+      "origin/research/rigorous-performance-audit-20261027"
+    ]
+  },
+  "scoped_new_policy_authority_check": {
+    "argv": [
+      "python3",
+      "tools/check-authority-refs.py",
+      "--paths",
+      "research/production_solver_closure_20261027/PREREGISTRATION.md",
+      "research/PRODUCTION_SOLVER_CLOSURE_POLICY_20261027.json"
+    ],
+    "started_utc": "2026-10-27T21:17:05.284597+00:00",
+    "wall_seconds": 0.15079316600167658,
+    "exit_code": 0,
+    "stdout": "check-authority-refs: PASS (6 citations, 2 distinct SHAs: reachable=2)\n",
+    "stderr": "",
+    "scope": "Only the two new policy documentation files, not the full research node or historical ledger; does not replace repository-wide check."
+  },
+  "scoped_check_shared_index_unchanged": true
+}

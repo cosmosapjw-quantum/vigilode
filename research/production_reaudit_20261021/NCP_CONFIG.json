@@ -1,0 +1,139 @@
+{
+  "schema": "vigilode.ncp-config.v1",
+  "rust_version": "1.94.1",
+  "warmups": 2,
+  "repetitions": 21,
+  "threads": [
+    1,
+    2,
+    4,
+    8
+  ],
+  "memory_limit_bytes": 8589934592,
+  "validation_timeout_seconds": 14400,
+  "comparison_timeout_seconds": 120,
+  "work_precision_timeout_seconds": 21600,
+  "invocation_timeout_seconds": 86400,
+  "corpus": "crates/vigilode-bench/protocols/n02_independent_reference_v1.json",
+  "locked_inputs": {
+    "Cargo.lock": "3c3310208cb895851aced4b4506ccd761e04c62d93113372919542478163a1e5",
+    "crates/vigilode-bench/Cargo.lock": "d52dbdd01959c4f481a2f42657525a906603b9bc895a6f51e6995ff472873abf",
+    "rust-toolchain.toml": "f53198ae4fdecfd87da36fe431c771b54c51e975d01c0e99f653bc14d5d48211",
+    "crates/vigilode-bench/protocols/n02_independent_reference_v1.json": "024de8e3251a8ac0dae34189268312947428a5c7b4f2213128ff56ecfb7ddfea"
+  },
+  "comparison_cases": [
+    {
+      "suite": "polynomial",
+      "case": "p4",
+      "arms": [
+        "protected",
+        "krylov",
+        "leja",
+        "laguerre",
+        "chebyshev",
+        "router"
+      ],
+      "original_budget": 1e-07
+    },
+    {
+      "suite": "polynomial",
+      "case": "p16",
+      "arms": [
+        "protected",
+        "krylov",
+        "leja",
+        "laguerre",
+        "chebyshev",
+        "router"
+      ],
+      "original_budget": 1e-07
+    },
+    {
+      "suite": "polynomial",
+      "case": "p64",
+      "arms": [
+        "protected",
+        "krylov",
+        "leja",
+        "laguerre",
+        "chebyshev",
+        "router"
+      ],
+      "original_budget": 1e-07
+    },
+    {
+      "suite": "homotopy",
+      "case": "h3",
+      "arms": [
+        "direct",
+        "continuation"
+      ],
+      "original_budget": 2e-05
+    },
+    {
+      "suite": "homotopy",
+      "case": "h8",
+      "arms": [
+        "direct",
+        "continuation"
+      ],
+      "original_budget": 2e-05
+    },
+    {
+      "suite": "homotopy",
+      "case": "h16",
+      "arms": [
+        "direct",
+        "continuation"
+      ],
+      "original_budget": 2e-05
+    },
+    {
+      "suite": "actual-k",
+      "case": "k2",
+      "arms": [
+        "direct",
+        "continuation"
+      ],
+      "original_budget": 1e-09
+    },
+    {
+      "suite": "actual-k",
+      "case": "k4",
+      "arms": [
+        "direct",
+        "continuation"
+      ],
+      "original_budget": 1e-09
+    },
+    {
+      "suite": "bound-clients",
+      "case": "diagonal",
+      "arms": [
+        "bounded",
+        "resolvent",
+        "diagonal"
+      ],
+      "original_budget": 1e-07
+    },
+    {
+      "suite": "bound-clients",
+      "case": "global",
+      "arms": [
+        "provider",
+        "replay"
+      ],
+      "original_budget": 0.0001
+    },
+    {
+      "suite": "bound-clients",
+      "case": "allocation",
+      "arms": [
+        "uniform",
+        "optimized"
+      ],
+      "original_budget": 0.5
+    }
+  ],
+  "claims_policy": "Execution receipts only. Production/accuracy/speed claims require separate production_promotion_gate.py; missing RSS or refused certificates HOLD."
+}

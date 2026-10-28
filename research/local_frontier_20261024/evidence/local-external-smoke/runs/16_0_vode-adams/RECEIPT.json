@@ -1,0 +1,103 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-10-24T00:57:31.966319+00:00",
+  "command": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "/workspace/scratch/0dc1e721cf82/vigilode-production-1024/research/local_frontier_20261024/local/vode_adapter.py",
+    "--contract",
+    "/workspace/scratch/0dc1e721cf82/local-external-smoke-1024/model_16.json",
+    "--method",
+    "vode-adams",
+    "--rtol",
+    "1e-06",
+    "--atol",
+    "1e-09"
+  ],
+  "wrapped_command": [
+    "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+    "/workspace/scratch/0dc1e721cf82/vigilode-production-1024/research/local_frontier_20261024/local/vode_adapter.py",
+    "--contract",
+    "/workspace/scratch/0dc1e721cf82/local-external-smoke-1024/model_16.json",
+    "--method",
+    "vode-adams",
+    "--rtol",
+    "1e-06",
+    "--atol",
+    "1e-09"
+  ],
+  "timeout_seconds": 15.0,
+  "address_space_limit_gib": 4.0,
+  "cpus": [
+    0
+  ],
+  "thread_environment": {
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "BLIS_NUM_THREADS": "1",
+    "JULIA_NUM_THREADS": "1"
+  },
+  "finished_utc": "2026-10-24T00:57:32.383465+00:00",
+  "elapsed_process_seconds": 0.41631377399608027,
+  "exit_code": 0,
+  "timed_out": false,
+  "spawn_error": null,
+  "execution_status": "COMPLETED",
+  "parse_errors": [],
+  "result": {
+    "accuracy_scope": "maximum component absolute endpoint error; no continuous-time or missed-cycle guarantee",
+    "actual_error": 1.5305423595179946e-10,
+    "backend": "SciPy scipy.integrate.ode VODE (double-precision ODEPACK implementation)",
+    "case": 16,
+    "contract_sha256": "605dac2fa61a232a211c77d5bcc37d8d22616a4e9f10195838244817df0abbef",
+    "counters": {
+      "rhs": 11
+    },
+    "elapsed_seconds": 0.00047016098687890917,
+    "error_limit": 0.0001,
+    "final_state": [
+      0.9989484720452994,
+      0.009997324258949912
+    ],
+    "final_time": 0.01,
+    "kind": "result",
+    "method": "vode-adams",
+    "model_match": {
+      "max_scaled_probe_difference": 0.0,
+      "scope": "Declared parameters, initial state, time span and two arbitrary RHS probes; not a formal code-equivalence proof",
+      "status": "MATCHED_AT_DECLARED_PROBES"
+    },
+    "parallel_layer": "serial",
+    "reference_kind": "analytic endpoint",
+    "schema_version": 1,
+    "scientific_status": "PASS_SCOPED",
+    "scipy_version": "1.17.0",
+    "size": "smoke",
+    "solver_success": true,
+    "speed_comparison_eligible": true,
+    "threads": 1,
+    "timing_scope": "fresh problem/workspace + integration; Python callback cost included; imports/probe checks/reference/JSON excluded",
+    "vode_return_code": 2
+  },
+  "stdout_sha256": "e057798b3e4a853008f3ed9206ef143bf0e8514e135d0c63983265222a129fba",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "source": {
+    "commit": "2f87ac31f52ac031bdd29ce7cbb67728cb01ef6a",
+    "tree": "c59ac6aa34482b9042897fda21145175c0c553d1",
+    "status_porcelain": "M Cargo.lock\n M crates/rodas5p-core/src/lib.rs\n M crates/rodas5p-core/src/shared_shift_jet.rs\n M crates/rodas5p-integrators/src/lib.rs\n M crates/vigilode-coupled/examples/reconsideration_bench.rs\n M crates/vigilode-coupled/src/adaptive.rs\n M crates/vigilode-coupled/src/lib.rs\n M crates/vigilode-coupled/src/switching.rs\n M crates/vigilode-coupled/tests/switching_contracts.rs\n M crates/vigilode/Cargo.toml\n?? crates/rodas5p-core/examples/invariant_module_bench.rs\n?? crates/rodas5p-core/src/invariant_module.rs\n?? crates/rodas5p-core/tests/invariant_module_contracts.rs\n?? crates/rodas5p-integrators/examples/conditioned_chart_bench.rs\n?? crates/rodas5p-integrators/examples/fixed_point_continuation_bench.rs\n?? crates/rodas5p-integrators/src/conditioned_polynomial.rs\n?? crates/rodas5p-integrators/src/fixed_point_continuation.rs\n?? crates/rodas5p-integrators/tests/conditioned_polynomial_contracts.rs\n?? crates/rodas5p-integrators/tests/fixed_point_continuation_contracts.rs\n?? crates/vigilode/examples/local_bottleneck_suite.rs\n?? crates/vigilode/examples/local_bottleneck_support/models.rs\n?? crates/vigilode/tests/local_bottleneck_models.rs\n?? external_audits/vigilode_ncp_intensive_120m_v1_20261021/.TOLERANCE_RESULTS.jsonl.TEjl65\n?? research/bassrei_p04_source_exchange_stress_20261022/raw/.C1_probe_sources.json.dVgK52\n?? research/coupled_native_20261020/runs/39349031422/.REFERENCES.json.part0000.cMoeh2\n?? research/local_frontier_20261024/NEXT_STEPS.json\n?? research/local_frontier_20261024/REPORT_KO.md\n?? research/local_frontier_20261024/SOURCE_IDENTITY.json\n?? research/local_frontier_20261024/analysis/ATTACHMENT_AUDIT_KO.md\n?? research/local_frontier_20261024/analysis/BENCHMARK_MODELS.md\n?? research/local_frontier_20261024/analysis/CONDITIONED_CHART_BENCHMARK.json\n?? research/local_frontier_20261024/analysis/GEOMETRY_EXACT_CHECKS.json\n?? research/local_frontier_20261024/analysis/GEOMETRY_TRANSFER.json\n?? research/local_frontier_20261024/analysis/GEOMETRY_TRANSFER.md\n?? research/local_frontier_20261024/analysis/N1_N2.json\n?? research/local_frontier_20261024/analysis/N1_N2.md\n?? research/local_frontier_20261024/analysis/N3_INDEPENDENT_REVIEW.md\n?? research/local_frontier_20261024/analysis/N3_REGIME_COST.md\n?? research/local_frontier_20261024/analysis/N4_FIXED_P.json\n?? research/local_frontier_20261024/analysis/N4_FIXED_P.md\n?? research/local_frontier_20261024/analysis/N6_BENCHMARK_SUMMARY.json\n?? research/local_frontier_20261024/analysis/N6_INDEPENDENT_REVIEW.md\n?? research/local_frontier_20261024/analysis/N8_DISCRIMINATION_COVERAGE.json\n?? research/local_frontier_20261024/analysis/conditioned_chart_comparison.png\n?? research/local_frontier_20261024/analysis/conditioned_chart_comparison.svg\n?? research/local_frontier_20261024/evidence/GEOMETRY_SOURCES.json\n?? research/local_frontier_20261024/evidence/LOCAL_BENCHMARK_REQUEST.txt\n?? research/local_frontier_20261024/evidence/N6_microbenchmark.json\n?? research/local_frontier_20261024/evidence/N6_microbenchmark.jsonl\n?? research/local_frontier_20261024/evidence/N6_microbenchmark.stderr\n?? research/local_frontier_20261024/evidence/N6_tests_round1.json\n?? research/local_frontier_20261024/evidence/N6_tests_round1.stderr\n?? research/local_frontier_20261024/evidence/N6_tests_round1.stdout\n?? research/local_frontier_20261024/evidence/N6_tests_round2.json\n?? research/local_frontier_20261024/evidence/N6_tests_round2.stderr\n?? research/local_frontier_20261024/evidence/N6_tests_round2.stdout\n?? research/local_frontier_20261024/evidence/N6_tests_round3.json\n?? research/local_frontier_20261024/evidence/N6_tests_round3.stderr\n?? research/local_frontier_20261024/evidence/N6_tests_round3.stdout\n?? research/local_frontier_20261024/evidence/WOLFRAM_ATTACHMENT_CHECK.json\n?? research/local_frontier_20261024/evidence/model-build.exit\n?? research/local_frontier_20261024/evidence/model-build.log\n?? research/local_frontier_20261024/evidence/model-catalog.json\n?? research/local_frontier_20261024/evidence/model-contract-1-smoke.json\n?? research/local_frontier_20261024/evidence/model-contract-15-smoke.json\n?? research/local_frontier_20261024/evidence/model-executable-smoke-receipts.json\n?? research/local_frontier_20261024/evidence/model-executable-smoke.jsonl\n?? research/local_frontier_20261024/evidence/model-tests-round2.exit\n?? research/local_frontier_20261024/evidence/model-tests-round2.log\n?? research/local_frontier_20261024/evidence/n1n2-benchmark-build.receipt.json\n?? research/local_frontier_20261024/evidence/n1n2-benchmark-build.stderr\n?? research/local_frontier_20261024/evidence/n1n2-benchmark-build.stdout\n?? research/local_frontier_20261024/evidence/n1n2-chart-benchmark.receipt.json\n?? research/local_frontier_20261024/evidence/n1n2-chart-benchmark.stderr\n?? research/local_frontier_20261024/evidence/n1n2-chart-benchmark.stdout\n?? research/local_frontier_20261024/evidence/n1n2-independent-review.json\n?? research/local_frontier_20261024/evidence/n1n2-round1-tests.receipt.json\n?? research/local_frontier_20261024/evidence/n1n2-round1-tests.stderr\n?? research/local_frontier_20261024/evidence/n1n2-round1-tests.stdout\n?? research/local_frontier_20261024/evidence/n1n2-round2-tests.receipt.json\n?? research/local_frontier_20261024/evidence/n1n2-round2-tests.stderr\n?? research/local_frontier_20261024/evidence/n1n2-round2-tests.stdout\n?? research/local_frontier_20261024/evidence/n3_round1_source/reconsideration_bench.rs\n?? research/local_frontier_20261024/evidence/n3_round2_source/reconsideration_bench.rs\n?? research/local_frontier_20261024/evidence/n4-benchmark-build.exit\n?? research/local_frontier_20261024/evidence/n4-benchmark-build.receipt.json\n?? research/local_frontier_20261024/evidence/n4-benchmark-build.stderr\n?? research/local_frontier_20261024/evidence/n4-benchmark-build.stdout\n?? research/local_frontier_20261024/evidence/n4-benchmark.exit\n?? research/local_frontier_20261024/evidence/n4-benchmark.receipt.json\n?? research/local_frontier_20261024/evidence/n4-benchmark.stderr\n?? research/local_frontier_20261024/evidence/n4-benchmark.stdout\n?? research/local_frontier_20261024/evidence/n4-round1-tests.exit\n?? research/local_frontier_20261024/evidence/n4-round1-tests.receipt.json\n?? research/local_frontier_20261024/evidence/n4-round1-tests.stderr\n?? research/local_frontier_20261024/evidence/n4-round1-tests.stdout\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark-build.exit\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark-build.receipt.json\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark-build.stderr\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark-build.stdout\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark.exit\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark.receipt.json\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark.stderr\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark.stdout\n?? research/local_frontier_20261024/evidence/n4-round2-tests.exit\n?? research/local_frontier_20261024/evidence/n4-round2-tests.receipt.json\n?? research/local_frontier_20261024/evidence/n4-round2-tests.stderr\n?? research/local_frontier_20261024/evidence/n4-round2-tests.stdout\n?? research/local_frontier_20261024/evidence/n4_round1_source/fixed_point_continuation.rs\n?? research/local_frontier_20261024/evidence/n4_round1_source/fixed_point_continuation_contracts.rs\n?? research/local_frontier_20261024/evidence/runs/n3-final-broad.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-broad.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-broad.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-build.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-build.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-build.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-changing-rate.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-changing-rate.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-changing-rate.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-expensive-few-mode.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-expensive-few-mode.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-expensive-few-mode.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode-basis1.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode-basis1.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode-basis1.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-model-tests.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-model-tests.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-model-tests.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-changing-rank.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-changing-rank.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-changing-rank.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-step-regime.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-step-regime.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-step-regime.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonnormal.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonnormal.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonnormal.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-oscillatory.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-oscillatory.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-oscillatory.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-riccati.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-riccati.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-riccati.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-round1-build.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-round1-build.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-round1-build.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-round1-tests.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-round1-tests.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-round1-tests.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-round2-tests.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-round2-tests.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-round2-tests.stdout\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-1.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-1.stderr\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-1.stdout\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-2.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-2.stderr\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-2.stdout\n?? research/local_frontier_20261024/local/.gitignore\n?? research/local_frontier_20261024/local/README_KO.md\n?? research/local_frontier_20261024/local/accuracy.json\n?? research/local_frontier_20261024/local/build_local.py\n?? research/local_frontier_20261024/local/campaign.py\n?? research/local_frontier_20261024/local/external_compare.py\n?? research/local_frontier_20261024/local/external_models.py\n?? research/local_frontier_20261024/local/julia_adapter.jl\n?? research/local_frontier_20261024/local/plot_campaign.py\n?? research/local_frontier_20261024/local/prepare_worktree.sh\n?? research/local_frontier_20261024/local/smoke.json\n?? research/local_frontier_20261024/local/stage_campaign.py\n?? research/local_frontier_20261024/local/standard.json\n?? research/local_frontier_20261024/local/test_campaign.py\n?? research/local_frontier_20261024/local/test_external_models.py\n?? research/local_frontier_20261024/local/vode_adapter.py\n?? research/local_frontier_20261024/src/analyze_conditioned_chart.py\n?? research/local_frontier_20261024/src/check_geometry_transfer.py\n?? research/local_frontier_20261024/src/run_n3_benchmarks.py\n?? research/local_frontier_20261024/src/run_receipt.py\n?? research/local_frontier_20261024/src/verify_package.py\n?? research/rev01c_gcrodr_refreshed_update_20261003/.RESULTS.json.uPuy2Q",
+    "clean": false,
+    "exploratory_dirty_run": true
+  },
+  "task": {
+    "case": 16,
+    "method": "vode-adams",
+    "parallel_layer": "serial",
+    "threads": 1,
+    "repeat": 0,
+    "instrumented": false
+  },
+  "contract_sha256": "605dac2fa61a232a211c77d5bcc37d8d22616a4e9f10195838244817df0abbef",
+  "binary_sha256": "b1e2d9da4765ca45dc9d226df4d54c5ad6dd86d74173703a9a05f8a5246c2e2c",
+  "eligible_for_timing_comparison": false
+}

@@ -1,0 +1,61 @@
+{
+  "schema": "vigilode-ex01-stage0-v1",
+  "node": "research/ex01_pexprb_own_step_20261011",
+  "decision": "HOLD(rival)",
+  "direct_rival": "dense-fast-colext64",
+  "source_commit": "49dc18e2156c6e849a0cb2fbf969ebaff66d8ebb",
+  "checker_blob": "ba30fa9c4e701112a8d68ead40dd1cf92f448678efbe2d5e769fb394ce002d16",
+  "tree_clean": true,
+  "summary": {
+    "total_prerequisites": 5,
+    "met_count": 4,
+    "unmet_count": 1,
+    "total_violations": 0,
+    "oracle_fixtures_tested": 120,
+    "oracle_violations": 0
+  },
+  "prerequisites": [
+    {
+      "id": "F1",
+      "name": "rigorous_defect_bound",
+      "met": true,
+      "violations": 0,
+      "oracle_cases": 120,
+      "evidence": "docs/reviews/20261011_ex01/DEFECT_BOUND.md",
+      "reviewer": "independent-numerical-audit"
+    },
+    {
+      "id": "F2",
+      "name": "phi_engine_parity",
+      "met": true,
+      "violations": 0,
+      "evidence": "crates/rodas5p-integrators/tests/pexprb_defect_certificate_contract.rs",
+      "reviewer": null
+    },
+    {
+      "id": "F3",
+      "name": "rivals_exist_natively",
+      "met": false,
+      "violations": 0,
+      "direct_rival": "dense-fast-colext64",
+      "evidence": "crates/ (no native rock4 in repository)",
+      "reviewer": null
+    },
+    {
+      "id": "F4",
+      "name": "fresh_niche_corpus",
+      "met": true,
+      "violations": 0,
+      "evidence": "rotadv2d-N parameters declared in preregistration (nu=1e-3, t in [0, 2], N in {24, 48})",
+      "reviewer": null
+    },
+    {
+      "id": "R",
+      "name": "reference_prerequisite",
+      "met": true,
+      "violations": 0,
+      "evidence": "reference uncertainty u bounded below 100u; 0% reference-limited",
+      "reviewer": null
+    }
+  ]
+}

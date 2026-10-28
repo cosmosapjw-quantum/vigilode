@@ -17,9 +17,27 @@ pub enum PreconditionerKind {
 pub enum InitialGuess {
     Zero,
     Previous,
+    /// Stage `i` starts from stage `i` of the last accepted step (research
+    /// node `research/spd07_mf_step_warm_start_20261007`). Honoured only by
+    /// the matrix-free U-form fast driver, which records each accepted step
+    /// (`Rodas5pMfFastWorkspace::record_accepted_step`); a caller driving the
+    /// workspace's `attempt` itself must record accepted steps too, or the
+    /// start stays `Previous`. The sequential stage solver refuses it. Before
+    /// the first accepted step of an integration it acts as `Previous`.
+    PreviousStep,
+    /// [`InitialGuess::PreviousStep`] scaled by `h / h_prev` (same node,
+    /// reported only).
+    PreviousStepScaled,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize)]
+impl InitialGuess {
+    /// Whether the start comes from the last accepted step's stages.
+    pub fn is_step_indexed(self) -> bool {
+        matches!(self, Self::PreviousStep | Self::PreviousStepScaled)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct LinearSolverConfig {
     pub method: LinearMethod,
     pub rtol: f64,
@@ -52,8 +70,10 @@ impl Default for LinearSolverConfig {
 }
 impl LinearSolverConfig {
     pub fn validate(&self) -> Result<(), String> {
-        if self.rtol < 0.0 || self.atol < 0.0 {
-            return Err("linear tolerances must be nonnegative".into());
+        // `< 0.0` alone lets NaN and +Inf through to every kernel (audit F-034).
+        let finite_nonnegative = |value: f64| value.is_finite() && value >= 0.0;
+        if !finite_nonnegative(self.rtol) || !finite_nonnegative(self.atol) {
+            return Err("linear tolerances must be finite and nonnegative".into());
         }
         if self.restart == 0 || self.maxiter == 0 || self.inner_m == 0 || self.outer_k == 0 {
             return Err("iteration limits must be positive".into());

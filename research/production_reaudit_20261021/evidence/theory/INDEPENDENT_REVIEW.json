@@ -1,0 +1,34 @@
+{
+  "schema": "vigilode.reaudit.independent-theory-and-bridge-review.v1",
+  "reviewer": "research_dag_audit",
+  "cayley_review": {
+    "status": "PASS_CONDITIONAL_THEOREM",
+    "inverse_substitution_exact_checks": 32,
+    "oracle_sha256": "6d435d67cca2949be6e9054ad46ad9904e48d5301ac05fa295433b5df615d791",
+    "proof": "For x=(I\u2212aJ)v and Hilbert dissipativity, ||(I+aJ)v||<=||(I\u2212aJ)v||, so C=2(I\u2212aJ)^\u22121\u2212I is a contraction. Exact polynomial coefficient triangle bounds then apply without normality.",
+    "scope": "Exact fixed linear Jacobian with declared Hilbert dissipativity; floating stage arithmetic and nonlinear drift remain separate."
+  },
+  "bridge_review": {
+    "status": "PASS_SCOPED_READ_ONLY",
+    "bound_pr101_current_bytes_unchanged": true,
+    "parameterized_pr101_rename_format_only": true,
+    "packet_review": "Both getters use the same query evaluation=sqrt_up(sum_up w_j*delta_j\u00b2); centered radius adds that upper bound outward only for weighted-ball carry; current weighted_center_displacement remains available. No double count introduced by the bridge.",
+    "hashes": {
+      "crates/rodas5p-integrators/src/pr101_verified.rs": "697a25d2ee877ca3285e166b7032a7de319c92d8d6d15a8382478573f71b49aa",
+      "crates/rodas5p-integrators/src/packet_curve_output.rs": "d171cb68286cb82206a9b64e0c29e41505d63a89d734c42a4b8d907e8e49642c",
+      "crates/rodas5p-integrators/src/bound_pr101.rs": "3fbeef9caba3c62dfbf940309effd22c7378a115a7660610bc045890fb3f3206"
+    },
+    "dense_bridge": "Reviewed by independent dense_transaction_audit, not claimed as rereviewed here."
+  },
+  "limitations": "No re-proving unchanged original scoped certificates. Native port execution belongs to evidence/port and root final receipt.",
+  "global_budget_review": {
+    "status": "PASS_CONDITIONAL_THEOREMS",
+    "document_sha256": "8296823917606745f281f076c922d074d1001678c66fe8c72a59839f9cf84d32",
+    "reviewed": "G1 comparison/positive gain bound, recenter jump atoms and query charges; G2 H\u00f6lder exponents, unconstrained positive-real relaxation, rounding overhead, modeled work ceiling versus actualwork; exact witness1640\u21921000.",
+    "requested_fixes_closed": [
+      "Absolute continuity and propagated jumps explicit",
+      "n*>0 relaxation distinctfrom n>=1",
+      "Cost-ceilingreduction distinguishedfrom actualcostratio"
+    ]
+  }
+}

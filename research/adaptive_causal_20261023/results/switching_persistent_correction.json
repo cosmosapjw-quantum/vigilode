@@ -1,0 +1,37 @@
+{
+  "schema": "vigilode.switching-persistent-correction.v1",
+  "created_utc": "2026-10-23T05:09:52.975022+00:00",
+  "baseline_commit": "548526add83a38a996875b3bd2f3cd3357465ed6",
+  "reason": "Measured window restart overhead and rapid-oscillation misrouting. Remove needless restarts when derivatives are explicitly forbidden; retain contrary FD/JVP campaign evidence.",
+  "scope": "Only DerivativeFallback::Forbidden dispatch. Authorized FD/JVP behavior unchanged.",
+  "files": [
+    {
+      "path": "crates/vigilode/src/switching.rs",
+      "sha256": "37704574ea2c9bf0524da84467dc880a9fb8b283808d0abd0e248881d4f60243"
+    },
+    {
+      "path": "crates/vigilode/tests/switching_contracts.rs",
+      "sha256": "a931e36030fcb66b1bd02860ce926c257e60b9b0b51c07c35f478a1f11ec5301"
+    },
+    {
+      "path": "crates/vigilode/SWITCHING.md",
+      "sha256": "e4f039b948153d9d4c7441376d12634801074af65192b79e59a3882fc9cef4ba"
+    }
+  ],
+  "command": "source /workspace/scratch/0dc1e721cf82/task_runtime/env-1023.sh; cargo test -p vigilode --locked --offline --test switching_contracts",
+  "exit_code": 0,
+  "tests": 14,
+  "stdout": "results/switching_persistent.stdout.log",
+  "stderr": "results/switching_persistent.stderr.log",
+  "comparisons": [
+    "Exact t/y/final state equality with native Dopri5::solve_observed at16windowtimes",
+    "Exact workcounters and FSALreuse equality",
+    "Fatalpartialstate and actualRHSattempt equality",
+    "Existing12contracts retained"
+  ],
+  "remaining": [
+    "No walltime acceleration claimed for correctedbranch without a new timingcohort",
+    "Authorized fallbackpressurepolicy remains experimental due observedoscillatoryregret",
+    "Persistent multi-method sessions remain futurework"
+  ]
+}

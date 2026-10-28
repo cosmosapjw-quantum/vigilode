@@ -1,0 +1,35 @@
+{
+  "command": [
+    "timeout",
+    "600s",
+    "cargo",
+    "test",
+    "--locked",
+    "--offline",
+    "-j",
+    "2",
+    "-p",
+    "rodas5p-integrators",
+    "--test",
+    "frontier_polynomial_provider"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 66.10014886991121,
+  "files_sha256": {
+    "crates/rodas5p-integrators/src/polynomial_resolvent.rs": "8e86ddc348410a08ccd80f17f847b3299798720e205e8ddc0a83ef138f7e7ed5",
+    "crates/rodas5p-integrators/tests/frontier_polynomial_provider.rs": "4232c40c3ccd90636b4b6f60eb8ff21f43579806919fe82fb3c658e34b8f9fa9",
+    "crates/rodas5p-integrators/examples/frontier_polynomial_provider.rs": "767d734ca769846b57f7834c901882e5410c0d26da1aa92e8939bd392b49a66c"
+  },
+  "env": {
+    "CARGO_TARGET_DIR": "/mnt/extdrive/vigilode-frontier-20261023/target",
+    "TMPDIR": "/mnt/extdrive/vigilode-frontier-20261023/tmp",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_INCREMENTAL": "0",
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "stdout_sha256": "418124504cbb682dff767da4b7637c0ebede102337b66138ba77a4d0fd8ac452",
+  "stderr_sha256": "06b62f300ba998e32138186b9c0f60687fc3962b4089e6d8a614fe9d900cdb88"
+}

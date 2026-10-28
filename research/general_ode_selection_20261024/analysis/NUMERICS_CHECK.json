@@ -1,0 +1,320 @@
+{
+  "schema": "vigilode.exact-numerics-check.v1",
+  "source": {
+    "path": "crates/rodas5p-integrators/src/dopri5.rs",
+    "sha256": "6226a1dc8be88c28de3c63eb3190ca2e19a448a77288f90f637ff02bc4a2cbb2",
+    "coefficient_snapshot_sha256": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6"
+  },
+  "dopri5": {
+    "stages": 7,
+    "tree_counts": {
+      "1": 1,
+      "2": 1,
+      "3": 2,
+      "4": 4,
+      "5": 9,
+      "6": 20
+    },
+    "endpoint_order5_conditions_pass": 17,
+    "embedded_order4_conditions_pass": 8,
+    "order6_endpoint_conditions_failed": 11,
+    "error_weights_exact_difference": true,
+    "fsal_last_row_equals_endpoint": true,
+    "stability_coefficients": [
+      "1",
+      "1",
+      "1/2",
+      "1/6",
+      "1/24",
+      "1/120",
+      "1/600",
+      "0"
+    ],
+    "embedded_stability_coefficients": [
+      "1",
+      "1",
+      "1/2",
+      "1/6",
+      "1/24",
+      "1097/120000",
+      "161/120000",
+      "1/24000"
+    ],
+    "oscillator_abs_theta_le_09_contractivity_upper_bracket": "-17218559/360000000000",
+    "all_tree_conditions": [
+      {
+        "order": 1,
+        "tree": "()",
+        "exact": "1",
+        "endpoint": "1",
+        "embedded": "1"
+      },
+      {
+        "order": 2,
+        "tree": "((),)",
+        "exact": "1/2",
+        "endpoint": "1/2",
+        "embedded": "1/2"
+      },
+      {
+        "order": 3,
+        "tree": "((), ())",
+        "exact": "1/3",
+        "endpoint": "1/3",
+        "embedded": "1/3"
+      },
+      {
+        "order": 3,
+        "tree": "(((),),)",
+        "exact": "1/6",
+        "endpoint": "1/6",
+        "embedded": "1/6"
+      },
+      {
+        "order": 4,
+        "tree": "((), (), ())",
+        "exact": "1/4",
+        "endpoint": "1/4",
+        "embedded": "1/4"
+      },
+      {
+        "order": 4,
+        "tree": "((), ((),))",
+        "exact": "1/8",
+        "endpoint": "1/8",
+        "embedded": "1/8"
+      },
+      {
+        "order": 4,
+        "tree": "((((),),),)",
+        "exact": "1/24",
+        "endpoint": "1/24",
+        "embedded": "1/24"
+      },
+      {
+        "order": 4,
+        "tree": "(((), ()),)",
+        "exact": "1/12",
+        "endpoint": "1/12",
+        "embedded": "1/12"
+      },
+      {
+        "order": 5,
+        "tree": "((), (), (), ())",
+        "exact": "1/5",
+        "endpoint": "1/5",
+        "embedded": "53929/270000"
+      },
+      {
+        "order": 5,
+        "tree": "((), (), ((),))",
+        "exact": "1/10",
+        "endpoint": "1/10",
+        "embedded": "53929/540000"
+      },
+      {
+        "order": 5,
+        "tree": "((), (((),),))",
+        "exact": "1/30",
+        "endpoint": "1/30",
+        "embedded": "2929/90000"
+      },
+      {
+        "order": 5,
+        "tree": "((), ((), ()))",
+        "exact": "1/15",
+        "endpoint": "1/15",
+        "embedded": "53929/810000"
+      },
+      {
+        "order": 5,
+        "tree": "(((),), ((),))",
+        "exact": "1/20",
+        "endpoint": "1/20",
+        "embedded": "53929/1080000"
+      },
+      {
+        "order": 5,
+        "tree": "(((((),),),),)",
+        "exact": "1/120",
+        "endpoint": "1/120",
+        "embedded": "1097/120000"
+      },
+      {
+        "order": 5,
+        "tree": "((((), ()),),)",
+        "exact": "1/60",
+        "endpoint": "1/60",
+        "embedded": "3037/180000"
+      },
+      {
+        "order": 5,
+        "tree": "(((), ((),)),)",
+        "exact": "1/40",
+        "endpoint": "1/40",
+        "embedded": "3037/120000"
+      },
+      {
+        "order": 5,
+        "tree": "(((), (), ()),)",
+        "exact": "1/20",
+        "endpoint": "1/20",
+        "embedded": "3037/60000"
+      },
+      {
+        "order": 6,
+        "tree": "((), (), (), (), ())",
+        "exact": "1/6",
+        "endpoint": "899/5400",
+        "embedded": "4026401/24300000"
+      },
+      {
+        "order": 6,
+        "tree": "((), (), (), ((),))",
+        "exact": "1/12",
+        "endpoint": "899/10800",
+        "embedded": "4026401/48600000"
+      },
+      {
+        "order": 6,
+        "tree": "((), (), (((),),))",
+        "exact": "1/36",
+        "endpoint": "1/36",
+        "embedded": "106039/4050000"
+      },
+      {
+        "order": 6,
+        "tree": "((), (), ((), ()))",
+        "exact": "1/18",
+        "endpoint": "899/16200",
+        "embedded": "4026401/72900000"
+      },
+      {
+        "order": 6,
+        "tree": "((), ((),), ((),))",
+        "exact": "1/24",
+        "endpoint": "899/21600",
+        "embedded": "4026401/97200000"
+      },
+      {
+        "order": 6,
+        "tree": "((), ((((),),),))",
+        "exact": "1/144",
+        "endpoint": "1/150",
+        "embedded": "8357/1080000"
+      },
+      {
+        "order": 6,
+        "tree": "((), (((), ()),))",
+        "exact": "1/72",
+        "endpoint": "1/72",
+        "embedded": "114307/8100000"
+      },
+      {
+        "order": 6,
+        "tree": "((), ((), ((),)))",
+        "exact": "1/48",
+        "endpoint": "1/48",
+        "embedded": "114307/5400000"
+      },
+      {
+        "order": 6,
+        "tree": "((), ((), (), ()))",
+        "exact": "1/24",
+        "endpoint": "1/24",
+        "embedded": "69067/1620000"
+      },
+      {
+        "order": 6,
+        "tree": "(((),), (((),),))",
+        "exact": "1/72",
+        "endpoint": "1/72",
+        "embedded": "106039/8100000"
+      },
+      {
+        "order": 6,
+        "tree": "(((),), ((), ()))",
+        "exact": "1/36",
+        "endpoint": "899/32400",
+        "embedded": "4026401/145800000"
+      },
+      {
+        "order": 6,
+        "tree": "((((((),),),),),)",
+        "exact": "1/720",
+        "endpoint": "1/600",
+        "embedded": "161/120000"
+      },
+      {
+        "order": 6,
+        "tree": "(((((), ()),),),)",
+        "exact": "1/360",
+        "endpoint": "1/360",
+        "embedded": "2513/900000"
+      },
+      {
+        "order": 6,
+        "tree": "((((), ((),)),),)",
+        "exact": "1/240",
+        "endpoint": "1/240",
+        "embedded": "2513/600000"
+      },
+      {
+        "order": 6,
+        "tree": "((((), (), ()),),)",
+        "exact": "1/120",
+        "endpoint": "1/120",
+        "embedded": "1457/180000"
+      },
+      {
+        "order": 6,
+        "tree": "((((),), ((),)),)",
+        "exact": "1/120",
+        "endpoint": "181/21600",
+        "embedded": "93949/10800000"
+      },
+      {
+        "order": 6,
+        "tree": "(((), (((),),)),)",
+        "exact": "1/180",
+        "endpoint": "1/180",
+        "embedded": "2951/450000"
+      },
+      {
+        "order": 6,
+        "tree": "(((), ((), ())),)",
+        "exact": "1/90",
+        "endpoint": "181/16200",
+        "embedded": "93949/8100000"
+      },
+      {
+        "order": 6,
+        "tree": "(((), (), ((),)),)",
+        "exact": "1/60",
+        "endpoint": "181/10800",
+        "embedded": "93949/5400000"
+      },
+      {
+        "order": 6,
+        "tree": "(((), (), (), ()),)",
+        "exact": "1/30",
+        "endpoint": "181/5400",
+        "embedded": "93949/2700000"
+      }
+    ]
+  },
+  "rodas5p_decimal_snapshot": {
+    "stages": 8,
+    "interpretation": "exact rationals of published decimal literals; scalar check only, not full nonlinear order certification",
+    "scalar_series_defects_orders_0_to_5": [
+      0.0,
+      5.524277592527456e-15,
+      1.5934909937998546e-15,
+      -9.433995250410871e-17,
+      -2.4096280119952307e-16,
+      -1.2657605449121018e-16
+    ],
+    "scalar_stiff_limit_decimal_residual": 0.0
+  },
+  "scope": "exact algebra on parsed source coefficients; not a floating-point execution benchmark, nonlinear stiff order proof, or general global-error certificate"
+}

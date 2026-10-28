@@ -1,0 +1,126 @@
+{
+ "agent": "lens_a2",
+ "items": [
+  {
+   "id": "F-002",
+   "verdict": "SURVIVES",
+   "strongest_attempt": {
+    "kind": "doc-citation",
+    "artifact": "exp/E-03/README.md:28-37 (H1b REFUTED): on all 18 n=96 campaign rows the ratio max error over interpolated grid points / max error over accepted endpoints has median 1.08, range 0.70-2.43, 0/18 rows above 5x, so on the campaign corpus the dense-arm error is carried by the accepted steps, not by the interpolant. This contradicts the finding's impact sentence. Code side: tree/crates/rodas5p-integrators/src/dense_output_v2.rs:43-49,439-441 (acceptance uses only error_norm + fixed_point_error) and output.rs:337-373 (accept_dense_interval checks finiteness only)."
+   },
+   "note": "Split verdict. The core claim survives: no code path compares interpolated values with atol/rtol, and exp/D1/dense_stiff_check.out reports interior WRMS 17.5 / 610 / 206 at rtol 1e-4 / 1e-6 / 1e-8 on Prothero-Robinson lambda=-1e5 against endpoint 0.002 / 0.095 / 0.136. Two parts do not survive: (1) the impact statement that every dense-arm consumer measures interpolant error is refuted for the campaign corpus by E-03 H1b; (2) 'h^6 endpoint' on stiff problems is inconsistent with the finding's own evidence (endpoint slope 3.1-3.2 on stiff PR). The PR numbers come from a Python replica, not the Rust lane, so they are unverified against the shipped code. The excess is non-monotone in rtol (206 at 1e-8), so it should be quoted as a range, not a trend. Absence of interior control matches the standard Rodas5P design, so P2 is the right ceiling.",
+   "agrees_with_first_refuter": true,
+   "disagreement": "Same verdict, but the first refuter did not cite E-03 H1b, which is the strongest evidence against the finding's impact statement; I would strike that sentence from the ledger rather than only calling the claim overstated."
+  },
+  {
+   "id": "F-003",
+   "verdict": "SURVIVES",
+   "strongest_attempt": {
+    "kind": "run",
+    "artifact": "Independent run on the measurement-profile binary (first refuter used the dev binary): RAYON_NUM_THREADS=1 $RUN/cargo-target/measurement/deps/v37_continuation_transaction_contracts-82765fe8e10784d8 --ignored --exact v37_exhaustion_is_a_charged_abstention_without_endpoint_or_failure_label --test-threads 1 -> exit 101, panicked at tests/v37_continuation_transaction_contracts.rs:110:5, assertion left == right failed, left: 17, right: 18, finished in 0.33s. Output saved in the session scratchpad f003/run.out. grep over tree/.github for --ignored, --include-ignored and v37_continuation returns nothing; grep over the whole tree for the phrase 'optimized v3.7 replay gate' matches only the ignore attribute itself."
+   },
+   "note": "Reproduced in a second profile. All assertions before :110 pass, including the exhausted row at target_attempt_index 12, so the replay diverges only on the completing recommendation. The sealed ledger row (semilinear.json:1240-1250) carries target_attempt_index 18 with target_accepted_steps_before 17, so the observed 17 equals the ledger's accepted-steps count; that is consistent with either one fewer rejected attempt before the target on this revision or an index-convention change, and I did not determine which. The ignore reason is also stale on its face: the test takes 0.33 s in the measurement profile, so 'long' no longer justifies exclusion. P2 is right unless some document asserts the v3.7 replay reproduces at b3e8165; I found none.",
+   "agrees_with_first_refuter": true,
+   "disagreement": ""
+  },
+  {
+   "id": "F-004",
+   "verdict": "SURVIVES",
+   "strongest_attempt": {
+    "kind": "run",
+    "artifact": "Independent recount from exp/E-03/e03a_rows.json (rows[].arms.dense_base.max_grid_wrms_casetol): 18 rows, 12 above 1.0, maximum 207.48 (semilinear rtol 1e-8), then 53.19 and 17.02 (semilinear 1e-6, 1e-4), next largest 4.22 (nonautonomous-stiff-forcing 1e-4). Universal-negative check: grep -i for 'global error', 'case tolerance', 'max_grid_wrms', 'dense error', 'exceeds ... tolerance' over tree/research/scientific_validity_v2_20260829/*.md, README.md and the external_reaudit_bundle returns only CANONICAL_EXECUTION_EVIDENCE.md:42 (the gap/dense ratio line) and unrelated disclaimers."
+   },
+   "note": "Counts and the omission both hold. Two qualifications weaken the finding's framing. First, outside the semilinear family every excess is at most 4.2x, which is ordinary global-error growth under satisfied local control; the actionable signal is one family (17-207x), so '12 of 18' overstates the breadth. Second, the dense-error magnitude in the tight reference basis is recoverable from published numbers (CANONICAL:41-43 gives gap and gap/dense ratio), so the information is unreported in case weights rather than hidden. The quoted sentence 'not a solver-execution crash' is literally true and README.md:36-44 admits no accuracy or performance claim. The scipy 2.6x comparison is taken from E-03's table and I did not recompute it. This is an omission, not drift from a prior documented state, so claim_type 'doc-drift' is a loose fit; P2 stands.",
+   "agrees_with_first_refuter": true,
+   "disagreement": ""
+  },
+  {
+   "id": "F-005",
+   "verdict": "SURVIVES",
+   "strongest_attempt": {
+    "kind": "doc-citation",
+    "artifact": "git -C tree show remotes/github/planning/vigilode-research-coding-spiral-20260904:docs/superpowers/specs/2026-09-04-vigilode-research-coding-spiral-design.md lines 145-223: M0 (sec 5) and M1 (sec 6) precede sec 7 item 2 'fixed-step/order-preservation experiments and theory'; line 223 'The order may change only when newly observed evidence creates a higher-priority blocker'. Callers confirmed by grep: integrate.rs:774, dense_output_v2.rs:585, g4_s5b0_regime_atlas.rs:1631. exp/E-04/README.md:3 confirms eta ~ h^-1.9, floors, and step-0 aborts."
+   },
+   "note": "Factual components hold. Refutation attempts: (1) the plan lives on a planning branch and is not part of the audited commit b3e8165, so this is not a defect of the tree; (2) the plan contains its own reorder clause (line 223), so the ordering is not in conflict with the evidence, it simply predates it, and E-04 is exactly the kind of new evidence the clause anticipates; (3) the numerical substance duplicates F-008 and F-009. What remains is a priority recommendation, which cannot be true or false. I keep SURVIVES for the verifiable statements and recommend the ledger fold this into F-008/F-009 as a recommendation rather than count it as a separate finding.",
+   "agrees_with_first_refuter": true,
+   "disagreement": ""
+  },
+  {
+   "id": "F-006",
+   "verdict": "SURVIVES",
+   "strongest_attempt": {
+    "kind": "code-trace",
+    "artifact": "tree/crates/rodas5p-integrators/src/adaptive.rs:263-293 + integrate.rs:757-761,861-869 + output.rs:254-288. Falsification attempt on 'never changes again ... regardless of tolerance': the rejection branch (adaptive.rs:286-292) scales trial_h, so any clipped trial with error>1 shrinks h below the spacing and re-enters ordinary adaptation; the error test is still applied to every clipped step. Finding's own data (exp/E-01/E-01_rows.csv): only 26/54 rows are zero-rejection (0,98,100); the other 28 rows had rejections, so the arm is not uniformly fixed-step."
+   },
+   "note": "Mechanical claim confirmed: an accepted clipped step returns requested_h and skips record_acceptance, and the doc comment at :263-267 plus adaptive_controller_contracts.rs:80-83 show this is intended and test-locked. Causal attribution is wrong, though. With a 101-point grid and h0=span/100, any tstop-clipping integrator whose natural step exceeds the spacing takes steps equal to the spacing; a controller that did grow h would be clipped identically. The freeze changes only two things: h cannot shrink below the spacing without first paying a rejection, and PI history is stale when clipping ends. So 'clipped arm is fixed-step at the grid spacing in 26/54 rows' is a property of the output policy, not of a wrong formula. claim_type should be fairness/methodology rather than wrong-formula, and P2 is correct; I see no basis for P1 since tolerance is enforced on every accepted step.",
+   "agrees_with_first_refuter": true,
+   "disagreement": "Verdict matches; I disagree with the first refuter's acceptance of the freeze as the cause. Removing the freeze would not change the step sequence in the zero-rejection rows."
+  },
+  {
+   "id": "F-007",
+   "verdict": "SURVIVES",
+   "strongest_attempt": {
+    "kind": "code-trace",
+    "artifact": "tree/crates/rodas5p-fair-ab/src/global_error.rs:240-280,701-720 + scientific_validity_v2_campaign.rs:708-744. Verified the triangle-inequality premise: discrepancy_wrms uses weights from reference_states[grid_index], the same per-grid-point weights as the error metric, so gap >= dense_max - clipped_err(t*) holds exactly. Falsification attempt on 'unattainable': tree/research/scientific_validity_v2_20260829/CANONICAL_EXECUTION_EVIDENCE.md:42-43 reports a minimum ratio of 0.1245, only 25% above the limit, and exp/E-03/README.md:16-17 shows 2/18 same-code-path h0 pairs did satisfy the rule."
+   },
+   "note": "The bound is two-sided, so Pass needs the two arms' error vectors to agree to 10% pointwise. That is a strong correlation requirement, not a mathematical impossibility: 'unattainable' and 'structurally unpassable' should read 'attainable only when both arms share essentially the same step sequence'. The scipy Radau control in E-03 failing the same rule is the most persuasive evidence that the gate carries no solver information. On severity: the published sentences (README.md:36-44, CANONICAL:48-50) are literally accurate, since rows were classified by the frozen rule and no claim was admitted; what is questionable is the interpretive label 'scientific output-policy invalidation'. Under the stated rubric that is a methodology weakness (P2) unless the 54/54 result is treated as an invalid experiment result (P0). P1 does not match any P1 criterion in the rubric.",
+   "agrees_with_first_refuter": true,
+   "disagreement": "Verdict matches. Severity: I would rate P2 (or argue P0 on the invalid-experiment reading), not P1."
+  },
+  {
+   "id": "F-008",
+   "verdict": "SURVIVES",
+   "strongest_attempt": {
+    "kind": "code-trace",
+    "artifact": "tree/crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs:58-66 + sequential.rs:365-382: tried to falsify via the eta clamp (ETA_MAX=0.5). tau=eta*rhs_wrms equals 0.1/l1 only while 0.1/(l1*max(flow,rhs)) <= 0.5, i.e. forcing_scale >= 0.0404 WRMS units; below that eta=0.5 and tau=0.5*rhs_wrms does scale with h. exp/E-04/README.md:3 records eta_max<=1e-5 on every measured arm, so the clamp regime was never entered and the measured floor is the constant-tau regime."
+   },
+   "note": "Algebra confirmed independently: for rhs_wrms>=flow_wrms and unclamped eta, tau=0.1/||b||_1 is h- and rtol-independent; linear_atol is the 64eps floor, so the accepted residual is governed by eta alone. Caveat the claim omits: 'at every h' is overbroad, since for forcing_scale<0.04 the clamp gives tau=0.5*rhs_wrms (h-dependent), but a 50% relative stage residual is no better for order preservation, so the substantive conclusion (no fixed-h order-5 convergence under the production rule) stands. Module doc lines 12-17 disclaim an endpoint budget, which supports P2 (methodology) rather than a wrong-result rating.",
+   "agrees_with_first_refuter": true,
+   "disagreement": ""
+  },
+  {
+   "id": "F-009",
+   "verdict": "SURVIVES",
+   "strongest_attempt": {
+    "kind": "code-trace",
+    "artifact": "tree/crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs:58-77: derived the Err condition from scratch. unclamped_eta<64eps <=> forcing_scale>0.1/(l1*64eps); then eta=64eps, tau=64eps*rhs_wrms, and l1*tau>0.1 <=> rhs_wrms>1.42e12. If only flow_wrms exceeds the bound the guard does not fire, so Err <=> rhs_wrms>1.42e12 exactly as claimed. Cross-checked against exp/E-04/README.md:3 (step-0 aborts for P1 rtol=1e-10 at every ladder h, P1 rtol=1e-8 for h>=1/256, P1PR rtol=1e-10 for h>=1/32)."
+   },
+   "note": "Attempted refutation: (1) the guard is a typed CoreError::LinearSolve, not a panic, and integrate.rs:787-812 converts it into a rejected step with h shrink, so the adaptive lane recovers; (2) the guard is a legitimate 'cannot certify' refusal because a relative residual below 64eps is unattainable. Neither falsifies the claim: the fixed-step pub API returns Err on input a direct-LU RODAS5P handles, and the guard bounds the residual rather than the error, which is damped by W^-1 ~ 1/(h*gamma*|lambda|) on the stiff components that inflate rhs_wrms. Mechanism wording is imprecise: at stage 0 gmix=0 (sequential.rs:350-354) so the h*J*gmix term is absent; the step-0 abort is driven by h*f being O(h*lambda) off-manifold. P1 is defensible under the rubric's 'abort on legal input' only if a typed Err counts as abort; P2 is equally defensible.",
+   "agrees_with_first_refuter": true,
+   "disagreement": ""
+  },
+  {
+   "id": "F-010",
+   "verdict": "SURVIVES",
+   "strongest_attempt": {
+    "kind": "code-trace",
+    "artifact": "tree/crates/rodas5p-krylov/src/gcrodr.rs:408-423,462-464,680: grep shows previous_solution is touched at exactly three lines (decl :50, read :462, write :680); no length check and no identity reset. workspace.common.prepare(n) sizes x to the new n, validate_system checks only the caller x0, and basis vectors are length-filtered at :420 while previous_solution is not. Contrast lgmres.rs:69-78 which clears previous_solution on identity mismatch. Existing run evidence: exp/E-05 verdict line (copy_from_slice 32 vs 16, child abort)."
+   },
+   "note": "Looked for a guard I could use to refute: none in validate_system, none in the closure, no doc contract on GcrodrState forbidding cross-dimension reuse. The :420 retain proves dimension change was contemplated. Reachability in-tree is nil (sequential.rs keeps n fixed per integration; fair-ab session.rs:42 resets the state), so this is a library-API panic only. Secondary defect in the same line: previous_solution is also reused across an operator-identity change at equal n, which is harmless for correctness (true residual is recomputed) but costs iterations.",
+   "agrees_with_first_refuter": true,
+   "disagreement": ""
+  },
+  {
+   "id": "F-011",
+   "verdict": "SURVIVES",
+   "strongest_attempt": {
+    "kind": "code-trace",
+    "artifact": "Hand arithmetic against tree/crates/rodas5p-integrators/src/exponential.rs:1078,1094-1099,1138-1150 and :881,906-911,932-951: v=e1+4.5e-7 e2, A=diag(-1,-3) gives h11=-1-O(1e-13), residual vector (0,-9.0e-7), next_norm=9.0e-7 <= 64*sqrt(eps)*max(1,|h11|)=9.537e-7, so happy_breakdown fires at m=1; m=1 result exp(-1)*v has error 4.5e-7*(e^-1-e^-3)=1.43e-7, relative 3.89e-7. Fused path returns error_estimate 0.0 by the explicit branch at :1146-1147; legacy path returns 0.0 because previous=None makes latest_error infinite and :947-951 maps non-finite to 0.0."
+   },
+   "note": "Tried to refute by checking whether the legacy function reports a nonzero estimate (it does not at m=1) and whether the threshold test still gates convergence (it does not: happy_breakdown short-circuits the OR at :1138 and :940). adaptive_exponential.rs:83-94 sums error_estimate, so the zero propagates into the step controller. The fold(1.0, max) floor makes the rule absolute rather than relative: any scaled operator with ||scale*A q|| <= 9.5e-7 breaks down at m=1, which is the ordinary small-substep regime, so this is not confined to contrived near-eigenvectors. Scope limit: exponential candidate lanes only, not the protected RODAS5P path.",
+   "agrees_with_first_refuter": true,
+   "disagreement": ""
+  },
+  {
+   "id": "F-014",
+   "verdict": "SURVIVES",
+   "strongest_attempt": {
+    "kind": "code-trace",
+    "artifact": "tree/crates/rodas5p-integrators/src/audit2_reusable_transaction_research.rs:560-600 (accepted requires output_error_upper_l2 <= output_budget_l2 with DeclaredUpperBound treatment) and :985-995 (output_error_l2 computed from &reference.state, output_accepted = output_assessment.accepted). Scope check: lib.rs:7-10 gates the module behind cfg(feature = \"audit2-research\"); the only non-test caller is audit2_bateman_real_client_research.rs:1135."
+   },
+   "note": "Literal claim holds: the commit decision reads an externally supplied reference state. Refutation attempts: the function is named 'reference_aware', its doc comment (:561-564) states the triangle-inequality admission rule openly, the module is feature-gated research code, and no default-feature integrator path reaches it. So this is declared oracle-gated admission, not covert leakage. Under the rubric the P1 clause 'reference information reaching a decision' applies on its face; P2 is justified only because the decision is a preregistered research admission and not a runtime solver decision. Any future receipt that reports a Candidate disposition from this lane as solver capability would promote this to P1, so the ledger should record that condition explicitly.",
+   "agrees_with_first_refuter": true,
+   "disagreement": ""
+  }
+ ]
+}

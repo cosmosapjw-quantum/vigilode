@@ -1,0 +1,18 @@
+warning: function `ic_eval_physical` is never used
+   --> crates/rodas5p-integrators/src/packet_window.rs:206:4
+    |
+206 | fn ic_eval_physical(p: &[IComplex], tau: Interval, work: &mut PacketWorkCounters) -> Result<IComplex, PacketError> {
+    |    ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.77s
+     Running tests/production_audit_packet.rs (target/debug/deps/production_audit_packet-1678bd1aadabbee6)
+
+running 1 test
+test outward_multimode_encloses_frozen_mpmath_reference_at_midpoint_and_endpoint ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 19 filtered out; finished in 0.05s
+

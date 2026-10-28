@@ -1,0 +1,196 @@
+{
+  "schema_version": 1,
+  "unit": "vigilode_ncp_followup_20261021",
+  "base_commit": "7a63876a97fc17f640771ec06658269947049994",
+  "claim_policy": {
+    "broad_production": "HOLD",
+    "performance": "No controlled new NCP timing",
+    "adoption": "New kernels admitted only on documented contracts"
+  },
+  "completed": [
+    {
+      "id": "F01",
+      "title": "Raw NCP audit and corrected evaluation",
+      "evidence": [
+        "NCP_AUDIT.json",
+        "NCP_AUDIT.md"
+      ]
+    },
+    {
+      "id": "F02",
+      "title": "Opt-in analytic heat Jacobian and complete derivative work",
+      "evidence": [
+        "ACCURACY_IMPLEMENTATION.json"
+      ]
+    },
+    {
+      "id": "F03",
+      "title": "Guarded banded Schur plus actual GMRES integration",
+      "evidence": [
+        "SCHUR_THEORY.md",
+        "SCHUR_IMPLEMENTATION.json"
+      ]
+    },
+    {
+      "id": "F04",
+      "title": "Positive conservative overlap remap",
+      "evidence": [
+        "REMAP_THEORY.md",
+        "REMAP_IMPLEMENTATION.json"
+      ]
+    },
+    {
+      "id": "F05",
+      "title": "Independent LRS physics/FVM oracle",
+      "evidence": [
+        "BASS_REI_PORT_RESEARCH.md",
+        "BASS_REI_CHECKS.json"
+      ]
+    },
+    {
+      "id": "F06",
+      "title": "Independent theory and code review",
+      "evidence": [
+        "INDEPENDENT_REVIEW.json"
+      ]
+    }
+  ],
+  "next_actions": [
+    {
+      "id": "P01",
+      "priority": 0,
+      "depends_on": [
+        "F01"
+      ],
+      "title": "Qualification evaluator adoption",
+      "files": [
+        "tools/production_promotion_gate.py",
+        "tools/run_ncp_reaudit.py",
+        "research/ncp_followup_20261021/audit_ncp_artifacts.py"
+      ],
+      "implementation": "New versioned protocol, fixed application budget separate from internal solver tolerances; enforce nonempty finite complete times/states and terminal coverage; preserve all failures; explicit timing/counter scopes.",
+      "acceptance": [
+        "empty/truncated/duplicate/misaligned/nonfinite outputs refuse",
+        "rotation success at internal1e-10 reproduces original application1e-6 without budget relaxation",
+        "old frozen protocol results remain unchanged"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "P02",
+      "priority": 0,
+      "depends_on": [
+        "F02",
+        "P01"
+      ],
+      "title": "Heat structured crossover",
+      "files": [
+        "crates/rodas5p-integrators/examples/component_benchmark_support/mod.rs",
+        "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
+      ],
+      "implementation": "Use delivered basis-JVP/analytic-stencil requests and add banded/true matrix-free arms. Count derivative RHS, PC setup, JVP, memory and full trajectory. Treat periodic wrap explicitly.",
+      "acceptance": [
+        "same IVP/output/reference/application error budget",
+        "n32/128/512/1600/4096 admitted according to memory",
+        "paired same-scope timings with >=7 confirmation blocks; no process-wall vs warmed-solve mixing"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "P03",
+      "priority": 0,
+      "depends_on": [
+        "F03",
+        "P02"
+      ],
+      "title": "Client-owned stage preconditioner factory",
+      "files": [
+        "crates/rodas5p-core/src/bordered.rs",
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
+      ],
+      "implementation": "Callback constructs I-gamma*h*J band/border or an admitted approximation, bound to mesh generation,h,gamma,coefficient identity. Record refactor work, fallback, true residual; invalidate recycle on changed system. Exact identity unavailable must disable cached reuse.",
+      "acceptance": [
+        "true stage residual and same-accuracy full ODE trajectory",
+        "dominance/Schur failure triggers counted fallback",
+        "no stale same-dimension mesh PC reuse",
+        "conditional iteration bound only when q proven"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "P04",
+      "priority": 1,
+      "depends_on": [
+        "F04",
+        "P03"
+      ],
+      "title": "Accepted-step remesh transaction",
+      "files": [
+        "crates/rodas5p-integrators/src/conservative_remap.rs",
+        "crates/rodas5p-integrators/src/adaptive.rs"
+      ],
+      "implementation": "Atomic mesh,state,volume,tolerance,error-budget update. Invalidate stage/recycle/J/PC/dense/event identities; conserve chosen measure; reject candidate remesh on budget failure.",
+      "acceptance": [
+        "n increase/decrease below capacity with zero hot-loop allocations where claimed",
+        "failure leaves accepted state and old mesh intact",
+        "separate spatial/temporal/remap refinement",
+        "original global observable budget"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "P05",
+      "priority": 1,
+      "depends_on": [
+        "P01"
+      ],
+      "title": "Representative stiff baselines and nonlinear reference",
+      "files": [
+        "external_audits/vigilode_ncp_intensive_120m_v1_20261021/harness/confirmation_worker.py"
+      ],
+      "implementation": "Create new adapters rather than editing archive. Add VODE/DVODE Jacobian chord iteration arm, actual diffsol and Julia algorithm/version. Independent three-level refinement for Robertson/Van der Pol.",
+      "acceptance": [
+        "fixed reference uncertainty allowance",
+        "same structural information and precision",
+        "solver completion separated from accuracy",
+        "nlu distinct from linear_solves"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "P06",
+      "priority": 2,
+      "depends_on": [
+        "P01",
+        "P02",
+        "P03",
+        "P04",
+        "P05"
+      ],
+      "title": "Scoped production release evidence",
+      "implementation": "Define supported problem/API matrix, physical budgets, resource limits, failure recovery and required corpus. Combine unchanged prior evidence with changed paths only.",
+      "acceptance": [
+        "all mandatory supported-scope tests pass",
+        "no unknown reference in claimed scope",
+        "deterministic receipts and reproducible source/binary identity",
+        "scoped empirical promotion distinct from full-horizon certified bound"
+      ],
+      "status": "pending"
+    }
+  ],
+  "physics_lane": {
+    "source": "BASS_REI_INPUTS.json",
+    "dag": "BASS_REI_DAG.json",
+    "current": "LRS non-tilted Bianchi-I unpolarized prototype and derived contracts",
+    "live_integration": "pending",
+    "separate_matter_radiation_stress": true
+  },
+  "prohibited_inferences": [
+    "one-step implies fifth-order after arbitrary remap",
+    "all banded solves are O(N) as bandwidth grows",
+    "Schur guarantees3-5 GMRES iterations for arbitrary JVP",
+    "2D phase grid covers every Bianchi/polarization case",
+    "new code performance inferred from old binary"
+  ]
+}

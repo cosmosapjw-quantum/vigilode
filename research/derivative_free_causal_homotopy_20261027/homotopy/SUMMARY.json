@@ -1,0 +1,474 @@
+{
+  "results_sha256": "dadbe1e3acbc677c25d3f33c8c31bff906f3d49d6099d5b7e319d78c0957ad81",
+  "stage_pairs": [
+    {
+      "n": 1,
+      "decay": 1.0,
+      "cubic": 0.0,
+      "h": 0.2,
+      "lambdas": [
+        1.0
+      ],
+      "arms": {
+        "Picard": {
+          "success": true,
+          "rhs": 13,
+          "error": 1.8179902028236938e-13
+        },
+        "Screened": {
+          "success": true,
+          "rhs": 4,
+          "error": 2.7755575615628914e-17
+        },
+        "SlowOnly": {
+          "success": true,
+          "rhs": 13,
+          "error": 1.8179902028236938e-13
+        }
+      }
+    },
+    {
+      "n": 1,
+      "decay": 1.0,
+      "cubic": 0.0,
+      "h": 1.98,
+      "lambdas": [
+        1.0
+      ],
+      "arms": {
+        "Picard": {
+          "success": true,
+          "rhs": 2819,
+          "error": 4.989342272665453e-13
+        },
+        "Screened": {
+          "success": true,
+          "rhs": 4,
+          "error": 1.1102230246251565e-16
+        },
+        "SlowOnly": {
+          "success": true,
+          "rhs": 4,
+          "error": 1.1102230246251565e-16
+        }
+      }
+    },
+    {
+      "n": 64,
+      "decay": 1.0,
+      "cubic": 0.0,
+      "h": 1.98,
+      "lambdas": [
+        1.0
+      ],
+      "arms": {
+        "Picard": {
+          "success": true,
+          "rhs": 3029,
+          "error": 6.439293542825908e-14
+        },
+        "Screened": {
+          "success": true,
+          "rhs": 4,
+          "error": 6.661338147750939e-16
+        },
+        "SlowOnly": {
+          "success": true,
+          "rhs": 4,
+          "error": 6.661338147750939e-16
+        }
+      }
+    },
+    {
+      "n": 1,
+      "decay": 1.0,
+      "cubic": 0.5,
+      "h": 0.5,
+      "lambdas": [
+        1.0
+      ],
+      "arms": {
+        "Picard": {
+          "success": true,
+          "rhs": 37,
+          "error": 5.595524044110789e-13
+        },
+        "Screened": {
+          "success": true,
+          "rhs": 12,
+          "error": 5.551115123125783e-17
+        },
+        "SlowOnly": {
+          "success": true,
+          "rhs": 35,
+          "error": 6.099010185778297e-13
+        }
+      }
+    },
+    {
+      "n": 64,
+      "decay": 10.0,
+      "cubic": 0.5,
+      "h": 0.18,
+      "lambdas": [
+        1.0
+      ],
+      "arms": {
+        "Picard": {
+          "success": true,
+          "rhs": 495,
+          "error": 1.283417816466681e-13
+        },
+        "Screened": {
+          "success": true,
+          "rhs": 80,
+          "error": 8.271161533457416e-14
+        },
+        "SlowOnly": {
+          "success": true,
+          "rhs": 16,
+          "error": 2.1094237467877974e-14
+        }
+      }
+    },
+    {
+      "n": 1,
+      "decay": 1.0,
+      "cubic": 0.0,
+      "h": 2.2,
+      "lambdas": [
+        1.0
+      ],
+      "arms": {
+        "Picard": {
+          "success": false,
+          "rhs": 4097,
+          "error": null
+        },
+        "Screened": {
+          "success": true,
+          "rhs": 4,
+          "error": 0.0
+        },
+        "SlowOnly": {
+          "success": true,
+          "rhs": 4,
+          "error": 0.0
+        }
+      }
+    },
+    {
+      "n": 1,
+      "decay": 1.0,
+      "cubic": 0.5,
+      "h": 0.5,
+      "lambdas": [
+        0.25,
+        0.5,
+        1.0
+      ],
+      "arms": {
+        "Picard": {
+          "success": true,
+          "rhs": 72,
+          "error": 4.563016631209393e-13
+        },
+        "Screened": {
+          "success": true,
+          "rhs": 28,
+          "error": 5.051514762044462e-15
+        },
+        "SlowOnly": {
+          "success": true,
+          "rhs": 72,
+          "error": 4.563016631209393e-13
+        }
+      }
+    }
+  ],
+  "failures": [
+    {
+      "n": 1,
+      "h": 2.2,
+      "mode": "Picard",
+      "rhs": 4097,
+      "failure": {
+        "kind": "IterationLimit",
+        "message": "station exhausted its update limit"
+      }
+    }
+  ],
+  "causal": [
+    {
+      "mode": "Picard",
+      "rhs": 20,
+      "reference_rhs": 4,
+      "error": 0.0
+    },
+    {
+      "mode": "Screened",
+      "rhs": 36,
+      "reference_rhs": 4,
+      "error": 0.0
+    },
+    {
+      "mode": "SlowOnly",
+      "rhs": 20,
+      "reference_rhs": 4,
+      "error": 0.0
+    }
+  ],
+  "trajectory_pairs": [
+    {
+      "steps": 8,
+      "arms": [
+        {
+          "mode": "Picard",
+          "warm_previous_stage": false,
+          "rhs_callbacks": 99,
+          "max_grid_error": 0.0009196015029152571,
+          "endpoint_error": 0.0007639669165442897
+        },
+        {
+          "mode": "Picard",
+          "warm_previous_stage": true,
+          "rhs_callbacks": 93,
+          "max_grid_error": 0.0009196015033366978,
+          "endpoint_error": 0.0007639669168749141
+        },
+        {
+          "mode": "Screened",
+          "warm_previous_stage": false,
+          "rhs_callbacks": 64,
+          "max_grid_error": 0.0009196015031847082,
+          "endpoint_error": 0.0007639669175196762
+        },
+        {
+          "mode": "Screened",
+          "warm_previous_stage": true,
+          "rhs_callbacks": 58,
+          "max_grid_error": 0.0009196015031310845,
+          "endpoint_error": 0.0007639669180534159
+        },
+        {
+          "mode": "SlowOnly",
+          "warm_previous_stage": false,
+          "rhs_callbacks": 99,
+          "max_grid_error": 0.0009196015029152571,
+          "endpoint_error": 0.0007639669165442897
+        },
+        {
+          "mode": "SlowOnly",
+          "warm_previous_stage": true,
+          "rhs_callbacks": 93,
+          "max_grid_error": 0.0009196015033366978,
+          "endpoint_error": 0.0007639669168749141
+        }
+      ]
+    },
+    {
+      "steps": 16,
+      "arms": [
+        {
+          "mode": "Picard",
+          "warm_previous_stage": false,
+          "rhs_callbacks": 153,
+          "max_grid_error": 0.00022989489873126434,
+          "endpoint_error": 0.00019072909490086554
+        },
+        {
+          "mode": "Picard",
+          "warm_previous_stage": true,
+          "rhs_callbacks": 141,
+          "max_grid_error": 0.00022989489865410384,
+          "endpoint_error": 0.00019072909472056532
+        },
+        {
+          "mode": "Screened",
+          "warm_previous_stage": false,
+          "rhs_callbacks": 117,
+          "max_grid_error": 0.00022989489789959627,
+          "endpoint_error": 0.0001907290957663399
+        },
+        {
+          "mode": "Screened",
+          "warm_previous_stage": true,
+          "rhs_callbacks": 99,
+          "max_grid_error": 0.00022989489888913806,
+          "endpoint_error": 0.00019072909642814384
+        },
+        {
+          "mode": "SlowOnly",
+          "warm_previous_stage": false,
+          "rhs_callbacks": 153,
+          "max_grid_error": 0.00022989489873126434,
+          "endpoint_error": 0.00019072909490086554
+        },
+        {
+          "mode": "SlowOnly",
+          "warm_previous_stage": true,
+          "rhs_callbacks": 141,
+          "max_grid_error": 0.00022989489865410384,
+          "endpoint_error": 0.00019072909472056532
+        }
+      ]
+    },
+    {
+      "steps": 32,
+      "arms": [
+        {
+          "mode": "Picard",
+          "warm_previous_stage": false,
+          "rhs_callbacks": 251,
+          "max_grid_error": 5.7451931910645904e-05,
+          "endpoint_error": 4.766586887661184e-05
+        },
+        {
+          "mode": "Picard",
+          "warm_previous_stage": true,
+          "rhs_callbacks": 228,
+          "max_grid_error": 5.745193212514099e-05,
+          "endpoint_error": 4.766587080606843e-05
+        },
+        {
+          "mode": "Screened",
+          "warm_previous_stage": false,
+          "rhs_callbacks": 200,
+          "max_grid_error": 5.745192833517265e-05,
+          "endpoint_error": 4.766587105264897e-05
+        },
+        {
+          "mode": "Screened",
+          "warm_previous_stage": true,
+          "rhs_callbacks": 181,
+          "max_grid_error": 5.7451930464691436e-05,
+          "endpoint_error": 4.7665868572632775e-05
+        },
+        {
+          "mode": "SlowOnly",
+          "warm_previous_stage": false,
+          "rhs_callbacks": 251,
+          "max_grid_error": 5.7451931910645904e-05,
+          "endpoint_error": 4.766586887661184e-05
+        },
+        {
+          "mode": "SlowOnly",
+          "warm_previous_stage": true,
+          "rhs_callbacks": 228,
+          "max_grid_error": 5.745193212514099e-05,
+          "endpoint_error": 4.766587080606843e-05
+        }
+      ]
+    },
+    {
+      "steps": 64,
+      "arms": [
+        {
+          "mode": "Picard",
+          "warm_previous_stage": false,
+          "rhs_callbacks": 424,
+          "max_grid_error": 1.4364380434561674e-05,
+          "endpoint_error": 1.1915451577748648e-05
+        },
+        {
+          "mode": "Picard",
+          "warm_previous_stage": true,
+          "rhs_callbacks": 377,
+          "max_grid_error": 1.4364379778197822e-05,
+          "endpoint_error": 1.1915449611765716e-05
+        },
+        {
+          "mode": "Screened",
+          "warm_previous_stage": false,
+          "rhs_callbacks": 384,
+          "max_grid_error": 1.436438348567659e-05,
+          "endpoint_error": 1.1915442939491871e-05
+        },
+        {
+          "mode": "Screened",
+          "warm_previous_stage": true,
+          "rhs_callbacks": 296,
+          "max_grid_error": 1.4364380248599318e-05,
+          "endpoint_error": 1.1915449138200085e-05
+        },
+        {
+          "mode": "SlowOnly",
+          "warm_previous_stage": false,
+          "rhs_callbacks": 424,
+          "max_grid_error": 1.4364380434561674e-05,
+          "endpoint_error": 1.1915451577748648e-05
+        },
+        {
+          "mode": "SlowOnly",
+          "warm_previous_stage": true,
+          "rhs_callbacks": 377,
+          "max_grid_error": 1.4364379778197822e-05,
+          "endpoint_error": 1.1915449611765716e-05
+        }
+      ]
+    }
+  ],
+  "order": [
+    {
+      "mode": "Picard",
+      "warm": false,
+      "max_grid_error_slopes": [
+        2.0000343702410333,
+        2.000547141963699,
+        1.9998596387623582
+      ]
+    },
+    {
+      "mode": "Picard",
+      "warm": true,
+      "max_grid_error_slopes": [
+        2.000034371386418,
+        2.0005471360932225,
+        1.9998597100709103
+      ]
+    },
+    {
+      "mode": "Screened",
+      "warm": false,
+      "max_grid_error_slopes": [
+        2.000034375882851,
+        2.000547226529534,
+        1.9998592425369304
+      ]
+    },
+    {
+      "mode": "Screened",
+      "warm": true,
+      "max_grid_error_slopes": [
+        2.0000343695889,
+        2.0005471792642844,
+        1.9998596211297417
+      ]
+    },
+    {
+      "mode": "SlowOnly",
+      "warm": false,
+      "max_grid_error_slopes": [
+        2.0000343702410333,
+        2.000547141963699,
+        1.9998596387623582
+      ]
+    },
+    {
+      "mode": "SlowOnly",
+      "warm": true,
+      "max_grid_error_slopes": [
+        2.000034371386418,
+        2.0005471360932225,
+        1.9998597100709103
+      ]
+    }
+  ],
+  "successful_stage_cells": 20,
+  "stage_cells": 21,
+  "successful_causal_cells": 3,
+  "successful_trajectories": 24,
+  "decimal80_max_exact_polynomial_residual": "9.9313441892400763464569623820365021342506709985976931509554788135574E-13",
+  "decimal80_interpretation": "independent high-precision numerical diagnostic, not outward interval certificate",
+  "status": "pass_scoped"
+}

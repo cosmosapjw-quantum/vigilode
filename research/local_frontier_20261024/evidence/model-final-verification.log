@@ -1,0 +1,99 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-1024/crates/vigilode)
+warning: constant `METHODS` is never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:100:11
+    |
+100 | pub const METHODS: [&str; 4] = ["dopri5", "rodas5p-mf", "rodas5p-dense", "switching"];
+    |           ^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `LAYERS` is never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:101:11
+    |
+101 | pub const LAYERS: [&str; 3] = ["serial", "data", "ensemble"];
+    |           ^^^^^^
+
+warning: multiple methods are never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:194:12
+    |
+111 | impl Model {
+    | ---------- methods in this implementation
+...
+194 |     pub fn name(&self) -> &'static str {
+    |            ^^^^
+...
+197 |     pub fn variant(&self) -> &'static str {
+    |            ^^^^^^^
+...
+200 |     pub fn autonomous(&self) -> bool {
+    |            ^^^^^^^^^^
+...
+203 |     pub fn exact_kind(&self) -> &'static str {
+    |            ^^^^^^^^^^
+...
+210 |     pub fn metadata(&self) -> Value {
+    |            ^^^^^^^^
+...
+213 |     pub fn parameters(&self) -> Value {
+    |            ^^^^^^^^^^
+...
+876 |     pub fn diagnostics(&self, y: &[f64]) -> Value {
+    |            ^^^^^^^^^^^
+
+warning: constant `NAMES` is never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:905:7
+    |
+905 | const NAMES: [&str; 24] = [
+    |       ^^^^^
+
+warning: constant `VARIANTS` is never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:931:7
+    |
+931 | const VARIANTS: [&str; 24] = [
+    |       ^^^^^^^^
+
+warning: `vigilode` (test "local_bottleneck_models") generated 5 warnings
+    Finished `test` profile [unoptimized] target(s) in 0.43s
+     Running tests/local_bottleneck_models.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/local_bottleneck_models-ce2e6ea73aa7fbc2)
+
+running 9 tests
+test false_switching_claims_are_negative_controls ... ok
+test conservative_semidiscretizations_telescope ... ok
+test hierarchy_streaming_is_skew_and_scattering_is_dissipative ... ok
+test analytic_states_satisfy_the_semidiscrete_equations ... ok
+test negligible_evolution_certificate_is_scoped_in_time ... ok
+test nonautonomous_partial_time_derivative_matches_independent_difference ... ok
+test invalid_or_overflowed_reference_is_unavailable ... ok
+test all_twenty_four_models_have_finite_rhs_and_directional_derivatives ... ok
+test data_parallel_rows_preserve_bits_and_thread_pool_budget ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-1024/crates/vigilode)
+    Finished `measurement` profile [optimized] target(s) in 3.21s

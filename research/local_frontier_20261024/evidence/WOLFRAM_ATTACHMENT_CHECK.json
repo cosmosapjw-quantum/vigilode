@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "purpose": "Independent symbolic checks of supplied benchmark equations; not performance evidence",
+  "code": "Clear[t,T,eps,gam,beta,w,z,u,v]; f=(1-T) Exp[(T-1)/(eps T)]; x=Exp[-gam t] Cos[w(Exp[beta t]-1)/beta]; FullSimplify[{D[f,T]/.T->1,D[x,{t,2}]+(2gam-beta)D[x,t]+(w^2 Exp[2beta t]+gam^2-gam beta)x,x/.t->0,D[x,t]/.t->0,(-z/eps-Sin[u]v)+Sin[u]v,100/(64+1)>1/4},Assumptions->eps>0&&beta>0]",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Symbol::undefined2: Warning: Global symbols \"T, T, T, T, T, T\" are undefined.\nGeneral::messages: Messages were generated which may indicate errors.\n\nOut[1]= {-1, 0, 1, -gam, -(z/eps), True}"
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  }
+}

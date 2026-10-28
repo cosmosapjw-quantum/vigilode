@@ -1,0 +1,12 @@
+    Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+error: very complex type used. Consider factoring parts into `type` definitions
+   --> crates/rodas5p-integrators/src/packet_window.rs:773:6
+    |
+773 | ) -> Result<(Vec<(Interval, Interval)>, Vec<(Interval, Interval)>), PacketError> {
+    |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#type_complexity
+    = note: `-D clippy::type-complexity` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::type_complexity)]`
+
+error: could not compile `rodas5p-integrators` (lib) due to 1 previous error

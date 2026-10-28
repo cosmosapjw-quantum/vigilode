@@ -1,0 +1,199 @@
+{
+  "schema": "vigilode.independent-review.v1",
+  "status": "pass_scoped",
+  "reviewer": "separate child agent joint_review; not an implementation author",
+  "base_commit": "4fe67602502440d76aa9dd245c6b1d67558c14bf",
+  "base_tree": "8bab954cffcf7abd9cdd0ca528567ece47e43bc7",
+  "scope": [
+    "changed opt-in switching entry policy",
+    "shared cost qualification arithmetic",
+    "execution identity and drift invalidation",
+    "causal stage-error and adjoint budgets",
+    "bounded pilot source and mathematics"
+  ],
+  "findings": [
+    {
+      "id": "R1",
+      "severity": "medium",
+      "class": "numerical",
+      "target": "causal_budget_pilot.rs combined embedded/inexact error budget",
+      "observation": "max of output and embedded weights bounded each perturbation separately; one addition did not reserve their sum",
+      "correction": "outward sum weights and sum reconstruction plus embedded rounding errors",
+      "status": "closed_source_native_pilot_and_independent_bound_oracle"
+    },
+    {
+      "id": "R2",
+      "severity": "low",
+      "class": "claim_scope",
+      "target": "sentinel scheduling and probe-overhead theorem",
+      "observation": "sentinel execution remains conditioned on eligible pressure batch; prepaid fractional credit is a derived extension, not implemented",
+      "correction": "narrowed wording and explicit theory/implementation distinction",
+      "status": "closed_source_review"
+    },
+    {
+      "id": "R3",
+      "severity": "low",
+      "class": "numerical",
+      "target": "causal pilot domain and exact embedded coefficient difference",
+      "observation": "ordinary row-sum/domain arithmetic and rounded coefficient difference did not support stated interval bookkeeping",
+      "correction": "directed row sums/domain closure and interval coefficient-difference reconstruction",
+      "status": "closed_source_and_native_pilot"
+    },
+    {
+      "id": "R4",
+      "severity": "medium",
+      "class": "selection_comparability",
+      "target": "adaptive implicit-to-explicit return",
+      "observation": "Initial adaptive change still relied on previous-window implicit work rate for actual method return",
+      "correction": "Old rate now only triggers a same-checkpoint same-window implicit replay; qualified shared comparison chooses return or commits successful implicit candidate; all work charged",
+      "status": "closed_source_and_native_contracts",
+      "evidence": [
+        "../validation/return_r1/RECEIPT.json",
+        "../validation/facade_final/RECEIPT.json",
+        "crates/vigilode/tests/adaptive_entry_contracts.rs"
+      ]
+    },
+    {
+      "id": "R5",
+      "severity": "medium",
+      "class": "performance_and_evidence_locality",
+      "target": "reuse of losing entry pilot during a rapidly decaying transient",
+      "observation": "Initial backoff used 2463 RHS versus legacy 1887; immediate symmetric relaxation renewal then used 2763 RHS because it replayed the preceding mixed-transient prefix rather than the newly accepted regime.",
+      "correction": "Pending renewal from an accepted-endpoint relaxation signal, followed by comparison on the next eligible prefix; same numerical thresholds and unchanged accuracy target",
+      "status": "closed_source_native_contracts_and_bounded_pilot",
+      "evidence": [
+        "../switching/native/case5_adaptive_1.stdout",
+        "../validation/transient_repair/RECEIPT.json",
+        "../validation/transient_repair/stdout.log",
+        "../validation/transient_pending_repair/RECEIPT.json",
+        "../validation/facade_final_r3/RECEIPT.json",
+        "../switching/native_r2/RUN.json",
+        "../switching/native_r2/pilot.jsonl"
+      ],
+      "outcome": "Final case5 uses 1311 RHS versus 1887 for legacy evidence policy; all measured repeats meet the same declared physical endpoint cap. Median wall time is essentially unchanged. No universal speed claim follows."
+    }
+  ],
+  "remaining_production_limitations": [
+    "Method-entry score remains deterministic work units, not calibrated future wall-time intervals",
+    "Causal bounds depend on supplied original-target residual/inverse/Lipschitz bounds and valid domain; ordinary embedded estimates do not become global error certificates",
+    "Monitored timing envelopes remain empirical; a changed-cost first dispatch cannot be predicted from old samples",
+    "Scalar Jacobi pilot serially emulates candidate parallel rounds and does not demonstrate parallel speedup",
+    "The shifted onset fixtures validate transfer within the same ODE family; they do not establish population false-positive rates or general solver dominance."
+  ],
+  "reviewed_source_sha256": {
+    "crates/vigilode/src/switching.rs": "6ea961cc71358f067d5ed713b7bc3def203b725b19d55ae8ec1fb7ea44dfd813",
+    "crates/vigilode/src/automatic.rs": "9b87d7d9d43b495a0d3e994c015337e76e26413c64ee49135116704eb9670548",
+    "crates/vigilode/src/execution_policy.rs": "4dc884d9fbcc256af0ae2b79f540d7ff97108e21403662e60ea54014791a1918",
+    "crates/vigilode/src/selection_evidence.rs": "4f4fdc05f24a34fd1b3e300a098841c191021d412a1680f83d1030296474421f",
+    "crates/vigilode/src/causal_budget.rs": "410860851964766795b3d8a83abecfdc0001f315cc5620b460e6649ea6245ccf",
+    "crates/vigilode/examples/causal_budget_pilot.rs": "2a8eea219caf20bb011e2d890e88f55352a0802d211ed8a131d0a48fb06ad5e9",
+    "crates/vigilode/examples/joint_execution_pilot.rs": "153642360dcc6b2121a58f7de9a3dac59d4a0ad12a31757cb1cdb75eb0082de1",
+    "research/joint_controller_20261025/theory/DERIVATIONS_KO.md": "357ea1c690d2d497a74d53bbcd8d43e86126848e6edd6f15c64cb2bd001ea7f7",
+    "crates/vigilode/tests/adaptive_entry_contracts.rs": "95a706ac30e6fe10692047633349c641ac64d8d4206ddeab8b34c06d14f4ad0b"
+  },
+  "independent_native_oracle": {
+    "status": "completed",
+    "source": "independent_probe.rs",
+    "checker": "check_probe.py",
+    "receipt": "INDEPENDENT_EXECUTION.json",
+    "result": "EXACT_ORACLE_CHECK.json",
+    "causal_cases": 96,
+    "cost_boundary_cases": 256,
+    "native_prefer_candidate_cases": 34,
+    "exact_rational_checks": 994,
+    "raw_sha256": "907f935b014f85db9c2b6832f4fc75c3bed9a764d9e8173584d0bb2fb0e0370a",
+    "scoped_dependencies_unchanged_at_final_review": true
+  },
+  "post_correction_causal_pilot": {
+    "status": "pass_scoped",
+    "receipt": "../causal/native/RECEIPT.json",
+    "raw": "../causal/native/stdout.log",
+    "raw_sha256": "e5786155a8167f615df05c90603d7f534be757fae4794f7a2daf94f85bccce57",
+    "pilot_source_sha256": "2a8eea219caf20bb011e2d890e88f55352a0802d211ed8a131d0a48fb06ad5e9",
+    "selected_evaluations": 10513,
+    "blanket_evaluations": 16818,
+    "selected_analytic_endpoint_error": 2.0316011095644626e-09,
+    "selected_maximum_bound": 9.845491477634116e-10,
+    "inner_budget": 1e-09,
+    "fallback_steps": 0,
+    "scope": "Fixed-mesh stage root work relative to blanket polishing; sequential native oracle costs1792RHS and no parallel speedupclaim"
+  },
+  "checks": [
+    {
+      "id": "native-exact-oracle",
+      "status": "pass_scoped",
+      "evidence": "EXACT_ORACLE_CHECK.json"
+    },
+    {
+      "id": "facade-final-native",
+      "status": "pass_scoped",
+      "evidence": "../validation/facade_final_r3/RECEIPT.json",
+      "source": "Parent execution independently inspected: 234 tests in 29 suites; exit 0; source unchanged."
+    },
+    {
+      "id": "new-return-contracts",
+      "status": "pass_scoped",
+      "evidence": "../validation/return_r1/RECEIPT.json",
+      "source": "parent execution inspected receipt"
+    },
+    {
+      "id": "endpoint_local_pending_renewal",
+      "status": "pass_scoped",
+      "evidence": "../validation/transient_pending_repair/RECEIPT.json",
+      "source": "Independent receipt and stdout inspection: 17 library and 10 adaptive contracts; source unchanged during execution."
+    },
+    {
+      "id": "final-switching-pilot",
+      "status": "pass_scoped",
+      "evidence": "../switching/native_r2/RUN.json",
+      "source": "Independent raw-row and final source-manifest checks, without solver rerun."
+    }
+  ],
+  "final_switching_pilot": {
+    "status": "pass_scoped",
+    "run_receipt": "../switching/native_r2/RUN.json",
+    "raw": "../switching/native_r2/pilot.jsonl",
+    "raw_sha256": "e037133fdaa5fecff1fcadbebccbf49dc60df5dd70c676999b9ff4958c801175",
+    "cases": 9,
+    "all_rows_including_warmup": 162,
+    "timed_rows": 135,
+    "all_reached_target_finite_accuracy_pass": true,
+    "all_reported_accounting_complete": true,
+    "source_matches_final_facade_manifest": true,
+    "case5": {
+      "legacy_rhs": 1887,
+      "initial_adaptive_rhs": 2463,
+      "immediate_relaxation_repair_rhs": 2763,
+      "final_adaptive_rhs": 1311,
+      "legacy_median_seconds": 0.000369166,
+      "final_adaptive_median_seconds": 0.000369637,
+      "maximum_endpoint_error": 7.170790738975086e-09
+    },
+    "heldout_scope": "New transition locations 0.43 and 0.87 within the previously examined family; 0.47 and 0.91 retained as regression controls.",
+    "remaining_tradeoffs": [
+      "Relaxation fixture uses 813 versus 749 legacy RHS after the stronger same-window return comparison.",
+      "Direct DOPRI remains cheaper for rotation; direct RODAS remains cheaper for case5.",
+      "Successful full-trajectory comparisons are not labeled per-decision false-positive rates."
+    ]
+  },
+  "published_source_binding_20261026": {
+    "scope": "Exact formatting-equivalence repair during workspace recovery; historical reviewed hashes preserved.",
+    "published_commit": "bc99943c5a74b174500ed9d858caea215ebf1d4b",
+    "evidence": "../RECOVERY_INVENTORY_20261026.json",
+    "document": {
+      "path": "research/joint_controller_20261025/theory/DERIVATIONS_KO.md",
+      "reviewed_sha256": "357ea1c690d2d497a74d53bbcd8d43e86126848e6edd6f15c64cb2bd001ea7f7",
+      "published_sha256": "f98f8d4b1b06e118e1bd5b749d3c7b394bcb7f272469537a419a6448f4c105ff",
+      "restored_trailing_space_lines_one_based": [
+        209,
+        268
+      ],
+      "restored_final_newline_count": 1,
+      "exact_reconstruction_matches": true,
+      "other_reviewed_hashes_match_published_manifest": 8,
+      "changed_mathematical_or_code_content": false
+    },
+    "science_rerun": false,
+    "review_status_unchanged": true
+  }
+}

@@ -1,0 +1,249 @@
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-core/src/leja_action.rs:1600:
+ #[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+ #[serde(rename_all = "kebab-case", tag = "reason")]
+ pub enum LejaAdmissionError {
+-    InvalidBudget { budget: f64 },
++    InvalidBudget {
++        budget: f64,
++    },
+     /// The report was produced by a legacy candidate API or has no complete
+     /// represented dense-symmetric enclosure authority.
+     Uncertified,
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-core/src/leja_action.rs:1607:
+-    BoundExceedsBudget { bound: f64, budget: f64 },
++    BoundExceedsBudget {
++        bound: f64,
++        budget: f64,
++    },
+ }
+ 
+ /// Borrowed, budget-admitted **fused** output of the explicit enclosed API.
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-core/tests/leja_enclosed_contract.rs:4:
+ //! exact Fraction intervals and spectral projectors, independently of Leja.
+ use rodas5p_core::leja_action::{
+     CertifiedLejaCoeffCache, CertifiedLejaWorkspace, LEJA_ENCLOSED_SCHEMA, LejaAdmissionError,
+-    leja_phi_action_certified_capped,
+-    leja_phi_action_enclosed_with_workspace,
++    leja_phi_action_certified_capped, leja_phi_action_enclosed_with_workspace,
+ };
+ use rodas5p_core::polynomial_action::{
+     JointPhiInput, SymmetricNonpositiveOperator, TotalErrorStatus,
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-core/tests/leja_enclosed_contract.rs:306:
+ fn admission_refuses_legacy_initial_workspace_and_invalid_budgets() {
+     let initial_workspace = CertifiedLejaWorkspace::new(1, 1);
+     assert!(matches!(
+-        initial_workspace.report().unwrap().admit_enclosed_fused(1.0),
++        initial_workspace
++            .report()
++            .unwrap()
++            .admit_enclosed_fused(1.0),
+         Err(LejaAdmissionError::Uncertified)
+     ));
+     let mut a = DenseMatrix::zeros(1, 1);
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/src/generic_verified.rs:12:
+ 
+ use crate::{
+     AdaptiveStepConfig, BoundCollectiveProblem, ContinuousResidualVerificationError,
+-    ContinuousResidualWorkspace, DenseOutputError, DenseSegmentWork, OdeProblem, Pr101VerifiedError,
+-    Pr101Model, Rodas5pQuarticSegment, sequential_step,
++    ContinuousResidualWorkspace, DenseOutputError, DenseSegmentWork, OdeProblem, Pr101Model,
++    Pr101VerifiedError, Rodas5pQuarticSegment, sequential_step,
+ };
+ 
+ #[derive(Debug, Error)]
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/src/lib.rs:21:
+ mod bound_pr101;
+ mod pr101_verified;
+ pub use pr101_verified::{
+-    Pr101Bound, Pr101VerifiedError, Pr101Model, Pr101Output, Pr101Run, Pr101VerifiedSegment,
++    Pr101Bound, Pr101Model, Pr101Output, Pr101Run, Pr101VerifiedError, Pr101VerifiedSegment,
+ };
+ mod candidates;
+ mod causal_majorant;
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/src/lib.rs:428:
+ pub use rodas5p_lagged::{
+     LaggedWork, RODAS5P_LAGGED_CONTRACTION_MAX, RODAS5P_LAGGED_DRIVER_ID,
+     RODAS5P_LAGGED_GMRES_BOUNDED_DRIVER_ID, RODAS5P_LAGGED_GMRES_DRIVER_ID,
+-    RODAS5P_LAGGED_GMRES_RESTART, RODAS5P_LAGGED_GMRES_RESOLVENT_DRIVER_ID, RODAS5P_LAGGED_MAX_ITERATIONS,
+-    RODAS5P_LAGGED_RICHARDSON_BOUNDED_DRIVER_ID, RODAS5P_LAGGED_RICHARDSON_RESOLVENT_DRIVER_ID, RODAS5P_LAGGED_STALENESS_Q_MAX,
++    RODAS5P_LAGGED_GMRES_RESOLVENT_DRIVER_ID, RODAS5P_LAGGED_GMRES_RESTART,
++    RODAS5P_LAGGED_MAX_ITERATIONS, RODAS5P_LAGGED_RICHARDSON_BOUNDED_DRIVER_ID,
++    RODAS5P_LAGGED_RICHARDSON_RESOLVENT_DRIVER_ID, RODAS5P_LAGGED_STALENESS_Q_MAX,
+     RODAS5P_LAGGED_THETA, RODAS5P_NONSTIFF_STAGE_SENSITIVITIES, Rodas5pLaggedOptions,
+     Rodas5pLaggedResult, StageSolver, StalenessRule, StalenessWork,
+-    integrate_rodas5p_lagged_observed, rodas5p_lagged_stage_targets, rodas5p_staleness_bound, rodas5p_resolvent_staleness_bound,
++    integrate_rodas5p_lagged_observed, rodas5p_lagged_stage_targets,
++    rodas5p_resolvent_staleness_bound, rodas5p_staleness_bound,
+ };
+ pub use rodas5p_matrix_free_fast::{
+     AttemptCharge, AttemptLgmresSnapshot, AttemptResidualOutcome, AttemptResidualRecord,
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/all_dag_a01_packet.rs:24:
+         vec![-0.75, 0.125, 1.0 + 2.0_f64.powi(-49)],
+         vec![0.125, 0.375, 0.5 + 2.0_f64.powi(-42)],
+         vec![(0.25, -0.125), (-0.1875, 0.0625), (0.125, 0.1875)],
+-        0.75, 0.375, 1.25, 0.0,
+-    ).unwrap();
++        0.75,
++        0.375,
++        1.25,
++        0.0,
++    )
++    .unwrap();
+     let mut work = PacketWorkCounters::default();
+     let frozen = curve(&model, &mut work);
+     for radius in [f64::NAN, f64::INFINITY, -1.0] {
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/all_dag_a01_packet.rs:38:
+     let direct = PacketCurveOutput::new(frozen.clone());
+     let before = work;
+     let owner = PacketFrozenOutput::from_weighted_radius(frozen, radius, &mut work).unwrap();
+-    assert_eq!(work.curve_frozen_radius_items - before.curve_frozen_radius_items, 1);
+-    assert_eq!(work.curve_frozen_allocation_requests, before.curve_frozen_allocation_requests);
++    assert_eq!(
++        work.curve_frozen_radius_items - before.curve_frozen_radius_items,
++        1
++    );
++    assert_eq!(
++        work.curve_frozen_allocation_requests,
++        before.curve_frozen_allocation_requests
++    );
+     let mut direct_workspace = direct.workspace(&mut work).unwrap();
+     let mut frozen_workspace = owner.workspace(&mut work).unwrap();
+     for t in [0.0, 1.0 / 128.0, 1.0 / 32.0] {
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/all_dag_a01_packet.rs:46:
+-        let direct_view = direct.enclose_at_weighted(t, radius, &mut direct_workspace, &mut work).unwrap();
++        let direct_view = direct
++            .enclose_at_weighted(t, radius, &mut direct_workspace, &mut work)
++            .unwrap();
+         let before = work;
+-        let view = owner.enclose_at(t, &mut frozen_workspace, &mut work).unwrap();
++        let view = owner
++            .enclose_at(t, &mut frozen_workspace, &mut work)
++            .unwrap();
+         assert_eq!(view.modes(), direct_view.modes());
+         assert_eq!(view.mode_radii(), direct_view.mode_radii());
+         assert_eq!(view.mean(), direct_view.mean());
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/all_dag_a01_packet.rs:52:
+         assert_eq!(view.mean_radius(), direct_view.mean_radius());
+-        assert_eq!(view.centered_weighted_radius(), direct_view.centered_weighted_radius());
++        assert_eq!(
++            view.centered_weighted_radius(),
++            direct_view.centered_weighted_radius()
++        );
+         assert!(view.centered_weighted_radius().unwrap() >= view.weighted_radius());
+-        assert_eq!(work.curve_frozen_query_attempts - before.curve_frozen_query_attempts, 1);
+-        assert_eq!(work.curve_frozen_query_refusals, before.curve_frozen_query_refusals);
++        assert_eq!(
++            work.curve_frozen_query_attempts - before.curve_frozen_query_attempts,
++            1
++        );
++        assert_eq!(
++            work.curve_frozen_query_refusals,
++            before.curve_frozen_query_refusals
++        );
+     }
+     let before = work;
+-    assert!(owner.enclose_at(f64::NAN, &mut frozen_workspace, &mut work).is_err());
+-    assert_eq!(work.curve_frozen_query_attempts - before.curve_frozen_query_attempts, 1);
+-    assert_eq!(work.curve_frozen_query_refusals - before.curve_frozen_query_refusals, 1);
+-    assert_eq!(work.curve_output_certificate_ops, before.curve_output_certificate_ops);
++    assert!(
++        owner
++            .enclose_at(f64::NAN, &mut frozen_workspace, &mut work)
++            .is_err()
++    );
++    assert_eq!(
++        work.curve_frozen_query_attempts - before.curve_frozen_query_attempts,
++        1
++    );
++    assert_eq!(
++        work.curve_frozen_query_refusals - before.curve_frozen_query_refusals,
++        1
++    );
++    assert_eq!(
++        work.curve_output_certificate_ops,
++        before.curve_output_certificate_ops
++    );
+     // Refusal leaves the immutable initial tube and curve intact.
+-    let view = owner.enclose_at(0.0, &mut frozen_workspace, &mut work).unwrap();
++    let view = owner
++        .enclose_at(0.0, &mut frozen_workspace, &mut work)
++        .unwrap();
+     assert!(view.centered_weighted_radius().unwrap() >= radius);
+ }
+ 
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/all_dag_a01_packet.rs:75:
+     let times = [0.0, 1.0 / 128.0, 1.0 / 64.0, 3.0 / 128.0, 1.0 / 32.0];
+     let mut arms = Vec::new();
+     for (i, chi) in [0.0, 0.375, -0.375, 0.375].into_iter().enumerate() {
+-        let model = CollectiveModel::new(xi.to_vec(), weights.to_vec(), initial.to_vec(), 0.75, chi, 1.25, 0.0).unwrap();
++        let model = CollectiveModel::new(
++            xi.to_vec(),
++            weights.to_vec(),
++            initial.to_vec(),
++            0.75,
++            chi,
++            1.25,
++            0.0,
++        )
++        .unwrap();
+         let mut work = PacketWorkCounters::default();
+         let frozen = curve(&model, &mut work);
+         let uncertain = i == 3;
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/all_dag_a01_packet.rs:87:
+         for t in times {
+             let before = work;
+             let view = owner.enclose_at(t, &mut workspace, &mut work).unwrap();
+-            assert_eq!(work.curve_output_certificate_ops - before.curve_output_certificate_ops, 110);
++            assert_eq!(
++                work.curve_output_certificate_ops - before.curve_output_certificate_ops,
++                110
++            );
+             assert!(view.centered_weighted_radius().is_none());
+             outputs.push(serde_json::json!({"time":t,"modes":view.modes(),"mode_radii":view.mode_radii(),"mean":view.mean(),"mean_radius":view.mean_radius()}));
+         }
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/all_dag_a01_packet.rs:94:
+-        let true_initial: Vec<_> = initial.iter().zip(perturbations).map(|(&(re,im),(dr,di))| if uncertain {(re+dr,im+di)} else {(re,im)}).collect();
++        let true_initial: Vec<_> = initial
++            .iter()
++            .zip(perturbations)
++            .map(|(&(re, im), (dr, di))| {
++                if uncertain {
++                    (re + dr, im + di)
++                } else {
++                    (re, im)
++                }
++            })
++            .collect();
+         arms.push(serde_json::json!({"chi":chi,"uncertain":uncertain,"initial_true":true_initial,"outputs":outputs}));
+     }
+     let payload = serde_json::json!({"schema_version":1,"xi":xi,"weights":weights,"initial_center":initial,"width":0.75,"carrier_metadata_only":1.25,"kappa":0.0,"horizon":1.0/32.0,"times":times,"eta":eta,"arms":arms});
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/all_dag_a01_packet.rs:98:
+-    let script = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/packet_unequal_fraction_oracle.py");
+-    let mut child = Command::new("python3").arg(script).args(["--numeric-only", "-"]).stdin(Stdio::piped()).stdout(Stdio::piped()).stderr(Stdio::piped()).spawn().unwrap();
+-    child.stdin.take().unwrap().write_all(serde_json::to_string(&payload).unwrap().as_bytes()).unwrap();
++    let script = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
++        .join("tests/packet_unequal_fraction_oracle.py");
++    let mut child = Command::new("python3")
++        .arg(script)
++        .args(["--numeric-only", "-"])
++        .stdin(Stdio::piped())
++        .stdout(Stdio::piped())
++        .stderr(Stdio::piped())
++        .spawn()
++        .unwrap();
++    child
++        .stdin
++        .take()
++        .unwrap()
++        .write_all(serde_json::to_string(&payload).unwrap().as_bytes())
++        .unwrap();
+     let result = child.wait_with_output().unwrap();
+-    assert!(result.status.success(), "{}", String::from_utf8_lossy(&result.stderr));
++    assert!(
++        result.status.success(),
++        "{}",
++        String::from_utf8_lossy(&result.stderr)
++    );
+     let result: serde_json::Value = serde_json::from_slice(&result.stdout).unwrap();
+     assert_eq!(result["disk_checks"], 80);
+     assert_eq!(result["allocation_authority"], "NOT_EVALUATED");

@@ -1,0 +1,558 @@
+{
+  "schema_version": "1.0",
+  "published_campaign_reruns": 0,
+  "rows": [
+    {
+      "ledger_id": "L-0063",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "699a7adc6dba5fc45d4da01a5456f10f25dcf210",
+      "claim": "PASS scoped native primitive: 15 new cases, 591 targets and 1341 RHS-target exact binary-rational comparisons; all outward bounds enclose, 1309 RHS rows certified and 32 deliberately underresolved rows rejected, 11 negative controls reject. Six core contract tests and nine new chart boundary tests plus eight related regressions pass. Real dense sufficient Euclidean dissipativity only; no generic ODE order, parallel dispatch, default activation or speedup claim.",
+      "result_paths": [
+        "research/rvj_integration_20261004/evidence/native_study.json",
+        "research/rvj_integration_20261004/evidence/exact_oracle.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0064",
+      "historical_verdict": "FAIL",
+      "superseded_by": [],
+      "source_commit": "4e5dc91600f77c360aa8278ebe5ed782641c78d5",
+      "claim": "FAIL (G1): repaired C2 under-covers once (x=-707.01) because directed::exp_interval returns [0,2^-1020] for all x<-707, false on (-707.0234,-707); fixed in a follow-up node. Base local counterexamples: chart decay 2/20200 (<=4.7e-16 rel), stepped time direction 676/20000, midpoint radius 2660/20000 (<=0.5 ulp). Repaired C1/C3 zero violations; chart and REV-02 reruns enclose 50-digit truth; published end-to-end bounds were not below truth.",
+      "result_paths": [
+        "research/safe_enclosure_composition_20261004/probes.json",
+        "research/safe_enclosure_composition_20261004/PROBE_RESULTS.json",
+        "research/safe_enclosure_composition_20261004/chart_runs.json",
+        "research/safe_enclosure_composition_20261004/CHART_CHECK.json",
+        "research/safe_enclosure_composition_20261004/rev02_cases.json",
+        "research/safe_enclosure_composition_20261004/REV02_CHECK.json",
+        "research/safe_enclosure_composition_20261004/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0065",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "171a4d2e859f88cf4f2e3e9c997cf0cccc04a546",
+      "claim": "PASS: exp_interval now returns [0, 2^-1019] for x < -707 (e^-707 < 2^-1019); the old floor 2^-1020 was false on (-707.0234,-707). Zero 60-digit violations on 40,511 points incl. the L-0064 counterexample and the REV-02 grid; SAFE-ENCLOSURE repaired compositions C1-C3 now zero violations on the same seeded probes; affected core and chart tests pass.",
+      "result_paths": [
+        "research/safe_enclosure_exp_floor_20261004/exp_rows.json",
+        "research/safe_enclosure_exp_floor_20261004/EXP_CHECK.json",
+        "research/safe_enclosure_exp_floor_20261004/probes.json",
+        "research/safe_enclosure_exp_floor_20261004/PROBE_RESULTS.json",
+        "research/safe_enclosure_exp_floor_20261004/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0066",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "65a16dde101446f2d0039a94e88a4cf3f87a8f71",
+      "claim": "PASS: Legacy policy and default entry reproduce the pre-change export bit for bit (14 rows); refresh-after-update is wired and counted (recycle_update_refreshes) and equals the REV-01c traced call; cold leaves the carried state unchanged. Driver-level linear-solve failures drop from 2453/2475 (brusselator-50, attempt cap hit) and 102/102 (brusselator-160) to 0 with refresh or cold. Counted applications only, no speed claim; default unchanged.",
+      "result_paths": [
+        "research/safe_recycle_policy_20261004/BASE_LEGACY.json",
+        "research/safe_recycle_policy_20261004/RUNS.json",
+        "research/safe_recycle_policy_20261004/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0067",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "f01ce4abf68467e92a807af81d11c8b2a23d0d64",
+      "claim": "PASS: 8,500 n=8 candidate columns of all four methods certified and enclosing the exact error (worst error/bound 0.30); executed flops equal independent formulas; selector cheapest in 87/90 (3 misses from the WideCluster abstention). Jet has a positive counted-flop margin over the best of individual LU, common-shift LU and Hessenberg reuse in 49/90 configurations (narrow up to 12.6x), none for all-equal shifts. No timing, no speed claim.",
+      "result_paths": [
+        "research/pp04_shared_shift_policy_20261004/cases.json",
+        "research/pp04_shared_shift_policy_20261004/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0068",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "e22d12ea0694898c4f65f9b383bd44c8c24b93b1",
+      "claim": "PASS: compressed jet outputs certified against the original RHS: 2,052 n=8 columns enclose the exact error (worst error/bound 0.40), 135/135 compressed and 216/216 uncompressed targets certified; plus/minus amplitudes kept distinct; LU column solves drop to k(d+1) (16 vs 256 at rank 1, M=16). Full-rank sets abstain when M<=n. Near-dependent sets at 1e-12/1e-6 were full rank under tolerance 1e-13 (prediction not observed).",
+      "result_paths": [
+        "research/pp03_rhs_compression_20261004/cases.json",
+        "research/pp03_rhs_compression_20261004/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0069",
+      "historical_verdict": "FAIL",
+      "superseded_by": [],
+      "source_commit": "108a0d5e13fe986b4cbbb526235506ee29a36f5a",
+      "claim": "FAIL (G2 as registered): budget refusals made 2 allocator events of <=72 bytes (the error message string and its growth), above the registered limit of one; nothing problem-sized is allocated before refusal. G1 PASS: non-LU peak within explicit slots + 64 B per allocation in 72/72; the slot bound alone is exceeded (1.0-2.0x) in 22 small-n configurations by struct/Vec headers. P_lu/(8n^2) about 3 for n>=16.",
+      "result_paths": [
+        "research/storage_runtime_20261004/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0070",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "24270b66b50801f2b30a0c660a9e0ecbf63d0743",
+      "claim": "PASS: opt-in complex-shift certificate with upward gain |gamma|/Re gamma (H = I) bounds the actual error of the exact binary target in all 480 single-column and 16 partial-fraction cases (Pade [3/3], [6/6], random shifts, complex jet; n = 4, 6 exact Fraction, n = 16, 24 at 50 digits); worst bound/actual 1.17. 36/36 negative controls fail closed. G3 observed: 16/80 random shifts have actual error above ||r||_2 (up to 2.16x), so gain 1 would under-bound. No timing or default change.",
+      "result_paths": [
+        "research/pp16_complex_shift_gain_20261004/pade_shifts.json",
+        "research/pp16_complex_shift_gain_20261004/cases.json",
+        "research/pp16_complex_shift_gain_20261004/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0071",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "ddeeb41d4abf893bb57aca53a2496c958c4054b2",
+      "claim": "On 79 preregistered verified symmetric fixtures the opt-in router admits 76 results, all enclosing the 50-digit target (bound/error 4.3-3.0e3), never admits declared enclosures, the timing execution, Laguerre degree >128 or an over-budget bound, ends unmet budgets in Fallback, and charges exactly both attempts. It routes 0 cases to Laguerre: Laguerre is never cheaper in vector products (ratio 1.0-1.57) and only Chebyshev admits in 33 cases. No speed claim.",
+      "result_paths": [
+        "research/pp08_laguerre_router_20261004/cases.json",
+        "research/pp08_laguerre_router_20261004/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0072",
+      "historical_verdict": "FAIL",
+      "superseded_by": [],
+      "source_commit": "5c593288710c24ca9f194bc2c70cb138d494ce07",
+      "claim": "FAIL (G2, G3 as registered; G1 PASS): all committed states and interior points enclose the reference (worst 0.18); the archived exact certificate accepts every native path with native/source error 1.000006 to 1.0112 (limit 1.01 exceeded in forty_tight); the cyclic-alias control was committed because its wrapped harmonics were below tolerance (bound 6.2e-13 encloses actual 2.8e-14). Other controls fail closed; no bound below actual error anywhere.",
+      "result_paths": [
+        "research/pp05_fourier_client_20261004/cases.json",
+        "research/pp05_fourier_client_20261004/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0073",
+      "historical_verdict": "FAIL",
+      "superseded_by": [],
+      "source_commit": "fb52d1fbd8703f3a569e0031d97c8ef7d85bcb9f",
+      "claim": "FAIL (G3 as registered): FFT right side equals the direct product within 5.3e-16 relative on all 48 calls; FFT-built runs enclose the reference (worst 0.108); the under-padded grid is refused without override, but with override its aliasing error is 3.6e-12 relative and the accurate candidates were correctly committed, so the expected rejection did not occur. No bound below actual error.",
+      "result_paths": [
+        "research/pp06_fourier_fft_candidate_20261004/cases.json",
+        "research/pp06_fourier_fft_candidate_20261004/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0074",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "f5a440358ed50b224cb57f9a54115d08c62b49e4",
+      "claim": "PASS, decision abstain: the native Fourier client performs no shifted solve (kill condition 'no nearby distinct shifts'); a frozen-J Newton variant would see >1 shift only at 7 halving starts, all at radius >= 1/2 (jet not admissible); the dissipativity witness fails at all 28 starts (row bound 0.056-0.115), alternative gain finite (1.006-1.022). No artificial workload substituted.",
+      "result_paths": [
+        "research/pp07_fourier_shared_action_20261004/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0075",
+      "historical_verdict": "FAIL",
+      "superseded_by": [],
+      "source_commit": "f7343c1626842845a0b0147fbd4849834dfda820",
+      "claim": "FAIL (G3): all 36 certificates enclose; verified mu -9.86 replaces Gershgorin 0 on F2, giving 3/6 F2 cases within 1e-8 relative (Pe 10 both, Pe 50 tau 0.01) but not Pe 50 tau 0.1 or Pe 200, whose solutions decay at the convective rate (~e^-218); power-of-two Osborne cannot symmetrize them. G1's 50-digit check flagged three 2x2 rows by <3e-48 where mu equals lambda exactly (post-hoc exact check).",
+      "result_paths": [
+        "research/pp12_lognorm_decay_20261004/cases.json",
+        "research/pp12_lognorm_decay_20261004/RESULTS.json",
+        "research/pp12_lognorm_decay_20261004/POSTHOC_G1.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0076",
+      "historical_verdict": "FAIL",
+      "superseded_by": [],
+      "source_commit": "e698541ea6cb39903b2b89e565d79813d1755f27",
+      "claim": "FAIL (G3 16/18): all 90 certificates enclose and every mu_up >= lambda_max; all six REV-02 stiff F2 cases now within 1e-8 relative (worst 3.0e-11, chain metric gives mu=-2/h^2), 10/12 holdout cases too; the two failures have exact solutions 6.2e-373 and 5.0e-414, below the binary64 range, so no binary64 result can meet a relative criterion (holdout design defect). REV-02/PP12 FAILs stand.",
+      "result_paths": [
+        "research/pp12b_chain_symmetrizer_20261004/cases.json",
+        "research/pp12b_chain_symmetrizer_20261004/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0077",
+      "historical_verdict": "FAIL",
+      "superseded_by": [],
+      "source_commit": "cf01facc304f6c0b03ef028f13bfdb9c7d4fc45f",
+      "claim": "G1 fails: the published R-NEXT-04 cases.json has no component fields, so the six h rho >= 20 cases (h rho 48, L' = 16) cannot be decomposed. G2 holds: certified max |L_n| on [0, 16], n <= 128, max 710.47 (n = 5), within 1.01 of attained values, no violation at 10,000 points per n. e^{L'/2}/max E_n = 4.196, so recomputed totals stay >= 2.3e6 (>= 3.2e3 even with E_n = 1) against budgets 1e-6. Supplementary derived emulation puts truncation + coefficient at ~1e-17 of the totals.",
+      "result_paths": [
+        "research/pp09_laguerre_envelope_20261004/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0078",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "57ab6af14b861c2744c3531ff6f7dd58e090f67e",
+      "claim": "PASS: all 54 bounded certificates enclose the 50-digit error of the fused candidate; the perturbation is >0 in all 54 rounding cases and exactly 0 in all 18 power-of-two controls. Seeded and control cases are useful (bound 1.4e-15 to 1.0e-11 relative, 3.5 to 4.9e4 times the error; perturbation dominates 16/18 seeded). Subnormal w: valid but useless (absolute floor ~1e-15). Large w (1e100): Taylor rejects and all 18 are Unbounded (e^omega overflows). No speed claim.",
+      "result_paths": [
+        "research/pp11_taylor_fused_total_20261004/cases.json",
+        "research/pp11_taylor_fused_total_20261004/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0079",
+      "historical_verdict": "FAIL",
+      "superseded_by": [],
+      "source_commit": "675f55d7f9977cb1f9bcf49ebc6fd1b07cee8974",
+      "claim": "FAIL (G3): certified client bounds enclose actual errors at omega 1, 40, 1e4 (G1); RODAS5P closest tolerance named (G2) but no matched error reached at omega 40 and 1e4 (best 1.6x and 193x the client bound). The independent reviewer failed the drafted report for a misleading matched-error statement and an untested work-scaling claim; corrections appended, draft kept. No speed claim.",
+      "result_paths": [
+        "research/pp15_fourier_comparator_20261004/cases.json",
+        "research/pp15_fourier_comparator_20261004/RESULTS.json",
+        "research/pp15_fourier_comparator_20261004/REVIEW.md"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0080",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "088205f0507b93db410b08d1d292c6e2837ba0ff",
+      "claim": "On the 72 PP08 fixtures every Newton-Leja report is EstimateOnly (LEJA_TOTAL_NOT_CERTIFIED) and no certified API admits it; actual error <= tolerance in 72/72 (G2 needs <=10x in 90%), estimate never under-reports (estimate/actual 4.8-7.2e5). Vector products vs certified Chebyshev at the same tolerance: ratio 0.83-2.0 (median 1.15), Leja fewer only in the 8 rho=200,h=0.2 cases. No certificate, no speed claim.",
+      "result_paths": [
+        "research/pp10_leja_candidate_20261004/cases.json",
+        "research/pp10_leja_candidate_20261004/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0081",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "4187c0b97b56b244e4a8d8da8446fa3f74f415ba",
+      "claim": "PASS: both opt-in changes are bitwise identical to the legacy fast drivers on all 56 identity points and six banded grid cases, and the fused landing equals the legacy triple landing in 616,920 property samples (0 class A/B, 14 class C re-extension cases reported); per attempt they remove exactly one validate call (171 Ir) and two re-landings (629-678 Ir): small driver 3,580 -> 2,778 Ir (0.78x, van der Pol), 5,076 -> 4,264 (Robertson), 12,435 -> 11,586 (HIRES); dense v2 0.91-0.96x at n <= 8, 0.999x at n = 400. Counted instructions only; no wall-time claim.",
+      "result_paths": [
+        "research/spd01_fast_driver_overhead_20261005/RESULTS_CORRECTED.json",
+        "research/spd01_fast_driver_overhead_20261005/RESULTS.json",
+        "research/spd01_fast_driver_overhead_20261005/PROFILE_DENSE.json",
+        "research/spd01_fast_driver_overhead_20261005/PROFILE_DENSE_B50.json",
+        "research/spd01_fast_driver_overhead_20261005/PROFILE_SMALL.json",
+        "research/spd01_fast_driver_overhead_20261005/IDENTITY.json",
+        "research/spd01_fast_driver_overhead_20261005/BANDED.json",
+        "research/spd01_fast_driver_overhead_20261005/PROPERTY.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0082",
+      "historical_verdict": "FAIL",
+      "superseded_by": [],
+      "source_commit": "5bbfa0f1c828f8484781edf80a8ac52fe82ce3f0",
+      "claim": "FAIL (items 4, 5): the column-extent LU is bitwise identical to v2 on all 35 identity points and 2,000 contract matrices, allocates one extra buffer per integration and none per step, and cuts instructions per attempt to 0.517x at n = 400 (3.90M -> 2.02M) and 0.773x at n = 100; but it costs 1.036-1.062x at n <= 8 (gate <= 1.03) and the unchanged legacy path compiled 1.024x its base at n = 400 (gate +-2 %), so the policy stays opt-in. Remaining n = 400 cost: the W copy and the two extent scans (~0.5M each). Counted instructions only; no wall-time claim.",
+      "result_paths": [
+        "research/spd02_lu_column_extents_20261005/RESULTS.json",
+        "research/spd02_lu_column_extents_20261005/PROFILE.json",
+        "research/spd02_lu_column_extents_20261005/IDENTITY.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0083",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "a9b11bb6327d2b08912e824f6c3103e2fc0dd7df",
+      "claim": "PASS: the banded pipeline, reached through new CLI arms with a native band fill, is bitwise identical to v2 on all 14 Brusselator points and cuts instructions per attempt to 0.255x at n = 400 (3.84M -> 0.98M) and 0.617x at n = 100; banded operations per attempt grow with slope 1.011 (n = 100 to 400) and 1.003 (to n = 1000). A slices kernel is bitwise identical to the indexed kernel but costs 1.012x its instructions (secondary item fails). Declared-band problems only. Counted instructions only; no wall-time claim.",
+      "result_paths": [
+        "research/spd03_banded_arm_instructions_20261005/RESULTS.json",
+        "research/spd03_banded_arm_instructions_20261005/PROFILE.json",
+        "research/spd03_banded_arm_instructions_20261005/PROFILE_N1000.json",
+        "research/spd03_banded_arm_instructions_20261005/IDENTITY.json",
+        "research/spd03_banded_arm_instructions_20261005/INT03.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0084",
+      "historical_verdict": "FAIL",
+      "superseded_by": [],
+      "source_commit": "0c731b02ac5dcbd10e7a71c2187f05161fa806b9",
+      "claim": "FAIL: starting stage i of the matrix-free U-form driver's GMRES-into solves from stage i of the last accepted step gives 0.963-1.001x the linear matvecs of the default start on the two Brusselators (gate <= 0.85) and 1.03-1.05x on Robertson and van der Pol; base reproduced bitwise on 14 cases. Reported: the default Previous start costs 1.02-1.57x the matvecs of a zero start in all 14 cases. Counted Krylov work only; no wall-time claim.",
+      "result_paths": [
+        "research/spd07_mf_step_warm_start_20261007/RUNS.json",
+        "research/spd07_mf_step_warm_start_20261007/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0085",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "bd62a8b4e8a6a02479d3c3192c8b57f2fa9a4250",
+      "claim": "PASS: fixed stage tables, const-generic stage functions and index-loop solves in the small-n driver are bitwise identical to L-0041 on 21 points and the 64-member ensemble, and give 0.838x (van der Pol), 0.848x (Robertson) and 0.736x (HIRES) Ir per attempt of the legacy arm in the same binary. The legacy arm itself drifted +5.2%/+2.9%/+0.3% against the SPD01 base; against the base the static arm is 0.882x/0.872x/0.737x. Counted instructions only; no wall-time claim.",
+      "result_paths": [
+        "research/spd06_small_static_stages_20261007/RESULTS.json",
+        "research/spd06_small_static_stages_20261007/IDENTITY.json",
+        "research/spd06_small_static_stages_20261007/ENSEMBLE_SMALL.json",
+        "research/spd06_small_static_stages_20261007/ENSEMBLE_STATIC.json",
+        "research/spd06_small_static_stages_20261007/PROFILE.json",
+        "research/spd06_small_static_stages_20261007/PROFILE_ROB8.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0086",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "bd62a8b4e8a6a02479d3c3192c8b57f2fa9a4250",
+      "claim": "PASS: applying the column-extent LU only for n > 64 is bitwise identical to v2 on 37 points, costs 1.0000-1.0001x Ir per attempt at n = 2, 3, 8 and 60, and gives 0.833x at n = 80, 0.787x at n = 100 and 0.531x at n = 400. Reported: the always-on variant already gives 0.888x at n = 60, so the fixed threshold leaves that gain unused. Counted instructions only; no wall-time claim.",
+      "result_paths": [
+        "research/spd09_colext_threshold_20261007/RESULTS.json",
+        "research/spd09_colext_threshold_20261007/IDENTITY.json",
+        "research/spd09_colext_threshold_20261007/PROFILE.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0087",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "fd998ca3bf1c62c86c8033d2115ad624f84ac6ac",
+      "claim": "PASS: a workspace-owned least-squares solve calling faer's in-place column-pivoted QR with the high-level path's parameters is bitwise identical to small::least_squares on 1,024 systems and reuse sequences and to GMRES-into on 408 solves, removes exactly 11 allocations per least-squares solve, and cuts the matrix-free driver's allocations per attempt to 0.018-0.096x on five problems (HIRES 0.48x, its JVP allocates). faer 0.24.4. Allocation counts only; no instruction or wall-time claim.",
+      "result_paths": [
+        "research/spd04_ls_workspace_20261007/RESULTS_RAW.json",
+        "research/spd04_ls_workspace_20261007/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0088",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "fd998ca3bf1c62c86c8033d2115ad624f84ac6ac",
+      "claim": "PASS: solving the LGMRES-into least-squares problem once per cycle instead of after every Arnoldi column is bitwise identical to the legacy path on all 1,216 rev04 solves (344 failures, all final-residual failures, outputs and states rolled back) and cuts allocations per solve to 0.027-0.042x of L-0061's LGMRES-into (e.g. 4,059 -> 110, 455.7 -> 15.4). No driver calls solve_lgmres_into. Allocation counts only; no instruction or wall-time claim.",
+      "result_paths": [
+        "research/spd05_lgmres_ls_once_20261007/RESULTS_RAW.json",
+        "research/spd05_lgmres_ls_once_20261007/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0089",
+      "historical_verdict": "FAIL",
+      "superseded_by": [],
+      "source_commit": "fd998ca3bf1c62c86c8033d2115ad624f84ac6ac",
+      "claim": "FAIL (kill): integrating 4 or 8 van der Pol members on lanes with each member's exact scalar arithmetic is bitwise identical for all 64 members and masks injected failures per lane, but gives 0.937x / 0.924x Ir per trajectory of the scalar arm (gate <= 0.80, kill > 0.90). The scalar arm drifted +8.6% from the base export (legacy item fails); against the base, batch8 is 1.005x. Counted instructions only; no wall-time claim.",
+      "result_paths": [
+        "research/spd08_small_ensemble_lanes_20261007/CONTRACT.json",
+        "research/spd08_small_ensemble_lanes_20261007/PROFILE.json",
+        "research/spd08_small_ensemble_lanes_20261007/PROFILE.members.rodas5p-fast-small.json",
+        "research/spd08_small_ensemble_lanes_20261007/PROFILE.members.rodas5p-fast-small-batch4.json",
+        "research/spd08_small_ensemble_lanes_20261007/PROFILE.members.rodas5p-fast-small-batch8.json",
+        "research/spd08_small_ensemble_lanes_20261007/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0090",
+      "historical_verdict": "FAIL",
+      "superseded_by": [
+        "L-0093"
+      ],
+      "source_commit": "0df3ede6917583d322d59c00ad84b69778ec962e",
+      "claim": "FAIL (items 2, 3): the CoupledGuarded stage target reproduces the pilot's work cut (JVP per accepted step vs Legacy: Bruss-50 0.31/0.26, inner products 0.11/0.07; Bruss-160 0.45/0.51; HIRES, Robertson, vdP 0.68-0.75) with error <= 1.5x the dense twin on 29 of 31 cells, but vig1b-k20 is 37.1x/4.4x the twin (the nu-guard repairs vigb-k20, not the single block), and at the registered 200-column budget diagpr128 and semilin128 k=3 exhaust the budget (as Legacy does). Counted work only; no wall-time claim.",
+      "result_paths": [
+        "research/alg01_coupled_stage_target_20261008/RUNS.json",
+        "research/alg01_coupled_stage_target_20261008/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0091",
+      "historical_verdict": "FAIL",
+      "superseded_by": [],
+      "source_commit": "cae94865fa855770a79a939063ed0df4cd198ffd",
+      "claim": "FAIL (items 3, 5): PredictiveCapped cuts van der Pol attempts at matched accuracy to 0.68-0.84x of the integral controller (5/5 E) and its rejections from 28.5% to 7.0%, with Integral bitwise unchanged (276/276), but Robertson's cheapest-run ratio reaches 1.160 at E = 3.16e-9 (gate 1.10; frontier 1.025) and van der Pol at rtol 5.62e-7 exceeds the calibration bound (err/rtol 2.55-2.57 vs 2.05-2.28) on all three seeds. Counted attempts only; no wall-time claim.",
+      "result_paths": [
+        "research/alg02_predictive_controller_20261008/RUNS.json",
+        "research/alg02_predictive_controller_20261008/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0092",
+      "historical_verdict": "FAIL",
+      "superseded_by": [],
+      "source_commit": "0df3ede6917583d322d59c00ad84b69778ec962e",
+      "claim": "FAIL (item 4): budget 2000 with the stagnation guard and production fallback is bitwise neutral on 14/14 SPD07 cells, completes every stress cell including Robertson to 4e10 (the guard without fallback livelocks there), has 0 linear failures on Brusselator-160/300 and uses 0.655x B0's and 0.418x Rbig's JVPs on Brusselator-300 1e-4, but Robertson to 4e10 at rtol 1e-5 ends at 3.32x the dense twin's error (gate 1.5x). Counted work only; no wall-time claim.",
+      "result_paths": [
+        "research/alg03_stage_budget_guard_20261008/RUNS.json",
+        "research/alg03_stage_budget_guard_20261008/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0093",
+      "historical_verdict": "FAIL",
+      "superseded_by": [],
+      "source_commit": "0df3ede6917583d322d59c00ad84b69778ec962e",
+      "claim": "Correction of L-0090 (same run, same outputs; verdict unchanged FAIL, items 2 and 3): the CoupledGuarded stage target cuts JVP per accepted step vs Legacy on the Brusselators (Bruss-50 0.31/0.26 vs ProjL2 0.47/0.30; Bruss-160 0.45/0.51 vs ProjL2 0.73/0.62), but its small-n passes (HIRES, Robertson, vdP 0.68-0.75) come from the staged solver omitting the diagnostic residual (ProjL2 equal or better). vig1b-k20 is 37.1x/4.4x the twin; item 3 was infeasible at budget 200 for every arm. No wall-time claim.",
+      "result_paths": [
+        "research/alg01_coupled_stage_target_20261008/RUNS.json",
+        "research/alg01_coupled_stage_target_20261008/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0094",
+      "historical_verdict": "FAIL",
+      "superseded_by": [],
+      "source_commit": "12dbb2da6af9b4225c641b52708bcb3cddc65d7a",
+      "claim": "FAIL (item 2 only): CoupledGuarded2 keeps error <= 1.5x the dense twin on 30 of 31 cells (vig1b-k20 at 1e-4 now 1.00x, was 37.1x) but vig1b-k20 at 1e-8 is 4.18x (Legacy 1.73x). Its own work gain over ProjL2 on the Brusselators is gm 0.738 (0.61-0.87); ladders at budget 20000 are 0.997-1.001x LU; small n within 0.91-1.006x DupFix, which alone explains most small-n savings (0.63-0.89x Legacy). Counted work only.",
+      "result_paths": [
+        "research/alg04_coupled_target_v2_20261010/RUNS.json",
+        "research/alg04_coupled_target_v2_20261010/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0095",
+      "historical_verdict": "FAIL",
+      "superseded_by": [
+        "L-0098"
+      ],
+      "source_commit": "e60199856280bd0528e11836e93c3f3717b8c199",
+      "claim": "FAIL (item 5, single-cell bound only): on fresh seeds PredictiveCapped2 gives van der Pol frontier ratios 0.685-0.834 (5/5 E), worst 1.015/1.033/0.969 on HIRES/Robertson/Brusselator-50, rejections 28.3% -> 6.8%, calibration fit ratios <= 1.56 (bound 2.0), but one van der Pol cell has err/rtol 65.17 where the integral controller has 65.04 (absolute bound 10 was mis-specified). PREDcap2 equals PREDcap on all 276 cells. Counted attempts only.",
+      "result_paths": [
+        "research/alg05_predictive_controller_v2_20261010/RUNS.json",
+        "research/alg05_predictive_controller_v2_20261010/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0096",
+      "historical_verdict": "PASS",
+      "superseded_by": [
+        "L-0097"
+      ],
+      "source_commit": "12dbb2da6af9b4225c641b52708bcb3cddc65d7a",
+      "claim": "PASS: B3 (G1+G2+G3) completes every stress cell including Robertson to 4e10, has 0 linear failures in 24 cells, error 0.54-1.00x the twin, and uses 0.418x Rbig's JVPs on Brusselator-300 1e-4. The predicted mechanism is not confirmed: G3 charges are <= 2.7e-3, never flip a decision, and all arms take identical Robertson steps; the 1e-5 spread (B3a 1.87x, B3 0.54x) is endpoint sensitivity. Most gain over ALG03 comes from ALG04's target. Counted work only.",
+      "result_paths": [
+        "research/alg06_guard_v2_20261010/RUNS.json",
+        "research/alg06_guard_v2_20261010/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0097",
+      "historical_verdict": "PASS",
+      "superseded_by": [],
+      "source_commit": "12dbb2da6af9b4225c641b52708bcb3cddc65d7a",
+      "claim": "Correction of L-0096 (same run and outputs; verdict PASS by the registered rule, item 4 not robust): B3 completes every stress cell with 0 linear failures and 0.418x Rbig's JVPs on Brusselator-300, but the Robertson-4e10 1e-5 accuracy pass is a favourable draw: in unregistered reviewer reruns with h0 perturbed by k*1e-9 (24 runs) B3 is 0.011-5.70x the twin (median 2.39x, 15/24 above 1.5x) while Rbig stays 0.95-1.06x. G3 never acted (charges <= 2.7e-3); step counts, not sequences, coincide. Not evidence for G1-G3.",
+      "result_paths": [
+        "research/alg06_guard_v2_20261010/RUNS.json",
+        "research/alg06_guard_v2_20261010/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    },
+    {
+      "ledger_id": "L-0098",
+      "historical_verdict": "FAIL",
+      "superseded_by": [],
+      "source_commit": "e60199856280bd0528e11836e93c3f3717b8c199",
+      "claim": "Correction of L-0095 (same run and outputs; verdict FAIL, item 5 single-cell bound): on fresh seeds PredictiveCapped2 gives van der Pol frontier ratios 0.685-0.834 (5/5 E), worst 1.015/1.033/0.969 on HIRES/Robertson/Brusselator-50, rejections 28.3% -> 6.8%, calibration fit ratios <= 1.56 (bound 2.0); one van der Pol cell has err/rtol 65.17 where the reference arm I has 65.04 (I's ALG02 maximum, 14.7, already exceeded the bound). PREDcap2 equals PREDcap on all 276 cells. Counted attempts only.",
+      "result_paths": [
+        "research/alg05_predictive_controller_v2_20261010/RUNS.json",
+        "research/alg05_predictive_controller_v2_20261010/RESULTS.json"
+      ],
+      "reuse_status": "READ_ONCE_NO_CAMPAIGN_RERUN",
+      "evidence_class": "NATIVE_REGISTERED_RESULT",
+      "promotion": "NOT_INFERRED_FROM_LEDGER_PASS"
+    }
+  ],
+  "special_cases": [
+    {
+      "id": "L-0097 sensitivity narrative",
+      "status": "PUBLISHED_REVIEW_NARRATIVE_ONLY",
+      "raw_sensitivity_rows_committed": false,
+      "rerun": false
+    },
+    {
+      "id": "Oct8 pilot",
+      "status": "PYTHON_REPLICA_EXPLORATORY",
+      "base_fidelity_proves_new_candidate_native_fidelity": false,
+      "raw_arrays_complete_in_repo": false
+    }
+  ]
+}

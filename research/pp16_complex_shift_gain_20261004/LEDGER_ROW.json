@@ -1,0 +1,21 @@
+{
+ "command": "python3 tools/pp16_pade_shifts.py --output research/pp16_complex_shift_gain_20261004/pade_shifts.json && cargo fmt --all -- --check && cargo clippy -p rodas5p-core --all-targets --locked -- -D warnings && cargo test -p rodas5p-core --locked --test pp16_complex_shift_contracts && PP16_PADE=research/pp16_complex_shift_gain_20261004/pade_shifts.json PP16_CASES=research/pp16_complex_shift_gain_20261004/cases.json cargo test --release -p rodas5p-core --locked --test pp16_complex_shift_study -- --ignored --nocapture && python3 tools/pp16_complex_shift_check.py --cases research/pp16_complex_shift_gain_20261004/cases.json --output research/pp16_complex_shift_gain_20261004/RESULTS.json --g4-contract-and-lint-passed",
+ "profile": "preregistered PP16 recorded run at ba3dbbd: native complex-shift certificates on seeded dissipative J (n 4/6/16/24, h 0.05/0.5) checked by exact-rational and 50-digit oracles",
+ "inputs": [
+  "crates/rodas5p-core/src/complex_shift_jet.rs",
+  "crates/rodas5p-core/src/shared_shift_jet.rs",
+  "crates/rodas5p-core/src/directed.rs",
+  "crates/rodas5p-core/src/lib.rs",
+  "crates/rodas5p-core/tests/pp16_complex_shift_contracts.rs",
+  "crates/rodas5p-core/tests/pp16_complex_shift_study.rs",
+  "tools/pp16_pade_shifts.py",
+  "tools/pp16_complex_shift_check.py"
+ ],
+ "outputs": [
+  "research/pp16_complex_shift_gain_20261004/pade_shifts.json",
+  "research/pp16_complex_shift_gain_20261004/cases.json",
+  "research/pp16_complex_shift_gain_20261004/RESULTS.json"
+ ],
+ "claim": "PASS: opt-in complex-shift certificate with upward gain |gamma|/Re gamma (H = I) bounds the actual error of the exact binary target in all 480 single-column and 16 partial-fraction cases (Pade [3/3], [6/6], random shifts, complex jet; n = 4, 6 exact Fraction, n = 16, 24 at 50 digits); worst bound/actual 1.17. 36/36 negative controls fail closed. G3 observed: 16/80 random shifts have actual error above ||r||_2 (up to 2.16x), so gain 1 would under-bound. No timing or default change.",
+ "verdict": "PASS"
+}

@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "node": "A09",
+  "status": "IMPLEMENTED_SCOPED_VALIDATION_AND_INDEPENDENT_REVIEW_PASSED",
+  "basis": [
+    "derived",
+    "native_tested",
+    "independently_numerically_checked",
+    "exact_fraction_checked"
+  ],
+  "baseline_commit": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+  "changed_files": [
+    "crates/rodas5p-integrators/src/nonlinear_homotopy.rs",
+    "crates/rodas5p-integrators/src/actual_k_homotopy.rs",
+    "crates/rodas5p-integrators/tests/nonlinear_homotopy_contracts.rs",
+    "crates/rodas5p-integrators/tests/actual_k_homotopy_contracts.rs",
+    "crates/rodas5p-integrators/examples/nonlinear_homotopy_run.rs",
+    "crates/rodas5p-integrators/examples/actual_k_homotopy_run.rs"
+  ],
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/nonlinear_homotopy.rs": "0e0885bfe17660f2ac644759167033f8f8544a30eabb24b6390e9cb97e3717e7",
+    "crates/rodas5p-integrators/src/actual_k_homotopy.rs": "33b6b946c3939c59a60c62622d1b0eb52ff3bd4cc39a879d80cc91bd59fb9242",
+    "crates/rodas5p-integrators/tests/nonlinear_homotopy_contracts.rs": "a9fbfdf7f518eedd8c6158a6376dd627e1d1ffd3c387d3d2dea581e5272dd1a0",
+    "crates/rodas5p-integrators/tests/actual_k_homotopy_contracts.rs": "80800ded09667065c55977c6a1ecf0d6f29296b03e52d2392a2d318edab31212",
+    "crates/rodas5p-integrators/examples/nonlinear_homotopy_run.rs": "7007a6f451bed53c0988fc14e6fb417df08597bed7c9e34a0204142a84cc977c",
+    "crates/rodas5p-integrators/examples/actual_k_homotopy_run.rs": "f6b130b92112091f1702035e18187bd612bd96536e56c114bbc175ed6344cb83"
+  },
+  "scopes": {
+    "original_represented_k_h5": {
+      "status": "IMPLEMENTED_AND_CERTIFIED_FOR_ADMITTED_SOURCE",
+      "api": "certify_collective_actual_k_homotopy",
+      "source": "immutable zero-carrier CollectiveModel, represented frozen J, all loaded alpha/beta/gamma/b entries",
+      "certificate": "uniform lambda in [0,1] common source-bound tube; explicit d+A*r<=r; unique actual represented-K endpoint root",
+      "retains_diagonal_upper_leakage": true,
+      "ode_discretization_certificate": false,
+      "generic_legacy_homotopy_step_promoted": false,
+      "limits": [
+        "positive admitted h and finite configuration",
+        "q=||(I-B)^-1 E||_infinity<1",
+        "tube and requested stage-output budget must pass",
+        "dense inverse construction and verification currently O(n^3)"
+      ]
+    },
+    "nonlinear_window": {
+      "status": "IMPLEMENTED_TRUE_ODE_REQUESTED_ENDPOINT_CERTIFICATE",
+      "api": "integrate_nonlinear_homotopy",
+      "source": "immutable original zero-carrier collective model with common kappa>=0 and final lambda exactly 1",
+      "candidate": "parallel frozen fine windows, signed complex diagonal vector affine fixed-tree prefix, post-scan energy projection",
+      "authority": "independent original-ODE local packet verification and outward scalar radius transport",
+      "undamped_verifier": "source-bound packet curve centered_weighted_radius",
+      "damped_verifier": "A03 verify_damped_packet_window",
+      "candidate_roundoff_certificate": false,
+      "all_requested_weighted_budgets_enforced": true,
+      "refinement_changes_budget": false,
+      "dense_trajectory_certificate": false,
+      "relative_tolerance_certificate": false
+    },
+    "historical_campaigns": {
+      "HT01": "ABSTAIN_UNCHANGED",
+      "HT02": "NOT_RUN_UNCHANGED",
+      "measured_speed_promotion": "HOLD",
+      "generic_production_promotion": "HOLD"
+    }
+  },
+  "theory": {
+    "exact_front": "M windows terminate within M exact sweeps without global q<1, using causal finite-horizon triangularity",
+    "factorial_majorant": "coarse-start R*c*H*(M*d)^k/(k+1)! under stated nonexpansive projection premises",
+    "finite_precision": "eta floor theorem is conditional; actual candidate arithmetic is not outward-replayed",
+    "nonvacuous_conditional_speedup": "PARALLEL_THEORY.md gives valid full-cost upper-parallel/lower-serial inequality and theta=1/12, M=64, p=32, K=7 example; not measured",
+    "known_result_attribution": "finite-front and factorial parareal convergence are known; project contribution is collective cubic constants, source binding, projected vector-prefix realization, and independent true-ODE residual certification",
+    "homotopy_cost_rule": "direct target preferred unless continuation/predictor setup and extra stages earn their cost"
+  },
+  "validation": {
+    "native_integration_tests_passed": 10,
+    "native_unit_tests_passed": 2,
+    "clippy_warnings_denied": "PASS",
+    "nonlinear_high_precision_containments": 164,
+    "high_precision_digits": 90,
+    "exact_fraction_radius_closures": 8,
+    "exact_fraction_full_linear_system_dimension": 16,
+    "exact_fraction_linear_containments": 18,
+    "linear_noncausal_beta_entries_retained": 27,
+    "nonlinear_high_precision_authority": "numerical cross-check, not proof"
+  },
+  "representative_results": {
+    "actual_k": {
+      "requested_stage_output_tolerance": 1e-09,
+      "maximum_stage_radius": 1.231315492041006e-11,
+      "maximum_output_radius": 5.6367254415943615e-11,
+      "inverse_residual_upper": 4.442023204703725e-16,
+      "leakage_q_upper": 4.2745896515652797e-19,
+      "noncausal_alpha_max": 5.577737968635803e-16,
+      "noncausal_linear_max": 3.7683229960916457e-16
+    },
+    "window": {
+      "requested_weighted_tolerance": 1e-05,
+      "maximum_weighted_radius": 1.8976595905312864e-09,
+      "windows": 8,
+      "horizon": 0.125,
+      "fine_substeps": 4,
+      "correction_rounds": 4,
+      "elapsed_including_setup_verification_seconds": 0.015946386,
+      "measured_speed_comparison": false
+    }
+  },
+  "executions": [
+    {
+      "command": "cargo clippy --offline -p rodas5p-integrators --lib --tests --examples -- -D warnings",
+      "exit_code": 0,
+      "log": "research/all_dag_completion_20261018/nodes/A09/clippy-final.log"
+    },
+    {
+      "command": "cargo test --offline -p rodas5p-integrators --test actual_k_homotopy_contracts --test nonlinear_homotopy_contracts",
+      "exit_code": 0,
+      "tests_passed": 10,
+      "log": "research/all_dag_completion_20261018/nodes/A09/test-final.log"
+    },
+    {
+      "command": "cargo test --offline -p rodas5p-integrators --lib nonlinear_homotopy",
+      "exit_code": 0,
+      "tests_passed": 2,
+      "log": "research/all_dag_completion_20261018/nodes/A09/unit.log"
+    },
+    {
+      "command": "python3 actual_k_reference.py actual-k-example-final.json",
+      "exit_code": 0,
+      "log": "research/all_dag_completion_20261018/nodes/A09/actual-k-reference-final.json"
+    },
+    {
+      "command": "python3 actual_k_fraction.py actual-k-linear-final.json",
+      "exit_code": 0,
+      "log": "research/all_dag_completion_20261018/nodes/A09/actual-k-fraction-final.json"
+    }
+  ],
+  "evidence_sha256": {
+    "research/all_dag_completion_20261018/nodes/A09/clippy-final.log": "655e1f10f0f2bc4f1d1b2e43d760bda0137f3472d8b4e9a4bb0eb7f801d7f575",
+    "research/all_dag_completion_20261018/nodes/A09/test-final.log": "2fc0ded9af44efef2cfccacd5a78a833bf5e75ac2439aae167db42393870df25",
+    "research/all_dag_completion_20261018/nodes/A09/unit.log": "46025d0ac275c68e3a0668d756170a041cbe3cbb7e38058770007b8a97417aa8",
+    "research/all_dag_completion_20261018/nodes/A09/actual-k-example-final.json": "84176308ad21eb3f7eb5b052ae474751e7bd4c4592ec1bd90edd3999c3a17f6c",
+    "research/all_dag_completion_20261018/nodes/A09/actual-k-linear-final.json": "ae9105e2abff45197fbe489939c6ede13f67825a250ed52ab75f334f3416a0cb",
+    "research/all_dag_completion_20261018/nodes/A09/actual-k-reference-final.json": "a87651ef145082fecd608e2c6c52cee4bc333d0b65e7ba7e527503de5f6438aa",
+    "research/all_dag_completion_20261018/nodes/A09/actual-k-fraction-final.json": "5863f9293f2351cd3ba6fb11ab3b0283eeb64fdc58db10b7eedf36c6b830e9d9",
+    "research/all_dag_completion_20261018/nodes/A09/example-final.json": "7c2109cedbc9ce141fcf30b884cfe2d2762046b4760982a50c7d15a08305e1a4",
+    "research/all_dag_completion_20261018/nodes/A09/actual_k_reference.py": "442d25ef5004f7aded4a19dd9a542c45b722354d070174d1f578bebee35612ac",
+    "research/all_dag_completion_20261018/nodes/A09/actual_k_fraction.py": "bf6a7a013f2904124d1e309838c2e0f01d752890c3df3581a3204ef7e3f969c3",
+    "research/all_dag_completion_20261018/nodes/A09/ACTUAL_K_H5.md": "104d40ffda4eb7775f6ae6fb9ddb87073311f06e659a7087f570fae125389381",
+    "research/all_dag_completion_20261018/nodes/A09/PARALLEL_THEORY.md": "fbafa78417bdc31266004188b7151a1c1f0792995821afff00796b689726952e",
+    "research/all_dag_completion_20261018/nodes/A09/FLOW_THEORY.md": "ab3807989b4aa3b35bbed37c70f5b25a69588998a08f9ecd454844ac343ba7dc",
+    "research/all_dag_completion_20261018/nodes/A09/IMPLEMENTATION.md": "6cef9d1650680d6c653cd332a36a5baf4db8f1cebd4bbcbdfafc8805bb976fd4",
+    "research/all_dag_completion_20261018/nodes/A09/REPORT_KO.md": "44e275a9b2bd8dcd944fe75c375122bf99965b5b245db745931884a85b061fa5",
+    "research/all_dag_completion_20261018/nodes/A09/NEXT_STEPS.json": "abb83acc7d2bc97f044f299015856af8bd049784d3888bdfcb3ed83c40d9ba1a"
+  },
+  "preserved_first_failures": [
+    "actual-k-first.log: owned-versus-borrowed coefficient compile error, repaired by owned clone",
+    "clippy-first.log: proof-indexed matrix-loop lint findings, scoped lint allowance with unchanged arithmetic"
+  ],
+  "next_steps_file": "research/all_dag_completion_20261018/nodes/A09/NEXT_STEPS.json",
+  "remaining": [
+    "Matched timing and original HT01 expensive-client admission",
+    "Structured inverse cost reduction for high-dimensional H5",
+    "Accepted-step ODE-global verification beyond represented stage-target accuracy",
+    "Continuous dense and relative-accuracy scopes not implemented by window token"
+  ],
+  "independent_review": {
+    "status": "PASS_SCOPED",
+    "reviewer": "/root/dag_a12_independent",
+    "review_path": "research/all_dag_completion_20261018/nodes/A12/REVIEW.json",
+    "decision_path": "research/all_dag_completion_20261018/nodes/A12/DECISION.json",
+    "review_sha256": "070b75e166bae594cb206923e732debf5cdc061d41e0c0c8f7262bbef7a20f8d",
+    "decision_sha256": "86dfe2c82280b646668a374f9898fa0ff29040d3c30b726ff41c7a9441fe3aa3",
+    "blocking_findings": [],
+    "closed_finding": "R-A09-01 independent actual-target Fraction oracle",
+    "publication_gate": "Final aggregate source manifest and integrated validation must match reviewed sources."
+  }
+}

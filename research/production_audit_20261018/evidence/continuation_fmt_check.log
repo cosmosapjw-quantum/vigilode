@@ -1,0 +1,76 @@
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-core/src/damped_moments.rs:77:
+     /// Compiles a damped moment table up to orders `(max_j, max_k)`.
+     pub fn compile(config: DampedMomentsConfig) -> CoreResult<Self> {
+         // Fields are public/serializable: constructors are not an admission boundary.
+-        let config = DampedMomentsConfig::new(
+-            config.kappa,
+-            config.horizon,
+-            config.max_j,
+-            config.max_k,
+-        )?;
++        let config =
++            DampedMomentsConfig::new(config.kappa, config.horizon, config.max_j, config.max_k)?;
+         let max_j = config.max_j;
+         let max_k = config.max_k;
+         let z = damping_product(config.kappa, config.horizon)?;
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-core/src/damped_moments.rs:256:
+ 
+ /// Backward recurrence for E_m(z) = \int_0^1 e^{-z v} v^m dv, v = 1 - u
+ /// z E_m = m E_{m-1} - e^{-z}  =>  E_{m-1} = (z E_m + e^{-z}) / m
+-fn compute_large_z_backward(z: Interval, j: usize, k: usize, b_jk: Interval) -> CoreResult<Interval> {
++fn compute_large_z_backward(
++    z: Interval,
++    j: usize,
++    k: usize,
++    b_jk: Interval,
++) -> CoreResult<Interval> {
+     let top = j + k + 45;
+     // Monotonicity encloses exp(-z) over the entire rounded-product interval.
+     let exp_int = Interval::new(exp_interval(-z.hi)?.lo, exp_interval(-z.lo)?.hi)?;
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-core/tests/damped_moment_enclosure_regressions.rs:29:
+     ];
+     for (kappa, horizon, j, k, lo_bits, hi_bits) in fixtures {
+         let result = compute_normalized_damped_moment(kappa, horizon, j, k).unwrap();
+-        assert!(result.lo <= f64::from_bits(lo_bits), "lower endpoint: {kappa}, {horizon}, {j}, {k}: {result:?}");
+-        assert!(result.hi >= f64::from_bits(hi_bits), "upper endpoint: {kappa}, {horizon}, {j}, {k}: {result:?}");
++        assert!(
++            result.lo <= f64::from_bits(lo_bits),
++            "lower endpoint: {kappa}, {horizon}, {j}, {k}: {result:?}"
++        );
++        assert!(
++            result.hi >= f64::from_bits(hi_bits),
++            "upper endpoint: {kappa}, {horizon}, {j}, {k}: {result:?}"
++        );
+     }
+ }
+ 
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/lib.rs:20:
+ mod causal_majorant;
+ mod certification;
+ mod certified_budget;
+-pub mod collective_model;
+ pub mod collective_direct;
++pub mod collective_model;
+ mod common_w_gate;
+ mod comparator_fidelity;
+ mod controller_telemetry;
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_trajectory.rs:20:
+ 
+ use crate::collective_model::CollectiveModel;
+ use crate::packet_window::{
+-    compile_packet, compute_certificate, generate_candidate, reconstruct_modes, CausalWeights,
++    CausalWeights, compile_packet, compute_certificate, generate_candidate, reconstruct_modes,
+ };
+ use crate::packet_work::PacketWorkCounters;
+ use rodas5p_core::directed::{add_up, mul_up, sqrt_up};
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:1:
+ //! New adversarial regressions for the 2026-10-18 packet audit.
+ use rodas5p_integrators::{
++    CausalWeights, CollectiveModel, PacketError, PacketWorkCounters, TrajectoryConfig,
+     compile_packet, compute_certificate, evaluate_mode_at, generate_candidate, reconstruct_modes,
+-    run_packet_trajectory, CausalWeights, CollectiveModel, PacketError, PacketWorkCounters,
+-    TrajectoryConfig,
++    run_packet_trajectory,
+ };
+ 
+ fn one_mode(width: f64, chi: f64, kappa: f64) -> CollectiveModel {

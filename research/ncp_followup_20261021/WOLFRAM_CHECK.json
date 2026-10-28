@@ -1,0 +1,15 @@
+{
+  "purpose": "Exact rational Schur solution and frozen nonlinear coefficient Taylor defect",
+  "tool": "wolfram_wolframlanguageevaluator",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Out[1]= <|\"schur\" -> {{179/41, 5/41}, {18/41, 129/41}}, \"residual\" -> {0, 0, 0, 0, 0}, \"solution\" -> {172/561, 107/187, 150/187, 194/561, 460/561}, \"frozen_nonlinearity_defect\" -> SeriesData[h, 0, {-1/2*y0^3, (-5*y0^4)/6}, 2, 4, 1]|>"
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  },
+  "code": "a={{4,-1,0},{-1,4,-1},{0,-1,3}}; b={{1,0},{0,1},{1,1}}; c={{1,2,0},{0,1,1}}; d={{5,1},{1,4}}; y=Inverse[a].b; s=d-c.y; m=ArrayFlatten[{{a,b},{c,d}}]; rhs={1,2,3,4,5}; u=Inverse[a].Take[rhs,3]; z=Inverse[s].(Take[rhs,-2]-c.u); x=Join[u-y.z,z]; <|\"schur\"->s,\"residual\"->Simplify[m.x-rhs],\"solution\"->x,\"frozen_nonlinearity_defect\"->Series[y0 Exp[y0 h]-y0/(1-y0 h),{h,0,3}]|>"
+}

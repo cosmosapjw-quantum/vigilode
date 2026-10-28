@@ -1,0 +1,681 @@
+{
+ "binary_sha256": "a53e63949cf2ba367613d1339e2d2efd1d41d69f2ce9f8600fc0fefcbbf5d812",
+ "corpus_sha256": "d308ab1cc5a7c9cd7bf2d1967b7f95dbf2ac00f907118ad8dc01b9ae8647a4e7",
+ "generator": "tools/triage/triage_parity.py",
+ "limit": 1e-13,
+ "limit_source": "THRESHOLDS.json: parity.max_relative_error",
+ "problems": [
+  {
+   "compared": [
+    "rhs",
+    "jacobian"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": 0.0,
+   "jvp_max_rel": null,
+   "mass_max_rel": null,
+   "model_source": "tools/stiff_benchmark_scipy.py::brusselator(1000); JVP of stiff_benchmark.rs::brusselator_jvp_only_problem (same equation, same operation order)",
+   "numpy_model": null,
+   "problem": "brusselator-1d-1000",
+   "reason": null,
+   "rhs_max_rel": 0.0,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": null,
+    "index": 0,
+    "kind": "rhs",
+    "numpy": 0.007715932143876833,
+    "numpy_hex": "3f7f9abdc3752bbd",
+    "rel": 0.0,
+    "rust": 0.007715932143876833,
+    "rust_hex": "3f7f9abdc3752bbd",
+    "sample": 0
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [
+    "rhs",
+    "jacobian"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": 0.0,
+   "jvp_max_rel": null,
+   "mass_max_rel": null,
+   "model_source": "tools/stiff_benchmark_scipy.py::brusselator(250); JVP of stiff_benchmark.rs::brusselator_jvp_only_problem (same equation, same operation order)",
+   "numpy_model": null,
+   "problem": "brusselator-1d-250",
+   "reason": null,
+   "rhs_max_rel": 0.0,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": null,
+    "index": 0,
+    "kind": "rhs",
+    "numpy": 0.032177634063490404,
+    "numpy_hex": "3fa079963bee41f2",
+    "rel": 0.0,
+    "rust": 0.032177634063490404,
+    "rust_hex": "3fa079963bee41f2",
+    "sample": 0
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [
+    "rhs",
+    "jacobian"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": 0.0,
+   "jvp_max_rel": null,
+   "mass_max_rel": null,
+   "model_source": "tools/stiff_benchmark_scipy.py::brusselator(50); JVP of stiff_benchmark.rs::brusselator_jvp_only_problem (same equation, same operation order)",
+   "numpy_model": null,
+   "problem": "brusselator-1d-50",
+   "reason": null,
+   "rhs_max_rel": 0.0,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": null,
+    "index": 0,
+    "kind": "rhs",
+    "numpy": 0.19417513655783228,
+    "numpy_hex": "3fc8dabb1a9b2a25",
+    "rel": 0.0,
+    "rust": 0.19417513655783228,
+    "rust_hex": "3fc8dabb1a9b2a25",
+    "sample": 0
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [
+    "rhs",
+    "jvp"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": 0.0,
+   "mass_max_rel": null,
+   "model_source": "tools/stiff_benchmark_scipy.py::brusselator(1000); JVP of stiff_benchmark.rs::brusselator_jvp_only_problem (same equation, same operation order)",
+   "numpy_model": "brusselator-1d-1000",
+   "problem": "brusselator-1d-jvp-1000",
+   "reason": null,
+   "rhs_max_rel": 0.0,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": null,
+    "index": 0,
+    "kind": "rhs",
+    "numpy": 0.007715932143876833,
+    "numpy_hex": "3f7f9abdc3752bbd",
+    "rel": 0.0,
+    "rust": 0.007715932143876833,
+    "rust_hex": "3f7f9abdc3752bbd",
+    "sample": 0
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [
+    "rhs",
+    "jvp"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": 0.0,
+   "mass_max_rel": null,
+   "model_source": "tools/stiff_benchmark_scipy.py::brusselator(250); JVP of stiff_benchmark.rs::brusselator_jvp_only_problem (same equation, same operation order)",
+   "numpy_model": "brusselator-1d-250",
+   "problem": "brusselator-1d-jvp-250",
+   "reason": null,
+   "rhs_max_rel": 0.0,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": null,
+    "index": 0,
+    "kind": "rhs",
+    "numpy": 0.032177634063490404,
+    "numpy_hex": "3fa079963bee41f2",
+    "rel": 0.0,
+    "rust": 0.032177634063490404,
+    "rust_hex": "3fa079963bee41f2",
+    "sample": 0
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [
+    "rhs",
+    "jvp"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": 5.759827679965748e-14,
+   "mass_max_rel": null,
+   "model_source": "tools/reference_v2/generate_references_v2.py::problem_runtime('brusselator-2d')",
+   "numpy_model": "brusselator-2d-holdout-v2",
+   "problem": "brusselator-2d",
+   "reason": null,
+   "rhs_max_rel": 0.0,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": 5084.541005288641,
+    "index": 354,
+    "kind": "jvp",
+    "numpy": 2.4132652990043653,
+    "numpy_hex": "40034e5e097e5d00",
+    "rel": 5.759827679965748e-14,
+    "rust": 2.4132652990045043,
+    "rust_hex": "40034e5e097e5e39",
+    "sample": 0
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": null,
+   "mass_max_rel": null,
+   "model_source": null,
+   "numpy_model": null,
+   "problem": "complex-dahlquist-32",
+   "reason": "no_numpy_model",
+   "rhs_max_rel": null,
+   "samples": 0,
+   "status": "not_checked",
+   "worst": null,
+   "y0_match": null
+  },
+  {
+   "compared": [
+    "rhs",
+    "jvp"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": 0.0,
+   "mass_max_rel": null,
+   "model_source": "tools/triage/triage_models.py::gray_scott(16) from crates/rodas5p-integrators/src/gray_scott.rs",
+   "numpy_model": null,
+   "problem": "gray-scott-16",
+   "reason": null,
+   "rhs_max_rel": 0.0,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": null,
+    "index": 0,
+    "kind": "rhs",
+    "numpy": -4.22149781492949e-40,
+    "numpy_hex": "b7c263209a6ce7ed",
+    "rel": 0.0,
+    "rust": -4.22149781492949e-40,
+    "rust_hex": "b7c263209a6ce7ed",
+    "sample": 0
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [
+    "rhs",
+    "jvp"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": 0.0,
+   "mass_max_rel": null,
+   "model_source": "tools/triage/triage_models.py::gray_scott(32) from crates/rodas5p-integrators/src/gray_scott.rs",
+   "numpy_model": null,
+   "problem": "gray-scott-32",
+   "reason": null,
+   "rhs_max_rel": 0.0,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": null,
+    "index": 0,
+    "kind": "rhs",
+    "numpy": -1.0923473725957405e-42,
+    "numpy_hex": "b7385c33793cb8ac",
+    "rel": 0.0,
+    "rust": -1.0923473725957405e-42,
+    "rust_hex": "b7385c33793cb8ac",
+    "sample": 0
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [
+    "rhs",
+    "jvp"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": 0.0,
+   "mass_max_rel": null,
+   "model_source": "tools/triage/triage_models.py::gray_scott(64) from crates/rodas5p-integrators/src/gray_scott.rs",
+   "numpy_model": null,
+   "problem": "gray-scott-64",
+   "reason": null,
+   "rhs_max_rel": 0.0,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": null,
+    "index": 0,
+    "kind": "rhs",
+    "numpy": -5.1641540651456115e-44,
+    "numpy_hex": "b6f26d2323b3cd10",
+    "rel": 0.0,
+    "rust": -5.1641540651456115e-44,
+    "rust_hex": "b6f26d2323b3cd10",
+    "sample": 0
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [
+    "rhs",
+    "jacobian"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": 0.0,
+   "jvp_max_rel": null,
+   "mass_max_rel": null,
+   "model_source": "tools/stiff_benchmark_scipy.py::hires",
+   "numpy_model": null,
+   "problem": "hires",
+   "reason": null,
+   "rhs_max_rel": 0.0,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": null,
+    "index": 0,
+    "kind": "rhs",
+    "numpy": -1.7093,
+    "numpy_hex": "bffb594af4f0d845",
+    "rel": 0.0,
+    "rust": -1.7093,
+    "rust_hex": "bffb594af4f0d845",
+    "sample": 0
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": null,
+   "mass_max_rel": null,
+   "model_source": null,
+   "numpy_model": null,
+   "problem": "manufactured-vector-32",
+   "reason": "no_numpy_model",
+   "rhs_max_rel": null,
+   "samples": 0,
+   "status": "not_checked",
+   "worst": null,
+   "y0_match": null
+  },
+  {
+   "compared": [
+    "mass",
+    "rhs",
+    "jacobian"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": 0.0,
+   "jvp_max_rel": null,
+   "mass_max_rel": 0.0,
+   "model_source": "tools/triage/triage_models.py::mass_affine from crates/rodas5p-integrators/src/problems.rs::constant_affine_mass_problem; integrated as y' = M^{-1} f (numpy.linalg.solve with the constant M), parity on f, J and M",
+   "numpy_model": null,
+   "problem": "mass-affine",
+   "reason": null,
+   "rhs_max_rel": 0.0,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": null,
+    "index": 0,
+    "kind": "mass",
+    "numpy": 2.0,
+    "numpy_hex": "4000000000000000",
+    "rel": 0.0,
+    "rust": 2.0,
+    "rust_hex": "4000000000000000",
+    "sample": -1
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": null,
+   "mass_max_rel": null,
+   "model_source": null,
+   "numpy_model": null,
+   "problem": "mass-nonlinear",
+   "reason": "no_numpy_model",
+   "rhs_max_rel": null,
+   "samples": 0,
+   "status": "not_checked",
+   "worst": null,
+   "y0_match": null
+  },
+  {
+   "compared": [
+    "rhs",
+    "jvp"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": 3.251242301474437e-15,
+   "mass_max_rel": null,
+   "model_source": "tools/reference_v2/generate_references_v2.py::problem_runtime('medical-akzo')",
+   "numpy_model": "medical-akzo-holdout-v2",
+   "problem": "medical-akzo",
+   "reason": null,
+   "rhs_max_rel": 3.665757623779867e-16,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": 5.19939884534239,
+    "index": 332,
+    "kind": "jvp",
+    "numpy": 0.06829531124897548,
+    "numpy_hex": "3fb17bcd3048d460",
+    "rel": 3.251242301474437e-15,
+    "rust": 0.06829531124897525,
+    "rust_hex": "3fb17bcd3048d450",
+    "sample": 1
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [
+    "rhs",
+    "jvp"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": 0.0,
+   "mass_max_rel": null,
+   "model_source": "tools/reference_v2/generate_references_v2.py::problem_runtime('oregonator')",
+   "numpy_model": "oregonator-holdout-v2",
+   "problem": "oregonator",
+   "reason": null,
+   "rhs_max_rel": 0.0,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": null,
+    "index": 0,
+    "kind": "rhs",
+    "numpy": 77.26935286375,
+    "numpy_hex": "4053513d13cb38f9",
+    "rel": 0.0,
+    "rust": 77.26935286375,
+    "rust_hex": "4053513d13cb38f9",
+    "sample": 0
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": null,
+   "mass_max_rel": null,
+   "model_source": null,
+   "numpy_model": null,
+   "problem": "oscillatory-prothero-robinson",
+   "reason": "no_numpy_model",
+   "rhs_max_rel": null,
+   "samples": 0,
+   "status": "not_checked",
+   "worst": null,
+   "y0_match": null
+  },
+  {
+   "compared": [
+    "rhs",
+    "jvp"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": 4.3346681203198465e-16,
+   "mass_max_rel": null,
+   "model_source": "tools/reference_v2/generate_references_v2.py::problem_runtime('pollution')",
+   "numpy_model": "pollution-holdout-v2",
+   "problem": "pollution",
+   "reason": null,
+   "rhs_max_rel": 0.0,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": 3143.523554407712,
+    "index": 4,
+    "kind": "jvp",
+    "numpy": 2098.1876271206156,
+    "numpy_hex": "40a0646010a975c6",
+    "rel": 4.3346681203198465e-16,
+    "rust": 2098.1876271206165,
+    "rust_hex": "40a0646010a975c8",
+    "sample": 1
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": null,
+   "mass_max_rel": null,
+   "model_source": null,
+   "numpy_model": null,
+   "problem": "prothero-robinson-nl",
+   "reason": "no_numpy_model",
+   "rhs_max_rel": null,
+   "samples": 0,
+   "status": "not_checked",
+   "worst": null,
+   "y0_match": null
+  },
+  {
+   "compared": [
+    "rhs",
+    "jacobian"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": 0.0,
+   "jvp_max_rel": null,
+   "mass_max_rel": null,
+   "model_source": "tools/stiff_benchmark_scipy.py::robertson",
+   "numpy_model": null,
+   "problem": "robertson",
+   "reason": null,
+   "rhs_max_rel": 0.0,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": null,
+    "index": 0,
+    "kind": "rhs",
+    "numpy": -0.04,
+    "numpy_hex": "bfa47ae147ae147b",
+    "rel": 0.0,
+    "rust": -0.04,
+    "rust_hex": "bfa47ae147ae147b",
+    "sample": 0
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": null,
+   "mass_max_rel": null,
+   "model_source": null,
+   "numpy_model": null,
+   "problem": "scalar-linear",
+   "reason": "no_numpy_model",
+   "rhs_max_rel": null,
+   "samples": 0,
+   "status": "not_checked",
+   "worst": null,
+   "y0_match": null
+  },
+  {
+   "compared": [
+    "rhs",
+    "jvp"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": 0.0,
+   "mass_max_rel": null,
+   "model_source": "tools/reference_v2/generate_references_v2.py::problem_runtime('semilinear-advection-diffusion-ramped'); JVP = legacy.semilinear_operator(v) + 2 nonlinear y v, the operation order of crates/rodas5p-integrators/src/scientific_corpus_v2.rs::semilinear_advection_diffusion_v2",
+   "numpy_model": "semilinear-advection-diffusion-ramped-n1536-grid32x48-v2.1",
+   "problem": "semilinear-advdiff-2d-1536",
+   "reason": null,
+   "rhs_max_rel": 1.5924102276785145e-14,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": null,
+    "index": 327,
+    "kind": "rhs",
+    "numpy": -0.027887864705408383,
+    "numpy_hex": "bf9c8ea2eb75c300",
+    "rel": 1.5924102276785145e-14,
+    "rust": -0.02788786470540794,
+    "rust_hex": "bf9c8ea2eb75c280",
+    "sample": 2
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [
+    "rhs",
+    "jvp"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": 0.0,
+   "mass_max_rel": null,
+   "model_source": "tools/reference_v2/generate_references_v2.py::problem_runtime('semilinear-advection-diffusion-ramped'); JVP = legacy.semilinear_operator(v) + 2 nonlinear y v, the operation order of crates/rodas5p-integrators/src/scientific_corpus_v2.rs::semilinear_advection_diffusion_v2",
+   "numpy_model": "semilinear-advection-diffusion-ramped-n384-grid16x24-v2.1",
+   "problem": "semilinear-advdiff-2d-384",
+   "reason": null,
+   "rhs_max_rel": 6.458460614960274e-15,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": null,
+    "index": 344,
+    "kind": "rhs",
+    "numpy": 0.004297552817978972,
+    "numpy_hex": "3f719a4f8ce59720",
+    "rel": 6.458460614960274e-15,
+    "rust": 0.004297552817979,
+    "rust_hex": "3f719a4f8ce59740",
+    "sample": 1
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [
+    "rhs",
+    "jvp"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": 0.0,
+   "mass_max_rel": null,
+   "model_source": "tools/reference_v2/generate_references_v2.py::problem_runtime('semilinear-advection-diffusion-ramped'); JVP = legacy.semilinear_operator(v) + 2 nonlinear y v, the operation order of crates/rodas5p-integrators/src/scientific_corpus_v2.rs::semilinear_advection_diffusion_v2",
+   "numpy_model": "semilinear-advection-diffusion-ramped-n96-grid8x12-v2.1",
+   "problem": "semilinear-advdiff-2d-96",
+   "reason": null,
+   "rhs_max_rel": 9.1242224633217e-16,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": null,
+    "index": 95,
+    "kind": "rhs",
+    "numpy": -0.005703686477231981,
+    "numpy_hex": "bf775cbfae2e7c16",
+    "rel": 9.1242224633217e-16,
+    "rust": -0.005703686477231976,
+    "rust_hex": "bf775cbfae2e7c10",
+    "sample": 1
+   },
+   "y0_match": true
+  },
+  {
+   "compared": [],
+   "f_error_samples": 0,
+   "jacobian_max_rel": null,
+   "jvp_max_rel": null,
+   "mass_max_rel": null,
+   "model_source": null,
+   "numpy_model": null,
+   "problem": "semilinear-advdiff-32",
+   "reason": "no_numpy_model",
+   "rhs_max_rel": null,
+   "samples": 0,
+   "status": "not_checked",
+   "worst": null,
+   "y0_match": null
+  },
+  {
+   "compared": [
+    "rhs",
+    "jacobian"
+   ],
+   "f_error_samples": 0,
+   "jacobian_max_rel": 0.0,
+   "jvp_max_rel": null,
+   "mass_max_rel": null,
+   "model_source": "tools/stiff_benchmark_scipy.py::van_der_pol(1000.0)",
+   "numpy_model": null,
+   "problem": "van-der-pol-mu1000",
+   "reason": null,
+   "rhs_max_rel": 0.0,
+   "samples": 4,
+   "status": "pass",
+   "worst": {
+    "abs_j_abs_v": null,
+    "index": 0,
+    "kind": "rhs",
+    "numpy": 0.0,
+    "numpy_hex": "0000000000000000",
+    "rel": 0.0,
+    "rust": 0.0,
+    "rust_hex": "0000000000000000",
+    "sample": 0
+   },
+   "y0_match": true
+  }
+ ],
+ "runtime": {
+  "machine": "x86_64",
+  "numpy": "2.5.4",
+  "python": "3.13.16",
+  "scipy": "1.18.1"
+ },
+ "schema": "vigilode-triage-parity-report-v1",
+ "tiny": 2.2250738585072014e-308
+}

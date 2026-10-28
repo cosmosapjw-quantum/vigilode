@@ -1,0 +1,147 @@
+{
+  "schema_version": "vigilode.research_loop_execution.v1",
+  "skill": "physmath-research-loop",
+  "workflow_version": "1.0.0",
+  "approval_version": "v0.2",
+  "baseline_commit": "4929c0f86cee03a06ac1ab2713e1b438dd10cfc5",
+  "preregistration_commit": "bfc5fba521a3a03f7f20c8416fdac4d61e135046",
+  "source_commit": "45037fc24e8f8101605f309e1fdb3a9a4e3df56d",
+  "ncp_used": false,
+  "theory_loop": [
+    {
+      "id": "R1",
+      "action": "비강성 확장 범위와 no-NCP 실행 계약",
+      "evidence": "PREREGISTRATION.md"
+    },
+    {
+      "id": "R2",
+      "action": "기준 개발 코드 및 별도 물리 norm 연구를 확인하고 기존 실험 재사용",
+      "evidence": "INTAKE.json"
+    },
+    {
+      "id": "R3",
+      "action": "매끄러움·고정모델·단위 질량·오차 스케일 전제 명시",
+      "evidence": "THEORY_KO.md"
+    },
+    {
+      "id": "R4",
+      "action": "DOPRI5, 단계 Picard, ensemble, 안정화 다항식 비교",
+      "evidence": "THEORY_KO.md"
+    },
+    {
+      "id": "R5",
+      "action": "조건부 전역5차·FSAL 작업량·삼각 회복·q4 후보·Chebyshev 수축 증명",
+      "evidence": "THEORY_KO.md"
+    },
+    {
+      "id": "R6",
+      "action": "Wolfram과 독립 Fraction 뿌리나무 검산 및 root 수학 검토",
+      "evidence": "SYMBOLIC_CHECK.json"
+    },
+    {
+      "id": "R7",
+      "action": "참조해 전체 상태 재계산 및 진동·비정규·강성 대조",
+      "evidence": "evidence/local_bench/REPLAY.json"
+    },
+    {
+      "id": "R8",
+      "action": "지원 비강성 범위와 범용 생산 적격성 구분",
+      "evidence": "DECISIONS.json"
+    },
+    {
+      "id": "R9",
+      "action": "식·심볼·실행 계약 대응 및 상세 보고",
+      "evidence": "API_MAP.json"
+    },
+    {
+      "id": "R10",
+      "action": "기존18+신규10 개발 과제와 로컬 재실행 인계",
+      "evidence": "NEXT_STEPS.json"
+    }
+  ],
+  "coding_loop": [
+    {
+      "id": "C1",
+      "action": "원래 worktree 보존, 별도 브랜치와 source 고정",
+      "evidence": "INPUTS.json"
+    },
+    {
+      "id": "C2",
+      "action": "기존 Jacobian 의존 생성자와 공개 결과 스키마 조사",
+      "evidence": "INTAKE.json"
+    },
+    {
+      "id": "C3",
+      "action": "RHS-only kernel, FSAL 수명, streaming WRMS, transaction 설계",
+      "evidence": "THEORY_KO.md"
+    },
+    {
+      "id": "C4",
+      "action": "커널/API/병렬/이론/감사/실험을 개별 agent에 분담,2buildjobs",
+      "evidence": "PREREGISTRATION.md"
+    },
+    {
+      "id": "C5",
+      "action": "Dopri5 커널·공개 facade·bounded ensemble 실제 구현",
+      "evidence": "API_MAP.json"
+    },
+    {
+      "id": "C6",
+      "action": "고정 소스25계약 검사와 환경 오류 복구 기록",
+      "evidence": "evidence/VALIDATION.json"
+    },
+    {
+      "id": "C7",
+      "action": "비선형 수렴, 비자율 RHS, exact reference 상태 replay",
+      "evidence": "evidence/local_bench/REPLAY.json"
+    },
+    {
+      "id": "C8",
+      "action": "사전등록 main/ensemble 설정과 warmup/3repeat 측정",
+      "evidence": "evidence/local_bench/SUMMARY.json"
+    },
+    {
+      "id": "C9",
+      "action": "독립 소스 검토 및 zero-tolerance/FSAL 문구 보완",
+      "evidence": "AUDIT_KO.md"
+    },
+    {
+      "id": "C10",
+      "action": "raw·해시·실행 명령과 scoped 판정 게시",
+      "evidence": "REPRODUCE.md"
+    }
+  ],
+  "policy_changes": [
+    {
+      "original": "docs/RESEARCH_LEDGER.md defers computer-algebra obligations until numerical holdout",
+      "replacement": "Exact algebra completed before final benchmark for newly implemented RK and new parallel candidate",
+      "authority": "User explicitly requests mathematical and coding research loops",
+      "scope": "New formulas only; no repeat of unchanged published evidence; symbolic success does not establish measured performance"
+    },
+    {
+      "original": "Source identity assumed from HEAD during first build",
+      "replacement": "Preserve provisional first logs, freeze corrected source, rerun affected contracts and use exact frozen source evidence",
+      "reason": "Import correction and formatting could overlap first build"
+    },
+    {
+      "original": "Shared local crate build cache",
+      "replacement": "Targeted generated-package cleanup after rlib format linker failure, then same-source recheck",
+      "reason": "Concrete environment failure; no numerical algorithm change"
+    }
+  ],
+  "reused_evidence": {
+    "published_legacy_experiments_rerun": false,
+    "baseline_node": "research/coupled_stage_adoption_20261022",
+    "related_client_commit": "69e83044aacfb9a8fd2c6c3fb1146911beeedd79"
+  },
+  "new_strong_no_go_claim": false,
+  "uncompleted_general_claims": [
+    "unrestricted production solver",
+    "certified uniform-in-time error",
+    "automatic stiff/nonstiff selection",
+    "universal stage parallel speedup",
+    "new SIMD ISA speedup",
+    "explicit event/dense/mass capability",
+    "real application client qualification"
+  ]
+}

@@ -1,0 +1,24 @@
+$ cargo test --locked --offline -p rodas5p-integrators --test production_audit_bound_collective -- --nocapture
+warning: collector transactional fields/methods are currently not used outside their earlier focused test binary; see build output in the parent tool transcript.
+
+running 5 tests
+
+thread 'fraction_dyadic_nonuniform_weights_rhs_is_outward_enclosed' panicked at crates/rodas5p-integrators/tests/production_audit_bound_collective.rs:90:19:
+attempt to multiply with overflow
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test euclidean_log_norm_bounds_two_mode_jacobian_and_uses_full_tube ... ok
+
+thread 'generic_same_name_and_dimension_problem_is_unbound' panicked at crates/rodas5p-integrators/tests/production_audit_bound_collective.rs:103:34:
+called `Result::unwrap()` on an `Err` value: PoisonError { .. }
+thread 'provider_fails_closed_on_bad_shape_nan_and_overflow_and_charges_attempts' panicked at crates/rodas5p-integrators/tests/production_audit_bound_collective.rs:315:34:
+called `Result::unwrap()` on an `Err` value: PoisonError { .. }
+thread 'warmed_interval_rhs_and_log_norm_make_no_heap_allocations' panicked at crates/rodas5p-integrators/tests/production_audit_bound_collective.rs:369:34:
+called `Result::unwrap()` on an `Err` value: PoisonError { .. }
+test fraction_dyadic_nonuniform_weights_rhs_is_outward_enclosed ... FAILED
+test generic_same_name_and_dimension_problem_is_unbound ... FAILED
+test provider_fails_closed_on_bad_shape_nan_and_overflow_and_charges_attempts ... FAILED
+test warmed_interval_rhs_and_log_norm_make_no_heap_allocations ... FAILED
+
+test result: FAILED. 1 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out
+error: test failed, to rerun pass `-p rodas5p-integrators --test production_audit_bound_collective`
+exit_code=101

@@ -1,0 +1,58 @@
+{
+  "case_plan_approval": "NOT_GRANTED",
+  "decision": "PASS_SHARED_EXECUTION_LOCK",
+  "evidence": [
+    {
+      "path": "/tmp/vigilode-continuation-gates-repair-20261025.rcnwlza8/FROZEN_REWORK_1_REPORT.json",
+      "sha256": "e2620ba32c77aece4c4fe3b68438967898e762c6560ff4bf18cc80f559709b06"
+    },
+    {
+      "path": "/tmp/vigilode-continuation-gates-repair-20261025.rcnwlza8/REWORK_1_DIFF.patch",
+      "sha256": "57645bdff2a07074e827353ea4ccbc5ee8a15bc098837b05836716be409c1714"
+    },
+    {
+      "path": "/tmp/vigilode-continuation-gates-repair-20261025.rcnwlza8/attempt_canonical_root/START.json",
+      "sha256": "0364d7488c64d8b855db3c6c932343ef38b8d532ac5d45b380665d54719873d6"
+    },
+    {
+      "path": "/tmp/vigilode-continuation-gates-repair-20261025.rcnwlza8/attempt_canonical_root/TERMINAL.json",
+      "sha256": "48576ae928b33329ffbbe2a17c6f3bb89cbb78404d9dda9eb07fce97de808a76"
+    },
+    {
+      "path": "/tmp/vigilode-continuation-gates-repair-20261025.rcnwlza8/attempt_canonical_root/stderr.raw",
+      "sha256": "85abc3ad4292ff0a3648ee6e9aeb6853400c3d8d59e3891a74d4684196523c3e"
+    }
+  ],
+  "execution_lock_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/.julia_comparison_campaign.lock",
+  "findings": [],
+  "observed_runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+  "participants": [
+    {
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/julia_comparison.py",
+      "sha256": "8e0a5510f56052938ec09eaae216cb12b76f017b6b216b73f696bc46be0cb8b3"
+    },
+    {
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/continuation_runner.py",
+      "sha256": "5b056f7d2218af991d86272a04bf78d63eb66ce35531ec09da27683ccf64ed6b"
+    }
+  ],
+  "production_admission": "HOLD",
+  "review_basis": [
+    "Both participant entry points validate the same fixed canonical cumulative cost root.",
+    "Both hold exclusive nonblocking flock on the exact execution_lock_path across child execution and terminal accounting.",
+    "The continuation alternate-root negative control refuses before lock creation, output mutation, or child spawn.",
+    "Retained synthetic suite is 27/27 PASS for exact continuation source and test bytes."
+  ],
+  "reviewed_utc": "2026-10-25T10:27:02.282385+00:00",
+  "reviewer_independent_of_implementation": true,
+  "reviewer_task": "/root/runner_gate_independent_review",
+  "schema": "vigilode.shared-execution-lock-review.v1",
+  "scientific_admission": "HOLD",
+  "scope": "Shared execution lock participation only. No case plan approval, solver launch authorization, reference admission, timing claim, or production admission.",
+  "source": {
+    "head": "572f265ca8a4c86eb02ab5690d7446f9e398e4d9",
+    "repo": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout",
+    "status_porcelain": "",
+    "tree": "4a6dedcd23e687d1bf365746ecb04e22e9b998d6"
+  }
+}

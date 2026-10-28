@@ -1,0 +1,130 @@
+    Blocking waiting for file lock on artifact directory
+warning: method `scalar_span_and_power` is never used
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:328:19
+    |
+326 | impl Rodas5pQuarticSegment {
+    | -------------------------- method in this implementation
+327 |     /// Exact represented time span for sealed model verifiers.
+328 |     pub(crate) fn scalar_span_and_power(
+    |                   ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: fields `prepared_centers`, `prepared_radii`, `prepared_times`, `prepared_count`, `radii`, and `prepared_valid` are never read
+   --> crates/rodas5p-integrators/src/output.rs:706:5
+    |
+698 | pub(crate) struct OutputCollector {
+    |                   --------------- fields in this struct
+...
+706 |     prepared_centers: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^^^
+707 |     prepared_radii: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^
+708 |     prepared_times: Vec<f64>,
+    |     ^^^^^^^^^^^^^^
+709 |     prepared_count: usize,
+    |     ^^^^^^^^^^^^^^
+710 |     radii: Vec<Vec<f64>>,
+    |     ^^^^^
+711 |     prepared_valid: bool,
+    |     ^^^^^^^^^^^^^^
+
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: `rodas5p-integrators` (lib) generated 5 warnings
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 41.53s
+     Running tests/a1_zero_tolerance_scale.rs (/workspace/scratch/0dc1e721cf82/runtime/target/debug/deps/a1_zero_tolerance_scale-3d74d666070ab3ee)
+
+running 9 tests
+test fast_small_driver_accepts_a_zero_component_with_zero_atol ... ok
+test fast_banded_driver_accepts_a_zero_component_with_zero_atol ... ok
+test fast_dense_driver_accepts_a_zero_component_with_zero_atol ... ok
+test lagged_driver_refuses_a_zero_richardson_weight_with_a_typed_error ... ok
+test lagged_driver_with_forced_refresh_accepts_a_zero_component_with_zero_atol ... ok
+test fast_small_batch_driver_accepts_a_zero_component_with_zero_atol ... ok
+test protected_sequential_driver_accepts_a_zero_component_with_zero_atol ... ok
+test matrix_free_fast_driver_accepts_a_zero_component_with_zero_atol ... ok
+test staged_coupled_target_refuses_a_zero_start_weight_with_a_typed_error ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/b1_lagged_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime/target/debug/deps/b1_lagged_contracts-757b6cdbc4f6417d)
+
+running 6 tests
+test b1_lagged_measurement_hires_and_brusselator ... ignored, measurement: run with --ignored --nocapture and record in docs/plan/nodes/b1-lagged.md
+test stage_targets_follow_the_preregistered_allocation ... ok
+test stage_sensitivities_are_the_verified_values_rounded_up ... ok
+test lagged_run_charges_every_refresh_and_evaluates_the_jacobian_every_attempt ... ok
+test lagged_jvp_branch_runs_inside_iterating_stages ... ok
+test forced_refresh_reproduces_the_fast_driver_on_robertson_and_hires ... ok
+
+test result: ok. 5 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.13s
+
+     Running tests/b1b_gmres_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime/target/debug/deps/b1b_gmres_contracts-1a0362133caae2cd)
+
+running 9 tests
+test b1b_gmres_measurement_hires_and_brusselator ... ignored, measurement: run with --ignored --nocapture and record in docs/plan/nodes/b1b-gmres.md
+test monitored_gmres_refuses_a_left_preconditioner ... ok
+test monitored_gmres_abandons_and_exhausts_without_writing_the_output ... ok
+test monitored_gmres_matches_gmres_into_at_the_last_column_of_a_full_cycle ... ok
+test monitored_gmres_matches_gmres_into_over_restarted_cycles_on_a_large_system ... ok
+test gmres_forced_refresh_reproduces_the_fast_driver_on_robertson_and_hires ... ok
+test richardson_default_is_the_wave1_driver_bit_for_bit ... ok
+test gmres_run_charges_every_refresh_and_counts_every_product ... ok
+test gmres_jvp_path_runs_inside_iterating_stages ... ok
+
+test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.76s
+
+     Running tests/b1c_staleness_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime/target/debug/deps/b1c_staleness_contracts-648ad32485866ffe)
+
+running 7 tests
+test b1c_kill_gate_measurement ... ignored, measurement: run with --ignored --nocapture, B1C_RESULTS_OUT=<path> writes results.json
+test bound_is_exact_for_scalar_step_change ... ok
+test unbounded_log_norm_refreshes_every_attempt ... ok
+test staleness_bound_dominates_explicit_t_norm ... ok
+test forced_refresh_bounded_equals_fast ... ok
+test staleness_ledger_identity ... ok
+test bounded_off_is_wave2_bitwise ... ok
+
+test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 17.77s
+

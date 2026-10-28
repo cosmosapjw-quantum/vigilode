@@ -1,0 +1,81 @@
+{
+  "schema": "vigilode.telemetry_covariance_toy.v1",
+  "status": "numerically checked",
+  "source_dependency": "independent explicit 4x4 block model; not VigilODE zeta34 implementation",
+  "analytic_reference": "1/2-exp(-1)",
+  "expected_physical_error": 0.13212055882855767,
+  "conclusion": "physical projected error invariant; auxiliary-coordinate Euclidean residual gate changes",
+  "production_claim": false,
+  "rows": [
+    {
+      "alpha": 0.25,
+      "auxiliary_diagonal": [
+        0.0625,
+        0.25,
+        1.0
+      ],
+      "residual_norm_at_1": 16.0,
+      "physical_error": 0.1321205588285577,
+      "projected_defect_integral": 0.1321205588285577,
+      "quadrature_indicator": 4.400498593134218e-15,
+      "illustrative_residual_gate_below_half": false,
+      "actual_physical_error_below_point_one": false
+    },
+    {
+      "alpha": 1.0,
+      "auxiliary_diagonal": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "residual_norm_at_1": 1.0,
+      "physical_error": 0.1321205588285577,
+      "projected_defect_integral": 0.1321205588285577,
+      "quadrature_indicator": 4.400498593134218e-15,
+      "illustrative_residual_gate_below_half": false,
+      "actual_physical_error_below_point_one": false
+    },
+    {
+      "alpha": 4.0,
+      "auxiliary_diagonal": [
+        16.0,
+        4.0,
+        1.0
+      ],
+      "residual_norm_at_1": 0.0625,
+      "physical_error": 0.13212055882855767,
+      "projected_defect_integral": 0.1321205588285577,
+      "quadrature_indicator": 4.400498593134218e-15,
+      "illustrative_residual_gate_below_half": true,
+      "actual_physical_error_below_point_one": false
+    },
+    {
+      "alpha": 16.0,
+      "auxiliary_diagonal": [
+        256.0,
+        16.0,
+        1.0
+      ],
+      "residual_norm_at_1": 0.00390625,
+      "physical_error": 0.13212055882855764,
+      "projected_defect_integral": 0.1321205588285577,
+      "quadrature_indicator": 4.400498593134218e-15,
+      "illustrative_residual_gate_below_half": true,
+      "actual_physical_error_below_point_one": false
+    },
+    {
+      "alpha": 64.0,
+      "auxiliary_diagonal": [
+        4096.0,
+        64.0,
+        1.0
+      ],
+      "residual_norm_at_1": 0.000244140625,
+      "physical_error": 0.13212055882855764,
+      "projected_defect_integral": 0.1321205588285577,
+      "quadrature_indicator": 4.400498593134218e-15,
+      "illustrative_residual_gate_below_half": true,
+      "actual_physical_error_below_point_one": false
+    }
+  ]
+}

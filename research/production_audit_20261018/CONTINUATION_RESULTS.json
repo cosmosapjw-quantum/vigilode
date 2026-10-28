@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "exec_sha": "bbb9bb4aaa9e8748109cee7b439ea2828015de8b",
+  "environment": {
+    "rustc": "1.94.1 (e408947bf 2026-03-25)",
+    "cargo": "1.94.1 (29ea6fb6a 2026-03-24)",
+    "host": "x86_64-unknown-linux-gnu",
+    "dependency_mode": "--locked --offline",
+    "cargo_manifest_or_lock_changed": false
+  },
+  "commands": [
+    {
+      "id": "integrator_targets",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test a05_dense_global_output --test a11_gray_scott_log_norm --test packet_trajectory_contracts --test packet_window_contracts --test production_audit_collective_direct --test production_audit_packet --test production_audit_split",
+      "exec_sha": "e9748019152b7a4063bc59d1ece3af1673bdbbaa",
+      "exit_code": 0,
+      "tests_passed": 44,
+      "tests_failed": 0,
+      "log": "evidence/continuation_integrators_targets_final.log"
+    },
+    {
+      "id": "core_targets",
+      "command": "cargo test --locked --offline -p rodas5p-core --test leja_total_contract --test damped_moment_enclosure_regressions",
+      "exec_sha": "e9748019152b7a4063bc59d1ece3af1673bdbbaa",
+      "exit_code": 0,
+      "tests_passed": 18,
+      "tests_failed": 0,
+      "log": "evidence/continuation_core_targets_final.log"
+    },
+    {
+      "id": "leja_contract_final",
+      "command": "cargo test --locked --offline -p rodas5p-core --test leja_total_contract",
+      "exec_sha": "bbb9bb4aaa9e8748109cee7b439ea2828015de8b",
+      "exit_code": 0,
+      "tests_passed": 14,
+      "tests_failed": 0,
+      "log": "evidence/continuation_a04/a04_leja_contract_exec_final.log"
+    },
+    {
+      "id": "scalar_coefficient_enclosure",
+      "command": "cargo test --locked --offline -p rodas5p-core zero_center_scalar_phi_radii_enclose_nonbinary_factorials",
+      "exec_sha": "bbb9bb4aaa9e8748109cee7b439ea2828015de8b",
+      "exit_code": 0,
+      "tests_passed": 1,
+      "tests_failed": 0,
+      "log": "evidence/continuation_a04/a04_zero_radius_exec_final.log"
+    },
+    {
+      "id": "leja_doctests",
+      "command": "cargo test --locked --offline --doc -p rodas5p-core",
+      "exec_sha": "bbb9bb4aaa9e8748109cee7b439ea2828015de8b",
+      "exit_code": 0,
+      "tests_passed": 13,
+      "tests_failed": 0,
+      "compile_fail_cache_contracts_passed": 1,
+      "log": "evidence/continuation_a04/a04_cache_api_doctest_exec_final.log"
+    },
+    {
+      "id": "workspace_all_target_check",
+      "command": "cargo check --locked --offline --workspace --all-targets",
+      "exec_sha": "bbb9bb4aaa9e8748109cee7b439ea2828015de8b",
+      "exit_code": 0,
+      "log": "evidence/continuation_workspace_check_exec_final.log"
+    },
+    {
+      "id": "workspace_fmt",
+      "command": "cargo fmt --all -- --check",
+      "exec_sha": "bbb9bb4aaa9e8748109cee7b439ea2828015de8b",
+      "exit_code": 0,
+      "log": "evidence/continuation_fmt_check_exec_final.log"
+    }
+  ],
+  "failed_runs_preserved": [
+    "evidence/continuation_a01/a01_worker/review_witness_initial_failure.log",
+    "evidence/continuation_a04/a04_scalar_alloc_first_failure.log",
+    "evidence/continuation_a04/a04_scalar_coefficient_first_failure.log",
+    "evidence/continuation_a04/a04_zero_radius_first_failure.log",
+    "evidence/continuation_a05/a05_review_initial_failure.log",
+    "evidence/continuation_a06/a06_reviewer_first_failure.log"
+  ],
+  "claim_ceiling": "All PASS results are bounded code/test or reviewed mathematical component claims. They do not imply packet certification, global trajectory accuracy, total Leja error certification, matched benchmark fairness, speed superiority, or production promotion."
+}

@@ -1,0 +1,246 @@
+{
+  "schema": "vigilode.frontier.decisions.v1",
+  "created_utc": "2026-10-23",
+  "broad_production": "HOLD",
+  "status_meanings": {
+    "PROMOTE": "specified production scope passes all required obligations; none assigned here",
+    "SPECIALIZED_ONLY": "구조·기능 제한을 명시한 선택적 사용; 범용 qualification과 다름",
+    "OPTIMIZATION_POSSIBLE": "구현/조건부 정리/일부 개선은 있으나 기본값 또는 통합 자격 미달",
+    "HOLD": "필수 증거 또는 구현이 아직 부족",
+    "PRUNE": "명시한 국소 범위에서만 후보/주장을 제외"
+  },
+  "decisions": [
+    {
+      "id": "GENERAL",
+      "status": "HOLD",
+      "scope": "범용 stiff/nonstiff/rapidly oscillating production solver",
+      "assumptions": [],
+      "evidence": [
+        "REPORT_KO.md",
+        "analysis/PRODUCTION_VALIDATION.md",
+        "results/FINAL_EVIDENCE_AUDIT.json"
+      ],
+      "remaining": [
+        "온라인 terminal event",
+        "지속 session 및 fatal 즉시 native 종료",
+        "전역 정확도와 장시간 phase",
+        "일반 비선형 PDE·remap 통합",
+        "현 코드 외부 matched-error 비교"
+      ],
+      "enabled_as_general_default": false
+    },
+    {
+      "id": "SW.PILOT",
+      "status": "OPTIMIZATION_POSSIBLE",
+      "scope": "bounded same-checkpoint implicit pilot; opt-in",
+      "assumptions": [
+        "기존 explicit prefix와 같은 checkpoint",
+        "모든 pilot/실패 작업을 비용에 포함",
+        "사용자 derivative 허용 유지"
+      ],
+      "evidence": [
+        "analysis/SWITCHING.json",
+        "results/switching_campaign/SUMMARY.json"
+      ],
+      "remaining": [
+        "한 번의 초기 pilot은 강성 전이를 놓침",
+        "빠른 FD 약2.03배/전이 FD 약3.05배 손실",
+        "authorized session 재시작",
+        "전역 no-regret 증명 없음"
+      ],
+      "enabled_as_general_default": false
+    },
+    {
+      "id": "QF.AFFINE",
+      "status": "SPECIALIZED_ONLY",
+      "scope": "고정 감쇠 회전 A와 상수 외력 b의 affine Lawson",
+      "assumptions": [
+        "A=-kappa I+omega R",
+        "선언한 b가 상수",
+        "일반 residual은 별도 smoothness/error 계약"
+      ],
+      "evidence": [
+        "analysis/AFFINE_QUOTIENT.json",
+        "results/AFFINE_SUMMARY.json"
+      ],
+      "remaining": [
+        "비선형·시간 외력의 일반화",
+        "느린 문제에서 full RHS보다5.09배 손실",
+        "주파수·provider epoch 연결"
+      ],
+      "enabled_as_general_default": false
+    },
+    {
+      "id": "QF.HARMONIC",
+      "status": "SPECIALIZED_ONLY",
+      "scope": "선언된 단일 harmonic 외력의 정확 endpoint action",
+      "assumptions": [
+        "고정 A,cos/sin coefficient vectors,frequency",
+        "유한 표현 가능한 phase/shifted frequencies",
+        "O(N) action은 고정 harmonic 수 기준"
+      ],
+      "evidence": [
+        "analysis/AFFINE_RESULTS_KO.md",
+        "evidence/AFFINE_DEVELOPMENT_FAILURES.json"
+      ],
+      "remaining": [
+        "일반 residual wrapper 없음",
+        "piecewise polynomial forcing 오차 예산",
+        "장시간 phase 오차"
+      ],
+      "enabled_as_general_default": false
+    },
+    {
+      "id": "CF.FORWARD",
+      "status": "SPECIALIZED_ONLY",
+      "scope": "현재 autonomous identity-mass supplied-base-JVP causal 경로",
+      "assumptions": [
+        "원래 stage residual/fallback 유지",
+        "17개 관측점 cap에 통과한 설정끼리 비교"
+      ],
+      "evidence": [
+        "analysis/CAUSAL_FINDINGS.json",
+        "results/CAUSAL_THREADS_AUDIT.json"
+      ],
+      "remaining": [
+        "넓은 spectrum에서33/35fallback 및 시간 이득 없음",
+        "20radian 시험은100/1000cycles 증거가 아님",
+        "frozen-base JVP는 남아 있음"
+      ],
+      "enabled_as_general_default": false
+    },
+    {
+      "id": "CF.UNCONDITIONAL_THREADING",
+      "status": "PRUNE",
+      "scope": "이번 작은 RHS의1/2-thread fixture에 무조건 병렬화",
+      "assumptions": [
+        "42개 같은 설정의 제한된 실행 환경"
+      ],
+      "evidence": [
+        "results/CAUSAL_THREADS_AUDIT.json"
+      ],
+      "remaining": [
+        "비싼 RHS/큰 client에서 별도 측정 필요",
+        "병렬화 자체의 보편적 불가능성 아님"
+      ],
+      "enabled_as_general_default": false
+    },
+    {
+      "id": "QA.QUOTIENT",
+      "status": "SPECIALIZED_ONLY",
+      "scope": "선언된 저차 q(B)를 사용하는 resolvent",
+      "assumptions": [
+        "전 공간 q(B) norm witness",
+        "동일 B의 norm bound",
+        "q(1) margin",
+        "원래 residual 반드시 검증"
+      ],
+      "evidence": [
+        "analysis/POLYNOMIAL_CANDIDATES.json",
+        "results/polynomial_campaign.json"
+      ],
+      "remaining": [
+        "ODE driver에 자동 연결되지 않음",
+        "witness를 step/epoch/provider에 묶기",
+        "float bound는 interval 인증 아님"
+      ],
+      "enabled_as_general_default": false
+    },
+    {
+      "id": "QA.NEUMANN",
+      "status": "PRUNE",
+      "scope": "이번 비수축3사례의 Neumann 후보",
+      "assumptions": [
+        "수축 사례는 baseline으로 유지"
+      ],
+      "evidence": [
+        "results/polynomial_campaign.json"
+      ],
+      "remaining": [
+        "다른 preconditioned norm의 수축 영역에는 일반화하지 않음"
+      ],
+      "enabled_as_general_default": false
+    },
+    {
+      "id": "PDE.RKL2",
+      "status": "OPTIMIZATION_POSSIBLE",
+      "scope": "고정 가중 자기수반 선형 scalar graph diffusion의 연구 prototype",
+      "assumptions": [
+        "양의 cell volume",
+        "대칭 비음 face conductance",
+        "h Lambda <= (s^2+s-2)/2",
+        "정확도는 Q^3 y의 norm에 의존"
+      ],
+      "evidence": [
+        "analysis/PDE_SCALABILITY.md",
+        "results/PDE_NATIVE_SUMMARY.json"
+      ],
+      "remaining": [
+        "일반 positivity 없음",
+        "극점 CFL",
+        "비선형/비정규 transport 확장",
+        "façade 미연결",
+        "nonzero Q 극단 진폭 roundoff/overflow"
+      ],
+      "enabled_as_general_default": false
+    },
+    {
+      "id": "PDE.POSITIVE_POISSON",
+      "status": "SPECIALIZED_ONLY",
+      "scope": "양성이 필요한 고정 Markov diffusion subflow",
+      "assumptions": [
+        "q=max(-Qii)>0 또는 Q=0 identity",
+        "P=I+Q/q는 stochastic",
+        "Poisson positive weights를 정규화",
+        "exact arithmetic mass/positivity; roundoff 별도"
+      ],
+      "evidence": [
+        "analysis/PDE_CANDIDATES.json",
+        "results/PDE_NATIVE_SUMMARY.json"
+      ],
+      "remaining": [
+        "극점 q에 비용 의존",
+        "sphere16x32에서Euler보다2.54배 느림",
+        "truncation bound와 float error를 구분"
+      ],
+      "enabled_as_general_default": false
+    },
+    {
+      "id": "PDE.UNCHECKED_POSITIVE_RKL2",
+      "status": "PRUNE",
+      "scope": "RKL2를 무검사 positive default로 쓰는 주장",
+      "assumptions": [],
+      "evidence": [
+        "results/ADVERSARIAL_EXACT_CHECKS.json",
+        "analysis/PDE_SCALABILITY.md"
+      ],
+      "remaining": [
+        "5x5 delta 반례의 이웃값 -5/512",
+        "positivity-aware transactional fallback 필요"
+      ],
+      "enabled_as_general_default": false
+    },
+    {
+      "id": "PDE.POLE_SPLIT",
+      "status": "HOLD",
+      "scope": "경도 FFT exact flow와 위도 RKL2 Strang split",
+      "assumptions": [
+        "고정 longitude-invariant geometry",
+        "두 suboperator가 각각 계약 충족"
+      ],
+      "evidence": [
+        "results/POLE_SPLIT.json",
+        "src/sphere_pole_split.py"
+      ],
+      "remaining": [
+        "CFL 감소만으로 정확도 비용 감소는 보장 안 됨",
+        "commutator/splitting error",
+        "FFT비용 포함 native latency 미측정"
+      ],
+      "enabled_as_general_default": false
+    }
+  ],
+  "evidence_summary": "SUMMARY.json",
+  "external_comparators_status": "NOT_RUN",
+  "scope_note": "No new broad production claim; absence of a new-code blocker in bounded review does not certify the whole solver."
+}

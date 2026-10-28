@@ -1,0 +1,9 @@
+   Compiling rodas5p-integrators v0.1.0 (/tmp/vigilode-pr90-94-validation.SkqyxWxw/checkout/crates/rodas5p-integrators)
+    Finished `measurement` profile [optimized] target(s) in 3.66s
+     Running tests/dense_wfiltered_contracts.rs (/tmp/vigilode-cumulative-validation-20261028/target-candidate/measurement/deps/dense_wfiltered_contracts-b744f18c0db8eb61)
+PR rtol 1e-6 (Off / Enforce / WFilteredEnforce): interior 311.467 / 1.052 / 0.350; accepted steps [7, 12, 15]; attempts [7, 26, 15]; jacobian builds [7, 50, 15]; LU [7, 50, 15]; WF/Off accepted 2.143
+
+thread 'prothero_robinson_wfiltered_enforce_kill_gate' (4141190) panicked at crates/rodas5p-integrators/tests/dense_wfiltered_contracts.rs:316:5:
+KILL GATE: 2.143x the Off accepted-step count > 1.3x
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p rodas5p-integrators --test dense_wfiltered_contracts`

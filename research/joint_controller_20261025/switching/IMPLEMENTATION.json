@@ -1,0 +1,225 @@
+{
+  "schema": "vigilode.switching-adaptation-review.v1",
+  "source_base": "4fe67602502440d76aa9dd245c6b1d67558c14bf",
+  "source_base_tree": "8bab954cffcf7abd9cdd0ca528567ece47e43bc7",
+  "scope": "opt-in negative comparison reuse and deterioration-triggered probe renewal",
+  "entry_points": [
+    "SwitchingConfig::adaptive_evidence",
+    "AutomaticOde::solve_adaptive"
+  ],
+  "changed_sources": [
+    "crates/vigilode/src/switching.rs",
+    "crates/vigilode/src/automatic.rs"
+  ],
+  "validation_sources": [
+    "crates/vigilode/tests/adaptive_entry_contracts.rs",
+    "crates/vigilode/examples/adaptive_entry_pilot.rs"
+  ],
+  "reuse": {
+    "persistent_explicit_session": "latest local follow-up already retains PI/FSAL/workspace",
+    "derivative_permissions": "unchanged; Forbidden never enters implicit pilots",
+    "total_attempt_accounting": "all old/new discarded work shares Options::max_steps",
+    "baseline_factories": "evidence_driven and AutomaticOde::solve unchanged"
+  },
+  "policy": {
+    "backoff_formula": "min(max_backoff_batches, max(base_cooldown,1)*2^negative_comparisons)",
+    "factory_base_cooldown": 4,
+    "factory_max_backoff": 64,
+    "work_deterioration": "accepted_steps>=4 AND work_per_advanced_time>=2*anchor_rate AND next_h<=0.5*anchor_h",
+    "rejection_deterioration": "rejected_steps>=2 AND rejection_fraction>=anchor_rejection+0.2",
+    "renewal_effect": "joint deterioration OR joint relaxation OR rejection-rise renews comparison eligibility; actual qualified pilot still required",
+    "sentinel_scope": "evidence age counts all explicit batches; comparison at next eligible pressure batch before tf",
+    "legacy_lifetime_pilot_limit_in_adaptive_mode": "replaced by bounded spacing plus global attempt budget",
+    "fractional_probe_credit_budget": "not implemented",
+    "memory_lifetime": "one fixed-function solve / explicit tenure; reset after implicit-to-explicit return",
+    "return_comparison": "previous implicit window rate only triggers a bounded same-checkpoint/same-window RODAS comparator; accepted explicit return requires qualified cost comparison",
+    "productive_replay": "successful same-window RODAS winner is committed directly",
+    "work_regime_relaxation": "accepted_steps>=4 AND work_per_advanced_time<=anchor_rate/2 AND next_h>=anchor_h/0.5; old thresholds reused symmetrically",
+    "relaxation_locality": "WorkRegimeRelaxed marks pending renewal but does not replay the just-ended mixed-phase prefix; next eligible prefix starts in newly reached regime",
+    "pending_consumption": "cleared only on an actual comparison or explicit-tenure reset, not scheduling or an ineligible batch"
+  },
+  "shared_evidence": {
+    "function": "selection_evidence::compare_qualified_costs",
+    "unit": "Work",
+    "kind": "ObservedWork",
+    "interval": "point interval of recorded deterministic routing score",
+    "identity": "same freshly instantiated physical checkpoint and accepted prefix",
+    "admissibility": "same original-coordinate local tolerance acceptance; not global error certification",
+    "entry_ratio": 0.8,
+    "future_cost_guarantee": false
+  },
+  "test_questions": [
+    "stable rotation: fewer losing pilots, fewer RHS, bit-identical physical endpoint",
+    "smooth rotating stiff onsets at 0.35,0.65,0.82 renew stale comparison",
+    "finite sentinels still run with legacy lifetime limit one",
+    "attempt budget including pilots never exceeded",
+    "automatic derivative-forbidden route invokes no derivative",
+    "invalid thresholds rejected before callbacks",
+    "same-window comparison required for explicit return",
+    "return comparator remaining global budget zero/one preserves checkpoint",
+    "fatal return comparator does not publish discarded explicit probe",
+    "fast transient epsilon1e-3 and1e-6: expire initial negative comparison when accepted h grows and work rate falls",
+    "manufactured joint/opposed/single-channel drift telemetry retains correct eligibility"
+  ],
+  "remaining_work": [
+    "calibrate work proxies against actual same-checkpoint cost intervals",
+    "persistent implicit controller/workspace across windows",
+    "cost-credit limit for repeated diagnostic work",
+    "physical-error-qualified specialized causal/homotopy/chart candidates",
+    "step-level held-out selection accuracy rather than only whole-trajectory loss"
+  ],
+  "execution_results": "see parent validation receipts and switching pilot analysis; this file describes implementation contracts",
+  "verification": {
+    "new_contract_count": 12,
+    "new_contract_split": {
+      "adaptive_entry_integration": 10,
+      "private_routing_state": 2
+    },
+    "previous_full_facade": {
+      "receipt": "../validation/facade_final_r2/RECEIPT.json",
+      "passed": 232,
+      "scope": "before symmetric change and pending locality repairs",
+      "exit_code": 0,
+      "source_unchanged_during_command": true
+    },
+    "current_scoped": {
+      "receipt": "../validation/transient_pending_repair/RECEIPT.json",
+      "library_passed": 17,
+      "integration_passed": 10,
+      "exit_code": 0,
+      "source_unchanged_during_command": true
+    },
+    "current_full_facade": {
+      "receipt": "../validation/facade_final_r3/RECEIPT.json",
+      "passed": 234,
+      "exit_code": 0,
+      "source_unchanged_during_command": true
+    },
+    "native_performance": {
+      "summary": "../evidence/NATIVE_PILOT_SUMMARY_FINAL.json",
+      "raw": "native_r2/pilot.jsonl",
+      "cases": 9,
+      "all_processes_including_warmup": 162,
+      "timed_rows": 135,
+      "all_rows_physical_accuracy_pass": true,
+      "scope": "same requested physical endpoint cap; wrapper setup, pilots and transitions included; short same-host wall times are diagnostic"
+    }
+  },
+  "repair_history": [
+    {
+      "round": 1,
+      "observed_case": "case5",
+      "first_adaptive_rhs": 2463,
+      "legacy_rhs": 1887,
+      "classification": "numerical_economy_regression",
+      "mechanism": "negative startup comparison outlived fast transient because only deterioration renewed evidence",
+      "repair": "symmetric paired work/h change using same thresholds",
+      "new_postrepair_holdout_onsets": [
+        0.43,
+        0.87
+      ],
+      "raw": "native/case5_adaptive_1.stdout"
+    },
+    {
+      "round": 2,
+      "observed_case": "case5",
+      "adaptive_rhs": 2763,
+      "legacy_rhs": 1887,
+      "classification": "numerical_economy_regression",
+      "mechanism": "endpoint relaxation signal immediately replayed the preceding mixed-transient prefix; second comparator250work versus192",
+      "repair": "pending renewal defers comparison until a subsequent eligible prefix rooted at the newly accepted state",
+      "changed_thresholds": false,
+      "raw": "transient_diagnostic/stdout.log"
+    },
+    {
+      "round": 3,
+      "classification": "causal_locality_correction",
+      "status": "contract_and_native_pass_scoped",
+      "evidence": "../validation/transient_pending_repair/RECEIPT.json",
+      "performance_status": "case5 RHS1311 versuslegacy1887; medianelapsed0.369637ms versus0.369166ms shows no wall-time improvement for this tinycase"
+    }
+  ],
+  "measured_results": [
+    {
+      "case": "case5",
+      "legacy_rhs": 1887,
+      "adaptive_rhs": 1311,
+      "legacy_median_seconds": 0.000369166,
+      "adaptive_median_seconds": 0.000369637,
+      "adaptive_max_endpoint_error": 7.170790738975086e-09,
+      "physical_cap": 0.0001
+    },
+    {
+      "case": "decay",
+      "legacy_rhs": 79,
+      "adaptive_rhs": 79,
+      "legacy_median_seconds": 4.5928e-05,
+      "adaptive_median_seconds": 4.754e-05,
+      "adaptive_max_endpoint_error": 3.3718316472253207e-09,
+      "physical_cap": 1e-05
+    },
+    {
+      "case": "relaxation",
+      "legacy_rhs": 749,
+      "adaptive_rhs": 813,
+      "legacy_median_seconds": 0.000300274,
+      "adaptive_median_seconds": 0.000262428,
+      "adaptive_max_endpoint_error": 4.360898420152637e-09,
+      "physical_cap": 1e-05
+    },
+    {
+      "case": "rotation",
+      "legacy_rhs": 6395,
+      "adaptive_rhs": 5804,
+      "legacy_median_seconds": 0.00251449,
+      "adaptive_median_seconds": 0.001420512,
+      "adaptive_max_endpoint_error": 9.254595551011491e-07,
+      "physical_cap": 1e-05
+    },
+    {
+      "case": "stiff-forced",
+      "legacy_rhs": 706,
+      "adaptive_rhs": 706,
+      "legacy_median_seconds": 0.000241427,
+      "adaptive_median_seconds": 0.000272953,
+      "adaptive_max_endpoint_error": 3.2427505125554035e-11,
+      "physical_cap": 1e-05
+    },
+    {
+      "case": "transition-43",
+      "legacy_rhs": 173988,
+      "adaptive_rhs": 30480,
+      "legacy_median_seconds": 0.026322405,
+      "adaptive_median_seconds": 0.012807808,
+      "adaptive_max_endpoint_error": 8.108632543191163e-09,
+      "physical_cap": 1e-05
+    },
+    {
+      "case": "transition-47",
+      "legacy_rhs": 162308,
+      "adaptive_rhs": 31122,
+      "legacy_median_seconds": 0.019611755,
+      "adaptive_median_seconds": 0.011760439,
+      "adaptive_max_endpoint_error": 9.924183697052058e-10,
+      "physical_cap": 1e-05
+    },
+    {
+      "case": "transition-87",
+      "legacy_rhs": 46270,
+      "adaptive_rhs": 30694,
+      "legacy_median_seconds": 0.00774087,
+      "adaptive_median_seconds": 0.006863562,
+      "adaptive_max_endpoint_error": 7.454328043721148e-09,
+      "physical_cap": 1e-05
+    },
+    {
+      "case": "transition-91",
+      "legacy_rhs": 34749,
+      "adaptive_rhs": 30215,
+      "legacy_median_seconds": 0.007601947,
+      "adaptive_median_seconds": 0.006747282,
+      "adaptive_max_endpoint_error": 9.676819345827425e-10,
+      "physical_cap": 1e-05
+    }
+  ]
+}

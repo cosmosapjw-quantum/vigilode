@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "node": "A06",
+  "scope": "native sequential first-stage matrix and RHS mapping",
+  "base_head": "98c6225f42593e6300053dc5846d382a6957e7f9",
+  "model": "N=1, kappa=1, chi=0, carrier=0, width=0, y=(1/2,0), h=1/4",
+  "equation": "W=I-h*gamma*J=A; A*x=r0, r0=(-1/8,0), s=h*gamma; wrong s*r0 leaves residual (1-s)*r0",
+  "before_regression_falsifier": {
+    "method": "Python Fraction exact arithmetic over the frozen binary64 gamma snapshot",
+    "exit_code": 0,
+    "log_sha256": "9caaf14fd58bc47379d511461c98045e15ba4ad7ffcedc0dc2a242b6d619a8ba"
+  },
+  "validation": {
+    "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_collective_direct",
+    "exit_code": 0,
+    "passed": 6,
+    "failed": 0,
+    "log_sha256": "604ae42dd07e4936a44994527ff79f7eb93ef39b8b98c7ff2cb2f27f28a50508",
+    "clippy_command": "cargo clippy --locked --offline -p rodas5p-integrators --test production_audit_collective_direct -- -D warnings",
+    "clippy_exit_code": 0,
+    "clippy_log_sha256": "586591f02e0ac6ef27cf45c88ac13f38abc9ae0cf0d2c76e281712ea2f0d10d7",
+    "fmt_exit_code": 0,
+    "diffcheck_exit_code": 0,
+    "first_test_compile_failure_exit_code": 101,
+    "first_test_compile_failure_kind": "test plumbing used private sequential module path; corrected to public crate re-export",
+    "first_test_compile_failure_log_sha256": "3804b4e24f1faa6a3125846fbe3a93324347acf10ab29648fcfb1eb1bf33ee93"
+  },
+  "source_sha256": {
+    "crates/rodas5p-integrators/tests/production_audit_collective_direct.rs": "881a40fba72ab7225889dbb0df8b8c87a70f7c24b12739660b0423ea83b03e11",
+    "research/production_audit_20261018/WOODBURY_THEORY.md": "69eb4b90c5f217a49c11b6911b2071b77e7be570a9d565683905de8dc50e5aa7"
+  },
+  "scientific_decision": "SCOPED EVIDENCE ONLY; full A06 trajectory integration and speed HOLD"
+}

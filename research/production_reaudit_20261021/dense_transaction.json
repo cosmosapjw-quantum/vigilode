@@ -1,0 +1,245 @@
+{
+  "schema": "vigilode.production-reaudit.dense-transaction.v1",
+  "date": "2026-10-21",
+  "baseline": {
+    "merged_commit": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+    "plan": "cc2e1a0",
+    "implementation": "f2f20c1"
+  },
+  "decision": "PASS_SCOPED_FIXES_AND_CONDITIONAL_THEOREMS_GLOBAL_PRODUCTION_NOT_ESTABLISHED",
+  "findings": [
+    {
+      "id": "DENSE-01",
+      "severity": "high",
+      "origin": "O-01",
+      "status": "fixed",
+      "before": "Enforcing midpoint errors admitted steps",
+      "after": "recoverable error rejects/retries with retained failure kind, work and rollback; unclassified error propagates",
+      "evidence": [
+        "red.log",
+        "green.log",
+        "final_native.log"
+      ],
+      "limits": "Plain unclassified Err API has no partial/work receipt; accounting claim covers recoverable rejected attempts and returned runs"
+    },
+    {
+      "id": "TX-01",
+      "severity": "medium",
+      "status": "fixed",
+      "before": "Cumulative individually finite costs could overflow to infinity and invalidate guard",
+      "after": "Validate prospective finite account before commit; typed refusal is atomic",
+      "evidence": [
+        "admission_red.log",
+        "final_native.log"
+      ],
+      "limits": "Binary64 admission accounts are not outward arithmetic; exact cap is provided separately by atomic integer Budget"
+    },
+    {
+      "id": "DENSE-T3",
+      "severity": "medium",
+      "status": "corrected_scope",
+      "result": "2.36 scalar filter factor requires nonpositive real spectrum and constant defect; no complex-LH-spectrum extension",
+      "evidence": [
+        "../theory/SENSITIVITY_PROOF.json"
+      ],
+      "counterexample": "z=4*pi*i gives zero exact half-step constant-defect response but nonzero W-filter"
+    }
+  ],
+  "theorems": [
+    {
+      "id": "G1",
+      "status": "proved_conditionally_independently_reviewed",
+      "document": "DENSE_GLOBAL_BUDGET_THEORY.md",
+      "claim": "Future-positive-lognorm weighted continuous defect budget bounds all horizon times",
+      "assumptions": [
+        "fixed norm",
+        "full tube and verified one-sided bound",
+        "actual absolutely continuous curve or explicit jump charges",
+        "certified initial radius and query rounding charges"
+      ]
+    },
+    {
+      "id": "G2",
+      "status": "proved_conditionally_independently_reviewed",
+      "document": "DENSE_GLOBAL_BUDGET_THEORY.md",
+      "claim": "Integer allocation from positive-real Holder optimum achieves error<=epsilon and work ceiling<Wstar+sum(c)",
+      "cost_witness": {
+        "uniform_work_ceiling": 1640,
+        "allocated_work_ceiling": 1000,
+        "reduction_fraction": "16/41",
+        "exact_counted_work_only_if": "Every step costs exactly c_j=1"
+      },
+      "assumptions": [
+        "uniform C_j*h^(p+1) local error bound",
+        "future propagation a_j",
+        "positive per-step cost ceiling c_j including certification",
+        "no unaccounted rejected attempts"
+      ]
+    }
+  ],
+  "execution": {
+    "status": "passed",
+    "native_passed": 56,
+    "native_failed": 0,
+    "native_ignored": 1,
+    "targets": [
+      {
+        "target": "a1_zero_tolerance_scale",
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0
+      },
+      {
+        "target": "c1_transaction_contracts",
+        "passed": 20,
+        "failed": 0,
+        "ignored": 0
+      },
+      {
+        "target": "dense_wfiltered_contracts",
+        "passed": 10,
+        "failed": 0,
+        "ignored": 1
+      },
+      {
+        "target": "p0_partial_contracts",
+        "passed": 9,
+        "failed": 0,
+        "ignored": 0
+      },
+      {
+        "target": "reaudit_admission_overflow",
+        "passed": 4,
+        "failed": 0,
+        "ignored": 0
+      },
+      {
+        "target": "sequential_estimate_failure_contracts",
+        "passed": 4,
+        "failed": 0,
+        "ignored": 0
+      }
+    ],
+    "ignored_reason": "Published PR W-filter kill gate FAIL at2.143xsteps vs1.3x gate; preserved and not rescored",
+    "command": "source /workspace/scratch/0dc1e721cf82/runtime/env.sh; CARGO_TARGET_DIR=/workspace/scratch/0dc1e721cf82/runtime/dense-target cargo test -p rodas5p-integrators --locked --offline -j 1 --test reaudit_admission_overflow --test c1_transaction_contracts --test sequential_estimate_failure_contracts --test p0_partial_contracts --test dense_wfiltered_contracts --test a1_zero_tolerance_scale",
+    "toolchain": "rustc1.94.1",
+    "independent_oracle": {
+      "command": "python3 research/production_reaudit_20261021/verify_global_budget.py",
+      "G1_cases": 3,
+      "G2_feasible_neighbours": 211,
+      "passed": true
+    },
+    "retained_failures": [
+      "Two test-authoring compile errors",
+      "O01 two semantic RED failures",
+      "TX01 four semantic RED failures",
+      "Shared-target E0463 artifact failure; cause not established; isolated-target rebuild passed"
+    ]
+  },
+  "independent_reviews": [
+    {
+      "reviewer": "facade_audit",
+      "method": "Direct source and regression review",
+      "scope": [
+        "O01 failure/work/rollback",
+        "TX01 prospective finite account"
+      ],
+      "verdict": "PASS"
+    },
+    {
+      "reviewer": "research_dag_audit",
+      "method": "Proof review",
+      "scope": [
+        "G1 gain placement and jump charges",
+        "G2 Holder exponents and integer rounding"
+      ],
+      "verdict": "PASS_AFTER_CLARIFICATIONS"
+    },
+    {
+      "reviewer": "root",
+      "method": "Proof review",
+      "scope": [
+        "G1/G2",
+        "cost ceiling versus actual counted work"
+      ],
+      "verdict": "PASS_AFTER_CLARIFICATIONS"
+    },
+    {
+      "reviewer": "benchmark_audit",
+      "method": "Error-path review",
+      "scope": [
+        "Unclassified Err has no returned work receipt"
+      ],
+      "verdict": "LIMITATION_DISCLOSED"
+    }
+  ],
+  "next_development": [
+    {
+      "id": "DENSE-N1",
+      "priority": "P1",
+      "task": "Implement model-bound GlobalBudget owner using G1 constant-density horizon envelope",
+      "files": [
+        "crates/rodas5p-integrators/src/generic_verified.rs",
+        "new global budget module"
+      ],
+      "acceptance": [
+        "exact contractive and expansive linear cases",
+        "nonzero initial radius",
+        "jump/center charge",
+        "same original tolerance and fixed norm",
+        "full attempted work retained"
+      ]
+    },
+    {
+      "id": "DENSE-N2",
+      "priority": "P1",
+      "task": "Complete preregistered G1 generic local-error/propagation study before changing controller",
+      "acceptance": [
+        "no ratio when global error below1",
+        "independent local high-accuracy solves",
+        "original grid/weights/tolerances",
+        "no re-score of E1b or B1c"
+      ]
+    },
+    {
+      "id": "TX-N1",
+      "priority": "P2",
+      "task": "Integer/outward economic accounting and full fatal-error work receipt if strict production overhead audit is required",
+      "acceptance": [
+        "overflow and rounding hostile tests",
+        "actual attempted work survives every returned error",
+        "caller state sharing and clone isolation documented"
+      ]
+    }
+  ],
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/dense_output_v2.rs": "a181b45fb1c12bda33c33b5a94c5a7c9defeac7e9c7c2e3c91a2c14b424f0bc5",
+    "crates/rodas5p-integrators/src/rodas5p_fast_dense.rs": "d08d7b7022178e26d7cd505d014e7ea7c31ce1c82d57aba75b7eb704473df557",
+    "crates/rodas5p-integrators/src/transaction.rs": "eb4ade404b3e34d1a4c9e781eaa727b1b77736a22a5ec83b78518ec2b1827adf",
+    "crates/rodas5p-integrators/tests/sequential_estimate_failure_contracts.rs": "b166a6a71b06db608b77bfb1c1d00a5667dfce654b0014281f6538e20d31b803",
+    "crates/rodas5p-integrators/tests/reaudit_admission_overflow.rs": "fbcd24da73bacf599a2e78f24cf8509e8e1d7256736609e000336a58f96bfbd5",
+    "research/production_reaudit_20261021/DENSE_GLOBAL_BUDGET_THEORY.md": "8296823917606745f281f076c922d074d1001678c66fe8c72a59839f9cf84d32",
+    "research/production_reaudit_20261021/verify_global_budget.py": "f1fd2301db4b1d3e5aae44b9e2caf68e94cad553a451f74c6cddb77497b2dc9f"
+  },
+  "evidence_sha256": {
+    "research/production_reaudit_20261021/evidence/dense_transaction/GLOBAL_BUDGET_PROOF.json": "bc10e96710e67fbd06c6d87231105e03a92d35a2e8bf48d21738f1b9c692eed6",
+    "research/production_reaudit_20261021/evidence/dense_transaction/admission_artifact_failure.exit": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+    "research/production_reaudit_20261021/evidence/dense_transaction/admission_artifact_failure.log": "881d047cbe12876ebb89a26c273ecf849ee515a1b442f5bc04cbb4c2f4c72ca0",
+    "research/production_reaudit_20261021/evidence/dense_transaction/admission_red.exit": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+    "research/production_reaudit_20261021/evidence/dense_transaction/admission_red.log": "325c9515c8fb8ce2c659fc9bd08d36358672a88b3069dc8a3d09f535de41d9c7",
+    "research/production_reaudit_20261021/evidence/dense_transaction/admission_test_compile_failure.exit": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+    "research/production_reaudit_20261021/evidence/dense_transaction/admission_test_compile_failure.log": "f7363ea4cf860093e2ae3ad407c02419895027b227c674dfbf6a83eee355d636",
+    "research/production_reaudit_20261021/evidence/dense_transaction/final_native.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "research/production_reaudit_20261021/evidence/dense_transaction/final_native.log": "e92140ec3ac7e9f9aad07f020b9bd9bc325f388ccbedb01368ebd7643c77349d",
+    "research/production_reaudit_20261021/evidence/dense_transaction/green.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "research/production_reaudit_20261021/evidence/dense_transaction/green.log": "4a5fef801e9972ea1daf662845dc469abdee76f7ae3aa88fcac14dc0f3d15f04",
+    "research/production_reaudit_20261021/evidence/dense_transaction/pre_fix_pins.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "research/production_reaudit_20261021/evidence/dense_transaction/pre_fix_pins.log": "270886fc40ee9e4ea4fd3e6325a3c39afa52bc92bd7fdbc6a1a6244e22af4031",
+    "research/production_reaudit_20261021/evidence/dense_transaction/red.exit": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+    "research/production_reaudit_20261021/evidence/dense_transaction/red.log": "8838f745c1c14458ed639890526d0c897c25fcc83761eacb098ec54715384c0f",
+    "research/production_reaudit_20261021/evidence/dense_transaction/regression.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+    "research/production_reaudit_20261021/evidence/dense_transaction/regression.log": "257dfabd73a9ad273c92b4d0eccab7db9ff0fdb0c178bdf6620687b17670ea13",
+    "research/production_reaudit_20261021/evidence/dense_transaction/test_compile_failure.exit": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+    "research/production_reaudit_20261021/evidence/dense_transaction/test_compile_failure.log": "2dbcc4031209e93061d8ff3d15b9a21328f50a210737bdb79b0e7b6d818ca18b"
+  }
+}

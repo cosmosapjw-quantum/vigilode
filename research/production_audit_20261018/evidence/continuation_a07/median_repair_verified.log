@@ -1,0 +1,14 @@
+A07 median/report/reference repair verification (no solver runs)
+Command: python3 -m py_compile tools/benchmarks/diffsol/a07/src/validate_report.py
+Exit code: 0
+Command: validate_report.validate on retained cold.jsonl, warm.jsonl, alloc_native.jsonl, alloc_diffsol.jsonl
+Exit code: 4 (expected; campaign valid but accuracy gate false)
+Exact point ratios independently recomputed from retained paired rows with statistics.median:
+  cold = 0.9195676453507838
+  warm = 1.4194023547437313
+Bootstrap 95% intervals retained from same paired ratios:
+  cold [0.6677305256409933, 1.327452564133345]
+  warm [1.402230958217182, 1.4501800614107307]
+Campaign schema/count/order: valid; counts cold=20, warm=160, allocator=2.
+Reference gate: pass. Max distance: native 0.33753007149457903; Diffsol 3.3026992500504733; Diffsol accuracy gate fails.
+Original manifest environment thread fields are null; supplementary receipt records command-specific assignments and hashes.

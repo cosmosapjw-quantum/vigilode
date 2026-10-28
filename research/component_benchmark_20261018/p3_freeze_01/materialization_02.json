@@ -1,0 +1,27 @@
+{
+  "classification": "embedded digest and file digest separately verified; frozen files created once",
+  "command": [
+    "python3",
+    "research/component_benchmark_20261018/freeze_p3_config.py",
+    "--root",
+    ".",
+    "--selection",
+    "research/component_benchmark_20261018/p3_freeze_01/P3_SELECTION.json",
+    "--panel",
+    "research/component_benchmark_20261018/ncp_screening_01/panel_review_01/all_valid_same_target_pairs.csv",
+    "--arms",
+    "research/component_benchmark_20261018/ncp_screening_01/panel_review_01/all_arms.csv",
+    "--screening-plan",
+    "research/component_benchmark_20261018/ncp_screening_01/screening/plan.json",
+    "--output",
+    "research/component_benchmark_20261018/p3_freeze_01/P3_CONFIG.json",
+    "--receipt",
+    "research/component_benchmark_20261018/p3_freeze_01/P3_SELECTION_RECEIPT.json"
+  ],
+  "cwd": "/root/VIGILODE_COMPONENT_20261018T134235Z/repo",
+  "exit_code": 0,
+  "observation": "captured from original NCP command tool output; no rerun",
+  "schema": "vigilode-component-p3-materialization-command-v1",
+  "stderr": "",
+  "stdout": "{\"config_sha256\": \"f816e72ed1d08131cd9d6ff72b25210f4e9f3b7c63a0908f768fb1965e79a675\", \"selected_pair_count\": 16, \"status\": \"FROZEN_PENDING_REVIEW\"}\n"
+}

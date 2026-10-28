@@ -1,0 +1,19 @@
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.24s
+     Running tests/production_audit_collective_direct.rs (target/debug/deps/production_audit_collective_direct-7c4a75a8187ac14f)
+
+running 1 test
+
+thread 'reviewer_regression_residual_uses_candidate_mean' (2427261) panicked at crates/rodas5p-integrators/tests/production_audit_collective_direct.rs:182:5:
+assertion failed: witness.weighted_residual_upper >= 0.0375
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test reviewer_regression_residual_uses_candidate_mean ... FAILED
+
+failures:
+
+failures:
+    reviewer_regression_residual_uses_candidate_mean
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test production_audit_collective_direct`

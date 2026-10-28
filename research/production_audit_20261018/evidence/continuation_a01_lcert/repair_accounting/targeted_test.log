@@ -1,0 +1,70 @@
+warning: fields `prepared_centers`, `prepared_radii`, `prepared_times`, `prepared_count`, `radii`, and `prepared_valid` are never read
+   --> crates/rodas5p-integrators/src/output.rs:706:5
+    |
+698 | pub(crate) struct OutputCollector {
+    |                   --------------- fields in this struct
+...
+706 |     prepared_centers: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^^^
+707 |     prepared_radii: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^
+708 |     prepared_times: Vec<f64>,
+    |     ^^^^^^^^^^^^^^
+709 |     prepared_count: usize,
+    |     ^^^^^^^^^^^^^^
+710 |     radii: Vec<Vec<f64>>,
+    |     ^^^^^
+711 |     prepared_valid: bool,
+    |     ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `rodas5p-integrators` (lib) generated 3 warnings
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.94s
+     Running tests/production_audit_packet_local_certificate.rs (target/debug/deps/production_audit_packet_local_certificate-198c4d05ab4bfdb6)
+
+running 2 tests
+first_success_work_before={"identity_snapshot_items":167,"identity_comparison_items":275,"model_copy_items":17,"model_bounds_snapshot_items":6,"model_bounds_comparison_items":18,"output_copy_items":0,"output_value_items":0,"output_restriction_multiplies":0,"certificate_items":4494,"outward_spectral_power_terms":0,"bernstein_transform_terms":0,"bernstein_refinement_terms":0,"reconstruction_terms":300,"moment_terms":30,"poly_multiply_terms":210,"volterra_terms":325,"nonlinear_evaluations":2,"output_horner_terms":0,"curve_setup_allocation_requests":23,"curve_setup_reserved_items":565,"curve_setup_interval_ops":4,"curve_time_normalization_ops":0,"curve_model_revalidation_items":51,"curve_model_constructor_payload_items":16,"curve_model_constructor_arithmetic_ops":20,"curve_output_certificate_ops":0,"curve_output_allocation_requests":3,"curve_frozen_allocation_requests":1,"curve_frozen_radius_items":3,"curve_frozen_query_attempts":0,"curve_frozen_query_refusals":0}
+first_success_work_after={"identity_snapshot_items":167,"identity_comparison_items":275,"model_copy_items":17,"model_bounds_snapshot_items":6,"model_bounds_comparison_items":18,"output_copy_items":0,"output_value_items":6,"output_restriction_multiplies":0,"certificate_items":4710,"outward_spectral_power_terms":0,"bernstein_transform_terms":0,"bernstein_refinement_terms":0,"reconstruction_terms":300,"moment_terms":30,"poly_multiply_terms":210,"volterra_terms":325,"nonlinear_evaluations":2,"output_horner_terms":54,"curve_setup_allocation_requests":23,"curve_setup_reserved_items":565,"curve_setup_interval_ops":4,"curve_time_normalization_ops":3,"curve_model_revalidation_items":51,"curve_model_constructor_payload_items":16,"curve_model_constructor_arithmetic_ops":20,"curve_output_certificate_ops":110,"curve_output_allocation_requests":3,"curve_frozen_allocation_requests":1,"curve_frozen_radius_items":3,"curve_frozen_query_attempts":1,"curve_frozen_query_refusals":0}
+overflow_work_before={"identity_snapshot_items":137,"identity_comparison_items":135,"model_copy_items":9,"model_bounds_snapshot_items":2,"model_bounds_comparison_items":4,"output_copy_items":0,"output_value_items":0,"output_restriction_multiplies":0,"certificate_items":3548,"outward_spectral_power_terms":0,"bernstein_transform_terms":0,"bernstein_refinement_terms":0,"reconstruction_terms":204,"moment_terms":10,"poly_multiply_terms":210,"volterra_terms":195,"nonlinear_evaluations":2,"output_horner_terms":0,"curve_setup_allocation_requests":23,"curve_setup_reserved_items":419,"curve_setup_interval_ops":2,"curve_time_normalization_ops":0,"curve_model_revalidation_items":0,"curve_model_constructor_payload_items":8,"curve_model_constructor_arithmetic_ops":8,"curve_output_certificate_ops":0,"curve_output_allocation_requests":3,"curve_frozen_allocation_requests":1,"curve_frozen_radius_items":1,"curve_frozen_query_attempts":0,"curve_frozen_query_refusals":0}
+overflow_work_after={"identity_snapshot_items":137,"identity_comparison_items":135,"model_copy_items":9,"model_bounds_snapshot_items":2,"model_bounds_comparison_items":4,"output_copy_items":0,"output_value_items":0,"output_restriction_multiplies":0,"certificate_items":3548,"outward_spectral_power_terms":0,"bernstein_transform_terms":0,"bernstein_refinement_terms":0,"reconstruction_terms":204,"moment_terms":10,"poly_multiply_terms":210,"volterra_terms":195,"nonlinear_evaluations":2,"output_horner_terms":0,"curve_setup_allocation_requests":23,"curve_setup_reserved_items":419,"curve_setup_interval_ops":2,"curve_time_normalization_ops":0,"curve_model_revalidation_items":0,"curve_model_constructor_payload_items":8,"curve_model_constructor_arithmetic_ops":8,"curve_output_certificate_ops":7,"curve_output_allocation_requests":3,"curve_frozen_allocation_requests":1,"curve_frozen_radius_items":1,"curve_frozen_query_attempts":1,"curve_frozen_query_refusals":1}
+subnormal_outcome=included
+subnormal_work_before={"identity_snapshot_items":137,"identity_comparison_items":135,"model_copy_items":9,"model_bounds_snapshot_items":2,"model_bounds_comparison_items":4,"output_copy_items":0,"output_value_items":0,"output_restriction_multiplies":0,"certificate_items":3548,"outward_spectral_power_terms":0,"bernstein_transform_terms":0,"bernstein_refinement_terms":0,"reconstruction_terms":204,"moment_terms":10,"poly_multiply_terms":210,"volterra_terms":195,"nonlinear_evaluations":2,"output_horner_terms":0,"curve_setup_allocation_requests":23,"curve_setup_reserved_items":419,"curve_setup_interval_ops":2,"curve_time_normalization_ops":0,"curve_model_revalidation_items":0,"curve_model_constructor_payload_items":8,"curve_model_constructor_arithmetic_ops":8,"curve_output_certificate_ops":7,"curve_output_allocation_requests":6,"curve_frozen_allocation_requests":2,"curve_frozen_radius_items":2,"curve_frozen_query_attempts":1,"curve_frozen_query_refusals":1}
+subnormal_work_after={"identity_snapshot_items":137,"identity_comparison_items":135,"model_copy_items":9,"model_bounds_snapshot_items":2,"model_bounds_comparison_items":4,"output_copy_items":0,"output_value_items":2,"output_restriction_multiplies":0,"certificate_items":3656,"outward_spectral_power_terms":0,"bernstein_transform_terms":0,"bernstein_refinement_terms":0,"reconstruction_terms":204,"moment_terms":10,"poly_multiply_terms":210,"volterra_terms":195,"nonlinear_evaluations":2,"output_horner_terms":18,"curve_setup_allocation_requests":23,"curve_setup_reserved_items":419,"curve_setup_interval_ops":2,"curve_time_normalization_ops":3,"curve_model_revalidation_items":0,"curve_model_constructor_payload_items":8,"curve_model_constructor_arithmetic_ops":8,"curve_output_certificate_ops":59,"curve_output_allocation_requests":6,"curve_frozen_allocation_requests":2,"curve_frozen_radius_items":2,"curve_frozen_query_attempts":2,"curve_frozen_query_refusals":1}
+test frozen_one_mode_exact_fraction_and_typed_refusals ... ok
+test frozen_unequal_frequency_fraction_reference has been running for over 60 seconds
+test frozen_unequal_frequency_fraction_reference ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 66.63s
+

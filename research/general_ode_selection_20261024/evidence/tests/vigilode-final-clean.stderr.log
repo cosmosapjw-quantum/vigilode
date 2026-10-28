@@ -1,0 +1,36 @@
+   Compiling rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-1024/crates/rodas5p-core)
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-1024/crates/rodas5p-integrators)
+   Compiling rodas5p-krylov v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-1024/crates/rodas5p-krylov)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-1024/crates/vigilode)
+    Finished `test` profile [unoptimized] target(s) in 37.71s
+     Running unittests src/lib.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/vigilode-8f29fb129b633f1d)
+     Running tests/capabilities_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/capabilities_contracts-8a25daf89e90ac9f)
+     Running tests/events_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/events_contracts-58cc100cc47eb863)
+     Running tests/explicit_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/explicit_contracts-abf2ecfce8e10d54)
+     Running tests/explicit_ensemble_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/explicit_ensemble_contracts-a3846114885d135e)
+     Running tests/explicit_hardening_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/explicit_hardening_contracts-4ab4d5ec9992a9e1)
+     Running tests/facade_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/facade_contracts-41c1fc05a40c20ff)
+     Running tests/frontier_affine_facade.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/frontier_affine_facade-1714c44026ed92a7)
+     Running tests/frontier_fatal_session_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/frontier_fatal_session_contracts-e134ee6e2bf36a21)
+     Running tests/frontier_switch_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/frontier_switch_contracts-c40df9a137414e29)
+     Running tests/lawson_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/lawson_contracts-3b1b19471175cf41)
+     Running tests/p0_api_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/p0_api_contracts-d4be1da0f5a63816)
+     Running tests/p0_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/p0_contracts-39e7eed78fb08e13)
+     Running tests/production_rhs_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/production_rhs_contracts-ae7e61b1cd022f1f)
+     Running tests/production_selection_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/production_selection_contracts-bc5849b474b633ee)
+     Running tests/production_session_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/production_session_contracts-7afaf2f651de13d5)
+     Running tests/records_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/records_contracts-acb81490b3221cfe)
+     Running tests/switching_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/switching_contracts-f9db960ed53f675f)

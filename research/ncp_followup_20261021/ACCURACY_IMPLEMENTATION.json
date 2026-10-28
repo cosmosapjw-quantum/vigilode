@@ -1,0 +1,135 @@
+{
+  "schema_version": 1,
+  "unit_id": "NCP-ACCURACY-HEAT",
+  "source_parent": "7a63876a97fc17f640771ec06658269947049994",
+  "claims": [
+    {
+      "id": "ROTATION-ENDPOINT",
+      "basis": [
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "scope": "saved native endpoints only",
+      "result": "1e-10 rtol with1e-10 atol passes7/7; other3 tolerance rows fail",
+      "evidence": "accuracy/ROTATION_ENDPOINT_DIAGNOSTIC.json"
+    },
+    {
+      "id": "HEAT-STENCIL",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "scope": "periodic heat/advection diffusion dense analytic assembly",
+      "result": "eliminates n auxiliary RHS calls per Jacobian; dense clear remains O(n^2), stencil fill O(n), dense LU unchanged",
+      "evidence": "evidence/final_03/adapter.stdout.log"
+    },
+    {
+      "id": "STAGES",
+      "basis": [
+        "implementation-verified"
+      ],
+      "result": "RODAS5P fast driver uses8 stages"
+    }
+  ],
+  "changes": [
+    "crates/rodas5p-integrators/examples/component_benchmark_support/mod.rs",
+    "crates/rodas5p-integrators/examples/component_benchmark_native.rs"
+  ],
+  "source_sha256": {
+    "crates/rodas5p-integrators/examples/component_benchmark_support/mod.rs": "732a4b474cdb44bf6164983ab0a742fc0e6a8db129b00142b529d2d0b8be1705",
+    "crates/rodas5p-integrators/examples/component_benchmark_native.rs": "290a65dcde217372341d7e519d1e1f9471d8df343ec651c9bcb518443ad5aaa3",
+    "research/ncp_followup_20261021/accuracy/rotation_diagnostic.py": "e3b02b2f95d68ba6c777aba84a26a30617358c87c136382ff5dfd02262576174",
+    "research/ncp_followup_20261021/accuracy/test_rotation_diagnostic.py": "0b4af581b95611c27d2f264a46fc34d651740a7c6cf00d206fded77ec5fbdefc"
+  },
+  "executions": [
+    {
+      "command": "python3 -m unittest discover -s research/ncp_followup_20261021/accuracy -p test_rotation_diagnostic.py -v",
+      "status": "completed",
+      "exit_code": 0,
+      "tests_passed": 3,
+      "log": "accuracy/rotation_test.log"
+    },
+    {
+      "command": "python3 research/ncp_followup_20261021/accuracy/rotation_diagnostic.py --bundle external_audits/vigilode_ncp_intensive_120m_v1_20261021 --out research/ncp_followup_20261021/accuracy/ROTATION_ENDPOINT_DIAGNOSTIC.json",
+      "status": "completed",
+      "exit_code": 0
+    },
+    {
+      "command": "cargo test --locked --offline -j1 -p rodas5p-integrators --example component_benchmark_native",
+      "status": "failed",
+      "exit_code": 101,
+      "class": "implementation",
+      "log": "accuracy/adapter_test.log",
+      "reason": "test used equality on ObservedIntegrationResult without PartialEq; corrected fieldwise"
+    },
+    {
+      "command": "cargo test --locked --offline -j1 -p rodas5p-integrators --example component_benchmark_native",
+      "status": "completed",
+      "exit_code": 0,
+      "tests_passed": 5,
+      "log": "accuracy/adapter_test_final.log",
+      "scope": "before final reviewer n2 coalescing/extra regression/analytic Fourier assertion"
+    },
+    {
+      "command": "cargo test --locked --offline -j1 -p rodas5p-integrators --example component_benchmark_native",
+      "status": "failed",
+      "exit_code": 101,
+      "class": "environment",
+      "log": "accuracy/adapter_test_reviewed.log",
+      "reason": "E0463 cannot find crate rodas5p_integrators after shared target dependency rebuild; final coordinated rerun required"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "rodas5p-integrators",
+        "--example",
+        "component_benchmark_native",
+        "--locked",
+        "--offline",
+        "-j",
+        "1"
+      ],
+      "status": "completed",
+      "exit_code": 0,
+      "tests_passed": 6,
+      "log": "evidence/final_03/adapter.stdout.log",
+      "stderr_log": "evidence/final_03/adapter.stderr.log",
+      "elapsed_seconds": 0.2700222829953418,
+      "scope": "Final reviewed adapter source, including cyclic n1/2 and extreme velocity regression, nonfinite refusal, actual fast-driver trajectory equivalence and Fourier exact accuracy."
+    }
+  ],
+  "next_actions": [
+    {
+      "id": "NCP-HEAT-PAIRED",
+      "action": "Run same heat n128 baseline/stencil requests; preserve exact Fourier accuracy budget and paired timing. Only derivative assembly changes.",
+      "inputs": [
+        "accuracy/HEAT_BASELINE_REQUEST.json",
+        "accuracy/HEAT_STENCIL_REQUEST.json"
+      ],
+      "status": "not_run"
+    },
+    {
+      "id": "GLOBAL-LOCAL-SEPARATION",
+      "action": "Expose external original accuracy budget separately from internal local tolerances; evaluate existing rtol refinement without relaxing original target.",
+      "status": "pending"
+    },
+    {
+      "id": "CYCLIC-LINEAR",
+      "action": "Use cyclic sparse or low-rank correction for periodic corner couplings rather than silently truncating to a narrow band.",
+      "status": "pending"
+    }
+  ],
+  "production_decision": "HOLD",
+  "final_source_native_verification": "PASS_SCOPED",
+  "final_verification": {
+    "summary": "evidence/final_03/SUMMARY.json",
+    "source_before": "evidence/final_03/SOURCE_BEFORE.json",
+    "source_after": "evidence/final_03/SOURCE_AFTER.json",
+    "source_files": 484,
+    "source_unchanged": true,
+    "commands_executed": 9,
+    "commands_exit_zero": 9
+  }
+}

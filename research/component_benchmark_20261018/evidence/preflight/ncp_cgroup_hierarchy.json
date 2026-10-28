@@ -1,0 +1,14 @@
+{
+  "argv": [
+    "ssh",
+    "-i",
+    "/home/cosmosapjw/.ssh/ncp_key",
+    "-o",
+    "BatchMode=yes",
+    "root@49.50.142.2",
+    "python3 -"
+  ],
+  "stdin": "import pathlib,json\nr={}\nfor line in pathlib.Path('/proc/self/cgroup').read_text().splitlines():\n if line.startswith('0::'):\n  p=pathlib.Path('/sys/fs/cgroup')/line[3:].lstrip('/')\n  while p!=pathlib.Path('/sys'):\n   r[str(p)]={n:(p/n).read_text() if (p/n).is_file() else None for n in ('memory.events','memory.max','memory.current','cpu.max','cpuset.cpus.effective')}\n   if p==pathlib.Path('/sys/fs/cgroup'):break\n   p=p.parent\nprint(json.dumps(r))\n",
+  "exit_code": 0,
+  "elapsed_seconds": 0.37068843841552734
+}

@@ -1,0 +1,38 @@
+{
+  "schema": "vigilode.dense-independent-review.v1",
+  "review_date": "2026-10-23",
+  "scope": "New continuous extension, observation transactions, physical-query clock boundary, initial lifted-state preflight",
+  "decision": "PASS_CODE_AND_EXACT_ALGEBRA_PENDING_COMPILED_TESTS",
+  "critical_open_findings": [],
+  "findings": [
+    {
+      "id": "DENSE-CLOCK-01",
+      "status": "FIXED_IN_SOURCE_TEST_PENDING",
+      "description": "A valid crossing-zero interior query has normalized theta rounded to1. Original strict theta<1 check rejected it.",
+      "example": {
+        "t_old": -1e+16,
+        "t_new": 2.0,
+        "query": 1.9999999999999998,
+        "theta": 1.0
+      },
+      "repair": "Check physical interval membership and permit normalized endpoints. Use independently computed remaining/h with right-endpoint anchored polynomial; use elapsed*k1 near the left endpoint.",
+      "regression_test": "dense_cross_zero_interval_accepts_query_whose_theta_rounds_to_one",
+      "algebra": "evidence/DENSE_ANCHOR_CHECK.json"
+    },
+    {
+      "id": "DENSE-LIFT-INIT",
+      "status": "REVIEWED",
+      "description": "Before any RHS, initial physical lift/scales evaluated using zero embedded error. Applies also to zero-lengthspan. No callback can run first."
+    }
+  ],
+  "exact_order_artifact": "evidence/DENSE_ORDER_CHECK.json",
+  "mathematical_review": "DENSE_THEORY_REVIEW_KO.md",
+  "primary_sources": "evidence/DENSE_PRIMARY_SOURCES.json",
+  "transaction_review": "Denseprepare builds pending output before clock commit; allpending observations commit only after clockaccept; driver changes physicalstate/FSAL thereafter. Failure retains previousacceptedstate and observations.",
+  "limitations": [
+    "No assertion of overflow-free arithmetic: finite-input coefficient or evaluation overflow returns a partialfailure.",
+    "Polynomial degree4 and local interpolation errorO(h5), not a standalone uniformtolerance certificate.",
+    "No extra RHS from dense interpolation; returned samples still require O(mn) time/memory.",
+    "This agent did not executecompiledtests; root owns frozen-source executionreceipts."
+  ]
+}

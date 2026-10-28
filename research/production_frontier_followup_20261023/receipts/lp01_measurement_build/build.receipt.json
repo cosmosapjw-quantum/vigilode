@@ -1,0 +1,44 @@
+{
+  "command": [
+    "timeout",
+    "--signal=TERM",
+    "--kill-after=5s",
+    "1800s",
+    "cargo",
+    "build",
+    "--locked",
+    "--offline",
+    "--profile",
+    "measurement",
+    "-j",
+    "2",
+    "-p",
+    "rodas5p-integrators",
+    "--example",
+    "frontier_long_phase"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 164.588515851181,
+  "source_sha256": {
+    "crates/rodas5p-integrators/examples/frontier_long_phase.rs": "ddd9782daea33f6eb0785adee0ee417afc5ac345bc2ad771c19920620d3ea005",
+    "crates/rodas5p-integrators/src/dopri5.rs": "b41d90ac47f29b01ccd2bea219d2e5e18ce1cee36d81e1ffed9f0658a36cff0e",
+    "crates/rodas5p-integrators/src/rodas5p_fast.rs": "a2fa1f0b255b5983d7bd03f93de1481e2a76eae1c773a23be2dea53fdfd4aafd",
+    "crates/rodas5p-integrators/src/lib.rs": "6c7164251b8fdf378d0ca926b83dd755f677bfa8937c35ed7668cc0fdfe91e3b",
+    "Cargo.lock": "3c3310208cb895851aced4b4506ccd761e04c62d93113372919542478163a1e5",
+    "Cargo.toml": "716ff1b052b1333e0ee5867f266426f6ecbec11578444f2e2b9c02baa03b037e"
+  },
+  "env": {
+    "CARGO_TARGET_DIR": "/mnt/extdrive/vigilode-frontier-20261023/target",
+    "TMPDIR": "/mnt/extdrive/vigilode-frontier-20261023/tmp",
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_INCREMENTAL": "0",
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "binary_path": "/mnt/extdrive/vigilode-frontier-20261023/target/measurement/examples/frontier_long_phase",
+  "binary_sha256": "eb438eef4e1f97486f9015879db5f060f88903b630e6f5c3e1da7b4867171b6f",
+  "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "4b6702fd9a652480d4fc7ae7eeb58a252b787d8bcc79805582052763720c7437"
+}

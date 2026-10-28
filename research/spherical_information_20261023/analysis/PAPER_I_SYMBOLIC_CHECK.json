@@ -1,0 +1,32 @@
+{
+  "schema": "vigilode.spherical-information.paper-i-algebra.v1",
+  "tool": "Python standard-library fractions",
+  "python": "3.12.14",
+  "command": "python3 analysis/check_paper_i_algebra.py",
+  "stable_bregman_coefficients": {
+    "2": "3/32",
+    "3": "-5/128",
+    "4": "45/2048",
+    "5": "-117/8192",
+    "6": "663/65536"
+  },
+  "checks": {
+    "r2": true,
+    "r3": true,
+    "r4": true,
+    "r5": true,
+    "joint_hessian_determinant_numerator": true,
+    "joint_metric_dn2_coefficient": true,
+    "joint_metric_cross_coefficient": true,
+    "scalar_metric_power": true,
+    "scalar_metric_coefficient_over_kappa": true
+  },
+  "status": "pass_scoped",
+  "scope": "Exact rational coefficients in the displayed T6-T8 derivation; not a solver validation or formal proof checker.",
+  "environment_failure": {
+    "attempt": "import sympy for equivalent algebra verification",
+    "observed": "ModuleNotFoundError: No module named 'sympy'",
+    "class": "environment",
+    "resolution": "No installation; use exact fractions and preserve explicit analytic derivation."
+  }
+}

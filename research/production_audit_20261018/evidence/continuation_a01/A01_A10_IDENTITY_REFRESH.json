@@ -1,0 +1,55 @@
+{
+  "unit": "A01_POST_A10_PACKET_INPUT_IDENTITY_REFRESH",
+  "cwd": "/home/cosmosapjw/vigilode",
+  "branch": "audit/production-readiness-20261018",
+  "head": "c3036c63da02ca9b04cd39ccf580cd67d00ccb0c",
+  "current_sources": {
+    "crates/rodas5p-integrators/src/packet_window.rs": {
+      "sha256": "cca2b7c008f062e38d784de3127789d05dba0d07e322349a81ac7744a9004084",
+      "matches_a10_review_repair_receipt": true,
+      "matches_current_worktree": true
+    },
+    "crates/rodas5p-integrators/tests/production_audit_packet.rs": {
+      "sha256": "ac0b7244e752dcb5ee6c60646f5e14b3e6cb88f3794227ed9fa226e2521e74b2",
+      "matches_a10_review_repair_receipt": true,
+      "matches_current_worktree": true
+    }
+  },
+  "execution": {
+    "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet",
+    "log": "../continuation_a10/review_repair_suite_final.log",
+    "log_sha256": "ec2f6adc8822991e80782a8ba07c1d433364b8a4004e7c75ea2ad2dc0b8105e0",
+    "exit_code": 0,
+    "observed_target_result": "37 passed; 0 failed",
+    "source_and_test_identity_bound_by": "../continuation_a10/REVIEW_REPAIR_RECEIPT.json",
+    "receipt_sha256": "f70996a6171845abc9251726ca3f9b6dc8519b70a46f72d808c3d2be052c8f8a",
+    "independent_review": "../continuation_a10/A10_INDEPENDENT_REVIEW.md",
+    "independent_review_sha256": "4348f6f0ec53abf39985de37de27eb5b09302b3da3af40e074f8cfe61ca4e744"
+  },
+  "a01_cases_observed_in_that_37_test_run": [
+    "certificate_uses_actual_weight_sum_and_spectral_support_and_charges_work",
+    "multimode_high_precision_linear_oracle_is_close_at_intermediate_and_endpoints",
+    "outward_linear_physical_times_enclose_returned_center_at_midpoint_and_endpoint",
+    "outward_nonlinear_physical_reconstruction_returns_finite_midpoint_and_endpoint",
+    "outward_one_mode_cubic_radius_contains_exact_midpoint_and_endpoint",
+    "outward_multimode_encloses_frozen_mpmath_reference_at_midpoint_and_endpoint",
+    "outward_initial_mode_radii_are_transport_included",
+    "outward_partial_time_request_refusal_keeps_first_output_work",
+    "outward_overflow_refusal_preserves_attempted_certificate_work",
+    "outward_subnormal_physical_time_is_finite_or_typed_refusal"
+  ],
+  "linked_a01_reference_and_review": {
+    "oracle_data": "a01_worker/multimode_mpmath_oracle.txt",
+    "oracle_data_sha256": "9f28ea4f02a4cdfbade16f25ffebc962ba9bc40be5281e9201086ac13fd66538",
+    "test_oracle_binding": "The 37-test run includes multimode_high_precision_linear_oracle_is_close_at_intermediate_and_endpoints. That test uses rounded constants inline, corresponding to the high-precision values in the oracle text; it does not load the text file at runtime.",
+    "a01_independent_review": "A01_INDEPENDENT_REVIEW.md",
+    "a01_independent_review_sha256": "30fcdd5f7daf1b587e3555cbb8bf5a01d1db81f6152df2a66f0ac67f2704169b",
+    "a01_reviewed_prior_source_hashes": {
+      "packet_window.rs": "0e527d45aa4676f95f7dc781d4805df837b3c3072fff016602bd36b0c8f22b90",
+      "production_audit_packet.rs": "91bd2bd77593bb46b5ff752a65693d06ba7aaea605cd6b042e3b986d784a6286"
+    },
+    "scope_note": "The A01 independent review is bound to its earlier source identity, not the current A10-edited packet_window file. Current A10 repair review covers the Bernstein helper and shared file identity; it does not replace a fresh A01 mathematical review. The current test run does establish that the A01 regression tests execute against the current source/test hashes."
+  },
+  "decision": "Identity refresh only. Retain local scoped enclosure status; roundoff_enclosed=false. A01 full-node and production authority remain HOLD. The high-precision oracle is diagnostic, not a rigorous reference enclosure. No code, tolerance, or authority change was made.",
+  "executor_identity": {"role":"evidence assembly agent", "runtime_model":"not independently observed"}
+}

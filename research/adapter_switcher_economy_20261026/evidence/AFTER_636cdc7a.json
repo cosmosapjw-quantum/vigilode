@@ -1,0 +1,1490 @@
+{
+ "provenance": {
+  "source_commit": "636cdc7a49011af3c10f8cf474cc4bb46e249700",
+  "bin_dir": "/tmp/claude-1000/-home-cosmosapjw-vigilode/c305ced9-a88b-4fdc-9890-f3e5363aed51/scratchpad/official/after_bin",
+  "binaries": {
+   "evidence_switch_bench": "68ef8abd78008244d59b25dfa73011a8165801c56ef8c99583379af709c974c6",
+   "local_bottleneck_suite": "386c105c9b8cebd3f53bd15207d565d2aea8c7ed53252201402e72de3f69d0c5"
+  },
+  "protocol": "warm-up 1 + 5 timed runs per cell, taskset one core; WorkCounters are the authority; wall time diagnostic_only",
+  "bench_options": {
+   "rtol": 1e-07,
+   "atol": 1e-10,
+   "h0": 1e-07,
+   "max_steps": 20000,
+   "span": [
+    0,
+    1
+   ],
+   "cap": 1e-05
+  },
+  "suite_options": {
+   "rtol": 1e-06,
+   "atol": 1e-09,
+   "h0": "min(1e-4, end/10)",
+   "max_steps": 100000,
+   "size": "standard",
+   "cap": 0.0001,
+   "switching_config": "ProvidedOnly, window_count 16, max_dense_dimension 256, pilot budget 32, pilot limit 4"
+  },
+  "note": "Execution commit 636cdc7a binaries; raw and per-segment rows retained outside the repository"
+ },
+ "runs": {
+  "bench:rotation:evidence": {
+   "kind": "bench",
+   "case": "rotation",
+   "mode": "evidence",
+   "timing": {
+    "warmup_seconds": 0.000515661,
+    "timed_seconds": [
+     0.000554193,
+     0.000469575,
+     0.000503749,
+     0.00047208,
+     0.00047735
+    ],
+    "median_seconds": 0.00047735,
+    "min_seconds": 0.000469575,
+    "max_seconds": 0.000554193,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 9.257890573044492e-07,
+   "cap": 1e-05,
+   "accuracy_pass": true,
+   "final_time": 1.0,
+   "final_state": [
+    0.8623179464986266,
+    -0.5063647394869715
+   ],
+   "message": "reached final time",
+   "role": "switch",
+   "totals": {
+    "attempts": 892,
+    "accepted_steps": 801,
+    "rejected_steps": 91,
+    "rhs_calls": 5371,
+    "jvp_vectors": 355,
+    "jacobian_builds": 0,
+    "linear_solves": 105,
+    "ft_calls": 0,
+    "switches": 0,
+    "segments": 35
+   },
+   "buckets": {
+    "explicit_committed": {
+     "count": 32,
+     "attempts": 877,
+     "accepted_steps": 789,
+     "rejected_steps": 88,
+     "rhs_calls": 5263,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 5263.0,
+     "span": 1.0
+    },
+    "explicit_probe_discarded": {
+     "count": 0,
+     "attempts": 0,
+     "accepted_steps": 0,
+     "rejected_steps": 0,
+     "rhs_calls": 0,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 0,
+     "span": 0
+    },
+    "implicit_committed": {
+     "count": 0,
+     "attempts": 0,
+     "accepted_steps": 0,
+     "rejected_steps": 0,
+     "rhs_calls": 0,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 0,
+     "span": 0
+    },
+    "implicit_pilot_discarded": {
+     "count": 3,
+     "attempts": 15,
+     "accepted_steps": 12,
+     "rejected_steps": 3,
+     "rhs_calls": 108,
+     "jvp_vectors": 355,
+     "jacobian_builds": 0,
+     "linear_solves": 105,
+     "ft_calls": 0,
+     "work_units": 568.0,
+     "span": 4.6800000000897176e-05
+    }
+   },
+   "reconciled": true,
+   "decision_sequence": "0:Rpilot![5] 1:D[32] 2:D[32] 3:D[32] 4:D[16] 5:D[32] 6:Rpilot![5] 7:D[32] 8:D[32] 9:D[12] 10:D[32] 11:D[32] 12:D[32] 13:D[14] 14:D[32] 15:D[32] 16:Rpilot![5] 17:D[32] 18:D[13] 19:D[32] 20:D[32] 21:D[32] 22:D[14] 23:D[32] 24:D[32] 25:D[32] 26:D[13] 27:D[32] 28:D[32] 29:D[32] 30:D[14] 31:D[32] 32:D[32] 33:D[32] 34:D[13]"
+  },
+  "bench:rotation:screened-reset": {
+   "kind": "bench",
+   "case": "rotation",
+   "mode": "screened-reset",
+   "timing": {
+    "warmup_seconds": 0.000701578,
+    "timed_seconds": [
+     0.000703151,
+     0.000838152,
+     0.000722207,
+     0.000793991,
+     0.000706187
+    ],
+    "median_seconds": 0.000722207,
+    "min_seconds": 0.000703151,
+    "max_seconds": 0.000838152,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 9.061416835765002e-07,
+   "cap": 1e-05,
+   "accuracy_pass": true,
+   "final_time": 1.0,
+   "final_state": [
+    0.8623179661460003,
+    -0.5063647595074208
+   ],
+   "message": "reached final time",
+   "role": "switch",
+   "totals": {
+    "attempts": 1105,
+    "accepted_steps": 1025,
+    "rejected_steps": 80,
+    "rhs_calls": 6710,
+    "jvp_vectors": 833,
+    "jacobian_builds": 0,
+    "linear_solves": 245,
+    "ft_calls": 0,
+    "switches": 0,
+    "segments": 45
+   },
+   "buckets": {
+    "explicit_committed": {
+     "count": 38,
+     "attempts": 1070,
+     "accepted_steps": 997,
+     "rejected_steps": 73,
+     "rhs_calls": 6458,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 6458.0,
+     "span": 1.0
+    },
+    "explicit_probe_discarded": {
+     "count": 0,
+     "attempts": 0,
+     "accepted_steps": 0,
+     "rejected_steps": 0,
+     "rhs_calls": 0,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 0,
+     "span": 0
+    },
+    "implicit_committed": {
+     "count": 0,
+     "attempts": 0,
+     "accepted_steps": 0,
+     "rejected_steps": 0,
+     "rhs_calls": 0,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 0,
+     "span": 0
+    },
+    "implicit_pilot_discarded": {
+     "count": 7,
+     "attempts": 35,
+     "accepted_steps": 28,
+     "rejected_steps": 7,
+     "rhs_calls": 252,
+     "jvp_vectors": 833,
+     "jacobian_builds": 0,
+     "linear_solves": 245,
+     "ft_calls": 0,
+     "work_units": 1330.0,
+     "span": 0.00010919999996805257
+    }
+   },
+   "reconciled": true,
+   "decision_sequence": "0:Rpilot![5] 1:D[32] 2:D[32] 3:D[32] 4:D[32] 5:D[7] 6:Rpilot![5] 7:D[32] 8:D[32] 9:D[32] 10:D[31] 11:D[32] 12:Rpilot![5] 13:D[32] 14:D[32] 15:D[31] 16:D[32] 17:D[32] 18:D[32] 19:D[32] 20:D[7] 21:Rpilot![5] 22:D[32] 23:D[32] 24:D[32] 25:D[32] 26:D[10] 27:Rpilot![5] 28:D[32] 29:D[32] 30:D[32] 31:D[32] 32:D[8] 33:Rpilot![5] 34:D[32] 35:D[32] 36:D[32] 37:D[32] 38:D[7] 39:Rpilot![5] 40:D[32] 41:D[32] 42:D[32] 43:D[32] 44:D[9]"
+  },
+  "bench:rotation:pressure-only": {
+   "kind": "bench",
+   "case": "rotation",
+   "mode": "pressure-only",
+   "timing": {
+    "warmup_seconds": 0.00635676,
+    "timed_seconds": [
+     0.006605944,
+     0.006644737,
+     0.006252826,
+     0.006286348,
+     0.00638364
+    ],
+    "median_seconds": 0.00638364,
+    "min_seconds": 0.006252826,
+    "max_seconds": 0.006644737,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 8.367772463824252e-08,
+   "cap": 1e-05,
+   "accuracy_pass": true,
+   "final_time": 1.0,
+   "final_state": [
+    0.8623188588635516,
+    -0.5063655574320342
+   ],
+   "message": "reached final time",
+   "role": "switch",
+   "totals": {
+    "attempts": 666,
+    "accepted_steps": 573,
+    "rejected_steps": 93,
+    "rhs_calls": 5144,
+    "jvp_vectors": 19749,
+    "jacobian_builds": 0,
+    "linear_solves": 4944,
+    "ft_calls": 0,
+    "switches": 1,
+    "segments": 5
+   },
+   "buckets": {
+    "explicit_committed": {
+     "count": 1,
+     "attempts": 32,
+     "accepted_steps": 30,
+     "rejected_steps": 2,
+     "rhs_calls": 193,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 193.0,
+     "span": 0.031328135205518096
+    },
+    "explicit_probe_discarded": {
+     "count": 1,
+     "attempts": 16,
+     "accepted_steps": 15,
+     "rejected_steps": 1,
+     "rhs_calls": 97,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 97.0,
+     "span": 0.0113452118880486
+    },
+    "implicit_committed": {
+     "count": 3,
+     "attempts": 618,
+     "accepted_steps": 528,
+     "rejected_steps": 90,
+     "rhs_calls": 4854,
+     "jvp_vectors": 19749,
+     "jacobian_builds": 0,
+     "linear_solves": 4944,
+     "ft_calls": 0,
+     "work_units": 29547.0,
+     "span": 0.9686718647944819
+    },
+    "implicit_pilot_discarded": {
+     "count": 0,
+     "attempts": 0,
+     "accepted_steps": 0,
+     "rejected_steps": 0,
+     "rhs_calls": 0,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 0,
+     "span": 0
+    }
+   },
+   "reconciled": true,
+   "decision_sequence": "0:D[32] 1:R[141] 2:R[156] 3:Dprobe![16] 4:R[321]"
+  },
+  "bench:rotation:dopri": {
+   "kind": "bench",
+   "case": "rotation",
+   "mode": "dopri",
+   "timing": {
+    "warmup_seconds": 0.000222656,
+    "timed_seconds": [
+     0.000296573,
+     0.000218637,
+     0.000207436,
+     0.000216774,
+     0.000259063
+    ],
+    "median_seconds": 0.000218637,
+    "min_seconds": 0.000207436,
+    "max_seconds": 0.000296573,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 9.277089911829961e-07,
+   "cap": 1e-05,
+   "accuracy_pass": true,
+   "final_time": 1.0,
+   "final_state": [
+    0.8623179445786927,
+    -0.5063647376939792
+   ],
+   "message": "DOPRI5 reached the final time",
+   "role": "direct",
+   "stats": {
+    "attempts": 875,
+    "accepted_steps": 784,
+    "rejected_steps": 91,
+    "rhs_calls": 5251,
+    "jvp_vectors": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 0,
+    "ft_calls": 0
+   }
+  },
+  "bench:rotation:rodas": {
+   "kind": "bench",
+   "case": "rotation",
+   "mode": "rodas",
+   "timing": {
+    "warmup_seconds": 0.006279025,
+    "timed_seconds": [
+     0.006364484,
+     0.006212561,
+     0.006444794,
+     0.006471674,
+     0.006443852
+    ],
+    "median_seconds": 0.006443852,
+    "min_seconds": 0.006212561,
+    "max_seconds": 0.006471674,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 5.70082485662482e-08,
+   "cap": 1e-05,
+   "accuracy_pass": true,
+   "final_time": 1.0,
+   "final_state": [
+    0.8623188886105283,
+    -0.5063655841015102
+   ],
+   "message": "",
+   "role": "direct",
+   "stats": {
+    "attempts": 640,
+    "accepted_steps": 542,
+    "rejected_steps": 98,
+    "rhs_calls": 5022,
+    "jvp_vectors": 20453,
+    "jacobian_builds": 0,
+    "linear_solves": 5120,
+    "ft_calls": 0
+   }
+  },
+  "bench:stiff-forced:evidence": {
+   "kind": "bench",
+   "case": "stiff-forced",
+   "mode": "evidence",
+   "timing": {
+    "warmup_seconds": 0.000143878,
+    "timed_seconds": [
+     0.000127498,
+     0.000135011,
+     0.000125815,
+     0.000136945,
+     0.00013446
+    ],
+    "median_seconds": 0.00013446,
+    "min_seconds": 0.000125815,
+    "max_seconds": 0.000136945,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 7.326025341924947e-10,
+   "cap": 1e-05,
+   "accuracy_pass": true,
+   "final_time": 1.0,
+   "final_state": [
+    0.5403023051355372
+   ],
+   "message": "reached final time",
+   "role": "switch",
+   "totals": {
+    "attempts": 66,
+    "accepted_steps": 64,
+    "rejected_steps": 2,
+    "rhs_calls": 456,
+    "jvp_vectors": 0,
+    "jacobian_builds": 29,
+    "linear_solves": 232,
+    "ft_calls": 29,
+    "switches": 1,
+    "segments": 6
+   },
+   "buckets": {
+    "explicit_committed": {
+     "count": 1,
+     "attempts": 32,
+     "accepted_steps": 30,
+     "rejected_steps": 2,
+     "rhs_calls": 193,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 193.0,
+     "span": 0.00819797811283977
+    },
+    "explicit_probe_discarded": {
+     "count": 1,
+     "attempts": 5,
+     "accepted_steps": 5,
+     "rejected_steps": 0,
+     "rhs_calls": 31,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 31.0,
+     "span": 7.809999995889161e-05
+    },
+    "implicit_committed": {
+     "count": 3,
+     "attempts": 21,
+     "accepted_steps": 21,
+     "rejected_steps": 0,
+     "rhs_calls": 168,
+     "jvp_vectors": 0,
+     "jacobian_builds": 21,
+     "linear_solves": 168,
+     "ft_calls": 21,
+     "work_units": 378.0,
+     "span": 0.9918020218871603
+    },
+    "implicit_pilot_discarded": {
+     "count": 1,
+     "attempts": 8,
+     "accepted_steps": 8,
+     "rejected_steps": 0,
+     "rhs_calls": 64,
+     "jvp_vectors": 0,
+     "jacobian_builds": 8,
+     "linear_solves": 64,
+     "ft_calls": 8,
+     "work_units": 144.0,
+     "span": 0.00819797811283977
+    }
+   },
+   "reconciled": true,
+   "decision_sequence": "0:Rpilot![8] 1:D[32] 2:R[12] 3:R[4] 4:Dprobe![5] 5:R[5]"
+  },
+  "bench:stiff-forced:screened-reset": {
+   "kind": "bench",
+   "case": "stiff-forced",
+   "mode": "screened-reset",
+   "timing": {
+    "warmup_seconds": 0.000131535,
+    "timed_seconds": [
+     0.000131586,
+     0.000131224,
+     0.000132477,
+     0.00019864,
+     0.00013928
+    ],
+    "median_seconds": 0.000132477,
+    "min_seconds": 0.000131224,
+    "max_seconds": 0.00019864,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 7.326025341924947e-10,
+   "cap": 1e-05,
+   "accuracy_pass": true,
+   "final_time": 1.0,
+   "final_state": [
+    0.5403023051355372
+   ],
+   "message": "reached final time",
+   "role": "switch",
+   "totals": {
+    "attempts": 66,
+    "accepted_steps": 64,
+    "rejected_steps": 2,
+    "rhs_calls": 456,
+    "jvp_vectors": 0,
+    "jacobian_builds": 29,
+    "linear_solves": 232,
+    "ft_calls": 29,
+    "switches": 1,
+    "segments": 6
+   },
+   "buckets": {
+    "explicit_committed": {
+     "count": 1,
+     "attempts": 32,
+     "accepted_steps": 30,
+     "rejected_steps": 2,
+     "rhs_calls": 193,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 193.0,
+     "span": 0.00819797811283977
+    },
+    "explicit_probe_discarded": {
+     "count": 1,
+     "attempts": 5,
+     "accepted_steps": 5,
+     "rejected_steps": 0,
+     "rhs_calls": 31,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 31.0,
+     "span": 7.809999995889161e-05
+    },
+    "implicit_committed": {
+     "count": 3,
+     "attempts": 21,
+     "accepted_steps": 21,
+     "rejected_steps": 0,
+     "rhs_calls": 168,
+     "jvp_vectors": 0,
+     "jacobian_builds": 21,
+     "linear_solves": 168,
+     "ft_calls": 21,
+     "work_units": 378.0,
+     "span": 0.9918020218871603
+    },
+    "implicit_pilot_discarded": {
+     "count": 1,
+     "attempts": 8,
+     "accepted_steps": 8,
+     "rejected_steps": 0,
+     "rhs_calls": 64,
+     "jvp_vectors": 0,
+     "jacobian_builds": 8,
+     "linear_solves": 64,
+     "ft_calls": 8,
+     "work_units": 144.0,
+     "span": 0.00819797811283977
+    }
+   },
+   "reconciled": true,
+   "decision_sequence": "0:Rpilot![8] 1:D[32] 2:R[12] 3:R[4] 4:Dprobe![5] 5:R[5]"
+  },
+  "bench:stiff-forced:pressure-only": {
+   "kind": "bench",
+   "case": "stiff-forced",
+   "mode": "pressure-only",
+   "timing": {
+    "warmup_seconds": 0.000120745,
+    "timed_seconds": [
+     0.000122619,
+     0.000121206,
+     0.000124993,
+     0.000160169,
+     0.00011806
+    ],
+    "median_seconds": 0.000122619,
+    "min_seconds": 0.00011806,
+    "max_seconds": 0.000160169,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 7.326025341924947e-10,
+   "cap": 1e-05,
+   "accuracy_pass": true,
+   "final_time": 1.0,
+   "final_state": [
+    0.5403023051355372
+   ],
+   "message": "reached final time",
+   "role": "switch",
+   "totals": {
+    "attempts": 58,
+    "accepted_steps": 56,
+    "rejected_steps": 2,
+    "rhs_calls": 392,
+    "jvp_vectors": 0,
+    "jacobian_builds": 21,
+    "linear_solves": 168,
+    "ft_calls": 21,
+    "switches": 1,
+    "segments": 5
+   },
+   "buckets": {
+    "explicit_committed": {
+     "count": 1,
+     "attempts": 32,
+     "accepted_steps": 30,
+     "rejected_steps": 2,
+     "rhs_calls": 193,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 193.0,
+     "span": 0.00819797811283977
+    },
+    "explicit_probe_discarded": {
+     "count": 1,
+     "attempts": 5,
+     "accepted_steps": 5,
+     "rejected_steps": 0,
+     "rhs_calls": 31,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 31.0,
+     "span": 7.809999995889161e-05
+    },
+    "implicit_committed": {
+     "count": 3,
+     "attempts": 21,
+     "accepted_steps": 21,
+     "rejected_steps": 0,
+     "rhs_calls": 168,
+     "jvp_vectors": 0,
+     "jacobian_builds": 21,
+     "linear_solves": 168,
+     "ft_calls": 21,
+     "work_units": 378.0,
+     "span": 0.9918020218871603
+    },
+    "implicit_pilot_discarded": {
+     "count": 0,
+     "attempts": 0,
+     "accepted_steps": 0,
+     "rejected_steps": 0,
+     "rhs_calls": 0,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 0,
+     "span": 0
+    }
+   },
+   "reconciled": true,
+   "decision_sequence": "0:D[32] 1:R[12] 2:R[4] 3:Dprobe![5] 4:R[5]"
+  },
+  "bench:stiff-forced:dopri": {
+   "kind": "bench",
+   "case": "stiff-forced",
+   "mode": "dopri",
+   "timing": {
+    "warmup_seconds": 0.000850716,
+    "timed_seconds": [
+     0.00084748,
+     0.000899086,
+     0.000855846,
+     0.00085315,
+     0.000875933
+    ],
+    "median_seconds": 0.000855846,
+    "min_seconds": 0.00084748,
+    "max_seconds": 0.000899086,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 3.157183436908184e-08,
+   "cap": 1e-05,
+   "accuracy_pass": true,
+   "final_time": 1.0,
+   "final_state": [
+    0.5403022742963054
+   ],
+   "message": "DOPRI5 reached the final time",
+   "role": "direct",
+   "stats": {
+    "attempts": 3111,
+    "accepted_steps": 3109,
+    "rejected_steps": 2,
+    "rhs_calls": 18667,
+    "jvp_vectors": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 0,
+    "ft_calls": 0
+   }
+  },
+  "bench:stiff-forced:rodas": {
+   "kind": "bench",
+   "case": "stiff-forced",
+   "mode": "rodas",
+   "timing": {
+    "warmup_seconds": 9.5929e-05,
+    "timed_seconds": [
+     8.0049e-05,
+     7.7344e-05,
+     0.000108362,
+     9.1581e-05,
+     9.2282e-05
+    ],
+    "median_seconds": 9.1581e-05,
+    "min_seconds": 7.7344e-05,
+    "max_seconds": 0.000108362,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 8.148821617481872e-10,
+   "cap": 1e-05,
+   "accuracy_pass": true,
+   "final_time": 1.0,
+   "final_state": [
+    0.5403023050532576
+   ],
+   "message": "",
+   "role": "direct",
+   "stats": {
+    "attempts": 14,
+    "accepted_steps": 14,
+    "rejected_steps": 0,
+    "rhs_calls": 112,
+    "jvp_vectors": 0,
+    "jacobian_builds": 14,
+    "linear_solves": 112,
+    "ft_calls": 14
+   }
+  },
+  "suite:c5:switching": {
+   "kind": "suite",
+   "case": "c5",
+   "mode": "switching",
+   "timing": {
+    "warmup_seconds": 0.000852649,
+    "timed_seconds": [
+     0.00093882,
+     0.000832953,
+     0.000825679,
+     0.000849283,
+     0.000788319
+    ],
+    "median_seconds": 0.000832953,
+    "min_seconds": 0.000788319,
+    "max_seconds": 0.00093882,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 1.2477927380156155e-08,
+   "cap": 0.0001,
+   "accuracy_pass": true,
+   "final_time": 2.0,
+   "final_state": [
+    0.8535165159991682,
+    0.5480991793552855
+   ],
+   "message": "reached final time",
+   "role": "switch",
+   "totals": {
+    "attempts": 115,
+    "accepted_steps": 89,
+    "rejected_steps": 26,
+    "rhs_calls": 748,
+    "jvp_vectors": 988,
+    "jacobian_builds": 0,
+    "linear_solves": 249,
+    "ft_calls": 28,
+    "switches": 1,
+    "segments": 10
+   },
+   "buckets": {
+    "explicit_committed": {
+     "count": 2,
+     "attempts": 64,
+     "accepted_steps": 53,
+     "rejected_steps": 11,
+     "rhs_calls": 386,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 386.0,
+     "span": 0.00011000091992950158
+    },
+    "explicit_probe_discarded": {
+     "count": 2,
+     "attempts": 19,
+     "accepted_steps": 9,
+     "rejected_steps": 10,
+     "rhs_calls": 116,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 116.0,
+     "span": 4.193886840253569e-05
+    },
+    "implicit_committed": {
+     "count": 4,
+     "attempts": 26,
+     "accepted_steps": 26,
+     "rejected_steps": 0,
+     "rhs_calls": 208,
+     "jvp_vectors": 832,
+     "jacobian_builds": 0,
+     "linear_solves": 208,
+     "ft_calls": 26,
+     "work_units": 1274.0,
+     "span": 1.9998899990800705
+    },
+    "implicit_pilot_discarded": {
+     "count": 2,
+     "attempts": 6,
+     "accepted_steps": 1,
+     "rejected_steps": 5,
+     "rhs_calls": 38,
+     "jvp_vectors": 156,
+     "jacobian_builds": 0,
+     "linear_solves": 41,
+     "ft_calls": 2,
+     "work_units": 237.0,
+     "span": 8.56426066449695e-05
+    }
+   },
+   "reconciled": true,
+   "decision_sequence": "0:Rpilot![5] 1:D[32] 2:Rpilot![1] 3:D[32] 4:R[9] 5:R[3] 6:Dprobe![10] 7:R[5] 8:Dprobe![9] 9:R[9]"
+  },
+  "suite:c5:rodas5p-mf": {
+   "kind": "suite",
+   "case": "c5",
+   "mode": "rodas5p-mf",
+   "timing": {
+    "warmup_seconds": 0.000968325,
+    "timed_seconds": [
+     0.000994043,
+     0.000989274,
+     0.000985627,
+     0.000970739,
+     0.000991238
+    ],
+    "median_seconds": 0.000989274,
+    "min_seconds": 0.000970739,
+    "max_seconds": 0.000994043,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 1.0382016881740949e-07,
+   "cap": 0.0001,
+   "accuracy_pass": true,
+   "final_time": 2.0,
+   "final_state": [
+    0.8535165636608306,
+    0.5480990880130441
+   ],
+   "message": "Success",
+   "role": "direct",
+   "stats": {
+    "attempts": 39,
+    "accepted_steps": 34,
+    "rejected_steps": 5,
+    "rhs_calls": 307,
+    "jvp_vectors": 1206,
+    "jacobian_builds": 0,
+    "linear_solves": 312,
+    "ft_calls": 34
+   }
+  },
+  "suite:c5:rodas5p-dense": {
+   "kind": "suite",
+   "case": "c5",
+   "mode": "rodas5p-dense",
+   "timing": {
+    "warmup_seconds": 0.000189163,
+    "timed_seconds": [
+     0.000183271,
+     0.000183051,
+     0.000180697,
+     0.000184524,
+     0.000122298
+    ],
+    "median_seconds": 0.000183051,
+    "min_seconds": 0.000122298,
+    "max_seconds": 0.000184524,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 1.0382010309220643e-07,
+   "cap": 0.0001,
+   "accuracy_pass": true,
+   "final_time": 2.0,
+   "final_state": [
+    0.853516563660798,
+    0.5480990880131098
+   ],
+   "message": "Success",
+   "role": "direct",
+   "stats": {
+    "attempts": 39,
+    "accepted_steps": 34,
+    "rejected_steps": 5,
+    "rhs_calls": 307,
+    "jvp_vectors": 0,
+    "jacobian_builds": 34,
+    "linear_solves": 312,
+    "ft_calls": 34
+   }
+  },
+  "suite:c10t:switching": {
+   "kind": "suite",
+   "case": "c10t",
+   "mode": "switching",
+   "timing": {
+    "warmup_seconds": 0.005548583,
+    "timed_seconds": [
+     0.006243068,
+     0.005522646,
+     0.005572338,
+     0.005248544,
+     0.005484524
+    ],
+    "median_seconds": 0.005522646,
+    "min_seconds": 0.005248544,
+    "max_seconds": 0.006243068,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 3.88503939134921e-05,
+   "cap": 0.0001,
+   "accuracy_pass": true,
+   "final_time": 1.0,
+   "final_state": [
+    -0.001952870330544748,
+    -0.0024316176140254304,
+    0.14002802425306674,
+    -0.21580880701272376,
+    0.9764351652723735,
+    0.2
+   ],
+   "message": "reached final time",
+   "role": "switch",
+   "totals": {
+    "attempts": 4159,
+    "accepted_steps": 3830,
+    "rejected_steps": 329,
+    "rhs_calls": 25102,
+    "jvp_vectors": 517,
+    "jacobian_builds": 0,
+    "linear_solves": 100,
+    "ft_calls": 0,
+    "switches": 0,
+    "segments": 145
+   },
+   "buckets": {
+    "explicit_committed": {
+     "count": 141,
+     "attempts": 4143,
+     "accepted_steps": 3819,
+     "rejected_steps": 324,
+     "rhs_calls": 24999,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 24999.0,
+     "span": 1.0
+    },
+    "explicit_probe_discarded": {
+     "count": 0,
+     "attempts": 0,
+     "accepted_steps": 0,
+     "rejected_steps": 0,
+     "rhs_calls": 0,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 0,
+     "span": 0
+    },
+    "implicit_committed": {
+     "count": 0,
+     "attempts": 0,
+     "accepted_steps": 0,
+     "rejected_steps": 0,
+     "rhs_calls": 0,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 0,
+     "span": 0
+    },
+    "implicit_pilot_discarded": {
+     "count": 4,
+     "attempts": 16,
+     "accepted_steps": 11,
+     "rejected_steps": 5,
+     "rhs_calls": 103,
+     "jvp_vectors": 517,
+     "jacobian_builds": 0,
+     "linear_solves": 100,
+     "ft_calls": 0,
+     "work_units": 720.0,
+     "span": 0.0010801534292435985
+    }
+   },
+   "reconciled": true,
+   "decision_sequence": "0:Rpilot![4] 1:D[32] 2:Rpilot![4] 3:D[32] 4:D[32] 5:D[32] 6:Rpilot![4] 7:D[32] 8:D[32] 9:D[32] 10:D[32] 11:D[6] 12:Rpilot![4] 13:D[32] 14:D[32] 15:D[32] 16:D[32] 17:D[32] 18:D[32] 19:D[32] 20:D[32] 21:D[3] 22:D[32] 23:D[32] 24:D[32] 25:D[32] 26:D[32] 27:D[32] 28:D[32] 29:D[32] 30:D[6] 31:D[32] 32:D[32] 33:D[32] 34:D[32] 35:D[32] 36:D[32] 37:D[32] 38:D[32] 39:D[4] 40:D[32] 41:D[32] 42:D[32] 43:D[32] 44:D[32] 45:D[32] 46:D[32] 47:D[32] 48:D[5] 49:D[32] 50:D[32] 51:D[32] 52:D[32] 53:D[32] 54:D[32] 55:D[32] 56:D[31] 57:D[32] 58:D[32] 59:D[32] 60:D[32] 61:D[32] 62:D[32] 63:D[32] 64:D[32] 65:D[2] 66:D[32] 67:D[32] 68:D[32] 69:D[32] 70:D[32] 71:D[32] 72:D[32] 73:D[32] 74:D[3] 75:D[32] 76:D[32] 77:D[32] 78:D[32] 79:D[32] 80:D[32] 81:D[32] 82:D[32] 83:D[32] 84:D[32] 85:D[32] 86:D[32] 87:D[32] 88:D[32] 89:D[32] 90:D[32] 91:D[3] 92:D[32] 93:D[32] 94:D[32] 95:D[32] 96:D[32] 97:D[32] 98:D[32] 99:D[32] 100:D[6] 101:D[32] 102:D[32] 103:D[32] 104:D[32] 105:D[32] 106:D[32] 107:D[32] 108:D[32] 109:D[1] 110:D[32] 111:D[32] 112:D[32] 113:D[32] 114:D[32] 115:D[32] 116:D[32] 117:D[32] 118:D[4] 119:D[32] 120:D[32] 121:D[32] 122:D[32] 123:D[32] 124:D[32] 125:D[32] 126:D[32] 127:D[32] 128:D[32] 129:D[32] 130:D[32] 131:D[32] 132:D[32] 133:D[32] 134:D[32] 135:D[2] 136:D[32] 137:D[32] 138:D[32] 139:D[32] 140:D[32] 141:D[32] 142:D[32] 143:D[32] 144:D[3]"
+  },
+  "suite:c10t:dopri5": {
+   "kind": "suite",
+   "case": "c10t",
+   "mode": "dopri5",
+   "timing": {
+    "warmup_seconds": 0.002508747,
+    "timed_seconds": [
+     0.002756469,
+     0.002657223,
+     0.00254315,
+     0.002482959,
+     0.002497947
+    ],
+    "median_seconds": 0.00254315,
+    "min_seconds": 0.002482959,
+    "max_seconds": 0.002756469,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 3.899609760221745e-05,
+   "cap": 0.0001,
+   "accuracy_pass": true,
+   "final_time": 1.0,
+   "final_state": [
+    -0.0019528703921278215,
+    -0.0024316173226180556,
+    0.14002802431262576,
+    -0.21580866130903503,
+    0.9764351960639255,
+    0.2
+   ],
+   "message": "DOPRI5 reached the final time",
+   "role": "direct",
+   "stats": {
+    "attempts": 4067,
+    "accepted_steps": 3735,
+    "rejected_steps": 332,
+    "rhs_calls": 24403,
+    "jvp_vectors": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 0,
+    "ft_calls": 0
+   }
+  },
+  "suite:c10t:rodas5p-mf": {
+   "kind": "suite",
+   "case": "c10t",
+   "mode": "rodas5p-mf",
+   "timing": {
+    "warmup_seconds": 0.189337078,
+    "timed_seconds": [
+     0.189373336,
+     0.188884214,
+     0.190423724,
+     0.1858783,
+     0.19785925
+    ],
+    "median_seconds": 0.189373336,
+    "min_seconds": 0.1858783,
+    "max_seconds": 0.19785925,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 1.177401899804531e-05,
+   "cap": 0.0001,
+   "accuracy_pass": true,
+   "final_time": 1.0,
+   "final_state": [
+    -0.0019528491866023271,
+    -0.0024317188628511727,
+    0.1400280035916278,
+    -0.2158594314256353,
+    0.9764245933011234,
+    0.2
+   ],
+   "message": "Success",
+   "role": "direct",
+   "stats": {
+    "attempts": 9454,
+    "accepted_steps": 9136,
+    "rejected_steps": 318,
+    "rhs_calls": 75314,
+    "jvp_vectors": 378160,
+    "jacobian_builds": 0,
+    "linear_solves": 75632,
+    "ft_calls": 0
+   }
+  },
+  "suite:c10:switching": {
+   "kind": "suite",
+   "case": "c10",
+   "mode": "switching",
+   "timing": {
+    "warmup_seconds": 0.002127596,
+    "timed_seconds": [
+     0.001987054,
+     0.00197372,
+     0.001984509,
+     0.002090537,
+     0.001986484
+    ],
+    "median_seconds": 0.001986484,
+    "min_seconds": 0.00197372,
+    "max_seconds": 0.002090537,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 0.030850543596799118,
+   "cap": 0.0001,
+   "accuracy_pass": false,
+   "final_time": 1.0,
+   "final_state": [
+    -0.0019647390368499763,
+    -0.0023699942276196747,
+    0.14004050938835969,
+    -0.18499711380983813,
+    0.9823695184249932,
+    0.2
+   ],
+   "message": "reached final time",
+   "role": "switch",
+   "totals": {
+    "attempts": 1209,
+    "accepted_steps": 1134,
+    "rejected_steps": 75,
+    "rhs_calls": 7309,
+    "jvp_vectors": 517,
+    "jacobian_builds": 0,
+    "linear_solves": 100,
+    "ft_calls": 0,
+    "switches": 0,
+    "segments": 52
+   },
+   "buckets": {
+    "explicit_committed": {
+     "count": 48,
+     "attempts": 1193,
+     "accepted_steps": 1123,
+     "rejected_steps": 70,
+     "rhs_calls": 7206,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 7206.0,
+     "span": 1.0
+    },
+    "explicit_probe_discarded": {
+     "count": 0,
+     "attempts": 0,
+     "accepted_steps": 0,
+     "rejected_steps": 0,
+     "rhs_calls": 0,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 0,
+     "span": 0
+    },
+    "implicit_committed": {
+     "count": 0,
+     "attempts": 0,
+     "accepted_steps": 0,
+     "rejected_steps": 0,
+     "rhs_calls": 0,
+     "jvp_vectors": 0,
+     "jacobian_builds": 0,
+     "linear_solves": 0,
+     "ft_calls": 0,
+     "work_units": 0,
+     "span": 0
+    },
+    "implicit_pilot_discarded": {
+     "count": 4,
+     "attempts": 16,
+     "accepted_steps": 11,
+     "rejected_steps": 5,
+     "rhs_calls": 103,
+     "jvp_vectors": 517,
+     "jacobian_builds": 0,
+     "linear_solves": 100,
+     "ft_calls": 0,
+     "work_units": 720.0,
+     "span": 0.0034602687180573253
+    }
+   },
+   "reconciled": true,
+   "decision_sequence": "0:Rpilot![4] 1:D[32] 2:Rpilot![4] 3:D[32] 4:D[8] 5:D[32] 6:Rpilot![4] 7:D[32] 8:D[10] 9:D[32] 10:D[32] 11:D[9] 12:Rpilot![4] 13:D[32] 14:D[32] 15:D[10] 16:D[32] 17:D[32] 18:D[14] 19:D[32] 20:D[32] 21:D[8] 22:D[32] 23:D[32] 24:D[13] 25:D[32] 26:D[32] 27:D[10] 28:D[32] 29:D[32] 30:D[11] 31:D[32] 32:D[32] 33:D[12] 34:D[32] 35:D[32] 36:D[13] 37:D[32] 38:D[32] 39:D[10] 40:D[32] 41:D[32] 42:D[9] 43:D[32] 44:D[32] 45:D[10] 46:D[32] 47:D[32] 48:D[10] 49:D[32] 50:D[32] 51:D[12]"
+  },
+  "suite:c10:dopri5": {
+   "kind": "suite",
+   "case": "c10",
+   "mode": "dopri5",
+   "timing": {
+    "warmup_seconds": 0.000838053,
+    "timed_seconds": [
+     0.000715955,
+     0.000719411,
+     0.000735842,
+     0.000712037,
+     0.000717829
+    ],
+    "median_seconds": 0.000717829,
+    "min_seconds": 0.000712037,
+    "max_seconds": 0.000735842,
+    "timing_authority": "diagnostic_only"
+   },
+   "determinism": {
+    "identical_across_runs": true,
+    "n_runs": 6
+   },
+   "success": true,
+   "error": 0.031681416255663064,
+   "cap": 0.0001,
+   "accuracy_pass": false,
+   "final_time": 1.0,
+   "final_state": [
+    -0.0019650296281158277,
+    -0.002368332482301965,
+    0.14004084495408958,
+    -0.18416624115097419,
+    0.9825148140579191,
+    0.2
+   ],
+   "message": "DOPRI5 reached the final time",
+   "role": "direct",
+   "stats": {
+    "attempts": 1105,
+    "accepted_steps": 1052,
+    "rejected_steps": 53,
+    "rhs_calls": 6631,
+    "jvp_vectors": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 0,
+    "ft_calls": 0
+   }
+  }
+ },
+ "comparison": {
+  "bench:rotation:evidence": {
+   "best_direct": "bench:rotation:dopri",
+   "best_direct_median_seconds": 0.000218637,
+   "switch_median_seconds": 0.00047735,
+   "time_ratio_median": 2.1832992585884368,
+   "switch_attempts": 892,
+   "best_direct_attempts": 875,
+   "switch_rhs": 5371,
+   "best_direct_rhs": 5251,
+   "direct_medians": {
+    "bench:rotation:dopri": 0.000218637,
+    "bench:rotation:rodas": 0.006443852
+   }
+  },
+  "bench:rotation:screened-reset": {
+   "best_direct": "bench:rotation:dopri",
+   "best_direct_median_seconds": 0.000218637,
+   "switch_median_seconds": 0.000722207,
+   "time_ratio_median": 3.3032240654601006,
+   "switch_attempts": 1105,
+   "best_direct_attempts": 875,
+   "switch_rhs": 6710,
+   "best_direct_rhs": 5251,
+   "direct_medians": {
+    "bench:rotation:dopri": 0.000218637,
+    "bench:rotation:rodas": 0.006443852
+   }
+  },
+  "bench:rotation:pressure-only": {
+   "best_direct": "bench:rotation:dopri",
+   "best_direct_median_seconds": 0.000218637,
+   "switch_median_seconds": 0.00638364,
+   "time_ratio_median": 29.197436847377162,
+   "switch_attempts": 666,
+   "best_direct_attempts": 875,
+   "switch_rhs": 5144,
+   "best_direct_rhs": 5251,
+   "direct_medians": {
+    "bench:rotation:dopri": 0.000218637,
+    "bench:rotation:rodas": 0.006443852
+   }
+  },
+  "bench:stiff-forced:evidence": {
+   "best_direct": "bench:stiff-forced:rodas",
+   "best_direct_median_seconds": 9.1581e-05,
+   "switch_median_seconds": 0.00013446,
+   "time_ratio_median": 1.468208471189439,
+   "switch_attempts": 66,
+   "best_direct_attempts": 14,
+   "switch_rhs": 456,
+   "best_direct_rhs": 112,
+   "direct_medians": {
+    "bench:stiff-forced:rodas": 9.1581e-05,
+    "bench:stiff-forced:dopri": 0.000855846
+   }
+  },
+  "bench:stiff-forced:screened-reset": {
+   "best_direct": "bench:stiff-forced:rodas",
+   "best_direct_median_seconds": 9.1581e-05,
+   "switch_median_seconds": 0.000132477,
+   "time_ratio_median": 1.4465555082386086,
+   "switch_attempts": 66,
+   "best_direct_attempts": 14,
+   "switch_rhs": 456,
+   "best_direct_rhs": 112,
+   "direct_medians": {
+    "bench:stiff-forced:rodas": 9.1581e-05,
+    "bench:stiff-forced:dopri": 0.000855846
+   }
+  },
+  "bench:stiff-forced:pressure-only": {
+   "best_direct": "bench:stiff-forced:rodas",
+   "best_direct_median_seconds": 9.1581e-05,
+   "switch_median_seconds": 0.000122619,
+   "time_ratio_median": 1.3389130933272184,
+   "switch_attempts": 58,
+   "best_direct_attempts": 14,
+   "switch_rhs": 392,
+   "best_direct_rhs": 112,
+   "direct_medians": {
+    "bench:stiff-forced:rodas": 9.1581e-05,
+    "bench:stiff-forced:dopri": 0.000855846
+   }
+  },
+  "suite:c5:switching": {
+   "best_direct": "suite:c5:rodas5p-dense",
+   "best_direct_median_seconds": 0.000183051,
+   "switch_median_seconds": 0.000832953,
+   "time_ratio_median": 4.550387596899225,
+   "switch_attempts": 115,
+   "best_direct_attempts": 39,
+   "switch_rhs": 748,
+   "best_direct_rhs": 307,
+   "direct_medians": {
+    "suite:c5:rodas5p-dense": 0.000183051,
+    "suite:c5:rodas5p-mf": 0.000989274
+   }
+  },
+  "suite:c10t:switching": {
+   "best_direct": "suite:c10t:dopri5",
+   "best_direct_median_seconds": 0.00254315,
+   "switch_median_seconds": 0.005522646,
+   "time_ratio_median": 2.171576981302715,
+   "switch_attempts": 4159,
+   "best_direct_attempts": 4067,
+   "switch_rhs": 25102,
+   "best_direct_rhs": 24403,
+   "direct_medians": {
+    "suite:c10t:dopri5": 0.00254315,
+    "suite:c10t:rodas5p-mf": 0.189373336
+   }
+  },
+  "suite:c10:switching": {
+   "best_direct": "suite:c10:dopri5",
+   "best_direct_median_seconds": 0.000717829,
+   "switch_median_seconds": 0.001986484,
+   "time_ratio_median": 2.7673498841646134,
+   "switch_attempts": 1209,
+   "best_direct_attempts": 1105,
+   "switch_rhs": 7309,
+   "best_direct_rhs": 6631,
+   "direct_medians": {
+    "suite:c10:dopri5": 0.000717829
+   }
+  }
+ }
+}

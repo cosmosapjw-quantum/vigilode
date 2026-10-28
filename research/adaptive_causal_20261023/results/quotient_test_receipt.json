@@ -1,0 +1,45 @@
+{
+  "schema": "vigilode.quotient-tests.v1",
+  "created_utc": "2026-10-23T05:00:55.802735+00:00",
+  "baseline_commit": "14c74978b93339a79d7228a324fa77552dae548e",
+  "command": "source /workspace/scratch/0dc1e721cf82/task_runtime/env-1023.sh; cargo test -p rodas5p-integrators --locked --offline --test quotient_flow_contracts -- --nocapture",
+  "exit_code": 0,
+  "passed": 12,
+  "failed": 0,
+  "log": "results/quotient_tests.log",
+  "source_files": [
+    {
+      "path": "crates/rodas5p-integrators/src/quotient_flow.rs",
+      "bytes": 25628,
+      "sha256": "42225c1bed7f2ac8ffffc68132fa4c14fcdc3a14fe0f9b282295afa1ea1b74ce"
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/quotient_flow_contracts.rs",
+      "bytes": 9236,
+      "sha256": "9b572ea06b2e893e0eb8900592b19823c9877b0c5d04fa8c9dfcfa8cd5f10fc5"
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/quotient_flow_bench.rs",
+      "bytes": 7247,
+      "sha256": "41e5f95f3ccc51bec220ca6ce33d033da29c3560b25fb8fd813a29967c969a3d"
+    }
+  ],
+  "corrections": [
+    {
+      "finding": "exponential coefficient underflow discarded large representable output",
+      "correction": "half-exponent scaled action below exponent-700; only universal-round-tozero shortcut below-1500",
+      "tests": [
+        "underflowing_exponential_coefficient_does_not_erase_large_state",
+        "subnormal_coefficient_is_scaled_before_large_state"
+      ]
+    },
+    {
+      "finding": "inverse normalized numerator overflow despite finite quotient",
+      "correction": "divide normalized coefficients before multiply/add",
+      "tests": [
+        "quotient_inverse_divides_before_large_sum"
+      ]
+    }
+  ],
+  "benchmark_state": "preliminary data retained; final source-pinned quiet execution delegated to root"
+}

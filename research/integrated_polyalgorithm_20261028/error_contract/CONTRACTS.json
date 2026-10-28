@@ -1,0 +1,72 @@
+{
+  "schema_version": 1,
+  "skill_context_used": {
+    "skill": "physmath-research-loop",
+    "version": "1.3.0",
+    "selected_stages": ["R3", "R5", "R9"],
+    "instruction_source": "research/integrated_polyalgorithm_20261028/SKILL_CONTEXT.md",
+    "behavior": "Read prior code/proofs, construct one coherent physical-error integration, preserve original targets and negative controls; no recursive delegation or native execution."
+  },
+  "source_commit": "384dba091a3d9e1aac0ecddec264958298239253",
+  "runtime_source_modified": false,
+  "checker_execution_at_worker_handoff": "NOT_RUN_PENDING_PARENT_REGISTRATION",
+  "syntax_validation": "Python ast.parse only; CHECK.py not imported or executed",
+  "claims": [
+    {
+      "id": "E1",
+      "name": "Selection-independent common-flow physical induction",
+      "status": "DERIVED_WITH_PROOF",
+      "scope": "Valid flow/domain bound and same physical request; arbitrary history-dependent backend selection on the realized accepted grid",
+      "check": "switching_check",
+      "tasks": ["PR-N01", "PR-N02", "PR-N03", "PR-N04", "PR-N05", "PR-N06"]
+    },
+    {
+      "id": "E2",
+      "name": "Dual induction anchors and wrong-anchor counterexample",
+      "status": "DERIVED_WITH_PROOF_AND_COUNTEREXAMPLE",
+      "scope": "Exact-flow propagation needs numerical-input truncation; discrete-map propagation permits exact-input truncation with valid discrete stability",
+      "check": "anchors_check",
+      "tasks": ["PR-N02", "PR-N03", "PR-N05"]
+    },
+    {
+      "id": "E3",
+      "name": "Telescoping certificate edges, norm conversion and clock ownership",
+      "status": "DERIVED_WITH_PROOF",
+      "scope": "Named common-space anchors and valid norm/chart/clock bounds; existing residual-enclosed terms are not separately charged again",
+      "check": "representation_clock_check",
+      "tasks": ["PR-N01", "PR-N02", "PR-N03", "PR-N04", "PR-N05"]
+    },
+    {
+      "id": "E4",
+      "name": "Exact finite-menu error/cost frontier",
+      "status": "DERIVED_WITH_PROOF_AND_EXAMPLE",
+      "scope": "Frozen request or joint validity tube; nonnegative observation weights; one named cost objective; pruning respects future continuation state",
+      "check": "menu_check",
+      "tasks": ["PR-N01", "PR-N02", "PR-N05", "PR-N06"]
+    },
+    {
+      "id": "E5",
+      "name": "Log-work allocation initializer and certificate-floor distinction",
+      "status": "DERIVED_WITH_PROOF_AND_EXAMPLE",
+      "scope": "Stated logarithmic cost relaxation only; final discrete plans retain original outward acceptance; upper allowance is not a representability lower bound",
+      "check": ["continuous_allocation_check", "precision_check"],
+      "tasks": ["PR-N01", "PR-N02", "PR-N05"]
+    }
+  ],
+  "primary_source": {
+    "authors": "Hendrik Ranocha; Jan Giesselmann",
+    "title": "Stability of step size control based on a posteriori error estimates",
+    "year": 2024,
+    "doi": "10.1007/s44207-024-00001-0",
+    "url": "https://link.springer.com/article/10.1007/s44207-024-00001-0",
+    "read_location": "Section 2.1, Lemma 1 and Sections 1/3",
+    "use": "Standard residual-energy connection and separation of reliability from controller stability; not a novelty attribution for the project construction."
+  },
+  "remaining_obligations": [
+    "Model-specific valid tubes and stability bounds",
+    "Native outward arithmetic and compiled-binary behavior",
+    "Correct physical versus internal-clock ownership for nonautonomous cases",
+    "Original-target temporal/stiff-uniform order where not already proved",
+    "Cost-table validity, full setup/failure costs and measured native performance"
+  ]
+}

@@ -1,0 +1,195 @@
+{
+ "agent": "lens_b",
+ "items": [
+  {
+   "id": "F-002",
+   "severity_final": "P2",
+   "finder_severity": "P1",
+   "refuter_severity": "P2",
+   "reason": "Adjudicated for the refuter. The missing interior-error control is real (no code path compares the interpolant to atol/rtol), but it is the standard design of Rosenbrock dense output and no returned endpoint is wrong. The finder's impact claim (campaign dense arm is dominated by interpolant error) was measured and REFUTED by E-03 H1b: interpolated-grid max error / accepted-endpoint max error has median 1.08, range 0.70-2.43, 0/18 rows above 5x. The 17x-610x exceedance is a Python replica on Prothero-Robinson lambda=-1e5 only; the Rust dense lane was not executed on it. No committed claim is falsified because every v2 claim is withheld.",
+   "impact_statement": "Library users who sample dense output on very stiff problems can receive interior values outside tolerance with no warning or doc caveat (dense_output_v2.rs has none). For the research pipeline the measured effect on the 18 n=96 campaign rows is at most ~2.4x, so it does not explain the 54/54 nonpass.",
+   "affected_claims": [
+    {
+     "path": "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md:63",
+     "quote": "H | Dense output and controller-neutral hard-stop/output handling | IMPLEMENTED; dense-output contracts | all 54 clipped/dense comparisons were output-policy-dominated"
+    }
+   ]
+  },
+  {
+   "id": "F-003",
+   "severity_final": "P2",
+   "finder_severity": "P1",
+   "refuter_severity": "P2",
+   "reason": "Adjudicated for the refuter. The failure is reproduced (17 vs 18, exit 101) and the test is #[ignore]d with an ignore reason naming an 'optimized v3.7 replay gate' that exists nowhere in the tree; no .github workflow passes --ignored. It is not P1 because no numerical result is wrong and nothing aborts on user input; it is not P0 because README.md:43-44 scopes the v3.7 receipts to their original inner-solve policy and no committed text claims the replay reproduces on b3e8165. Two committed plans list the test command without --ignored, so it silently reports 0 run.",
+   "impact_statement": "Research pipeline only: the sealed v3.3/v3.7 consumed-N=192 replay value (18) is not reproducible on the target code and no gate would notice. Becomes P0 if any document asserts v3.7 replay parity on this revision.",
+   "affected_claims": [
+    {
+     "path": "README.md:43",
+     "quote": "Legacy v3.5/v3.6/v3.7 receipts remain valid only under their original corpus, comparator, inner-solve, and output policies and are not transplantable to v2."
+    },
+    {
+     "path": "crates/rodas5p-integrators/tests/v37_continuation_transaction_contracts.rs:69",
+     "quote": "#[ignore = \"long consumed N=192 replay; executed by the optimized v3.7 replay gate\"]"
+    },
+    {
+     "path": "docs/superpowers/plans/2026-08-23-v38d-first-candidate-wave.md:106",
+     "quote": "cargo test -p rodas5p-integrators --test v37_continuation_transaction_contracts --offline --locked"
+    }
+   ]
+  },
+  {
+   "id": "F-004",
+   "severity_final": "P2",
+   "finder_severity": "P1",
+   "refuter_severity": "P2",
+   "reason": "Adjudicated for the refuter. The omission is real: 12/18 dense rows exceed 1 in case-tolerance weights (max 207.48, semilinear rtol 1e-8) and E-03 reports VigilODE worse than SciPy Radau in 17/18 rows, and no committed v2 document says so. But every committed sentence is literally true, no positive solver-quality claim is published, and global error above tolerance under satisfied local control is ordinary ODE behaviour, so this is doc drift / methodology, not a wrong number or false claim. The 2.6x median is E-03's own table and was not independently recomputed.",
+   "impact_statement": "Readers of the README and ledgers are steered to conclude that only the protocol failed; the actionable result (semilinear global-error growth, deficit versus SciPy Radau) is absent from the record. No library user receives a wrong value because of it.",
+   "affected_claims": [
+    {
+     "path": "research/scientific_validity_v2_20260829/CANONICAL_EXECUTION_EVIDENCE.md:49",
+     "quote": "This result is not a solver-execution crash: every case and both output arms completed."
+    },
+    {
+     "path": "README.md:38",
+     "quote": "completed all 54 cases without an execution failure, but all 54 rows were classified `output-policy-dominated`"
+    }
+   ]
+  },
+  {
+   "id": "F-005",
+   "severity_final": "P2",
+   "finder_severity": "P1",
+   "refuter_severity": "P2",
+   "reason": "Adjudicated for the refuter. The finding's unique content is a priority judgment about a plan that lives on a planning branch outside the audited tree b3e8165; its numerical substance is already carried by F-008 and F-009. One sub-claim is false (a fixed-h order test of the forcing path exists, though it scales rtol as h^6). Ordering a plan cannot by itself produce a wrong number or falsify a receipt. Should be merged into F-008/F-009 rather than counted separately.",
+   "impact_statement": "Research pipeline only: a planned M1 real-client certificate would be built on stage solves whose residual budget does not shrink with h. No library-user impact beyond F-008/F-009.",
+   "affected_claims": [
+    {
+     "path": "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md:61",
+     "quote": "F | Optional WRMS true-residual APIs and per-stage residual forcing heuristic | ... | endpoint contamination is not certified; canonical inner/outer study NOT_RUN"
+    }
+   ]
+  },
+  {
+   "id": "F-006",
+   "severity_final": "P2",
+   "finder_severity": "P1",
+   "refuter_severity": "P2",
+   "reason": "Adjudicated for the refuter, and the 'wrong-formula' label is too strong. adaptive.rs:279-282 returns requested_h unchanged on an accepted clipped step, and the doc comment at adaptive.rs:264-267 states this is intentional. When the requested step exceeds the output spacing, any hard-stop solver takes grid-spacing steps, so the clipped arm is over-accurate, never wrong. The defect is that PI history and h receive no updates while clipping persists, and that the campaign compares a grid-locked arm with a free-step arm without saying so. Not P1: no wrong value, no abort. Not P0: the 54/54 classification is reproduced (E-02 PASS) and all claims are withheld.",
+   "impact_statement": "Research pipeline: the clipped arm in the v2 campaign is effectively a fixed-step run at span/100 (26 zero-rejection rows with exactly 100 internal / 98 clipped steps), which drives the clipped/dense gap toward the dense error itself and feeds F-007. Library users pay extra work on dense output grids but get results within tolerance.",
+   "affected_claims": [
+    {
+     "path": "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md:58",
+     "quote": "C | Failure-typed adaptive diagnostics, operator accounting, and clip-neutral controller state | ... | 54 clipped/dense pairs completed with zero execution failures"
+    },
+    {
+     "path": "research/scientific_validity_v2_20260829/CANONICAL_EXECUTION_EVIDENCE.md:50",
+     "quote": "It is a scientific output-policy invalidation. No threshold was tuned and no numerical retry was made."
+    }
+   ]
+  },
+  {
+   "id": "F-007",
+   "severity_final": "P1",
+   "finder_severity": "P1",
+   "refuter_severity": "P1",
+   "reason": "Finder and refuter agree on P1; I keep it, noting the rubric fit is imperfect. The triangle bound holds on all 54 rows (0 violations), 47/54 rows have clipped_max < 0.9*dense_max, and min gap/dense = 0.1245 against the 0.1 limit. E-03 shows the rule also fails for two admissible policies on the same code path (16/18) and for SciPy Radau pairs, so the nonpass is solver-independent. It is above P2 because the only v2 gate decision is fixed by construction and the committed causal attribution is unsupported. It is below P0 because every committed number is true and reproduces, and README.md:43 admits no claim. 'Unattainable' is overstated: clipped-vs-clipped pairs pass 16/18, and 2/18 and 1/18 of other pairings pass.",
+   "impact_statement": "Research pipeline: the v2 freeze can never be created and the Oregonator holdout can never be opened under the frozen rule, and the ledger's required fix sends future work toward an unreachable target. No library-user impact. Upgrade to P0 if the 54/54 result is cited anywhere as evidence about the solver or its output policy.",
+   "affected_claims": [
+    {
+     "path": "research/scientific_validity_v2_20260829/CANONICAL_EXECUTION_EVIDENCE.md:50",
+     "quote": "It is a scientific output-policy invalidation."
+    },
+    {
+     "path": "research/scientific_validity_v2_20260829/CANONICAL_EXECUTION_EVIDENCE.md:42",
+     "quote": "Discrepancy / dense-error ratio range: 0.12454170289388176 to 1.0941303386549561; every row strictly exceeded the frozen 0.1 dominance limit"
+    },
+    {
+     "path": "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md:72",
+     "quote": "v2 freeze threshold is eligible-row conservative maximum | WITHHELD AS DESIGNED | ... | improve output-policy agreement under a new declared campaign; do not tune the frozen gate"
+    }
+   ]
+  },
+  {
+   "id": "F-008",
+   "severity_final": "P2",
+   "finder_severity": "P1",
+   "refuter_severity": "P2",
+   "reason": "Adjudicated for the refuter. The algebra is exact (tau = 0.1/||b||_1 = 0.02022 outer-WRMS units whenever rhs_wrms >= flow_wrms) and E-04 measures an h-independent floor at 0.1-0.3 rtol with slopes <= 0 over 5+ halvings. But on the adaptive path, which is the one with a tolerance contract, achieved error / rtol is 0.18-0.29 (P1) and 0.01-0.04 (P2), so results stay within tolerance. The module comment at g4_s5b0_inner_tolerance.rs:12-17 disclaims any endpoint budget and CLAIM_SCOPE:61 says endpoint contamination is not certified, so no committed claim is false. One fixed-h point exceeded rtol (1.3e-8 at rtol 1e-8, k=9), but fixed-step runs carry no tolerance promise.",
+   "impact_statement": "Fixed-h convergence studies of the production matrix-free step show order ~0, so any future order-preservation or certificate claim built on this rule would be invalid. Library users on the adaptive lane get tolerance-proportional accuracy; tightening rtol still buys accuracy proportionally.",
+   "affected_claims": [
+    {
+     "path": "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md:61",
+     "quote": "F | ... per-stage residual forcing heuristic | IMPLEMENTED; weighted-residual contracts plus nonnormal resolvent counterexample | endpoint contamination is not certified; canonical inner/outer study NOT_RUN"
+    },
+    {
+     "path": "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs:14",
+     "quote": "This is not an endpoint-error budget."
+    }
+   ]
+  },
+  {
+   "id": "F-009",
+   "severity_final": "P1",
+   "finder_severity": "P1",
+   "refuter_severity": "P1",
+   "reason": "Finder and refuter agree; P1 confirmed as a refusal of legal input. Reproduced on the prebuilt harness: step 0 fails with 0 GMRES iterations for P1 rtol=1e-10 at every h in 1/8..1/1024, P1 rtol=1e-8 for h >= 1/256, and P1PR rtol=1e-10 for h >= 1/32, while direct LU handles the same steps. The entry points are exported (lib.rs:289-290 sequential_matrix_free_step*). Mitigating: it is a typed Err, not a panic, and no wrong number is produced; the adaptive driver recovers through h*0.2 rejections. One mechanism detail in the claim is wrong (gmix is zero at stage 0), but the threshold 1.42e12 and the abort are exact.",
+   "impact_statement": "Library users of the fixed-step matrix-free API at tight tolerance on stiff problems cannot integrate at all. On the adaptive lane the guard inflates rejected_steps and linear_solve_failures, which the fair-ab harness reports as solver failures, so work and failure accounting in research receipts is distorted.",
+   "affected_claims": [
+    {
+     "path": "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md:61",
+     "quote": "F | Optional WRMS true-residual APIs and per-stage residual forcing heuristic | IMPLEMENTED; weighted-residual contracts"
+    },
+    {
+     "path": "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs:72",
+     "quote": "RODAS5P inner-forcing roundoff floor exceeds the stage-residual heuristic allocation"
+    }
+   ]
+  },
+  {
+   "id": "F-010",
+   "severity_final": "P1",
+   "finder_severity": "P1",
+   "refuter_severity": "P1",
+   "reason": "Finder and refuter agree; P1 confirmed by the rubric's panic clause, at the low end of P1 for reach. Reproduced: exit 134 with copy_from_slice length 32 vs 16 at gcrodr.rs:463. The input is legal: GcrodrState and solve_gcrodr are re-exported (lib.rs:17), no contract forbids cross-dimension reuse, and gcrodr.rs:420 explicitly filters the basis by length, so a dimension change is contemplated while previous_solution is unchecked. Cargo.toml:37 sets panic = \"abort\", so the process dies without unwinding. No in-tree integrator reaches it because n is fixed.",
+   "impact_statement": "Any external user or harness session that reuses one GcrodrState across problems of different size crashes the process. No committed result is affected. Secondary cost effect measured by E-05: stale warm start across an operator change takes 352 iterations versus 264 fresh, still within tolerance.",
+   "affected_claims": [
+    {
+     "path": "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md:57",
+     "quote": "B | Scale-invariant Krylov breakdown/certification and refresh accounting | IMPLEMENTED; local Krylov contracts"
+    }
+   ]
+  },
+  {
+   "id": "F-011",
+   "severity_final": "P1",
+   "finder_severity": "P1",
+   "refuter_severity": "P1",
+   "reason": "Finder and refuter agree; P1 confirmed as a silently wrong certified result. exponential.rs:1078 sets the breakdown tolerance to 64*sqrt(eps) = 9.54e-7 and :1094-1099 floors the column scale at 1, so a subdiagonal of 9.0e-7 is treated as an invariant subspace and the action is returned converged with error_estimate 0 while the true relative error is 3.9e-7. Any relative_tolerance below ~1e-6 is unenforced and adaptive_exponential sees phi_error = 0. Caveats: the numbers come from a numpy/scipy replica of the rule, not a Rust run, and the input is a constructed near-invariant vector; no E-xx experiment measured how often it fires in practice. Confined to the guarded exponential candidate lanes, not the protected RODAS5P path.",
+   "impact_statement": "Users of the exponential-Rosenbrock candidate lanes at tight tolerance can accept steps with uncontrolled Krylov error near invariant subspaces. For the research pipeline, any candidate-versus-protected comparison could credit the candidate with accuracy it did not achieve; no committed receipt was shown to be affected.",
+   "affected_claims": [
+    {
+     "path": "README.md:5",
+     "quote": "combines a protected matrix-free Rosenbrock path with guarded exponential-Rosenbrock candidates"
+    },
+    {
+     "path": "research/scientific_validity_v2_20260829/CLAIM_SCOPE_AND_INVALIDATION.md:57",
+     "quote": "B | Scale-invariant Krylov breakdown/certification and refresh accounting | IMPLEMENTED; local Krylov contracts"
+    }
+   ]
+  },
+  {
+   "id": "F-014",
+   "severity_final": "P2",
+   "finder_severity": "P1",
+   "refuter_severity": "P2",
+   "reason": "Adjudicated for the refuter, against the literal rubric wording. Reference information does reach the commit decision (audit2_reusable_transaction_research.rs:985-994, :1030-1032), which matches the P1 text. I still rate it P2 because the rubric targets undisclosed leakage: here the function is named assess_audit2_reference_aware_output with a docstring stating the rule, the code is behind the audit2-research feature, the Bateman authority proof requires zero candidate executions, and no committed document cites a Candidate/ProtectedFallback disposition. Residual gap: the disclosure is in code only; a grep for 'reference-aware' across all committed .md files returns nothing.",
+   "impact_statement": "Research pipeline only: dispositions from this transaction cannot be cited as runtime candidate quality. Upgrade to P1 the moment any receipt or ledger reports these dispositions without the reference-aware caveat. No library-user impact in default builds.",
+   "affected_claims": [
+    {
+     "path": "crates/rodas5p-integrators/src/audit2_reusable_transaction_research.rs:558",
+     "quote": "Assess a candidate against an independent output budget without treating reference uncertainty as additional tolerance."
+    }
+   ]
+  }
+ ]
+}

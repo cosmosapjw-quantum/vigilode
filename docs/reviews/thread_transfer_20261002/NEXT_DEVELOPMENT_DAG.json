@@ -1,0 +1,340 @@
+{
+  "schema_version": "vigilode-thread-transfer-review-v1",
+  "review_id": "VIG-THREAD-20261002",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "branch": "claude/jolly-wozniak-7wl15h-wu25-stiff-benchmark",
+  "scientific_source_commit": "d1e9ba3b0125ee478c28d0b2c280ca0869289c15",
+  "scientific_source_tree": "25e00400a0b8a76ee41171e717094344069a1b28",
+  "publication_base_commit": "687def63d3f6d24297d37bc1cb1a99558be2d71f",
+  "publication_base_tree": "83777d81ea4e0bb1976df365412df27a63251b28",
+  "nodes": [
+    {
+      "id": "P0-PREREG",
+      "priority": "P0",
+      "title": "새 native 연구의 source/authority 고정",
+      "status": "PROPOSED_NATIVE_WORK_NOT_EXECUTED",
+      "depends_on": [],
+      "target_files": [
+        "docs/RESEARCH_LEDGER.md",
+        "research/<new_node>/PREREGISTRATION.md (proposed)",
+        "research/LEDGER.jsonl"
+      ],
+      "input_contract": "Refresh branch HEAD and relevant code; retain original negative findings; new immutable run identity.",
+      "acceptance_tests": [
+        "preregistration commit remotely acknowledged before new native execution",
+        "no holdout touched",
+        "old L-0033 and R4 result files unchanged"
+      ],
+      "stop_condition": "Unresolved source identity, dirty unrelated changes or timing hold used as permission.",
+      "claim_ceiling": "Preregistered native research, not success.",
+      "addresses": [
+        "B-TIMING"
+      ],
+      "mutation_policy": "same existing branch; new native research node preregistered and pushed before native execution; preserve old ledgers/FAIL/HOLD"
+    },
+    {
+      "id": "P0-MF-TARGET",
+      "priority": "P0",
+      "title": "Raw-stage와 native K target의 정밀도·잔차 계약",
+      "status": "PROPOSED_NATIVE_WORK_NOT_EXECUTED",
+      "depends_on": [
+        "P0-PREREG"
+      ],
+      "target_files": [
+        "crates/rodas5p-integrators/src/stage_target.rs",
+        "crates/rodas5p-core/src/coefficients.rs",
+        "new raw/native allowance tests (proposed)"
+      ],
+      "input_contract": "Unchanged official snapshot; constant M, same current J, S=lower-native-Gamma+stated diagonal.",
+      "acceptance_tests": [
+        "symbolic r_U=gamma*r_K for generic M,J",
+        "outward enclosure of D_Gamma, D_alpha, output/embedded/dense discrepancies",
+        "mutated coefficient, operator, h or scale invalidates receipt",
+        "absolute/WRMS residual mapped by gamma; relative RHS criteria recomputed"
+      ],
+      "stop_condition": "Any acceptance relies on ignored coefficient leakage or assumes native bit parity.",
+      "claim_ceiling": "Validated stage-target transport only.",
+      "addresses": [
+        "B-MF-WORKSPACE",
+        "B-PHYSICAL-ERROR"
+      ],
+      "mutation_policy": "same existing branch; new native research node preregistered and pushed before native execution; preserve old ledgers/FAIL/HOLD"
+    },
+    {
+      "id": "P1-MF-WORKSPACE",
+      "priority": "P1",
+      "title": "JVP-only raw-stage reusable workspace",
+      "status": "PROPOSED_NATIVE_WORK_NOT_EXECUTED",
+      "depends_on": [
+        "P0-MF-TARGET"
+      ],
+      "target_files": [
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs (proposed)",
+        "crates/rodas5p-integrators/src/sequential.rs",
+        "crates/rodas5p-integrators/src/problem.rs"
+      ],
+      "input_contract": "Start M=I; donor raw U from existing fast driver; current JVP target; existing Krylov identity and rejection semantics.",
+      "acceptance_tests": [
+        "RHS assembly JVP decreases 7->0 on controlled nondegenerate 8-stage fixtures",
+        "all actual solver/residual JVP and preconditioner calls counted",
+        "no explicit Jacobian or direct fallback in strict MF mode",
+        "allocation counts per attempt reported",
+        "time forcing, represented clock, dense output and rejected-step rollback tests",
+        "matched physical accuracy against current native path"
+      ],
+      "stop_condition": "Target errors exceed allowance, missing residual check, or total costs consistently worse than donor baseline.",
+      "claim_ceiling": "Native correctness/cost counters if actually run; no walltime win without approved campaign.",
+      "addresses": [
+        "B-MF-WORKSPACE",
+        "B-LATEST-SMALLN"
+      ],
+      "mutation_policy": "same existing branch; new native research node preregistered and pushed before native execution; preserve old ledgers/FAIL/HOLD"
+    },
+    {
+      "id": "P0-RADIUS-REPLAY",
+      "priority": "P0",
+      "title": "R4 여섯 번 상한의 native 원인 재현",
+      "status": "PROPOSED_NATIVE_WORK_NOT_EXECUTED",
+      "depends_on": [
+        "P0-PREREG"
+      ],
+      "target_files": [
+        "crates/rodas5p-integrators/tests/thread_transfer_radius.rs (proposed from supplied template)",
+        "crates/rodas5p-cli/src/r4_studies.rs"
+      ],
+      "input_contract": "Same n=8/16 source fixtures, same coefficient bits, unchanged certificate and old six-point schedule.",
+      "acceptance_tests": [
+        "cargo test --release -p rodas5p-integrators --locked --test thread_transfer_radius -- --nocapture",
+        "preserve six-attempt rejection",
+        "record seven/eight-attempt closure or contrary evidence",
+        "native full/blocked bound status not inferred from Python",
+        "Do not infer operational q2 admission gains: its current sequential certificate is a separate consumer; candidate distance and outer tolerance also required."
+      ],
+      "stop_condition": "Native contradiction: preserve exact input, classify rounding/policy/model difference, do not promote.",
+      "claim_ceiling": "Radius diagnosis, no efficiency claim.",
+      "addresses": [
+        "B-HOM-RADIUS"
+      ],
+      "mutation_policy": "same existing branch; new native research node preregistered and pushed before native execution; preserve old ledgers/FAIL/HOLD"
+    },
+    {
+      "id": "P1-RADIUS-PROPOSAL",
+      "priority": "P1",
+      "title": "Residual preflight와 stage/component box",
+      "status": "PROPOSED_NATIVE_WORK_NOT_EXECUTED",
+      "depends_on": [
+        "P0-RADIUS-REPLAY"
+      ],
+      "target_files": [
+        "crates/rodas5p-integrators/src/outward_certificate.rs",
+        "crates/rodas5p-integrators/src/homotopy_policy.rs"
+      ],
+      "input_contract": "Proposal may use current residual and past accepted data, never current exact stage oracle.",
+      "acceptance_tests": [
+        "Every proposed radius independently rechecked with outward inequalities",
+        "synthetic scalar-radius-no-go fixture versus anisotropic feasible box",
+        "failure histories and preflight/serial work counted",
+        "all finite/positive/identity conditions fail closed"
+      ],
+      "stop_condition": "Proposal cost consumes the available W-solve savings or adverse rounding invalidates claimed lower bound.",
+      "claim_ceiling": "Verified feasible bounds, not proof of global optimality or speed.",
+      "addresses": [
+        "B-HOM-RADIUS",
+        "B-HOM-COST"
+      ],
+      "mutation_policy": "same existing branch; new native research node preregistered and pushed before native execution; preserve old ledgers/FAIL/HOLD"
+    },
+    {
+      "id": "P1-PATH-ACTION",
+      "priority": "P1",
+      "title": "전체 sum matrix 대신 finite path action",
+      "status": "PROPOSED_NATIVE_WORK_NOT_EXECUTED",
+      "depends_on": [
+        "P0-RADIUS-REPLAY"
+      ],
+      "target_files": [
+        "crates/rodas5p-integrators/src/outward_certificate.rs"
+      ],
+      "input_contract": "s-block strict lower nonnegative H, use ceil(log2(s)); existing blocked/pool infrastructure reused.",
+      "acceptance_tests": [
+        "exact rational identity against full sum and causal solve",
+        "outward bounds enclose high-precision stage reference",
+        "s=1,3,8,9,16 and invalid structure tests",
+        "directed scalar work, memory, matrix-vector/matrix-matrix counts recorded",
+        "no native bit identity required without proof of evaluation order"
+      ],
+      "stop_condition": "Hidden dense sn matrices erase benefit or bound loses validity.",
+      "claim_ceiling": "Certificate-action correctness and counted cost only.",
+      "addresses": [
+        "B-HOM-COST"
+      ],
+      "mutation_policy": "same existing branch; new native research node preregistered and pushed before native execution; preserve old ledgers/FAIL/HOLD"
+    },
+    {
+      "id": "P1-LAGUERRE-CERT",
+      "priority": "P1",
+      "title": "Signed output-adjoint Bernstein recurrence budget",
+      "status": "PROPOSED_NATIVE_WORK_NOT_EXECUTED",
+      "depends_on": [
+        "P0-PREREG"
+      ],
+      "target_files": [
+        "crates/rodas5p-core/src/polynomial_action.rs",
+        "new interval Bernstein utility/tests (proposed)"
+      ],
+      "input_contract": "Verified self-adjoint X; exact chosen coefficient bits; initial source and normalization budgets separate; start degree<=64 or128.",
+      "acceptance_tests": [
+        "backward identity with arbitrary signed stored coefficients",
+        "Bernstein convex-hull/subdivision bounds including mutation tests",
+        "diagonal and rotated symmetric exact references",
+        "all coefficient/truncation/recurrence/summation/normalization terms present before Certified",
+        "declared-only spectrum remains EstimateOnly"
+      ],
+      "stop_condition": "Bounds or setup unusable; retain existing EstimateOnly/Chebyshev fallback.",
+      "claim_ceiling": "One new proved error component until complete native total bound is verified.",
+      "addresses": [
+        "B-LAGUERRE"
+      ],
+      "mutation_policy": "same existing branch; new native research node preregistered and pushed before native execution; preserve old ledgers/FAIL/HOLD"
+    },
+    {
+      "id": "P2-LAGUERRE-CACHE",
+      "priority": "P2",
+      "title": "Envelope cache 및 전체 certificate 비용",
+      "status": "PROPOSED_NATIVE_WORK_NOT_EXECUTED",
+      "depends_on": [
+        "P1-LAGUERRE-CERT"
+      ],
+      "target_files": [
+        "crates/rodas5p-core/src/polynomial_action.rs",
+        "research/<new_cost_node>/ (proposed)"
+      ],
+      "input_contract": "Key includes degree, coefficient bits, transform/domain and proof version; current operator domain verification stays active.",
+      "acceptance_tests": [
+        "cold/warm setup/action/enclosure counters separated",
+        "changed h/domain/degree/coefficients invalidate cache",
+        "same-vector combination versus distinct five-vector paths",
+        "scale up degree only after bounded complexity experiment"
+      ],
+      "stop_condition": "Degree/memory/bit complexity or setup costs exceed amortizable action savings.",
+      "claim_ceiling": "Amortized cost study, no blanket degree4096 support.",
+      "addresses": [
+        "B-LAGUERRE",
+        "B-HOM-COST"
+      ],
+      "mutation_policy": "same existing branch; new native research node preregistered and pushed before native execution; preserve old ledgers/FAIL/HOLD"
+    },
+    {
+      "id": "P1-NEGATIVE-CONTROLS",
+      "priority": "P1",
+      "title": "Method 별 physical error 회귀자료",
+      "status": "PROPOSED_NATIVE_WORK_NOT_EXECUTED",
+      "depends_on": [
+        "P0-PREREG"
+      ],
+      "target_files": [
+        "new method-labelled stiffness tests (proposed)",
+        "supplied inputs/thread_loop3/proofs"
+      ],
+      "input_contract": "Keep RJ5/RVJ5/chart-RVJ5/RODAS/exact-phi identities separate; compare physical error and target distance.",
+      "acceptance_tests": [
+        "reproduce RVJ kappa=h^-6 two-step 4/3 limit",
+        "reproduce quinticPR embedded blindness",
+        "test actual native RODAS/exponential methods separately, without assuming same failure",
+        "use matched represented clock/output meshes and error norm"
+      ],
+      "stop_condition": "Any report confuses method identity or stage certificate with actual ODE error.",
+      "claim_ceiling": "Specific method/domain regression results only.",
+      "addresses": [
+        "B-PHYSICAL-ERROR",
+        "B-CHART"
+      ],
+      "mutation_policy": "same existing branch; new native research node preregistered and pushed before native execution; preserve old ledgers/FAIL/HOLD"
+    },
+    {
+      "id": "P2-CHART-CONTRACT",
+      "priority": "P2",
+      "title": "Optional Darboux/closure chart와 오차 재구성",
+      "status": "PROPOSED_NATIVE_WORK_NOT_EXECUTED",
+      "depends_on": [
+        "P1-NEGATIVE-CONTROLS"
+      ],
+      "target_files": [
+        "new chart research module (proposed)",
+        "new physical output adapter tests (proposed)"
+      ],
+      "input_contract": "Explicit D lower bound, chart/inverse norms, cofactor residual, initial transverse state, mass/event/dense-output transforms.",
+      "acceptance_tests": [
+        "validate wprime=-kappa*w+(rC-w*rD)/D",
+        "fail on D=0, poor chart conditioning and invalid branch",
+        "nonzero fast initial mode preserved",
+        "finite epsilon invariance not replaced by equilibrium residual",
+        "moving-frame connection retained"
+      ],
+      "stop_condition": "No certified chart/domain or high-order jet work exceeds baseline; leave generic route active.",
+      "claim_ceiling": "Model-specific chart theorem and tests; no generic production replacement.",
+      "addresses": [
+        "B-CHART",
+        "B-PHYSICAL-ERROR"
+      ],
+      "mutation_policy": "same existing branch; new native research node preregistered and pushed before native execution; preserve old ledgers/FAIL/HOLD"
+    },
+    {
+      "id": "P1-SMALLN-COST",
+      "priority": "P1",
+      "title": "Small-n overhead의 제한된 specialization",
+      "status": "PROPOSED_NATIVE_WORK_NOT_EXECUTED",
+      "depends_on": [
+        "P0-PREREG"
+      ],
+      "target_files": [
+        "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+        "new counted small-n profile node (proposed)"
+      ],
+      "input_contract": "Do not redo banded optimization on tiny dense systems; retain finiteness, output, clock and mass rules.",
+      "acceptance_tests": [
+        "allocation/clone/profile attribution at n=2,3,8",
+        "tiny-stack or static dispatch alternative compared at identical physical error",
+        "rejection and coefficient/cache identity regressions",
+        "ensemble throughput separated from one-trajectory latency"
+      ],
+      "stop_condition": "Optimization weakens semantics or instruction reduction does not meet new prereg threshold.",
+      "claim_ceiling": "Counted instruction/allocation findings, not old FAIL revision.",
+      "addresses": [
+        "B-LATEST-SMALLN"
+      ],
+      "mutation_policy": "same existing branch; new native research node preregistered and pushed before native execution; preserve old ledgers/FAIL/HOLD"
+    },
+    {
+      "id": "P2-TIMING-GATE",
+      "priority": "P2",
+      "title": "권한이 닫힌 후 native matched-error 성능 비교",
+      "status": "PROPOSED_NATIVE_WORK_NOT_EXECUTED",
+      "depends_on": [
+        "P1-MF-WORKSPACE",
+        "P1-SMALLN-COST"
+      ],
+      "target_files": [
+        "existing native CVODE/Hairer benchmark adapters",
+        "research/<new_approved_timing_node>/ (proposed)"
+      ],
+      "input_contract": "Resolve timing authority independently; no exploratory retuning on protected holdout.",
+      "acceptance_tests": [
+        "native full build and selected contracts passed with recorded toolchain",
+        "paired matched-error runs with preregistered uncertainty/acceptance",
+        "all source, setup, per-attempt, output costs counted",
+        "negative and inconclusive runs retained"
+      ],
+      "stop_condition": "HOLD still active or native runtime not verified.",
+      "claim_ceiling": "Only domain-specific statistically supported comparison.",
+      "addresses": [
+        "B-TIMING",
+        "B-NATIVE-RUNTIME"
+      ],
+      "mutation_policy": "same existing branch; new native research node preregistered and pushed before native execution; preserve old ledgers/FAIL/HOLD"
+    }
+  ],
+  "recommended_first_native_node": "P0-MF-TARGET",
+  "independent_first_regression": "P0-RADIUS-REPLAY",
+  "scope_policy": "No new branch. Production files are only planned targets; this review does not modify them."
+}

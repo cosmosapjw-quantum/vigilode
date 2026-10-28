@@ -55,6 +55,7 @@ fn adaptive_fused_parallel_exponential_responds_to_tolerance() {
             max_factor: 4.0,
             reject_max_factor: 0.8,
             controller: ControllerKind::Pi,
+            max_step_policy: rodas5p_integrators::MaxStepPolicy::AllowClockResolutionSlack,
         };
         integrate_pexprb54s4_fused_adaptive_observed(
             &problem,
@@ -136,6 +137,7 @@ fn incomplete_adaptive_run_preserves_attempted_work_and_partial_output() {
         max_factor: 4.0,
         reject_max_factor: 0.8,
         controller: ControllerKind::Pi,
+        max_step_policy: rodas5p_integrators::MaxStepPolicy::AllowClockResolutionSlack,
     };
     let run = integrate_pexprb54s4_fused_adaptive_observed(
         &problem,

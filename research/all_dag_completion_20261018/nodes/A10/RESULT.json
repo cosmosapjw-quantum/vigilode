@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "workflow_version": "1.0.0",
+  "node": "A10",
+  "task": "both",
+  "status": "complete",
+  "decision": "PASS_SCOPED",
+  "scope": "outward adaptive Bernstein bounds on exact represented continuous packet residual; immutable owner; opt-in A02 retry with unchanged physical gates",
+  "original_dag": "research/all_dag_completion_20261018/ORIGINAL_DAG.json#A10",
+  "implementation": [
+    "RepresentedPacketCurve::with_bernstein_residual_bound",
+    "PacketFrozenOutput::with_bernstein_residual_bound",
+    "VerifiedPacketAdaptiveConfig::bernstein_max_depth",
+    "fallible counted Bernstein workspace and explicit degree cap"
+  ],
+  "reused": [
+    {
+      "source": "research/production_audit_20261018/THEOREMS.json#T2",
+      "premises": "polynomial on [0,1], outward interval coefficients, positive weighted norm",
+      "status": "reused_after_one_adversarial_review"
+    },
+    {
+      "source": "crates/rodas5p-integrators/src/packet_window.rs:compute_certificate",
+      "scope": "existing estimate-only candidate domain gate retained"
+    }
+  ],
+  "claims": [
+    {
+      "id": "A10-R",
+      "status": "derived_and_implementation_verified",
+      "statement": "rho_new=min(rho_old,sqrt_up(sum_up w_j U_j^2)) encloses exact same continuous weighted residual and cannot increase T1 radius with unchanged gain/initial tube",
+      "proof": "REPORT_KO.md#정리-a10-r-잔차-경계의-안전한-감소"
+    },
+    {
+      "id": "A10-COST",
+      "status": "derived",
+      "statement": "per mode work O(d^2(1+D*2^D)), O(d) additional live storage, d<=1024,D<=8; cheap pass zero transform/allocation",
+      "elapsed_speedup_claim": false
+    }
+  ],
+  "checks": [
+    {
+      "id": "new_native",
+      "result": "pass_scoped",
+      "test_count": 4,
+      "fraction_disk_containments": 42,
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test all_dag_a10_bernstein -- --nocapture",
+      "exit_code": 0,
+      "evidence": "evidence/native.log"
+    },
+    {
+      "id": "changed_kernel_regression",
+      "result": "pass_scoped",
+      "test_count": 8,
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet bernstein -- --nocapture",
+      "exit_code": 0,
+      "evidence": "evidence/changed_kernel_regression.log"
+    },
+    {
+      "id": "independent_review",
+      "result": "pass_scoped",
+      "reviewer": "/root/dag_a12_independent",
+      "scope": "positive weighted norm aggregation, immutable curve/source, valid exhausted bound, monotone min",
+      "corrections": [
+        "state actual O(d^2 D2^D) work",
+        "separate residual threshold success from physical window acceptance"
+      ]
+    },
+    {
+      "id": "A02_unchanged_budget_integration",
+      "result": "pass_scoped",
+      "evidence": "../A02/native_with_bernstein_final.log",
+      "physical_tolerance": 0.0001,
+      "new_fraction_containments": 30,
+      "reused_regression_fraction_containments": 120,
+      "accepted_windows": 16,
+      "rejected_windows": 14,
+      "actual_window_rejection_savings_claim": false
+    }
+  ],
+  "failures": [
+    {
+      "class": "implementation_integration",
+      "scope": "concurrent actual_k_homotopy.rs owned/reference type mismatch, outside A10",
+      "evidence": "evidence/first_compile.log",
+      "resolved": true
+    }
+  ],
+  "fixture": {
+    "model": "N=1, a0=.5, chi=2, omega=kappa=0,h=.5,order=degree=4,sweeps=2,initial_radius=1e-10",
+    "old_residual": 0.0026064664829494252,
+    "new_residual": 0.0026053068793230765,
+    "old_output_radius": 0.001968281956657994,
+    "new_output_radius": 0.0019674062781352077,
+    "fixed_physical_budget": 0.001967844117396601,
+    "budget_selection": "constructive fixture midpoint after two bounds; not preregistered benchmark",
+    "physical_gate_before": "reject",
+    "physical_gate_after": "accept"
+  },
+  "counter_contract": {
+    "bernstein_residual_false_rejections_saved": "residual threshold successes only; physical acceptance is separately checked",
+    "allocation_counters": "requested reservations/items, not allocator-measured events",
+    "terms": "heterogeneous attempted arithmetic/copy counts, not FLOPs or elapsed time"
+  },
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/packet_window.rs": "0eb7359dafc437436e0589a12ffc5bea2097a5bd176c422cdbeb0c6495696c80",
+    "crates/rodas5p-integrators/src/packet_work.rs": "e0960416af726c0110359bc03971cc5379186eb06673ee7cee4aff012bce5353",
+    "crates/rodas5p-integrators/src/packet_curve.rs": "955bdf313d02fee67151b05c0eabce5b9e87c63a444e6db321bcac2ee8d324f5",
+    "crates/rodas5p-integrators/src/packet_curve_output.rs": "2e49d892c31ca72925c6e2fc4a5051492f5ceff7df552bd63e9cfbf7ec1036c5",
+    "crates/rodas5p-integrators/tests/all_dag_a10_bernstein.rs": "5001dfbaaacc6cc8021aaaa5b91d469c32da901713a9539f758f7fae8f787183",
+    "crates/rodas5p-integrators/tests/packet_curve_output_fraction_oracle.py": "3f08a213fac408a37d902b5760ba7c9769e84c384ca40ed35343712a7d022cfd"
+  },
+  "next_actions": [
+    {
+      "action": "Run matched physical output campaign A02 None vs Some(0,1,2) at frozen source and tolerance",
+      "required_for": "elapsed speed decision",
+      "implementation_required": false
+    }
+  ],
+  "stages": {
+    "R1": "complete",
+    "R2": "reused",
+    "R3": "reused",
+    "R4": "complete",
+    "R5": "complete",
+    "R6": "complete",
+    "R7": "complete",
+    "R8": "complete",
+    "R9": "complete",
+    "R10": "complete",
+    "C1": "complete",
+    "C2": "complete",
+    "C3": "complete",
+    "C4": "complete",
+    "C5": "complete",
+    "C6": "complete",
+    "C7": "complete",
+    "C8": "complete",
+    "C9": "complete",
+    "C10": "complete"
+  },
+  "publication": "parent will integrate all A01-A12 and push collectively; no node-local push"
+}

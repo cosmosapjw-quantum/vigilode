@@ -1,0 +1,43 @@
+{
+  "schema": "vigilode-component-p3-driver-source-review-v1",
+  "reviewer_task": "component_benchmark_final_review",
+  "requested_model": "gpt-6-astra",
+  "requested_reasoning_effort": "ultra",
+  "observed_runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+  "review_status": "PASS_SOURCE_CHECKPOINT",
+  "scope": "research-only P3 launcher source and owned-process cleanup controls",
+  "reviewed_path": "research/component_benchmark_20261018/run_ncp_p3.py",
+  "reviewed_sha256": "15ccbef4c4880296a085f88dfc716ce258699ac358397b70df9c7afe9c9d78ba",
+  "focused_test_path": "research/component_benchmark_20261018/test_run_ncp_p3.py",
+  "focused_test_sha256": "6ec9f0b1bfbd6082635b1db83d2daf8f6c386d69e26be55f60f7a131b410fc39",
+  "source_binding_sha256": "53ae19c911a99a718024c56bd9a5ff711e1f637bc6660a31c836870d134945ce",
+  "panel_source_sha256": "d337da5a843aca0788d913cfb57b140954547244984721eadbba7d376c3b7de3",
+  "prior_major": "Unbounded P2 marker wait and P3 controller subprocess could exceed phase lease; killing only the controller process group could orphan separately sessioned solver arms.",
+  "partial_repair": {
+    "raw_test_log": "research/component_benchmark_20261018/evidence/native_dev/p3_driver_hard_cap_tests_01.log",
+    "sha256": "605048a3ad74c8900009145ecbd654959dbcba99305c6bcc058ed10dad00f04c",
+    "status": "INSUFFICIENT_NESTED_SESSION_EVIDENCE"
+  },
+  "resolved_nested_group_evidence": {
+    "raw_test_log": "research/component_benchmark_20261018/evidence/native_dev/p3_driver_hard_cap_tests_04.log",
+    "sha256": "5319567ec312ea0a8a42119ccdc1d38eeffb7c5d761dacd9ca3e7ceb82f976f7",
+    "command": "PYTHONPATH=tools python3 -m unittest -v research.component_benchmark_20261018.test_run_ncp_p3",
+    "exit_code": 0,
+    "tests": "3/3",
+    "control": "nested owned session terminated before controller reap; unrelated session survived"
+  },
+  "numbered_raw_test_logs": [
+    {
+      "path": "research/component_benchmark_20261018/evidence/native_dev/p3_driver_hard_cap_tests_02.log",
+      "sha256": "446094b404de68bb5606eb6d1f03af0a7b1c3353521c203330d5ac7436b7c258"
+    },
+    {
+      "path": "research/component_benchmark_20261018/evidence/native_dev/p3_driver_hard_cap_tests_03.log",
+      "sha256": "a204a80959a0dbe2768a0749ca47b04693c3c4ee266eaf6e6962f4431f654879"
+    }
+  ],
+  "numerical_admission": "HOLD",
+  "p3_launch_admission": "HOLD_PENDING_FRESH_ASTRA_CONFIG_FREEZE",
+  "timing_authority": "diagnostic_only",
+  "production_admission": "HOLD"
+}

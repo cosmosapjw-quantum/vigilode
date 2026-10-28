@@ -1,0 +1,694 @@
+{
+  "schema_version": 1,
+  "observed_at_utc": "2026-10-21T04:17:45.236047+00:00",
+  "scope": "Port published A01-A11 scoped certificate implementations while retaining production wave1-3 APIs; A12 independent integration review owned by root",
+  "baseline_commit": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+  "published_source_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+  "later_research_branch_head_inspected": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406",
+  "later_component_benchmark_tooling_imported": false,
+  "state": "IMPLEMENTED_85_NATIVE_2_DOCTESTS_PASS_FINAL_ISOLATED_TARGET_RETRY_PENDING",
+  "automatic_facade_route_added": false,
+  "production_promotion": false,
+  "speed_promotion": false,
+  "historical_report_files_checked": 168,
+  "historical_report_mismatches": [],
+  "current_bound_pr101_byte_identical_to_baseline": true,
+  "compatibility": {
+    "pr101": "Current BoundPr101Problem and Pr101Error kept unchanged. Parameterized imported Pr101Model lives in pr101_verified.rs; error renamed Pr101VerifiedError. Both provider/driver contracts passed.",
+    "dense": "Existing WFilteredReport/Enforce kept; VerifiedResidual added; arbitrary callback entry point refuses; power-Horner interval evaluation and detailed attempted-work accounting imported. Dense agent combined its O01 fix separately.",
+    "packet": "Both weighted_center_displacement and centered_weighted_radius remain. Weighted displacement computed once for all queries; centered radius Some only with weighted owner. Old current mode/component semantics preserved.",
+    "ledger": "No historical LEDGER rows merged/replaced.",
+    "manifest": "Published SOURCE_MANIFEST retained unchanged, intentionally not a current-source receipt. Root final snapshot supersedes this observed source inventory."
+  },
+  "commands": [
+    {
+      "id": "core_contracts",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-core",
+        "--test",
+        "leja_enclosed_contract",
+        "--test",
+        "guarded_polynomial_router",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode",
+      "environment": "source /workspace/scratch/0dc1e721cf82/runtime/env.sh",
+      "exit_code": 0,
+      "passed_tests": 13,
+      "status": "PASS",
+      "log": "research/production_reaudit_20261021/evidence/port/core_contracts.log",
+      "log_sha256": "47f690ea1eaf052450c9dd293d3d028481bca1b2c6b97afb51b99958c907545c"
+    },
+    {
+      "id": "integrator_contracts",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "all_dag_a01_packet",
+        "--test",
+        "production_audit_packet_adaptive",
+        "--test",
+        "production_audit_packet_verified",
+        "--test",
+        "production_audit_damped_packet",
+        "--test",
+        "all_dag_a05_verified",
+        "--test",
+        "all_dag_a06_direct",
+        "--test",
+        "collective_rodas5p_allocation_contract",
+        "--test",
+        "nonlinear_homotopy_contracts",
+        "--test",
+        "actual_k_homotopy_contracts",
+        "--test",
+        "all_dag_a10_bernstein",
+        "--test",
+        "all_dag_a11_verified",
+        "--test",
+        "production_audit_packet_curve_output",
+        "--test",
+        "production_audit_pr101_provider",
+        "--test",
+        "independent_pr101_review",
+        "--test",
+        "production_audit_pr101_cloud",
+        "--",
+        "--nocapture",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode",
+      "environment": "source /workspace/scratch/0dc1e721cf82/runtime/env.sh",
+      "exit_code": 0,
+      "passed_tests": 72,
+      "status": "PASS",
+      "log": "research/production_reaudit_20261021/evidence/port/integrator_contracts.log",
+      "log_sha256": "6f6f584262d7ec4ca01fa146fd97e7ceddf3a1044486ec8dd2d9c51d7730977f"
+    },
+    {
+      "id": "packet_compatibility",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "production_audit_packet_center_displacement",
+        "--test",
+        "packet_trajectory_contracts",
+        "--",
+        "--test-threads=1"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode",
+      "environment": "source /workspace/scratch/0dc1e721cf82/runtime/env.sh",
+      "exit_code": 101,
+      "passed_tests": 0,
+      "status": "ENVIRONMENT_BUILD_FAILURE_RETRY_PENDING",
+      "log": "research/production_reaudit_20261021/evidence/port/packet_compatibility.log",
+      "log_sha256": "8a75f6bd962a057b4e931a5aa591735a3bdf937912585c522e43ee98b006d832"
+    },
+    {
+      "id": "homotopy_unit",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--lib",
+        "nonlinear_homotopy::tests"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode",
+      "environment": "source /workspace/scratch/0dc1e721cf82/runtime/env.sh",
+      "exit_code": 101,
+      "passed_tests": 0,
+      "status": "ENVIRONMENT_BUILD_FAILURE_RETRY_PENDING",
+      "log": "research/production_reaudit_20261021/evidence/port/homotopy_unit.log",
+      "log_sha256": "675f6bb346050141403b16b4ac6e97429a196ab46ced958dc01e048ec4e96941"
+    },
+    {
+      "id": "leja_token_doc",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-core",
+        "--doc",
+        "AdmittedLejaFused"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode",
+      "environment": "source /workspace/scratch/0dc1e721cf82/runtime/env.sh",
+      "exit_code": 0,
+      "passed_tests": 1,
+      "status": "PASS",
+      "log": "research/production_reaudit_20261021/evidence/port/leja_token_doc.log",
+      "log_sha256": "22ff3c5b464e101226ecfd13e45f93e54da590df9ea8fd5ec1c6a614dfaab28b"
+    },
+    {
+      "id": "polynomial_token_doc",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-core",
+        "--doc",
+        "GuardedPolynomialAction"
+      ],
+      "cwd": "/workspace/scratch/0dc1e721cf82/vigilode",
+      "environment": "source /workspace/scratch/0dc1e721cf82/runtime/env.sh",
+      "exit_code": 0,
+      "passed_tests": 1,
+      "status": "PASS",
+      "log": "research/production_reaudit_20261021/evidence/port/polynomial_token_doc.log",
+      "log_sha256": "3e7cb6257e7fae5f79c5e7f7e7f1ad11f1d6e3796a75d3f59907fe8535de824d"
+    }
+  ],
+  "new_ported_source_files": [
+    {
+      "path": "crates/rodas5p-core/src/leja_action.rs",
+      "published_path": "crates/rodas5p-core/src/leja_action.rs",
+      "published_git_blob": "8a4e9aaf5eaec275d4f21339761c7ea528fcea4f",
+      "current_sha256": "b42b152013c6130b65348e9a02ffeb81d26c783c003c56d495d203bf8ce807f2",
+      "published_sha256": "8e980e402a7e80a226d066166dfe15102dbb879ec9d03dffc88b2fdbd37f6736",
+      "byte_identical_to_published": false
+    },
+    {
+      "path": "crates/rodas5p-core/src/lib.rs",
+      "published_path": "crates/rodas5p-core/src/lib.rs",
+      "published_git_blob": "0bcf22f20095f7747c5d9996609c9a73269c3ad6",
+      "current_sha256": "3f3b601fa230e1f8e6be76730f7e80623cb3db6e8e9398c99ed70f1ad6787851",
+      "published_sha256": "93e785dc20835d41f02a2075309d7eb40895dee57dce1f908f12b71abdd30eb7",
+      "byte_identical_to_published": false
+    },
+    {
+      "path": "crates/rodas5p-core/src/polynomial_router.rs",
+      "published_path": "crates/rodas5p-core/src/polynomial_router.rs",
+      "published_git_blob": "4f07f65107b410da2425cd1ff0f94e6d8cde7861",
+      "current_sha256": "d2591d77f58b6c295e5e880ad78b2f3d72cbfab7985bb71d19606bd6cce4e4ec",
+      "published_sha256": "d2591d77f58b6c295e5e880ad78b2f3d72cbfab7985bb71d19606bd6cce4e4ec",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-core/tests/guarded_polynomial_router.rs",
+      "published_path": "crates/rodas5p-core/tests/guarded_polynomial_router.rs",
+      "published_git_blob": "c7efbc52bb12107cdf3691dc5cacb12e0ae1caec",
+      "current_sha256": "c94e4f8123ab641d21619eb423f7b316f2dc111b8fe54a0de69626bc5448ebac",
+      "published_sha256": "b5a61b7d64201af898b3669f4fe40c420c7b7494d2a8505de3356a7a8e173568",
+      "byte_identical_to_published": false
+    },
+    {
+      "path": "crates/rodas5p-core/tests/leja_enclosed_contract.rs",
+      "published_path": "crates/rodas5p-core/tests/leja_enclosed_contract.rs",
+      "published_git_blob": "30723e362c5b2ce495152e9f4fc9e5ccba988d85",
+      "current_sha256": "b28d6321a355fbfc180514de68b0f76dfb0522fe5f2924ea410a14cb463897ac",
+      "published_sha256": "ff93fec6203e5e32c9f3ab35ed961543e2d8ed10563bdb0db78e504b81b3496d",
+      "byte_identical_to_published": false
+    },
+    {
+      "path": "crates/rodas5p-core/tests/leja_total_contract.rs",
+      "published_path": "crates/rodas5p-core/tests/leja_total_contract.rs",
+      "published_git_blob": "f8b0e38772e620dbe43fdc828c44d24bc0231f2d",
+      "current_sha256": "2cfbd06abcb39b43faaccdc4953fa1c7611efc026e9c733be97a2cf29e927371",
+      "published_sha256": "2cfbd06abcb39b43faaccdc4953fa1c7611efc026e9c733be97a2cf29e927371",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-core/tests/leja_total_holdout.rs",
+      "published_path": "crates/rodas5p-core/tests/leja_total_holdout.rs",
+      "published_git_blob": "69d8c84c3e69f9eb6d7270404bcb443b91f39453",
+      "current_sha256": "573f6ec571fdf101ac534d373b8c80029aeda51eb901d26466869797e3f78468",
+      "published_sha256": "573f6ec571fdf101ac534d373b8c80029aeda51eb901d26466869797e3f78468",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/actual_k_homotopy_run.rs",
+      "published_path": "crates/rodas5p-integrators/examples/actual_k_homotopy_run.rs",
+      "published_git_blob": "6c7adf23a24bcd492c9dcbae808f7540239a0e1d",
+      "current_sha256": "f6b130b92112091f1702035e18187bd612bd96536e56c114bbc175ed6344cb83",
+      "published_sha256": "f6b130b92112091f1702035e18187bd612bd96536e56c114bbc175ed6344cb83",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/collective_structured_compare.rs",
+      "published_path": "crates/rodas5p-integrators/examples/collective_structured_compare.rs",
+      "published_git_blob": "6562a1e0b500980ee4491d079f54efaa8ce142a7",
+      "current_sha256": "e8c610beebd8b1debe42e61d42e1300da754a5bb83a266960861f5d62847e6c6",
+      "published_sha256": "e8c610beebd8b1debe42e61d42e1300da754a5bb83a266960861f5d62847e6c6",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/damped_packet_run.rs",
+      "published_path": "crates/rodas5p-integrators/examples/damped_packet_run.rs",
+      "published_git_blob": "57cbc0d443d3fbb6e3afef21b42633c7fde979a3",
+      "current_sha256": "23b93d3bd267a6d5b8cdd94b4b26a6de37d5cae3d88f091f2ba0180d632ed3c1",
+      "published_sha256": "23b93d3bd267a6d5b8cdd94b4b26a6de37d5cae3d88f091f2ba0180d632ed3c1",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/gray_scott_verified_run.rs",
+      "published_path": "crates/rodas5p-integrators/examples/gray_scott_verified_run.rs",
+      "published_git_blob": "8c1380319ba3633e7693709cf51265ae9aed8a41",
+      "current_sha256": "fc060d070a81fa261a8d80fd501c02a6d7aa19b4e4d596eca99ce251b334df29",
+      "published_sha256": "fc060d070a81fa261a8d80fd501c02a6d7aa19b4e4d596eca99ce251b334df29",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/nonlinear_homotopy_run.rs",
+      "published_path": "crates/rodas5p-integrators/examples/nonlinear_homotopy_run.rs",
+      "published_git_blob": "c23a33f3a29f0a86d5f3e0802c37d13f814880bc",
+      "current_sha256": "7007a6f451bed53c0988fc14e6fb417df08597bed7c9e34a0204142a84cc977c",
+      "published_sha256": "7007a6f451bed53c0988fc14e6fb417df08597bed7c9e34a0204142a84cc977c",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/packet_adaptive_run.rs",
+      "published_path": "crates/rodas5p-integrators/examples/packet_adaptive_run.rs",
+      "published_git_blob": "d76ea1698cb1271a55907d4fd4bc20c83d29e8ca",
+      "current_sha256": "1bd59876b676487099396d465c8d15f8ac6d3032d58b93d86254fe03e532306d",
+      "published_sha256": "1bd59876b676487099396d465c8d15f8ac6d3032d58b93d86254fe03e532306d",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/packet_verified_run.rs",
+      "published_path": "crates/rodas5p-integrators/examples/packet_verified_run.rs",
+      "published_git_blob": "301162129c821c8214487143c0109ff8feda2eff",
+      "current_sha256": "1e8af3bd73241387ddc668a15513c672c18e84fe7865defdcd46007a27fa621e",
+      "published_sha256": "1e8af3bd73241387ddc668a15513c672c18e84fe7865defdcd46007a27fa621e",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/pr101_verified_run.rs",
+      "published_path": "crates/rodas5p-integrators/examples/pr101_verified_run.rs",
+      "published_git_blob": "c232b79baf421d81fe9fda50f647221e5cdc6538",
+      "current_sha256": "823b040d0bbf50d3e6c6ac1bfbdf2a6d5ce9abf44bca8308297b8a7d27c0326a",
+      "published_sha256": "823b040d0bbf50d3e6c6ac1bfbdf2a6d5ce9abf44bca8308297b8a7d27c0326a",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/verified_residual_compare.rs",
+      "published_path": "crates/rodas5p-integrators/examples/verified_residual_compare.rs",
+      "published_git_blob": "3dd2f813861328b6092248d9b8d01525772099c3",
+      "current_sha256": "eea8e24244c80a744f2d68994eb42b77c45c9780ed41cc960cca6a4c9631a695",
+      "published_sha256": "eea8e24244c80a744f2d68994eb42b77c45c9780ed41cc960cca6a4c9631a695",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/actual_k_homotopy.rs",
+      "published_path": "crates/rodas5p-integrators/src/actual_k_homotopy.rs",
+      "published_git_blob": "32f0c397645b10ac7e707c4c74526166b196d485",
+      "current_sha256": "33b6b946c3939c59a60c62622d1b0eb52ff3bd4cc39a879d80cc91bd59fb9242",
+      "published_sha256": "33b6b946c3939c59a60c62622d1b0eb52ff3bd4cc39a879d80cc91bd59fb9242",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/affine_transport.rs",
+      "published_path": "crates/rodas5p-integrators/src/affine_transport.rs",
+      "published_git_blob": "1c7024c2e1c567b337f82b0ba4530a1747022f51",
+      "current_sha256": "4d8687c8c536850d7f5616192a864c839c63ab8e0ddc778678ffd6eba1a9e178",
+      "published_sha256": "4d8687c8c536850d7f5616192a864c839c63ab8e0ddc778678ffd6eba1a9e178",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/bound_collective.rs",
+      "published_path": "crates/rodas5p-integrators/src/bound_collective.rs",
+      "published_git_blob": "c7ca641dd5677146ac89b8fb1e082ed60f4aa0d1",
+      "current_sha256": "d85fcfd962f3075ce5630a640adfca1e487f9a2968f2ee6962ba8f2b2f8d5103",
+      "published_sha256": "d85fcfd962f3075ce5630a640adfca1e487f9a2968f2ee6962ba8f2b2f8d5103",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/collective_direct.rs",
+      "published_path": "crates/rodas5p-integrators/src/collective_direct.rs",
+      "published_git_blob": "37fd72e5aedf933382e9c29a905c1d5dad7b8ed0",
+      "current_sha256": "388a1c6144a7e57327bf63be8e5bfd0a0815e8d9feaea90ed1972d1575040f49",
+      "published_sha256": "388a1c6144a7e57327bf63be8e5bfd0a0815e8d9feaea90ed1972d1575040f49",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/collective_rodas5p.rs",
+      "published_path": "crates/rodas5p-integrators/src/collective_rodas5p.rs",
+      "published_git_blob": "45300fc235e56faa45938fa94143c1cafc96ded3",
+      "current_sha256": "9e84ec5cd53496c2951a91c418b76069384fbfb48d0e3bc5a94fcb5d0aadd7b3",
+      "published_sha256": "9e84ec5cd53496c2951a91c418b76069384fbfb48d0e3bc5a94fcb5d0aadd7b3",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/damped_packet.rs",
+      "published_path": "crates/rodas5p-integrators/src/damped_packet.rs",
+      "published_git_blob": "3836036e456cff7adaa271d2340b0d39d7f47c6e",
+      "current_sha256": "a26ba94036207c45cbbdde358e6231c7ed0c0db842efec2f105ff39272981e5c",
+      "published_sha256": "a26ba94036207c45cbbdde358e6231c7ed0c0db842efec2f105ff39272981e5c",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/generic_verified.rs",
+      "published_path": "crates/rodas5p-integrators/src/generic_verified.rs",
+      "published_git_blob": "d46a9f53b901b60ff2dea9fbea7d5237f5f1e253",
+      "current_sha256": "25fbe265d1ed4b67b807eb07348d7ac1a0db4d43de029109c199fc4b543699c4",
+      "published_sha256": "0a014a6d55fcb494524b3105547eeb21fd2ab1b1557c1bf14838f7def14b7e17",
+      "byte_identical_to_published": false
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/gray_scott.rs",
+      "published_path": "crates/rodas5p-integrators/src/gray_scott.rs",
+      "published_git_blob": "40bd15f65acefcbf1f0abb63f1b223f6f5c003d7",
+      "current_sha256": "366a20843c7931238f458b62760f146ecf34068ba306fc43acd39258390653ad",
+      "published_sha256": "366a20843c7931238f458b62760f146ecf34068ba306fc43acd39258390653ad",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/gray_scott_verified.rs",
+      "published_path": "crates/rodas5p-integrators/src/gray_scott_verified.rs",
+      "published_git_blob": "5e84ce711b53ccbc1f9457542703dd0c111aa4ff",
+      "current_sha256": "190d1013040688debdee17e5be45e711a7b09403e6b8d26896fb849aa96001df",
+      "published_sha256": "190d1013040688debdee17e5be45e711a7b09403e6b8d26896fb849aa96001df",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/nonlinear_homotopy.rs",
+      "published_path": "crates/rodas5p-integrators/src/nonlinear_homotopy.rs",
+      "published_git_blob": "529e8b26eaebb486654e6e8e19e2cca8c740c00a",
+      "current_sha256": "0e0885bfe17660f2ac644759167033f8f8544a30eabb24b6390e9cb97e3717e7",
+      "published_sha256": "0e0885bfe17660f2ac644759167033f8f8544a30eabb24b6390e9cb97e3717e7",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/output.rs",
+      "published_path": "crates/rodas5p-integrators/src/output.rs",
+      "published_git_blob": "4d75334eabcc4dc89f62cdbec0e4d58afcb1fab0",
+      "current_sha256": "81bdf698f36ae0b450af77e36631e27da319fb079d648658c794ad948978a10c",
+      "published_sha256": "81bdf698f36ae0b450af77e36631e27da319fb079d648658c794ad948978a10c",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/packet_curve.rs",
+      "published_path": "crates/rodas5p-integrators/src/packet_curve.rs",
+      "published_git_blob": "3851555523719ef70f1455254b21b49af86f65ba",
+      "current_sha256": "955bdf313d02fee67151b05c0eabce5b9e87c63a444e6db321bcac2ee8d324f5",
+      "published_sha256": "955bdf313d02fee67151b05c0eabce5b9e87c63a444e6db321bcac2ee8d324f5",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/packet_curve_output.rs",
+      "published_path": "crates/rodas5p-integrators/src/packet_curve_output.rs",
+      "published_git_blob": "8ab66ef2edcdd40d5e286fd626626cac939d47a1",
+      "current_sha256": "d171cb68286cb82206a9b64e0c29e41505d63a89d734c42a4b8d907e8e49642c",
+      "published_sha256": "2e49d892c31ca72925c6e2fc4a5051492f5ceff7df552bd63e9cfbf7ec1036c5",
+      "byte_identical_to_published": false
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/packet_verified_trajectory.rs",
+      "published_path": "crates/rodas5p-integrators/src/packet_verified_trajectory.rs",
+      "published_git_blob": "627b34281a95dd5ceda456d916de2124f17b2152",
+      "current_sha256": "72189a94cc28fd5bd2ebd0245de9f8a9fe7f4d51792ea8973e4654867253e1a0",
+      "published_sha256": "72189a94cc28fd5bd2ebd0245de9f8a9fe7f4d51792ea8973e4654867253e1a0",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/packet_window.rs",
+      "published_path": "crates/rodas5p-integrators/src/packet_window.rs",
+      "published_git_blob": "4ac22a54f78c4eeaef47d24ffa374636410c5d01",
+      "current_sha256": "0eb7359dafc437436e0589a12ffc5bea2097a5bd176c422cdbeb0c6495696c80",
+      "published_sha256": "0eb7359dafc437436e0589a12ffc5bea2097a5bd176c422cdbeb0c6495696c80",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/packet_work.rs",
+      "published_path": "crates/rodas5p-integrators/src/packet_work.rs",
+      "published_git_blob": "ce9c2f99270736dc267b4cd21a5abbd6961cfe20",
+      "current_sha256": "e0960416af726c0110359bc03971cc5379186eb06673ee7cee4aff012bce5353",
+      "published_sha256": "e0960416af726c0110359bc03971cc5379186eb06673ee7cee4aff012bce5353",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/a05_dense_global_output.rs",
+      "published_path": "crates/rodas5p-integrators/tests/a05_dense_global_output.rs",
+      "published_git_blob": "c2ec9ebb3462d1a65ee4e09cf51fc85c49a02766",
+      "current_sha256": "93ae703e47d1502b1966cf2ed4bc8833887043c1d7917c5c77d1358dab46a14e",
+      "published_sha256": "93ae703e47d1502b1966cf2ed4bc8833887043c1d7917c5c77d1358dab46a14e",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/actual_k_homotopy_contracts.rs",
+      "published_path": "crates/rodas5p-integrators/tests/actual_k_homotopy_contracts.rs",
+      "published_git_blob": "c2b9fb94b0f12bc3c8e74c7f0bf791fc033a6f37",
+      "current_sha256": "80800ded09667065c55977c6a1ecf0d6f29296b03e52d2392a2d318edab31212",
+      "published_sha256": "80800ded09667065c55977c6a1ecf0d6f29296b03e52d2392a2d318edab31212",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/affine_transport_contract.rs",
+      "published_path": "crates/rodas5p-integrators/tests/affine_transport_contract.rs",
+      "published_git_blob": "393917d576b14488fd5f042c8ded19f6e25961d6",
+      "current_sha256": "2405d2a3be9c78fcf3ec69447b33be477d3941d09ce02fa8359220fcbfdf688b",
+      "published_sha256": "2405d2a3be9c78fcf3ec69447b33be477d3941d09ce02fa8359220fcbfdf688b",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/all_dag_a01_packet.rs",
+      "published_path": "crates/rodas5p-integrators/tests/all_dag_a01_packet.rs",
+      "published_git_blob": "13046b9ebe830c6d7afdc111a77feab6c3cd9631",
+      "current_sha256": "c4fdeed767d7d392126a76ca5a5b308e4a046df28202ea707cc10e573b24c60f",
+      "published_sha256": "4a1786bc2f68ee8d543d57591c47233abc84594f4a969621e3e9ccfd77dc2fca",
+      "byte_identical_to_published": false
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/all_dag_a05_verified.rs",
+      "published_path": "crates/rodas5p-integrators/tests/all_dag_a05_verified.rs",
+      "published_git_blob": "26cea906ef0d84b59a799e9cf0f7648ecbed4b7c",
+      "current_sha256": "67b99a5a52406a45731dbbcb0bdd0c8144de03b75941d86383233e0d9b881973",
+      "published_sha256": "67b99a5a52406a45731dbbcb0bdd0c8144de03b75941d86383233e0d9b881973",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/all_dag_a06_direct.rs",
+      "published_path": "crates/rodas5p-integrators/tests/all_dag_a06_direct.rs",
+      "published_git_blob": "e047aec6bb06723510346b81c4fdf0d74e1223ac",
+      "current_sha256": "bbb4095c9c825f7896200200c09914680685509a2cc22e246d102278c698f18f",
+      "published_sha256": "bbb4095c9c825f7896200200c09914680685509a2cc22e246d102278c698f18f",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/all_dag_a10_bernstein.rs",
+      "published_path": "crates/rodas5p-integrators/tests/all_dag_a10_bernstein.rs",
+      "published_git_blob": "a7b8a18d65d0b15ed97efd65087b8e7a997ebb7e",
+      "current_sha256": "5001dfbaaacc6cc8021aaaa5b91d469c32da901713a9539f758f7fae8f787183",
+      "published_sha256": "5001dfbaaacc6cc8021aaaa5b91d469c32da901713a9539f758f7fae8f787183",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/all_dag_a11_verified.rs",
+      "published_path": "crates/rodas5p-integrators/tests/all_dag_a11_verified.rs",
+      "published_git_blob": "20925a21c94d0ba2f0ed2d7a05671ba4c624e9c3",
+      "current_sha256": "dabd453f1cc05ca829df66483877492a3539f044cea61b02d93a7d95fd527d62",
+      "published_sha256": "dabd453f1cc05ca829df66483877492a3539f044cea61b02d93a7d95fd527d62",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/collective_rodas5p_allocation_contract.rs",
+      "published_path": "crates/rodas5p-integrators/tests/collective_rodas5p_allocation_contract.rs",
+      "published_git_blob": "a2a521a980c0af89a6a815c11609b4e8ff6b97b2",
+      "current_sha256": "ac59fd4bb9010c84e93dfc103e5f20941650a87433ed5445124f889831e5a195",
+      "published_sha256": "ac59fd4bb9010c84e93dfc103e5f20941650a87433ed5445124f889831e5a195",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/collective_rodas5p_contracts.rs",
+      "published_path": "crates/rodas5p-integrators/tests/collective_rodas5p_contracts.rs",
+      "published_git_blob": "da4fa1d4bd3d589f28348c2bde6802f87f1784a1",
+      "current_sha256": "c6a6874d2f662fc973de15b115e3c29808cf65c4fc8a8441087ea130f65e57ef",
+      "published_sha256": "c6a6874d2f662fc973de15b115e3c29808cf65c4fc8a8441087ea130f65e57ef",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/independent_pr101_review.rs",
+      "published_path": "crates/rodas5p-integrators/tests/independent_pr101_review.rs",
+      "published_git_blob": "2f1ea51e8d294647148b9c6cd64a881ca36291ec",
+      "current_sha256": "e83728d1f5181c2d37fef2bd4fe3957a836096c52c571e4c36a73cb5cd430d68",
+      "published_sha256": "e83728d1f5181c2d37fef2bd4fe3957a836096c52c571e4c36a73cb5cd430d68",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/nonlinear_homotopy_contracts.rs",
+      "published_path": "crates/rodas5p-integrators/tests/nonlinear_homotopy_contracts.rs",
+      "published_git_blob": "9c7cd3ca9adf9068d5f6691ac615143ef9dbe331",
+      "current_sha256": "a9fbfdf7f518eedd8c6158a6376dd627e1d1ffd3c387d3d2dea581e5272dd1a0",
+      "published_sha256": "a9fbfdf7f518eedd8c6158a6376dd627e1d1ffd3c387d3d2dea581e5272dd1a0",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/packet_unequal_fraction_oracle.py",
+      "published_path": "crates/rodas5p-integrators/tests/packet_unequal_fraction_oracle.py",
+      "published_git_blob": "b1c501f963f90c086be9e4f34da2936a4b87452e",
+      "current_sha256": "1590bd2caa5c4049e7e42edf1c922525c8f11818d66c236e5230da62c8f6dbae",
+      "published_sha256": "1590bd2caa5c4049e7e42edf1c922525c8f11818d66c236e5230da62c8f6dbae",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/packet_unequal_frequency_oracle.py",
+      "published_path": "crates/rodas5p-integrators/tests/packet_unequal_frequency_oracle.py",
+      "published_git_blob": "272501741883a9720d7abe5c4ed7f7674c8073eb",
+      "current_sha256": "cb33f0e15f8cd274b53d85e09ab35637789c4ac4e6bbfe0cd65851600678b734",
+      "published_sha256": "cb33f0e15f8cd274b53d85e09ab35637789c4ac4e6bbfe0cd65851600678b734",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/pr101_cloud_fraction_oracle.py",
+      "published_path": "crates/rodas5p-integrators/tests/pr101_cloud_fraction_oracle.py",
+      "published_git_blob": "717fceb5ba67ef5eea2116ba27ebdf3f586cccc0",
+      "current_sha256": "45d47564f9db42ce233c5e67dd67afec2b4ff7582a5afc016f26f57e7a5aab95",
+      "published_sha256": "45d47564f9db42ce233c5e67dd67afec2b4ff7582a5afc016f26f57e7a5aab95",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/production_audit_bound_collective.rs",
+      "published_path": "crates/rodas5p-integrators/tests/production_audit_bound_collective.rs",
+      "published_git_blob": "180997b56bb1b7caaf724d696ed85c4a067c9fff",
+      "current_sha256": "24bc209514c05e0f2505fcf63bc4af959f4221a38346c37a37fbce7f6d545fe2",
+      "published_sha256": "590ad37213ed56a95cb18d8c545ba40dd613d9c18be417c1eef585a6361dfb0f",
+      "byte_identical_to_published": false
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/production_audit_collective_direct.rs",
+      "published_path": "crates/rodas5p-integrators/tests/production_audit_collective_direct.rs",
+      "published_git_blob": "c7581df787b7ba9ebf7f42999eccb19e7d085ee6",
+      "current_sha256": "a13ff0f4ea1851eb470c1ea7ecabcd06b3bba8e38399cc90a49f74bb54bdadae",
+      "published_sha256": "a13ff0f4ea1851eb470c1ea7ecabcd06b3bba8e38399cc90a49f74bb54bdadae",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/production_audit_damped_packet.rs",
+      "published_path": "crates/rodas5p-integrators/tests/production_audit_damped_packet.rs",
+      "published_git_blob": "8518946f9c105ffbe2c1f2eacc8df6f22177d137",
+      "current_sha256": "74b3ab834fe08b1316ca2b3ccea1a49b98661954f404f84a1ad55a0a275227ef",
+      "published_sha256": "74b3ab834fe08b1316ca2b3ccea1a49b98661954f404f84a1ad55a0a275227ef",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/production_audit_packet_adaptive.rs",
+      "published_path": "crates/rodas5p-integrators/tests/production_audit_packet_adaptive.rs",
+      "published_git_blob": "0f1a04ee7588fa3f2f15dbc2d5b8772f6b0cfc88",
+      "current_sha256": "392aaa3c6fe8994c441f922680e2508edf38c05b6cb1e76d3d018649b974135f",
+      "published_sha256": "392aaa3c6fe8994c441f922680e2508edf38c05b6cb1e76d3d018649b974135f",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/production_audit_packet_curve.rs",
+      "published_path": "crates/rodas5p-integrators/tests/production_audit_packet_curve.rs",
+      "published_git_blob": "00140cdc5a86b37137db091247dad463158ab3b8",
+      "current_sha256": "826cbc316060cb8cb3e7908c7c1aff76fe0716b0dc7f3d08722303d7cc161fde",
+      "published_sha256": "826cbc316060cb8cb3e7908c7c1aff76fe0716b0dc7f3d08722303d7cc161fde",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/production_audit_packet_curve_output.rs",
+      "published_path": "crates/rodas5p-integrators/tests/production_audit_packet_curve_output.rs",
+      "published_git_blob": "a6c77d30c982224f42d76c6e5c040e68ee8b40ba",
+      "current_sha256": "ca2cb73a56139cde5761b9f51f63341adbefe9287504282a4f4e29793134df12",
+      "published_sha256": "17089300015fa185f98d67293323cf172644810567e83692d3b8aa8a9df93467",
+      "byte_identical_to_published": false
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/production_audit_packet_verified.rs",
+      "published_path": "crates/rodas5p-integrators/tests/production_audit_packet_verified.rs",
+      "published_git_blob": "c345197fe305b002dcd60940d374dfd0bfe196da",
+      "current_sha256": "eeff827121e51a1aea9a9f389ce6a9dedc723f6aa3008c05e60e7b5721ee2b96",
+      "published_sha256": "eeff827121e51a1aea9a9f389ce6a9dedc723f6aa3008c05e60e7b5721ee2b96",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/production_audit_pr101_cloud.rs",
+      "published_path": "crates/rodas5p-integrators/tests/production_audit_pr101_cloud.rs",
+      "published_git_blob": "86b54a767c6fa762d4b25effb2c462f6b62bfdf8",
+      "current_sha256": "5d80e873849db3376dbebecace6861d9f764f456ae1569e8fa4e0be5f4ae84e0",
+      "published_sha256": "5d80e873849db3376dbebecace6861d9f764f456ae1569e8fa4e0be5f4ae84e0",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "tools/all_dag_benchmark.py",
+      "published_path": "tools/all_dag_benchmark.py",
+      "published_git_blob": "68fd5895da04bd1f3f5abce6c4c10b8b77afcd42",
+      "current_sha256": "7c953f73a365863d1956f31e70ef94e82dd41ace3f5650abe8c002fe94e8cdd5",
+      "published_sha256": "7c953f73a365863d1956f31e70ef94e82dd41ace3f5650abe8c002fe94e8cdd5",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "tools/tests/test_all_dag_benchmark.py",
+      "published_path": "tools/tests/test_all_dag_benchmark.py",
+      "published_git_blob": "a76d21d7b0a9d71bad942e187f684d2239020cf3",
+      "current_sha256": "f5ddfbb700805160040735b2cd98d7d0cb6158ef8e16ac4785adcb1f1fb6dc78",
+      "published_sha256": "f5ddfbb700805160040735b2cd98d7d0cb6158ef8e16ac4785adcb1f1fb6dc78",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "tools/tests/test_all_dag_handoff.py",
+      "published_path": "tools/tests/test_all_dag_handoff.py",
+      "published_git_blob": "1b523e4efd2c941041dae35432643acff33fcccf",
+      "current_sha256": "882a5c5ba540f0e51a568af20d5fe97e5fb066b5084fb20c3cdd01d272b67da6",
+      "published_sha256": "882a5c5ba540f0e51a568af20d5fe97e5fb066b5084fb20c3cdd01d272b67da6",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "tools/validate_all_dag_completion.py",
+      "published_path": "tools/validate_all_dag_completion.py",
+      "published_git_blob": "3a0f33a16aed2e1b71eefc90154d20173a780ab3",
+      "current_sha256": "1327797d4c12233ec86f181ffd71cf5996b2b88c80c86b4e4a59ad2e5a177172",
+      "published_sha256": "1327797d4c12233ec86f181ffd71cf5996b2b88c80c86b4e4a59ad2e5a177172",
+      "byte_identical_to_published": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/pr101_verified.rs",
+      "published_path": "crates/rodas5p-integrators/src/bound_pr101.rs",
+      "published_git_blob": "e0413365a7176f688e31e9e1322cb42e9720f539",
+      "current_sha256": "697a25d2ee877ca3285e166b7032a7de319c92d8d6d15a8382478573f71b49aa",
+      "published_sha256": "16a42eb8135387488fe2a9e43d0cc92793f08ae8f8d0cbed11febfd54d6e6f2d",
+      "byte_identical_to_published": false
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/dense_output_v2.rs",
+      "published_path": "crates/rodas5p-integrators/src/dense_output_v2.rs",
+      "published_git_blob": "edf22405af18922c489f02b9da6cfa658c887a5a",
+      "current_sha256": "a181b45fb1c12bda33c33b5a94c5a7c9defeac7e9c7c2e3c91a2c14b424f0bc5",
+      "published_sha256": "1a46db7831523e3ba3e44169f6456061ee716b4f1073d2076d9c0ef1e0a26bae",
+      "byte_identical_to_published": false
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/lib.rs",
+      "published_path": "crates/rodas5p-integrators/src/lib.rs",
+      "published_git_blob": "73005b5ce8850e11b9eb7e418c77f082ae27768a",
+      "current_sha256": "e25cd14022b23e899df4df4da5460bdbcafe64bdef3c164f124319740e0b54af",
+      "published_sha256": "9fff40d55f034e392ca4680638fed16e9d028057562aecc821a9bd525ee66acd",
+      "byte_identical_to_published": false
+    }
+  ],
+  "failed_build_diagnosis": {
+    "symptom": "E0463 cannot find crate rodas5p_integrators or rodas5p_krylov; follow-on type inference errors",
+    "hypothesis": "Shared Cargo target used by distinct worktree and package builds; not yet established by a fresh-target retry",
+    "action": "Root final matrix from mainrepo only using fresh isolated target; raw failures retained; no correctness PASS inferred for these failed commands"
+  },
+  "proof_reuse": {
+    "source": "research/all_dag_completion_20261018/",
+    "policy": "Reuse published bounds/derivations unchanged, once source and assumptions are mapped. No prior source-manifest hash rewritten. New proof obligation is compatibility bridge, documented PORT.md.",
+    "independent_review": "Root or independent agent to review bridge resolutions; this author does not self-certify A12."
+  },
+  "native_pass_count": 85,
+  "compile_fail_doctest_pass_count": 2
+}

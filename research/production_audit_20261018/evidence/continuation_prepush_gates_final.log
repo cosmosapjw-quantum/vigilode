@@ -1,0 +1,42 @@
+=== [1/7] Checking rustfmt ===
+=== [2/7] Checking clippy (-D warnings) ===
+   Compiling rodas5p-fair-ab v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-fair-ab)
+    Checking rodas5p-cli v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-cli)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 13.17s
+=== [3/7] Checking research nodes & append-only ledger against de990927d0f9197f0e37fcaeccee33bea6c7b8af ===
+check-research-node: PASS (125 ledger rows, base=de990927d0f9197f0e37fcaeccee33bea6c7b8af, new nodes=none)
+=== [4/7] Checking published authority commit references ===
+check-authority-refs: PASS (1492 citations, 270 distinct SHAs: missing+allowlisted=26, non-commit=47, reachable=196, unreachable+allowlisted=1)
+=== [5/7] Checking #[ignore] tests reachability in CI workflows ===
+79 ignored tests, all reachable from CI
+=== [6/7] Running E4 build-mode & portability regression checks ===
+test_ci_exercises_default_and_explicit_offline_modes (__main__.E4RepositoryContractTests.test_ci_exercises_default_and_explicit_offline_modes) ... ok
+test_default_cargo_config_does_not_force_source_replacement_or_offline_mode (__main__.E4RepositoryContractTests.test_default_cargo_config_does_not_force_source_replacement_or_offline_mode) ... ok
+test_offline_config_is_explicit_and_not_auto_discovered (__main__.E4RepositoryContractTests.test_offline_config_is_explicit_and_not_auto_discovered) ... ok
+test_public_offline_wrapper_and_helpers_exist (__main__.E4RepositoryContractTests.test_public_offline_wrapper_and_helpers_exist) ... ok
+test_readme_and_gitignore_publish_both_build_modes (__main__.E4RepositoryContractTests.test_readme_and_gitignore_publish_both_build_modes) ... ok
+test_metadata_comparison_detects_dependency_graph_drift (__main__.MetadataComparisonTests.test_metadata_comparison_detects_dependency_graph_drift) ... ok
+test_metadata_comparison_ignores_checkout_paths (__main__.MetadataComparisonTests.test_metadata_comparison_ignores_checkout_paths) ... ok
+test_hidden_and_manifestless_directories_are_ignored (__main__.VendorValidationTests.test_hidden_and_manifestless_directories_are_ignored) ... ok
+test_manifest_bearing_directory_without_checksum_fails (__main__.VendorValidationTests.test_manifest_bearing_directory_without_checksum_fails) ... ok
+test_missing_required_faer_version_fails (__main__.VendorValidationTests.test_missing_required_faer_version_fails) ... ok
+test_valid_sources_with_different_package_counts_pass (__main__.VendorValidationTests.test_valid_sources_with_different_package_counts_pass) ... ok
+test_wrapper_accepts_environment_vendor_and_uses_absolute_override (__main__.WrapperContractTests.test_wrapper_accepts_environment_vendor_and_uses_absolute_override) ... ok
+test_wrapper_rejects_missing_vendor (__main__.WrapperContractTests.test_wrapper_rejects_missing_vendor) ... ok
+
+----------------------------------------------------------------------
+Ran 13 tests in 0.134s
+
+OK
+test_different_relative_workspace_member_path_remains_distinct (__main__.CrossCheckoutMetadataTests.test_different_relative_workspace_member_path_remains_distinct) ... ok
+test_registry_package_identity_remains_fully_qualified (__main__.CrossCheckoutMetadataTests.test_registry_package_identity_remains_fully_qualified) ... ok
+test_same_workspace_layout_ignores_checkout_root_in_package_ids (__main__.CrossCheckoutMetadataTests.test_same_workspace_layout_ignores_checkout_root_in_package_ids) ... ok
+test_load_bearing_corpus_never_directly_executes_wrapper (__main__.LoadBearingInvocationTests.test_load_bearing_corpus_never_directly_executes_wrapper) ... ok
+test_valid_vendor_path_with_quote_and_backslash_round_trips (__main__.WrapperTomlEscapingTests.test_valid_vendor_path_with_quote_and_backslash_round_trips) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.153s
+
+OK
+=== [7/7] Checking git diff whitespace & tracked working tree cleanliness ===
+=== ALL PRE-PUSH GATES PASSED ===

@@ -1,0 +1,1410 @@
+{
+  "schema": "spherical-information.mesh-experiment.v1",
+  "nmu": 64,
+  "nphi": 128,
+  "fine_cells": 8192,
+  "kappa": 1,
+  "normalization": "rho dimensionless normalized energy; dOmega sums to 4pi; nscaled=rho^0.75",
+  "algorithm": "greedy quadtree eta reduction per extra cell; no optimality claim",
+  "scope": "finite-grid compression of massless one-field thermal energy section, not PDE speedup",
+  "certificate_scope": "supplied discrete fine values; excludes continuum quadrature, time, subcell and spectral-shape errors",
+  "records": [
+    {
+      "profile": "smooth",
+      "budget": 0.001143457887372712,
+      "budget_fraction": 0.1,
+      "root_entropy_loss": 0.01143457887372712,
+      "adaptive": {
+        "cells": 46,
+        "entropy_loss": 0.0011377596394644973,
+        "direct_entropy_loss": 0.0011377596394645932,
+        "energy_relative_drift": 2.827194228504756e-16,
+        "number_relative_drift": 9.062332634302773e-05,
+        "number_drift_entropy_identity_residual": -3.885780586188048e-15,
+        "minimum_reconstruction": 0.8194664893904733,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.06140362452191947,
+            "bound": 0.07734492376515494,
+            "signed_error": 0.06140362452191947,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.03134509296856769,
+            "bound": 0.06557725388874,
+            "signed_error": 0.03134509296856769,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.005434076167336841,
+            "bound": 0.011949295703293943,
+            "signed_error": 0.005434076167336841,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 64,
+        "entropy_loss": 0.0007239702607371168,
+        "direct_entropy_loss": 0.000723970260737091,
+        "energy_relative_drift": 2.827194228504756e-16,
+        "number_relative_drift": 5.766472190220069e-05,
+        "number_drift_entropy_identity_residual": -4.218847493575595e-15,
+        "minimum_reconstruction": 0.8194664893904733,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.0374643564985597,
+            "bound": 0.04288816214806677,
+            "signed_error": 0.0374643564985597,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.019082780922425175,
+            "bound": 0.03229345006312473,
+            "signed_error": 0.019082780922425175,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.0013987274958205448,
+            "bound": 0.00221037953474581,
+            "signed_error": 0.0013987274958205448,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 1.391304347826087,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "smooth",
+      "budget": 0.00034303736621181356,
+      "budget_fraction": 0.03,
+      "root_entropy_loss": 0.01143457887372712,
+      "adaptive": {
+        "cells": 145,
+        "entropy_loss": 0.00033820715692235714,
+        "direct_entropy_loss": 0.00033820715692245293,
+        "energy_relative_drift": 2.827194228504756e-16,
+        "number_relative_drift": 2.6938429251770805e-05,
+        "number_drift_entropy_identity_residual": -2.123301534595612e-15,
+        "minimum_reconstruction": 0.8194664893904733,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.017109433209661584,
+            "bound": 0.020660561860445237,
+            "signed_error": 0.017109433209661584,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.009658718000705852,
+            "bound": 0.01799819472409308,
+            "signed_error": 0.009658718000705852,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.0013706602900155572,
+            "bound": 0.00215818390931307,
+            "signed_error": 0.0013706602900155572,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 256,
+        "entropy_loss": 0.00018341235868054445,
+        "direct_entropy_loss": 0.0001834123586807605,
+        "energy_relative_drift": 2.827194228504756e-16,
+        "number_relative_drift": 1.4608918667349952e-05,
+        "number_drift_entropy_identity_residual": -1.9637069748057456e-15,
+        "minimum_reconstruction": 0.8049556652645506,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.009699993807463031,
+            "bound": 0.010797247512950126,
+            "signed_error": 0.009699993807463031,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.004586662476904503,
+            "bound": 0.007774665892299709,
+            "signed_error": 0.004586662476904503,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.0003682212043212997,
+            "bound": 0.0005955892769322829,
+            "signed_error": 0.0003682212043212997,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 1.7655172413793103,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "smooth",
+      "budget": 0.00011434578873727119,
+      "budget_fraction": 0.01,
+      "root_entropy_loss": 0.01143457887372712,
+      "adaptive": {
+        "cells": 445,
+        "entropy_loss": 0.00011411768625006931,
+        "direct_entropy_loss": 0.00011411768625028608,
+        "energy_relative_drift": 2.827194228504756e-16,
+        "number_relative_drift": 9.089551047398859e-06,
+        "number_drift_entropy_identity_residual": -4.336808689942018e-17,
+        "minimum_reconstruction": 0.8049556652645506,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.006128762828011679,
+            "bound": 0.007379639382163048,
+            "signed_error": 0.006128762828011679,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.0027656921079032026,
+            "bound": 0.006111485579699732,
+            "signed_error": 0.0027656921079032026,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.0004733269657109603,
+            "bound": 0.0008590914107755622,
+            "signed_error": 0.0004733269657109603,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 1024,
+        "entropy_loss": 4.1838704601896565e-05,
+        "direct_entropy_loss": 4.183870460205594e-05,
+        "energy_relative_drift": 2.827194228504756e-16,
+        "number_relative_drift": 3.3324811755218967e-06,
+        "number_drift_entropy_identity_residual": -1.502270530195915e-15,
+        "minimum_reconstruction": 0.8012211338129873,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.0023007411956515247,
+            "bound": 0.00250399190820968,
+            "signed_error": 0.0023007411956515247,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.0009194896558660034,
+            "bound": 0.0016274847353733458,
+            "signed_error": 0.0009194896558660034,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 8.637321951929947e-05,
+            "bound": 0.00012687522661838783,
+            "signed_error": 8.637321951929947e-05,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 2.301123595505618,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "smooth",
+      "budget": 3.4303736621181356e-05,
+      "budget_fraction": 0.003,
+      "root_entropy_loss": 0.01143457887372712,
+      "adaptive": {
+        "cells": 1207,
+        "entropy_loss": 3.429077225825191e-05,
+        "direct_entropy_loss": 3.429077226106994e-05,
+        "energy_relative_drift": 4.240791342757134e-16,
+        "number_relative_drift": 2.731283249154873e-06,
+        "number_drift_entropy_identity_residual": -1.001389455298346e-15,
+        "minimum_reconstruction": 0.8049556652645506,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.0019264158360746276,
+            "bound": 0.0022216610618353044,
+            "signed_error": 0.0019264158360746276,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.0006771645703695799,
+            "bound": 0.0015410353013051606,
+            "signed_error": 0.0006771645703695799,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.00010800130688038948,
+            "bound": 0.0002771697919410854,
+            "signed_error": 0.00010800130688038948,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 4096,
+        "entropy_loss": 5.503679757793111e-06,
+        "direct_entropy_loss": 5.503679760479587e-06,
+        "energy_relative_drift": 2.827194228504756e-16,
+        "number_relative_drift": 4.383718226530445e-07,
+        "number_drift_entropy_identity_residual": 1.2515326841826442e-15,
+        "minimum_reconstruction": 0.8002807095395417,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.00037846478735218303,
+            "bound": 0.00037913777589974483,
+            "signed_error": 0.00037846478735218303,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 3.4454822836588202e-15,
+            "bound": 0.0,
+            "signed_error": 3.4454822836588202e-15,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 1.617331152919389e-05,
+            "bound": 1.8768296940260518e-05,
+            "signed_error": 1.617331152919389e-05,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 3.393537696768848,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "localized_beam",
+      "budget": 0.10877765570988114,
+      "budget_fraction": 0.1,
+      "root_entropy_loss": 1.0877765570988114,
+      "adaptive": {
+        "cells": 22,
+        "entropy_loss": 0.10408266588106806,
+        "direct_entropy_loss": 0.10408266588106449,
+        "energy_relative_drift": 2.1540264509375703e-16,
+        "number_relative_drift": 0.00726754353884988,
+        "number_drift_entropy_identity_residual": -4.3021142204224816e-16,
+        "minimum_reconstruction": 1.0,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.1376515997527651,
+            "bound": 1.5996054869415812,
+            "signed_error": 0.1376515997527651,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.036100218946308785,
+            "bound": 1.4428259742828797,
+            "signed_error": -0.036100218946308785,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.4228655218541053,
+            "bound": 0.8876257143610059,
+            "signed_error": 0.4228655218541053,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 256,
+        "entropy_loss": 0.09890514132173646,
+        "direct_entropy_loss": 0.09890514132173749,
+        "energy_relative_drift": 0.0,
+        "number_relative_drift": 0.006906024309496312,
+        "number_drift_entropy_identity_residual": 2.095545958979983e-15,
+        "minimum_reconstruction": 1.0,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.03664995819215349,
+            "bound": 0.21919707494607207,
+            "signed_error": 0.03664995819215349,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.014283329290497263,
+            "bound": 0.33498091676901787,
+            "signed_error": -0.014283329290497263,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.42066601153703426,
+            "bound": 0.8262207579289419,
+            "signed_error": 0.42066601153703426,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 11.636363636363637,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "localized_beam",
+      "budget": 0.03263329671296434,
+      "budget_fraction": 0.03,
+      "root_entropy_loss": 1.0877765570988114,
+      "adaptive": {
+        "cells": 58,
+        "entropy_loss": 0.031030076293772163,
+        "direct_entropy_loss": 0.031030076293768354,
+        "energy_relative_drift": 2.1540264509375703e-16,
+        "number_relative_drift": 0.002166666548842293,
+        "number_drift_entropy_identity_residual": 2.1371793224034263e-15,
+        "minimum_reconstruction": 1.0,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.09193501420095401,
+            "bound": 1.3044156950718107,
+            "signed_error": 0.09193501420095401,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.011933707987408143,
+            "bound": 1.0254862622704453,
+            "signed_error": 0.011933707987408143,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.11320490709607396,
+            "bound": 0.21050510001638537,
+            "signed_error": 0.11320490709607396,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 1024,
+        "entropy_loss": 0.027854704294431168,
+        "direct_entropy_loss": 0.02785470429443218,
+        "energy_relative_drift": 4.3080529018751406e-16,
+        "number_relative_drift": 0.0019449470717139267,
+        "number_drift_entropy_identity_residual": -7.91033905045424e-16,
+        "minimum_reconstruction": 1.0,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.01076283103786613,
+            "bound": 0.034693169799871755,
+            "signed_error": 0.01076283103786613,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.0028762141046015303,
+            "bound": 0.05561667653825469,
+            "signed_error": -0.0028762141046015303,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.12012905759339018,
+            "bound": 0.17223763244219595,
+            "signed_error": 0.12012905759339018,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 17.655172413793103,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "localized_beam",
+      "budget": 0.010877765570988114,
+      "budget_fraction": 0.01,
+      "root_entropy_loss": 1.0877765570988114,
+      "adaptive": {
+        "cells": 106,
+        "entropy_loss": 0.010591678560291367,
+        "direct_entropy_loss": 0.010591678560292432,
+        "energy_relative_drift": 0.0,
+        "number_relative_drift": 0.0007395610444336332,
+        "number_drift_entropy_identity_residual": 2.6038199374411874e-15,
+        "minimum_reconstruction": 1.0,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.008585997296554168,
+            "bound": 0.04467365523700145,
+            "signed_error": 0.008585997296554168,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.0015300732903672078,
+            "bound": 0.038205297202558934,
+            "signed_error": -0.0015300732903672078,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.04298722956269068,
+            "bound": 0.055184797671716704,
+            "signed_error": 0.04298722956269068,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 4096,
+        "entropy_loss": 0.004687398609876718,
+        "direct_entropy_loss": 0.004687398609878203,
+        "energy_relative_drift": 2.1540264509375703e-16,
+        "number_relative_drift": 0.00032729631964026297,
+        "number_drift_entropy_identity_residual": -3.929148673087468e-16,
+        "minimum_reconstruction": 1.0,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.0017329763093706122,
+            "bound": 0.0031389643039561143,
+            "signed_error": 0.0017329763093706122,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 6.63918415990636e-16,
+            "bound": 0.0,
+            "signed_error": -6.63918415990636e-16,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.020110192934861784,
+            "bound": 0.02255087147720796,
+            "signed_error": 0.020110192934861784,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 38.64150943396226,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "localized_beam",
+      "budget": 0.0032633296712964344,
+      "budget_fraction": 0.003,
+      "root_entropy_loss": 1.0877765570988114,
+      "adaptive": {
+        "cells": 180,
+        "entropy_loss": 0.0030074568069959466,
+        "direct_entropy_loss": 0.003007456806993749,
+        "energy_relative_drift": 0.0,
+        "number_relative_drift": 0.00020999484497270728,
+        "number_drift_entropy_identity_residual": -1.7334224333698245e-15,
+        "minimum_reconstruction": 1.0,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.0037294273601399318,
+            "bound": 0.026376018946060023,
+            "signed_error": 0.0037294273601399318,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.0013115638913049747,
+            "bound": 0.014338686255229889,
+            "signed_error": 0.0013115638913049747,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.011914900600682798,
+            "bound": 0.014801041853964098,
+            "signed_error": 0.011914900600682798,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 8192,
+        "entropy_loss": 0.0,
+        "direct_entropy_loss": 0.0,
+        "energy_relative_drift": 0.0,
+        "number_relative_drift": 0.0,
+        "number_drift_entropy_identity_residual": 0.0,
+        "minimum_reconstruction": 1.0,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.0,
+            "bound": 0.0,
+            "signed_error": 0.0,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.0,
+            "bound": 0.0,
+            "signed_error": 0.0,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.0,
+            "bound": 0.0,
+            "signed_error": 0.0,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 45.51111111111111,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "two_beams",
+      "budget": 0.068541044741011,
+      "budget_fraction": 0.1,
+      "root_entropy_loss": 0.6854104474101099,
+      "adaptive": {
+        "cells": 52,
+        "entropy_loss": 0.06563762084947591,
+        "direct_entropy_loss": 0.06563762084948521,
+        "energy_relative_drift": 6.556235412088402e-16,
+        "number_relative_drift": 0.004508800788648375,
+        "number_drift_entropy_identity_residual": 1.4155343563970746e-15,
+        "minimum_reconstruction": 1.0000001141352641,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.16611293996473384,
+            "bound": 1.923600491168581,
+            "signed_error": 0.16611293996473384,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.017351144106999908,
+            "bound": 1.4939866555935324,
+            "signed_error": 0.017351144106999908,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.19806538662410716,
+            "bound": 0.3461054978398103,
+            "signed_error": 0.19806538662410716,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 1024,
+        "entropy_loss": 0.01791616878559907,
+        "direct_entropy_loss": 0.01791616878560571,
+        "energy_relative_drift": 2.1854118040294676e-16,
+        "number_relative_drift": 0.001230703290348448,
+        "number_drift_entropy_identity_residual": 6.463579671489583e-15,
+        "minimum_reconstruction": 1.0,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.0064620291276438315,
+            "bound": 0.035979560632749256,
+            "signed_error": 0.0064620291276438315,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.0027026972642418736,
+            "bound": 0.034730271187058716,
+            "signed_error": -0.0027026972642418736,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.06143800269549865,
+            "bound": 0.07754339290170614,
+            "signed_error": 0.06143800269549865,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 19.692307692307693,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "two_beams",
+      "budget": 0.0205623134223033,
+      "budget_fraction": 0.030000000000000002,
+      "root_entropy_loss": 0.6854104474101099,
+      "adaptive": {
+        "cells": 109,
+        "entropy_loss": 0.0203211344048436,
+        "direct_entropy_loss": 0.02032113440484713,
+        "energy_relative_drift": 4.370823608058935e-16,
+        "number_relative_drift": 0.0013959059704632584,
+        "number_drift_entropy_identity_residual": 1.3183898417423734e-16,
+        "minimum_reconstruction": 1.0,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.01767927149382656,
+            "bound": 0.12285758796176752,
+            "signed_error": 0.01767927149382656,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.0003015963796732674,
+            "bound": 0.07401278103373578,
+            "signed_error": 0.0003015963796732674,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.06787822566298894,
+            "bound": 0.08827350178930565,
+            "signed_error": 0.06787822566298894,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 1024,
+        "entropy_loss": 0.01791616878559907,
+        "direct_entropy_loss": 0.01791616878560571,
+        "energy_relative_drift": 2.1854118040294676e-16,
+        "number_relative_drift": 0.001230703290348448,
+        "number_drift_entropy_identity_residual": 6.463579671489583e-15,
+        "minimum_reconstruction": 1.0,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.0064620291276438315,
+            "bound": 0.035979560632749256,
+            "signed_error": 0.0064620291276438315,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.0027026972642418736,
+            "bound": 0.034730271187058716,
+            "signed_error": -0.0027026972642418736,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.06143800269549865,
+            "bound": 0.07754339290170614,
+            "signed_error": 0.06143800269549865,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 9.394495412844037,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "two_beams",
+      "budget": 0.006854104474101099,
+      "budget_fraction": 0.01,
+      "root_entropy_loss": 0.6854104474101099,
+      "adaptive": {
+        "cells": 229,
+        "entropy_loss": 0.006806736962288863,
+        "direct_entropy_loss": 0.006806736962294968,
+        "energy_relative_drift": 8.74164721611787e-16,
+        "number_relative_drift": 0.00046757058812465103,
+        "number_drift_entropy_identity_residual": 6.42715047849407e-16,
+        "minimum_reconstruction": 1.0,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.008106508130150361,
+            "bound": 0.02812861201178858,
+            "signed_error": 0.008106508130150361,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.0027386426846882275,
+            "bound": 0.021447448443970354,
+            "signed_error": -0.0027386426846882275,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.019095471321939738,
+            "bound": 0.02159416087574117,
+            "signed_error": 0.019095471321939738,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 4096,
+        "entropy_loss": 0.003084901860618438,
+        "direct_entropy_loss": 0.0030849018606178245,
+        "energy_relative_drift": 4.370823608058935e-16,
+        "number_relative_drift": 0.0002119090814387774,
+        "number_drift_entropy_identity_residual": -4.384947266400374e-15,
+        "minimum_reconstruction": 1.0,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.0010026605914739337,
+            "bound": 0.004560431407685759,
+            "signed_error": 0.0010026605914739337,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 3.055791871966938e-15,
+            "bound": 0.0,
+            "signed_error": 3.055791871966938e-15,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.010142981665482866,
+            "bound": 0.010923530273732817,
+            "signed_error": 0.010142981665482866,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 17.88646288209607,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "two_beams",
+      "budget": 0.00205623134223033,
+      "budget_fraction": 0.003,
+      "root_entropy_loss": 0.6854104474101099,
+      "adaptive": {
+        "cells": 408,
+        "entropy_loss": 0.002045228774764032,
+        "direct_entropy_loss": 0.00204522877476778,
+        "energy_relative_drift": 6.556235412088402e-16,
+        "number_relative_drift": 0.0001404915198522334,
+        "number_drift_entropy_identity_residual": 1.1744077932362984e-15,
+        "minimum_reconstruction": 1.0,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.00422609685982558,
+            "bound": 0.01309934185778006,
+            "signed_error": 0.00422609685982558,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.001167260609349473,
+            "bound": 0.010027961905337043,
+            "signed_error": -0.001167260609349473,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.005249724530091129,
+            "bound": 0.0057784574924631795,
+            "signed_error": 0.005249724530091129,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 8192,
+        "entropy_loss": 0.0,
+        "direct_entropy_loss": 0.0,
+        "energy_relative_drift": 0.0,
+        "number_relative_drift": 0.0,
+        "number_drift_entropy_identity_residual": 0.0,
+        "minimum_reconstruction": 1.0,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.0,
+            "bound": 0.0,
+            "signed_error": 0.0,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.0,
+            "bound": 0.0,
+            "signed_error": 0.0,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.0,
+            "bound": 0.0,
+            "signed_error": 0.0,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 20.07843137254902,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "near_vacuum",
+      "budget": 0.020696995501235774,
+      "budget_fraction": 0.1,
+      "root_entropy_loss": 0.20696995501235774,
+      "adaptive": {
+        "cells": 19,
+        "entropy_loss": 0.020076563132592536,
+        "direct_entropy_loss": 0.02007656313261121,
+        "energy_relative_drift": 3.975693353522982e-16,
+        "number_relative_drift": 0.14378778098450304,
+        "number_drift_entropy_identity_residual": 3.469446951953614e-18,
+        "minimum_reconstruction": 1.000000000000016e-12,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.0049036511159719,
+            "bound": 0.030703673893255484,
+            "signed_error": 0.0049036511159719,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.0006409357737222021,
+            "bound": 0.03671645377130905,
+            "signed_error": -0.0006409357737222021,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.02001220439374991,
+            "bound": 0.04975375104290551,
+            "signed_error": 0.02001220439374991,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 64,
+        "entropy_loss": 0.019293134806333524,
+        "direct_entropy_loss": 0.01929313480624487,
+        "energy_relative_drift": 7.951386707045964e-16,
+        "number_relative_drift": 0.13817688932693845,
+        "number_drift_entropy_identity_residual": -3.122502256758253e-16,
+        "minimum_reconstruction": 1e-12,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.0048105688759261245,
+            "bound": 0.02565525068731311,
+            "signed_error": 0.0048105688759261245,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.0006798059836084288,
+            "bound": 0.03513018825320365,
+            "signed_error": -0.0006798059836084288,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.02000216619810098,
+            "bound": 0.04952404890765413,
+            "signed_error": 0.02000216619810098,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 3.3684210526315788,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "near_vacuum",
+      "budget": 0.006209098650370732,
+      "budget_fraction": 0.03,
+      "root_entropy_loss": 0.20696995501235774,
+      "adaptive": {
+        "cells": 49,
+        "entropy_loss": 0.006205117006263566,
+        "direct_entropy_loss": 0.006205117006284309,
+        "energy_relative_drift": 1.325231117840994e-16,
+        "number_relative_drift": 0.04444087362898255,
+        "number_drift_entropy_identity_residual": -3.8163916471489756e-17,
+        "minimum_reconstruction": 1.000000000000016e-12,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.0003197168425139181,
+            "bound": 0.0038996117175198945,
+            "signed_error": 0.0003197168425139181,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 2.325700101640932e-05,
+            "bound": 0.005619329299679508,
+            "signed_error": -2.325700101640932e-05,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.006142623682723989,
+            "bound": 0.010866468501641436,
+            "signed_error": 0.006142623682723989,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 1024,
+        "entropy_loss": 0.002206688545194041,
+        "direct_entropy_loss": 0.002206688545163483,
+        "energy_relative_drift": 0.0,
+        "number_relative_drift": 0.015804241350557278,
+        "number_drift_entropy_identity_residual": -1.2490009027033011e-15,
+        "minimum_reconstruction": 1e-12,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.0002872343103790209,
+            "bound": 0.0008514755739893749,
+            "signed_error": 0.0002872343103790209,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 7.669913999644231e-05,
+            "bound": 0.0013155166316008726,
+            "signed_error": -7.669913999644231e-05,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.002766241627534573,
+            "bound": 0.003928082166405802,
+            "signed_error": 0.002766241627534573,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 20.897959183673468,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "near_vacuum",
+      "budget": 0.0020696995501235773,
+      "budget_fraction": 0.01,
+      "root_entropy_loss": 0.20696995501235774,
+      "adaptive": {
+        "cells": 112,
+        "entropy_loss": 0.0020579593002935537,
+        "direct_entropy_loss": 0.002057959300314557,
+        "energy_relative_drift": 1.325231117840994e-16,
+        "number_relative_drift": 0.01473904667802635,
+        "number_drift_entropy_identity_residual": -4.336808689942018e-17,
+        "minimum_reconstruction": 1.000000000000016e-12,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 0.0002536195410175341,
+            "bound": 0.0007286653556012,
+            "signed_error": 0.0002536195410175341,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 0.0001295260723533863,
+            "bound": 0.0009281676949596979,
+            "signed_error": -0.0001295260723533863,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.0016068514417511884,
+            "bound": 0.0022575740929307157,
+            "signed_error": 0.0016068514417511884,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 4096,
+        "entropy_loss": 0.0003627693869867874,
+        "direct_entropy_loss": 0.0003627693867435996,
+        "energy_relative_drift": 2.915508459250187e-15,
+        "number_relative_drift": 0.002598144155406533,
+        "number_drift_entropy_identity_residual": -2.3856242502284797e-15,
+        "minimum_reconstruction": 1e-12,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 4.6017711282525646e-05,
+            "bound": 7.534506767018867e-05,
+            "signed_error": 4.6017711282525646e-05,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 2.2118644553998365e-16,
+            "bound": 0.0,
+            "signed_error": -2.2118644553998365e-16,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.00045950503709599785,
+            "bound": 0.0005151131233555111,
+            "signed_error": 0.00045950503709599785,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 36.57142857142857,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "near_vacuum",
+      "budget": 0.0006209098650370732,
+      "budget_fraction": 0.003,
+      "root_entropy_loss": 0.20696995501235774,
+      "adaptive": {
+        "cells": 240,
+        "entropy_loss": 0.0006149732293797568,
+        "direct_entropy_loss": 0.0006149732294007532,
+        "energy_relative_drift": 3.975693353522982e-16,
+        "number_relative_drift": 0.0044044209874662095,
+        "number_drift_entropy_identity_residual": -5.627009275199768e-17,
+        "minimum_reconstruction": 1.000000000000016e-12,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 5.327008203481638e-05,
+            "bound": 0.00013662302595218517,
+            "signed_error": 5.327008203481638e-05,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 7.341194949054476e-06,
+            "bound": 0.00010362600980769711,
+            "signed_error": 7.341194949054476e-06,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.0003887005558778551,
+            "bound": 0.00045312106550576863,
+            "signed_error": 0.0003887005558778551,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 4096,
+        "entropy_loss": 0.0003627693869867874,
+        "direct_entropy_loss": 0.0003627693867435996,
+        "energy_relative_drift": 2.915508459250187e-15,
+        "number_relative_drift": 0.002598144155406533,
+        "number_drift_entropy_identity_residual": -2.3856242502284797e-15,
+        "minimum_reconstruction": 1e-12,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 4.6017711282525646e-05,
+            "bound": 7.534506767018867e-05,
+            "signed_error": 4.6017711282525646e-05,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 2.2118644553998365e-16,
+            "bound": 0.0,
+            "signed_error": -2.2118644553998365e-16,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 0.00045950503709599785,
+            "bound": 0.0005151131233555111,
+            "signed_error": 0.00045950503709599785,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 17.066666666666666,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "tiny_perturbation",
+      "budget": 3.927470186774023e-18,
+      "budget_fraction": 0.1,
+      "root_entropy_loss": 3.927470186774023e-17,
+      "adaptive": {
+        "cells": 49,
+        "entropy_loss": 3.758187974054197e-18,
+        "direct_entropy_loss": 3.7581879740541994e-18,
+        "energy_relative_drift": 0.0,
+        "number_relative_drift": 0.0,
+        "number_drift_entropy_identity_residual": -3.758187974054197e-18,
+        "minimum_reconstruction": 0.9999999910902464,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 4.008733800480951e-09,
+            "bound": 4.008733855553563e-09,
+            "signed_error": 4.008733800480951e-09,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 6.753261302085981e-10,
+            "bound": 3.9507092554246456e-09,
+            "signed_error": -6.753261302085981e-10,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 5.589524731188145e-10,
+            "bound": 7.50214198282607e-10,
+            "signed_error": 5.589524731188145e-10,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 64,
+        "entropy_loss": 2.341522279757547e-18,
+        "direct_entropy_loss": 2.341522279757547e-18,
+        "energy_relative_drift": 0.0,
+        "number_relative_drift": 0.0,
+        "number_drift_entropy_identity_residual": -2.341522279757547e-18,
+        "minimum_reconstruction": 0.9999999910902464,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 2.4976236925803e-09,
+            "bound": 2.4976237702050328e-09,
+            "signed_error": 2.4976236925803e-09,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 1.9289990794254834e-18,
+            "bound": 1.7500549432910519e-09,
+            "signed_error": 1.9289990794254834e-18,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 1.2057960255069464e-10,
+            "bound": 1.963203816531829e-10,
+            "signed_error": 1.2057960255069464e-10,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 1.3061224489795917,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "tiny_perturbation",
+      "budget": 1.1782410560322068e-18,
+      "budget_fraction": 0.029999999999999995,
+      "root_entropy_loss": 3.927470186774023e-17,
+      "adaptive": {
+        "cells": 139,
+        "entropy_loss": 1.1582960652755232e-18,
+        "direct_entropy_loss": 1.1582960652755227e-18,
+        "energy_relative_drift": 0.0,
+        "number_relative_drift": 0.0,
+        "number_drift_entropy_identity_residual": -1.1582960652755232e-18,
+        "minimum_reconstruction": 0.9999999910902464,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 1.2355157205657519e-09,
+            "bound": 1.2355158041999417e-09,
+            "signed_error": 1.2355157205657519e-09,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 3.6199817996917014e-11,
+            "bound": 1.1997156388484565e-09,
+            "signed_error": -3.6199817996917014e-11,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 1.136795093717433e-10,
+            "bound": 1.850791632073372e-10,
+            "signed_error": 1.136795093717433e-10,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 256,
+        "entropy_loss": 6.062496141835768e-19,
+        "direct_entropy_loss": 6.062496141835769e-19,
+        "energy_relative_drift": 0.0,
+        "number_relative_drift": 0.0,
+        "number_drift_entropy_identity_residual": -6.062496141835768e-19,
+        "minimum_reconstruction": 0.9999999902791081,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 6.46666228735851e-10,
+            "bound": 6.466662550281236e-10,
+            "signed_error": 6.46666228735851e-10,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 1.0111673969086543e-17,
+            "bound": 4.322163909683835e-10,
+            "signed_error": 1.0111673969086543e-17,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 3.0727225711841005e-11,
+            "bound": 5.04303573391206e-11,
+            "signed_error": 3.0727225711841005e-11,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 1.841726618705036,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "tiny_perturbation",
+      "budget": 3.927470186774023e-19,
+      "budget_fraction": 0.01,
+      "root_entropy_loss": 3.927470186774023e-17,
+      "adaptive": {
+        "cells": 439,
+        "entropy_loss": 3.904709528749316e-19,
+        "direct_entropy_loss": 3.9047095287493207e-19,
+        "energy_relative_drift": 0.0,
+        "number_relative_drift": 0.0,
+        "number_drift_entropy_identity_residual": -3.904709528749316e-19,
+        "minimum_reconstruction": 0.9999999902791081,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 4.1650230195381696e-10,
+            "bound": 4.165023494094174e-10,
+            "signed_error": 4.1650230195381696e-10,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 3.2068486714793047e-13,
+            "bound": 3.501886769716744e-10,
+            "signed_error": 3.2068486714793047e-13,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 2.8312876114114725e-11,
+            "bound": 4.758514588403206e-11,
+            "signed_error": 2.8312876114114725e-11,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 1024,
+        "entropy_loss": 1.4379632565223337e-19,
+        "direct_entropy_loss": 1.4379632565223347e-19,
+        "energy_relative_drift": 0.0,
+        "number_relative_drift": 0.0,
+        "number_drift_entropy_identity_residual": -1.4379632565223337e-19,
+        "minimum_reconstruction": 0.9999999900692018,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 1.5338268547354346e-10,
+            "bound": 1.5338274692436067e-10,
+            "signed_error": 1.5338268547354346e-10,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 1.065785088651839e-17,
+            "bound": 9.279982385526916e-11,
+            "signed_error": 1.065785088651839e-17,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 6.98663530756972e-12,
+            "bound": 1.0774792924698997e-11,
+            "signed_error": 6.98663530756972e-12,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 2.3325740318906605,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    },
+    {
+      "profile": "tiny_perturbation",
+      "budget": 1.178241056032207e-19,
+      "budget_fraction": 0.0030000000000000005,
+      "root_entropy_loss": 3.927470186774023e-17,
+      "adaptive": {
+        "cells": 1261,
+        "entropy_loss": 1.1764569167442546e-19,
+        "direct_entropy_loss": 1.1764569167442553e-19,
+        "energy_relative_drift": 0.0,
+        "number_relative_drift": 0.0,
+        "number_drift_entropy_identity_residual": -1.1764569167442546e-19,
+        "minimum_reconstruction": 0.9999999902791081,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 1.2548863391492827e-10,
+            "bound": 1.2548873760840867e-10,
+            "signed_error": 1.2548863391492827e-10,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 1.280972515746469e-15,
+            "bound": 8.675141260729688e-11,
+            "signed_error": 1.280972515746469e-15,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 5.621993480006082e-12,
+            "bound": 1.3666147520623447e-11,
+            "signed_error": 5.621993480006082e-12,
+            "certified": true
+          }
+        }
+      },
+      "uniform": {
+        "cells": 4096,
+        "entropy_loss": 2.3654048852885893e-20,
+        "direct_entropy_loss": 2.3654048852885857e-20,
+        "energy_relative_drift": 0.0,
+        "number_relative_drift": 0.0,
+        "number_drift_entropy_identity_residual": -2.3654048852885893e-20,
+        "minimum_reconstruction": 0.9999999900162726,
+        "observables": {
+          "dipole_x": {
+            "absolute_error": 2.523097648122779e-11,
+            "bound": 2.523098563616539e-11,
+            "signed_error": 2.523097648122779e-11,
+            "certified": true
+          },
+          "quadrupole_z": {
+            "absolute_error": 8.74573273191609e-18,
+            "bound": 0.0,
+            "signed_error": 8.74573273191609e-18,
+            "certified": true
+          },
+          "localized_response": {
+            "absolute_error": 1.0782231775042986e-12,
+            "bound": 1.2501510170907038e-12,
+            "signed_error": 1.0782231775042986e-12,
+            "certified": true
+          }
+        }
+      },
+      "cell_count_reduction": 3.2482157018239493,
+      "baseline": "finest supplied discrete state; uniform chooses first nested level meeting same budget"
+    }
+  ],
+  "joint_mb": {
+    "n_values": [
+      2.6184376798267155,
+      2.0283378025184113,
+      0.33329157462975045,
+      0.556385232123117
+    ],
+    "rho_values": [
+      9.819141299350182,
+      5.531830370504758,
+      0.5881616022877949,
+      0.8345778481846755
+    ],
+    "weights": [
+      0.2,
+      0.3,
+      0.1,
+      0.4
+    ],
+    "retained_n": 1.3880721270330885,
+    "retained_rho": 4.016024670524113,
+    "jensen_loss": 0.5005274625456027,
+    "bregman_loss": 0.5005274625456019,
+    "minimum_pointwise_divergence": 0.13949624137399486,
+    "hessian_eigenvalues": [
+      0.06040190607030144,
+      3.0794833976854985
+    ],
+    "number_conservation_error": 0.0,
+    "energy_conservation_error": 0.0,
+    "scope": "finite-grid joint massless MB equilibrium; no adaptive joint solver implemented"
+  },
+  "all_observable_bounds_pass": true,
+  "diagnostic_timings": [
+    {
+      "profile": "smooth",
+      "adaptive_diagnostic_seconds": 0.14979696899536066,
+      "uniform_level_construction_seconds_reusing_cache": 0.1419632760080276,
+      "cached_cells": 13653,
+      "stable_fallback_count": 360
+    },
+    {
+      "profile": "localized_beam",
+      "adaptive_diagnostic_seconds": 0.016487735003465787,
+      "uniform_level_construction_seconds_reusing_cache": 0.5140133380045881,
+      "cached_cells": 13653,
+      "stable_fallback_count": 5058
+    },
+    {
+      "profile": "two_beams",
+      "adaptive_diagnostic_seconds": 0.026817931997356936,
+      "uniform_level_construction_seconds_reusing_cache": 0.7443346509971889,
+      "cached_cells": 13653,
+      "stable_fallback_count": 4427
+    },
+    {
+      "profile": "near_vacuum",
+      "adaptive_diagnostic_seconds": 0.02530482699512504,
+      "uniform_level_construction_seconds_reusing_cache": 0.6977298370038625,
+      "cached_cells": 13653,
+      "stable_fallback_count": 3626
+    },
+    {
+      "profile": "tiny_perturbation",
+      "adaptive_diagnostic_seconds": 0.6063107960071648,
+      "uniform_level_construction_seconds_reusing_cache": 0.15527498700248543,
+      "cached_cells": 13653,
+      "stable_fallback_count": 5461
+    }
+  ],
+  "wall_seconds": 8.229227237010491,
+  "environment": {
+    "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "numpy": "2.3.5",
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.39"
+  },
+  "command": "python3 src/spherical_mesh.py --output results/mesh_results.json"
+}

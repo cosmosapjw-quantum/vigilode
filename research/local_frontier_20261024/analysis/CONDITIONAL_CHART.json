@@ -1,0 +1,2370 @@
+{
+  "schema_version": 1,
+  "study": "conditional_chart_accuracy_cost",
+  "input": "research/local_frontier_20261024/evidence/runs/conditional-chart-round3-sweep.stdout",
+  "input_sha256": "7dde0fac084e80adae930154c7c71ba9581a064dfe54e5bfc9356315512b03b6",
+  "rows": 384,
+  "status_counts": {
+    "PASS_SCOPED": 336,
+    "HOLD_UNRESOLVED_ERROR_BOUND": 48
+  },
+  "refusal_counts": {
+    "direct": 96,
+    "accepted": 66,
+    "residual_uncertainty_floor": 90,
+    "estimated_cost_cap": 18,
+    "correction_budget": 42,
+    "chart_setup_refused": 72
+  },
+  "groups": [
+    {
+      "case": "degenerate",
+      "action": "dense",
+      "tolerance": 1e-17,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9119828080229224e-06,
+      "median_ratio_to_direct": 0.994364215187863,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "dense",
+      "tolerance": 1e-17,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9228194044188283e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "dense",
+      "tolerance": 1e-17,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9936603585657367e-06,
+      "median_ratio_to_direct": 1.0368422296883988,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "dense",
+      "tolerance": 1e-17,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.944357628765792e-06,
+      "median_ratio_to_direct": 1.0112013766334305,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "dense",
+      "tolerance": 1e-13,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9274219653179193e-06,
+      "median_ratio_to_direct": 0.7645844100083324,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "dense",
+      "tolerance": 1e-13,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.5208753148614608e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "dense",
+      "tolerance": 1e-13,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9848452380952383e-06,
+      "median_ratio_to_direct": 0.7873635107590868,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "dense",
+      "tolerance": 1e-13,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9839207135777995e-06,
+      "median_ratio_to_direct": 0.7869967633392568,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "dense",
+      "tolerance": 1e-09,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9195902111324374e-06,
+      "median_ratio_to_direct": 0.9960466952347404,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "dense",
+      "tolerance": 1e-09,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.927209055876686e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "dense",
+      "tolerance": 1e-09,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9080886558627264e-06,
+      "median_ratio_to_direct": 0.9900787099584991,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "dense",
+      "tolerance": 1e-09,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.8998224121557456e-06,
+      "median_ratio_to_direct": 0.985789479539114,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "dense",
+      "tolerance": 1e-05,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9386957364341086e-06,
+      "median_ratio_to_direct": 0.9789909288663883,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "dense",
+      "tolerance": 1e-05,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9803e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "dense",
+      "tolerance": 1e-05,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9828077304261645e-06,
+      "median_ratio_to_direct": 1.0012663386487728,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "dense",
+      "tolerance": 1e-05,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.927383429672447e-06,
+      "median_ratio_to_direct": 0.9732785081414165,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "structured",
+      "tolerance": 1e-17,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9771482213438738e-06,
+      "median_ratio_to_direct": 1.031729353260896,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "structured",
+      "tolerance": 1e-17,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.916343869731801e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "structured",
+      "tolerance": 1e-17,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.0516646153846155e-06,
+      "median_ratio_to_direct": 1.070614020682913,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "structured",
+      "tolerance": 1e-17,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9659273084479373e-06,
+      "median_ratio_to_direct": 1.0258739777861872,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "structured",
+      "tolerance": 1e-13,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9863584905660375e-06,
+      "median_ratio_to_direct": 0.9919311397348239,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "structured",
+      "tolerance": 1e-13,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.0025165165165165e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "structured",
+      "tolerance": 1e-13,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.1083393045310855e-06,
+      "median_ratio_to_direct": 1.0528449014735985,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "structured",
+      "tolerance": 1e-13,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.0070651955867603e-06,
+      "median_ratio_to_direct": 1.0022714814248606,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "structured",
+      "tolerance": 1e-09,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9055457142857144e-06,
+      "median_ratio_to_direct": 0.9677206164881893,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "structured",
+      "tolerance": 1e-09,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.969107283464567e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "structured",
+      "tolerance": 1e-09,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9038572787821125e-06,
+      "median_ratio_to_direct": 0.9668631540645923,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "structured",
+      "tolerance": 1e-09,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9907402985074626e-06,
+      "median_ratio_to_direct": 1.0109862043701516,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "structured",
+      "tolerance": 1e-05,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9157978927203066e-06,
+      "median_ratio_to_direct": 0.999339966643583,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "structured",
+      "tolerance": 1e-05,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9170632183908045e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "structured",
+      "tolerance": 1e-05,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9128623326959846e-06,
+      "median_ratio_to_direct": 0.9978086869256476,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "degenerate",
+      "action": "structured",
+      "tolerance": 1e-05,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 1.9981648351648354e-06,
+      "median_ratio_to_direct": 1.0423051342261462,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "chart_setup_refused": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "dense",
+      "tolerance": 1e-17,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": false,
+      "median_seconds": 2.2980780711825486e-06,
+      "median_ratio_to_direct": null,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "dense",
+      "tolerance": 1e-17,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": false,
+      "median_seconds": 2.349768149882904e-06,
+      "median_ratio_to_direct": null,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "dense",
+      "tolerance": 1e-17,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": false,
+      "median_seconds": 2.2026905286343612e-06,
+      "median_ratio_to_direct": null,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "dense",
+      "tolerance": 1e-17,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": false,
+      "median_seconds": 2.2781697038724375e-06,
+      "median_ratio_to_direct": null,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "dense",
+      "tolerance": 1e-13,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.199742857142857e-06,
+      "median_ratio_to_direct": 0.9736122687031247,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "dense",
+      "tolerance": 1e-13,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.25936230248307e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "dense",
+      "tolerance": 1e-13,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.2969276693455796e-06,
+      "median_ratio_to_direct": 1.0166265352047457,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "dense",
+      "tolerance": 1e-13,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.2248865406006674e-06,
+      "median_ratio_to_direct": 0.9847409324991777,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "dense",
+      "tolerance": 1e-09,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.32728488372093e-06,
+      "median_ratio_to_direct": 0.9386961751616077,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "estimated_cost_cap": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "dense",
+      "tolerance": 1e-09,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.47927385377943e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "dense",
+      "tolerance": 1e-09,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 4.532233031674208e-06,
+      "median_ratio_to_direct": 1.8280485734826053,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": 0.015720486111111154,
+      "refusal_reasons": {
+        "correction_budget": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "dense",
+      "tolerance": 1e-09,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 8.873676991150444e-06,
+      "median_ratio_to_direct": 3.579143537380238,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 4,
+      "actual_error_upper": 1.7242041128184837e-11,
+      "last_chart_error_upper": 1.7242041128184837e-11,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "dense",
+      "tolerance": 1e-05,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.2824351747463363e-06,
+      "median_ratio_to_direct": 1.0043656432926287,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "estimated_cost_cap": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "dense",
+      "tolerance": 1e-05,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.2725141884222473e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "dense",
+      "tolerance": 1e-05,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 3.59989928057554e-06,
+      "median_ratio_to_direct": 1.5841042044603755,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": 0.015720486111111154,
+      "refusal_reasons": {
+        "correction_budget": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "dense",
+      "tolerance": 1e-05,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 6.312504731861198e-06,
+      "median_ratio_to_direct": 2.777762516960926,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 2,
+      "actual_error_upper": 6.84923595895004e-07,
+      "last_chart_error_upper": 6.84923595895004e-07,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "structured",
+      "tolerance": 1e-17,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": false,
+      "median_seconds": 2.337341121495327e-06,
+      "median_ratio_to_direct": null,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "structured",
+      "tolerance": 1e-17,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": false,
+      "median_seconds": 2.4959962917181705e-06,
+      "median_ratio_to_direct": null,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "structured",
+      "tolerance": 1e-17,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": false,
+      "median_seconds": 2.474592088998764e-06,
+      "median_ratio_to_direct": null,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "structured",
+      "tolerance": 1e-17,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": false,
+      "median_seconds": 2.235658100558659e-06,
+      "median_ratio_to_direct": null,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "structured",
+      "tolerance": 1e-13,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.7439272976680383e-06,
+      "median_ratio_to_direct": 1.2241811330495067,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 1,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": 0.00011837429470490379,
+      "refusal_reasons": {
+        "correction_budget": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "structured",
+      "tolerance": 1e-13,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.2414389697648378e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "structured",
+      "tolerance": 1e-13,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.6995587044534414e-06,
+      "median_ratio_to_direct": 1.2043864414192225,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": 0.015720486111111154,
+      "refusal_reasons": {
+        "correction_budget": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "structured",
+      "tolerance": 1e-13,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 3.836295019157088e-06,
+      "median_ratio_to_direct": 1.7115322214459294,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 6,
+      "actual_error_upper": 3.885780586188048e-16,
+      "last_chart_error_upper": 3.885780586188048e-16,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "structured",
+      "tolerance": 1e-09,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.7415821917808217e-06,
+      "median_ratio_to_direct": 1.126089290238744,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 1,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": 0.00011837429470490379,
+      "refusal_reasons": {
+        "correction_budget": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "structured",
+      "tolerance": 1e-09,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.4346046228710463e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "structured",
+      "tolerance": 1e-09,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.6754064171122993e-06,
+      "median_ratio_to_direct": 1.0989079672235582,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": 0.015720486111111154,
+      "refusal_reasons": {
+        "correction_budget": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "structured",
+      "tolerance": 1e-09,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 3.404071428571429e-06,
+      "median_ratio_to_direct": 1.3982029757904277,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 4,
+      "actual_error_upper": 1.7242041128184837e-11,
+      "last_chart_error_upper": 1.7242041128184837e-11,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "structured",
+      "tolerance": 1e-05,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.7880445682451255e-06,
+      "median_ratio_to_direct": 1.255547642045409,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 1,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": 0.00011837429470490379,
+      "refusal_reasons": {
+        "correction_budget": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "structured",
+      "tolerance": 1e-05,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.2205804661487238e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "structured",
+      "tolerance": 1e-05,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.5507974522292997e-06,
+      "median_ratio_to_direct": 1.148707507390304,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 1.1102230246251565e-16,
+      "last_chart_error_upper": 0.015720486111111154,
+      "refusal_reasons": {
+        "correction_budget": 3
+      }
+    },
+    {
+      "case": "leakage",
+      "action": "structured",
+      "tolerance": 1e-05,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.9696068249258164e-06,
+      "median_ratio_to_direct": 1.3373110635689645,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 2,
+      "actual_error_upper": 6.84923595895004e-07,
+      "last_chart_error_upper": 6.84923595895004e-07,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "dense",
+      "tolerance": 1e-17,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.4563251533742333e-06,
+      "median_ratio_to_direct": 1.0908356889302533,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "dense",
+      "tolerance": 1e-17,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.2517829021372327e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "dense",
+      "tolerance": 1e-17,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.30969168591224e-06,
+      "median_ratio_to_direct": 1.0257168591697026,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "dense",
+      "tolerance": 1e-17,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.362318772136954e-06,
+      "median_ratio_to_direct": 1.0490881558319003,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "dense",
+      "tolerance": 1e-13,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.2580959367945827e-06,
+      "median_ratio_to_direct": 0.9993241846009991,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "dense",
+      "tolerance": 1e-13,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.2596230248307e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "dense",
+      "tolerance": 1e-13,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.185169213973799e-06,
+      "median_ratio_to_direct": 0.9670503397961793,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "dense",
+      "tolerance": 1e-13,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.3382768691588784e-06,
+      "median_ratio_to_direct": 1.034808392136149,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "dense",
+      "tolerance": 1e-09,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.202426842684269e-06,
+      "median_ratio_to_direct": 0.9367185919445168,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "estimated_cost_cap": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "dense",
+      "tolerance": 1e-09,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.351215041128085e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "dense",
+      "tolerance": 1e-09,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 3.4877439024390247e-06,
+      "median_ratio_to_direct": 1.483379376803258,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": 0.0,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "dense",
+      "tolerance": 1e-09,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 3.646440801457195e-06,
+      "median_ratio_to_direct": 1.5508750742372235,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": 0.0,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "dense",
+      "tolerance": 1e-05,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.259249435665914e-06,
+      "median_ratio_to_direct": 0.9916206069111128,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "estimated_cost_cap": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "dense",
+      "tolerance": 1e-05,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.278340546697039e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "dense",
+      "tolerance": 1e-05,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 3.430390410958904e-06,
+      "median_ratio_to_direct": 1.5056530578503804,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": 0.0,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "dense",
+      "tolerance": 1e-05,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 3.4695771230502603e-06,
+      "median_ratio_to_direct": 1.522852730721131,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": 0.0,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "structured",
+      "tolerance": 1e-17,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.2132013274336284e-06,
+      "median_ratio_to_direct": 0.9997801290642394,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "structured",
+      "tolerance": 1e-17,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.213688053097345e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "structured",
+      "tolerance": 1e-17,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.3216299303944318e-06,
+      "median_ratio_to_direct": 1.0487611057691966,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "structured",
+      "tolerance": 1e-17,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.2844109589041092e-06,
+      "median_ratio_to_direct": 1.0319479999486876,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "structured",
+      "tolerance": 1e-13,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.4203567110036273e-06,
+      "median_ratio_to_direct": 1.069523333528553,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": 0.0,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "structured",
+      "tolerance": 1e-13,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.263023755656109e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "structured",
+      "tolerance": 1e-13,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.4693617283950618e-06,
+      "median_ratio_to_direct": 1.0911779967944395,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": 0.0,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "structured",
+      "tolerance": 1e-13,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.4457750611246947e-06,
+      "median_ratio_to_direct": 1.080755363266437,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": 0.0,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "structured",
+      "tolerance": 1e-09,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.6093533246414606e-06,
+      "median_ratio_to_direct": 1.149078863082228,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": 0.0,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "structured",
+      "tolerance": 1e-09,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.270821793416572e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "structured",
+      "tolerance": 1e-09,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.4955922693266833e-06,
+      "median_ratio_to_direct": 1.0989819969852994,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": 0.0,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "structured",
+      "tolerance": 1e-09,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.489047263681592e-06,
+      "median_ratio_to_direct": 1.09609977801767,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": 0.0,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "structured",
+      "tolerance": 1e-05,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.848160739687055e-06,
+      "median_ratio_to_direct": 1.2436917098559286,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": 0.0,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "structured",
+      "tolerance": 1e-05,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.2900858123569796e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "structured",
+      "tolerance": 1e-05,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.463796798029557e-06,
+      "median_ratio_to_direct": 1.0758534831905675,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": 0.0,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nilpotent",
+      "action": "structured",
+      "tolerance": 1e-05,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.5683234916559692e-06,
+      "median_ratio_to_direct": 1.1214966171999574,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 0.0,
+      "last_chart_error_upper": 0.0,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "dense",
+      "tolerance": 1e-17,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": false,
+      "median_seconds": 2.2210921198668147e-06,
+      "median_ratio_to_direct": null,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "dense",
+      "tolerance": 1e-17,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": false,
+      "median_seconds": 2.2571770011273955e-06,
+      "median_ratio_to_direct": null,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "dense",
+      "tolerance": 1e-17,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": false,
+      "median_seconds": 2.2263670745272524e-06,
+      "median_ratio_to_direct": null,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "dense",
+      "tolerance": 1e-17,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": false,
+      "median_seconds": 2.2607389830508473e-06,
+      "median_ratio_to_direct": null,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "dense",
+      "tolerance": 1e-13,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.3357001166861144e-06,
+      "median_ratio_to_direct": 1.042027824075927,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "dense",
+      "tolerance": 1e-13,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.241494960806271e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "dense",
+      "tolerance": 1e-13,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.2190964523281595e-06,
+      "median_ratio_to_direct": 0.9900073348948977,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "dense",
+      "tolerance": 1e-13,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.3633837072018894e-06,
+      "median_ratio_to_direct": 1.0543783271998857,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "dense",
+      "tolerance": 1e-09,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.3162199074074074e-06,
+      "median_ratio_to_direct": 1.0378153530413894,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "estimated_cost_cap": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "dense",
+      "tolerance": 1e-09,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.2318227424749166e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "dense",
+      "tolerance": 1e-09,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 3.801643493761141e-06,
+      "median_ratio_to_direct": 1.7033805693481805,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": 0.02767716717074098,
+      "refusal_reasons": {
+        "correction_budget": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "dense",
+      "tolerance": 1e-09,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 7.63054372623574e-06,
+      "median_ratio_to_direct": 3.418973909090139,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 3,
+      "actual_error_upper": 2.55351295663786e-14,
+      "last_chart_error_upper": 2.55351295663786e-14,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "dense",
+      "tolerance": 1e-05,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.219140798226164e-06,
+      "median_ratio_to_direct": 0.9463012597774072,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "estimated_cost_cap": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "dense",
+      "tolerance": 1e-05,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.3450679953106682e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "dense",
+      "tolerance": 1e-05,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 3.7122152133580707e-06,
+      "median_ratio_to_direct": 1.5829883060027377,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": 0.02767716717074098,
+      "refusal_reasons": {
+        "correction_budget": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "dense",
+      "tolerance": 1e-05,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 6.058280966767372e-06,
+      "median_ratio_to_direct": 2.583413776863552,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 2,
+      "actual_error_upper": 3.084368316308428e-10,
+      "last_chart_error_upper": 3.084368316308428e-10,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "structured",
+      "tolerance": 1e-17,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": false,
+      "median_seconds": 2.4326804374240583e-06,
+      "median_ratio_to_direct": null,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "structured",
+      "tolerance": 1e-17,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": false,
+      "median_seconds": 2.2763412969283278e-06,
+      "median_ratio_to_direct": null,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "structured",
+      "tolerance": 1e-17,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": false,
+      "median_seconds": 2.5026075e-06,
+      "median_ratio_to_direct": null,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "structured",
+      "tolerance": 1e-17,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": false,
+      "median_seconds": 2.2730943181818184e-06,
+      "median_ratio_to_direct": null,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "structured",
+      "tolerance": 1e-13,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.3811702380952383e-06,
+      "median_ratio_to_direct": 1.0368218237477036,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "structured",
+      "tolerance": 1e-13,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.296605051664753e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "structured",
+      "tolerance": 1e-13,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.2424473094170404e-06,
+      "median_ratio_to_direct": 0.976418347504524,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "structured",
+      "tolerance": 1e-13,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.4654125615763545e-06,
+      "median_ratio_to_direct": 1.0735030647908907,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "residual_uncertainty_floor": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "structured",
+      "tolerance": 1e-09,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.5516505102040815e-06,
+      "median_ratio_to_direct": 1.1249325207161402,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": 0.02767716717074098,
+      "refusal_reasons": {
+        "correction_budget": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "structured",
+      "tolerance": 1e-09,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.268269841269841e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "structured",
+      "tolerance": 1e-09,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.515447236180905e-06,
+      "median_ratio_to_direct": 1.1089717768202954,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": 0.02767716717074098,
+      "refusal_reasons": {
+        "correction_budget": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "structured",
+      "tolerance": 1e-09,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 3.0951267387944356e-06,
+      "median_ratio_to_direct": 1.3645319804903357,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 3,
+      "actual_error_upper": 2.55351295663786e-14,
+      "last_chart_error_upper": 2.55351295663786e-14,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "structured",
+      "tolerance": 1e-05,
+      "method": "capped_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.492447073474471e-06,
+      "median_ratio_to_direct": 1.1060022543095298,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": 0.02767716717074098,
+      "refusal_reasons": {
+        "correction_budget": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "structured",
+      "tolerance": 1e-05,
+      "method": "direct",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.2535641891891894e-06,
+      "median_ratio_to_direct": 1.0,
+      "chart_accepts": 0,
+      "fallback_solves": 0,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": null,
+      "refusal_reasons": {
+        "direct": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "structured",
+      "tolerance": 1e-05,
+      "method": "no_refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.5236620428751576e-06,
+      "median_ratio_to_direct": 1.1198536322957575,
+      "chart_accepts": 0,
+      "fallback_solves": 3,
+      "maximum_corrections": 0,
+      "actual_error_upper": 4.440892098500626e-16,
+      "last_chart_error_upper": 0.02767716717074098,
+      "refusal_reasons": {
+        "correction_budget": 3
+      }
+    },
+    {
+      "case": "nonnormal",
+      "action": "structured",
+      "tolerance": 1e-05,
+      "method": "refinement",
+      "samples": 3,
+      "all_scoped_pass": true,
+      "median_seconds": 2.870018651362984e-06,
+      "median_ratio_to_direct": 1.2735464404036299,
+      "chart_accepts": 3,
+      "fallback_solves": 0,
+      "maximum_corrections": 2,
+      "actual_error_upper": 3.084368316308428e-10,
+      "last_chart_error_upper": 3.084368316308428e-10,
+      "refusal_reasons": {
+        "accepted": 3
+      }
+    }
+  ],
+  "conclusions": {
+    "selected_for_these_known_blocks": "direct triangular solve with outward original residual check",
+    "conditional_candidate": "bounded polynomial correction improves the polynomial candidate only, not the strongest final direct comparator",
+    "cost_cap": "empirical routing estimate; callback count bound is hard but elapsed-time bound requires verified event-cost bounds",
+    "scope": "same requested infinity-error tolerance, not identical attained errors; not whole ODE or production promotion",
+    "holds": "retained and excluded from speed ranking; an upper error bound above tolerance does not prove an actual error failure"
+  },
+  "accuracy_contract": {
+    "norm": "absolute infinity",
+    "residual_threshold": "round_down(tau/K)",
+    "acceptance": "K*(norm(computed_original_residual)+mu)<=tau",
+    "floor_meaning": "certificate uncertainty; not a lower bound on actual solution error",
+    "finite_precision_recurrence": "r_next <= eta*r + A0*(P0*mu+nu)",
+    "original_reference": "outward interval block-triangular solve for exact binary B and RHS",
+    "lower_upper_separation": true
+  },
+  "cost_contract": {
+    "hard_bound": "degree*(max_corrections+1) callback attempts, plus separately counted fallback",
+    "conditional_wall_bound": "passes*U+F_upper <= rho*F_lower requires verified cost bounds",
+    "implemented_cost_proxy": "2 times measured first polynomial pass, excluding common final certificate",
+    "implemented_wall_bound_verified": false,
+    "setup_and_calibration_amortized_in_route_timing": false
+  },
+  "next_steps": [
+    {
+      "id": "CC1",
+      "action": "Select structured direct when the exact block provider exists"
+    },
+    {
+      "id": "CC2",
+      "action": "Retain bounded refinement only where a useful relation exists without a cheaper direct solve"
+    },
+    {
+      "id": "CC3",
+      "action": "Validate weighted/time-integration error allocation separately before ODE integration"
+    },
+    {
+      "id": "CC4",
+      "action": "Measure provider-regime cost stability and setup/calibration amortization on local independent runs"
+    },
+    {
+      "id": "CC5",
+      "action": "Tighten callback error allowance or residual precision when certificate uncertainty blocks accuracy"
+    }
+  ]
+}

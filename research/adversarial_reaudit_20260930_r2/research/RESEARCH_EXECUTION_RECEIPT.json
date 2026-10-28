@@ -1,0 +1,46 @@
+{
+  "schema": "vigilode.reaudit.research_execution.v1",
+  "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+  "runtime": "3.12.14",
+  "commands": [
+    {
+      "argv": [
+        "python3",
+        "reaudit/research/polynomial_joint_probe.py"
+      ],
+      "environment": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1"
+      },
+      "actual_exit_code": 0,
+      "stdout_stderr": "reaudit/research/polynomial_joint_execution.log"
+    },
+    {
+      "argv": [
+        "python3",
+        "reaudit/research/homotopy_majorant_probe.py"
+      ],
+      "environment": {
+        "OPENBLAS_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1"
+      },
+      "actual_exit_code": 0,
+      "stdout_stderr": "reaudit/research/homotopy_majorant_execution.log"
+    }
+  ],
+  "unavailable_optional_import": {
+    "module": "mpmath",
+    "observed": "ModuleNotFoundError",
+    "replacement": "stdlib Decimal precision110",
+    "runtime_failure": false
+  },
+  "source_hashes": {
+    "polynomial_joint_probe.py": "095915825dea797e7f3b4aa01494d6a6cf1630da5d69299afac93fbc47b12a04",
+    "homotopy_majorant_probe.py": "18c10c915c56be75da4ffe20a25ff3a74e84a5c91d112b40e31d5257e2e1de9c"
+  },
+  "evidence_status": {
+    "polynomial": "bounded standalone numerical implementation",
+    "homotopy_exact_fixture": "Fraction inequalities exact",
+    "homotopy_actual_tableau": "binary64 diagnostic with explicit arithmetic tolerance"
+  }
+}

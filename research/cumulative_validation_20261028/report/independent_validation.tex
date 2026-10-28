@@ -1,0 +1,88 @@
+\documentclass[aps,pra,reprint,onecolumn,10pt,notitlepage,nofootinbib]{revtex4-2}
+\usepackage{amsmath,amssymb,booktabs,array}
+\usepackage[colorlinks=true,urlcolor=blue]{hyperref}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\begin{document}
+\title{Independent local validation of the VigilODE PR90--94 integration}
+\author{VigilODE validation team}
+\noaffiliation
+\date{28 October 2026}
+\begin{abstract}
+We replayed source-sensitive support checks at their original commits and
+ran a separate native validation on the integrated delivery plus limited
+contract repairs. The original 23-node, 34-edge plan, 73-path coverage, ten
+interactions and negative evidence remain intact. The native contract and
+manufactured-model results below are scoped; full research-reference authority,
+public API compatibility and broad physical-client qualification remain open.
+\end{abstract}
+\maketitle
+
+\section{Identity and methods}
+Delivered source commit:\par
+\noindent\texttt{e935878fefe795a1b7e88aba64e5e30ef7be1578}\par
+Delivered source tree:\par
+\noindent\texttt{bff4df3e8f2be76dccfb072302556d4fea4b5dc2}\par
+Native validation code commit:\par
+\noindent\texttt{5c57bf146f2f5faf69f711f133a83fcb265cee90}\par
+Native validation code tree:\par
+\noindent\texttt{9633bde7dda1e9dd4748d1aecc8f22af68b5f5ac}\par
+The pure preregistration commit was remote-reachable before execution, but the code execution commit was local when measurements began; this process deviation is retained rather than retroactively passed.
+The validation used locked offline Rust 1.94.1 dependencies, one Cargo build
+and one timing process at a time, single-thread solver settings and a pinned
+CPU for the short matched-accuracy cohort. Raw receipts and executable hashes
+are indexed in \texttt{EVIDENCE\_MANIFEST.json}. Source-locked exact checks
+are not counted as current native or physical accuracy checks.
+
+\section{Native and physical results}
+\begin{table}[h]
+\caption{Final-tree contract execution. Ignored tests are not counted as passes.}
+\begin{tabular}{L{0.34\linewidth}rrL{0.37\linewidth}}
+\toprule
+Scope & Passed & Ignored & Outcome\\
+\midrule
+Facade and coupled measurement suites & 424 & 0 & Exit 0\\
+Core/facade/coupled release command & 830 & 21 & Exit 0\\
+Integrator release command & 1196 & 54 & Initial 1800-s timeout retained; bounded second attempt exit 0\\
+Native VODE/CVODE/diffsol adapter grid & 7 & 0 & Common linear exact solution and endpoint parity; exit 0\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The release smoke returned all sixteen state components for four manufactured
+linear-decay paths. The largest returned-state error was
+$3.3719\times 10^{-9}$; RHS-only paths made zero JVP calls. These are
+manufactured oracles, not validation of an external physical client.
+The inherited W-filtered Prothero--Robinson negative control still fails its
+cost gate: accepted-step ratio $15/7=2.143>1.3$. The Off arm has interior
+error $311.467$. An expected-negative reproduction does not make that route
+productive.
+
+\section{Matched accuracy and profile}
+For the rapid oscillator, both retained DOPRI and RHS-only switching produced
+the same 17-point maximum state error $9.4603\times10^{-7}$ at input tolerance
+$10^{-8}$, below the common achieved-error cap $10^{-6}$. Their maximum
+phase and amplitude errors were $1.4996\times10^{-7}$ radians and
+$9.8307\times10^{-7}$. They used identical work counters: 10027 accepted
+steps, 10845 attempts and 65071 RHS calls, with zero JVP calls. Three timed
+samples gave median solver-reported times 5.591 ms (DOPRI) and 5.702 ms
+(switching). The small difference is diagnostic only. At input tolerance
+$10^{-6}$ both arms exceeded the common $10^{-4}$ achieved-error cap, so no
+speed ratio was assigned to that first cohort. Separate Callgrind differences between 16 and 32 windows (17 and 33 requested observation points)
+at the same endpoint gave 14827 and 14849 marginal guest instructions
+per added point, respectively. Numerical work changed between grids, so these
+are neither whole-solve instruction counts nor native elapsed time.
+
+\section{Open gates and claim ceiling}
+The full research-reference authority check fails on this checkout with 49
+missing citations; the PR94 CI failure reported 53 under its own snapshot.
+The attempted Q-LEDGER repair and a proposed stiff-cubic benchmark driver
+were rejected in independent review and were not merged. The standalone vendor validator was invoked without its required directory
+argument (exit 2), leaving that graph validation unperformed, although locked
+offline metadata and builds passed. Whole-workspace
+format checking still fails on the same two coupled files as the delivered
+source. Public switching configuration changes still need an explicit
+compatibility or version decision. The ten prospective interaction campaigns,
+six candidate implementation nodes and real-client qualification are not
+promoted by the tests above. Broad production remains \textbf{HOLD}.
+
+\end{document}

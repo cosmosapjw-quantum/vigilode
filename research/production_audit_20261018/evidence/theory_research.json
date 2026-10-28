@@ -1,0 +1,148 @@
+{
+  "schema": "vigilode-constructive-native-theory-v1",
+  "date": "2026-10-18",
+  "base_commit_prefix": "2fc61b9",
+  "author_agent": "theory_research",
+  "status": "AWAITING_INDEPENDENT_REVIEW",
+  "proof_file": "theory_research.md",
+  "no_go_submissions": [],
+  "historical_campaigns_rerun": 0,
+  "claims": [
+    {
+      "id": "T1",
+      "name": "Weighted energy tube and sharp full-space logarithmic norm",
+      "proof_status": "DERIVED",
+      "implementation_status": "CONTRACT_ONLY",
+      "statement": "mu_w(Df)=-kappa+S*abs(chi)*abs(mean)^2; validated residual gives exponential-integrating-factor global error",
+      "preconditions": [
+        "positive weights with exact sum S retained",
+        "real frequencies and chi; kappa>=0",
+        "initial uncertainty product ball enclosed",
+        "actual reconstructed-curve residual enclosed continuously",
+        "candidate mean upper bound enclosed",
+        "Y(0) equals the admitted center initial state, otherwise independently enclose initial discrepancy"
+      ],
+      "accuracy_gain": "flow perturbation exponent factor 3 -> 1 against norm-Lipschitz cubic bound",
+      "work": "O(n) initial tube, O(1) scalar gain per window excluding residual construction",
+      "followup": "interval reconstruction residual and inherited-state implementation"
+    },
+    {
+      "id": "T2",
+      "name": "Bernstein continuous polynomial bound",
+      "proof_status": "DERIVED",
+      "implementation_status": "CONTRACT_ONLY",
+      "statement": "sup norm <= max Bernstein coefficient norm <= monomial coefficient norm sum; subdivision excess <= cell_width*derivative_control_bound",
+      "preconditions": [
+        "polynomial curve on real normalized interval",
+        "outward coefficient transformation for native enclosure"
+      ],
+      "accuracy_example": {
+        "polynomial": "(1-tau)^12",
+        "old_bound": 4096,
+        "new_bound": 1
+      },
+      "work": "O(d^2) transformation and each subdivision, O(d) streaming memory",
+      "followup": "refine only rejected or near-threshold domain/residual checks"
+    },
+    {
+      "id": "T3",
+      "name": "Input-complete damped moment enclosure and beta-prefix work reduction",
+      "proof_status": "DERIVED",
+      "implementation_status": "IMPLEMENTED_AWAITING_REVIEW",
+      "statement": "successful finite interval evaluations enclose exact binary64 input integral; small-z beta sequence costs O(k+N)",
+      "preconditions": [
+        "j,k<=64",
+        "finite kappa>=0, horizon>0",
+        "existing directed interval and exp_interval contracts",
+        "intermediate overflow errors propagated"
+      ],
+      "work_example": {
+        "N": 28,
+        "k": 64,
+        "old_beta_interval_divisions": 1920,
+        "new_beta_interval_divisions": 93,
+        "old_beta_interval_multiplications": 1920,
+        "new_beta_interval_multiplications": 92,
+        "old_beta_ordinary_divisions": 30,
+        "old_beta_total_divisions": 1950
+      },
+      "remaining": "large-z width and runtime promotion, connection to damped packet"
+    }
+  ],
+  "changed_files": [
+    "crates/rodas5p-core/src/damped_moments.rs",
+    "crates/rodas5p-core/tests/damped_moment_enclosure_regressions.rs"
+  ],
+  "validation": {
+    "before_beta_prefix_optimization": {
+      "existing_damped_tests": {
+        "passed": 7,
+        "failed": 0
+      },
+      "new_regressions": {
+        "passed": 4,
+        "failed": 0
+      }
+    },
+    "final_run": {
+      "command": "PATH=/workspace/scratch/0dc1e721cf82/runtime/rust/bin:$PATH CARGO_HOME=/workspace/scratch/0dc1e721cf82/runtime/cargo-home cargo test --locked --offline -p rodas5p-core --test damped_moment_contracts --test damped_moment_enclosure_regressions",
+      "exit_code": 0,
+      "existing_damped_tests": {
+        "passed": 7,
+        "failed": 0
+      },
+      "new_regressions": {
+        "passed": 4,
+        "failed": 0
+      },
+      "scope": "after all damped source and beta prefix changes",
+      "warning": "concurrent leja source unused safe_l2 import; unrelated to this unit"
+    },
+    "rustfmt": "UNAVAILABLE_IN_RESTORED_TOOLCHAIN",
+    "independent_review": "PENDING_ROOT",
+    "oracle_generator": "damped_oracle_generator.py",
+    "oracle_output": "damped_oracles.json"
+  },
+  "literature": {
+    "plugin": "SciSpace",
+    "query": "Which primary research papers develop rigorous a posteriori continuous-time error bounds for dissipative nonlinear ordinary differential equations using one-sided Lipschitz or logarithmic norms, and how do these improve exponential global error estimates?",
+    "returned_count": 10,
+    "selected": [
+      {
+        "title": "Global, rigorous and realistic bounds for the solution of dissipative differential equations. Part I: Theory",
+        "author": "Arnold Neumaier",
+        "year": 1994,
+        "doi": "10.1007/BF02276880",
+        "scispace_id": "3t9mmmyy2r",
+        "primary_url": "https://arnold-neumaier.at/ms/ode.pdf",
+        "access": "author-page/search primary excerpt; full PDF direct open timed out",
+        "role": "context only"
+      },
+      {
+        "title": "Nonlinear evolution governed by accretive operators in Banach spaces: error control and applications",
+        "authors": [
+          "Ricardo H. Nochetto",
+          "Giuseppe Savare"
+        ],
+        "year": 2006,
+        "doi": "10.1142/S0218202506001224",
+        "scispace_id": "12o0krvypk",
+        "primary_url": "https://www.math.umd.edu/~rhn/papers/pdf/accretive.pdf",
+        "access": "37-page primary PDF opened; abstract and sections1-2 read",
+        "role": "context only, not an imported packet theorem"
+      }
+    ]
+  },
+  "research_loop": {
+    "R1": "DONE_CURRENT_CHANGED_SCOPE",
+    "R2": "DONE_SOURCE_AND_PUBLISHED_PROOF_REUSE",
+    "R3": "DONE_EXACT_WEIGHT_SUM_TRUE_TUBE_AND_OUTPUT_CENTER",
+    "R4": "DONE_WEIGHTED_GEOMETRY_BERNSTEIN_INTERVAL_LIFT",
+    "R5": "DONE_THREE_PROOFS",
+    "R6": "PENDING_INDEPENDENT_REVIEW_BY_ROOT",
+    "R7": "DONE_TARGETED_11_TESTS_PASS",
+    "R8": "PENDING_REVIEW",
+    "R9": "DONE_CODE_FORMULAS_AND_IMPLEMENTED_MOMENTS",
+    "R10": "HANDOFF_TO_ROOT"
+  }
+}

@@ -1,0 +1,187 @@
+{
+  "schema": "vigilode.audit2.matrix_free_common_w.host_exact_c5.v1",
+  "recorded_at_utc": "2026-08-30T06:03:01Z",
+  "finalized_at_utc": "2026-08-30T06:21:01Z",
+  "execution_lane": "HOST_CODEX_ONLY",
+  "local_llm_used": false,
+  "authority": {
+    "branch": "research/audit2-original-target-bridge-20260830",
+    "head": "c5fbd6d5703fc396bdf30eb3acfacb6c6bd2b921",
+    "tree": "a0fec46f857f00054d674fb417812065aeca8a31",
+    "pr": 31,
+    "pr_state_at_gate": "OPEN_DRAFT_UNMERGED"
+  },
+  "source_package": {
+    "zip_sha256": "4576b8d0c5c0e22314c4cebb6b78e5e18376ceb8ba615142a208659e9e7d4719",
+    "manifest_sha256": "a736ca26ea3c494c05c12e61db100361cc3f9a60009fbc1f7c615f8bbbe40d94",
+    "patch_sha256": "de28e9c4390d9ea47ff7bc8757fcfe3fc0026a8844720a2e21deb9105e5a7082",
+    "application": "git_apply_check_then_git_apply",
+    "three_way_or_fuzzy_application": false
+  },
+  "fixed_rules": {
+    "selected_independently_of_exact_c5_outcomes": true,
+    "tolerance_widened_after_outcome": false,
+    "condition_ceiling_changed_after_outcome": false,
+    "trial_state_or_problem_changed_after_outcome": false,
+    "mutation_changed_after_outcome": false
+  },
+  "verification": [
+    {
+      "name": "matrix_free_common_w_contracts",
+      "exit": 0,
+      "passed": 6,
+      "failed": 0,
+      "log_sha256": "644947dc2933bf8114a48d42266a46c2ab0137485097d47a026ace1ddd0fa6a4"
+    },
+    {
+      "name": "pr31_structured_correction_contracts",
+      "exit": 0,
+      "passed": 15,
+      "failed": 0,
+      "expected_by_prompt": 16,
+      "disposition": "EXPECTED_16_OBSERVED_15_NO_PROTECTED_PATH_EDIT",
+      "log_sha256": "f773ed574a0170bbd33222eadf9be1061ef48f1d7e179086cc635dd5d0ed0a57"
+    },
+    {
+      "name": "check_audit2_readiness",
+      "exit": 0,
+      "rust_passed": 64,
+      "python_passed": 20,
+      "log_sha256": "c4a39f7b3669a21c741f82b4dd38bcab6699128153acd89bb9bf324b17511c0e"
+    },
+    {
+      "name": "clippy_all_targets_research_feature",
+      "exit": 0,
+      "log_sha256": "3ae22f0399b580401e58bb0c25075a838e2849aabe2714ce98c7b5d381f253ba"
+    },
+    {
+      "name": "cargo_fmt_check",
+      "exit": 0,
+      "log_sha256": "d62638de74cf68f458aeb22f7c59a6b529f3fc19a12a8205ec1d3bc68862cd9d"
+    },
+    {
+      "name": "git_diff_check",
+      "exit": 0,
+      "log_sha256": "d62638de74cf68f458aeb22f7c59a6b529f3fc19a12a8205ec1d3bc68862cd9d"
+    }
+  ],
+  "raw_observations": {
+    "declared_session_dimension": 48,
+    "rhs_per_batch": 8,
+    "batches": 2,
+    "setup_attempts": 1,
+    "setup_completed": 1,
+    "workspace_initializations": 1,
+    "solve_attempts": 16,
+    "solve_completed": 16,
+    "workspace_capacity_growth_after_first": 0,
+    "direct_factorizations": 0,
+    "direct_solve_calls": 0,
+    "session_linear_matvecs": 400,
+    "session_diagnostic_matvecs": 16,
+    "session_jvp_calls": 416,
+    "session_jvp_vectors": 416,
+    "recycle_counters": 0,
+    "krylov_basis_reuse_claimed": false,
+    "block_forward_dimension": 16,
+    "block_forward_h": 0.01,
+    "block_forward_solve_attempts": 8,
+    "block_forward_solve_completed": 8,
+    "block_forward_linear_matvecs": 136,
+    "block_forward_diagnostic_matvecs": 8,
+    "block_forward_jvp_calls": 144,
+    "block_forward_jvp_vectors": 144,
+    "condition_f": 197.8202670133432,
+    "relative_to_explicit_common_w": 4.760950091765468e-16,
+    "condition_aware_bound": 1.2660497088853964e-7,
+    "initial_residual_l2": 7.849744525694364e-5,
+    "linear_residual_l2": 3.3065204906367934e-20,
+    "linear_residual_bound": 1.8152171963340063e-11,
+    "malformed_late_rhs_partial_rows_retained": 1,
+    "malformed_late_rhs_reports_retained": 1,
+    "invalid_config_setup_attempts_retained": 1,
+    "invalid_config_setup_completed": 0,
+    "invalid_config_solve_attempts": 0,
+    "production_activation": false
+  },
+  "mutation": {
+    "change": "first_stage_dependent_coupling_plus_to_minus",
+    "expected_failure_exit": 101,
+    "relative_difference": 0.4899133405529948,
+    "fixed_bound": 1.2660497088853964e-7,
+    "mutation_log_sha256": "1dd4e2b0af56df6309ea19a76034ee7e825e22019522d31fe8a0a104e7ef95a7",
+    "restored_source_sha256": "5e534e31dd70ff9cc96f89d3e09778506438c14099acf6c5ff424db3f71c9b00",
+    "restored_test_exit": 0,
+    "restored_log_sha256": "a4e0ee129c088e81d2d006c20eb608700c5e45bb750354d9e31a95987501e4ef"
+  },
+  "fresh_review": {
+    "rounds": 1,
+    "read_only": true,
+    "p0": 0,
+    "p1_found": 1,
+    "p1_summary": "projected shifted-operator JVP work was uncounted and attempted session setup was lost on constructor failure",
+    "repair_rounds": 1,
+    "repair": "use new_counted_jvp and retain a typed boxed setup-failure snapshot",
+    "post_repair_p1_unresolved": 0,
+    "second_fresh_review_run": false,
+    "p2_deferred": "target residual and nonlinear snapshot preparation duplicate RHS work and may differ for stateful callbacks",
+    "p3_deferred": "historical package handoff still says five new contracts while the exact-c5 suite has six"
+  },
+  "failed_history": [
+    {
+      "kind": "SPEC_EXPECTATION_MISMATCH",
+      "expected": "PR31 bridge suite has 16 tests",
+      "observed": "exact c5 suite has 15 tests and all 15 passed",
+      "action": "retained; no forbidden PR31 path edit"
+    },
+    {
+      "kind": "INTENTIONAL_MUTATION_FAILURE",
+      "exit": 101,
+      "action": "accepted only as coupling-sign regression sensitivity; source restored byte-for-byte"
+    },
+    {
+      "kind": "FRESH_REVIEW_P1",
+      "observed": "projected correction session had linear_matvecs=136 but jvp_calls=0 and constructor failures lost setup_attempts=1",
+      "action": "one bounded repair; final jvp_calls=144 equals linear_matvecs+diagnostic_matvecs and setup snapshot is retained"
+    },
+    {
+      "kind": "REPAIR_CLOSEOUT_CLIPPY_FAILURE",
+      "exit": 101,
+      "observed": "result_large_err for unboxed typed setup failure",
+      "action": "boxed failure payload; subsequent clippy passed",
+      "log_sha256": "4c8bf1c9bde16252b402198ac8d591ff8c37e747a007d7319e16b6c7a19182c5"
+    },
+    {
+      "kind": "REPAIR_CLOSEOUT_FORMAT_FAILURE",
+      "exit": 1,
+      "observed": "cargo fmt --check requested mechanical layout changes in the extended contract test",
+      "action": "cargo fmt --all; final fmt and readiness passed",
+      "log_sha256": "8efe82901b31b1121b42fb4057f6952349e61143ce4a8e2f04e154aa489279d5"
+    }
+  ],
+  "protected_diff": {
+    "seven_pr31_paths": "EMPTY",
+    "fixtures": "EMPTY",
+    "scientific_validity_v2_20260829": "EMPTY",
+    "rodas5p_core": "EMPTY",
+    "cargo_lock": "EMPTY"
+  },
+  "validity": {
+    "RESULT_VALIDITY": "declared bounded session, projected block-forward, failure-preservation, and mutation probes only",
+    "PROVENANCE_VALIDITY": "exact supplied patch replayed on c5/tree a0fec; publication identity supplied externally after commit",
+    "PACKAGING_VALIDITY": "manifest-complete package plus this compact exact-c5 host receipt; complete command logs retained in the host work unit"
+  },
+  "claim_ceiling": "EXPLORATORY_NONAUTHORITATIVE_MATRIX_FREE_COMMON_W_SUBSTRATE",
+  "not_admitted": [
+    "production_activation",
+    "scalability",
+    "timing_or_speedup",
+    "krylov_basis_reuse",
+    "matrix_free_original_target_accuracy",
+    "production_preconditioner",
+    "transactional_whole_step",
+    "accuracy_without_observable_budget",
+    "merge_tag_or_release"
+  ],
+  "next_node_not_started": "REUSABLE_PRECONDITIONER_AND_TRANSACTIONAL_STEP"
+}

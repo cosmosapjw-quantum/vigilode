@@ -1,0 +1,18 @@
+........F...........................sss................................. [ 77%]
+.....................                                                    [100%]
+=================================== FAILURES ===================================
+______ test_all_configured_component_ids_exist_and_aliases_bind_real_base ______
+
+tmp_path = PosixPath('/tmp/pytest-of-root/pytest-0/test_all_configured_component_0')
+
+    def test_all_configured_component_ids_exist_and_aliases_bind_real_base(tmp_path):
+        cfg=campaign.configurations(ROOT,tmp_path)
+        known={r['component_id'] for r in inventory(ROOT)}
+>       assert len(known)==246 and len(cfg['cases'])==78
+E       AssertionError: assert (254 == 246)
+E        +  where 254 = len({'rodas5p-cli:src::bin::allocation_audit', 'rodas5p-cli:src::main', 'rodas5p-cli:src::r3_campaigns', 'rodas5p-cli:src::r4_studies', 'rodas5p-cli:src::stiff_benchmark', 'rodas5p-cli:src::triage', ...})
+
+tools/tests/test_component_benchmark_campaign.py:46: AssertionError
+=========================== short test summary info ============================
+FAILED tools/tests/test_component_benchmark_campaign.py::test_all_configured_component_ids_exist_and_aliases_bind_real_base
+1 failed, 89 passed, 3 skipped in 23.71s

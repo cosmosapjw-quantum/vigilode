@@ -595,6 +595,7 @@ fn with_context(error: CoreError, context: impl AsRef<str>) -> CoreError {
         CoreError::Dimension(_) => CoreError::Dimension(message),
         CoreError::InvalidInput(_) => CoreError::InvalidInput(message),
         CoreError::NonFinite(_) => CoreError::NonFinite(message),
+        CoreError::FatalCallback(_) => CoreError::FatalCallback(message),
         CoreError::LinearSolve(_) => CoreError::LinearSolve(message),
         CoreError::NonlinearSolve(_) => CoreError::NonlinearSolve(message),
         CoreError::Coefficients(_) => CoreError::Coefficients(message),

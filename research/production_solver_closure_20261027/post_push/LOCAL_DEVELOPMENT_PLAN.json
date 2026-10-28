@@ -1,0 +1,1074 @@
+{
+  "schema_version": 2,
+  "workflow": "physmath-research-loop",
+  "workflow_version": "1.0.0",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "baseline_pr": 91,
+  "baseline_commit": "206298b4068d923bb47c7160b111b7439098660c",
+  "implementation_branch": "research/production-solver-closure-20261027",
+  "commit_pin_rule": "Use the exact published SHA supplied with the handoff; verify SOURCE_MANIFEST.json. Inside this commit, git rev-parse HEAD supplies a non-self-referential source identity.",
+  "scope": "Three bounded parallel research tasks plus production configuration, native validation, profiling, report and publication.",
+  "production_readiness": {
+    "setup": "implemented_scoped",
+    "repository_ci": "failed_on_scientific_commit",
+    "release": "pending_local",
+    "wall_time_authority": "diagnostic_only; retrospective aggregate registration",
+    "supported_scope": "smooth forward identity-mass endpoint IVP; actual client qualification remains required"
+  },
+  "rules": {
+    "correction_loops_max_per_research_task": 3,
+    "after_last_failed_correction": "Preserve failure evidence and keep the best verified implementation; do not add an unrecorded fourth correction or relax the original cap.",
+    "reuse": "Reuse closed evidence when source, input, assumptions and environment dependencies remain valid.",
+    "new_constants": "Derive method constants from exact algebra/numerical-analysis bounds. Caller accuracy/resource inputs and empirical scheduling controls must be labeled separately.",
+    "cost": "Actual elapsed time, guest instructions, callback-unit proxy, residual and physical error are separate metrics.",
+    "publication": "Use a new non-force branch; do not merge the stacked PRs or alter default branch without an explicit instruction."
+  },
+  "toolchain": {
+    "rust": "1.94.1",
+    "lockfile": "Cargo.lock",
+    "cloud_profile": "measurement",
+    "local_qualification_profile": "release",
+    "measurement": {
+      "opt_level": 3,
+      "lto": false,
+      "codegen_units": 16
+    },
+    "release": {
+      "opt_level": 3,
+      "lto": "fat",
+      "codegen_units": 1
+    }
+  },
+  "environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "RUSTDOCFLAGS": "-D warnings",
+    "native_lock": "/tmp/vigilode-cargo-20261027.lock",
+    "host_receipt": "evidence/HOST.json",
+    "fresh_target_directory": "Use a previously unused CARGO_TARGET_DIR for independent local release qualification; do not reuse cloud fingerprint diagnostics."
+  },
+  "validation_authority": "evidence/VALIDATION_SUMMARY.json distinguishes latest executed gates, previous failures/timeouts, ignored tests, scoped evidence reuse and pending local release qualification.",
+  "resource_contract": "The handoff's 1800-second command timeout is a caller resource budget, not a numerical constant. Historical high-order Fraction oracle tests can each require minutes. Retain partial receipts and increase a stated local resource budget when necessary without changing accuracy caps.",
+  "publication_status_rule": "P-PUSH complete_scoped refers to the already read-back verified scientific commit78bb8775bf553ad2b514575a0ef4a025446f5d28 and PR92. The later metadata delivery full SHA is supplied only after publication/read-back; this in-commit plan cannot self-pin that descendant SHA.",
+  "execution_suites": {
+    "facade-contracts": [
+      [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "--lib",
+        "--tests",
+        "--",
+        "--test-threads=1"
+      ]
+    ],
+    "coupled-contracts": [
+      [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode-coupled",
+        "--lib",
+        "--tests",
+        "--",
+        "--test-threads=1"
+      ]
+    ],
+    "all-targets": [
+      [
+        "cargo",
+        "check",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "-p",
+        "vigilode-coupled",
+        "--all-targets"
+      ]
+    ],
+    "release-contracts": [
+      [
+        "cargo",
+        "test",
+        "--release",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "-p",
+        "vigilode-coupled",
+        "-p",
+        "rodas5p-core",
+        "-p",
+        "rodas5p-krylov",
+        "--lib",
+        "--tests",
+        "--",
+        "--test-threads=1"
+      ],
+      [
+        "cargo",
+        "test",
+        "--release",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--lib",
+        "--tests",
+        "--",
+        "--test-threads=1"
+      ]
+    ],
+    "docs": [
+      [
+        "cargo",
+        "doc",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "-p",
+        "vigilode-coupled",
+        "--no-deps"
+      ],
+      [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "-p",
+        "vigilode-coupled",
+        "--doc"
+      ]
+    ],
+    "smoke-release": [
+      [
+        "python3",
+        "research/production_solver_closure_20261027/run_smoke.py",
+        "--profile",
+        "release",
+        "--output",
+        "{output}/smoke-release"
+      ]
+    ],
+    "local-benchmarks": [
+      [
+        "cargo",
+        "build",
+        "--release",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "--example",
+        "production_return_bench_20261027"
+      ],
+      [
+        "cargo",
+        "build",
+        "--release",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode-coupled",
+        "--example",
+        "cubic_production_bench",
+        "--example",
+        "structural_production_bench_20261027"
+      ],
+      [
+        "{target}/release/examples/cubic_production_bench",
+        "--bench",
+        "128"
+      ],
+      [
+        "{target}/release/examples/structural_production_bench_20261027",
+        "bench",
+        "1",
+        "64",
+        "5",
+        "1"
+      ],
+      [
+        "{target}/release/examples/structural_production_bench_20261027",
+        "bench",
+        "64",
+        "64",
+        "5",
+        "1"
+      ],
+      [
+        "{target}/release/examples/structural_production_bench_20261027",
+        "bench",
+        "2048",
+        "64",
+        "5",
+        "1"
+      ],
+      [
+        "{target}/release/examples/structural_production_bench_20261027",
+        "bench",
+        "2048",
+        "64",
+        "5",
+        "2"
+      ],
+      [
+        "python3",
+        "research/production_solver_closure_20261027/adapter/run_performance.py",
+        "--binary",
+        "{target}/release/examples/production_return_bench_20261027",
+        "--valgrind",
+        "{valgrind}",
+        "--output",
+        "{output}/adapter/raw/performance"
+      ]
+    ],
+    "local-profiles": [
+      [
+        "python3",
+        "research/production_solver_closure_20261027/run_instruction_profile.py",
+        "--binary",
+        "{target}/release/examples/cubic_production_bench",
+        "--output",
+        "{output}/cubic",
+        "--arms",
+        "generic",
+        "scalar",
+        "algebraic",
+        "rational",
+        "--repetitions",
+        "20",
+        "40",
+        "--valgrind",
+        "{valgrind}",
+        "--",
+        "--arm",
+        "{arm}",
+        "{repetitions}"
+      ],
+      [
+        "python3",
+        "research/production_solver_closure_20261027/run_instruction_profile.py",
+        "--binary",
+        "{target}/release/examples/structural_production_bench_20261027",
+        "--output",
+        "{output}/structural",
+        "--arms",
+        "pr91",
+        "fused",
+        "enclosed",
+        "--repetitions",
+        "2",
+        "6",
+        "--valgrind",
+        "{valgrind}",
+        "--",
+        "profile",
+        "2048",
+        "64",
+        "{arm}",
+        "{repetitions}",
+        "1"
+      ]
+    ]
+  },
+  "nodes": [
+    {
+      "id": "S-PRS",
+      "kind": "survey",
+      "title": "Inspect PRs after PR91",
+      "dependencies": [],
+      "purpose": "Use remote primary evidence before choosing remaining work.",
+      "status": "complete_scoped",
+      "evidence": [
+        "evidence/PR_SURVEY.json"
+      ]
+    },
+    {
+      "id": "R-STRUCT",
+      "kind": "research",
+      "title": "Charged structural attempts and full residual enclosure",
+      "dependencies": [
+        "S-PRS"
+      ],
+      "purpose": "Retain all failed work and replace repeated full-state stage verification by a proved two-channel enclosure.",
+      "status": "complete_scoped",
+      "correction_loops_used": 3,
+      "correction_loops_max": 3,
+      "evidence": [
+        "structural/THEORY.md",
+        "structural/README_KO.md"
+      ],
+      "theory_contract": "Exact arbitrary represented-stage defect identity; outward mean/RHS/lift terms; dimension-dependent induced infinity norm.",
+      "code_targets": [
+        "crates/vigilode-coupled/src/structural_mean_field.rs"
+      ]
+    },
+    {
+      "id": "R-HOMO",
+      "kind": "research",
+      "title": "Scalar homotopy and rational cubic inverse",
+      "dependencies": [
+        "S-PRS"
+      ],
+      "purpose": "Remove Vec overhead and expensive radical prediction while retaining the original outward physical error certificate.",
+      "status": "complete_scoped",
+      "correction_loops_used": 1,
+      "correction_loops_max": 3,
+      "evidence": [
+        "homotopy/THEORY.md",
+        "homotopy/REPORT_KO.md",
+        "homotopy/RUN_RECORD.json"
+      ],
+      "theory_contract": "Positive-sum inverse identity and exact rational defect beta^3(3+8beta)/(1+3beta)^3; unchanged finite-step accuracy budget.",
+      "code_targets": [
+        "crates/vigilode-coupled/src/rhs_homotopy.rs"
+      ]
+    },
+    {
+      "id": "R-ADAPT",
+      "kind": "research",
+      "title": "Exact return evidence and causal proposal reuse",
+      "dependencies": [
+        "S-PRS"
+      ],
+      "purpose": "Separate adapter decisions from expensive implicit-mode arithmetic and retain both favorable and adverse nonlinear outcomes.",
+      "status": "complete_scoped",
+      "correction_loops_used": 3,
+      "correction_loops_max": 3,
+      "evidence": [
+        "adapter/THEORY.md",
+        "adapter/REPORT_KO.md",
+        "adapter/RESULTS.json"
+      ],
+      "theory_contract": "Checked E<I and prefix E<L; comparator cap E, challenger cap I-1, productive sentinel bound 2I+6; past accepted proposal transport.",
+      "code_targets": [
+        "crates/vigilode/src/switching.rs"
+      ]
+    },
+    {
+      "id": "I-PROD",
+      "kind": "integration",
+      "title": "Explicit production configuration and callback permissions",
+      "dependencies": [
+        "R-STRUCT",
+        "R-HOMO",
+        "R-ADAPT"
+      ],
+      "purpose": "Provide strict serialized deployment files, RHS-only default, selective supplied-JVP opt-in, and preserved partial solutions.",
+      "status": "complete_scoped",
+      "correction_loops_used": 1,
+      "correction_loops_max": 3,
+      "evidence": [
+        "PRODUCTION_SETUP.md",
+        "homotopy/PRODUCTION_API_REVIEW.md",
+        "evidence/production_smoke_pass0/SUMMARY.json",
+        "theory/FINAL_GATE_FAILURE_REVIEW.md"
+      ],
+      "integration_correction": "Inherited lagged-driver failed physical JVP/Jacobian attempts are reconciled independently of already-attempted operator counts. Numerical arithmetic and original test assertions are unchanged.",
+      "code_targets": [
+        "crates/vigilode/src/production.rs",
+        "crates/vigilode/examples/production_from_json.rs",
+        "crates/rodas5p-integrators/src/rodas5p_lagged.rs",
+        ".github/workflows/production.yml"
+      ]
+    },
+    {
+      "id": "V-CLOUD",
+      "kind": "validation",
+      "title": "Native contracts, small paired benchmarks and profiles",
+      "dependencies": [
+        "I-PROD"
+      ],
+      "purpose": "Verify this changed dependency set and bind each numerical claim to its source, binary, logs and exact accuracy contract.",
+      "status": "complete_scoped",
+      "evidence": [
+        "evidence/VALIDATION_SUMMARY.json",
+        "RESULTS.json"
+      ]
+    },
+    {
+      "id": "P-PUSH",
+      "kind": "publication",
+      "title": "Publish implementation, evidence and local handoff",
+      "dependencies": [
+        "V-CLOUD"
+      ],
+      "purpose": "Create a reviewable non-force branch/PR and persist the REVTeX report and reproducibility bundle.",
+      "status": "complete_scoped",
+      "evidence": [
+        "MANIFEST.json",
+        "LOCAL_CODEX_HANDOFF_KO.md"
+      ]
+    },
+    {
+      "id": "L-RELEASE",
+      "kind": "validation",
+      "title": "Pinned native release verification on the deployment machine",
+      "dependencies": [
+        "P-PUSH",
+        "Q-GIVENS",
+        "Q-FAIR-AB",
+        "Q-LINT",
+        "Q-NEGATIVE"
+      ],
+      "purpose": "Verify the actual release/LTO/libm/CPU environment rather than transferring shared-host timing claims.",
+      "status": "pending_local",
+      "execution_suites": [
+        "release-contracts",
+        "docs",
+        "smoke-release"
+      ],
+      "acceptance": [
+        "All selected native tests pass with Rust1.94.1 and unchanged Cargo.lock.",
+        "Record ignored tests separately; do not turn their nonexecution into a pass.",
+        "Four smoke arms pass original1e-6 grid cap with atomic callback accounting.",
+        "Record compiler, target features, libm, CPU topology, affinity and thread limits."
+      ],
+      "outputs": [
+        "<output>/SUITE_RECEIPT.json",
+        "<output>/command_XX/RECEIPT.json",
+        "<output>/command_XX/SOURCE_INPUTS.json",
+        "<output>/command_XX/stdout.log",
+        "<output>/command_XX/stderr.log"
+      ]
+    },
+    {
+      "id": "L-HARDWARE",
+      "kind": "validation",
+      "title": "Matched-accuracy measurements on target hardware",
+      "dependencies": [
+        "L-RELEASE"
+      ],
+      "purpose": "Choose scalar/rational and serial/parallel deployment paths from measured total cost, including certificate and pool overhead.",
+      "status": "pending_local",
+      "execution_suites": [
+        "local-benchmarks",
+        "local-profiles"
+      ],
+      "acceptance": [
+        "Reuse current scientific cases/caps and retain n1 structural and nonlinear adapter negative controls.",
+        "Use isolated paired ABBA/BAAB blocks; no concurrent builds or benchmarks.",
+        "Count rejected/discarded work, actual callbacks, allocation/workspace cost and full validation.",
+        "Report median and all block ranges; claim no stable time advantage when ranges cross1.",
+        "Measure serial plus only the relevant bounded thread counts; never infer speedup from callback counts."
+      ],
+      "outputs": [
+        "local/hardware/raw/",
+        "local/hardware/ANALYSIS.json",
+        "local/hardware/DECISION.md"
+      ]
+    },
+    {
+      "id": "PR-N01",
+      "kind": "development",
+      "title": "Small Krylov arithmetic and calibrated cost evidence",
+      "dependencies": [
+        "L-HARDWARE"
+      ],
+      "purpose": "Address observed safe_l2, QR, MGS and GMRES cost that the callback-unit proxy misses.",
+      "status": "pending_local",
+      "proposed_branch": "research/local-krylov-cost-evidence",
+      "reuse": [
+        "research/spd04_ls_workspace_20261007",
+        "crates/vigilode/src/solve.rs: existing krylov_ls_workspace=true",
+        "crates/rodas5p-krylov/tests/givens_production_differential_contracts.rs"
+      ],
+      "theory_obligations": [
+        "Derive an operation/byte model indexed by actual Krylov dimension, restart and provider identity.",
+        "If replacing pivoted QR or norms, prove rank/breakdown and true-residual acceptance conditions; reuse the known nonnormal Givens differential counterexample.",
+        "Separate empirical timing intervals from analytical rounding/error bounds."
+      ],
+      "code_targets": [
+        "crates/rodas5p-krylov/src/gmres_into.rs",
+        "crates/rodas5p-krylov/src/small.rs",
+        "crates/rodas5p-core/src/norms.rs",
+        "crates/vigilode/src/selection_evidence.rs"
+      ],
+      "acceptance": [
+        "Same original-target residual and all-state accuracy caps; no hidden derivative permission change.",
+        "Measure full stiff-cubic and adverse reentrant trajectories, not only a favorable microkernel.",
+        "Preserve existing LS workspace reuse rather than reimplementing it.",
+        "Any new cost selector is tied to exact model/environment epochs and charges its calibration."
+      ],
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "outputs": [
+        "THEORY.md",
+        "cost_identity.json",
+        "raw/",
+        "RESULTS.json",
+        "PR_BODY.md"
+      ]
+    },
+    {
+      "id": "PR-N02",
+      "kind": "development",
+      "title": "Tighter finite-step cubic accuracy planning",
+      "dependencies": [
+        "L-RELEASE"
+      ],
+      "purpose": "Reduce step count rather than only root cost using the actual decay envelope and a finite-step error proof.",
+      "status": "pending_local",
+      "proposed_branch": "research/local-cubic-error-budget",
+      "reuse": [
+        "research/derivative_free_causal_homotopy_20261027/theory/THEORY.md",
+        "homotopy/THEORY.md"
+      ],
+      "theory_obligations": [
+        "Bound the local midpoint defect along the decaying exact-state envelope for all admitted h.",
+        "Sum the propagated defects with outward rounding and an explicit grid-time contract.",
+        "Derive the smallest admitted grid and remaining algebraic budget; no fitted epsilon split or safety multiplier."
+      ],
+      "code_targets": [
+        "crates/vigilode-coupled/src/rhs_homotopy.rs:CubicDecayAccuracyPlan"
+      ],
+      "acceptance": [
+        "Every returned point retains its original physical cap.",
+        "Include zero/linear, strong nonlinear, near-rounding-floor and subnormal refusals.",
+        "Independent rational/interval oracle checks the finite-step bound and grid minimality.",
+        "Compare scalar and rational candidates under both old and new plans without attributing grid savings to the root method."
+      ],
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "outputs": [
+        "finite_step_proof.tex",
+        "planner_contract.json",
+        "exact_checks.py",
+        "accuracy_work_time.json"
+      ]
+    },
+    {
+      "id": "PR-N03",
+      "kind": "development",
+      "title": "Adaptive structural consumer with physical-error accounting",
+      "dependencies": [
+        "L-RELEASE"
+      ],
+      "purpose": "Connect the new charged stage certificate to adaptive trajectory decisions with temporal and endpoint errors included.",
+      "status": "pending_local",
+      "proposed_branch": "research/local-structural-adaptive-certificate",
+      "reuse": [
+        "structural/THEORY.md",
+        "research/derivative_free_causal_homotopy_20261027/evidence/STRUCTURAL_CONSTANTS_DERIVATION.md"
+      ],
+      "theory_obligations": [
+        "For changing h derive the product-form adjoint residual transport, including mean-field operator commutation conditions.",
+        "Add temporal truncation and endpoint rounding; a stage residual certificate alone cannot certify a physical trajectory.",
+        "For nonlinear extensions prove a closure/remainder bound on an explicit invariant domain before enabling the route."
+      ],
+      "code_targets": [
+        "crates/vigilode-coupled/src/structural_mean_field.rs",
+        "crates/vigilode-coupled/src/adaptive.rs"
+      ],
+      "acceptance": [
+        "Use StructuralResult charged APIs on every rejected attempt and scheduled failure.",
+        "All state components and arbitrary transverse forcing are retained.",
+        "Reject a conservative enclosure honestly; retain direct screen as the separately qualified operational alternative.",
+        "Measure n1/n64/n2048 and pool startup; derive any exact n1 simplification algebraically rather than fitting a dimension threshold."
+      ],
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "outputs": [
+        "variable_step_theorem.tex",
+        "failure_ledger.json",
+        "physical_bound_oracle.json",
+        "paired_profiles/"
+      ]
+    },
+    {
+      "id": "PR-N04",
+      "kind": "development",
+      "title": "Owned session continuation and generic homotopy workspace",
+      "dependencies": [
+        "L-RELEASE"
+      ],
+      "purpose": "Remove remaining restart/allocation work without pretending a state-plus-step snapshot contains FSAL/controller/workspace identity.",
+      "status": "pending_local",
+      "proposed_branch": "research/local-continuation-workspace",
+      "reuse": [
+        "crates/vigilode/src/session.rs",
+        "crates/vigilode/tests/production_session_contracts.rs",
+        "homotopy/THEORY.md:H3"
+      ],
+      "theory_obligations": [
+        "Specify exact state, epoch, controller, FSAL and callback-effect identity for transferable sessions.",
+        "Prove that buffer reuse preserves the operation/evaluation order and invalidates history at lambda, carrier or model changes.",
+        "For generic vector homotopy state sufficient monotonicity/domain/branch conditions; keep finite-budget failure explicit when they are unavailable."
+      ],
+      "code_targets": [
+        "crates/vigilode/src/session.rs",
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode-coupled/src/rhs_homotopy.rs"
+      ],
+      "acceptance": [
+        "Bit parity for identical schedules; independent oracle for any intentionally changed schedule.",
+        "Fatal/partial callback behavior and all discarded work are preserved.",
+        "Measure easy/fast-map negative controls and nonnormal systems; avoid declaring generic AA universally cheaper."
+      ],
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "outputs": [
+        "session_identity.json",
+        "continuation_contracts.log",
+        "allocation_profiles/",
+        "RESULTS.json"
+      ]
+    },
+    {
+      "id": "PR-N05",
+      "kind": "development",
+      "title": "Generic causal closure and parallel work/span selection",
+      "dependencies": [
+        "L-HARDWARE",
+        "PR-N04"
+      ],
+      "purpose": "Extend finite causal reuse to harder nonlinear carriers with explicit remainder and parallel cost conditions.",
+      "status": "pending_local",
+      "proposed_branch": "research/local-causal-closure-span",
+      "reuse": [
+        "research/derivative_free_causal_homotopy_20261027/causal/REPORT_KO.md",
+        "crates/vigilode-coupled/src/causal.rs"
+      ],
+      "theory_obligations": [
+        "Derive full-space finite-DAG residual amplification and nonlinear closure bounds under the actual frozen/rebuilt carrier rule.",
+        "Prove high-order conditions when the carrier changes; a projected small residual does not supply this theorem.",
+        "Compare total work and critical path against forward substitution; include communication and validation before any parallel selection."
+      ],
+      "code_targets": [
+        "crates/vigilode-coupled/src/causal.rs",
+        "crates/vigilode-coupled/src/algebra.rs",
+        "crates/vigilode/src/execution_policy.rs"
+      ],
+      "acceptance": [
+        "Use accepted full trajectories with common physical accuracy and report outer WRMS rejection separately.",
+        "Exact-input cache keys include epoch, step and basis; every scheduled failure is joined/charged.",
+        "Keep the forward method as a strong baseline, especially on tiny stages.",
+        "JVP/AD permission is selective and explicit; no automatic state Jacobian or Newton fallback."
+      ],
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "outputs": [
+        "closure_order_proof.tex",
+        "work_span_contract.json",
+        "accepted_trajectory_profiles/",
+        "RESULTS.json"
+      ]
+    },
+    {
+      "id": "PR-N06",
+      "kind": "development",
+      "title": "Temporal residence and exploration-loss theory",
+      "dependencies": [
+        "L-HARDWARE",
+        "PR-N01"
+      ],
+      "purpose": "Resolve the nonlinear reentrant loss by proving when past cost evidence can inform future windows and by accounting for unsuccessful exploration.",
+      "status": "pending_local",
+      "proposed_branch": "research/local-adapter-residence-bound",
+      "reuse": [
+        "adapter/THEORY.md",
+        "adapter/LOCAL_TASKS.json",
+        "adapter/PERFORMANCE.json"
+      ],
+      "theory_obligations": [
+        "State explicit variation, dwell-time or model-domain hypotheses; finite past samples alone cannot certify an arbitrary future smooth regime.",
+        "Derive finite-horizon exploration and residence loss including comparator/pilot overhead, rejected attempts and the exact same-target condition.",
+        "Separate the proved one-window bound 2I+6 from any amortized or future-window claim.",
+        "Obtain window/revalidation rules from the proved budget and measured cost intervals, without an unexplained hysteresis multiplier."
+      ],
+      "code_targets": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/src/selection_evidence.rs"
+      ],
+      "acceptance": [
+        "Preserve RHS-only as the baseline/default and supplied-JVP permission as explicit opt-in.",
+        "Include easy, stiff-cubic, relaxing and reentrant nonlinear exact-oracle trajectories.",
+        "Charge all calibration, invalidated evidence and discarded probes; retain an honest finite-budget refusal outside the theorem domain.",
+        "Require matched physical accuracy and total wall-time evidence, not solely callback-unit reduction."
+      ],
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "outputs": [
+        "residence_theorem.tex",
+        "cost_epoch_contract.json",
+        "adverse_trajectory_receipts/",
+        "RESULTS.json"
+      ]
+    },
+    {
+      "id": "R-QUALIFY",
+      "kind": "release_decision",
+      "title": "Scoped release qualification for the actual client",
+      "dependencies": [
+        "L-RELEASE",
+        "L-HARDWARE",
+        "Q-LEDGER",
+        "Q-BENCH",
+        "Q-API"
+      ],
+      "purpose": "Approve only the validated provider/output/model combinations and register unsupported features explicitly.",
+      "status": "pending_local",
+      "acceptance": [
+        "Native release/CI and the client's original accuracy contract pass.",
+        "Long integration, restart, resource exhaustion and realistic domain inputs have retained evidence.",
+        "Publishing and CI success do not substitute for a general nonlinear convergence/order proof.",
+        "Research PR-N01..06 are separate extensions; attach them only after their own contracts pass."
+      ],
+      "outputs": [
+        "release_qualification.json",
+        "supported_routes.md",
+        "client_handoff.md"
+      ]
+    },
+    {
+      "id": "Q-LEDGER",
+      "kind": "qualification",
+      "title": "Research registration and published-reference qualification",
+      "dependencies": [
+        "P-PUSH"
+      ],
+      "purpose": "Mechanical registration is repaired retrospectively; qualify full historical references in a full-history clone.",
+      "status": "registration_repaired_full_authority_pending",
+      "proposed_branch": "fix/local-q-ledger",
+      "code_targets": [
+        "research/LEDGER.jsonl",
+        "research/production_solver_closure_20261027/PREREGISTRATION.md"
+      ],
+      "acceptance": [
+        "Keep L-0173 INCONCLUSIVE and all earlier bytes unchanged.",
+        "Preserve the lack of pre-run committed aggregate registration; a later PASS needs a genuinely prospective experiment.",
+        "Fetch public historical refs in an isolated clone and distinguish missing local objects, non-commit data and truly unpublished authority references; do not extend allowlists merely to pass."
+      ],
+      "diagnostic_argv": [
+        [
+          "python3",
+          "tools/check-research-node.py",
+          "--base",
+          "206298b4068d923bb47c7160b111b7439098660c"
+        ],
+        [
+          "python3",
+          "tools/check-authority-refs.py"
+        ]
+      ],
+      "execution": "Commands are prospective. Use the existing native lock/receipt runner and a fresh target; do not infer execution from this plan.",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "outputs": [
+        "PREREGISTRATION.md",
+        "SOURCE_IDENTITY.json",
+        "raw/",
+        "RESULTS.json",
+        "PR_BODY.md"
+      ]
+    },
+    {
+      "id": "Q-GIVENS",
+      "kind": "qualification",
+      "title": "Portable Givens residual fixture",
+      "dependencies": [
+        "P-PUSH"
+      ],
+      "purpose": "Separate generated-input/profile sensitivity from unsafe convergence.",
+      "status": "pending_local",
+      "proposed_branch": "fix/local-givens-fixture",
+      "code_targets": [
+        "crates/rodas5p-krylov/tests/givens_production_differential_contracts.rs",
+        "crates/rodas5p-krylov/src/gmres_givens.rs"
+      ],
+      "acceptance": [
+        "Export every A/b/Jacobi binary64 bit and record exact compiler/libm/profile identity.",
+        "Observe true residual and margin before historical success/failure expectations.",
+        "Reproduce PR91/PR92 under test and measurement profiles in serialized runs.",
+        "Preserve true-residual acceptance; do not flip expected=false or promote the candidate solely because it now returns Ok.",
+        "Independent high-precision/outward residual checks all returned Ok states."
+      ],
+      "diagnostic_argv": [
+        [
+          "cargo",
+          "test",
+          "-p",
+          "rodas5p-krylov",
+          "--test",
+          "givens_production_differential_contracts",
+          "--locked",
+          "--",
+          "--nocapture"
+        ]
+      ],
+      "execution": "Commands are prospective. Use the existing native lock/receipt runner and a fresh target; do not infer execution from this plan.",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "outputs": [
+        "PREREGISTRATION.md",
+        "SOURCE_IDENTITY.json",
+        "raw/",
+        "RESULTS.json",
+        "PR_BODY.md"
+      ]
+    },
+    {
+      "id": "Q-FAIR-AB",
+      "kind": "qualification",
+      "title": "Attempted, admitted and refused work",
+      "dependencies": [
+        "P-PUSH"
+      ],
+      "purpose": "Repair the inherited equality of attempted operator entries and budget-admitted inner calls.",
+      "status": "pending_local",
+      "proposed_branch": "fix/local-fair-ab-budget-ledger",
+      "code_targets": [
+        "crates/rodas5p-fair-ab/src/adapters.rs",
+        "crates/rodas5p-fair-ab/src/budget.rs",
+        "crates/rodas5p-fair-ab/src/contracts.rs",
+        "crates/rodas5p-fair-ab/tests/fair_ab_contracts.rs"
+      ],
+      "acceptance": [
+        "Derive and implement A=E+R with E<=B in the stated sequential, shape-valid, nonsaturated-counter scope.",
+        "Keep refused attempts visible and charge every actual inner callback with independent entry atomics.",
+        "Cover budget refusal during solve and diagnostic certificate, plus admitted callback failure.",
+        "Preserve BudgetExhausted/external certificate behavior; neither remove only debug_assert nor raise budget."
+      ],
+      "diagnostic_argv": [
+        [
+          "cargo",
+          "test",
+          "-p",
+          "rodas5p-fair-ab",
+          "--test",
+          "fair_ab_contracts",
+          "external_certificate_and_hard_budget_cover_diagnostic_work",
+          "--locked",
+          "--",
+          "--exact",
+          "--nocapture"
+        ]
+      ],
+      "execution": "Commands are prospective. Use the existing native lock/receipt runner and a fresh target; do not infer execution from this plan.",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "outputs": [
+        "PREREGISTRATION.md",
+        "SOURCE_IDENTITY.json",
+        "raw/",
+        "RESULTS.json",
+        "PR_BODY.md"
+      ]
+    },
+    {
+      "id": "Q-BENCH",
+      "kind": "qualification",
+      "title": "Qualified external comparator build",
+      "dependencies": [
+        "P-PUSH"
+      ],
+      "purpose": "Reproduce the declared SUNDIALS6.4.1 comparator or qualify intentional6/7 portability.",
+      "status": "pending_local",
+      "proposed_branch": "fix/local-sundials-build-portability",
+      "code_targets": [
+        "crates/vigilode-bench/build.rs",
+        "crates/vigilode-bench/native/bridge/cvode_bridge.c",
+        ".github/workflows/production.yml"
+      ],
+      "acceptance": [
+        "Record package/compiler/precision/link identity.",
+        "Make compiler/include/link discovery explicit; current CC override is ignored.",
+        "If supporting7, qualify sunrealtype/SUNComm/SUN_COMM_NULL and MPI linkage, not only one header include.",
+        "Run original bridge/bench contracts under each declared supported version; comparator-version changes are separate experimental factors."
+      ],
+      "diagnostic_argv": [],
+      "execution": "Commands are prospective. Use the existing native lock/receipt runner and a fresh target; do not infer execution from this plan.",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "outputs": [
+        "PREREGISTRATION.md",
+        "SOURCE_IDENTITY.json",
+        "raw/",
+        "RESULTS.json",
+        "PR_BODY.md"
+      ]
+    },
+    {
+      "id": "Q-LINT",
+      "kind": "qualification",
+      "title": "Broader integrator Clippy",
+      "dependencies": [
+        "P-PUSH"
+      ],
+      "purpose": "Resolve23 inherited diagnostic sites while retaining operation order/API behavior.",
+      "status": "pending_local",
+      "proposed_branch": "fix/local-integrator-lint-scope",
+      "code_targets": [
+        "crates/rodas5p-integrators/src",
+        "crates/rodas5p-integrators/tests/support"
+      ],
+      "acceptance": [
+        "Use SETUP_REVIEW.json exact23 sites;17lib/22libtest summaries overlap.",
+        "Do not claim green facade/core --no-deps Clippy covers integrators.",
+        "Preserve arithmetic order and charged failure behavior; review allocation/API choices for large enum/error lints rather than blanket suppression."
+      ],
+      "diagnostic_argv": [
+        [
+          "cargo",
+          "clippy",
+          "-p",
+          "rodas5p-integrators",
+          "--all-targets",
+          "--locked",
+          "--",
+          "-D",
+          "warnings"
+        ]
+      ],
+      "execution": "Commands are prospective. Use the existing native lock/receipt runner and a fresh target; do not infer execution from this plan.",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "outputs": [
+        "PREREGISTRATION.md",
+        "SOURCE_IDENTITY.json",
+        "raw/",
+        "RESULTS.json",
+        "PR_BODY.md"
+      ]
+    },
+    {
+      "id": "Q-API",
+      "kind": "qualification",
+      "title": "Public SwitchingConfig compatibility",
+      "dependencies": [
+        "P-PUSH"
+      ],
+      "purpose": "Resolve newly introduced exhaustive-literal break before a release.",
+      "status": "pending_local",
+      "proposed_branch": "fix/local-switching-api-compatibility",
+      "code_targets": [
+        "crates/vigilode/src/switching.rs",
+        "Cargo.toml"
+      ],
+      "acceptance": [
+        "New fields are strict_return_work_improvement and reuse_observed_entry_step; false reproduces their legacy default choice.",
+        "Choose a compatibility-preserving API design or explicit versioned migration under project release policy.",
+        "Check representative downstream exhaustive literals and cargo-semver-checks against exactPR91.",
+        "continue-on-error does not establish compatibility; do not claim registry publication state was verified."
+      ],
+      "diagnostic_argv": [],
+      "execution": "Commands are prospective. Use the existing native lock/receipt runner and a fresh target; do not infer execution from this plan.",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "outputs": [
+        "PREREGISTRATION.md",
+        "SOURCE_IDENTITY.json",
+        "raw/",
+        "RESULTS.json",
+        "PR_BODY.md"
+      ]
+    },
+    {
+      "id": "Q-NEGATIVE",
+      "kind": "qualification",
+      "title": "Retained negative evidence and ignored suite",
+      "dependencies": [
+        "P-PUSH"
+      ],
+      "purpose": "Give the known W-filtered research failure an explicit regression contract and execute the rest of ignored coverage.",
+      "status": "pending_local",
+      "proposed_branch": "fix/local-negative-research-contract",
+      "code_targets": [
+        "crates/rodas5p-integrators/tests/dense_wfiltered_contracts.rs",
+        ".github/workflows/ignored-tests.yml"
+      ],
+      "acceptance": [
+        "Retain FAIL:15/7>1.3 and its original tolerance/error observations.",
+        "Review explicit expected-negative regression semantics without loosening the historical1.3 threshold or blanket-skipping.",
+        "Do not use Off311.467 vs WFiltered0.350 tolerance units as matched-accuracy performance evidence.",
+        "Record outcomes of all remaining ignored tests; no skipped/filtered/unreached test counts as passed."
+      ],
+      "diagnostic_argv": [
+        [
+          "cargo",
+          "test",
+          "--workspace",
+          "--profile",
+          "measurement",
+          "--locked",
+          "--",
+          "--ignored"
+        ]
+      ],
+      "execution": "Commands are prospective. Use the existing native lock/receipt runner and a fresh target; do not infer execution from this plan.",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "outputs": [
+        "PREREGISTRATION.md",
+        "SOURCE_IDENTITY.json",
+        "raw/",
+        "RESULTS.json",
+        "PR_BODY.md"
+      ]
+    }
+  ],
+  "parallel_groups": [
+    [
+      "R-STRUCT",
+      "R-HOMO",
+      "R-ADAPT"
+    ],
+    [
+      "PR-N01",
+      "PR-N02",
+      "PR-N03",
+      "PR-N04"
+    ],
+    [
+      "Q-LEDGER",
+      "Q-GIVENS",
+      "Q-FAIR-AB",
+      "Q-BENCH",
+      "Q-LINT",
+      "Q-API",
+      "Q-NEGATIVE"
+    ]
+  ],
+  "timing_serialization": "All build, native timing and profiling commands share one lock. Literature, proofs and disjoint source edits may run concurrently.",
+  "frozen_scientific_commit": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+  "post_push_status": "post_push/STATUS.json",
+  "post_push_observed_kst": "2026-10-28T06:15:55+09:00",
+  "publication": {
+    "branch": "research/production-solver-closure-20261027",
+    "pr": 92,
+    "scientific_commit": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+    "delivery_commit_rule": "Use full final delivery SHA; metadata commit is a descendant of the frozen scientific commit."
+  },
+  "scope_note": "The original16-node/20-edge plan is immutable. This expanded23-node plan adds only seven observed repository-qualification tasks, not new speculative performance gates. FuturePR-N01..06 remain optional extensions.",
+  "qualification_parallel_rule": "Read-only diagnosis, theory and disjoint edits may be parallel; all native/build/test/benchmark/profile work shares the existing lock.",
+  "path_bases": {
+    "code_targets": "repository root",
+    "inherited_node_evidence_and_execution_paths": "research/production_solver_closure_20261027",
+    "supplemental_documents": "research/production_solver_closure_20261027/post_push",
+    "diagnostic_argv_cwd": "repository root",
+    "execution_suites": "The existing run_local.py reads the unchanged original node plan for identical suite argv; use this expanded DAG for scheduling and qualification dependencies."
+  }
+}

@@ -1,0 +1,1455 @@
+{
+  "schema": "vigilode.frontier-next-steps.v1",
+  "created_utc": "2026-10-23",
+  "repository": "https://github.com/cosmosapjw-quantum/vigilode",
+  "publication_branch": "research/production-frontier-20261023",
+  "report_commit": "resolve-and-record-verified-remote-tip-at-execution",
+  "minimum_published_ancestors": {
+    "native_crates": "df5c6c56da0eb93b58147d6630a0f094cf4af212",
+    "standalone_pde_final": "37817308c12384f33ecb9b8ff64509f971eb3b2b"
+  },
+  "identity_note": "Native measurements local55ad7ec6 map to remote df5c6c56 with equal tree; do not require the local hash as a remote ancestor. Standalone PDE source is a later separate freeze.",
+  "current_broad_production_status": "HOLD",
+  "constraints": {
+    "ncp": false,
+    "cloud_resources": false,
+    "allowed_external_comparators": [
+      "VODE/DVODE",
+      "diffsol",
+      "Julia"
+    ],
+    "default_derivatives": "forbidden",
+    "jvp_ad": "selective and explicitly authorized with recorded cost/evidence",
+    "force_push": false,
+    "merge_default_branch": false,
+    "reuse_unchanged_published_evidence": true,
+    "all_nodes_must_have_a_disposition": true,
+    "max_sibling_candidates": 3,
+    "selection": "correctness/support first, then Pareto error/work/time/memory; no global-optimum claim"
+  },
+  "global_resources": {
+    "max_active_code_workers": 2,
+    "max_active_cargo_builds": 1,
+    "max_build_jobs": 2,
+    "max_concurrent_timed_solves": 1,
+    "solver_threads_default": 1,
+    "solver_threads_optional": [
+      2
+    ],
+    "solver_peak_rss_bytes_max": 1073741824,
+    "timed_process_wall_seconds_max": 90,
+    "qualification_wall_seconds_max": 5400,
+    "qualification_process_creation_cap": 500,
+    "build_wall_seconds_max_per_attempt": 1800,
+    "task_timeboxes_are_caps_not_completion_promises": true,
+    "focused_validation_budgets_are_not_permission_to_multiply_global_campaign_cap": true
+  },
+  "execution_policy": {
+    "source_freeze": "No edits/compiles during timed cohort; record new commit/tree/relevant-source/binary hashes before timing.",
+    "failures": "Preserve raw immutable failures; route/task-local failure does not cancel unrelated independent tasks.",
+    "budget_expiry": "Checkpoint code/status/receipts; remaining work NOT_RUN or BLOCKED, never done by inference.",
+    "parallelism": "Independent disjoint source ownership may run in parallel; shared lib.rs/driver integration by one owner; builds and timing serialized.",
+    "verification": "Only affected contracts rerun after changes; use stored-receipt audits for unchanged cohorts.",
+    "publication": "Create an isolated follow-up branch from verified publication tip for code changes; never reset current checkout, force-push, or merge main. Publish only after scope-wide disposition and focused checks; validation-only runs may remain receipt-only."
+  },
+  "waves": [
+    {
+      "id": 0,
+      "tasks": [
+        "PR00"
+      ]
+    },
+    {
+      "id": 1,
+      "tasks": [
+        "FA01",
+        "GE01",
+        "QA01",
+        "LP01"
+      ],
+      "note": "SW02 begins afterFA01; respect two-worker cap and disjoint files."
+    },
+    {
+      "id": 2,
+      "tasks": [
+        "SW02",
+        "SW03",
+        "EV01",
+        "QF01",
+        "CF01",
+        "SG01"
+      ],
+      "note": "Dependency order overrides wave label; this wave spans multiple bounded local sessions."
+    },
+    {
+      "id": 3,
+      "tasks": [
+        "DV01",
+        "CP01",
+        "PDE23",
+        "PDE-POLAR",
+        "PDE-FLOAT",
+        "AMR01",
+        "CAP01"
+      ]
+    },
+    {
+      "id": 4,
+      "tasks": [
+        "PB01"
+      ]
+    }
+  ],
+  "tasks": [
+    {
+      "id": "PR00",
+      "title_ko": "발행 tip·도구·근거 identity 고정",
+      "priority": "P0",
+      "wave": 0,
+      "status": "preflight-required",
+      "depends_on": [],
+      "existing_files": [
+        "research/production_frontier_20261023/REPORT_KO.md",
+        "research/production_frontier_20261023/BENCHMARK_PLAN.json",
+        "research/production_frontier_20261023/analysis/ADVERSARIAL_FINDINGS.json"
+      ],
+      "proposed_files": [],
+      "implementation_steps": [
+        "Fetch and isolate.",
+        "Validate required ancestors and package identity.",
+        "Create new follow-up evidence directory keyed by actual source; do not overwrite published receipts."
+      ],
+      "contract": [
+        "Fetch the named publication branch and record its actual tip/tree; final report commit is deliberately not prefilled.",
+        "Use a new detached worktree at the fetched tip; preserve the original checkout and dirty files.",
+        "Verify published native commit df5c6c56da0eb93b58147d6630a0f094cf4af212 and PDE followup37817308c12384f33ecb9b8ff64509f971eb3b2b are ancestors; distinguish equivalent local timing hashes from remote hashes.",
+        "Read and reuse unchanged published evidence; rerun only when code, assumptions, output contract, platform qualification or dependency identity changes."
+      ],
+      "tests": [
+        "Read-only package/manifest hash validation; record git status, commit, tree, Cargo.lock hash, compiler version and thread controls.",
+        "cargo metadata --locked --offline after finding existing Rust1.94.1/vendor; metadata is environment identity, not a solver test."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 15,
+        "focused_validation_wall_seconds_max": 300,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "Current report/plan/analysis present and identified.",
+        "Every downstream task has a record: READY/BLOCKED/REUSED/NOT_RUN; no single-node-only completion claim."
+      ],
+      "stop_criteria": [
+        "Missing ancestor/report: do not reset current checkout; diagnose shallow history/fetch once within scope and preserve failure.",
+        "Missing locked dependency: record package and stop dependent native builds; continue independent read-only planning.",
+        "Never run historical NCP/SSH launcher scripts."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/evidence/SOURCE_SURVEY.json",
+        "research/production_frontier_20261023/results/FINAL_EVIDENCE_AUDIT.json"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "FA01",
+      "title_ko": "fatal 오류의 즉시 native 종료와 수락 prefix 보존",
+      "priority": "P0",
+      "wave": 1,
+      "status": "implementation-required",
+      "depends_on": [
+        "PR00"
+      ],
+      "existing_files": [
+        "crates/rodas5p-core/src/error.rs",
+        "crates/vigilode/src/fd.rs",
+        "crates/vigilode/src/solve.rs",
+        "crates/vigilode/src/solution.rs",
+        "crates/rodas5p-integrators/src/adaptive.rs",
+        "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+        "crates/rodas5p-integrators/src/rodas5p_fast_dense.rs",
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
+      ],
+      "proposed_files": [
+        "crates/vigilode/tests/frontier_fatal_session_contracts.rs"
+      ],
+      "implementation_steps": [
+        "Introduce a distinct internal terminal signal and partial-result branch in the affected native loops.",
+        "Propagate through Guard and facade without conflating recoverability.",
+        "Audit exhaustive matches and update public telemetry docs."
+      ],
+      "contract": [
+        "A fatal callback is entered exactly once and causes no subsequent native trial or user callback.",
+        "Recoverable errors retain existing retry semantics.",
+        "Terminal driver result includes last accepted time/state, all work before failure and typed reason; never turn fatal into an Err that drops partial records."
+      ],
+      "tests": [
+        "Inject fatal/recoverable RHS, dense Jacobian, JVP and df/dt failures on first attempt, after acceptance and after rejection.",
+        "Verify fatal count1, postfatal native attempts0, unchanged accepted prefix and complete charge.",
+        "Repeat only affected facade failure/switching tests; unsupported combinations must fail before callbacks."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 120,
+        "focused_validation_wall_seconds_max": 600,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "All supported touched routes return terminal partial records without shortcircuited retry loops.",
+        "Recoverable injection still recovers or stops by its existing budget."
+      ],
+      "stop_criteria": [
+        "Any partial-state/work loss, stale success or extra fatal callback blocks route publication.",
+        "If a route cannot support typed termination in this slice, mark it UNSUPPORTED for the new session rather than silently preserving a claimed guarantee."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/analysis/ADVERSARIAL_FINDINGS.json",
+        "research/production_frontier_20261023/analysis/SWITCHING.md"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "SW02",
+      "title_ko": "허용된 explicit·implicit 세션 지속",
+      "priority": "P0",
+      "wave": 2,
+      "status": "implementation-required",
+      "depends_on": [
+        "FA01"
+      ],
+      "existing_files": [
+        "crates/rodas5p-integrators/src/dopri5.rs",
+        "crates/rodas5p-integrators/src/dopri5_dense.rs",
+        "crates/rodas5p-integrators/src/adaptive.rs",
+        "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+        "crates/vigilode/src/explicit.rs",
+        "crates/vigilode/src/solve.rs",
+        "crates/vigilode/src/switching.rs"
+      ],
+      "proposed_files": [
+        "crates/vigilode/tests/frontier_session_contracts.rs"
+      ],
+      "implementation_steps": [
+        "First expose bounded native session advancement, then adapt facade wrappers.",
+        "Keep legacy entry points delegating to the session with unchanged output policy.",
+        "Replace switching batch reconstruction only after session tests pass."
+      ],
+      "contract": [
+        "Advance only from accepted checkpoints; cache validity keys include model/provider epoch, method, dimension, physical norm and h-dependence.",
+        "Preserve FSAL, next h and controller in the unchanged explicit session; preserve eligible implicit factor/preconditioner state without stale reuse.",
+        "For unchanged single-method paths, output states/times and counters match the existing persistent driver at the same observation policy."
+      ],
+      "tests": [
+        "Compare one continuous solve with multiple advance_to calls at identical landing observations, including rejected trials.",
+        "Change each cache-key field separately and verify required invalidation and callback counts.",
+        "Partial failure, zero span, tiny representable span, fixed-function callback and explicit restart fixtures."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 150,
+        "focused_validation_wall_seconds_max": 900,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "No output/counter drift for unchanged-method controls unless an intentional contract change is explicitly independently validated.",
+        "No per-window full workspace reconstruction after initialization for constant dimension."
+      ],
+      "stop_criteria": [
+        "Do not carry caches across a model epoch or dimension change without invalidation.",
+        "Parity or fatal contract failure stops adapter adoption, but independent QF/QA work may continue."
+      ],
+      "evidence_to_reuse": [
+        "research/adaptive_causal_20261023/results/rhs_persistent_campaign/RHS_PARITY.json",
+        "research/production_frontier_20261023/results/switching_campaign/SUMMARY.json"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "EV01",
+      "title_ko": "accepted-step 온라인 terminal event",
+      "priority": "P0",
+      "wave": 2,
+      "status": "implementation-required",
+      "depends_on": [
+        "SW02",
+        "FA01"
+      ],
+      "existing_files": [
+        "crates/vigilode/src/events.rs",
+        "crates/vigilode/src/solve.rs",
+        "crates/vigilode/src/problem.rs",
+        "crates/vigilode/src/solution.rs",
+        "crates/vigilode/tests/events_contracts.rs"
+      ],
+      "proposed_files": [
+        "crates/vigilode/tests/frontier_online_events.rs"
+      ],
+      "implementation_steps": [
+        "Add event hook to accepted-candidate boundary.",
+        "Separate localization termination from ordinary output truncation.",
+        "Expose supported root/direction/domain-cap capabilities."
+      ],
+      "contract": [
+        "Check events inside the accepted-step loop and stop before any later physical trial after terminal localization.",
+        "Already evaluated stages can pass an as-yet-undetected event; do not promise domain-wall safety without a declared safe-domain cap/bracket.",
+        "Localization uses a validated segment and preserves event state/time, accepted prefix and event-evaluation work.",
+        "Only explicitly supported transversal roots receive time-error claims; tangent/multiple/unbracketed roots have a stated policy."
+      ],
+      "tests": [
+        "Simple roots in each direction; events at initial/final time; nonterminal then terminal sequence; rejected-step interaction.",
+        "Instrument all RHS/stage/event calls and distinguish pre-detection overshoot from forbidden post-detection trial calls.",
+        "Domain trap with declared safe step cap must not cross the declared domain; without it report limitation/refusal.",
+        "Tangent and even-number crossing negative controls; root residual plus state-induced timing error."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 120,
+        "focused_validation_wall_seconds_max": 600,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "No new trial after detected terminal event on supported routes.",
+        "Event error respects the declared transverse-root bound and independent analytic oracle."
+      ],
+      "stop_criteria": [
+        "Any hidden post-terminal integration or falsely advertised tangent/multiple-root guarantee blocks this API.",
+        "Do not reinterpret unsupported switching+events as supported just because RODAS has postprocessing events."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/analysis/PRODUCTION_VALIDATION.md"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "SW03",
+      "title_ko": "변화 감지에 따른 제한된 전환 재탐색",
+      "priority": "P0",
+      "wave": 2,
+      "status": "implementation-required",
+      "depends_on": [
+        "SW02"
+      ],
+      "existing_files": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/examples/frontier_switch_bench.rs",
+        "crates/vigilode/tests/frontier_switch_contracts.rs"
+      ],
+      "proposed_files": [
+        "crates/vigilode/tests/frontier_switch_epoch.rs"
+      ],
+      "implementation_steps": [
+        "Add epoch/change counters and explicit exploration allowance to persistent session.",
+        "Register<=3 sibling policies before measurement.",
+        "Choose by eligible accuracy/work/time vector and retain scope-specific options."
+      ],
+      "contract": [
+        "Provider authorization is necessary but not a benefit certificate.",
+        "Replay candidates start from one accepted checkpoint; charge all discarded/failed work and preserve physical output/norm.",
+        "Re-exploration budget is explicit and finite; exhaustion never grants implicit permission.",
+        "At most3 preregistered alternatives: epoch-triggered, work-trend-triggered, current one-pilot control."
+      ],
+      "tests": [
+        "Changed-code subset: rapid JVP loss, rapid FD loss and smooth nonstiff-stiff-nonstiff transition.",
+        "Use two independent transition timings so a rule fitted only to the old transition is visible.",
+        "Fatal/recoverable pilot, exhausted exploration budget, epoch replacement and no physical-progress tests."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 90,
+        "focused_validation_wall_seconds_max": 900,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "Transition fixture can re-evaluate later evidence; no stale no-switch decision from an earlier epoch.",
+        "Same sampled-error cap with all pilots charged; report worst loss and repeat range, not only best speedup.",
+        "Keep default unchanged if any required cohort loses>2x without a supported override or reason."
+      ],
+      "stop_criteria": [
+        "No unbounded periodic probes or reuse of work measurements across changed models.",
+        "Failure of sampled accuracy or trial budget stops promotion; preserve all negative controls."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/results/switching_campaign/SUMMARY.json",
+        "research/production_frontier_20261023/analysis/SWITCHING.json"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "DV01",
+      "title_ko": "미분 제공자 권한·비용·선택 계약",
+      "priority": "P1",
+      "wave": 3,
+      "status": "implementation-required",
+      "depends_on": [
+        "SW03"
+      ],
+      "existing_files": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/src/fd.rs",
+        "crates/vigilode/src/problem.rs",
+        "crates/vigilode/src/capabilities.rs",
+        "crates/vigilode/src/solution.rs"
+      ],
+      "proposed_files": [
+        "crates/vigilode/tests/frontier_provider_cost.rs"
+      ],
+      "implementation_steps": [
+        "Split request counts and callback work in telemetry.",
+        "Attach benefit evidence to provider/model epoch.",
+        "Keep a reproducible counter policy and optional measured-time policy distinct."
+      ],
+      "contract": [
+        "Forbidden never invokes derivatives; ProvidedOnly never synthesizes hidden finite differences including df/dt.",
+        "Record actual user calls separately from kernel requests/build attempts/shortcircuits.",
+        "Optional provider timing cannot be represented as deterministic work; record policy/version and timing uncertainty.",
+        "Do not infer full-space derivative quality or stiffness from a few samples."
+      ],
+      "tests": [
+        "Poison unauthorized Jacobian/JVP/dfdt callbacks.",
+        "Cheap RHS with expensive JVP and opposite cost profile; identical equations and actual-error cap.",
+        "Provider epoch change invalidates benefit history and relevant caches."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 60,
+        "focused_validation_wall_seconds_max": 600,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "Supplied derivatives are used only within authorization and recorded selection evidence.",
+        "No derivative-provider success claim based on permission alone."
+      ],
+      "stop_criteria": [
+        "Missing provider or unsupported nonautonomous combination must refuse before callbacks.",
+        "Unstable timer-based choices stay opt-in; no default change based on three noisy microtimings."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/analysis/SWITCHING.md"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "GE01",
+      "title_ko": "시간·공간·근사 flow·remap의 명시적 오차 예산",
+      "priority": "P0",
+      "wave": 1,
+      "status": "implementation-required",
+      "depends_on": [
+        "PR00"
+      ],
+      "existing_files": [
+        "research/production_frontier_20261023/analysis/PRODUCTION_VALIDATION.md",
+        "research/production_frontier_20261023/src/validate_campaign_contract.py",
+        "crates/rodas5p-integrators/src/adaptive.rs",
+        "crates/rodas5p-integrators/src/conservative_remap.rs"
+      ],
+      "proposed_files": [
+        "crates/rodas5p-integrators/src/physical_error_budget.rs",
+        "crates/rodas5p-integrators/tests/frontier_physical_budget.rs"
+      ],
+      "implementation_steps": [
+        "Implement pure budget/identity/ordering layer before modifying adaptive acceptance.",
+        "Add accepted-candidate callback consuming a bound only when supplied by a justified client.",
+        "Use physical weighted norms as final accuracy contract; Fisher conditioning remains optional."
+      ],
+      "contract": [
+        "Represent time residual, spatial defect, flow/root perturbation, remap consistency and roundoff separately; never double-count one perturbation.",
+        "Any divisor amplification bound G must satisfy0<G<infinity; unknown bounds are estimated/operational, not certified.",
+        "Numerical one-step stability bound is not automatically the continuous RHS Lipschitz bound.",
+        "Remap-first then flow-jump ordering is explicit; changing order multiplies prior-space jump by the remap norm."
+      ],
+      "tests": [
+        "Replay existing exact-rational cases only if implementation changes their dependency; add failing zero/infinite G, negative budget, double-count and remap-order cases.",
+        "Analytic damped rotation amplification independent of frequency; nonnormal positive growth negative control.",
+        "Three temporal refinements with an independent reference whose uncertainty<=10% of cap."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 90,
+        "focused_validation_wall_seconds_max": 600,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "Ledger rejects overspent/invalid budgets before commit and exposes estimated versus bounded status.",
+        "Known-bound fixture error lies below the derived total including jumps."
+      ],
+      "stop_criteria": [
+        "Sampled residuals alone cannot be labeled integral upper bounds.",
+        "Unknown physical bounds leave certified mode unsupported; operational solve may remain available with clear status."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/results/production_validation_checks.json"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "QF01",
+      "title_ko": "선언된 외력 경로의 캐시·비선형 잔여항 연결",
+      "priority": "P1",
+      "wave": 2,
+      "status": "implementation-required",
+      "depends_on": [
+        "GE01"
+      ],
+      "existing_files": [
+        "crates/rodas5p-integrators/src/quotient_flow.rs",
+        "crates/vigilode/src/lawson.rs",
+        "crates/rodas5p-integrators/tests/frontier_affine_contracts.rs",
+        "crates/vigilode/tests/frontier_affine_facade.rs",
+        "crates/rodas5p-integrators/examples/frontier_affine_bench.rs"
+      ],
+      "proposed_files": [
+        "crates/rodas5p-integrators/tests/frontier_harmonic_residual.rs"
+      ],
+      "implementation_steps": [
+        "Add coefficient caching first with bitwise/state-error contract.",
+        "Derive then implement a stage-consistent harmonic-plus-residual wrapper.",
+        "Defer piecewise polynomial forcing until phi_j and interpolation-residual budget are explicit."
+      ],
+      "contract": [
+        "Reuse the implemented constant/harmonic action; do not reopen completed phi1 identities without changed assumptions.",
+        "Cache shifted harmonic coefficients by carrier/forcing/frequency/step/epoch; use the correct nonautonomous stage forcing.",
+        "General smooth forcing requires a declared approximation residual and budget; freezing it does not preserve fifth order automatically.",
+        "Physical-norm and failure-scratch contracts remain explicit."
+      ],
+      "tests": [
+        "Zero frequency, resonance, A-to-zero, least-subnormal coefficient regression and finite extreme arguments affected by changes.",
+        "Noncommuting smooth nonlinear residual at three step refinements; compare against independent analytic or high-precision reference.",
+        "Slow/zero carrier and generic time-forcing losses retained; direct declared formula not conflated with adaptive wrapper."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 120,
+        "focused_validation_wall_seconds_max": 600,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "No stale harmonic cache, resonance discontinuity or coefficient-underflow regression.",
+        "New wrapper meets its explicitly derived order/scope and full trajectory error cap."
+      ],
+      "stop_criteria": [
+        "Do not enable general time-dependent nonlinear forcing if stage formula/order conditions are not derived.",
+        "No default replacement when slow/generic forcing negative controls regress unaccounted."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/analysis/AFFINE_RESULTS_KO.md",
+        "research/production_frontier_20261023/analysis/AFFINE_QUOTIENT.json"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "QA01",
+      "title_ko": "전 공간 polynomial witness와 실제 stage 연결",
+      "priority": "P1",
+      "wave": 1,
+      "status": "implementation-required",
+      "depends_on": [
+        "PR00"
+      ],
+      "existing_files": [
+        "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+        "crates/rodas5p-integrators/tests/frontier_polynomial.rs",
+        "crates/rodas5p-integrators/examples/frontier_polynomial.rs",
+        "crates/rodas5p-core/src/operator.rs"
+      ],
+      "proposed_files": [
+        "crates/rodas5p-integrators/tests/frontier_polynomial_provider.rs"
+      ],
+      "implementation_steps": [
+        "Add typed identity/witness binding around the existing primitive.",
+        "Integrate an opt-in physical collision/provider path before a general router.",
+        "Benchmark against direct block calculation as well as iteration, not a weak iterative baseline alone."
+      ],
+      "contract": [
+        "Bind a relation to the exact B=sA operator, physical norm, dimension, provider/model epoch and s.",
+        "Require declared exact relation or justified full-space defect/norm witness; finite probes cannot establish this.",
+        "Keep mandatory original-space residual action; d-1 candidate actions plus1 residual action=d total.",
+        "Floating conditional bounds remain distinct from outward-rounded certificates."
+      ],
+      "tests": [
+        "Reject stale s/epoch/norm/dimension witnesses; preserve output on rejection.",
+        "Repeated/Jordan roots, near-pole margin, nonnormal block and coefficient cancellation.",
+        "Use physical local-collision direct sums with fixed degree and an independent explicit small-block reference; test actual stage residual and trajectory."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 90,
+        "focused_validation_wall_seconds_max": 600,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "Truthful provider contract enforced before use and original residual unchanged.",
+        "At least one declared physical block client integrates with actual work/action savings under its error contract."
+      ],
+      "stop_criteria": [
+        "Do not assume a low-degree annihilator for an arbitrary refined Laplacian.",
+        "If witness cannot be established, route to a supported method and charge failed setup; never infer an exact polynomial from a few vectors."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/analysis/POLYNOMIAL.md",
+        "research/production_frontier_20261023/analysis/POLYNOMIAL_CANDIDATES.json"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "CF01",
+      "title_ko": "causal 전체 궤적의 root 예산·넓은 스펙트럼 병목",
+      "priority": "P0",
+      "wave": 2,
+      "status": "implementation-required",
+      "depends_on": [
+        "GE01",
+        "FA01"
+      ],
+      "existing_files": [
+        "crates/vigilode-coupled/src/causal.rs",
+        "crates/vigilode-coupled/src/adaptive.rs",
+        "crates/vigilode-coupled/src/raw_step.rs",
+        "crates/vigilode-coupled/src/fallback.rs",
+        "crates/vigilode-coupled/tests/frontier_causal_trajectory.rs",
+        "crates/vigilode-coupled/examples/frontier_causal_trajectory.rs"
+      ],
+      "proposed_files": [
+        "crates/vigilode-coupled/tests/frontier_causal_budget.rs"
+      ],
+      "implementation_steps": [
+        "Implement reusable workspace independently of root-budget tightening.",
+        "Add conditional per-trajectory root budget using GE01.",
+        "Compare<=3 bounded basis-growth/fallback policies on the known broad-spectrum loss only after unchanged residual acceptance is verified."
+      ],
+      "contract": [
+        "Keep full original-space stage residual and embedded acceptance; no tolerance relaxation for speed.",
+        "Supply justified inverse/Lipschitz/step-map amplification constants to convert stage residual into endpoint root budget.",
+        "Reuse forward/lift/project workspace where dimension and basis epoch permit; frozen-base JVP remains explicitly counted.",
+        "Broad-spectrum projection/fallback costs are part of total accepted trajectory work."
+      ],
+      "tests": [
+        "Triangular amplification10^7 counterexample and bound failure; root-budget overspend must reject transactionally.",
+        "Affected Riccati/nonlinear, stiff, nonnormal and broad-spectrum cases at common observations.",
+        "Allocator counts and same accepted outputs with reused workspace; delayed callback failure preserves prefix."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 120,
+        "focused_validation_wall_seconds_max": 900,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "Supported analytic clients obey summed root perturbation budget.",
+        "Workspace change does not alter acceptance or lose counters.",
+        "Broad-spectrum case reports exact fallback fraction; no speed claim if effectively neutral."
+      ],
+      "stop_criteria": [
+        "Unknown inverse/stability bounds mean operational rather than certified mode.",
+        "Do not extend current autonomous identity-mass causal formula to nonautonomous/mass systems without a new target and order derivation."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/analysis/CAUSAL_TRAJECTORY.md",
+        "research/production_frontier_20261023/analysis/CAUSAL_FINDINGS.json"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "CP01",
+      "title_ko": "비싼 RHS에서만 stage batching 교차점 확인",
+      "priority": "P2",
+      "wave": 3,
+      "status": "implementation-required",
+      "depends_on": [
+        "CF01"
+      ],
+      "existing_files": [
+        "crates/vigilode-coupled/src/causal.rs",
+        "crates/vigilode-coupled/examples/frontier_causal_trajectory.rs",
+        "research/production_frontier_20261023/src/run_causal_frontier.py"
+      ],
+      "proposed_files": [
+        "crates/vigilode-coupled/tests/frontier_causal_batch_workspace.rs"
+      ],
+      "implementation_steps": [
+        "Prefer allocation reuse and vectorized residual batches before thread scheduling.",
+        "Use new real client cost or record NOT_RUN if unavailable.",
+        "Retain prior negative parallel results in final decision."
+      ],
+      "contract": [
+        "Keep serial forward default for the already tested small/cheap RHS cohort.",
+        "Any parallel candidate must include scheduling, repeated RHS and memory costs.",
+        "Only one and two threads within current budget; do not simulate expensive RHS with unverified sleep-based speed claims."
+      ],
+      "tests": [
+        "New actual compute-heavy RHS client with independent reference;1/2thread output/work consistency.",
+        "At most3 RHS-cost regimes and3state sizes selected before timing, not a full Cartesian product.",
+        "Five timed repeats after one warmup; same achieved-error cap."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 60,
+        "focused_validation_wall_seconds_max": 600,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "Batching enabled only for a measured cohort with>=1.2x gain beyond observed repeat variability and preserved correctness.",
+        "No gain: mark specialized experiment PRUNED in this cohort and keep serial path."
+      ],
+      "stop_criteria": [
+        "No blind rerun of unchanged210trajectory campaign.",
+        "No expansion to4/64threads or cloud resources."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/analysis/CAUSAL_FINDINGS.json",
+        "research/production_frontier_20261023/results/FINAL_EVIDENCE_AUDIT.json"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "SG01",
+      "title_ko": "구면 보존 확산 prototype의 안전한 solver API 이식",
+      "priority": "P1",
+      "wave": 2,
+      "status": "implementation-required",
+      "depends_on": [
+        "SW02",
+        "GE01",
+        "FA01"
+      ],
+      "existing_files": [
+        "research/production_frontier_20261023/src/pde_kernels.rs",
+        "research/production_frontier_20261023/src/pde_native_driver.rs",
+        "research/production_frontier_20261023/src/pde_frontier.py",
+        "crates/vigilode/src/capabilities.rs"
+      ],
+      "proposed_files": [
+        "crates/rodas5p-integrators/src/conservative_graph_flow.rs",
+        "crates/rodas5p-integrators/tests/frontier_graph_flow.rs"
+      ],
+      "implementation_steps": [
+        "Port validated primitives into a reusable module with explicit request/capability types.",
+        "Use accepted-state scratch and rollback-safe RKL-to-positive fallback.",
+        "Preserve current standalone source/evidence identities; do not call porting itself new performance evidence."
+      ],
+      "contract": [
+        "Graph requires positive cell weights and symmetric nonnegative face conductances; weighted mass w^TQ=0.",
+        "State is committed only after finite/physical-norm/positivity contracts pass; failed RKL trial remains charged.",
+        "RKL2 is not generally positivity preserving; positivity-required requests select a proven positive method or reject/fallback.",
+        "Setup/workspace allocation and hot-loop allocation are separate metrics."
+      ],
+      "tests": [
+        "Reuse exact -5/512 negative delta as a regression: reject unsafe RKL commit, preserve input, then test positive fallback.",
+        "Sphere weights sum4pi; zero polar flux; constant mode; nonaxisymmetric modes and independent discrete oracle.",
+        "Keep Q=0/t=0 finite1.5e308 identity regressions; validate inputs before bypass.",
+        "Failed candidate, callback and budget paths must preserve last accepted state."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 120,
+        "focused_validation_wall_seconds_max": 900,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "Typed production-facing graph API reproduces supported prototype results with unchanged physical invariants.",
+        "Relative mass drift<=1e-11 plus1e-13 absolute; negativity<=1e-13 scaled roundoff only where requested positive policy applies.",
+        "Successful fixed-capacity hot loop performs no heap allocations."
+      ],
+      "stop_criteria": [
+        "Do not route general variable-coefficient/nonlinear/advection PDE through the reversible scalar proof.",
+        "Cannot satisfy positivity or error budget: return typed failure/alternative, not clipping without error accounting."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/analysis/PDE_SCALABILITY.md",
+        "research/production_frontier_20261023/results/ADVERSARIAL_EXACT_CHECKS.json",
+        "research/production_frontier_20261023/analysis/PDE_CANDIDATES.json"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "PDE23",
+      "title_ko": "2D·3D 및 실제 수송–충돌·물질 결합",
+      "priority": "P1",
+      "wave": 3,
+      "status": "implementation-required",
+      "depends_on": [
+        "SG01",
+        "QF01",
+        "QA01"
+      ],
+      "existing_files": [
+        "research/production_frontier_20261023/src/pde_frontier.py",
+        "research/bassrei_p06_full_sphere_scoped_20261022/FULL_SPHERE_FVM_REFERENCE.py",
+        "research/production_frontier_20261023/analysis/PRODUCTION_VALIDATION.md"
+      ],
+      "proposed_files": [
+        "crates/vigilode/examples/frontier_reaction_diffusion.rs",
+        "crates/vigilode/tests/frontier_pde_manufactured.rs"
+      ],
+      "implementation_steps": [
+        "Begin fixed grid and declared carrier/collision, then add a nonlinear reaction residual.",
+        "Use sparse face actions and small physical border coupling; test actual Schur/preconditioner iteration costs rather than assume3–5iterations.",
+        "Connect a supplied physical model only after variables and conserved quantities are explicit."
+      ],
+      "contract": [
+        "Separate temporal, spatial, splitting, projection and physical-source errors.",
+        "Use actual BASS/rei_bianchi variable meanings/weights/boundaries before claiming physical applicability; manufactured clients do not certify the real model.",
+        "Joint photon-number/energy contracts require both invariants or explicit source terms, not mass-only normalization.",
+        "Derivative-free transport/collision action may coexist with authorized selective JVP for difficult residuals."
+      ],
+      "tests": [
+        "2D grids16x16,32x32,64x64 and3D8^3,12^3,16^3: choose a bounded subset and three refinement levels per studied effect.",
+        "Manufactured reaction-diffusion and transport-collision with independent forcing/reference; anisotropic and variable-coefficient controls.",
+        "Sharp front/limiter switch, absorbing/reflecting/periodic boundary cases only when declared supported.",
+        "For physical client, compare source/invariant budgets and physical observables against supplied reference uncertainty."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 150,
+        "focused_validation_wall_seconds_max": 1200,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "All required sampled physical errors<=cap with reference uncertainty<=0.1cap.",
+        "Temporal/spatial/splitting orders measured separately; no combined two-parameter refinement presented as one order.",
+        "Actual client missing: record BLOCKED_CLIENT_DATA and continue manufactured scope without claiming BASS/rei production."
+      ],
+      "stop_criteria": [
+        "No proof transfer from fixed reversible diffusion to nonlinear transport without verifying assumptions.",
+        "No mass-only remap or positivity clipping that silently changes energy/accuracy."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/analysis/PDE_SCALABILITY.md",
+        "research/production_frontier_20261023/analysis/PRODUCTION_VALIDATION.md",
+        "research/spherical_information_20261023/README.md"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "PDE-POLAR",
+      "title_ko": "구면 극점 비용과 분할 오차의 공동 선택",
+      "priority": "P2",
+      "wave": 3,
+      "status": "implementation-required",
+      "depends_on": [
+        "SG01"
+      ],
+      "existing_files": [
+        "research/production_frontier_20261023/src/sphere_pole_split.py",
+        "research/production_frontier_20261023/src/pde_frontier.py"
+      ],
+      "proposed_files": [
+        "research/production_frontier_followup/src/polar_cost_study.py"
+      ],
+      "implementation_steps": [
+        "Use old split counts to choose discriminating new modes.",
+        "Add an independent total-error scorer, then bounded timings.",
+        "Do not scalarize transform count and stencil count into invented FLOPs."
+      ],
+      "contract": [
+        "At most3candidates: full graph RKL, exact-longitude plus latitude split, a specified conservative geometry change.",
+        "FFT pairs and graph actions are different units; compare measured complete trajectories under total spatial/time/splitting error.",
+        "No automatic default from stability-CFL relief alone."
+      ],
+      "tests": [
+        "Higher azimuthal modes, anisotropy and localized polar data beyond old smoothcosphi fixture.",
+        "Three fixed-grid refinements with separate discrete and continuum references.",
+        "Record FFT setup/plans, all transforms, pole weights, memory and splitting commutator sensitivity."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 90,
+        "focused_validation_wall_seconds_max": 600,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "Select only within the tested grid/mode/error cohort; speed gain>=1.2x beyond repeat variability needed for default in that cohort.",
+        "Retain nonwinning alternatives as research or local prune with scope."
+      ],
+      "stop_criteria": [
+        "Do not rerun unchanged42-row split study as new evidence.",
+        "No new geometry without conservative remap/projection error accounting."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/results/POLE_SPLIT.json",
+        "research/production_frontier_20261023/analysis/ADVERSARIAL_AUDIT.md"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "PDE-FLOAT",
+      "title_ko": "비영 연산자에서 극단 진폭 recurrence 강건성",
+      "priority": "P1",
+      "wave": 3,
+      "status": "implementation-required",
+      "depends_on": [
+        "SG01"
+      ],
+      "existing_files": [
+        "research/production_frontier_20261023/src/pde_kernels.rs"
+      ],
+      "proposed_files": [
+        "crates/rodas5p-integrators/tests/frontier_graph_extreme_range.rs"
+      ],
+      "implementation_steps": [
+        "Choose<=3options: scaled recurrence, safe local splitting, declared range refusal.",
+        "Validate the minimal compatible fix before broad API default."
+      ],
+      "contract": [
+        "Identity bypass fixes are already complete; nonzeroQ and positive time require separate intermediate-overflow controls.",
+        "Finite exact-output cases must return finite output or a typed range refusal without corrupting input.",
+        "Poisson truncation bound excludes rounding unless a separate rounding enclosure is supplied."
+      ],
+      "tests": [
+        "Finite positive/negative states near1e308 on small nonzero graphs with analytic/extended-precision oracle.",
+        "Scale-equivariant cases, cancellation, underflow, zero time, zero operator and invalid step count.",
+        "Check weighted mass and finite transaction state after an overflow rejection."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 60,
+        "focused_validation_wall_seconds_max": 600,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "Explicit supported range and reproducible finite-output/error contract; no silentInf/NaN commit."
+      ],
+      "stop_criteria": [
+        "No arbitrary rescaling if physical norm/source/positivity semantics change.",
+        "If safe range cannot be certified operationally, preserve scoped typed refusal rather than claim universal floating robustness."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/analysis/PDE_CANDIDATES.json"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "AMR01",
+      "title_ko": "수락 경계 remap·격자 변경의 보존·오차 계약",
+      "priority": "P1",
+      "wave": 3,
+      "status": "implementation-required",
+      "depends_on": [
+        "SG01",
+        "SW02",
+        "GE01"
+      ],
+      "existing_files": [
+        "crates/rodas5p-integrators/src/conservative_remap.rs",
+        "crates/rodas5p-integrators/examples/lrs_photon_remap_run.rs",
+        "crates/rodas5p-integrators/tests/lrs_photon_remap_contracts.rs",
+        "research/production_frontier_20261023/analysis/PRODUCTION_VALIDATION.md"
+      ],
+      "proposed_files": [
+        "crates/vigilode/tests/frontier_remap_session.rs"
+      ],
+      "implementation_steps": [
+        "Add a transactional accepted-step remap interface.",
+        "Track consistency defect separately from conservation correction.",
+        "Use geometric summable budgets if remap count is unknown."
+      ],
+      "contract": [
+        "Remap only between accepted steps; stage dimension stays fixed.",
+        "Commit grid/state/provider/workspace/basis/controller changes atomically after conservation, positivity and consistency-budget validation.",
+        "Nonnegative weighted conservative map is L1-nonexpansive but does not imply zero remap defect or fifth-order global accuracy.",
+        "Use actual physical photon-number and energy invariants for radiation clients."
+      ],
+      "tests": [
+        "Prescribed0/4/16remap schedules with independent exact projection; vary h and grid separately at three levels.",
+        "Rejected remap leaves old accepted state/grid/cache epoch intact.",
+        "Capacity overflow and dimension change invalidation; compare fixed-capacity no-allocation path only within declaredNmax."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 120,
+        "focused_validation_wall_seconds_max": 900,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "Accumulated weighted remap perturbations fit declared budget and physical invariant thresholds.",
+        "No stale FSAL/factor/basis/dense segment after grid change."
+      ],
+      "stop_criteria": [
+        "Do not reuse pre-remap derivative caches or claim automatic fifth-order restart.",
+        "Unavailable real-client invariant definition blocks physical claim, not generic contract testing."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/results/production_validation_checks.json",
+        "research/spherical_information_20261023/README.md"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "LP01",
+      "title_ko": "100·1000주기 위상·진폭 정확도",
+      "priority": "P0",
+      "wave": 1,
+      "status": "new-horizon-validation-required",
+      "depends_on": [
+        "PR00"
+      ],
+      "existing_files": [
+        "crates/vigilode-coupled/examples/frontier_causal_trajectory.rs",
+        "crates/rodas5p-integrators/examples/frontier_affine_bench.rs",
+        "research/production_frontier_20261023/BENCHMARK_PLAN.json"
+      ],
+      "proposed_files": [
+        "research/production_frontier_followup/src/long_phase_campaign.py"
+      ],
+      "implementation_steps": [
+        "Register new horizon/mask/output contract.",
+        "Run only supported existing routes first; rerun changed routes after their source freeze.",
+        "Mark long-phase qualification per method/scope rather than solver-wide."
+      ],
+      "contract": [
+        "Existing20radian causal results do not cover this new horizon.",
+        "Phase is compared to independent analytic phase with enough observations for branch tracking; zero-amplitude mask is explicit.",
+        "Endpoint-only phase agreement does not imply uniform phase accuracy."
+      ],
+      "tests": [
+        "Analytic rotation/damped rotation at100and1000cycles and frequencies1,100,10000; choose prespecified subset, not full product.",
+        "4097observations for1000cycles or an equivalent safely unwrapped analytic reference.",
+        "Rotation-equivariant nonlinear amplitude and noncommuting residual negative control; support checks before running."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 30,
+        "focused_validation_wall_seconds_max": 1200,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "Required phase error<=1e-3rad and relative amplitude error<=1e-5 outside recorded mask, plus stated sampled state cap.",
+        "Reference uncertainty<=10% of each cap; raw missed/error/budget rows retained."
+      ],
+      "stop_criteria": [
+        "Do not unwrap undersampled phase or treat near-zero amplitude angles as meaningful.",
+        "Process90s cap and total budget enforced; TIMEOUT/NOT_RUN are not successes."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/analysis/CAUSAL_TRAJECTORY.md",
+        "research/production_frontier_20261023/analysis/PRODUCTION_VALIDATION.md"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "CAP01",
+      "title_ko": "기능 조합·dense 출력·재시작의 실제 지원표",
+      "priority": "P0",
+      "wave": 3,
+      "status": "implementation-required",
+      "depends_on": [
+        "SW02",
+        "EV01"
+      ],
+      "existing_files": [
+        "crates/vigilode/src/capabilities.rs",
+        "crates/vigilode/src/options.rs",
+        "crates/vigilode/src/solution.rs",
+        "crates/vigilode/tests/capabilities_contracts.rs",
+        "crates/vigilode/tests/events_contracts.rs"
+      ],
+      "proposed_files": [
+        "crates/vigilode/tests/frontier_capability_matrix.rs"
+      ],
+      "implementation_steps": [
+        "Extend session/event capabilities only after their contracts pass.",
+        "Generate a human-readable support matrix from typed facts.",
+        "Preserve old evidence for unchanged combinations."
+      ],
+      "contract": [
+        "Every route declares supported identity/mass, autonomy, scalar/vector tolerances, dense output, events, restart and dimension changes.",
+        "Unsupported combinations refuse before callbacks; no hidden dense fallback above resource cap.",
+        "Dense output uses same physical observations and scores interior error separately from step-landing output."
+      ],
+      "tests": [
+        "Table-driven valid/refused combinations, including JVP+mass/dense and switching+events.",
+        "Quarter/mid/three-quarter dense probes and17/257/4097output densities for changed routes only.",
+        "Constant mass/index1DAE only on already supported dense route; restart epochs and clock extremes."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 90,
+        "focused_validation_wall_seconds_max": 900,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "Supported behavior agrees with capability table and failure telemetry.",
+        "No output interpolation claim transferred from one route to another without tests."
+      ],
+      "stop_criteria": [
+        "Missing feature remains UNSUPPORTED; never count refusal as accuracy success.",
+        "Do not quietly modify golden receipts to hide semantic drift."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/analysis/PRODUCTION_VALIDATION.md"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    },
+    {
+      "id": "PB01",
+      "title_ko": "범용 production 범위별 최종 local qualification",
+      "priority": "P0",
+      "wave": 4,
+      "status": "blocked-until-scope-readiness",
+      "depends_on": [
+        "FA01",
+        "SW02",
+        "EV01",
+        "SW03",
+        "DV01",
+        "GE01",
+        "QF01",
+        "QA01",
+        "CF01",
+        "CP01",
+        "SG01",
+        "PDE23",
+        "PDE-POLAR",
+        "PDE-FLOAT",
+        "AMR01",
+        "LP01",
+        "CAP01"
+      ],
+      "existing_files": [
+        "research/production_frontier_20261023/BENCHMARK_PLAN.json",
+        "research/production_frontier_20261023/src/validate_campaign_contract.py",
+        "research/production_frontier_20261023/src/adversarial_evidence_audit.py",
+        "research/production_frontier_20261023/analysis/PRODUCTION_VALIDATION.md"
+      ],
+      "proposed_files": [
+        "research/production_frontier_followup/QUALIFICATION.json",
+        "research/production_frontier_followup/REPORT_KO.md"
+      ],
+      "implementation_steps": [
+        "Create immutable campaign identity and readiness matrix before launch.",
+        "Runcontract-smoke600s, accuracy/scaling1800s, externalmatched-error2400s, replay/summary600s within one totalcap.",
+        "Produce reviewable code+evidence+machine decisions for every node, then publish only validated follow-up commits without force/merge."
+      ],
+      "contract": [
+        "Dependencies are satisfied by implemented acceptance or an explicit narrower-scope decision; unresolved required broad features keep broad HOLD.",
+        "Compare only VODE/DVODE, diffsol and Julia; missing dependency=NOT_RUN, unsupported combination=UNSUPPORTED.",
+        "Common equations, norms, observations, reference uncertainty, precision and threads; setup/pilots/failures charged.",
+        "No merging old/new hardware or build profiles; pin compiler/lock/source/binary."
+      ],
+      "tests": [
+        "18family plan B01-B18 in a prespecified bounded subset, not Cartesian expansion.",
+        "Correctness first; only error-eligible methods enter work-precision timing.",
+        "One warmup+five repeats, deterministic order rotation; Julia JIT/setup and steady solve separately.",
+        "Re-read raw evidence and validate summaries/figures independently without rerunning unchanged solvers."
+      ],
+      "budget": {
+        "engineering_timebox_minutes_per_attempt": 60,
+        "focused_validation_wall_seconds_max": 5400,
+        "max_candidates": 3,
+        "timed_repeats": 5,
+        "solver_threads_default": 1,
+        "solver_threads_optional": [
+          2
+        ],
+        "max_timed_solves_concurrent": 1,
+        "inherit_global_resource_caps": true
+      },
+      "success_criteria": [
+        "Zero contract violations and100%required scope-case success, normalized actual error<=1, reference uncertainty<=0.1cap.",
+        "Mass/phase/amplitude/order thresholds from existing plan satisfied for claimed scope.",
+        "Report worst losses, failures, missing cohorts and repeat variation;>=1.2gain and2xloss limits are engineering policy, not theorems.",
+        "Return scope labels: production-qualified-scope, specialized-only, optimization-possible, hold, pruned-in-cohort."
+      ],
+      "stop_criteria": [
+        "Any required unresolved event/fatal/global-error/physical-client obligation prevents broad production promotion.",
+        "No fabricated external results; do not substitute another solver or pastNCP timing.",
+        "Stop at5400s/500processes/1GiBsolverRSS and preserveNOT_RUN/TIMEOUT; do not silently raise budget."
+      ],
+      "evidence_to_reuse": [
+        "research/production_frontier_20261023/BENCHMARK_PLAN.json",
+        "research/production_frontier_20261023/results/FINAL_EVIDENCE_AUDIT.json"
+      ],
+      "required_outputs": [
+        "changed source and focused test diff or explicit BLOCKED/NOT_RUN reason",
+        "immutable command/exit/stdout/stderr receipts",
+        "actual source/tree/binary identity",
+        "before-after actual-error and all-attempt work when performance is claimed",
+        "per-node decision with remaining limitations"
+      ]
+    }
+  ],
+  "retained_counterexamples": [
+    {
+      "id": "SW-rapid-JVP",
+      "evidence": "results/switching_campaign/SUMMARY.json",
+      "fact": "screenedJVP improves median9.46x vslegacyJVP under1e-5sampledcap; does not prove universal provider benefit"
+    },
+    {
+      "id": "SW-rapid-FD",
+      "evidence": "results/switching_campaign/SUMMARY.json",
+      "fact": "screenedFD2.03xslower with lowerachievederror; not strictPareto dominance"
+    },
+    {
+      "id": "SW-transition-FD",
+      "evidence": "results/switching_campaign/SUMMARY.json",
+      "fact": "screenedFD3.05xslower and lessaccurate; oneearlypilot misseslaterregime"
+    },
+    {
+      "id": "CF-broad",
+      "evidence": "analysis/CAUSAL_FINDINGS.json",
+      "fact": "33fallbacks in35attempts; roughly0.999speedratio"
+    },
+    {
+      "id": "CP-small",
+      "evidence": "analysis/CAUSAL_FINDINGS.json",
+      "fact": "no>=1.2xtwo-thread gain in42configurations;84pairedoutputsbitwiseequal"
+    },
+    {
+      "id": "QF-generic",
+      "evidence": "analysis/AFFINE_RESULTS_KO.md",
+      "fact": "slowcarrier/genericforcing losses; declaredharmonicaction is a distinct specializedalgorithm"
+    },
+    {
+      "id": "PDE-positive",
+      "evidence": "results/ADVERSARIAL_EXACT_CHECKS.json",
+      "fact": "RKL2negative neighbor-5/512 withmasspreserved"
+    },
+    {
+      "id": "PDE-polar-cost",
+      "evidence": "analysis/PDE_SCALABILITY.md",
+      "fact": "positivePoisson canlose onpolargrid; FFTactions cannotbe equatedtostencilactions"
+    }
+  ],
+  "completion_record_required_fields": [
+    "task_id",
+    "status",
+    "dependencies",
+    "source_commit",
+    "source_tree",
+    "changed_files",
+    "evidence_reused",
+    "new_receipts",
+    "actual_error_scope",
+    "total_work_including_failures",
+    "performance_cohort",
+    "decision",
+    "remaining_blockers"
+  ],
+  "status_enum": [
+    "READY",
+    "IN_PROGRESS",
+    "PASS_SCOPED",
+    "REUSED",
+    "FAIL",
+    "BLOCKED",
+    "NOT_RUN",
+    "UNSUPPORTED",
+    "TIMEOUT",
+    "PRUNED_IN_COHORT"
+  ]
+}

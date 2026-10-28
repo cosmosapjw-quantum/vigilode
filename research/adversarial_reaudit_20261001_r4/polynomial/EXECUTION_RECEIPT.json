@@ -1,0 +1,72 @@
+{
+  "schema": "vigilode-r4-execution-receipt-v1",
+  "audited_source": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "prereg_commit": "b2914f3e3c03eda60a8547619db6284aac8250a2",
+  "observed_completed_utc": "2026-10-01T11:23:47.898004+00:00",
+  "native_command": "source runtime_r4/env.sh; flock runtime_r4/cargo-build.lock cargo run --offline --manifest-path r4/polynomial/probe/Cargo.toml",
+  "oracle_command": "source runtime_r4/env.sh; python3 r4/polynomial/oracle.py",
+  "native_exit": 0,
+  "oracle_exit": 0,
+  "native_rows": 78,
+  "scientific_script_repairs": [],
+  "production_edits": false,
+  "files": {
+    "CONTRACT.md": {
+      "sha256": "874ccc1c55c4580fd94b96a55553eb20606a4292c3494d2113554d759ce16095",
+      "bytes": 3098
+    },
+    "MATH_REVIEW_KO.md": {
+      "sha256": "8b390224bf13339a2862ab11b553350c08707774d78509872c9b9aed6992718f",
+      "bytes": 5901
+    },
+    "probe/Cargo.toml": {
+      "sha256": "2ea23244cafadbbf1aa19baa41c8782448acc33df12f8430d27f0e8242e300b2",
+      "bytes": 273
+    },
+    "probe/src/main.rs": {
+      "sha256": "f93eeab90b80dd5e80e94699a83d0546c92c9a9ccc4fc58ac436c6bb4b1d42e4",
+      "bytes": 7504
+    },
+    "probe/Cargo.lock": {
+      "sha256": "bde0d680f1a065b5be4fbf8b58a36a5f8638a9f645ad71bcbe03d2f2f4e22541",
+      "bytes": 22349
+    },
+    "oracle.py": {
+      "sha256": "48c809f295de0b6c5710c8af5aee5d7cfa349a06c66449a4a0bdbaeff26366d5",
+      "bytes": 5005
+    },
+    "native.jsonl": {
+      "sha256": "c820fdc4d3214286f326ae0c502f9fae9c692edc7e8538f1493b1f003116c0ca",
+      "bytes": 207648
+    },
+    "native.stderr": {
+      "sha256": "95028c6b5642f7541d169048c3a930403a8bf6761e7737107bd0c71251fbb47b",
+      "bytes": 317
+    },
+    "native.exit": {
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    "oracle.stdout": {
+      "sha256": "ef0ef81b6a847b969d56e03a311d4f330928d49216b3fa8fa48d4192b9a14d20",
+      "bytes": 315
+    },
+    "oracle.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "oracle.exit": {
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    "ORACLE_RESULTS.json": {
+      "sha256": "638386d54ce364bdecd09e35173c78310af3770411a909797951a92e23606a01",
+      "bytes": 47324
+    }
+  },
+  "native_executable": {
+    "path": "runtime_r4/target-shared/debug/vigilode-r4-polynomial-probe",
+    "sha256": "9abd1ff9196cdafd42a8ef70cb477619ec48b5ef342c2dde8bfeba6c09360b2d",
+    "bytes": 100690208
+  }
+}

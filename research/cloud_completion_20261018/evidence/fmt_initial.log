@@ -1,0 +1,119 @@
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/src/lib.rs:19:
+ mod block;
+ mod bound_collective;
+ mod bound_pr101;
+-pub use bound_pr101::{Pr101Model, Pr101VerifiedSegment, Pr101Output, Pr101Bound, Pr101Run, Pr101Error};
++pub use bound_pr101::{
++    Pr101Bound, Pr101Error, Pr101Model, Pr101Output, Pr101Run, Pr101VerifiedSegment,
++};
+ mod candidates;
+ mod causal_majorant;
+ mod certification;
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/src/lib.rs:26:
+ mod certified_budget;
+ pub mod collective_direct;
+-pub mod collective_rodas5p;
+ pub mod collective_model;
++pub mod collective_rodas5p;
+ mod common_w_gate;
+ mod comparator_fidelity;
+ mod controller_telemetry;
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:2:
+ use std::alloc::{GlobalAlloc, Layout, System};
+ use std::io::Write;
+ use std::process::{Command, Stdio};
+-use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};
+ use std::sync::Mutex;
++use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};
+ 
+ use rodas5p_core::directed::Interval;
+ use rodas5p_integrators::packet_window::{PacketComplexInterval, RepresentedPacketCurve};
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:10:
+ use rodas5p_integrators::{
+-    compile_packet, generate_candidate, CausalWeights, CollectiveModel, PacketWorkCounters,
++    CausalWeights, CollectiveModel, PacketWorkCounters, compile_packet, generate_candidate,
+ };
+ 
+ struct CountingAllocator;
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:156:
+         String::from_utf8_lossy(&output.stdout),
+         String::from_utf8_lossy(&output.stderr)
+     );
+-    assert!(String::from_utf8_lossy(&output.stdout)
+-        .contains("exact Fraction residual and evaluation enclosures verified"));
++    assert!(
++        String::from_utf8_lossy(&output.stdout)
++            .contains("exact Fraction residual and evaluation enclosures verified")
++    );
+ }
+ 
+ #[test]
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:265:
+ 
+     let mut mutated_candidate = candidate.clone();
+     mutated_candidate.mean[0].0 = mutated_candidate.mean[0].0.next_up();
+-    assert!(curve
+-        .validate_source(&mutated_candidate, &packet, &mut work)
+-        .is_err());
++    assert!(
++        curve
++            .validate_source(&mutated_candidate, &packet, &mut work)
++            .is_err()
++    );
+     let before = curve.mode_coefficients(0).unwrap().to_vec();
+     let mut output = vec![(0.0, 0.0); model.num_modes()];
+     curve
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:286:
+     )
+     .unwrap();
+     let other_packet = compile_packet(&other_model, 0.25, 1, &mut work).unwrap();
+-    assert!(curve
+-        .validate_source(&candidate, &other_packet, &mut work)
+-        .is_err());
++    assert!(
++        curve
++            .validate_source(&candidate, &other_packet, &mut work)
++            .is_err()
++    );
+ 
+     assert!(curve.mode_coefficients(0).unwrap()[degree] != (0.0, 0.0));
+     assert!(
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:333:
+     }
+     let allocations = ALLOCATIONS.load(AtomicOrdering::SeqCst) - before;
+     assert_eq!(allocations, 0);
+-    assert!(curve
+-        .evaluate_modes_at_into(f64::NAN, &mut centers, &mut work)
+-        .is_err());
+-    assert!(curve
+-        .evaluate_modes_at_into(0.75, &mut centers, &mut work)
+-        .is_err());
+-    assert!(curve
+-        .evaluate_modes_at_into(f64::INFINITY, &mut centers, &mut work)
+-        .is_err());
+-    assert!(curve
+-        .evaluate_modes_at_into(0.25, &mut [], &mut work)
+-        .is_err());
++    assert!(
++        curve
++            .evaluate_modes_at_into(f64::NAN, &mut centers, &mut work)
++            .is_err()
++    );
++    assert!(
++        curve
++            .evaluate_modes_at_into(0.75, &mut centers, &mut work)
++            .is_err()
++    );
++    assert!(
++        curve
++            .evaluate_modes_at_into(f64::INFINITY, &mut centers, &mut work)
++            .is_err()
++    );
++    assert!(
++        curve
++            .evaluate_modes_at_into(0.25, &mut [], &mut work)
++            .is_err()
++    );
+     assert!(work.output_horner_terms > 0);
+ }
+ 

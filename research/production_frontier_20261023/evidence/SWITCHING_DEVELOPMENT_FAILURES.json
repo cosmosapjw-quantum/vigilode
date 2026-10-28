@@ -1,0 +1,23 @@
+{
+  "schema": "vigilode.development-failures.v1",
+  "entries": [
+    {
+      "kind": "implementation-test-compile",
+      "message": "E0283 sum() type inference ambiguous with serde_json PartialEq",
+      "fix": "explicit sum::<usize>() and sum::<u64>()",
+      "source": "initial frontier_switch_contracts test build"
+    },
+    {
+      "kind": "test-assumption",
+      "message": "expected jacobian_builds=1 but observed12; actual user callback invocation=1",
+      "fix": "assert actual callback count exactly1; native attempted build count>=1; document existing fatal retry cost",
+      "source": "fatal pilot contract test"
+    },
+    {
+      "kind": "environment-or-concurrent-source-build",
+      "message": "E0463 cannot find crate for vigilode while shared source dependencies changed; downstream inference errors",
+      "status": "needs stable-source rerun",
+      "source": "evidence/switching_tests.log at intermediate development"
+    }
+  ]
+}

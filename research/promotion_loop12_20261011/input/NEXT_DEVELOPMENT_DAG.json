@@ -1,0 +1,115 @@
+{
+  "schema": "rvj-loop12-remaining-v1",
+  "all_nodes_remaining": true,
+  "repository_mutation_authorized": false,
+  "nodes": [
+    {
+      "id": "N1",
+      "priority": "P1",
+      "title": "Common nonzero damping kernel client",
+      "depends_on": [],
+      "status": "NOT_IMPLEMENTED",
+      "acceptance": [
+        "use exp(-kappa t) entire moments without resolving artificial fast Taylor layers",
+        "preserve initial transient and original packet tail",
+        "test large kappa with same physical tolerance"
+      ],
+      "stop": "Theory with kappa>=0 is not an implemented damped solver"
+    },
+    {
+      "id": "N2",
+      "priority": "P1",
+      "title": "Rank-r collective feedback and multiple frequency clusters",
+      "depends_on": [],
+      "status": "NOT_IMPLEMENTED",
+      "acceptance": [
+        "matrix kernel moment tensors and independent initial-state reconstruction",
+        "charge cluster splitting and inter-cluster feedback",
+        "cost must depend on actual r and width, not assumed small rank"
+      ],
+      "stop": "No inference of low rank from a few trajectories"
+    },
+    {
+      "id": "N3",
+      "priority": "P1",
+      "title": "Full adaptive window chaining with inherited uncertainty",
+      "depends_on": [],
+      "status": "NOT_IMPLEMENTED",
+      "acceptance": [
+        "carry each initial-state enclosure and its weighted moments into the next window",
+        "bind mode/epoch/history before commit",
+        "account output/restart O(n) cost"
+      ],
+      "stop": "Current adaptive kernel-order selection is one finite window, not a full variable-step engine"
+    },
+    {
+      "id": "N4",
+      "priority": "P1",
+      "title": "Structure/compiler admission on an actual independently validated Vigilode model",
+      "depends_on": [
+        "N2"
+      ],
+      "status": "NOT_STARTED",
+      "acceptance": [
+        "read current source only on separately authorized integration request",
+        "certify low-rank feedback/projectability or return unsupported",
+        "do not substitute CLUE symbolic Jacobian for a no-derivative-ever claim"
+      ],
+      "stop": "No repository changes in this standalone loop"
+    },
+    {
+      "id": "N5",
+      "priority": "P1",
+      "title": "Genuinely varying implicit closure",
+      "depends_on": [
+        "N2"
+      ],
+      "status": "NOT_IMPLEMENTED",
+      "acceptance": [
+        "whole-path inverse and witness certificate without pointwise Newton repetition where possible",
+        "include nonpolynomial tail and branch domains"
+      ],
+      "stop": "Current cubic mean field has no implicit root solve"
+    },
+    {
+      "id": "N6",
+      "priority": "P2",
+      "title": "Native precision, FFT convolution and proper baseline timing",
+      "depends_on": [
+        "N1",
+        "N3"
+      ],
+      "status": "NOT_STARTED",
+      "acceptance": [
+        "directed arithmetic against exact fixtures, all failed work and memory",
+        "compare already-hoisted full solver, specialized ensemble solver and RHS-only UA baseline",
+        "report mean-only versus full-state-output cost separately"
+      ],
+      "stop": "No promotion from isolated Fraction timings"
+    },
+    {
+      "id": "N7",
+      "priority": "P0",
+      "title": "Independent theorem/implementation review",
+      "depends_on": [],
+      "status": "PENDING_INDEPENDENT_REVIEW",
+      "acceptance": [
+        "check kernel tail, analytic coefficient contraction, output scaling and model admissibility",
+        "review actual code without inheriting owner judgment"
+      ],
+      "stop": "HOLD until actual independent verdict"
+    },
+    {
+      "id": "N8",
+      "priority": "P2",
+      "title": "Authentic geometry source full replay recovery",
+      "depends_on": [],
+      "status": "BLOCKED_SOURCE_INHERITED",
+      "acceptance": [
+        "obtain original author missing inputs",
+        "do not synthesize unverified originals"
+      ],
+      "stop": "Do not relabel primary source selective reading as full suite"
+    }
+  ]
+}

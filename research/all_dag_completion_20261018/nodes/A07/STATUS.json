@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "node": "A07",
+  "implementation": "COMPLETE_SCOPED",
+  "python_contract_tests": {
+    "passed": 9,
+    "command": "python3 -m unittest discover -s tools/tests -p test_all_dag_benchmark.py -v",
+    "log": "python_contract_tests_final.log"
+  },
+  "retained_collective_rows_revalidated": 30,
+  "retained_robertson_rows_reused_without_reexecution": 182,
+  "new_native_campaign": {
+    "status": "PASS_SCOPED_DIAGNOSTIC",
+    "rows": 36,
+    "processes": 3,
+    "repeats_per_process": 2,
+    "modes": [
+      8
+    ],
+    "all_achieved_error_gates_pass": true,
+    "evidence": "native_smoke/VALIDATED.json",
+    "dense_over_structured_paired_medians": [
+      0.4212790390609712,
+      0.43685227259685844,
+      0.3921189342630531
+    ],
+    "speed_decision": "HOLD; structured slower in this small-case instrumented run"
+  },
+  "speed_promotion": "HOLD",
+  "production_promotion": "HOLD",
+  "files_sha256": {
+    "tools/all_dag_benchmark.py": "7c953f73a365863d1956f31e70ef94e82dd41ace3f5650abe8c002fe94e8cdd5",
+    "tools/tests/test_all_dag_benchmark.py": "f5ddfbb700805160040735b2cd98d7d0cb6158ef8e16ac4785adcb1f1fb6dc78",
+    "tools/benchmarks/diffsol/a07/Cargo.lock": "095669a81ff64533d7c15e2765fdeb754f288eb882aea8df167629c660a07d68",
+    "research/production_audit_20261018/evidence/continuation_a07/A07_INDEPENDENT_REVIEW.md": "4780a8c761bc4053a66a0efda98c05516404b4a300bff26b15b133b5b971307a",
+    "research/production_audit_20261018/evidence/continuation_a07/validated.json": "45f64070c9a2d4a373f0decc922440848b9c3bdc03bc3ac6b4178311e3eab621",
+    "research/cloud_completion_20261018/evidence/local_codex_rerun_20261018/bench/structured_comparison.stdout": "a2708b4baa8351c9112fa70a87cd0225988cb7b9f0892f92e07a072394bf9be4"
+  }
+}

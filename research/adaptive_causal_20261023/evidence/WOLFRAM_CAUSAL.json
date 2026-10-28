@@ -1,0 +1,14 @@
+{
+  "code": "Clear[l,a,b,c,u,k,w,s]; l={{0,0,0,0},{x21,0,0,0},{x31,x32,0,0},{x41,x42,x43,0}}; <|\"finite_inverse\"->Simplify[(IdentityMatrix[4]-l).Total[NestList[l.#&,IdentityMatrix[4],3]]-IdentityMatrix[4]],\"nilpotence\"->Simplify[l.l.l.l]|>",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Out[1]= <|\"finite_inverse\" -> {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, \"nilpotence\" -> {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}|>"
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  },
+  "correction": "Initial symbolic Sum[MatrixPower] did not evaluate MatrixPower[L,0] for symbolic singular L. Explicit finite list with IdentityMatrix avoids evaluator ambiguity; first four initial identities were exact zero."
+}

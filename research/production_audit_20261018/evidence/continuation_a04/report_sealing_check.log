@@ -1,0 +1,110 @@
+    Checking rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+error[E0616]: field `converged` of struct `CertifiedLejaReport` is private
+  --> crates/rodas5p-core/tests/leja_total_holdout.rs:64:22
+   |
+64 |     assert!(rep_cert.converged);
+   |                      ^^^^^^^^^ private field
+   |
+help: a method `converged` also exists, call it with parentheses
+   |
+64 |     assert!(rep_cert.converged());
+   |                               ++
+
+error[E0616]: field `total_bound` of struct `CertifiedLejaReport` is private
+  --> crates/rodas5p-core/tests/leja_total_holdout.rs:65:22
+   |
+65 |     assert!(rep_cert.total_bound <= budget);
+   |                      ^^^^^^^^^^^ private field
+   |
+help: a method `total_bound` also exists, call it with parentheses
+   |
+65 |     assert!(rep_cert.total_bound() <= budget);
+   |                                 ++
+
+error[E0616]: field `fused` of struct `CertifiedLejaReport` is private
+  --> crates/rodas5p-core/tests/leja_total_holdout.rs:66:25
+   |
+66 |     assert_eq!(rep_cert.fused.len(), n);
+   |                         ^^^^^ private field
+   |
+help: a method `fused` also exists, call it with parentheses
+   |
+66 |     assert_eq!(rep_cert.fused().len(), n);
+   |                              ++
+
+error[E0616]: field `converged` of struct `CertifiedLejaReport` is private
+   --> crates/rodas5p-core/tests/leja_total_holdout.rs:271:47
+    |
+271 | ...                   let adm = rep.converged && rep.total_bound <= budget;
+    |                                     ^^^^^^^^^ private field
+    |
+help: a method `converged` also exists, call it with parentheses
+    |
+271 |                                 let adm = rep.converged() && rep.total_bound <= budget;
+    |                                                        ++
+
+error[E0616]: field `total_bound` of struct `CertifiedLejaReport` is private
+   --> crates/rodas5p-core/tests/leja_total_holdout.rs:271:64
+    |
+271 | ...                   let adm = rep.converged && rep.total_bound <= budget;
+    |                                                      ^^^^^^^^^^^ private field
+    |
+help: a method `total_bound` also exists, call it with parentheses
+    |
+271 |                                 let adm = rep.converged && rep.total_bound() <= budget;
+    |                                                                           ++
+
+error[E0616]: field `fused` of struct `CertifiedLejaReport` is private
+   --> crates/rodas5p-core/tests/leja_total_holdout.rs:275:41
+    |
+275 | ...                   rep.fused,
+    |                           ^^^^^ private field
+    |
+help: a method `fused` also exists, call it with parentheses
+    |
+275 |                                     rep.fused(),
+    |                                              ++
+
+error[E0616]: field `total_bound` of struct `CertifiedLejaReport` is private
+   --> crates/rodas5p-core/tests/leja_total_holdout.rs:276:46
+    |
+276 | ...                   Some(rep.total_bound),
+    |                                ^^^^^^^^^^^ private field
+    |
+help: a method `total_bound` also exists, call it with parentheses
+    |
+276 |                                     Some(rep.total_bound()),
+    |                                                         ++
+
+error[E0616]: field `degree` of struct `CertifiedLejaReport` is private
+   --> crates/rodas5p-core/tests/leja_total_holdout.rs:277:41
+    |
+277 | ...                   rep.degree,
+    |                           ^^^^^^ private field
+    |
+help: a method `degree` also exists, call it with parentheses
+    |
+277 |                                     rep.degree(),
+    |                                               ++
+
+error[E0616]: field `vector_products` of struct `CertifiedLejaReport` is private
+   --> crates/rodas5p-core/tests/leja_total_holdout.rs:278:41
+    |
+278 | ...                   rep.vector_products as usize,
+    |                           ^^^^^^^^^^^^^^^ private field
+    |
+help: a method `vector_products` also exists, call it with parentheses
+    |
+278 |                                     rep.vector_products() as usize,
+    |                                                        ++
+
+error[E0282]: type annotations needed
+   --> crates/rodas5p-core/tests/leja_total_holdout.rs:443:55
+    |
+443 |                 let total_bound_hex: Option<String> = total_bound.map(hex);
+    |                                                       ^^^^^^^^^^^ cannot infer type
+
+Some errors have detailed explanations: E0282, E0616.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `rodas5p-core` (test "leja_total_holdout") due to 10 previous errors
+warning: build failed, waiting for other jobs to finish...

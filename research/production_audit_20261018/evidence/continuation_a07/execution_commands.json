@@ -1,0 +1,200 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--profile",
+        "measurement"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode/tools/benchmarks/diffsol/a07",
+      "env": {
+        "MKL_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "RAYON_NUM_THREADS": "1"
+      },
+      "exit_code": 0,
+      "name": "timing_build"
+    },
+    {
+      "argv": [
+        "cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--profile",
+        "measurement",
+        "--features",
+        "allocation-audit"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode/tools/benchmarks/diffsol/a07",
+      "env": {
+        "MKL_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "RAYON_NUM_THREADS": "1"
+      },
+      "exit_code": 0,
+      "name": "allocator_build"
+    },
+    {
+      "argv": [
+        "python3",
+        "src/cold_pairs.py",
+        "--binary",
+        "target/measurement/vigilode-a07-timing",
+        "--grid",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/grid.json",
+        "--manifest",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/manifest.json",
+        "--pairs",
+        "10",
+        "--logs",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/logs/cold",
+        "--out",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/cold.jsonl"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode/tools/benchmarks/diffsol/a07",
+      "env": {
+        "MKL_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "RAYON_NUM_THREADS": "1"
+      },
+      "exit_code": 0,
+      "name": "cold_pairs"
+    },
+    {
+      "argv": [
+        "target/measurement/vigilode-a07-timing",
+        "--warm-abba",
+        "20",
+        "--grid",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/grid.json",
+        "--manifest",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/manifest.json"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode/tools/benchmarks/diffsol/a07",
+      "env": {
+        "MKL_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "RAYON_NUM_THREADS": "1"
+      },
+      "exit_code": 0,
+      "name": "warm_abba",
+      "stderr": "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/warm.stderr",
+      "stdout": "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/warm.jsonl"
+    },
+    {
+      "argv": [
+        "target/measurement/vigilode-a07-allocator",
+        "--alloc",
+        "native",
+        "--grid",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/grid.json",
+        "--manifest",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/manifest.json"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode/tools/benchmarks/diffsol/a07",
+      "env": {
+        "MKL_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "RAYON_NUM_THREADS": "1"
+      },
+      "exit_code": 0,
+      "name": "allocator_native",
+      "stderr": "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/alloc_native.stderr",
+      "stdout": "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/alloc_native.jsonl"
+    },
+    {
+      "argv": [
+        "target/measurement/vigilode-a07-allocator",
+        "--alloc",
+        "diffsol",
+        "--grid",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/grid.json",
+        "--manifest",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/manifest.json"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode/tools/benchmarks/diffsol/a07",
+      "env": {
+        "MKL_NUM_THREADS": "1",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "RAYON_NUM_THREADS": "1"
+      },
+      "exit_code": 0,
+      "name": "allocator_diffsol",
+      "stderr": "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/alloc_diffsol.stderr",
+      "stdout": "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/alloc_diffsol.jsonl"
+    },
+    {
+      "argv": [
+        "python3",
+        "src/validate_report.py",
+        "capture",
+        "--grid",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/grid.json",
+        "--reference",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/reference.json",
+        "--timing-binary",
+        "/home/cosmosapjw/vigilode/tools/benchmarks/diffsol/a07/target/measurement/vigilode-a07-timing",
+        "--allocator-binary",
+        "/home/cosmosapjw/vigilode/tools/benchmarks/diffsol/a07/target/measurement/vigilode-a07-allocator",
+        "--out",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/manifest.json"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode/tools/benchmarks/diffsol/a07",
+      "env": {},
+      "exit_code": 0,
+      "name": "manifest_capture"
+    },
+    {
+      "argv": [
+        "python3",
+        "src/validate_report.py",
+        "validate",
+        "--grid",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/grid.json",
+        "--reference",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/reference.json",
+        "--manifest",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/manifest.json",
+        "--samples",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/cold.jsonl",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/warm.jsonl",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/alloc_native.jsonl",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/alloc_diffsol.jsonl",
+        "--out",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/validated.json",
+        "--markdown",
+        "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/REPORT.md"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode/tools/benchmarks/diffsol/a07",
+      "env": {},
+      "exit_code": 4,
+      "name": "report_revalidation",
+      "note": "report-only; no campaign rerun",
+      "stderr": "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/validate_median_reference_repair.stderr",
+      "stdout": "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a07/validate_median_reference_repair.stdout"
+    },
+    {
+      "argv": [
+        "python3",
+        "research/production_audit_20261018/evidence/continuation_a07/verify_report_repair.py"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "environment": {},
+      "exit_code": 0,
+      "name": "repair_verification",
+      "note": "report-only tests on retained campaign rows; no solver executions",
+      "stdout": "research/production_audit_20261018/evidence/continuation_a07/verify_report_repair.log"
+    }
+  ],
+  "schema": "vigilode-a07-exact-command-record-v1"
+}

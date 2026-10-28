@@ -1,0 +1,312 @@
+{
+  "schema": "vigilode.next-n06-n07-implementation.v1",
+  "status": "IMPLEMENTED_NATIVE_CONTRACTS_PASS_NEW_NCP_RECEIPTS_PENDING",
+  "nodes": {
+    "N06": {
+      "status": "OWNED_LINEAR_ENDPOINT_CLIENT_IMPLEMENTED",
+      "scope": "Homogeneous diagonal symmetric nonpositive ODE with4 distinct represented rates; requested endpoints only.",
+      "remaining": "Generic nonlinear continuous-residual provider dispatch and general nonnormal action remain outside this implemented contract."
+    },
+    "N07": {
+      "status": "DIRECT_CONTINUATION_COMPARISON_CLIENT_IMPLEMENTED",
+      "scope": "Nonlinear collective requested original-ODE endpoints; separate actual-K represented stage-functional certificate.",
+      "remaining": "Measured matched-budget speed/parallel efficiency and fullcurve nonlinear extension require separate evidence."
+    }
+  },
+  "files": [
+    "crates/rodas5p-integrators/examples/reaudit_comparison.rs",
+    "crates/rodas5p-integrators/examples/reaudit_comparison_support/mod.rs",
+    "crates/rodas5p-integrators/tests/reaudit_comparison_contract.rs"
+  ],
+  "cli": {
+    "manifest": "reaudit_comparison --list",
+    "run": "reaudit_comparison --suite SUITE --case CASE --arm ARM --threads N",
+    "stdout": "one JSON record",
+    "invalid_cli_exit": 2,
+    "numerical_refusal": "JSON status REFUSED; original work/time retained, no budget relaxation"
+  },
+  "grid": [
+    {
+      "suite": "polynomial",
+      "cases": [
+        "p4",
+        "p16",
+        "p64"
+      ],
+      "arms": [
+        "protected",
+        "krylov",
+        "leja",
+        "laguerre",
+        "chebyshev",
+        "router"
+      ],
+      "dimension": [
+        4,
+        16,
+        64
+      ],
+      "steps": 4,
+      "mesh": [
+        0,
+        0.03125,
+        0.0625,
+        0.09375,
+        0.125
+      ],
+      "original_budget": 1e-07,
+      "norm": "Euclidean L2",
+      "scope": "REQUESTED_ODE_ENDPOINTS_ONLY",
+      "baseline_kind": "analytic diagonal exp, not protected RODAS5P",
+      "arm_semantics": "polynomial name means priority with guarded fallback; router CompareAll uses deterministic Leja-first admitted selection"
+    },
+    {
+      "suite": "homotopy",
+      "cases": [
+        "h3",
+        "h8",
+        "h16"
+      ],
+      "arms": [
+        "direct",
+        "continuation"
+      ],
+      "modes": [
+        3,
+        8,
+        16
+      ],
+      "windows": [
+        4,
+        8,
+        16
+      ],
+      "horizon": 0.25,
+      "original_budget": 2e-05,
+      "norm": "fixed weighted L2 from owned model",
+      "scope": "REQUESTED_ODE_ENDPOINTS_ONLY",
+      "correction_rounds": 2,
+      "split_substeps": 4,
+      "max_refinements": 2,
+      "packet_order": 5,
+      "packet_degree": 10,
+      "packet_sweeps": 8,
+      "damped_subdivision_levels": 6
+    },
+    {
+      "suite": "actual-k",
+      "cases": [
+        "k2",
+        "k4"
+      ],
+      "arms": [
+        "direct",
+        "continuation"
+      ],
+      "modes": [
+        2,
+        4
+      ],
+      "h": 0.0009765625,
+      "original_budget": 1e-09,
+      "norm": "componentwise absolute stage-output radius",
+      "scope": "STAGE_FUNCTIONAL_ONLY",
+      "rounds_per_stage": 10,
+      "tube_radius": 0.001,
+      "ode_truncation_certified": false
+    }
+  ],
+  "schedules": {
+    "direct": [
+      1.0
+    ],
+    "continuation": [
+      0.0,
+      0.5,
+      1.0
+    ]
+  },
+  "pair_gate": {
+    "same_fields": [
+      "suite",
+      "case",
+      "input_sha256",
+      "scope",
+      "original_budget",
+      "threads"
+    ],
+    "endpoint_success": "PASS_CERTIFIED_ENDPOINTS",
+    "stage_success": "PASS_CERTIFIED_STAGE_FUNCTIONAL",
+    "checks": [
+      "both achieved_bound <= unchanged original_budget",
+      "same requested output schedule and finite returned centers",
+      "all candidate/refusal/certificate work included",
+      "selected_backend_per_step and fallback_used disclosed",
+      "no scientific promotion from timing-only or stage-only success"
+    ],
+    "warmups": 2,
+    "paired_repetitions": 21,
+    "thread_grid": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "timing_policy": "outer process wall and inner solver transaction recorded separately; unknown RSS blocks memory gate"
+  },
+  "cost_grid": [
+    {
+      "suite": "polynomial",
+      "setup": "dense operator/source construction O(n^2); workspace construction inside transaction",
+      "candidate": "all routed attempts including abstentions and polynomial/cache setup/certification/output copying; native WorkCounters and routecost receipts retained",
+      "certificate": "4n component exp enclosures from original IVP plus outward multiply/subtract/square/sum/sqrt; O(4n) primitive calls",
+      "span": "4 sequential action steps; no measured speedup assumed",
+      "timers": [
+        "setup_ns",
+        "candidate_ns",
+        "certificate_ns",
+        "elapsed_ns",
+        "outer process wall"
+      ]
+    },
+    {
+      "suite": "homotopy",
+      "setup": "owned model/mesh/request hash and native coarse rotation/energy/budget setup",
+      "candidate": "L*m*sum_r (2+r)*4*2^r split substeps for attempted refinements r=0..2; raw native work remains authoritative on early exit",
+      "certificate": "every attempted packet/damped verification window plus outward scalar-prefix; raw native counters retained",
+      "span": "candidate stage-round depth from correction_rounds; each round m parallel windows plus logarithmic prefix; no certified scheduler-span scalar",
+      "timers": [
+        "setup_ns",
+        "candidate_and_certificate_ns",
+        "elapsed_ns",
+        "outer process wall"
+      ]
+    },
+    {
+      "suite": "actual-k",
+      "setup": "owned model, frozen Jacobian/inverse and common tube",
+      "candidate": "8*L*10 RHS attempts for successful frozen cases; native work retained on failure",
+      "certificate": "all128 alpha/beta entries; common-tube H5/inverse/leakage/output witness",
+      "span": "candidate_rounds exported; precise scheduler span null",
+      "timers": [
+        "setup_ns",
+        "candidate_and_certificate_ns",
+        "elapsed_ns",
+        "outer process wall"
+      ]
+    }
+  ],
+  "validation": {
+    "native": "PASS",
+    "historical_campaigns_rerun": false,
+    "new_tests": 4,
+    "format": "rustfmt applied",
+    "tests_passed": 4,
+    "example_build_exit": 0,
+    "new_smoke_rows": 6,
+    "new_smoke_passed": 6,
+    "speed_inference": false,
+    "contract_log": "evidence/theory/reaudit_comparison_contract.log",
+    "build_log": "evidence/theory/reaudit_comparison_build.log",
+    "smoke": "evidence/theory/COMPARISON_SMOKE.json",
+    "smoke_results": [
+      {
+        "suite": "polynomial",
+        "case": "p4",
+        "arm": "protected",
+        "exit": 0,
+        "status": "PASS_CERTIFIED_ENDPOINTS",
+        "achieved_bound": 7.158840396331263e-16,
+        "original_budget": 1e-07,
+        "input_sha256": "2d69802c8c9a93a01736fb7535415a51ac14e6e154ab07178025793b5ac9ac77",
+        "full_curve_certified": false,
+        "error": null,
+        "raw": "research/production_reaudit_20261021/evidence/theory/comparison_smoke_polynomial_p4_protected.stdout"
+      },
+      {
+        "suite": "polynomial",
+        "case": "p4",
+        "arm": "laguerre",
+        "exit": 0,
+        "status": "PASS_CERTIFIED_ENDPOINTS",
+        "achieved_bound": 9.784163913396838e-10,
+        "original_budget": 1e-07,
+        "input_sha256": "2d69802c8c9a93a01736fb7535415a51ac14e6e154ab07178025793b5ac9ac77",
+        "full_curve_certified": false,
+        "error": null,
+        "raw": "research/production_reaudit_20261021/evidence/theory/comparison_smoke_polynomial_p4_laguerre.stdout"
+      },
+      {
+        "suite": "homotopy",
+        "case": "h3",
+        "arm": "direct",
+        "exit": 0,
+        "status": "PASS_CERTIFIED_ENDPOINTS",
+        "achieved_bound": 2.6097251926801136e-08,
+        "original_budget": 2e-05,
+        "input_sha256": "4a98f48560615a3965d3461f55ee587bfdc07470177860dc41e5d2fe60203043",
+        "full_curve_certified": false,
+        "error": null,
+        "raw": "research/production_reaudit_20261021/evidence/theory/comparison_smoke_homotopy_h3_direct.stdout"
+      },
+      {
+        "suite": "homotopy",
+        "case": "h3",
+        "arm": "continuation",
+        "exit": 0,
+        "status": "PASS_CERTIFIED_ENDPOINTS",
+        "achieved_bound": 2.5895422171784324e-08,
+        "original_budget": 2e-05,
+        "input_sha256": "4a98f48560615a3965d3461f55ee587bfdc07470177860dc41e5d2fe60203043",
+        "full_curve_certified": false,
+        "error": null,
+        "raw": "research/production_reaudit_20261021/evidence/theory/comparison_smoke_homotopy_h3_continuation.stdout"
+      },
+      {
+        "suite": "actual-k",
+        "case": "k2",
+        "arm": "direct",
+        "exit": 0,
+        "status": "PASS_CERTIFIED_STAGE_FUNCTIONAL",
+        "achieved_bound": 5.053660996812445e-11,
+        "original_budget": 1e-09,
+        "input_sha256": "da9764a13b882f316f67e3aeb6f0544f12d80935495914c3b84ef23bd55bc5a0",
+        "full_curve_certified": false,
+        "error": null,
+        "raw": "research/production_reaudit_20261021/evidence/theory/comparison_smoke_actual-k_k2_direct.stdout"
+      },
+      {
+        "suite": "actual-k",
+        "case": "k2",
+        "arm": "continuation",
+        "exit": 0,
+        "status": "PASS_CERTIFIED_STAGE_FUNCTIONAL",
+        "achieved_bound": 5.053660996812445e-11,
+        "original_budget": 1e-09,
+        "input_sha256": "da9764a13b882f316f67e3aeb6f0544f12d80935495914c3b84ef23bd55bc5a0",
+        "full_curve_certified": false,
+        "error": null,
+        "raw": "research/production_reaudit_20261021/evidence/theory/comparison_smoke_actual-k_k2_continuation.stdout"
+      }
+    ],
+    "manifest_only_followup": "Warmup count aligned to root frozen NCP2+21 protocol before NCP execution"
+  },
+  "proofs": [
+    "For nonpositive diagonal A, ||exp(hA)||2<=1. Guarded action error delta_i yields r_i<=add_up(r_(i-1),delta_i). Frozen local div_down(epsilon,8) and4 steps preserve original epsilon; failures never change it.",
+    "Common certificate evaluates original IVP x_i(t)=x0_i exp(a_i t), requires exactly represented interval product a_i*t, then uses outward exp/multiply/subtract/square/sum/sqrt. Radius bounds each represented center even when Krylov convergence is merely diagnostic.",
+    "Nonlinear direct and continuation use the same sealed endpoint verifier at final lambda1. A stage-functional witness is never promoted to an ODE endpoint or wholecurve certificate."
+  ],
+  "claim_limits": [
+    "full_curve_certified alwaysfalse",
+    "protected here means analytic diagonal reference, not production RODAS5P",
+    "priority-family timing cannot be credited to that family after fallback",
+    "native counters are documented events, not complete FLOP accounting; total transaction/process timings include missing primitive costs",
+    "certificate_ns is null for fused native homotopy/stage client",
+    "NCP runner must measure process startup/threadpool/serialization excluded from inner timer"
+  ],
+  "source_sha256": {
+    "crates/rodas5p-integrators/examples/reaudit_comparison.rs": "a22dc348890bbbd20ac470b4bb5137758e7c8db3c3954980188f87e1e69f2c50",
+    "crates/rodas5p-integrators/examples/reaudit_comparison_support/mod.rs": "c3a0d6a881953d23de86dc2b75c0ad717d4c71514f0f012b3aa1a4ca043c5a4c",
+    "crates/rodas5p-integrators/tests/reaudit_comparison_contract.rs": "2556fb01c2d72c0dfb7284d428ccdf3d668b998f9add9b082ae4014c4dd213e0"
+  }
+}

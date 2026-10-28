@@ -1,0 +1,27 @@
+{
+  "unit": "A04_R1_REPORT_CERTIFICATION_TRANSACTION",
+  "cwd": "/home/cosmosapjw/vigilode",
+  "branch": "audit/production-readiness-20261018",
+  "head_at_capture": "c3036c63da02ca9b04cd39ccf580cd67d00ccb0c",
+  "sources": {
+    "crates/rodas5p-core/src/leja_action.rs": "e9e01e246acc25d81170b95761a8b525c30f6753a4bc9f9624cf57d5e9a043b1",
+    "crates/rodas5p-core/tests/leja_total_contract.rs": "46fa750e1b4bfa2ca7550c3548c0856899e0d85fff07b42053e24a884f43c01f"
+  },
+  "change": "Removed writes to public report.certification_ops before outcome? and output_result?. Attempted certification work remains in workspace.last_certification_ops and WorkCounters on refusal. The public report, including certification_ops and status, is mutated only in the final successful report commit. No arithmetic, threshold, or counter semantics changed.",
+  "regressions": [
+    "refused_output_preserves_certificate_work_accounting: successful report snapshot followed by post-work overflow refusal; report equality preserved and workspace attempt count remains positive",
+    "interval_matvec_overflow_refusal_preserves_workspace_work: prior report preserved while local/work counters record refused attempt",
+    "test_a04_failed_dimension_change_preserves_last_successful_report: n=2 success then n=1 wrong-length input and invalid-h refusal preserve full report"
+  ],
+  "commands": [
+    {"command":"cargo test --locked --offline -p rodas5p-core --lib refused_output_preserves_certificate_work_accounting -- --nocapture", "exit_code":0, "log":"a04_report_certification_final.log", "sha256":"1f01227999eeca27940cf0a1700a8a7753cc60311d57aee94dc028595f03e1d8"},
+    {"command":"cargo test --locked --offline -p rodas5p-core --lib interval_matvec_overflow_refusal_preserves_workspace_work -- --nocapture", "exit_code":0, "log":"a04_interval_report_transaction_final.log", "sha256":"6c8cc2c5f08bb9c2acfa109486e7b1ba3ef4fbd87a7490eb60e3a233f664da7b"},
+    {"command":"cargo test --locked --offline -p rodas5p-core --test leja_total_contract -- --nocapture", "exit_code":0, "log":"a04_report_certification_contract_final.log", "sha256":"86f0d4a82bc19fc751fa92d7d694143ebdcd6e33e0dc296bc954d539a20e0652"},
+    {"command":"cargo clippy --locked --offline -p rodas5p-core --all-targets -- -D warnings", "exit_code":0, "log":"../continuation_a03/a03_adversarial_clippy.log", "sha256":"d8d8b293f287c67c3e72c887b72e7cafd2a4b3a2c367402fd8982608811db9db"},
+    {"command":"rustfmt --edition 2024 --check crates/rodas5p-core/src/damped_moments.rs crates/rodas5p-core/tests/damped_forcing_moment_consumer.rs crates/rodas5p-core/src/leja_action.rs crates/rodas5p-core/tests/leja_total_contract.rs", "exit_code":0, "log":"../continuation_a03/a03_final_fmt.log", "sha256":"1ca4a13146b2891c0e462123ac0cb848f92e6221f18b870a1b78c232d1956c35"},
+    {"command":"git diff --check", "exit_code":0, "log":"../continuation_a03/a03_final_diffcheck.log", "sha256":"1ca4a13146b2891c0e462123ac0cb848f92e6221f18b870a1b78c232d1956c35"}
+  ],
+  "preserved_failure": {"log":"a04_report_certification_transaction_first_failure.log", "exit_code":101, "sha256":"d96810190e83a51235af99fc2bf1e2a19511f8ee7f453cef2ec829a27b028d80", "cause":"failed output attempt changed prior report certification_ops from 246 to 162"},
+  "decision": "Implementation repair complete; A04 scientific/arithmetic authority remains EstimateOnly and awaits fresh independent review.",
+  "executor_identity": {"role":"implementation agent", "runtime_model":"not independently observed"}
+}

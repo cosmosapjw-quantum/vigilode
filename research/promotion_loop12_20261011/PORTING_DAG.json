@@ -1,0 +1,508 @@
+{
+  "schema": "vigilode-loop12-porting-delta-v1",
+  "date": "2026-10-11",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "source_commit": "2e944afc36a20fd20ce33438b2a1d4f4e0a6a5c4",
+  "source_tree": "d19fe946006130beaf139c0b2c22c0821af3e19f",
+  "scope": "RESEARCH_DESIGN_NO_NATIVE_SOURCE_MUTATION",
+  "new_symbols": "PROPOSED_NOT_COMPILED",
+  "all_tests": "PLANNED_NOT_EXECUTED",
+  "existing_native_campaigns_rerun": false,
+  "existing_nonlinear_real_client": "NOT_ESTABLISHED",
+  "prior_dag": "research/promotion_theory_20261011/PORTING_DAG.json",
+  "nodes": [
+    {
+      "id": "LP01",
+      "title_ko": "생성형 collective 모델과 구조 admission 계약",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "pr_id": "PR-LP01",
+      "depends_on": [],
+      "prior_TP_nodes": [
+        "TP01",
+        "TP09"
+      ],
+      "attachment_N_nodes": [
+        "N4"
+      ],
+      "proposed_files": [
+        "crates/rodas5p-integrators/src/collective_model.rs",
+        "crates/rodas5p-integrators/tests/collective_admission_contracts.rs"
+      ],
+      "implementation_steps": [
+        "Create checked private-field scalar complex cubic model with exact stored-input weight normalization and retained independent initial amplitudes.",
+        "Generate reference RHS and certificate expressions from the same immutable model; only optional comparison adapter generates an OdeProblem with real JVP.",
+        "Bind mode order, schema, time convention, identity mass, epoch and whole initial box; no sampled-rank admission."
+      ],
+      "tests": {
+        "status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          "Known generated cubic model retains all initial modes and odd initial moments.",
+          "Common linear Dahlquist g=0 boundary handled without claiming nonlinear real-client coverage."
+        ],
+        "negative": [
+          "Zero/negative weights, nonfinite parameters, wrong mass, state/radius dimensions, stale epoch, hidden opaque callback mismatch.",
+          "Manufactured local-cubic vector and semilinear PDE do not enter as scalar mean feedback."
+        ]
+      },
+      "acceptance": [
+        "One model defines target and certificate; generic callbacks return UnsupportedModel.",
+        "No dummy JVP and no change to existing OdeProblem::new requirements."
+      ],
+      "preregistration": "NEW_NATIVE_SOURCE_FIXTURE_CHECKER_GATE_BEFORE_EXECUTION"
+    },
+    {
+      "id": "LP02",
+      "title_ko": "kappa=0 finite-window packet와 native total certificate",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "pr_id": "PR-LP02",
+      "depends_on": [
+        "LP01"
+      ],
+      "prior_TP_nodes": [
+        "TP06",
+        "TP10"
+      ],
+      "attachment_N_nodes": [
+        "N6",
+        "N7"
+      ],
+      "proposed_files": [
+        "crates/rodas5p-integrators/src/packet_window.rs",
+        "crates/rodas5p-integrators/src/packet_work.rs",
+        "crates/rodas5p-integrators/tests/packet_window_contracts.rs"
+      ],
+      "implementation_steps": [
+        "Port moment prefix compilation, polynomial waveform Picard and exact causal factorial convolution into binary64 interval-enclosed arithmetic.",
+        "Use independent candidate generation and current-input original-model defect certification; enclose tail, rounding and reconstruction.",
+        "Add checked resource/cost ledger; do not encode scalar products as JVP calls.",
+        "Precompute/recur causal beta weights; adopt LC1 complete output cost and LC2 cache-space contract. Cached prototype is research/promotion_loop12_20261011/causal_weights.py, not native implementation."
+      ],
+      "tests": {
+        "status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          "Selected exact fixtures from attachment bound native waveform, mean and all reconstructed modes.",
+          "Exact coalescence and symmetric weights with nonzero odd initial moment.",
+          "Full and compiled unrounded maps agree; native map only needs certified error, not bit parity."
+        ],
+        "negative": [
+          "p=0 dropped-tail control refuses when physical bound exceeds budget.",
+          "Overflow, subnormal bound collapse, mismatched mode order, asymmetric initial data with odd moments discarded, false certificate Deserialize."
+        ]
+      },
+      "acceptance": [
+        "Admitted finite-window class only; no full adaptive/global claim.",
+        "Online packet Jacobian/JVP/VJP/FD-directional/Krylov/linear-solve counters zero, all other work visible.",
+        "Independent Rust review required after implementation."
+      ],
+      "preregistration": "NEW_NATIVE_SOURCE_FIXTURE_CHECKER_GATE_BEFORE_EXECUTION"
+    },
+    {
+      "id": "LP03",
+      "title_ko": "공통 damping의 entire-moment kernel",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "pr_id": "PR-LP03",
+      "depends_on": [
+        "LP02"
+      ],
+      "prior_TP_nodes": [
+        "TP06",
+        "TP07"
+      ],
+      "attachment_N_nodes": [
+        "N1"
+      ],
+      "proposed_files": [
+        "crates/rodas5p-core/src/damped_moments.rs",
+        "crates/rodas5p-core/tests/damped_moment_contracts.rs"
+      ],
+      "implementation_steps": [
+        "Implement outward entire moments for exp(-kappa t) kernel without approximating common fast damping by artificial high-degree Taylor layers.",
+        "Bind parameter range/order/precision and switch formula only on verified enclosure criteria.",
+        "Retain original initial transient, model tail and phase arithmetic; connect scalar API to packet."
+      ],
+      "tests": {
+        "status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          "kappa→0 factorial convolution limit with enclosure.",
+          "Large kappa*h, small h and mixed j/k orders against selected high-precision/exact identity fixtures."
+        ],
+        "negative": [
+          "Use old phi0..phi4 API outside [-600,0] or as arbitrary-order oracle must refuse.",
+          "Cancellation branch, moment recurrence instability and unbounded damping uncertainty are not silent successes."
+        ]
+      },
+      "acceptance": [
+        "Kernel error encloses original damped model at same physical tolerance.",
+        "No claim of uniform time complexity in arbitrarily large bit-length kappa."
+      ],
+      "preregistration": "NEW_NATIVE_SOURCE_FIXTURE_CHECKER_GATE_BEFORE_EXECUTION"
+    },
+    {
+      "id": "LP04",
+      "title_ko": "불확실성 전파와 adaptive window transaction",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "pr_id": "PR-LP04",
+      "depends_on": [
+        "LP02"
+      ],
+      "prior_TP_nodes": [
+        "TP04",
+        "TP10"
+      ],
+      "attachment_N_nodes": [
+        "N3"
+      ],
+      "proposed_files": [
+        "crates/rodas5p-integrators/src/packet_trajectory.rs",
+        "crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs"
+      ],
+      "implementation_steps": [
+        "Carry mode radii and weighted initial moment enclosures into each subsequent window using approved transfer theorem.",
+        "Commit t/state/radii/history only after complete local bound and global budget check; rejected trial retains work but cannot mutate accepted data.",
+        "Add global physical norm/time arithmetic/phase ledger and output policy; damping-enabled tests depend on LP03."
+      ],
+      "tests": {
+        "status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          "Two-plus windows reproduce one-window overlap enclosure under inherited perturbations.",
+          "Accepted/rejected/retry sequence preserves accepted state and monotonically increases work.",
+          "Mean-only versus all-mode outputs separately reported."
+        ],
+        "negative": [
+          "Reset inherited error to zero, stale epoch, rejected candidate mutates start state, missing output mode or stale nu reuse.",
+          "Label chained time windows independent homotopy tasks or use embedded error as validated global error."
+        ]
+      },
+      "acceptance": [
+        "Entire accepted finite trajectory meets physical budget and initial/parameter uncertainty included.",
+        "Window-chain implementation does not claim generic RODAS5P tableau identity."
+      ],
+      "preregistration": "NEW_NATIVE_SOURCE_FIXTURE_CHECKER_GATE_BEFORE_EXECUTION"
+    },
+    {
+      "id": "LP05",
+      "title_ko": "Rank-r 및 multiple-frequency-cluster kernel",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "pr_id": "PR-LP05",
+      "depends_on": [
+        "LP01",
+        "LP02"
+      ],
+      "prior_TP_nodes": [
+        "TP01",
+        "TP06",
+        "TP09"
+      ],
+      "attachment_N_nodes": [
+        "N2"
+      ],
+      "proposed_files": [
+        "crates/rodas5p-integrators/src/finite_rank_memory.rs",
+        "crates/rodas5p-integrators/tests/finite_rank_memory_contracts.rs"
+      ],
+      "implementation_steps": [
+        "Generalize to explicit B,C and cheap known linear flow; compile matrix-valued moments, preserve n initial data.",
+        "Charge cluster assignment, tensor contractions, cross-cluster feedback and requested outputs.",
+        "Use approved rank-r theorem/certificate and actual r/cluster widths; no inference from sampled trajectories."
+      ],
+      "tests": {
+        "status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          "r=1 reduction agrees with scalar class; r>1 independent channels preserve initial state.",
+          "Cluster merge/split keeps original target and exposes truncation cost."
+        ],
+        "negative": [
+          "r=n advertised as low rank, missing inter-cluster coupling, sampled rank certificate, discarded transverse modes."
+        ]
+      },
+      "acceptance": [
+        "All extra r and cluster factors explicit in complexity and gate.",
+        "A formula y=Ay+B g(Cy) alone is not a cheap propagator certificate."
+      ],
+      "preregistration": "NEW_NATIVE_SOURCE_FIXTURE_CHECKER_GATE_BEFORE_EXECUTION"
+    },
+    {
+      "id": "LP06",
+      "title_ko": "실제 nonlinear client의 독립 구조 검증",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "pr_id": "PR-LP06",
+      "depends_on": [
+        "LP01"
+      ],
+      "prior_TP_nodes": [
+        "TP01",
+        "TP09"
+      ],
+      "attachment_N_nodes": [
+        "N4"
+      ],
+      "proposed_files": [
+        "research/<new-native-registration>/MODEL_ADMISSION.json",
+        "crates/rodas5p-integrators/tests/real_collective_client_contracts.rs"
+      ],
+      "implementation_steps": [
+        "Select an actual client and bind its authoritative model/initial/domain definition.",
+        "Supply generated whole-domain exact identities or certified defect bounds against original model; admit same target or record unsupported.",
+        "After model selection choose scalar LP02 path or rank-r LP05; rank-r implementation cannot be marked present from this node."
+      ],
+      "tests": {
+        "status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          "Independent original-model and generated-model enclosure agreement over declared domain, not just trajectory sample."
+        ],
+        "negative": [
+          "Low-rank RHS sample, conservation law alone, low-dimensional exact trajectory or model name treated as projectability proof."
+        ]
+      },
+      "acceptance": [
+        "EXISTING_NONLINEAR_REAL_CLIENT remains NOT_ESTABLISHED until evidence exists.",
+        "No current real client is invented to satisfy this node."
+      ],
+      "preregistration": "NEW_NATIVE_SOURCE_FIXTURE_CHECKER_GATE_BEFORE_EXECUTION"
+    },
+    {
+      "id": "LP07",
+      "title_ko": "진짜 implicit closure의 atlas 결합",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "pr_id": "PR-LP07",
+      "depends_on": [
+        "LP05"
+      ],
+      "prior_TP_nodes": [
+        "TP02",
+        "TP03",
+        "TP07",
+        "TP08"
+      ],
+      "attachment_N_nodes": [
+        "N5"
+      ],
+      "proposed_files": [
+        "crates/rodas5p-integrators/src/packet_implicit_closure.rs",
+        "crates/rodas5p-integrators/tests/packet_implicit_closure_contracts.rs"
+      ],
+      "implementation_steps": [
+        "Only if selected model requires it, add whole-path inverse/branch witness and nonpolynomial tail.",
+        "Reuse inverse-defect atlas authority only with exact current B/C/model/operator binding.",
+        "Separate any solve/JVP/factorization work from pure derivative-free packet claims."
+      ],
+      "tests": {
+        "status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          "Selected genuine implicit root varies along path, remains in certified connected tube."
+        ],
+        "negative": [
+          "Scalar cubic feedback relabeled implicit closure; pointwise Newton samples treated whole-path branch certificate; fold crossed without witness."
+        ]
+      },
+      "acceptance": [
+        "Optional branch; not a prerequisite of explicit packet.",
+        "All closure costs and uncertainty included before accuracy/work promotion."
+      ],
+      "preregistration": "NEW_NATIVE_SOURCE_FIXTURE_CHECKER_GATE_BEFORE_EXECUTION"
+    },
+    {
+      "id": "LP08",
+      "title_ko": "FFT 및 basis 선택의 선택적 가속",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "pr_id": "PR-LP08",
+      "depends_on": [
+        "LP02"
+      ],
+      "prior_TP_nodes": [
+        "TP06",
+        "TP10"
+      ],
+      "attachment_N_nodes": [
+        "N6"
+      ],
+      "proposed_files": [
+        "crates/rodas5p-core/src/packet_convolution.rs",
+        "crates/rodas5p-core/tests/packet_convolution_contracts.rs"
+      ],
+      "implementation_steps": [
+        "Keep direct convolution strongest small-degree baseline.",
+        "If measured workload needs FFT, implement sufficient zero padding and enclosure of transform/arithmetic/alias effects.",
+        "Evaluate optional quotient polynomial or Laguerre representations only where exact model and conditioning permit."
+      ],
+      "tests": {
+        "status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          "Causal convolution coefficients match direct oracle within interval bounds; no periodic boundary introduced."
+        ],
+        "negative": [
+          "Circular wraparound, signed cancellation hidden by relative error, asymmetric transform normalization, illegal symmetric-operator admission."
+        ]
+      },
+      "acceptance": [
+        "Optional acceleration only after end-to-end cost test; FFT is not required to complete LP02/LP04.",
+        "No Laguerre dominance or nonlinear iteration parallelism inferred from a polynomial name."
+      ],
+      "preregistration": "NEW_NATIVE_SOURCE_FIXTURE_CHECKER_GATE_BEFORE_EXECUTION"
+    },
+    {
+      "id": "LP09",
+      "title_ko": "동일 정확도·출력·준비 작업의 native 비교",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "pr_id": "PR-LP09",
+      "depends_on": [
+        "LP02"
+      ],
+      "prior_TP_nodes": [
+        "TP05",
+        "TP08",
+        "TP10"
+      ],
+      "attachment_N_nodes": [
+        "N6"
+      ],
+      "proposed_files": [
+        "research/<new-native-registration>/PREREGISTRATION.json",
+        "crates/rodas5p-fair-ab/src/<proposed_packet_benchmark>.rs"
+      ],
+      "implementation_steps": [
+        "Freeze exact candidate scope and run selected single-window, damped, multiwindow or rank-r arms only after their relevant dependencies finish.",
+        "Compare naive same-map and already-hoisted same-map separately, plus specialized direct ensemble/full solver and appropriate RHS-only UA baseline if actually available.",
+        "Record preprocessing, failed trials, native precision, allocations/peak memory, outputs, phase, certificate and fallback; matched physical tolerance.",
+        "Same-map n-fold product count requires a declared dense padded schedule or actual per-sweep lengths; arbitrary R_out keeps the shared-output-setup term."
+      ],
+      "tests": {
+        "status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          "Cost equality against already-hoisted map correctly yields no extra n-factor claim.",
+          "Same-map coefficient term ratios agree without being mislabeled wall time."
+        ],
+        "negative": [
+          "Weak baseline repeats nonlinear mean n times, ignores output, reports Fraction timings as native, drops failed trials."
+        ]
+      },
+      "acceptance": [
+        "Count-work, span, elapsed time and physical accuracy have independent outcomes.",
+        "Missing baseline is recorded, not synthesized.",
+        "Strongest comparator required before production speed promotion."
+      ],
+      "preregistration": "NEW_NATIVE_SOURCE_FIXTURE_CHECKER_GATE_BEFORE_EXECUTION"
+    },
+    {
+      "id": "LP10",
+      "title_ko": "경로별 독립 구현 및 승격 검토",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "pr_id": "PR-LP10",
+      "depends_on": [
+        "LP02"
+      ],
+      "prior_TP_nodes": [
+        "TP10"
+      ],
+      "attachment_N_nodes": [
+        "N7"
+      ],
+      "proposed_files": [
+        "research/<new-native-registration>/INDEPENDENT_DECISION.json"
+      ],
+      "implementation_steps": [
+        "Independent reviewer reads actual new Rust source plus raw gates.",
+        "Select only finished route scopes; requires LP04 for finite global trajectory, LP09 for speed/work decision, LP06 for claimed actual-client coverage.",
+        "Keep original current-K leakage finding and prior theory/native distinctions unchanged."
+      ],
+      "tests": {
+        "status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          "Reviewer can recover source/fixture/certificate/counter identity and exact claim scope."
+        ],
+        "negative": [
+          "Owner self-review counted independent, theory PROMOTE copied into native result, single-window labeled full adaptive, native tests unrun marked PASS."
+        ]
+      },
+      "acceptance": [
+        "This report only closes source mapping/design; independent implementation review still NOT_EXECUTED.",
+        "Production default unchanged until separate release decision."
+      ],
+      "preregistration": "NEW_NATIVE_SOURCE_FIXTURE_CHECKER_GATE_BEFORE_EXECUTION"
+    },
+    {
+      "id": "LP11",
+      "title_ko": "현재 shared-shift 기능의 중복 개선 주장 제거",
+      "status": "SOURCE_VERIFIED_ALREADY_PRESENT_NO_NEW_IMPLEMENTATION",
+      "pr_id": "PR-LP11",
+      "depends_on": [],
+      "prior_TP_nodes": [
+        "TP07",
+        "TP10"
+      ],
+      "attachment_N_nodes": [],
+      "proposed_files": [],
+      "implementation_steps": [
+        "Reference existing shared_shift_jet normalized recurrence and retained LU/residual costs.",
+        "Do not schedule a new code rewrite merely to implement Wnext=R0W-W, which is already present.",
+        "Only create separate future work if a concrete remaining client gap is independently demonstrated."
+      ],
+      "tests": {
+        "status": "SOURCE_READ_ONLY_NO_REPLAY_REQUIRED",
+        "positive": [
+          "Static source anchor shared_shift_jet.rs:363–375 and current file digest retained."
+        ],
+        "negative": [
+          "Loop12 §11 described as newly removing all native inverse work or newly implementing an already present recurrence."
+        ]
+      },
+      "acceptance": [
+        "Disposition is SOURCE_VERIFIED_ALREADY_PRESENT, not native test rerun."
+      ],
+      "preregistration": "NO_NEW_NATIVE_CAMPAIGN_REQUIRED_FOR_ALREADY_PRESENT_DISPOSITION"
+    },
+    {
+      "id": "LP12",
+      "title_ko": "기하 원본 missing-input 복원 의무",
+      "status": "BLOCKED_SOURCE_INHERITED",
+      "pr_id": "PR-LP12",
+      "depends_on": [],
+      "prior_TP_nodes": [],
+      "attachment_N_nodes": [
+        "N8"
+      ],
+      "proposed_files": [
+        "research/<future-author-input-recovery>/SOURCE_RECOVERY.json"
+      ],
+      "implementation_steps": [
+        "Obtain authentic missing author input and preserve provenance if full source replay is requested.",
+        "Do not manufacture originals or conflate selective theorem read with full suite restoration."
+      ],
+      "tests": {
+        "status": "PLANNED_NOT_EXECUTED",
+        "positive": [
+          "Authentic supplied source identity and declared read/replay scope."
+        ],
+        "negative": [
+          "Synthetic substitute labeled original; archive identity treated full scientific replay."
+        ]
+      },
+      "acceptance": [
+        "BLOCKED_SOURCE_INHERITED; independent packet theorems need not wait for unrelated full archive replay."
+      ],
+      "preregistration": "NEW_NATIVE_SOURCE_FIXTURE_CHECKER_GATE_BEFORE_EXECUTION"
+    }
+  ],
+  "implementation_first_path": [
+    "LP01",
+    "LP02",
+    "LP03",
+    "LP04",
+    "LP09",
+    "LP10"
+  ],
+  "crosswalk_notes": [
+    "LP04 scalar kappa=0 chaining can proceed without LP03; damped chaining adds LP03.",
+    "LP09/LP10 require additional nodes only for claims made in selected route; no artificial all-route conjunction.",
+    "LP06 scalar client does not require rank-r LP05; rank-r real client does.",
+    "N7 theory review may be completed independently in current turn; unimplemented native review stays NOT_EXECUTED.",
+    "TP05 residual-allocation mechanism and TP08 independent homotopy windows do not automatically transfer to sequential packet sweeps."
+  ],
+  "current_integration_delta": {
+    "original_N7_theory_review": "COMPLETED_IN_INPUT_REVIEW",
+    "original_D_printed_complexity": "REJECT_AS_WRITTEN_CORRECTED_LC1_PROMOTE",
+    "native_review": "NOT_EXECUTED",
+    "cached_causal_weight_reference": "IMPLEMENTED_EXACT_RESEARCH_PROTOTYPE_NOT_NATIVE",
+    "original_output_setup_must_be_charged": true
+  }
+}

@@ -1,0 +1,24 @@
+    Checking rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-adapters/crates/rodas5p-integrators)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Checking vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-adapters/crates/vigilode)
+error: no rules expected `[`
+  --> crates/vigilode/examples/execution_policy_pilot.rs:74:88
+   |
+74 |                 rows.push(json!({"repeat":repeat,"arm":["serial","parallel","adaptive"][arm],
+   |                                                                                        ^ no rules expected this token in macro call
+   |
+   = note: while trying to match end of macro
+
+error: could not compile `vigilode` (example "execution_policy_pilot") due to 1 previous error

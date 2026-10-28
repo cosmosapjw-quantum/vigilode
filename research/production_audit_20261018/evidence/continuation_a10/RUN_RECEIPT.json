@@ -1,0 +1,74 @@
+{
+  "unit": "A10_BERNSTEIN_SCOPED",
+  "cwd": "/home/cosmosapjw/vigilode",
+  "branch": "audit/production-readiness-20261018",
+  "head": "c3036c63da02ca9b04cd39ccf580cd67d00ccb0c",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+  "sources": {
+    "crates/rodas5p-integrators/src/packet_window.rs": "c1c174400a9cff9207af4a361dba2bb550f35f1c87f25518bc0de3ad22641f00",
+    "crates/rodas5p-integrators/src/packet_work.rs": "846fafd24f163a0c1ab7f89a094a9552f2c92c2a0ff93beef3703c8ed1efc9ad",
+    "crates/rodas5p-integrators/tests/production_audit_packet.rs": "09a48627caf01216d7755db578f6a82cc7b654a657508f1ba02cbe8196b1854e"
+  },
+  "logs": [
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a10/bernstein_first.log",
+      "sha256": "4df1580aa129c519b29b6c279424c97ddc65a91f086160cc3a6d5936169a17fb",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet bernstein_",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a10_bernstein_first.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a10/real_gate_first.log",
+      "sha256": "b284da6b63aa5b5901769411c806adebc33899d46e24277ade0b7793a3a9378e",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet bernstein_candidate_gate_recovers_a_real_linear_packet -- --nocapture",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a10_real_gate_first.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a10/clippy_first_failure.log",
+      "sha256": "42a356b2241255f203daf78f256c03415066338c918207cc2aa4ff98a963fe85",
+      "command": "cargo clippy --locked --offline -p rodas5p-integrators --lib --test production_audit_packet -- -D warnings",
+      "exit_code": 101,
+      "copied_exactly_from": "/tmp/vigilode_a10_clippy_first.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a10/interval_first.log",
+      "sha256": "8aaa23d7b8ac618f9ac888ed02b3b34e416cf7e3aa5a149d6749931acd799db5",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet bernstein_interval_coefficients_include_perturbed_polynomials",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a10_interval_first.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a10/packet_suite_frozen.log",
+      "sha256": "849b4a78b8a69a61ec39907dd253200cefa0ec5048ba3269a9d82ebe4ca9c0d1",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a10_packet_suite_frozen.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a10/clippy_frozen.log",
+      "sha256": "60defc15b47ba5655b917c8b58945e068c26f26230be9dfd954ad650665a62ea",
+      "command": "cargo clippy --locked --offline -p rodas5p-integrators --lib --test production_audit_packet -- -D warnings",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a10_clippy_frozen.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a10/fmt_frozen.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a10_fmt_frozen.log"
+    }
+  ],
+  "decision": "SCOPED_IMPLEMENTATION_REVIEW_PENDING; PRODUCTION_AUTHORITY_HOLD",
+  "limits": [
+    "helper bounds represented interval coefficient polynomial in complex L1 norm",
+    "called only when cheap diagnostic candidate coefficient gate fails",
+    "residual polynomial and A01 output path do not yet invoke Bernstein fallback",
+    "existing model tail formula remains unchanged",
+    "roundoff_enclosed=false for diagnostic packet certificate",
+    "subdivision cap max_depth=8; per-cell O(d^2) work with O(d) temporary memory",
+    "counter tracks transform and interpolation terms, not allocator or CausalWeights setup"
+  ]
+}

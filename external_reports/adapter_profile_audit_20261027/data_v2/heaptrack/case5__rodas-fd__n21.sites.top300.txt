@@ -1,0 +1,300 @@
+reading file "~/vigilode-integration-followup-20261027/profile_r2/prof/heaptrack/case5__rodas-fd__n21.zst" - please wait, this might take some time...
+Debuggee command was: ~/vigilode-integration-followup-20261027/profile_r2/prof_bin repeat-arm case5 rodas-fd 21
+finished reading file, now analyzing data:
+
+MOST CALLS TO ALLOCATION FUNCTIONS
+1428 calls to allocation functions with 0B peak consumption from
+{closure#0}::from_elem<>::from_elem<>::with_capacity_zeroed_in<>::with_capacity_zeroed_in<>::try_allocate_in<>::allocate_zeroed::alloc_impl::alloc_impl_runtime::alloc_zeroed
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:178
+  in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+{closure#0}::from_elem<>::from_elem<>::with_capacity_zeroed_in<>::with_capacity_zeroed_in<>::try_allocate_in<>::allocate_zeroed::alloc_impl::alloc_impl_runtime
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:190
+{closure#0}::from_elem<>::from_elem<>::with_capacity_zeroed_in<>::with_capacity_zeroed_in<>::try_allocate_in<>::allocate_zeroed::alloc_impl
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:312
+{closure#0}::from_elem<>::from_elem<>::with_capacity_zeroed_in<>::with_capacity_zeroed_in<>::try_allocate_in<>::allocate_zeroed
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:435
+{closure#0}::from_elem<>::from_elem<>::with_capacity_zeroed_in<>::with_capacity_zeroed_in<>::try_allocate_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:451
+{closure#0}::from_elem<>::from_elem<>::with_capacity_zeroed_in<>::with_capacity_zeroed_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:574
+{closure#0}::from_elem<>::from_elem<>::with_capacity_zeroed_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:221
+{closure#0}::from_elem<>::from_elem<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_elem.rs:24
+{closure#0}::from_elem<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3587
+{closure#0}
+  at ~/vigilode-integ-dda8d2f/crates/vigilode/src/fd.rs:250
+714 calls with 0B peak consumption from:
+    dense_jacobian
+      at crates/rodas5p-integrators/src/problem.rs:805
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    dense_jacobian_into
+      at crates/rodas5p-integrators/src/problem.rs:787
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    attempt
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:1135
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_fast_in<>
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:2355
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_fast<>
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:2286
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_rodas5p_routed_observed_with_options::integrate_rodas5p_fast_observed_with_partial
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:1785
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_rodas5p_routed_observed_with_options
+      at ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/routing.rs:495
+    solve_observed_bounded
+      at crates/vigilode/src/solve.rs:222
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    vigilode::solve::Rodas5p::solve::h018fa6ab678efaef
+      at crates/vigilode/src/solve.rs:126
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}::solve_only
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:584
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}
+      at ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:667
+    main
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:674
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+714 calls with 0B peak consumption from:
+    dense_jacobian
+      at crates/rodas5p-integrators/src/problem.rs:805
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    dense_jacobian_into
+      at crates/rodas5p-integrators/src/problem.rs:787
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    attempt
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:1135
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_fast_in<>
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:2355
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_fast<>
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:2286
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_rodas5p_routed_observed_with_options::integrate_rodas5p_fast_observed_with_partial
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:1785
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_rodas5p_routed_observed_with_options
+      at ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/routing.rs:495
+    solve_observed_bounded
+      at crates/vigilode/src/solve.rs:222
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    vigilode::solve::Rodas5p::solve::h018fa6ab678efaef
+      at crates/vigilode/src/solve.rs:126
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}::solve_only
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:584
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}
+      at ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:667
+    main
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:674
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+
+735 calls to allocation functions with 0B peak consumption from
+zeros::from_elem<>::from_elem<>::with_capacity_zeroed_in<>::with_capacity_zeroed_in<>::try_allocate_in<>::allocate_zeroed::alloc_impl::alloc_impl_runtime::alloc_zeroed
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:178
+  in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+zeros::from_elem<>::from_elem<>::with_capacity_zeroed_in<>::with_capacity_zeroed_in<>::try_allocate_in<>::allocate_zeroed::alloc_impl::alloc_impl_runtime
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:190
+zeros::from_elem<>::from_elem<>::with_capacity_zeroed_in<>::with_capacity_zeroed_in<>::try_allocate_in<>::allocate_zeroed::alloc_impl
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:312
+zeros::from_elem<>::from_elem<>::with_capacity_zeroed_in<>::with_capacity_zeroed_in<>::try_allocate_in<>::allocate_zeroed
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:435
+zeros::from_elem<>::from_elem<>::with_capacity_zeroed_in<>::with_capacity_zeroed_in<>::try_allocate_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:451
+zeros::from_elem<>::from_elem<>::with_capacity_zeroed_in<>::with_capacity_zeroed_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:574
+zeros::from_elem<>::from_elem<>::with_capacity_zeroed_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:221
+zeros::from_elem<>::from_elem<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_elem.rs:24
+zeros::from_elem<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3587
+zeros
+  at ~/vigilode-integ-dda8d2f/crates/rodas5p-core/src/matrix.rs:35
+714 calls with 0B peak consumption from:
+    {closure#0}
+      at crates/vigilode/src/fd.rs:254
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    dense_jacobian
+      at crates/rodas5p-integrators/src/problem.rs:805
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    dense_jacobian_into
+      at crates/rodas5p-integrators/src/problem.rs:787
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    attempt
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:1135
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_fast_in<>
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:2355
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_fast<>
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:2286
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_rodas5p_routed_observed_with_options::integrate_rodas5p_fast_observed_with_partial
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:1785
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_rodas5p_routed_observed_with_options
+      at ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/routing.rs:495
+    solve_observed_bounded
+      at crates/vigilode/src/solve.rs:222
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    vigilode::solve::Rodas5p::solve::h018fa6ab678efaef
+      at crates/vigilode/src/solve.rs:126
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}::solve_only
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:584
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}
+      at ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:667
+    main
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:674
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+21 calls with 0B peak consumption from:
+    with_dense_size
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:842
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    new
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:789
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_fast<>
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:2284
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_rodas5p_routed_observed_with_options::integrate_rodas5p_fast_observed_with_partial
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:1785
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_rodas5p_routed_observed_with_options
+      at ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/routing.rs:495
+    solve_observed_bounded
+      at crates/vigilode/src/solve.rs:222
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    vigilode::solve::Rodas5p::solve::h018fa6ab678efaef
+      at crates/vigilode/src/solve.rs:126
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}::solve_only
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:584
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}
+      at ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:667
+    main
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:674
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+
+714 calls to allocation functions with 0B peak consumption from
+{closure#0}::to_vec<>::to_vec_in<>::to_vec<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>::try_allocate_in<>::allocate::alloc_impl::alloc_impl_runtime::alloc
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:95
+  in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+{closure#0}::to_vec<>::to_vec_in<>::to_vec<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>::try_allocate_in<>::allocate::alloc_impl::alloc_impl_runtime
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:190
+{closure#0}::to_vec<>::to_vec_in<>::to_vec<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>::try_allocate_in<>::allocate::alloc_impl
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:312
+{closure#0}::to_vec<>::to_vec_in<>::to_vec<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>::try_allocate_in<>::allocate
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:429
+{closure#0}::to_vec<>::to_vec_in<>::to_vec<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>::try_allocate_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:449
+{closure#0}::to_vec<>::to_vec_in<>::to_vec<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:418
+{closure#0}::to_vec<>::to_vec_in<>::to_vec<>::with_capacity_in<>::with_capacity_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:177
+{closure#0}::to_vec<>::to_vec_in<>::to_vec<>::with_capacity_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:967
+{closure#0}::to_vec<>::to_vec_in<>::to_vec<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/slice.rs:447
+{closure#0}::to_vec<>::to_vec_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/slice.rs:400
+{closure#0}::to_vec<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/slice.rs:376
+{closure#0}
+  at ~/vigilode-integ-dda8d2f/crates/vigilode/src/fd.rs:252
+714 calls with 0B peak consumption from:
+    dense_jacobian
+      at crates/rodas5p-integrators/src/problem.rs:805
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    dense_jacobian_into
+      at crates/rodas5p-integrators/src/problem.rs:787
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    attempt
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:1135
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_fast_in<>
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:2355
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_fast<>
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:2286
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_rodas5p_routed_observed_with_options::integrate_rodas5p_fast_observed_with_partial
+      at crates/rodas5p-integrators/src/rodas5p_fast.rs:1785
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_rodas5p_routed_observed_with_options
+      at ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/routing.rs:495
+    solve_observed_bounded
+      at crates/vigilode/src/solve.rs:222
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    vigilode::solve::Rodas5p::solve::h018fa6ab678efaef
+      at crates/vigilode/src/solve.rs:126
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}::solve_only
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:584
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}
+      at ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:667
+    main
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:674
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+
+294 calls to allocation functions with 0B peak consumption from
+from_iter<>::with_capacity<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>::try_allocate_in<>::allocate::alloc_impl::alloc_impl_runtime::alloc
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:95
+  in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+from_iter<>::with_capacity<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>::try_allocate_in<>::allocate::alloc_impl::alloc_impl_runtime
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:190
+from_iter<>::with_capacity<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>::try_allocate_in<>::allocate::alloc_impl
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:312
+from_iter<>::with_capacity<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>::try_allocate_in<>::allocate
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:429
+from_iter<>::with_capacity<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>::try_allocate_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:449
+from_iter<>::with_capacity<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:418
+from_iter<>::with_capacity<>::with_capacity_in<>::with_capacity_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:177
+from_iter<>::with_capacity<>::with_capacity_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:967
+from_iter<>::with_capacity<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:526
+from_iter<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_iter_nested.rs:30
+147 calls with 0B peak consumption from:
+    with_dense_size::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>::fold<>::fold<>::{closure#0}<>::{closure#1}::{closure#0}::collect<>::from_iter<>::from_iter<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_iter.rs:33
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    with_dense_size::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>::fold<>::fold<>::{closure#0}<>::{closure#1}::{closure#0}::collect<>::from_iter<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3801
+    with_dense_size::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>::fold<>::fold<>::{closure#0}<>::{closure#1}::{closure#0}::collect<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs:2035
+    with_dense_size::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>::fold<>::fold<>::{closure#0}<>::{closure#1}::{closure#0}
+      at ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/rodas5p_fast.rs:816
+    with_dense_size::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>::fold<>::fold<>::{closure#0}<>::{closure#1}
+      at ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/rodas5p_fast.rs:823
+    with_dense_size::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>::fold<>::fold<>::{closure#0}<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:88
+    with_dense_size::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>::fold<>::fold<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs:2610
+    with_dense_size::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>::fold<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:128
+    with_dense_size::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs:832
+    with_dense_size::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3937
+    with_dense_size::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/spec_extend.rs:27
+    with_dense_size::collect<>::from_iter<>::from_iter<>::from_iter<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_iter_nested.rs:60
+    with_dense_size::collect<>::from_iter<>::from_iter<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_iter.rs:33

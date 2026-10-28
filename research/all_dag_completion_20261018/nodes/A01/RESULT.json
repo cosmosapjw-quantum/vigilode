@@ -1,0 +1,96 @@
+{
+  "schema_version": 1,
+  "node": "A01",
+  "status": "IMPLEMENTED_SCOPED_VALIDATION_AND_INDEPENDENT_REVIEW_PASSED",
+  "implementation_status": "implemented",
+  "proof_status": "derived_with_reused_local_theorem",
+  "changes": [
+    "semantic integration of cloud weighted trajectory and latest local frozen certificate",
+    "immutable weighted initial-tube constructor",
+    "explicit returned-center weighted radius accessor",
+    "independent numerical oracle execution separated from unchanged allocator gate"
+  ],
+  "new_api": [
+    "PacketFrozenOutput::from_weighted_radius",
+    "PacketCertifiedView::centered_weighted_radius"
+  ],
+  "test_command": "cargo test -p rodas5p-integrators --test all_dag_a01_packet --locked --offline -- --nocapture",
+  "execution": {
+    "status": "PASS",
+    "exit_code": 0,
+    "command": "cargo test --locked --offline -p rodas5p-integrators --test all_dag_a01_packet -- --nocapture",
+    "log": "research/all_dag_completion_20261018/nodes/A01/evidence/native.log",
+    "tests_passed": 2
+  },
+  "allocation_authority": "NOT_EVALUATED",
+  "scope": {
+    "kappa": 0,
+    "frame": "rotating",
+    "weights": "actual stored positive weights",
+    "initial_tube": "component disks or weighted ball"
+  },
+  "reused_proof": "research/cloud_completion_20261018/PACKET.md",
+  "independent_review": "PASS_SCOPED: nodes/A12/REVIEW.json",
+  "production_decision": "nodes/A12/DECISION.json; broad production HOLD",
+  "checks": [
+    {
+      "kind": "python_oracle_syntax",
+      "status": "pass_scoped",
+      "command": "python3 -m py_compile crates/rodas5p-integrators/tests/packet_unequal_fraction_oracle.py"
+    },
+    {
+      "kind": "diff_whitespace",
+      "status": "pass_scoped",
+      "command": "git diff --check"
+    },
+    {
+      "kind": "native_test",
+      "status": "PASS",
+      "log": "research/all_dag_completion_20261018/nodes/A01/evidence/native.log"
+    }
+  ],
+  "root_execution": {
+    "command": "cargo test --locked --offline -p rodas5p-integrators --test all_dag_a01_packet -- --nocapture",
+    "exit_code": 0,
+    "tests_passed": 2,
+    "independent_fraction_disk_checks": 80,
+    "log": "research/all_dag_completion_20261018/nodes/A01/evidence/native.log",
+    "allocation_authority": "NOT_EVALUATED by new numerical oracle; existing allocator evidence reused separately"
+  },
+  "historical_pre_runtime_checkpoint": {
+    "execution": {
+      "status": "not_run",
+      "exit_code": null
+    },
+    "checks": [
+      {
+        "kind": "python_oracle_syntax",
+        "status": "pass_scoped",
+        "command": "python3 -m py_compile crates/rodas5p-integrators/tests/packet_unequal_fraction_oracle.py"
+      },
+      {
+        "kind": "diff_whitespace",
+        "status": "pass_scoped",
+        "command": "git diff --check"
+      },
+      {
+        "kind": "native_test",
+        "status": "not_run",
+        "reason": "root restoring Rust toolchain"
+      },
+      {
+        "kind": "rustfmt",
+        "status": "blocked",
+        "reason": "attempt during toolchain restoration: libLLVM.so.21.1-rust-1.94.1-stable cannot read file data; no automatic retry"
+      }
+    ]
+  },
+  "current_execution_authority": "execution; historical_pre_runtime_checkpoint is retained failed/pending history, not current state",
+  "author_checkpoint_status": "IMPLEMENTED_TARGETED_VALIDATION_PASSED_REVIEW_PENDING",
+  "integrated_execution": {
+    "record": "research/all_dag_completion_20261018/FINAL_EXECUTION.json",
+    "source_authority": "research/all_dag_completion_20261018/SOURCE_MANIFEST.json",
+    "independent_review": "research/all_dag_completion_20261018/nodes/A12/REVIEW.json",
+    "broad_production": "HOLD"
+  }
+}

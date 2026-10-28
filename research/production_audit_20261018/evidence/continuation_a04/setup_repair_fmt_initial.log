@@ -1,0 +1,227 @@
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-core/src/leja_action.rs:897:
+             for k in 1..JOINT_PHI_TERMS {
+                 let reciprocal_lo = setup_kernel!(work, div_down(1.0, factorials[k]))?;
+                 let reciprocal_hi = setup_kernel!(work, div_up(1.0, factorials[k]))?;
+-                let mut term =
+-                    setup_kernel!(work, Interval::new(reciprocal_lo, reciprocal_hi))?;
++                let mut term = setup_kernel!(work, Interval::new(reciprocal_lo, reciprocal_hi))?;
+                 let mut sum = term;
+                 for order in 1..=64 {
+                     term = setup_kernel!(work, term.mul(ci))?;
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-core/src/leja_action.rs:923:
+                 let f = factorials[k - 1];
+                 let reciprocal_lo = setup_kernel!(work, div_down(1.0, f))?;
+                 let reciprocal_hi = setup_kernel!(work, div_up(1.0, f))?;
+-                let reciprocal =
+-                    setup_kernel!(work, Interval::new(reciprocal_lo, reciprocal_hi))?;
++                let reciprocal = setup_kernel!(work, Interval::new(reciprocal_lo, reciprocal_hi))?;
+                 let difference = setup_kernel!(work, intervals[k - 1].sub(reciprocal))?;
+                 intervals[k] = setup_kernel!(work, difference.div(ci))?;
+             }
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-core/src/leja_action.rs:2557:
+         assert!(bound.is_finite() && bound >= 2.0);
+         // Per subdivision: one point, one domain Interval::new, then
+         // sub_down/sub_up, factor Interval::new, and interval multiplication.
+-        assert_eq!(setup.snapshot().subtotal().interval_kernel_invocations(), 7 * 128);
++        assert_eq!(
++            setup.snapshot().subtotal().interval_kernel_invocations(),
++            7 * 128
++        );
+     }
+ 
+     #[test]
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-core/src/leja_setup_work.rs:774:
+         );
+         assert_eq!(cold_value, &[2, 3, 5, 7]);
+         let cold = cold.snapshot();
+-        assert_eq!(cold.leja_points_observation(), OnceLockObservation::InitializedByThisCall);
++        assert_eq!(
++            cold.leja_points_observation(),
++            OnceLockObservation::InitializedByThisCall
++        );
+         assert_eq!(cold.subtotal().allocation_requests(), 1);
+         assert_eq!(cold.subtotal().allocation_items_requested(), 4);
+ 
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-core/src/leja_setup_work.rs:781:
+         let mut warm = LejaSetupWork::new();
+-        let warm_value = get_or_init_static(
+-            &cell,
+-            StaticLejaTable::Points,
+-            Some(&mut warm),
+-            |_| panic!("warm table must not rerun its initializer"),
+-        );
++        let warm_value =
++            get_or_init_static(&cell, StaticLejaTable::Points, Some(&mut warm), |_| {
++                panic!("warm table must not rerun its initializer")
++            });
+         assert_eq!(warm_value, &[2, 3, 5, 7]);
+         let warm = warm.snapshot();
+-        assert_eq!(warm.leja_points_observation(), OnceLockObservation::WarmCountedInitializer);
++        assert_eq!(
++            warm.leja_points_observation(),
++            OnceLockObservation::WarmCountedInitializer
++        );
+         assert_eq!(warm.leja_points_history(), Some(cold.subtotal()));
+         assert_eq!(warm.subtotal().allocation_requests(), 0);
+         assert_eq!(warm.subtotal().allocation_items_requested(), 0);
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-core/tests/leja_setup_work_contract.rs:168:
+         .unwrap();
+     let first = setup.snapshot();
+     assert_eq!(first.setup_coverage(), SetupCoverage::PartialUnattributed);
+-    assert_eq!(first.coefficient_cache_observation(), CoefficientCacheObservation::PreparedByThisCall);
++    assert_eq!(
++        first.coefficient_cache_observation(),
++        CoefficientCacheObservation::PreparedByThisCall
++    );
+ 
+     let mut warm = LejaSetupWork::new();
+     cache
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-core/tests/leja_setup_work_contract.rs:175:
+         .precompute_certified_with_setup_work(-0.625, 0.125, 7, &mut warm)
+         .unwrap();
+     let warm = warm.snapshot();
+-    assert_eq!(warm.coefficient_cache_observation(), CoefficientCacheObservation::WarmCountedEntry);
++    assert_eq!(
++        warm.coefficient_cache_observation(),
++        CoefficientCacheObservation::WarmCountedEntry
++    );
+     assert_eq!(warm.setup_coverage(), SetupCoverage::PartialUnattributed);
+-    assert_eq!(warm.coefficient_cache_history(), first.coefficient_cache_history());
++    assert_eq!(
++        warm.coefficient_cache_history(),
++        first.coefficient_cache_history()
++    );
+     assert!(warm.coefficient_cache_history().is_some());
+ }
+ 
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-core/tests/leja_setup_work_contract.rs:195:
+     let mut legacy_cache = CertifiedLejaCoeffCache::new();
+     let mut legacy_workspace = CertifiedLejaWorkspace::new(2, 1);
+     let mut legacy_work = WorkCounters::default();
+-    let legacy_report = rodas5p_core::leja_action::leja_phi_action_certified_with_cache_and_workspace(
+-        &op,
+-        0.125,
+-        input,
+-        1.0,
+-        8,
+-        Some(&mut legacy_cache),
+-        &mut legacy_work,
+-        &mut legacy_workspace,
+-    )
+-    .unwrap()
+-    .clone();
++    let legacy_report =
++        rodas5p_core::leja_action::leja_phi_action_certified_with_cache_and_workspace(
++            &op,
++            0.125,
++            input,
++            1.0,
++            8,
++            Some(&mut legacy_cache),
++            &mut legacy_work,
++            &mut legacy_workspace,
++        )
++        .unwrap()
++        .clone();
+ 
+     let mut counted_cache = CertifiedLejaCoeffCache::new();
+     let mut counted_workspace = CertifiedLejaWorkspace::new(2, 1);
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:2:
+ use std::alloc::{GlobalAlloc, Layout, System};
+ use std::io::Write;
+ use std::process::{Command, Stdio};
+-use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};
+ use std::sync::Mutex;
++use std::sync::atomic::{AtomicUsize, Ordering as AtomicOrdering};
+ 
+ use rodas5p_core::directed::Interval;
+ use rodas5p_integrators::packet_window::{PacketComplexInterval, RepresentedPacketCurve};
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:10:
+ use rodas5p_integrators::{
+-    compile_packet, generate_candidate, CausalWeights, CollectiveModel, PacketWorkCounters,
++    CausalWeights, CollectiveModel, PacketWorkCounters, compile_packet, generate_candidate,
+ };
+ 
+ struct CountingAllocator;
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:156:
+         String::from_utf8_lossy(&output.stdout),
+         String::from_utf8_lossy(&output.stderr)
+     );
+-    assert!(String::from_utf8_lossy(&output.stdout)
+-        .contains("exact Fraction residual and evaluation enclosures verified"));
++    assert!(
++        String::from_utf8_lossy(&output.stdout)
++            .contains("exact Fraction residual and evaluation enclosures verified")
++    );
+ }
+ 
+ #[test]
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:265:
+ 
+     let mut mutated_candidate = candidate.clone();
+     mutated_candidate.mean[0].0 = mutated_candidate.mean[0].0.next_up();
+-    assert!(curve
+-        .validate_source(&mutated_candidate, &packet, &mut work)
+-        .is_err());
++    assert!(
++        curve
++            .validate_source(&mutated_candidate, &packet, &mut work)
++            .is_err()
++    );
+     let before = curve.mode_coefficients(0).unwrap().to_vec();
+     let mut output = vec![(0.0, 0.0); model.num_modes()];
+     curve
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:286:
+     )
+     .unwrap();
+     let other_packet = compile_packet(&other_model, 0.25, 1, &mut work).unwrap();
+-    assert!(curve
+-        .validate_source(&candidate, &other_packet, &mut work)
+-        .is_err());
++    assert!(
++        curve
++            .validate_source(&candidate, &other_packet, &mut work)
++            .is_err()
++    );
+ 
+     assert!(curve.mode_coefficients(0).unwrap()[degree] != (0.0, 0.0));
+     assert!(
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:333:
+     }
+     let allocations = ALLOCATIONS.load(AtomicOrdering::SeqCst) - before;
+     assert_eq!(allocations, 0);
+-    assert!(curve
+-        .evaluate_modes_at_into(f64::NAN, &mut centers, &mut work)
+-        .is_err());
+-    assert!(curve
+-        .evaluate_modes_at_into(0.75, &mut centers, &mut work)
+-        .is_err());
+-    assert!(curve
+-        .evaluate_modes_at_into(f64::INFINITY, &mut centers, &mut work)
+-        .is_err());
+-    assert!(curve
+-        .evaluate_modes_at_into(0.25, &mut [], &mut work)
+-        .is_err());
++    assert!(
++        curve
++            .evaluate_modes_at_into(f64::NAN, &mut centers, &mut work)
++            .is_err()
++    );
++    assert!(
++        curve
++            .evaluate_modes_at_into(0.75, &mut centers, &mut work)
++            .is_err()
++    );
++    assert!(
++        curve
++            .evaluate_modes_at_into(f64::INFINITY, &mut centers, &mut work)
++            .is_err()
++    );
++    assert!(
++        curve
++            .evaluate_modes_at_into(0.25, &mut [], &mut work)
++            .is_err()
++    );
+     assert!(work.output_horner_terms > 0);
+ }
+ 

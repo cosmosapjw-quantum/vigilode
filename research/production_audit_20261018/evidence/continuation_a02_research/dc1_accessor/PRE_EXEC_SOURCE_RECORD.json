@@ -1,0 +1,43 @@
+{
+  "schema_version": 1,
+  "unit": "A02-DC1-ACCESSOR",
+  "status": "SOURCE_AND_TEST_CONTRACT_STAGED_NOT_EXECUTED",
+  "checkout_head_before_dc1": "178e18ab1e270b4743a4d1c45b6541fc9d0e7848",
+  "exec_sha": null,
+  "pushed_exec_sha_verified": false,
+  "tests_build_oracle": "NOT_RUN_BEFORE_PUSHED_EXEC_SHA",
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/packet_curve_output.rs": "864ef1358240e1d53d792204e0355cd24c7cb44c0cd3856ee21f514a5588afc6",
+    "crates/rodas5p-integrators/tests/production_audit_packet_center_displacement.rs": "a8047344fcc3c4673461932261a7c0742c1fa4b39d85d3766f8381767da170a1",
+    "crates/rodas5p-integrators/tests/production_audit_packet_curve_output.rs": "227af049b642de72032afacac2d8ca2f98a6c19d25aac1078ac0c6e0aefbdba3",
+    "crates/rodas5p-integrators/tests/production_audit_packet_local_certificate.rs": "0c1aa2b5a20a64b1d4b3354226f25b337a80b6123b337059c92f61e951b6e10c",
+    "crates/rodas5p-integrators/tests/production_audit_packet_unequal_reference.rs": "e7dd12272e0e10a020793d1e17888250a2be2aaa8b96381dd0b94401cafd509c"
+  },
+  "contract_binding": {
+    "supplement_02/AMENDMENT_KO.md_sha256": "e0ccbc46d8e35c8866c97b3dd2bb1d3c9b9daccbec127b9864bdea7254325eca",
+    "supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json_sha256": "1679dd7542028d3c103b321ca4293d1fcf4aa4f7622ee663c3cef3ba5557abb3",
+    "retained_A01_old_output_payload_sha256": "ae524daf9bf6539edbe7cc1b5b4d31276da2d73ff0d5392cc15cace0f5220651"
+  },
+  "test_source_history": [
+    {
+      "sha256": "ce839d049c617cf1b6a150d9e05e943e52c912982abedb7896e7e6c64d653f4c",
+      "classification": "pre-bit-authority draft; superseded before EXEC_SHA"
+    },
+    {
+      "sha256_prefix_suffix": "387d9e9c...edf86a73",
+      "classification": "intermediate observed by parent before final rustfmt; superseded before EXEC_SHA"
+    }
+  ],
+  "source_derived_counter_delta": {
+    "per_query_additional_curve_output_certificate_ops": "3*N+1",
+    "N1_old": 52,
+    "N1_new": 56,
+    "N2_old": 81,
+    "N2_new": 88,
+    "N3_old": 110,
+    "N3_new": 120,
+    "getter_extra_ops": 0,
+    "getter_allocations": 0
+  },
+  "frozen_behavior": "same-query stored-mode delta_j, stored-weight outward square/sum/root; weighted_radius remains the base T1 radius; views expose only immutable scalar getters"
+}

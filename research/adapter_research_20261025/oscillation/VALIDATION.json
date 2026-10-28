@@ -1,0 +1,101 @@
+{
+  "schema": "vigilode.oscillatory-pilot-validation.v1",
+  "tests": {
+    "native_contracts": {
+      "passed": 10,
+      "failed": 0,
+      "exit": 0,
+      "command": "cargo test -p vigilode --locked --offline --test oscillatory_chart_contracts"
+    },
+    "algebra": {
+      "passed": 5,
+      "failed": 0,
+      "exit": 0,
+      "command": "python3 research/adapter_research_20261025/oscillation/verify_algebra.py"
+    },
+    "independent_endpoint": {
+      "rows_checked": 8,
+      "chart_cap_pass": 4,
+      "exit": 0,
+      "command": "python3 research/adapter_research_20261025/oscillation/check_pilot.py"
+    }
+  },
+  "pilot": {
+    "command": "cargo run -p vigilode --locked --offline --profile measurement --example oscillatory_chart_pilot",
+    "exit": 0,
+    "timed_repeats": 5,
+    "excluded_warmups": 1,
+    "binary_sha256": "2217b07454a0e1561244e8e0f25412eeaeac84f0a8eb848a321a596ac34eaf68",
+    "host": "Linux-6.18.55-x86_64-with-glibc2.39",
+    "resource_scope": "current shared execution host; not user local CPU; no pinned affinity",
+    "arithmetic": "binary64 native; 80digit Decimal endpoint numerical reference"
+  },
+  "source_sha256": {
+    "crates/vigilode/src/oscillatory_chart.rs": "45d4873f851b77f6da905bcf3c434ae08588e0a7a16fc96fc8a55bd02a0126d8",
+    "crates/vigilode/tests/oscillatory_chart_contracts.rs": "bc2bdc0eae86633690e35cfd7703387a1b33dc7c9a625cac102f05386001c4f6",
+    "crates/vigilode/examples/oscillatory_chart_pilot.rs": "de0b959ceeb8da6b3b5a35487fc61d9652e0743628d91b9f2d95b8b031f939c2"
+  },
+  "pairs": [
+    {
+      "case": "catalog-15-exponential-chirp",
+      "physical_local_atol": 1e-06,
+      "full_endpoint_error": 0.004300449841053933,
+      "chart_endpoint_error": 1.2366114177098098e-07,
+      "full_seconds": 0.044797098,
+      "chart_seconds": 0.000116222,
+      "observed_time_ratio": 385.44421882259815,
+      "rhs_ratio": 762.9546142208775,
+      "both_endpoint_cap_pass": false,
+      "comparison_scope": "same requested physical atol; physical WRMS versus stricter transported physical-Linf sufficient local budget; different achieved errors; shared host diagnostic timing; declared models only"
+    },
+    {
+      "case": "catalog-15-exponential-chirp",
+      "physical_local_atol": 1e-08,
+      "full_endpoint_error": 7.650263457037454e-05,
+      "chart_endpoint_error": 1.240509917010968e-09,
+      "full_seconds": 0.078166492,
+      "chart_seconds": 0.000289388,
+      "observed_time_ratio": 270.10965209338326,
+      "rhs_ratio": 747.0099812850905,
+      "both_endpoint_cap_pass": true,
+      "comparison_scope": "same requested physical atol; physical WRMS versus stricter transported physical-Linf sufficient local budget; different achieved errors; shared host diagnostic timing; declared models only"
+    },
+    {
+      "case": "equivariant-cubic-chirp",
+      "physical_local_atol": 1e-06,
+      "full_endpoint_error": 0.004166301928643534,
+      "chart_endpoint_error": 1.1712930181317915e-07,
+      "full_seconds": 0.029463068,
+      "chart_seconds": 0.000120438,
+      "observed_time_ratio": 244.63265746691243,
+      "rhs_ratio": 707.9753979739507,
+      "both_endpoint_cap_pass": false,
+      "comparison_scope": "same requested physical atol; physical WRMS versus stricter transported physical-Linf sufficient local budget; different achieved errors; shared host diagnostic timing; declared models only"
+    },
+    {
+      "case": "equivariant-cubic-chirp",
+      "physical_local_atol": 1e-08,
+      "full_endpoint_error": 7.452691375497977e-05,
+      "chart_endpoint_error": 1.2349232747510541e-09,
+      "full_seconds": 0.070855336,
+      "chart_seconds": 0.000281487,
+      "observed_time_ratio": 251.71796921349832,
+      "rhs_ratio": 688.4250148192057,
+      "both_endpoint_cap_pass": true,
+      "comparison_scope": "same requested physical atol; physical WRMS versus stricter transported physical-Linf sufficient local budget; different achieved errors; shared host diagnostic timing; declared models only"
+    }
+  ],
+  "initial_failure": {
+    "kind": "environment",
+    "cause": "optional mpmath unavailable",
+    "repair": "stdlib Decimal high precision; original failure preserved"
+  },
+  "review_repair": {
+    "object": "phase near beta*dt underflow",
+    "before": "lost large carrier through expm1(beta*dt)=0",
+    "after": "exprel limit and endpoint-based large-phase branch",
+    "regressions": 2,
+    "status": "implementation-verified"
+  },
+  "post_measurement_edit": "example leading documentation only clarified norm scope; executable statements unchanged"
+}

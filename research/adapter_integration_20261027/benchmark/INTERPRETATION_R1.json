@@ -1,0 +1,143 @@
+{
+  "schema": "vigilode.adapter-integration-r1-interpretation.v1",
+  "binary_sha256": "7f69dc29eb96411d343a38d7f98acb0ac67d9c92e8ea71f218b11291e7118923",
+  "timing_summary": {
+    "completed_cells": 25,
+    "failed_cells": 0,
+    "qualified_timing_only_cells": 5,
+    "qualified_accuracy_and_timing_cells": 4,
+    "clear_improvements": 0,
+    "promotion_supported": false
+  },
+  "accounting_audit": {
+    "distinct_arm_records": 33,
+    "duplicate_records_identical": 17,
+    "errors": [],
+    "scope": "all selector aggregate work fields, disposition RHS/attempt sums, and complete initial records across duplicate pairs; not cross-commit parity"
+  },
+  "figure_review": {
+    "files": [
+      "policy_work_and_time.png",
+      "entry_seed_ablation.png",
+      "selection_overhead.png",
+      "work_dispositions.png",
+      "endpoint_accuracy.png"
+    ],
+    "status": "visually inspected; readable labels, no clipping; unqualified timing marked with crosses",
+    "title_correction": "Plotting source now names RHS work explicitly and uses a neutral endpoint-error title for future runs. R1 figure bytes are preserved."
+  },
+  "findings": [
+    {
+      "id": "R1-SEED-COSINE",
+      "decision": "retain_for_targeted_optimization",
+      "case": "stiff-forced",
+      "rhs_unseeded": 456,
+      "rhs_seeded": 394,
+      "attempts_unseeded": 66,
+      "attempts_seeded": 58,
+      "first_implicit_attempts": [
+        12,
+        6
+      ],
+      "endpoint_error_unchanged": true,
+      "wall_time_claim": false
+    },
+    {
+      "id": "R1-SEED-LOWER",
+      "decision": "revise_before_retest",
+      "case": "case5",
+      "rhs_unseeded": 2032,
+      "rhs_seeded": 2040,
+      "initial_h_unseeded": 0.0001,
+      "initial_h_seeded": 5.3005115734208904e-05,
+      "mechanism": "mean pilot accepted h is smaller than original proposal; first implicit tenure adds one attempt",
+      "proposal": "Only increase the original h0 when reusing entry-pilot scale; retain native acceptance tests. This is a data-informed revision requiring validation."
+    },
+    {
+      "id": "R1-ENTRY-DELAY",
+      "decision": "optimize_scheduler",
+      "case": "case5",
+      "rhs_evidence": 1456,
+      "rhs_adaptive_unseeded": 2032,
+      "extra_committed_explicit_attempts": 96,
+      "extra_committed_explicit_rhs": 576,
+      "implicit_entry_evidence": 0.0005239295874881414,
+      "implicit_entry_adaptive": 0.000835027996927529,
+      "mechanism": "adaptive negative-evidence scheduling delays next eligible winning pilot; pilot count identical",
+      "proposal": "Preserve native rate-based rearm or one-shot startup retry evidence without stacking backoffs or exhausting future-regime sentinels."
+    },
+    {
+      "id": "R1-TRANSITION-RENEWAL",
+      "decision": "retain_as_transition_adaptation",
+      "rhs_pairs": {
+        "transition-39": [
+          184724,
+          30515
+        ],
+        "transition-79": [
+          68323,
+          29327
+        ]
+      },
+      "mechanism": "legacy reaches lifetime limit of eight losing pilots; adaptive later executes a ninth, winning pilot",
+      "seed_effect_rhs": {
+        "transition-39": 0,
+        "transition-79": -8
+      },
+      "wall_time_claim": false,
+      "scope": "same-family parameter holdouts, not independent problem families"
+    },
+    {
+      "id": "R1-RETURN-COST",
+      "decision": "retain_as_robustness_option_measure_further",
+      "case": "relaxation",
+      "rhs_evidence": 675,
+      "rhs_adaptive": 722,
+      "same_checkpoint_comparator_rhs": 48,
+      "seed_rhs_saving": 1,
+      "seed_added_rejections": 1,
+      "mechanism": "actual current-window confirmation is charged once; no prevention of a wrong return observed in this fixture"
+    },
+    {
+      "id": "R1-OSCILLATION",
+      "decision": "prefer_persistent_explicit_when_appropriate",
+      "cases": [
+        "rotation",
+        "gyro-tight"
+      ],
+      "rotation_rhs_equal": 5371,
+      "gyro_tight_rhs": [
+        24555,
+        24554
+      ],
+      "gyro_tight_total_work_proxy": [
+        25313,
+        25323
+      ],
+      "mechanism": "one fewer RHS on gyro is offset by extra JVP/linear work; no real work reduction"
+    },
+    {
+      "id": "R1-GYRO-DEFAULT",
+      "decision": "exclude_from_speed_qualification",
+      "max_error_approx": 0.0316,
+      "cap": 0.0001,
+      "scope": "all compared default-tolerance methods complete but fail requested physical endpoint cap"
+    },
+    {
+      "id": "R1-BACKEND",
+      "decision": "use_dense_only_under_explicit_small_dimension_permission",
+      "case": "case5",
+      "direct_rhs_mf_dense": [
+        307,
+        307
+      ],
+      "jvp_mf": 1206,
+      "jvp_dense": 0,
+      "dense_jacobian_builds": 34,
+      "timing_ratio_dense_over_mf_median": 0.072,
+      "wall_time_claim": false,
+      "mechanism": "different backend work; timing drift invalidates quantified speedup, while counters identify substantial matrix-free cost"
+    }
+  ],
+  "next_measurement": "After correcting the shrinking seed and startup scheduling regression, rerun only changed comparisons plus required controls. Preserve R1. Do not loosen timing thresholds or increase accuracy tolerances."
+}

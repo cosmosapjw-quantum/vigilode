@@ -1,0 +1,40 @@
+A07 final execution record (2026-10-18)
+Repository: /home/cosmosapjw/vigilode
+Branch: audit/production-readiness-20261018
+HEAD: c3036c63da02ca9b04cd39ccf580cd67d00ccb0c
+A01 frozen inputs rechecked before build:
+  packet_window.rs SHA-256 9d8fb1046f92f42cee1f9d4364f22bba7639e5699e188b12f43657dc18a6b04c
+  production_audit_packet.rs SHA-256 78d692158e679233679312852bb55d7c5d3eb84fd163165b40ecddb30a7e3c93
+
+Builds (cwd tools/benchmarks/diffsol/a07; --locked --offline; RAYON_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1):
+  cargo build --locked --offline --profile measurement => exit 0 (timing binary)
+  cargo build --locked --offline --profile measurement --features allocation-audit => exit 0 (separate allocator/callback-audit binary)
+  Standalone lock SHA-256: 095669a81ff64533d7c15e2765fdeb754f288eb882aea8df167629c660a07d68
+
+Manifest:
+  Capture command: python3 src/validate_report.py capture --grid <grid.json> --reference <reference.json> --timing-binary <vigilode-a07-timing> --allocator-binary <vigilode-a07-allocator> --out <manifest.json>
+  Exit 0. Metadata used cargo metadata --locked --offline --no-deps after the exact full metadata command hit an uncached aho-corasick package; initial failure preserved in manifest_capture_first_failure.log.
+  manifest.json SHA-256: 0502ed2f1a0dc02fc5403ebd7eae6a1f6700b88d662666f095fcf7e2f6e95d4f
+  Git diff binary SHA-256: af42de17887efc5e6658f0c1ff0e042b2d303563422e17e5ac4a1f8c077047ca
+  Timing binary SHA-256: f1af08047816ca91f7ae69ea2e98349c52bbf2ea59d5c74eed5cfafb8cf749ee
+  Allocator binary SHA-256: 7c487dd5cf0ecde75be860139caf55e88cd0290a617c23be699d0391a6113d64
+  No manifested source or binary hash changed after capture.
+
+Sampling commands, all with the same single-thread environment as builds:
+  python3 src/cold_pairs.py --binary target/measurement/vigilode-a07-timing --grid <grid.json> --manifest <manifest.json> --pairs 10 --logs <evidence>/logs/cold --out <evidence>/cold.jsonl => exit 0; 20/20 successful rows, 10 matched pairs, alternating order.
+  target/measurement/vigilode-a07-timing --warm-abba 20 --grid <grid.json> --manifest <manifest.json> => exit 0; 160/160 successful rows, prescribed 20 ABBA/BAAB blocks.
+  target/measurement/vigilode-a07-allocator --alloc native --grid <grid.json> --manifest <manifest.json> => exit 0.
+  target/measurement/vigilode-a07-allocator --alloc diffsol --grid <grid.json> --manifest <manifest.json> => exit 0.
+
+Validation/report command: python3 src/validate_report.py validate --grid <grid.json> --reference <reference.json> --manifest <manifest.json> --samples <cold.jsonl> <warm.jsonl> <alloc_native.jsonl> <alloc_diffsol.jsonl> --out <validated.json> --markdown <REPORT.md>
+Exit 4: strict campaign schema/count/order validation passed with counts cold=20,warm=160,allocator=2; empirical reference stability gate passed; accuracy overlap gate failed because Diffsol error upper bound exceeds 1.0. Exit 4 is the scientific accuracy gate, not a schema/runtime failure.
+
+Metric summary:
+  fine Radau vs previous Radau spread: 1.0253688066238993e-05 WRMS
+  fine Radau vs LSODA spread: 0.0010781557032515283 WRMS
+  native max-grid WRMS: 0.33753007149457903; empirical interval [0.3364519157913275,0.33860822719783057]; accuracy gate PASS
+  Diffsol max-grid WRMS: 3.3026992500504733; empirical interval [3.301621094347222,3.3037774057537246]; accuracy gate FAIL
+  cold Diffsol/native median ratio: 1.0112855366465705; 95% bootstrap [0.6677305256409933,1.327452564133345]
+  warm Diffsol/native median ratio: 1.425298255891888; 95% bootstrap [1.402230958217182,1.4501800614107307]
+  Timing authority: diagnostic_only. No speed claim: accuracy/output gate failed.
+  Allocator counts: native 443 allocations / 49,211 bytes; Diffsol 1,039 allocations / 116,634 bytes.

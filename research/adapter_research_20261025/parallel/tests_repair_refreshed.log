@@ -1,0 +1,30 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-adapters/crates/vigilode)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.93s
+     Running tests/execution_policy_contracts.rs (target/debug/deps/execution_policy_contracts-734c2545169bce0a)
+
+running 9 tests
+test exact_key_and_nesting_cannot_reuse_unsafe_evidence ... ok
+test expired_calibration_falls_back_and_requests_probe ... ok
+test invalid_or_wrong_output_clears_prior_evidence ... ok
+test measured_gain_and_overhead_payback ... ok
+test single_item_calibration_never_replays_or_builds_pool ... ok
+test actual_dispatch_preserves_order_and_no_implicit_replay ... ok
+test slow_parallel_stays_serial ... ok
+test internal_nested_wrapper_is_forced_serial ... ok
+test real_calibration_and_shape_validation ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

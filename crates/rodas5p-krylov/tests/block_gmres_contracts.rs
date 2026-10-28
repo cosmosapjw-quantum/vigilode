@@ -219,3 +219,85 @@ fn block_gmres_does_not_false_converge_on_small_nonzero_rhs() {
     assert!(report.maximum_relative_residual <= 1.0e-12);
     assert!((report.solutions[0][0] - 1.0e-14).abs() <= 1.0e-28);
 }
+
+#[test]
+fn block_arnoldi_rank_is_uniformly_operator_scale_invariant() {
+    let expected = [1.0, -2.0, 0.5];
+    let config = BlockGmresConfig {
+        max_basis: 3,
+        rtol: 1.0e-11,
+        atol: 0.0,
+        rank_tolerance: 1.0e-12,
+    };
+
+    let solve_at_scale = |scale: f64| {
+        let diagonal = vec![scale, 3.0 * scale, 7.0 * scale];
+        let rhs = vec![
+            diagonal
+                .iter()
+                .zip(expected)
+                .map(|(diagonal, value)| diagonal * value)
+                .collect::<Vec<_>>(),
+        ];
+        let operator = DiagonalBatchOperator::new(diagonal);
+        let preconditioner = IdentityPreconditioner::new(3);
+        let mut counters = WorkCounters::default();
+        solve_block_gmres(&operator, &preconditioner, &rhs, &config, &mut counters).unwrap()
+    };
+
+    let unit_scale = solve_at_scale(1.0);
+    let tiny_scale = solve_at_scale(1.0e-16);
+    assert_eq!(
+        tiny_scale.final_basis_dimension,
+        unit_scale.final_basis_dimension
+    );
+    assert_eq!(tiny_scale.search_directions, unit_scale.search_directions);
+    for report in [unit_scale, tiny_scale] {
+        assert!(report.converged);
+        assert!(
+            report.solutions[0]
+                .iter()
+                .zip(expected)
+                .all(|(actual, expected)| (actual - expected).abs() <= 1.0e-10)
+        );
+    }
+}
+
+#[test]
+fn seeded_arnoldi_rank_is_uniformly_operator_scale_invariant() {
+    use rodas5p_krylov::{SeededGmresConfig, solve_seeded_gmres};
+
+    let expected = [1.0, -2.0, 0.5];
+    let config = SeededGmresConfig {
+        shared_basis: 3,
+        restart: 3,
+        max_arnoldi: 10,
+        rtol: 1.0e-11,
+        atol: 0.0,
+        rank_tolerance: 1.0e-12,
+    };
+
+    let solve_at_scale = |scale: f64| {
+        let diagonal = vec![scale, 3.0 * scale, 7.0 * scale];
+        let rhs = vec![
+            diagonal
+                .iter()
+                .zip(expected)
+                .map(|(diagonal, value)| diagonal * value)
+                .collect::<Vec<_>>(),
+        ];
+        let operator = DiagonalBatchOperator::new(diagonal);
+        let preconditioner = IdentityPreconditioner::new(3);
+        let mut counters = WorkCounters::default();
+        solve_seeded_gmres(&operator, &preconditioner, &rhs, &config, &mut counters).unwrap()
+    };
+
+    let unit_scale = solve_at_scale(1.0);
+    let tiny_scale = solve_at_scale(1.0e-16);
+    assert_eq!(
+        tiny_scale.final_basis_dimension,
+        unit_scale.final_basis_dimension
+    );
+    assert_eq!(tiny_scale.search_directions, unit_scale.search_directions);
+    assert_eq!(tiny_scale.block_iterations, unit_scale.block_iterations);
+}

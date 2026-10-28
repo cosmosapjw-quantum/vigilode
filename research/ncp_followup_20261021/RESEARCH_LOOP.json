@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "workflow_version": "1.0.0",
+  "task": "both",
+  "unit_id": "VIGILODE_NCP_FOLLOWUP_20261021",
+  "scope": "Audit and bounded implementation/research delivery, not finished broad production or live BASS port",
+  "status": "complete_scoped",
+  "theory_stages": [
+    {
+      "id": "R1",
+      "status": "complete",
+      "result": "Scope: latest published NCP + scoped production improvements + separate physical port",
+      "evidence": [
+        "PREREGISTRATION.md"
+      ]
+    },
+    {
+      "id": "R2",
+      "status": "complete",
+      "result": "Read NCP raw source, recent branch identity, primary literature and current relevant physics blob identities",
+      "evidence": [
+        "NCP_AUDIT.json"
+      ]
+    },
+    {
+      "id": "R3",
+      "status": "complete",
+      "result": "Correct benchmark assumptions, one-step order, stages, bandwidth and Thomson structure",
+      "evidence": [
+        "ADVICE_REVIEW_KO.md"
+      ]
+    },
+    {
+      "id": "R4",
+      "status": "complete",
+      "result": "Choose analytic stencil, Schur, positive remap and LRS weighted transport",
+      "evidence": [
+        "NEXT_STEPS.json"
+      ]
+    },
+    {
+      "id": "R5",
+      "status": "complete",
+      "result": "Construct Schur/GMRES norm bounds, remap contraction and physical conservation",
+      "evidence": [
+        "SCHUR_THEORY.md"
+      ]
+    },
+    {
+      "id": "R6",
+      "status": "complete",
+      "result": "Independent theory and code review plus Wolfram checks",
+      "evidence": [
+        "INDEPENDENT_REVIEW.json"
+      ]
+    },
+    {
+      "id": "R7",
+      "status": "complete",
+      "result": "Run discriminating residual, allocation, periodic-collision and physics checks",
+      "evidence": [
+        "evidence/final_03/SUMMARY.json"
+      ]
+    },
+    {
+      "id": "R8",
+      "status": "complete",
+      "result": "Scope admission and production HOLD decision",
+      "evidence": [
+        "DECISION.json"
+      ]
+    },
+    {
+      "id": "R9",
+      "status": "complete",
+      "result": "Detailed code mapping and execution/development contracts",
+      "evidence": [
+        "REPORT_KO.md"
+      ]
+    },
+    {
+      "id": "R10",
+      "status": "complete",
+      "result": "Research unit complete; explicit next development DAG",
+      "evidence": [
+        "NEXT_STEPS.json"
+      ]
+    }
+  ],
+  "coding_stages": [
+    {
+      "id": "C1",
+      "status": "complete",
+      "result": "Freeze inherited source and baseline",
+      "evidence": [
+        "PREREGISTRATION.md"
+      ]
+    },
+    {
+      "id": "C2",
+      "status": "complete",
+      "result": "Trace raw evaluation and actual native problem/Jacobian APIs",
+      "evidence": [
+        "ACCURACY_FINDINGS.md"
+      ]
+    },
+    {
+      "id": "C3",
+      "status": "complete",
+      "result": "Numerical contracts and rejection conditions",
+      "evidence": [
+        "REMAP_THEORY.md"
+      ]
+    },
+    {
+      "id": "C4",
+      "status": "complete",
+      "result": "Parallel scoped development and serialized native checks",
+      "evidence": [
+        "INDEPENDENT_REVIEW.json"
+      ]
+    },
+    {
+      "id": "C5",
+      "status": "complete",
+      "result": "Implement kernels, adapter and physics oracle",
+      "evidence": [
+        "SCHUR_IMPLEMENTATION.json"
+      ]
+    },
+    {
+      "id": "C6",
+      "status": "complete",
+      "result": "Native/API/allocator/serialization checks",
+      "evidence": [
+        "evidence/final_03/SUMMARY.json"
+      ]
+    },
+    {
+      "id": "C7",
+      "status": "complete",
+      "result": "Independent equations, invariant and Fourier/Schur residual checks",
+      "evidence": [
+        "BASS_REI_CHECKS.json"
+      ]
+    },
+    {
+      "id": "C8",
+      "status": "complete",
+      "result": "Frozen484file closure and preserved failing receipts",
+      "evidence": [
+        "evidence/final_03/SOURCE_BEFORE.json"
+      ]
+    },
+    {
+      "id": "C9",
+      "status": "complete",
+      "result": "Independent review findings closed in bounded code",
+      "evidence": [
+        "INDEPENDENT_REVIEW.json"
+      ]
+    },
+    {
+      "id": "C10",
+      "status": "complete",
+      "result": "Code/report/evidence and handoff prepared for publication",
+      "evidence": [
+        "CODEX_HANDOFF_KO.md"
+      ]
+    }
+  ],
+  "strong_no_go": "No new general impossibility theorem claimed; frozen-RHS example is a scoped consistency counterexample.",
+  "remaining": "NEXT_STEPS.json",
+  "separate_physics_loop": "BASS_REI_LOOP.json"
+}

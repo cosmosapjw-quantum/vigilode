@@ -1,0 +1,46 @@
+++ date -u
+Wed Sep 30 23:47:03 UTC 2026
+++ /home/user/target-wu23/release/rodas5p r3-campaign-verify --study hom06 --output research/r3_matched_accuracy_hom06_20261001/VERIFY.json
+++ /home/user/target-wu23/release/rodas5p r3-campaign-verify --study poly03 --output research/r3_matched_accuracy_poly03_20261001/VERIFY.json
+++ date -u
+Wed Sep 30 23:47:12 UTC 2026
+++ /home/user/target-wu23/release/rodas5p r3-campaign --study hom06 --sessions 6 --seed 20261003 --output research/r3_matched_accuracy_hom06_20261001/CAMPAIGN.json
+hom06 transactional-certified-p1: Block
+Error: invalid fair-comparison input: INVALID_RAW_TIMING_PROTOCOL: invalid fair-comparison input: paired timing case scalar-linear#aa records batch 2 but its warmups calibrate to 3
+
+Stack backtrace:
+   0: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+   1: rodas5p::main
+   2: std::sys::backtrace::__rust_begin_short_backtrace
+   3: main
+   4: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+   5: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+   6: _start
+
+real	2m26.255s
+user	2m23.618s
+sys	0m36.083s
+++ date -u
+Wed Sep 30 23:49:38 UTC 2026
+++ /home/user/target-wu23/release/rodas5p r3-campaign --study poly03 --sessions 6 --seed 20261004 --output research/r3_matched_accuracy_poly03_20261001/CAMPAIGN.json
+Error: invalid fair-comparison input: INVALID_RAW_TIMING_PROTOCOL: invalid fair-comparison input: paired timing case diagonal24-rho10#aa records batch 4 but its warmups calibrate to 5
+
+Stack backtrace:
+   0: anyhow::error::<impl core::convert::From<E> for anyhow::Error>::from
+   1: rodas5p::main
+   2: std::sys::backtrace::__rust_begin_short_backtrace
+   3: main
+   4: __libc_start_call_main
+             at ./csu/../sysdeps/nptl/libc_start_call_main.h:58:16
+   5: __libc_start_main_impl
+             at ./csu/../csu/libc-start.c:360:3
+   6: _start
+
+real	2m8.368s
+user	2m3.969s
+sys	0m2.974s
+++ date -u
+Wed Sep 30 23:51:47 UTC 2026
+EXIT 0

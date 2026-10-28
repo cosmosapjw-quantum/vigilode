@@ -1,0 +1,105 @@
+{
+  "schema_version": 1,
+  "blocker": "SG01_conservative_PDE_scalability",
+  "scope": "autonomous linear reversible scalar graph diffusion",
+  "production_status": "HOLD",
+  "source_base": "9b210c76dffb8909902f733e80d6cfa32405006e",
+  "candidate_budget": 3,
+  "candidates": [
+    {
+      "id": "PDE_EULER",
+      "parent": "PDE_ROOT",
+      "changed_design": "positive forward Euler",
+      "status": "RETAIN_BASELINE",
+      "selection_reason": "simple low-overhead positive fallback; highest tested action cost at same1e-5errorcap",
+      "theory": [
+        "mass and positivity if hq<=1",
+        "global Werror <=T h norm(Q^2u0)/2"
+      ],
+      "implementation": "src/pde_kernels.rs"
+    },
+    {
+      "id": "PDE_POISSON",
+      "parent": "PDE_ROOT",
+      "changed_design": "normalized Poisson polynomial",
+      "status": "SPECIALIZED_FOR_SPECIFIC_CASES_ONLY",
+      "selection_reason": "positive mass-preserving high-accuracy diffusion subflow; stiff polar q can dominate",
+      "theory": [
+        "truncation operator error<=2tail",
+        "weighted mass and positivity",
+        "split mu<=32; roundoff excluded"
+      ],
+      "implementation": "src/pde_kernels.rs"
+    },
+    {
+      "id": "PDE_RKL2",
+      "parent": "PDE_ROOT",
+      "changed_design": "second-order Legendre stability polynomial",
+      "status": "OPTIMIZATION_POSSIBLE",
+      "selection_reason": "fewer stencil actions for refined diffusion when smooth data and reversibleQ; no general positivity",
+      "theory": [
+        "Wcontractivity if hLambda<=(s^2+s-2)/2",
+        "global Werror <=5T h^2 norm(Q^3u0)/18",
+        "O(1+sqrt(hLambda)) actions per step"
+      ],
+      "pruned_subclaim": "unchecked positive PDE default",
+      "counterexample": "2D periodic delta at s3,hq2.5 has negative neighbor -5/512",
+      "implementation": "src/pde_kernels.rs"
+    }
+  ],
+  "evidence": {
+    "python_tests": 10,
+    "native_tests": 9,
+    "campaign_rows": 166,
+    "spatial_rows": 9,
+    "max_relative_mass_drift": 7.949196856316121e-14,
+    "timing": "separate root-coordinated PDE_NATIVE_BENCHMARK.jsonl, not inferred from action counts"
+  },
+  "remaining_issues": [
+    {
+      "id": "PDE-POLAR",
+      "priority": "high",
+      "action": "compare geometric grid changes and exact-longitude splitting under same total spatial/time/split error",
+      "acceptance": "positive conservative sphere convergence beyond single mu mode and matched-cost improvement"
+    },
+    {
+      "id": "PDE-INTEGRATION",
+      "priority": "high",
+      "action": "integrate graph subflow API, adaptive budget, transaction-safe positivity fallback and rejected-work accounting",
+      "acceptance": "accepted full nonlinear client trajectories with conservation/error evidence"
+    },
+    {
+      "id": "PDE-NONLINEAR",
+      "priority": "high",
+      "action": "derive conditions for variable diffusion/advection/reaction before routing general PDEs",
+      "acceptance": "independent manufactured solutions and nonsmooth positivity/robustness tests"
+    },
+    {
+      "id": "PDE-FLOAT",
+      "priority": "medium",
+      "action": "handle extreme-amplitude recurrences for nonzeroQ and positive time before production API integration",
+      "acceptance": "finite exact-output cases near f64 range return finite output without intermediate overflow; analytic truncationbound remains distinctfromroundoff",
+      "current_scope": "q0 and t0 identity bypass implemented in Euler/RKL2 and verified by2newregressions; general nonzeroQ extreme-amplitude safeguards remain"
+    }
+  ],
+  "inputs_reused": [
+    "research/spherical_information_20261023/RESEARCH_REPORT_KO.md"
+  ],
+  "source_files": {
+    "pde_frontier.py": "863b4dd64b2fc149f1a3f0d68f49ee15723d119b95e41b62a24e74edd0769fda",
+    "pde_plot.py": "b304462e65f80d7efa1c125d4859177134b36314b05bea7748b0d7c1b5aea28b",
+    "pde_native_driver.rs": "fe9bf0e010be1bfcb7596872fc031fe2186598a3dd3a7271daacb264ecc72931",
+    "pde_kernels.rs": "c63ddd9ae34760ece74e723882eaa16e4d26a191bb8cffe9b6bc843bd6e826c3"
+  },
+  "primary_source": {
+    "title": "A stabilized Runge–Kutta–Legendre method for explicit super-time-stepping of parabolic and mixed equations",
+    "doi": "10.1016/j.jcp.2013.08.021",
+    "url": "https://www.osti.gov/biblio/22230848",
+    "verified_scope": "bibliography/abstract; direct mathematical derivation in report"
+  },
+  "spatial_metric_interpretation": {
+    "periodic_2d_3d": "difference between discrete and continuum Fourier decay evaluated at cell centers; excludes initial cell-average projection and reconstruction error",
+    "sphere": "nonaxisymmetric x mode uses exact initial and continuum cell averages; independent semidiscrete latitude eigensystem",
+    "sphere_temporal_campaign": "axisymmetric mu mode; differs from sphere spatial-refinement fixture"
+  }
+}

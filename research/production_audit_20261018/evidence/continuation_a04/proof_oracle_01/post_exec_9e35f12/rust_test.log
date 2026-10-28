@@ -1,0 +1,18 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.05s
+     Running tests/production_audit_leja_arithmetic_oracle.rs (target/debug/deps/production_audit_leja_arithmetic_oracle-290ce2a0c1d8ced6)
+
+running 1 test
+
+thread 'frozen_arithmetic_fixture_export' (483292) panicked at crates/rodas5p-core/tests/production_audit_leja_arithmetic_oracle.rs:278:10:
+called `Result::unwrap()` on an `Err` value: Os { code: 2, kind: NotFound, message: "No such file or directory" }
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test frozen_arithmetic_fixture_export ... FAILED
+
+failures:
+
+failures:
+    frozen_arithmetic_fixture_export
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.98s
+
+error: test failed, to rerun pass `-p rodas5p-core --test production_audit_leja_arithmetic_oracle`

@@ -1,0 +1,29 @@
+# Standalone diffsol comparator of the BASS/rei NCP C1 campaign. Not a
+# workspace member: setup_ncp.sh copies this crate to CAMP/diffsol-adapter,
+# next to the checkout at CAMP/src, seeds Cargo.lock from the checkout's lock
+# merged with the archived diffsol-adapter lock (ncp_intensive_120m_v1), and
+# builds offline. The workspace Cargo.toml/Cargo.lock are never touched.
+[package]
+name = "vigilode_bassrei_diffsol"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[[bin]]
+name = "vigilode_bassrei_diffsol"
+path = "src/main.rs"
+
+[dependencies]
+diffsol = { version = "=0.17.1", default-features = false, features = ["nalgebra"] }
+serde_json = { version = "=1.0.151", features = ["float_roundtrip"] }
+rodas5p-core = { path = "../src/crates/rodas5p-core" }
+rodas5p-integrators = { path = "../src/crates/rodas5p-integrators" }
+rodas5p-krylov = { path = "../src/crates/rodas5p-krylov" }
+
+[profile.release]
+opt-level = 3
+lto = false
+codegen-units = 16
+panic = "abort"
+
+[workspace]

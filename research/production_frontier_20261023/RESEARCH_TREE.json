@@ -1,0 +1,360 @@
+{
+  "schema": "vigilode.frontier.research-tree.v1",
+  "protocol": "SEARCH_PROTOCOL.json",
+  "algorithm": "finite deterministic MCTS-inspired select-expand-evaluate-backpropagate; no stochastic UCT search",
+  "root_budget_siblings": 3,
+  "roots": [
+    {
+      "id": "SW",
+      "blockers": [
+        "SW02",
+        "SW03",
+        "DV01"
+      ]
+    },
+    {
+      "id": "QF",
+      "blockers": [
+        "QF01"
+      ]
+    },
+    {
+      "id": "CF",
+      "blockers": [
+        "CF01",
+        "CP01"
+      ]
+    },
+    {
+      "id": "QA",
+      "blockers": [
+        "QA01"
+      ]
+    },
+    {
+      "id": "PDE",
+      "blockers": [
+        "SG01"
+      ]
+    },
+    {
+      "id": "PB",
+      "blockers": [
+        "PB01"
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "id": "SW.LEGACY",
+      "parent": "SW",
+      "design_change": "pressure-only baseline",
+      "decision": "RETAIN_BASELINE",
+      "actual_work": "baseline",
+      "evidence": [
+        "analysis/SWITCHING.json"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "SW.PILOT",
+      "parent": "SW",
+      "design_change": "bounded same-checkpoint implicit pilot",
+      "decision": "OPTIMIZATION_POSSIBLE",
+      "actual_work": "implemented_and_measured",
+      "evidence": [
+        "results/switching_campaign/SUMMARY.json"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "SW.SESSION",
+      "parent": "SW",
+      "design_change": "persistent authorized native sessions",
+      "decision": "DEFER",
+      "actual_work": "specified_not_implemented",
+      "evidence": [
+        "analysis/SWITCHING.md"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "QF.LAWSON",
+      "parent": "QF",
+      "design_change": "existing Lawson forcing",
+      "decision": "RETAIN_BASELINE",
+      "actual_work": "baseline",
+      "evidence": [
+        "results/AFFINE_SUMMARY.json"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "QF.AFFINE",
+      "parent": "QF",
+      "design_change": "stable exact phi1 action",
+      "decision": "SPECIALIZED_ONLY",
+      "actual_work": "implemented_and_measured",
+      "evidence": [
+        "results/AFFINE_SUMMARY.json"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "QF.SHIFT",
+      "parent": "QF",
+      "design_change": "equilibrium-shift action",
+      "decision": "PRUNE_AS_DEFAULT",
+      "actual_work": "analytic_singularity_and_cancellation",
+      "evidence": [
+        "analysis/AFFINE_QUOTIENT.md"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "CF.RESIDUAL",
+      "parent": "CF",
+      "design_change": "residual-first baseline",
+      "decision": "RETAIN_BASELINE",
+      "actual_work": "measured_full_trajectories",
+      "evidence": [
+        "results/causal_campaign/SUMMARY.json"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "CF.FORWARD",
+      "parent": "CF",
+      "design_change": "causal forward",
+      "decision": "SPECIALIZED_ONLY",
+      "actual_work": "measured_full_trajectories",
+      "evidence": [
+        "analysis/CAUSAL_FINDINGS.json"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "CF.PICARD",
+      "parent": "CF",
+      "design_change": "batched causal Picard",
+      "decision": "HOLD_AS_DEFAULT",
+      "actual_work": "measured_full_trajectories",
+      "evidence": [
+        "results/CAUSAL_THREADS_AUDIT.json"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "QA.QUOTIENT",
+      "parent": "QA",
+      "design_change": "declared polynomial resolvent with full-space witness",
+      "decision": "SPECIALIZED_ONLY",
+      "actual_work": "implemented_action_counts",
+      "evidence": [
+        "analysis/POLYNOMIAL_CANDIDATES.json"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "QA.NEUMANN",
+      "parent": "QA",
+      "design_change": "geometric polynomial",
+      "decision": "PRUNE_NONCONTRACTIVE_FIXTURES",
+      "actual_work": "measured_action_counts",
+      "evidence": [
+        "results/polynomial_campaign.json"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "QA.FALLBACK",
+      "parent": "QA",
+      "design_change": "retain general solver",
+      "decision": "RETAIN",
+      "actual_work": "general_fallback_with_direct_2x2_control",
+      "evidence": [
+        "analysis/POLYNOMIAL.md"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "PDE.EULER",
+      "parent": "PDE",
+      "design_change": "conservative Euler",
+      "decision": "RETAIN_BASELINE",
+      "actual_work": "native_grid_measurements",
+      "evidence": [
+        "results/PDE_NATIVE_SUMMARY.json"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "PDE.UNIFORM",
+      "parent": "PDE",
+      "design_change": "positive Poisson uniformization",
+      "decision": "SPECIALIZED_ONLY",
+      "actual_work": "native_grid_measurements",
+      "evidence": [
+        "results/PDE_NATIVE_SUMMARY.json"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "PDE.RKL2",
+      "parent": "PDE",
+      "design_change": "Legendre stabilized second-order polynomial",
+      "decision": "OPTIMIZATION_POSSIBLE",
+      "actual_work": "native_grid_measurements",
+      "evidence": [
+        "results/PDE_NATIVE_SUMMARY.json"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "PB.REUSE",
+      "parent": "PB",
+      "design_change": "prior published unchanged cohorts",
+      "decision": "RETAIN",
+      "actual_work": "source_assumption_audit_no_unchanged_rerun",
+      "evidence": [
+        "evidence/SOURCE_SURVEY.json",
+        "BENCHMARK_PLAN.json"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "PB.TARGETED",
+      "parent": "PB",
+      "design_change": "new affected trajectories and grid tests",
+      "decision": "COMPLETE_SCOPED",
+      "actual_work": "new_changed_path_evidence",
+      "evidence": [
+        "SUMMARY.json",
+        "results/FINAL_EVIDENCE_AUDIT.json"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "PB.EXTERNAL",
+      "parent": "PB",
+      "design_change": "future local VODE/DVODE diffsol Julia matched-error cohort",
+      "decision": "NOT_RUN",
+      "actual_work": "plan_only",
+      "evidence": [
+        "BENCHMARK_PLAN.json"
+      ],
+      "global_optimality_claim": false
+    },
+    {
+      "id": "QF.AFFINE.HARMONIC",
+      "parent": "QF.AFFINE",
+      "design_change": "Add two regular shifted-frequency actions for declared single harmonic forcing",
+      "trigger": "source inspection shows original forcing counterexample was sin/cos, not constant",
+      "decision": "SPECIALIZED_ONLY",
+      "actual_work": "implemented, native contracts and same-output timing",
+      "evidence": [
+        "analysis/AFFINE_QUOTIENT.json",
+        "results/AFFINE_SUMMARY.json"
+      ]
+    },
+    {
+      "id": "PDE.RKL2.POLE_SPLIT",
+      "parent": "PDE.RKL2",
+      "design_change": "Exact longitude FFT plus latitude RKL2 Strang splitting",
+      "trigger": "sphere polar outgoing rate and Poisson cost",
+      "decision": "HOLD",
+      "actual_work": "Python prototype,42 error/work rows and3tests; no latency claim",
+      "evidence": [
+        "results/POLE_SPLIT.json",
+        "results/POLE_SPLIT_TESTS.log"
+      ]
+    },
+    {
+      "id": "PDE.RKL2.POSITIVITY",
+      "parent": "PDE.RKL2",
+      "design_change": "Audit hypothetical unconditional positivity claim",
+      "trigger": "conservation does not imply componentwise positivity",
+      "decision": "PRUNE_CLAIM",
+      "actual_work": "exact -5/512 counterexample",
+      "evidence": [
+        "results/ADVERSARIAL_EXACT_CHECKS.json"
+      ]
+    },
+    {
+      "id": "CF.PICARD.THREADS2",
+      "parent": "CF.PICARD",
+      "design_change": "Use two stage workers instead of one",
+      "trigger": "sequential-loop parallelism objective",
+      "decision": "PRUNE_UNCONDITIONAL_SMALL_RHS_DEFAULT",
+      "actual_work": "84 bitwise replay pairs,42 setting latency comparisons",
+      "evidence": [
+        "results/CAUSAL_THREADS_AUDIT.json"
+      ]
+    }
+  ],
+  "rounds": [
+    {
+      "round": 1,
+      "action": "select",
+      "basis": "source audit of independent remaining blockers; unchanged evidence reused"
+    },
+    {
+      "round": 2,
+      "action": "expand",
+      "basis": "up to3 designs per independent blocker, agents work in parallel"
+    },
+    {
+      "round": 3,
+      "action": "evaluate",
+      "basis": "proof assumptions, real code contracts, native stored results and negative controls"
+    },
+    {
+      "round": 4,
+      "action": "expand_children",
+      "nodes": [
+        "QF.AFFINE.HARMONIC",
+        "PDE.RKL2.POLE_SPLIT",
+        "PDE.RKL2.POSITIVITY",
+        "CF.PICARD.THREADS2"
+      ]
+    },
+    {
+      "round": 5,
+      "action": "backpropagate_and_prune",
+      "basis": "scope-qualified portfolio retained, automatic general promotion rejected by mixed outcomes; child failure cannot be averaged away"
+    }
+  ],
+  "interpretation": "Rounds express logical research progression, not fabricated wall timestamps or UCT visit/reward counters. Source-specific detailed documents preserve actual measurements.",
+  "pareto_policy": {
+    "hard_constraints": [
+      "mathematical assumptions explicit",
+      "original residual/true error validated",
+      "failures retained",
+      "source identity recorded"
+    ],
+    "objectives": [
+      "achieved error",
+      "weighted invariant defects",
+      "actual work",
+      "single-thread elapsed",
+      "workspace/storage",
+      "applicability"
+    ],
+    "dominance": "Compare only same problem, reference, accuracy budget and execution cohort. Unknown dimensions prevent dominance. Different support requires separate portfolio branches.",
+    "backpropagation": "Parent records verified leaves, failures, unresolved eligibility, Pareto set, without averaging away a failed correctness condition.",
+    "pruning": "Local scope only; no strong universal no-go."
+  },
+  "selected_portfolio": [
+    "QF.AFFINE",
+    "QF.AFFINE.HARMONIC",
+    "CF.FORWARD",
+    "QA.QUOTIENT",
+    "PDE.RKL2",
+    "PDE.UNIFORM"
+  ],
+  "experimental_only": [
+    "SW.PILOT",
+    "PDE.RKL2.POLE_SPLIT"
+  ],
+  "pruning_scope": "No unsupported universal impossibility theorem. Unknown timing or applicability prevents a strict Pareto dominance declaration."
+}

@@ -1,0 +1,146 @@
+{
+  "schema": "vigilode.general-ode-numerical-audit.v1",
+  "base_commit": "057fecf0698fa262d881f101625e6b0bb93791cf",
+  "solver_source_equivalent_to": "1cdf2c3071498888f2d8ff3ddc0629cb3cf443ef",
+  "scope": "ordinary identity-mass ODEs; selected DOPRI5 and RODAS5P; application-specific work excluded",
+  "assessment": "bounded candidate; unrestricted production readiness not established by this numerical audit",
+  "proofs": [
+    {
+      "id": "NUM-P1",
+      "claim": "DOPRI5 exact rational tableau satisfies all endpoint order conditions through five and embedded conditions through four",
+      "status": "exact-computation-verified",
+      "endpoint_conditions": 17,
+      "embedded_conditions": 8,
+      "artifact": "NUMERICS_CHECK.json",
+      "limits": [
+        "Exact rational interpretation; floating-point and callback perturbations separate.",
+        "Embedded local estimate is not a global-error certificate."
+      ]
+    },
+    {
+      "id": "NUM-P2",
+      "claim": "Declared constant-frequency normal skew-Hermitian system has a constructive global DOPRI5 state-error bound under |omega|max*hmax <= 0.9",
+      "status": "analytical-proof",
+      "bound": "||y0|| T omega_max^6 hmax^5 (1/3600 + 0.9 exp(0.9)/5040)",
+      "limits": [
+        "Exact arithmetic, positive variable steps summing to T.",
+        "Not a theorem for general nonlinear or nonnormal oscillators.",
+        "No automatic frequency adapter implemented."
+      ]
+    },
+    {
+      "id": "NUM-P3",
+      "claim": "Arbitrary accepted-state method selection preserves order under common uniform stability and defect bounds",
+      "status": "analytical-proof-conditional",
+      "bound": "E_N <= exp(L*T)*(E_0+Cmax*T*hmax^p+sum(eta_n))",
+      "limits": [
+        "Requires eligible method maps with specified Lipschitz/local-defect bounds.",
+        "Current selector chooses before integration; automatic switching is not implemented."
+      ]
+    },
+    {
+      "id": "NUM-P4",
+      "claim": "Pause/resume preserves deterministic transition trajectory and work when the full native state and registered schedule are unchanged",
+      "status": "analytical-proof-conditional",
+      "work": "DOPRI5 FSAL: 1+6*A RHS calls for A full trials; K restarts give K+6*A only on otherwise identical attempted trajectories",
+      "limits": [
+        "Partial failed callbacks excluded from that exact RHS formula.",
+        "No universal wall-clock speedup.",
+        "Provider or model change invalidates caches."
+      ]
+    }
+  ],
+  "findings": [
+    {
+      "id": "NUM-F1",
+      "severity": "high",
+      "summary": "Reused finite stage storage concealed incomplete Ok callback writes in the implicit facade",
+      "status": "fixed-tested-scoped",
+      "implementation": [
+        "crates/vigilode/src/fd.rs",
+        "crates/vigilode/src/solve.rs"
+      ],
+      "tests": [
+        "crates/vigilode/tests/production_rhs_contracts.rs",
+        "fd::tests::vector_callback_refuses_invalid_input_without_entering_user_code",
+        "fd::tests::vector_callback_detects_stale_output_on_reused_buffer"
+      ],
+      "behavior": "Nonfinite numerical inputs are refused before entering user code; outputs are poisoned; malformed Ok is terminal; sparse Jacobian writes preserved.",
+      "limits": [
+        "Raw native entry points outside the facade do not inherit this guard.",
+        "Additional O(n) guard work must be included in timings."
+      ],
+      "verification_receipt": "../VALIDATION.json"
+    },
+    {
+      "id": "NUM-F2",
+      "severity": "medium",
+      "summary": "Fast RODAS scalar/vector acceptance norm did not reject overflowed tolerance scale",
+      "status": "fixed-tested-scoped",
+      "implementation": [
+        "crates/rodas5p-integrators/src/rodas5p_fast.rs"
+      ],
+      "tests": [
+        "rodas5p_fast::tests::fast_error_norm_refuses_overflowed_scalar_and_vector_scales"
+      ],
+      "counterexample": {
+        "atol": 1e+308,
+        "rtol": 1.0,
+        "state_magnitude": 1e+308,
+        "scale_float": "infinity",
+        "prior_result_for_finite_error": "zero normalized contribution"
+      },
+      "limits": [
+        "Contract/controller inconsistency; not claimed to demonstrate an inaccurate step falsely accepted."
+      ],
+      "verification_receipt": "../VALIDATION.json"
+    },
+    {
+      "id": "NUM-F3",
+      "severity": "low",
+      "summary": "Fast RODAS sum of normalized squares can overflow for extreme rejected defects",
+      "status": "deferred-no-demonstrated-accuracy-failure",
+      "reason": "For realizable dimensions, such a norm already requires rejection; possible overconservative shrinkage requires performance evidence."
+    }
+  ],
+  "source_facts": {
+    "dopri5_stages": 7,
+    "dopri5_fsal_subsequent_rhs": 6,
+    "rodas5p_stages": 8,
+    "rodas5p_transformed_W": "I/(gamma*h)-J",
+    "rodas5p_stage_error": "last transformed stage u_8",
+    "rodas5p_scalar_snapshot_check": "decimal-coefficient structure evidence only, not full nonlinear order proof"
+  },
+  "services": {
+    "wolfram": "new independent exact tableau/stability/log-series computations completed; raw responses preserved",
+    "scispace": "discovery completed; returned metadata not treated as validation of original method papers"
+  },
+  "next_steps": [
+    {
+      "id": "NUM-N1",
+      "priority": 1,
+      "action": "Bind global accuracy budgets to declared stability/frequency information with matching reference tests",
+      "acceptance": "Proof assumptions explicit; global state and phase/amplitude tests on matching problem class; no extrapolation to nonlinear systems."
+    },
+    {
+      "id": "NUM-N2",
+      "priority": 1,
+      "action": "Implement shared accepted-state switch with cache invalidation and measured startup accounting",
+      "acceptance": "No state jump; same RHS/model epoch; all work counted; recovery and phase/accuracy tests pass."
+    },
+    {
+      "id": "NUM-N3",
+      "priority": 1,
+      "action": "Complete implicit persistent facade and online terminal event semantics",
+      "acceptance": "Native parity, finite-state callbacks, quota invariance, accepted-prefix failure and event termination verified."
+    },
+    {
+      "id": "NUM-N4",
+      "priority": 2,
+      "action": "Benchmark callback hardening overhead on cheap and expensive RHS with fixed accepted solutions",
+      "acceptance": "Paired timings, accuracy matches, full callback cost included; optimize only under measured regression."
+    }
+  ],
+  "verification": "See root-level evidence receipts for compiled tests; exact arithmetic check executed locally and saved here.",
+  "no_ncp": true
+}

@@ -1,0 +1,138 @@
+{
+ "control": "C3 DenseErrorControl::Off under-controls interior outputs",
+ "expected": "Off far above reliability_c2.ratio_max=100 (audit DP-01: 1801.6)",
+ "grid": "uniform101",
+ "metric": "max over outputs of |y-ref|/(atol+rtol*|ref|)",
+ "problem": "prothero-robinson-nl",
+ "reference": "exact sin t (rodas5p triage-exact)",
+ "rows": [
+  {
+   "arm": "seq-direct",
+   "attempts": 107,
+   "h0_scale": 0.5,
+   "max_requested_normalized_error": 6.632710004483773e-07,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct",
+   "attempts": 106,
+   "h0_scale": 1.0,
+   "max_requested_normalized_error": 6.632710004483773e-07,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct",
+   "attempts": 106,
+   "h0_scale": 2.0,
+   "max_requested_normalized_error": 6.632710004483773e-07,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct-dense-enforce",
+   "attempts": 45,
+   "h0_scale": 0.5,
+   "max_requested_normalized_error": 1.0418689253955833,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct-dense-enforce",
+   "attempts": 44,
+   "h0_scale": 1.0,
+   "max_requested_normalized_error": 1.0933030660056111,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct-dense-enforce",
+   "attempts": 44,
+   "h0_scale": 2.0,
+   "max_requested_normalized_error": 1.2978777489659417,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct-dense-off",
+   "attempts": 11,
+   "h0_scale": 0.5,
+   "max_requested_normalized_error": 975.7497345406208,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct-dense-off",
+   "attempts": 11,
+   "h0_scale": 1.0,
+   "max_requested_normalized_error": 1751.990412875421,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct-dense-off",
+   "attempts": 10,
+   "h0_scale": 2.0,
+   "max_requested_normalized_error": 954.2341753634786,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct-dense-report",
+   "attempts": 11,
+   "h0_scale": 0.5,
+   "max_requested_normalized_error": 975.7497345406208,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct-dense-report",
+   "attempts": 11,
+   "h0_scale": 1.0,
+   "max_requested_normalized_error": 1751.990412875421,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct-dense-report",
+   "attempts": 10,
+   "h0_scale": 2.0,
+   "max_requested_normalized_error": 954.2341753634786,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct-dense-report-defect",
+   "attempts": 11,
+   "h0_scale": 0.5,
+   "max_requested_normalized_error": 975.7497345406208,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct-dense-report-defect",
+   "attempts": 11,
+   "h0_scale": 1.0,
+   "max_requested_normalized_error": 1751.990412875421,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct-dense-report-defect",
+   "attempts": 10,
+   "h0_scale": 2.0,
+   "max_requested_normalized_error": 954.2341753634786,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct-maxstep-strict",
+   "attempts": 107,
+   "h0_scale": 0.5,
+   "max_requested_normalized_error": 6.632710004483773e-07,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct-maxstep-strict",
+   "attempts": 106,
+   "h0_scale": 1.0,
+   "max_requested_normalized_error": 6.632710004483773e-07,
+   "status": "ok"
+  },
+  {
+   "arm": "seq-direct-maxstep-strict",
+   "attempts": 106,
+   "h0_scale": 2.0,
+   "max_requested_normalized_error": 6.632710004483773e-07,
+   "status": "ok"
+  }
+ ],
+ "rtol": 1e-08,
+ "schema": "vigilode-triage-control-c3-v1"
+}

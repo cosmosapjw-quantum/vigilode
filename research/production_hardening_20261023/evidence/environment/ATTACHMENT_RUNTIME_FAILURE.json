@@ -1,0 +1,11 @@
+{
+  "kind": "environment",
+  "archive": "project_sources/06-rust-1.94.1-x86_64-unknown-linux-gnu.tar.xz",
+  "failure": "Large shared objects in the extraction/install output were shorter than ELF declarations. This is an extraction/environment failure, not demonstrated source archive corruption.",
+  "librustc_driver_bytes": 74930176,
+  "declared_program_header_offset": 83886080,
+  "driver_sha256": "c7ca8d86e716fa0bea70db42cbaacbeefe8a99723daa1fed62dcf6de128ff39e",
+  "repair": "Fetched manifest-SHA-verified official same-version components. GNU tar extraction again yielded a short LLVM file; Python tarfile complete-member read/write restored all declared bytes, allowing rustc -Vv and offline cargo metadata to pass.",
+  "initial_vendor_extract_failure": "tar attempted uid/gid1000 ownership unsupported; rerun --no-same-owner completed exit0",
+  "archive_corruption_established": false
+}

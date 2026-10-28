@@ -1,0 +1,254 @@
+{
+  "schema_version": "vigilode-coupled-theory-sources/v1",
+  "created_utc": "2026-10-22",
+  "source_commit": "8878e55a54e3a5f99fa81d6d3b08e05c94ed3db2",
+  "scope": {
+    "ncp_used": false,
+    "prior_published_experiments_rerun": false,
+    "new_numerical_experiments_performed_by_this_theory_track": false,
+    "symbolic_check_performed": true,
+    "source_inspection": "static",
+    "current_target": "autonomous identity-mass raw-U coupled",
+    "code_changes_owned_by_this_track": []
+  },
+  "inputs": [
+    {
+      "path": "research/coupled_stage_adoption_20261022/inputs/PRIOR_IDEAS.txt",
+      "sha256": "a517b6fc3f2729b359b879426d604fb303403265e2540ecfcdb0a3b9f2a3da7d",
+      "read_scope": "complete",
+      "reproduced_prior_experiments": false
+    },
+    {
+      "path": "research/coupled_stage_adoption_20261022/inputs/PRIOR_RESEARCH.md",
+      "sha256": "c877a1bbd30439c4488373754ba1c189ea4a99c2e2b8544d37cf8703e93d74ad",
+      "read_scope": "complete",
+      "reproduced_prior_experiments": false
+    }
+  ],
+  "research_workflow": {
+    "skill": "physmath-research-loop",
+    "requested_internal_version": "1.0.0",
+    "theory_loop": "conditional derivation, primary-source comparison, symbolic adversarial check, implementation handoff",
+    "coding_loop": "handed off to native adaptive, fallback/bounds and projected block-solve agents"
+  },
+  "source_paths_inspected": [
+    "crates/rodas5p-integrators/src/raw_stage_target.rs",
+    "crates/rodas5p-integrators/src/stage_target.rs",
+    "crates/rodas5p-integrators/src/causal_majorant.rs",
+    "crates/rodas5p-integrators/src/sequential.rs",
+    "crates/vigilode-coupled/src/lib.rs",
+    "crates/vigilode-coupled/src/solver.rs",
+    "crates/vigilode-coupled/src/algebra.rs",
+    "crates/vigilode-coupled/src/residual_first.rs",
+    "crates/vigilode-hybrid/src/native.rs"
+  ],
+  "primary_sources": [
+    {
+      "id": "EW1996",
+      "title": "Choosing the Forcing Terms in an Inexact Newton Method",
+      "authors": [
+        "Stanley C. Eisenstat",
+        "Homer F. Walker"
+      ],
+      "year": 1996,
+      "doi": "10.1137/0917003",
+      "url": "https://epubs.siam.org/doi/10.1137/0917003",
+      "author_copy": "https://users.wpi.edu/~walker/Papers/forcing_terms,SISC_17,1996,16-32.pdf",
+      "retrieval": "Exa search; original article abstract and author PDF excerpts",
+      "supported_use": "Inexact Newton forcing balances linear work and nonlinear progress; avoid oversolving. Does not certify the present solver."
+    },
+    {
+      "id": "SAAD1993",
+      "title": "A Flexible Inner-Outer Preconditioned GMRES Algorithm",
+      "authors": [
+        "Yousef Saad"
+      ],
+      "year": 1993,
+      "doi": "10.1137/0914028",
+      "url": "https://epubs.siam.org/doi/10.1137/0914028",
+      "retrieval": "Exa search; original publisher abstract",
+      "supported_use": "Variable preconditioning requires an appropriate flexible Krylov formulation."
+    },
+    {
+      "id": "PETSC_FGMRES",
+      "title": "KSPFGMRES official documentation",
+      "url": "https://petsc.org/release/manualpages/KSP/KSPFGMRES/",
+      "retrieval": "Exa full page fetch",
+      "supported_use": "Official distinction between a linear fixed preconditioner and nonlinear or changing preconditioning. The retrieved documentation version was 3.26.0."
+    },
+    {
+      "id": "LUAN_OSTERMANN2016",
+      "title": "Parallel exponential Rosenbrock methods",
+      "authors": [
+        "Vu Thai Luan",
+        "Alexander Ostermann"
+      ],
+      "year": 2016,
+      "doi": "10.1016/j.camwa.2016.01.020",
+      "url": "https://www.sciencedirect.com/science/article/pii/S0898122116300165",
+      "retrieval": "SciSpace paper search abstract; Exa publisher-page fetch",
+      "supported_use": "Parallel exponential Rosenbrock schemes are separately constructed methods with their own order conditions; they are not the same as solving an existing RODAS5P target in parallel. Full paper proof was not revalidated."
+    },
+    {
+      "id": "TRANQUILLI_SANDU2014",
+      "title": "Rosenbrock-Krylov Methods for Large Systems of Differential Equations",
+      "authors": [
+        "Paul Tranquilli",
+        "Adrian Sandu"
+      ],
+      "year": 2014,
+      "doi": "10.1137/130923336",
+      "url": "https://arxiv.org/abs/1305.5481",
+      "retrieval": "SciSpace search; Exa original arXiv abstract fetch",
+      "supported_use": "Small fixed subspace order results are part of a distinct Rosenbrock-K order theory, not automatically inherited by this fixed RODAS5P method. Only abstract-level comparison was used."
+    },
+    {
+      "id": "SHEEHAN_SAAD_SIDJE2010",
+      "title": "Computing exp(-tau A)b with Laguerre polynomials",
+      "authors": [
+        "Bernard N. Sheehan",
+        "Yousef Saad",
+        "Roger B. Sidje"
+      ],
+      "year": 2010,
+      "journal": "Electronic Transactions on Numerical Analysis",
+      "volume": 37,
+      "pages": "147-165",
+      "url": "https://experts.umn.edu/en/publications/computing-exp-touab-with-laguerre-polynomials/",
+      "retrieval": "Exa search; author university publication record and abstract",
+      "supported_use": "Laguerre matrix-function actions motivate short recurrence and lower inner-product/storage cost. This does not prove a production bound for raw-U stage solves."
+    }
+  ],
+  "search_receipts": [
+    {
+      "tool": "SciSpace.search_papers",
+      "query": "Which original numerical analysis papers construct parallel exponential Rosenbrock methods with shared matrix-function Krylov subspaces, and what order and parallel stage conditions distinguish them from simultaneously solving the coupled stages of a fixed Rosenbrock method?",
+      "outcome": "success",
+      "papers_returned": 10,
+      "reused_records": [
+        "LUAN_OSTERMANN2016",
+        "TRANQUILLI_SANDU2014"
+      ]
+    },
+    {
+      "tool": "Exa.web_search_exa",
+      "query": "Original papers and official PETSc documentation Eisenstat Walker choosing forcing terms in an inexact Newton method 1996 and Saad flexible inner outer preconditioned GMRES varying nonlinear preconditioner",
+      "outcome": "success",
+      "reused_records": [
+        "EW1996",
+        "SAAD1993"
+      ]
+    },
+    {
+      "tool": "Exa.web_fetch_exa",
+      "urls": [
+        "https://petsc.org/release/manualpages/KSP/KSPFGMRES/",
+        "https://arxiv.org/abs/1305.5481",
+        "https://www.sciencedirect.com/science/article/pii/S0898122116300165"
+      ],
+      "outcome": "success"
+    },
+    {
+      "tool": "Exa.web_search_exa",
+      "query": "Original paper Laguerre polynomial expansion matrix exponential differential equations Laguerre matrix function action error estimate stable exponential integrator",
+      "outcome": "success",
+      "reused_records": [
+        "SHEEHAN_SAAD_SIDJE2010"
+      ],
+      "unused_relevant_hit": "Khoroshikh and Kurbatov, An approximation of matrix exponential by a truncated Laguerre series (2025); not used for a present solver guarantee."
+    }
+  ],
+  "symbolic_receipt": {
+    "tool": "Wolfram.wolframlanguageevaluator",
+    "context_attempt": {
+      "tool": "Wolfram.wolframcontext",
+      "outcome": "tool_error",
+      "message": "MCP -32603 Internal error"
+    },
+    "evaluation_outcome": "success",
+    "time_constraint_seconds": 45,
+    "wolfram_language_code": "aa={{0,0,0},{a21,0,0},{a31,a32,0}}; cc={{0,0,0},{c21,0,0},{c31,c32,0}}; gg=Simplify[Inverse[IdentityMatrix[3]/gam-cc]]; al=Simplify[aa.gg]; gl=gg-gam IdentityMatrix[3]; kk={k1,k2,k3}; uu=gg.kk; fun[z_]:=z+z^2; j0=1+2 yy; ww=1-hh gam j0; rk=ww kk-hh(fun/@(yy+al.kk))-hh j0 gl.kk; ru=ww uu-hh gam(fun/@(yy+aa.uu))-gam cc.uu; delta=FullSimplify[ru-gam rk,Assumptions->gam!=0]; nn=fun/@(yy+al.kk)-ConstantArray[fun[yy],3]-j0 al.kk; bb=hh j0(al+gl); eta=th+lam(1-th); hhomo=ww kk-eta bb.kk-hh ConstantArray[fun[yy],3]-lam hh nn; detcheck=Simplify[Det[Table[D[hhomo[[i]],kk[[j]]],{i,3},{j,3}]]-ww^3]; ll={{0,0,0},{l21,0,0},{l31,l32,0}}; causalcheck=Simplify[Inverse[IdentityMatrix[3]-ll]-(IdentityMatrix[3]+ll+ll.ll)]; skew={{0,1},{-1,0}}; vv={{1},{0}}; <|\"raw_minus_gamma_native\"->delta,\"homotopy_determinant_minus_W_power_s\"->detcheck,\"causal_inverse_identity\"->causalcheck,\"projection_counterexample_full_det\"->Det[skew],\"projection_counterexample_reduced_det\"->Det[Transpose[vv].skew.vv]|>",
+    "result": {
+      "raw_minus_gamma_native": [
+        0,
+        0,
+        0
+      ],
+      "homotopy_determinant_minus_W_power_s": 0,
+      "causal_inverse_identity": [
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0
+        ]
+      ],
+      "projection_counterexample_full_det": 1,
+      "projection_counterexample_reduced_det": 0
+    },
+    "meaning": "Exact symbolic 3-stage scalar quadratic example with generic coefficients; verifies algebraic identities in that setup, not full eight-stage binary64 implementation or runtime performance.",
+    "raw_tool_receipt_path": "research/coupled_stage_adoption_20261022/SYMBOLIC_CHECK.json"
+  },
+  "derived_results": [
+    {
+      "id": "THM_TRIANGULAR",
+      "status": "proved_conditional",
+      "statement": "Triangular homotopy with invertible common diagonal W has unique stages and determinant det(W)^s; exact undamped Newton determines one more stage per update, at most s updates."
+    },
+    {
+      "id": "THM_INVARIANT",
+      "status": "proved_conditional",
+      "statement": "If f0, J0 action and nonlinear remainder preserve a common finite-dimensional subspace and projected W is invertible, the lifted projected solution solves the original raw-U target exactly."
+    },
+    {
+      "id": "THM_CAUSAL",
+      "status": "proved_conditional",
+      "statement": "With valid inverse and Lipschitz bounds, E_i=kappa rho_i+sum_j<i kappa(abs(gamma Cij)+abs(h gamma)L_i abs(Aij)) E_j bounds raw-U stage error; endpoint and embedded perturbations are bounded separately."
+    },
+    {
+      "id": "THM_GLOBAL",
+      "status": "proved_conditional",
+      "statement": "A stable fifth-order step map plus per-step root output error O(h^6) preserves fifth-order global convergence on a fixed interval."
+    },
+    {
+      "id": "COMPLEXITY",
+      "status": "derived_conditional",
+      "statement": "Fixed s,m and O(n) RHS/JVP imply O(n) state-dimension work and storage. Small common-diagonal block solve can replace O((sm)^3) dense factorization by O(m^3+s^2 m^2). No universal speedup over existing sparse/banded baselines follows."
+    }
+  ],
+  "implementation_contract": {
+    "raw_target_preserved": true,
+    "fallback_target": "same raw-U matrix-free fast target",
+    "conditional_bounds_are_certificates": false,
+    "user_assumptions": [
+      "inverse L2 norm bound for W",
+      "RHS Lipschitz bounds on a valid stage domain"
+    ],
+    "output_budgets": [
+      "endpoint perturbation",
+      "embedded error perturbation"
+    ],
+    "roundoff_status": "ordinary f64 estimates unless separate outward rounding and callback evaluation enclosures are implemented",
+    "required_total_cost_components": [
+      "failed coupled attempt",
+      "basis growth",
+      "RHS",
+      "JVP",
+      "residual validation",
+      "small factorization and solve",
+      "fallback",
+      "rejected physical steps"
+    ],
+    "current_common_diagonal_solve": "One m-by-m factor per reduced solve; full reduced matrix still stored; O(m^3+s^2*m^2) when s varies; at fixed s=8 an arithmetic constant improvement, not a change of asymptotic order in n or m."
+  },
+  "published_preregistration_commit": "2ba9bdb49e91722f1381ed4e33ee0d65ab8d5a7b"
+}

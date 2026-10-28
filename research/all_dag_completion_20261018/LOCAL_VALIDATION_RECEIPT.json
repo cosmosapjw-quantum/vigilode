@@ -1,0 +1,169 @@
+{
+  "branch": "research/all-dag-local-validation-20261018",
+  "claim_ceiling": {
+    "broad_production": "HOLD",
+    "general_solver_accuracy": "HOLD",
+    "matched_accuracy_speed": "HOLD",
+    "timing_authority": "DIAGNOSTIC_ONLY",
+    "twelve_original_nodes": "implemented and independently reviewed in scoped domains; this local run adds source-bound contracts and client smoke evidence",
+    "zero_allocation": "not claimed for full benchmark arms; calibrated step_into allocation contract is a narrower test"
+  },
+  "environment": {
+    "RAYON_NUM_THREADS": null,
+    "RUSTFLAGS": null,
+    "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+    "cpu_model": "AMD Ryzen 9 5900X 12-Core Processor",
+    "dependencies": "--locked --offline",
+    "logical_cpus": 24,
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)"
+  },
+  "evidence_directories": [
+    "research/all_dag_completion_20261018/local_validation_01",
+    "research/all_dag_completion_20261018/local_example_01",
+    "research/all_dag_completion_20261018/local_timing_01"
+  ],
+  "recorded_at_utc": "2026-10-18T11:55:55Z",
+  "repository": "https://github.com/cosmosapjw-quantum/vigilode.git",
+  "schema_version": 1,
+  "source_identity": {
+    "cargo_lock_sha256": "04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400",
+    "dag_sha256": "38f2d5c2a5ba44dcf93120bbd0c9a1c98937d20767f74065a5e2372003c68063",
+    "source_and_dag_unchanged": true,
+    "source_files": 414,
+    "source_manifest_sha256": "5a461ee10fc178e188631e242705d992978d68292d4a10f0ee3f856854cea916"
+  },
+  "task": "LOCAL-01 through LOCAL-05 local continuation of published all-node DAG",
+  "tasks": {
+    "LOCAL-01": {
+      "command": [
+        "python3",
+        "tools/validate_all_dag_completion.py"
+      ],
+      "exit_code": 0,
+      "result": {
+        "dag_sha256": "38f2d5c2a5ba44dcf93120bbd0c9a1c98937d20767f74065a5e2372003c68063",
+        "errors": [],
+        "node_count": 12,
+        "passed": true,
+        "production_promotion": false,
+        "schema_version": 1,
+        "source_files_checked": 414,
+        "source_manifest_sha256": "5a461ee10fc178e188631e242705d992978d68292d4a10f0ee3f856854cea916",
+        "speed_promotion": false
+      }
+    },
+    "LOCAL-02": {
+      "command": [
+        "python3",
+        "tools/validate_all_dag_completion.py",
+        "--execute",
+        "--output",
+        "research/all_dag_completion_20261018/local_validation_01"
+      ],
+      "commands": [
+        {
+          "exit_code": 0,
+          "id": "core_contracts",
+          "log": "core_contracts.log",
+          "log_sha256": "edcc190dc8077a564dde48603435e9d4eeede3ce42d594ad190de0d53c6979d2",
+          "wall_seconds": 41.17536379804369
+        },
+        {
+          "exit_code": 0,
+          "id": "integrator_contracts",
+          "log": "integrator_contracts.log",
+          "log_sha256": "abadc9302861c6250af24e49542ff8a8e27c6a87a76c9deba171598b18c6a7af",
+          "wall_seconds": 99.93409344903193
+        },
+        {
+          "exit_code": 0,
+          "id": "homotopy_unit",
+          "log": "homotopy_unit.log",
+          "log_sha256": "4e0f1af65080bcb3eed5a7b3cc19338253bd14764c9e01b678d402e6572d1bf4",
+          "wall_seconds": 15.264751889044419
+        },
+        {
+          "exit_code": 0,
+          "id": "leja_token_doc",
+          "log": "leja_token_doc.log",
+          "log_sha256": "312eae8a1a35c50b5346d56a080d3dbfbba3c67adfddf14907c4be91bf8fc231",
+          "wall_seconds": 1.8188577080145478
+        },
+        {
+          "exit_code": 0,
+          "id": "polynomial_token_doc",
+          "log": "polynomial_token_doc.log",
+          "log_sha256": "b247e1c8c6bb1241c67dfd5df9479d5845e6c75a2ed359221d87a9f98413750a",
+          "wall_seconds": 1.5638003099011257
+        },
+        {
+          "exit_code": 0,
+          "id": "tool_contracts",
+          "log": "tool_contracts.log",
+          "log_sha256": "8bc5b2d6a21146518875d5890f452bb27c516c002f743f2fcf17a14f79a18de3",
+          "wall_seconds": 1.1007004990242422
+        }
+      ],
+      "exit_code": 0,
+      "passed": true
+    },
+    "LOCAL-03": {
+      "all_six_handoff_examples_exit_zero": true,
+      "example_record": "research/all_dag_completion_20261018/local_example_01/EXAMPLE_RUNS.json",
+      "required_command": "nonlinear_homotopy_run",
+      "required_exit_code": 0
+    },
+    "LOCAL-04": {
+      "all_allocator_positive_controls_pass": true,
+      "all_empirical_accuracy_gates_pass": true,
+      "all_success": true,
+      "command": [
+        "python3",
+        "tools/all_dag_benchmark.py",
+        "run",
+        "--modes",
+        "8",
+        "32",
+        "128",
+        "--repeats",
+        "5",
+        "--processes",
+        "5",
+        "--output",
+        "research/all_dag_completion_20261018/local_timing_01"
+      ],
+      "exit_code": 0,
+      "measured_allocation_calls": [
+        38,
+        70,
+        527,
+        528,
+        869,
+        1857
+      ],
+      "report": "research/all_dag_completion_20261018/local_timing_01/REPORT.md",
+      "rows": 450,
+      "schema_valid": true,
+      "source_bound": true,
+      "speed_promotion": "HOLD"
+    },
+    "LOCAL-05": {
+      "receipt": "research/all_dag_completion_20261018/LOCAL_VALIDATION_RECEIPT.json",
+      "report": "research/all_dag_completion_20261018/LOCAL_REPORT_KO.md"
+    }
+  },
+  "tested_source_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+  "tested_source_tree": "8cc5c76544b4cfa5c288f4d63a066cc6a4578eb9",
+  "worktree": {
+    "Cargo_manifest_or_lock_modified": false,
+    "final_porcelain": [
+      "?? research/all_dag_completion_20261018/local_example_01/",
+      "?? research/all_dag_completion_20261018/local_timing_01/",
+      "?? research/all_dag_completion_20261018/local_validation_01/"
+    ],
+    "initial": "dedicated detached worktree from fetched origin/research/all-dag-completion-20261018; clean before outputs",
+    "production_source_modified": false
+  }
+}

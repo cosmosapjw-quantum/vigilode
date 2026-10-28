@@ -1,0 +1,21 @@
+warning: type `DenseMatrix` is more private than the item `rodas5p_staleness_bound`
+  --> research/production_reaudit_20261021/evidence/integrator/legacy_staleness_reproducer.rs:8:1
+   |
+ 8 | / pub fn rodas5p_staleness_bound(
+ 9 | |     h: f64,
+10 | |     h_p: f64,
+11 | |     gamma: f64,
+...  |
+14 | |     s: &[f64],
+15 | | ) -> f64 {
+   | |________^ function `rodas5p_staleness_bound` is reachable at visibility `pub`
+   |
+note: but type `DenseMatrix` is only usable at visibility `pub(crate)`
+  --> research/production_reaudit_20261021/evidence/integrator/legacy_staleness_reproducer.rs:2:1
+   |
+ 2 | struct DenseMatrix { n: usize, data: Vec<f64> }
+   | ^^^^^^^^^^^^^^^^^^
+   = note: `#[warn(private_interfaces)]` on by default
+
+warning: 1 warning emitted
+

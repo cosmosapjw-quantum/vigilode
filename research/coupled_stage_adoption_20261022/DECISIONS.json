@@ -1,0 +1,710 @@
+{
+  "schema_version": "vigilode.coupled_adoption.decisions.v1",
+  "implementation_commit": "e419f920f0b8d0b123af03df5e802e8fc612a75d",
+  "benchmark_commit": "53920cc617c317927fcabe90f6b66f1a9fbf79bd",
+  "ncp_used": false,
+  "general_production": "HOLD",
+  "new_default_dispatcher": false,
+  "component_decisions": [
+    {
+      "component": "common_diagonal_projected_solve",
+      "decision": "PROMOTE",
+      "scope": "exactly repeated invertible diagonal block and zero upper blocks; same original reduced residual check",
+      "evidence": "4 independent dense/structure/singularity/nonfinite tests plus changed-kernel regressions",
+      "limits": "same storage; s=8 fixed; no universal elapsed speedup"
+    },
+    {
+      "component": "coupled_adaptive_raw_u",
+      "decision": "SPECIALIZED_ONLY",
+      "scope": "autonomous identity-mass user-JVP forward endpoint-observed trajectories",
+      "evidence": "62 targeted tests and registered local trajectories",
+      "limits": "operational residual policy; no unrestricted/global accuracy certification"
+    },
+    {
+      "component": "conditional_causal_bound",
+      "decision": "OPTIMIZATION_POSSIBLE",
+      "scope": "user-supplied valid inverse/Lipschitz/domain/roundoff assumptions",
+      "limits": "ordinary f64 estimate, not interval certificate; automatic h-dependent witness/budget remains N14"
+    }
+  ],
+  "tests": {
+    "source_commit": "e419f920f0b8d0b123af03df5e802e8fc612a75d",
+    "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+    "cargo_lock_sha256": "3c3310208cb895851aced4b4506ccd761e04c62d93113372919542478163a1e5",
+    "ncp_used": false,
+    "results": [
+      {
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-p",
+          "vigilode-coupled"
+        ],
+        "exit_code": 0,
+        "seconds": 30.816853290001745,
+        "passed": 59,
+        "failed": 0,
+        "log": "00.log",
+        "log_sha256": "e2b9a59efa8ff7c1c4466c55f8aab00afb29ba21256f39a43ed9f493fe7b4382"
+      },
+      {
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-p",
+          "rodas5p-integrators",
+          "--lib",
+          "adaptive_output_session"
+        ],
+        "exit_code": 0,
+        "seconds": 0.8200663400057238,
+        "passed": 3,
+        "failed": 0,
+        "log": "01.log",
+        "log_sha256": "f30dbac151620747d3b4d7d42164b08062bed4716d09996caeb0a6930bccee68"
+      }
+    ],
+    "all_passed": true
+  },
+  "campaign": {
+    "schema": "vigilode.local-adaptive-campaign.v1",
+    "host_kind": "local-sandbox-not-ncp",
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+    "logical_cpus_visible": 9,
+    "affinity_cpu_count": 9,
+    "cgroup_cpu_max": "1600000 200000",
+    "binary": "/workspace/scratch/0dc1e721cf82/task_runtime/target/measurement/examples/adaptive_bench",
+    "binary_sha256": "69eaffa0501f545a4bf39be7e799b3a2006a5444c3d3cde2f376f5b34fb54730",
+    "source_commit": "53920cc617c317927fcabe90f6b66f1a9fbf79bd",
+    "cargo_profile": "measurement",
+    "compiler_optimization": "opt-level=3,lto=false,codegen-units=16 (repository measurement profile)",
+    "budget_seconds": 900.0,
+    "warmup_per_configuration": 1,
+    "timed_repeats": 3,
+    "planned_configurations": 51,
+    "timing_interpretation": "single local host; no controlled CPU pinning or NCP extrapolation",
+    "elapsed_seconds": 216.6881293769984,
+    "completed_configurations": 51,
+    "failed_or_unrun_configurations": 0
+  },
+  "numerical_configurations": {
+    "parsed": 51,
+    "all_repeats_success": 51,
+    "failed": 0,
+    "unparsed": 0
+  },
+  "case_decisions": [
+    {
+      "case": "few-mode",
+      "decision": "OPTIMIZATION_POSSIBLE",
+      "basis": "observed sampled-error budget and local timing only",
+      "comparisons": [
+        {
+          "case": "few-mode",
+          "max_abs_error_threshold": 1e-06,
+          "threads": 1,
+          "status": "COMPARABLE",
+          "baseline_file": "000.stdout.json",
+          "candidate_file": "001.stdout.json",
+          "baseline_seconds": 0.009513086,
+          "candidate_seconds": 0.022518653,
+          "baseline_error": 8.170043165221449e-10,
+          "candidate_error": 8.17004304595921e-10,
+          "speedup": 0.4224535988009585,
+          "observed_time_ratio_envelope": [
+            0.33838091511051815,
+            0.5125313263677622
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "few-mode",
+          "max_abs_error_threshold": 1e-06,
+          "threads": 2,
+          "status": "COMPARABLE",
+          "baseline_file": "000.stdout.json",
+          "candidate_file": "002.stdout.json",
+          "baseline_seconds": 0.009513086,
+          "candidate_seconds": 0.112320136,
+          "baseline_error": 8.170043165221449e-10,
+          "candidate_error": 8.17004304595921e-10,
+          "speedup": 0.08469617593767871,
+          "observed_time_ratio_envelope": [
+            0.06954562736688658,
+            0.09862764673987713
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "few-mode",
+          "max_abs_error_threshold": 1e-08,
+          "threads": 1,
+          "status": "COMPARABLE",
+          "baseline_file": "000.stdout.json",
+          "candidate_file": "001.stdout.json",
+          "baseline_seconds": 0.009513086,
+          "candidate_seconds": 0.022518653,
+          "baseline_error": 8.170043165221449e-10,
+          "candidate_error": 8.17004304595921e-10,
+          "speedup": 0.4224535988009585,
+          "observed_time_ratio_envelope": [
+            0.33838091511051815,
+            0.5125313263677622
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "few-mode",
+          "max_abs_error_threshold": 1e-08,
+          "threads": 2,
+          "status": "COMPARABLE",
+          "baseline_file": "000.stdout.json",
+          "candidate_file": "002.stdout.json",
+          "baseline_seconds": 0.009513086,
+          "candidate_seconds": 0.112320136,
+          "baseline_error": 8.170043165221449e-10,
+          "candidate_error": 8.17004304595921e-10,
+          "speedup": 0.08469617593767871,
+          "observed_time_ratio_envelope": [
+            0.06954562736688658,
+            0.09862764673987713
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        }
+      ],
+      "not_a_production_promotion": true,
+      "performance_status": "EXPLORATORY_ONLY"
+    },
+    {
+      "case": "riccati",
+      "decision": "SPECIALIZED_ONLY",
+      "basis": "observed sampled-error budget and local timing only",
+      "comparisons": [
+        {
+          "case": "riccati",
+          "max_abs_error_threshold": 1e-06,
+          "threads": 1,
+          "status": "COMPARABLE",
+          "baseline_file": "006.stdout.json",
+          "candidate_file": "007.stdout.json",
+          "baseline_seconds": 0.00212098,
+          "candidate_seconds": 0.004573541,
+          "baseline_error": 1.3622328178669596e-08,
+          "candidate_error": 1.3622328327855815e-08,
+          "speedup": 0.46375007898693815,
+          "observed_time_ratio_envelope": [
+            0.10611101223829805,
+            1.4452816550385388
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "riccati",
+          "max_abs_error_threshold": 1e-06,
+          "threads": 2,
+          "status": "COMPARABLE",
+          "baseline_file": "006.stdout.json",
+          "candidate_file": "008.stdout.json",
+          "baseline_seconds": 0.00212098,
+          "candidate_seconds": 0.030257825,
+          "baseline_error": 1.3622328178669596e-08,
+          "candidate_error": 1.3622328327855815e-08,
+          "speedup": 0.07009690881614922,
+          "observed_time_ratio_envelope": [
+            0.03478442031932297,
+            0.1319307328184556
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "riccati",
+          "max_abs_error_threshold": 1e-08,
+          "threads": 1,
+          "status": "COMPARABLE",
+          "baseline_file": "009.stdout.json",
+          "candidate_file": "010.stdout.json",
+          "baseline_seconds": 0.014309529,
+          "candidate_seconds": 0.011185485,
+          "baseline_error": 5.388120713489819e-10,
+          "candidate_error": 5.388121684934966e-10,
+          "speedup": 1.2792944606335799,
+          "observed_time_ratio_envelope": [
+            0.47764944977124535,
+            1.8815737545820752
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "riccati",
+          "max_abs_error_threshold": 1e-08,
+          "threads": 2,
+          "status": "COMPARABLE",
+          "baseline_file": "009.stdout.json",
+          "candidate_file": "011.stdout.json",
+          "baseline_seconds": 0.014309529,
+          "candidate_seconds": 0.147014268,
+          "baseline_error": 5.388120713489819e-10,
+          "candidate_error": 5.388121684934966e-10,
+          "speedup": 0.09733428730876652,
+          "observed_time_ratio_envelope": [
+            0.03635836121447396,
+            0.18188748526053244
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        }
+      ],
+      "not_a_production_promotion": true,
+      "performance_status": "EXPLORATORY_ONLY"
+    },
+    {
+      "case": "stiff",
+      "decision": "OPTIMIZATION_POSSIBLE",
+      "basis": "observed sampled-error budget and local timing only",
+      "comparisons": [
+        {
+          "case": "stiff",
+          "max_abs_error_threshold": 1e-06,
+          "threads": 1,
+          "status": "COMPARABLE",
+          "baseline_file": "012.stdout.json",
+          "candidate_file": "016.stdout.json",
+          "baseline_seconds": 0.01428563,
+          "candidate_seconds": 0.018445108,
+          "baseline_error": 4.409272145317056e-09,
+          "candidate_error": 3.368005180304223e-11,
+          "speedup": 0.7744942453034159,
+          "observed_time_ratio_envelope": [
+            0.5561526142530365,
+            1.7883807741809605
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "stiff",
+          "max_abs_error_threshold": 1e-06,
+          "threads": 2,
+          "status": "COMPARABLE",
+          "baseline_file": "012.stdout.json",
+          "candidate_file": "014.stdout.json",
+          "baseline_seconds": 0.01428563,
+          "candidate_seconds": 0.096596766,
+          "baseline_error": 4.409272145317056e-09,
+          "candidate_error": 4.409271782759849e-09,
+          "speedup": 0.14788931960724233,
+          "observed_time_ratio_envelope": [
+            0.08664040672745933,
+            0.3961943186786227
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "stiff",
+          "max_abs_error_threshold": 1e-08,
+          "threads": 1,
+          "status": "COMPARABLE",
+          "baseline_file": "012.stdout.json",
+          "candidate_file": "016.stdout.json",
+          "baseline_seconds": 0.01428563,
+          "candidate_seconds": 0.018445108,
+          "baseline_error": 4.409272145317056e-09,
+          "candidate_error": 3.368005180304223e-11,
+          "speedup": 0.7744942453034159,
+          "observed_time_ratio_envelope": [
+            0.5561526142530365,
+            1.7883807741809605
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "stiff",
+          "max_abs_error_threshold": 1e-08,
+          "threads": 2,
+          "status": "COMPARABLE",
+          "baseline_file": "012.stdout.json",
+          "candidate_file": "014.stdout.json",
+          "baseline_seconds": 0.01428563,
+          "candidate_seconds": 0.096596766,
+          "baseline_error": 4.409272145317056e-09,
+          "candidate_error": 4.409271782759849e-09,
+          "speedup": 0.14788931960724233,
+          "observed_time_ratio_envelope": [
+            0.08664040672745933,
+            0.3961943186786227
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        }
+      ],
+      "not_a_production_promotion": true,
+      "performance_status": "EXPLORATORY_ONLY"
+    },
+    {
+      "case": "nonnormal",
+      "decision": "SPECIALIZED_ONLY",
+      "basis": "observed sampled-error budget and local timing only",
+      "comparisons": [
+        {
+          "case": "nonnormal",
+          "max_abs_error_threshold": 1e-06,
+          "threads": 1,
+          "status": "COMPARABLE",
+          "baseline_file": "018.stdout.json",
+          "candidate_file": "019.stdout.json",
+          "baseline_seconds": 0.015782355,
+          "candidate_seconds": 0.001466429,
+          "baseline_error": 5.659099605592743e-09,
+          "candidate_error": 5.659099494570441e-09,
+          "speedup": 10.762440595487407,
+          "observed_time_ratio_envelope": [
+            3.805059415857761,
+            12.253565583091302
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "nonnormal",
+          "max_abs_error_threshold": 1e-06,
+          "threads": 2,
+          "status": "COMPARABLE",
+          "baseline_file": "018.stdout.json",
+          "candidate_file": "023.stdout.json",
+          "baseline_seconds": 0.015782355,
+          "candidate_seconds": 0.032199504,
+          "baseline_error": 5.659099605592743e-09,
+          "candidate_error": 5.2431253783069565e-11,
+          "speedup": 0.4901427984729207,
+          "observed_time_ratio_envelope": [
+            0.10091768397966874,
+            0.8789446698952438
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "nonnormal",
+          "max_abs_error_threshold": 1e-08,
+          "threads": 1,
+          "status": "COMPARABLE",
+          "baseline_file": "018.stdout.json",
+          "candidate_file": "019.stdout.json",
+          "baseline_seconds": 0.015782355,
+          "candidate_seconds": 0.001466429,
+          "baseline_error": 5.659099605592743e-09,
+          "candidate_error": 5.659099494570441e-09,
+          "speedup": 10.762440595487407,
+          "observed_time_ratio_envelope": [
+            3.805059415857761,
+            12.253565583091302
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "nonnormal",
+          "max_abs_error_threshold": 1e-08,
+          "threads": 2,
+          "status": "COMPARABLE",
+          "baseline_file": "018.stdout.json",
+          "candidate_file": "023.stdout.json",
+          "baseline_seconds": 0.015782355,
+          "candidate_seconds": 0.032199504,
+          "baseline_error": 5.659099605592743e-09,
+          "candidate_error": 5.2431253783069565e-11,
+          "speedup": 0.4901427984729207,
+          "observed_time_ratio_envelope": [
+            0.10091768397966874,
+            0.8789446698952438
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        }
+      ],
+      "not_a_production_promotion": true,
+      "performance_status": "EXPLORATORY_ONLY"
+    },
+    {
+      "case": "oscillatory",
+      "decision": "SPECIALIZED_ONLY",
+      "basis": "observed sampled-error budget and local timing only",
+      "comparisons": [
+        {
+          "case": "oscillatory",
+          "max_abs_error_threshold": 1e-06,
+          "threads": 1,
+          "status": "COMPARABLE",
+          "baseline_file": "027.stdout.json",
+          "candidate_file": "028.stdout.json",
+          "baseline_seconds": 0.051027465,
+          "candidate_seconds": 0.011012102,
+          "baseline_error": 7.421301684296111e-09,
+          "candidate_error": 7.421283476638507e-09,
+          "speedup": 4.633762473322532,
+          "observed_time_ratio_envelope": [
+            2.1654019406790255,
+            7.5886390849757825
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "oscillatory",
+          "max_abs_error_threshold": 1e-06,
+          "threads": 2,
+          "status": "COMPARABLE",
+          "baseline_file": "027.stdout.json",
+          "candidate_file": "029.stdout.json",
+          "baseline_seconds": 0.051027465,
+          "candidate_seconds": 0.596896031,
+          "baseline_error": 7.421301684296111e-09,
+          "candidate_error": 7.421283476638507e-09,
+          "speedup": 0.08548802865134146,
+          "observed_time_ratio_envelope": [
+            0.072520735638764,
+            0.15186572298599926
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "oscillatory",
+          "max_abs_error_threshold": 1e-08,
+          "threads": 1,
+          "status": "COMPARABLE",
+          "baseline_file": "027.stdout.json",
+          "candidate_file": "028.stdout.json",
+          "baseline_seconds": 0.051027465,
+          "candidate_seconds": 0.011012102,
+          "baseline_error": 7.421301684296111e-09,
+          "candidate_error": 7.421283476638507e-09,
+          "speedup": 4.633762473322532,
+          "observed_time_ratio_envelope": [
+            2.1654019406790255,
+            7.5886390849757825
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "oscillatory",
+          "max_abs_error_threshold": 1e-08,
+          "threads": 2,
+          "status": "COMPARABLE",
+          "baseline_file": "027.stdout.json",
+          "candidate_file": "029.stdout.json",
+          "baseline_seconds": 0.051027465,
+          "candidate_seconds": 0.596896031,
+          "baseline_error": 7.421301684296111e-09,
+          "candidate_error": 7.421283476638507e-09,
+          "speedup": 0.08548802865134146,
+          "observed_time_ratio_envelope": [
+            0.072520735638764,
+            0.15186572298599926
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        }
+      ],
+      "not_a_production_promotion": true,
+      "performance_status": "EXPLORATORY_ONLY"
+    },
+    {
+      "case": "broad",
+      "decision": "OPTIMIZATION_POSSIBLE",
+      "basis": "37/38 and 79/81 attempted steps use sequential fallback; median timing ratios do not demonstrate candidate speedup",
+      "comparisons": [
+        {
+          "case": "broad",
+          "max_abs_error_threshold": 1e-06,
+          "threads": 1,
+          "status": "COMPARABLE",
+          "baseline_file": "030.stdout.json",
+          "candidate_file": "031.stdout.json",
+          "baseline_seconds": 6.086383272,
+          "candidate_seconds": 5.32359059,
+          "baseline_error": 1.1674085081871816e-09,
+          "candidate_error": 1.167355824526796e-09,
+          "speedup": 1.1432853764962418,
+          "observed_time_ratio_envelope": [
+            1.0011667603698986,
+            6.833288133444365
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.9736842105263158
+        },
+        {
+          "case": "broad",
+          "max_abs_error_threshold": 1e-06,
+          "threads": 2,
+          "status": "COMPARABLE",
+          "baseline_file": "030.stdout.json",
+          "candidate_file": "032.stdout.json",
+          "baseline_seconds": 6.086383272,
+          "candidate_seconds": 2.720528572,
+          "baseline_error": 1.1674085081871816e-09,
+          "candidate_error": 1.167355824526796e-09,
+          "speedup": 2.2372061571570216,
+          "observed_time_ratio_envelope": [
+            1.133093792118342,
+            6.194029003414284
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.9736842105263158
+        },
+        {
+          "case": "broad",
+          "max_abs_error_threshold": 1e-08,
+          "threads": 1,
+          "status": "COMPARABLE",
+          "baseline_file": "030.stdout.json",
+          "candidate_file": "031.stdout.json",
+          "baseline_seconds": 6.086383272,
+          "candidate_seconds": 5.32359059,
+          "baseline_error": 1.1674085081871816e-09,
+          "candidate_error": 1.167355824526796e-09,
+          "speedup": 1.1432853764962418,
+          "observed_time_ratio_envelope": [
+            1.0011667603698986,
+            6.833288133444365
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.9736842105263158
+        },
+        {
+          "case": "broad",
+          "max_abs_error_threshold": 1e-08,
+          "threads": 2,
+          "status": "COMPARABLE",
+          "baseline_file": "030.stdout.json",
+          "candidate_file": "032.stdout.json",
+          "baseline_seconds": 6.086383272,
+          "candidate_seconds": 2.720528572,
+          "baseline_error": 1.1674085081871816e-09,
+          "candidate_error": 1.167355824526796e-09,
+          "speedup": 2.2372061571570216,
+          "observed_time_ratio_envelope": [
+            1.133093792118342,
+            6.194029003414284
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.9736842105263158
+        }
+      ],
+      "not_a_production_promotion": true,
+      "performance_status": "EXPLORATORY_ONLY"
+    },
+    {
+      "case": "few-mode-large",
+      "decision": "SPECIALIZED_ONLY",
+      "basis": "zero fallback on tested trajectories; measured 1-worker ratio about 1.05 is not robust performance evidence",
+      "comparisons": [
+        {
+          "case": "few-mode-large",
+          "max_abs_error_threshold": 1e-06,
+          "threads": 1,
+          "status": "COMPARABLE",
+          "baseline_file": "036.stdout.json",
+          "candidate_file": "037.stdout.json",
+          "baseline_seconds": 0.224653092,
+          "candidate_seconds": 0.213481163,
+          "baseline_error": 8.170042933202185e-10,
+          "candidate_error": 8.170042825866169e-10,
+          "speedup": 1.0523321535399355,
+          "observed_time_ratio_envelope": [
+            0.9945363986207073,
+            1.3685702433131037
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "few-mode-large",
+          "max_abs_error_threshold": 1e-06,
+          "threads": 2,
+          "status": "COMPARABLE",
+          "baseline_file": "036.stdout.json",
+          "candidate_file": "038.stdout.json",
+          "baseline_seconds": 0.224653092,
+          "candidate_seconds": 0.294276675,
+          "baseline_error": 8.170042933202185e-10,
+          "candidate_error": 8.170042825866169e-10,
+          "speedup": 0.7634077420509118,
+          "observed_time_ratio_envelope": [
+            0.5362823204054719,
+            1.1690743756332278
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "few-mode-large",
+          "max_abs_error_threshold": 1e-08,
+          "threads": 1,
+          "status": "COMPARABLE",
+          "baseline_file": "036.stdout.json",
+          "candidate_file": "037.stdout.json",
+          "baseline_seconds": 0.224653092,
+          "candidate_seconds": 0.213481163,
+          "baseline_error": 8.170042933202185e-10,
+          "candidate_error": 8.170042825866169e-10,
+          "speedup": 1.0523321535399355,
+          "observed_time_ratio_envelope": [
+            0.9945363986207073,
+            1.3685702433131037
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        },
+        {
+          "case": "few-mode-large",
+          "max_abs_error_threshold": 1e-08,
+          "threads": 2,
+          "status": "COMPARABLE",
+          "baseline_file": "036.stdout.json",
+          "candidate_file": "038.stdout.json",
+          "baseline_seconds": 0.224653092,
+          "candidate_seconds": 0.294276675,
+          "baseline_error": 8.170042933202185e-10,
+          "candidate_error": 8.170042825866169e-10,
+          "speedup": 0.7634077420509118,
+          "observed_time_ratio_envelope": [
+            0.5362823204054719,
+            1.1690743756332278
+          ],
+          "time_ratio_envelope_interpretation": "Extremes of observed samples, not a confidence interval",
+          "candidate_fallback_fraction": 0.0
+        }
+      ],
+      "not_a_production_promotion": true,
+      "performance_status": "EXPLORATORY_ONLY"
+    }
+  ],
+  "research_next_steps": "NEXT_STEPS.json",
+  "general_production_remaining": [
+    "h-dependent root accuracy and verified assumptions",
+    "physical client full-state, spatial/remap and domain validation",
+    "cost selector and repeated fallback economics",
+    "nonautonomous/mass/dense-output scope not implemented",
+    "local timing does not establish external solver superiority"
+  ],
+  "performance_claims": {
+    "universal_speedup": false,
+    "parallel_speedup_promoted": false,
+    "reason": "uncontrolled host load, three repeats, cheap callbacks, and fallback-dominated broad case"
+  }
+}

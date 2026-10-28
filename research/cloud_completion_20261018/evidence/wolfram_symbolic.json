@@ -1,0 +1,10 @@
+{
+  "scope": "Symbolic cross-check only; complete weighted/interval proofs are in project documents",
+  "code": "j=D[{-c (u^2+v^2) v,c (u^2+v^2) u},{{u,v}}]; sym=(j+Transpose[j])/2; {Factor[Det[z IdentityMatrix[2]-sym]], Expand[a*(d*(g*t+q)+e)+b-(a*d*g*t+a*d*q+a*e+b)], Series[(Exp[z]-1)/z,{z,0,4}]}",
+  "response": [
+    {
+      "type": "text",
+      "text": "Out[1]= {-((c*u^2 + c*v^2 - z)*(c*u^2 + c*v^2 + z)), 0, SeriesData[z, 0, {1, 1/2, 1/6, 1/24, 1/120}, 0, 5, 1]}"
+    }
+  ]
+}

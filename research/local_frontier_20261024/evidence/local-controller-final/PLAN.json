@@ -1,0 +1,1331 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-24T01:01:04.083198+00:00",
+  "source": {
+    "commit": "2f87ac31f52ac031bdd29ce7cbb67728cb01ef6a",
+    "tree": "c59ac6aa34482b9042897fda21145175c0c553d1",
+    "status_porcelain": "M Cargo.lock\n M crates/rodas5p-core/src/lib.rs\n M crates/rodas5p-core/src/shared_shift_jet.rs\n M crates/rodas5p-integrators/src/lib.rs\n M crates/vigilode-coupled/examples/reconsideration_bench.rs\n M crates/vigilode-coupled/src/adaptive.rs\n M crates/vigilode-coupled/src/lib.rs\n M crates/vigilode-coupled/src/switching.rs\n M crates/vigilode-coupled/tests/switching_contracts.rs\n M crates/vigilode/Cargo.toml\n?? crates/rodas5p-core/examples/invariant_module_bench.rs\n?? crates/rodas5p-core/src/invariant_module.rs\n?? crates/rodas5p-core/tests/invariant_module_contracts.rs\n?? crates/rodas5p-integrators/examples/conditioned_chart_bench.rs\n?? crates/rodas5p-integrators/examples/fixed_point_continuation_bench.rs\n?? crates/rodas5p-integrators/src/conditioned_polynomial.rs\n?? crates/rodas5p-integrators/src/fixed_point_continuation.rs\n?? crates/rodas5p-integrators/tests/conditioned_polynomial_contracts.rs\n?? crates/rodas5p-integrators/tests/fixed_point_continuation_contracts.rs\n?? crates/vigilode/examples/local_bottleneck_suite.rs\n?? crates/vigilode/examples/local_bottleneck_support/models.rs\n?? crates/vigilode/tests/local_bottleneck_models.rs\n?? external_audits/vigilode_ncp_intensive_120m_v1_20261021/.TOLERANCE_RESULTS.jsonl.TEjl65\n?? research/bassrei_p04_source_exchange_stress_20261022/raw/.C1_probe_sources.json.dVgK52\n?? research/coupled_native_20261020/runs/39349031422/.REFERENCES.json.part0000.cMoeh2\n?? research/local_frontier_20261024/DECISIONS.json\n?? research/local_frontier_20261024/DEVELOPMENT_STATUS.json\n?? research/local_frontier_20261024/NEXT_STEPS.json\n?? research/local_frontier_20261024/REPORT_KO.md\n?? research/local_frontier_20261024/RESEARCH_RECORD.json\n?? research/local_frontier_20261024/SOURCE_IDENTITY.json\n?? research/local_frontier_20261024/analysis/ATTACHMENT_AUDIT_KO.md\n?? research/local_frontier_20261024/analysis/BENCHMARK_INDEPENDENT_REVIEW.md\n?? research/local_frontier_20261024/analysis/BENCHMARK_MODELS.json\n?? research/local_frontier_20261024/analysis/BENCHMARK_MODELS.md\n?? research/local_frontier_20261024/analysis/CONDITIONED_CHART_BENCHMARK.json\n?? research/local_frontier_20261024/analysis/GEOMETRY_EXACT_CHECKS.json\n?? research/local_frontier_20261024/analysis/GEOMETRY_TRANSFER.json\n?? research/local_frontier_20261024/analysis/GEOMETRY_TRANSFER.md\n?? research/local_frontier_20261024/analysis/LOCAL_CAMPAIGN.json\n?? research/local_frontier_20261024/analysis/LOCAL_CAMPAIGN.md\n?? research/local_frontier_20261024/analysis/LOCAL_RUNNER_INDEPENDENT_REVIEW.md\n?? research/local_frontier_20261024/analysis/N1_N2.json\n?? research/local_frontier_20261024/analysis/N1_N2.md\n?? research/local_frontier_20261024/analysis/N3_INDEPENDENT_REVIEW.md\n?? research/local_frontier_20261024/analysis/N3_N5_TIMING_TABLES.md\n?? research/local_frontier_20261024/analysis/N3_REGIME_COST.json\n?? research/local_frontier_20261024/analysis/N3_REGIME_COST.md\n?? research/local_frontier_20261024/analysis/N4_FIXED_P.json\n?? research/local_frontier_20261024/analysis/N4_FIXED_P.md\n?? research/local_frontier_20261024/analysis/N5_PARALLEL_CALLBACKS.json\n?? research/local_frontier_20261024/analysis/N5_PARALLEL_CALLBACKS.md\n?? research/local_frontier_20261024/analysis/N6_BENCHMARK_SUMMARY.json\n?? research/local_frontier_20261024/analysis/N6_INDEPENDENT_REVIEW.md\n?? research/local_frontier_20261024/analysis/N8_DISCRIMINATION_COVERAGE.json\n?? research/local_frontier_20261024/analysis/conditioned_chart_comparison.png\n?? research/local_frontier_20261024/analysis/conditioned_chart_comparison.svg\n?? research/local_frontier_20261024/evidence/GEOMETRY_SOURCES.json\n?? research/local_frontier_20261024/evidence/LOCAL_BENCHMARK_REQUEST.txt\n?? research/local_frontier_20261024/evidence/N6_microbenchmark.json\n?? research/local_frontier_20261024/evidence/N6_microbenchmark.jsonl\n?? research/local_frontier_20261024/evidence/N6_microbenchmark.stderr\n?? research/local_frontier_20261024/evidence/N6_record_structure_validation.json\n?? research/local_frontier_20261024/evidence/N6_tests_round1.json\n?? research/local_frontier_20261024/evidence/N6_tests_round1.stderr\n?? research/local_frontier_20261024/evidence/N6_tests_round1.stdout\n?? research/local_frontier_20261024/evidence/N6_tests_round2.json\n?? research/local_frontier_20261024/evidence/N6_tests_round2.stderr\n?? research/local_frontier_20261024/evidence/N6_tests_round2.stdout\n?? research/local_frontier_20261024/evidence/N6_tests_round3.json\n?? research/local_frontier_20261024/evidence/N6_tests_round3.stderr\n?? research/local_frontier_20261024/evidence/N6_tests_round3.stdout\n?? research/local_frontier_20261024/evidence/WOLFRAM_ATTACHMENT_CHECK.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/ANALYSIS_1792803484656121271.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/ANALYSIS_1792803484656121271.md\n?? research/local_frontier_20261024/evidence/local-controller-smoke/CAMPAIGN_IDENTITY.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/CONFIG.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/EXECUTION_1792803484573235840.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/PLAN.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/29d0c748a3f73e90/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/29d0c748a3f73e90/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/29d0c748a3f73e90/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/29d0c748a3f73e90/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/40fc7474dad6dc89/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/40fc7474dad6dc89/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/40fc7474dad6dc89/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/40fc7474dad6dc89/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/4202ff778f886009/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/4202ff778f886009/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/4202ff778f886009/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/4202ff778f886009/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/453cb04cdafa98fe/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/453cb04cdafa98fe/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/453cb04cdafa98fe/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/453cb04cdafa98fe/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/67298cbbb37b58e6/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/67298cbbb37b58e6/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/67298cbbb37b58e6/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/67298cbbb37b58e6/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/9a2f9558bef4b9c2/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/9a2f9558bef4b9c2/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/9a2f9558bef4b9c2/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/9a2f9558bef4b9c2/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/ab37767ac4d028f1/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/ab37767ac4d028f1/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/ab37767ac4d028f1/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/ab37767ac4d028f1/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/b1abbd05d8e96a81/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/b1abbd05d8e96a81/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/b1abbd05d8e96a81/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/b1abbd05d8e96a81/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/d590d542e3886e9e/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/d590d542e3886e9e/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/d590d542e3886e9e/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/d590d542e3886e9e/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/IDENTITY.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/SUMMARY_1792803491577082907.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/model_1.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/model_10.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_dopri5/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_dopri5/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_dopri5/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_dopri5/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_rodas5p-mf/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_rodas5p-mf/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_rodas5p-mf/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_rodas5p-mf/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_switching/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_switching/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_switching/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_switching/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_vode-adams/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_vode-adams/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_vode-adams/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_vode-adams/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_vode-bdf/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_vode-bdf/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_vode-bdf/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_vode-bdf/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_dopri5/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_dopri5/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_dopri5/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_dopri5/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_rodas5p-mf/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_rodas5p-mf/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_rodas5p-mf/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_rodas5p-mf/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_switching/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_switching/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_switching/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_switching/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_vode-adams/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_vode-adams/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_vode-adams/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_vode-adams/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_vode-bdf/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_vode-bdf/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_vode-bdf/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_vode-bdf/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/IDENTITY.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/SUMMARY_1792803452852923387.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/model_15.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/model_16.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_dopri5/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_dopri5/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_dopri5/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_dopri5/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_rodas5p-mf/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_rodas5p-mf/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_rodas5p-mf/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_rodas5p-mf/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_switching/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_switching/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_switching/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_switching/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_vode-adams/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_vode-adams/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_vode-adams/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_vode-adams/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_vode-bdf/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_vode-bdf/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_vode-bdf/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_vode-bdf/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_dopri5/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_dopri5/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_dopri5/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_dopri5/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_rodas5p-mf/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_rodas5p-mf/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_rodas5p-mf/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_rodas5p-mf/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_switching/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_switching/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_switching/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_switching/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_vode-adams/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_vode-adams/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_vode-adams/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_vode-adams/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_vode-bdf/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_vode-bdf/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_vode-bdf/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_vode-bdf/stdout.jsonl\n?? research/local_frontier_20261024/evidence/model-build.exit\n?? research/local_frontier_20261024/evidence/model-build.log\n?? research/local_frontier_20261024/evidence/model-catalog.json\n?? research/local_frontier_20261024/evidence/model-contract-1-smoke.json\n?? research/local_frontier_20261024/evidence/model-contract-15-smoke.json\n?? research/local_frontier_20261024/evidence/model-executable-smoke-receipts-round2.json\n?? research/local_frontier_20261024/evidence/model-executable-smoke-receipts.json\n?? research/local_frontier_20261024/evidence/model-executable-smoke-round2.jsonl\n?? research/local_frontier_20261024/evidence/model-executable-smoke.jsonl\n?? research/local_frontier_20261024/evidence/model-final-verification.exit\n?? research/local_frontier_20261024/evidence/model-final-verification.log\n?? research/local_frontier_20261024/evidence/model-source-identity.json\n?? research/local_frontier_20261024/evidence/model-tests-round2.exit\n?? research/local_frontier_20261024/evidence/model-tests-round2.log\n?? research/local_frontier_20261024/evidence/n1n2-benchmark-build.receipt.json\n?? research/local_frontier_20261024/evidence/n1n2-benchmark-build.stderr\n?? research/local_frontier_20261024/evidence/n1n2-benchmark-build.stdout\n?? research/local_frontier_20261024/evidence/n1n2-chart-benchmark.receipt.json\n?? research/local_frontier_20261024/evidence/n1n2-chart-benchmark.stderr\n?? research/local_frontier_20261024/evidence/n1n2-chart-benchmark.stdout\n?? research/local_frontier_20261024/evidence/n1n2-independent-review.json\n?? research/local_frontier_20261024/evidence/n1n2-round1-tests.receipt.json\n?? research/local_frontier_20261024/evidence/n1n2-round1-tests.stderr\n?? research/local_frontier_20261024/evidence/n1n2-round1-tests.stdout\n?? research/local_frontier_20261024/evidence/n1n2-round2-tests.receipt.json\n?? research/local_frontier_20261024/evidence/n1n2-round2-tests.stderr\n?? research/local_frontier_20261024/evidence/n1n2-round2-tests.stdout\n?? research/local_frontier_20261024/evidence/n3_round1_source/reconsideration_bench.rs\n?? research/local_frontier_20261024/evidence/n3_round2_source/reconsideration_bench.rs\n?? research/local_frontier_20261024/evidence/n4-benchmark-build.exit\n?? research/local_frontier_20261024/evidence/n4-benchmark-build.receipt.json\n?? research/local_frontier_20261024/evidence/n4-benchmark-build.stderr\n?? research/local_frontier_20261024/evidence/n4-benchmark-build.stdout\n?? research/local_frontier_20261024/evidence/n4-benchmark.exit\n?? research/local_frontier_20261024/evidence/n4-benchmark.receipt.json\n?? research/local_frontier_20261024/evidence/n4-benchmark.stderr\n?? research/local_frontier_20261024/evidence/n4-benchmark.stdout\n?? research/local_frontier_20261024/evidence/n4-round1-tests.exit\n?? research/local_frontier_20261024/evidence/n4-round1-tests.receipt.json\n?? research/local_frontier_20261024/evidence/n4-round1-tests.stderr\n?? research/local_frontier_20261024/evidence/n4-round1-tests.stdout\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark-build.exit\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark-build.receipt.json\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark-build.stderr\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark-build.stdout\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark.exit\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark.receipt.json\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark.stderr\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark.stdout\n?? research/local_frontier_20261024/evidence/n4-round2-tests.exit\n?? research/local_frontier_20261024/evidence/n4-round2-tests.receipt.json\n?? research/local_frontier_20261024/evidence/n4-round2-tests.stderr\n?? research/local_frontier_20261024/evidence/n4-round2-tests.stdout\n?? research/local_frontier_20261024/evidence/n4_round1_source/fixed_point_continuation.rs\n?? research/local_frontier_20261024/evidence/n4_round1_source/fixed_point_continuation_contracts.rs\n?? research/local_frontier_20261024/evidence/runs/n3-final-broad.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-broad.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-broad.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-build.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-build.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-build.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-changing-rate.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-changing-rate.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-changing-rate.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-expensive-few-mode.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-expensive-few-mode.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-expensive-few-mode.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode-basis1.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode-basis1.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode-basis1.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-model-tests.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-model-tests.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-model-tests.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-changing-rank.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-changing-rank.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-changing-rank.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-step-regime.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-step-regime.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-step-regime.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonnormal.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonnormal.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonnormal.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-oscillatory.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-oscillatory.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-oscillatory.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-riccati.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-riccati.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-riccati.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-round1-build.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-round1-build.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-round1-build.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-round1-tests.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-round1-tests.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-round1-tests.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-round2-tests.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-round2-tests.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-round2-tests.stdout\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-1.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-1.stderr\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-1.stdout\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-2.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-2.stderr\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-2.stdout\n?? research/local_frontier_20261024/local/.gitignore\n?? research/local_frontier_20261024/local/CATALOG.json\n?? research/local_frontier_20261024/local/HANDOFF_TEMPLATE_KO.md\n?? research/local_frontier_20261024/local/README_KO.md\n?? research/local_frontier_20261024/local/accuracy.json\n?? research/local_frontier_20261024/local/build_local.py\n?? research/local_frontier_20261024/local/campaign.py\n?? research/local_frontier_20261024/local/external_compare.py\n?? research/local_frontier_20261024/local/external_models.py\n?? research/local_frontier_20261024/local/julia_adapter.jl\n?? research/local_frontier_20261024/local/plot_campaign.py\n?? research/local_frontier_20261024/local/prepare_worktree.sh\n?? research/local_frontier_20261024/local/smoke.json\n?? research/local_frontier_20261024/local/stage_campaign.py\n?? research/local_frontier_20261024/local/standard.json\n?? research/local_frontier_20261024/local/test_campaign.py\n?? research/local_frontier_20261024/local/test_external_models.py\n?? research/local_frontier_20261024/local/vode_adapter.py\n?? research/local_frontier_20261024/src/analyze_conditioned_chart.py\n?? research/local_frontier_20261024/src/analyze_n3_n5.py\n?? research/local_frontier_20261024/src/check_geometry_transfer.py\n?? research/local_frontier_20261024/src/run_n3_benchmarks.py\n?? research/local_frontier_20261024/src/run_receipt.py\n?? research/local_frontier_20261024/src/verify_package.py\n?? research/rev01c_gcrodr_refreshed_update_20261003/.RESULTS.json.uPuy2Q",
+    "clean": false,
+    "exploratory_dirty_run": true
+  },
+  "binary": "/workspace/scratch/0dc1e721cf82/runtime1024/target/measurement/examples/local_bottleneck_suite",
+  "binary_sha256": "edf11cef5c5f0484cc326ab127264011352c6f922e4d7559b7e27692ef0f127d",
+  "config": {
+    "size": "smoke",
+    "cases": [
+      15
+    ],
+    "threads": [
+      1
+    ],
+    "methods": [
+      "dopri5",
+      "rodas5p-mf",
+      "switching"
+    ],
+    "rtol": 1e-06,
+    "atol": 1e-09,
+    "repeats": 1,
+    "max_steps": 5000,
+    "ensemble_count": 4,
+    "per_run_seconds": 5,
+    "campaign_seconds": 60,
+    "memory_gib": 4,
+    "profiling": "callbacks",
+    "emit_state": false
+  },
+  "catalog": {
+    "cases": [
+      {
+        "autonomous": true,
+        "case": 1,
+        "dense_dimension_limit": 256,
+        "dimension": 3,
+        "dimension_smoke": 3,
+        "dimension_standard": 3,
+        "grid": [
+          0,
+          0
+        ],
+        "id": 1,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Robertson",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "k1": 0.04,
+          "k2": 10000.0,
+          "k3": 30000000.0
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          40.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "canonical 3-species; ensemble extension separate"
+      },
+      {
+        "autonomous": true,
+        "case": 2,
+        "dense_dimension_limit": 256,
+        "dimension": 8,
+        "dimension_smoke": 8,
+        "dimension_standard": 8,
+        "grid": [
+          0,
+          0
+        ],
+        "id": 2,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "HIRES",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "source": "HIRES test-set equations; initial y8=.0057; no POLLU claim"
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          321.8122
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "8-species alternative explicitly permitted by request, not POLLU"
+      },
+      {
+        "autonomous": true,
+        "case": 3,
+        "dense_dimension_limit": 256,
+        "dimension": 28,
+        "dimension_smoke": 28,
+        "dimension_standard": 28,
+        "grid": [
+          0,
+          0
+        ],
+        "id": 3,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Pleiades",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "G": 1.0,
+          "masses": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7
+          ],
+          "softening": 0.0
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          3.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "canonical masses and initial conditions; collision unregularized"
+      },
+      {
+        "autonomous": true,
+        "case": 4,
+        "dense_dimension_limit": 256,
+        "dimension": 4096,
+        "dimension_smoke": 16,
+        "dimension_standard": 4096,
+        "grid": [
+          4096,
+          0
+        ],
+        "id": 4,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Kuramoto-Sakaguchi",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "alpha": 0.2,
+          "coupling": 1.0,
+          "frequency": "0.5+0.1cos(2pi i/N)",
+          "radius": 32
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          10.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "local periodic coupling, no self term; radius4 smoke/32standard"
+      },
+      {
+        "autonomous": false,
+        "case": 5,
+        "dense_dimension_limit": 256,
+        "dimension": 2,
+        "dimension_smoke": 2,
+        "dimension_standard": 2,
+        "grid": [
+          0,
+          0
+        ],
+        "id": 5,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Adiabatic-flash negative control",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "classification": "persistent transverse stiffness negative switch-down control",
+          "epsilon": 1e-06
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          2.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "literal equations; transverse stiffness persists after boundary layer"
+      },
+      {
+        "autonomous": false,
+        "case": 6,
+        "dense_dimension_limit": 256,
+        "dimension": 1024,
+        "dimension_smoke": 16,
+        "dimension_standard": 1024,
+        "grid": [
+          1024,
+          0
+        ],
+        "id": 6,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Freeze-out transport",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "boundary": "periodic",
+          "gamma0": 100000.0,
+          "gamma_exponent": 4,
+          "tau": 0.05,
+          "velocity": 0.1
+        },
+        "reference_kind": "analytic-semidiscrete-endpoint",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          2.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "periodic upwind, constant velocity, global conservative relaxation, exponent4"
+      },
+      {
+        "autonomous": true,
+        "case": 7,
+        "dense_dimension_limit": 256,
+        "dimension": 1,
+        "dimension_smoke": 1,
+        "dimension_standard": 1,
+        "grid": [
+          0,
+          0
+        ],
+        "id": 7,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Literal ignition negative control",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "classification": "literal attachment equation: no ignition; f'(1)=-1",
+          "epsilon": 0.02,
+          "reference_absolute_bound": 1e-190,
+          "reference_time_max": 10.0
+        },
+        "reference_kind": "analytic-negligible-evolution-bound",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          10.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "literal scalar equation; no thermal ignition occurs"
+      },
+      {
+        "autonomous": true,
+        "case": 8,
+        "dense_dimension_limit": 256,
+        "dimension": 3,
+        "dimension_smoke": 3,
+        "dimension_standard": 3,
+        "grid": [
+          0,
+          0
+        ],
+        "id": 8,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Oregonator",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "q": 8.375e-06,
+          "s": 77.27,
+          "w": 0.161
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          30.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "specified 3-variable coefficients"
+      },
+      {
+        "autonomous": true,
+        "case": 9,
+        "dense_dimension_limit": 256,
+        "dimension": 512,
+        "dimension_smoke": 16,
+        "dimension_standard": 512,
+        "grid": [
+          256,
+          0
+        ],
+        "id": 9,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "FPUT beta chain",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "boundary": "periodic",
+          "quartic": 1.0,
+          "spring": 1000000.0
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          1.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "periodic homogeneous stiff springs plus quartic bonds"
+      },
+      {
+        "autonomous": true,
+        "case": 10,
+        "dense_dimension_limit": 256,
+        "dimension": 6,
+        "dimension_smoke": 6,
+        "dimension_standard": 6,
+        "grid": [
+          0,
+          0
+        ],
+        "id": 10,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Uniform-field relativistic gyromotion",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "B": [
+            0,
+            0,
+            1
+          ],
+          "E": [
+            0,
+            0,
+            0
+          ],
+          "c": 1,
+          "initial_momentum": [
+            1,
+            0,
+            0.2
+          ],
+          "omega_c": 500.0
+        },
+        "reference_kind": "analytic-semidiscrete-endpoint",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          1.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "uniform B and zero E exactly solvable subcase; dimensionless"
+      },
+      {
+        "autonomous": true,
+        "case": 11,
+        "dense_dimension_limit": 256,
+        "dimension": 396,
+        "dimension_smoke": 55,
+        "dimension_standard": 396,
+        "grid": [
+          36,
+          10
+        ],
+        "id": 11,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Two-scale Lorenz-96 variant",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "F": 10,
+          "b": 10,
+          "c": 10,
+          "fast_ring": "global periodic ring; stated forward-advection variant",
+          "h": 1
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          5.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "global fast cyclic ring with attachment's forward cyclic advection"
+      },
+      {
+        "autonomous": true,
+        "case": 12,
+        "dense_dimension_limit": 256,
+        "dimension": 1024,
+        "dimension_smoke": 16,
+        "dimension_standard": 1024,
+        "grid": [
+          1024,
+          0
+        ],
+        "id": 12,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Kuramoto-Sivashinsky",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "boundary": "periodic",
+          "discretization": "centered D1,D2,D2 squared; RHS=-u D1u-D2u-D2^2u",
+          "length": 100.53096491487338,
+          "nu": 1.0
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          10.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "periodic centered semidiscretization; correct negative RHS signs"
+      },
+      {
+        "autonomous": true,
+        "case": 13,
+        "dense_dimension_limit": 256,
+        "dimension": 3072,
+        "dimension_smoke": 24,
+        "dimension_standard": 3072,
+        "grid": [
+          1024,
+          0
+        ],
+        "id": 13,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Low-Mach primitive acoustic relaxation",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "Mach": 0.001,
+          "boundary": "periodic",
+          "cooling": 1000.0,
+          "gamma": 1.4,
+          "variables": [
+            "rho",
+            "velocity",
+            "pressure"
+          ],
+          "variant": "primitive isentropic acoustic-advection plus pressure relaxation"
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          0.1
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "defined primitive periodic system; not an unspecified IMEX split"
+      },
+      {
+        "autonomous": true,
+        "case": 14,
+        "dense_dimension_limit": 256,
+        "dimension": 4096,
+        "dimension_smoke": 16,
+        "dimension_standard": 4096,
+        "grid": [
+          4096,
+          0
+        ],
+        "id": 14,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Advected Cahn-Hilliard",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "boundary": "periodic",
+          "epsilon": 0.02,
+          "length": 6.283185307179586,
+          "velocity": 0.1
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          1.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "periodic 1D centered conservative semidiscretization"
+      },
+      {
+        "autonomous": false,
+        "case": 15,
+        "dense_dimension_limit": 256,
+        "dimension": 2,
+        "dimension_smoke": 2,
+        "dimension_standard": 2,
+        "grid": [
+          0,
+          0
+        ],
+        "id": 15,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Exponential chirp",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "beta": 1.2,
+          "gamma": 0.8,
+          "omega0": 1.0
+        },
+        "reference_kind": "analytic-semidiscrete-endpoint",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          8.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "specified analytically solvable nonautonomous second-order system"
+      },
+      {
+        "autonomous": true,
+        "case": 16,
+        "dense_dimension_limit": 256,
+        "dimension": 2,
+        "dimension_smoke": 2,
+        "dimension_standard": 2,
+        "grid": [
+          0,
+          0
+        ],
+        "id": 16,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Inspiral chirp",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "alpha": 0.1,
+          "collision_time": 2.5,
+          "coordinates": "two Cartesian first-order variables",
+          "omega0": 1.0,
+          "r0": 1.0
+        },
+        "reference_kind": "analytic-semidiscrete-endpoint",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          2.49
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "two Cartesian first-order variables; stop before singularity"
+      },
+      {
+        "autonomous": true,
+        "case": 17,
+        "dense_dimension_limit": 256,
+        "dimension": 2048,
+        "dimension_smoke": 32,
+        "dimension_standard": 2048,
+        "grid": [
+          32,
+          64
+        ],
+        "id": 17,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Spherical rotation-shear FVM",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "discretization": "first-order conservative upwind equal-mu FVM; zero polar face flux",
+          "rotation_axis": [
+            0.7071067811865476,
+            0.0,
+            0.7071067811865476
+          ],
+          "shear": 0.1
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          1.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "equal-mu first-order conservative FVM; explicit rotation and shear fields"
+      },
+      {
+        "autonomous": true,
+        "case": 18,
+        "dense_dimension_limit": 256,
+        "dimension": 4096,
+        "dimension_smoke": 32,
+        "dimension_standard": 4096,
+        "grid": [
+          32,
+          128
+        ],
+        "id": 18,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Spherical diffusion-absorption",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "d_mu": 0.01,
+          "d_phi": "0.1(1+mu^2/2)",
+          "discretization": "conservative equal-mu fluxes, periodic phi",
+          "opacity": "1+1000 I(mu>.5 and cos(phi)>.5)"
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          0.1
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "anisotropic centered fluxes plus fixed angular opacity patch"
+      },
+      {
+        "autonomous": true,
+        "case": 19,
+        "dense_dimension_limit": 256,
+        "dimension": 3072,
+        "dimension_smoke": 48,
+        "dimension_standard": 3072,
+        "grid": [
+          32,
+          0
+        ],
+        "id": 19,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Linear spherical modal waves",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "gravity_depth": 1.0,
+          "nu": 0.0001,
+          "variant": "linearized nonrotating spherical modal acoustic pairs, hyperviscosity on all components; not nonlinear SWE"
+        },
+        "reference_kind": "analytic-semidiscrete-endpoint",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          1.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "linearized nonrotating modal acoustic system, not full nonlinear SWE"
+      },
+      {
+        "autonomous": false,
+        "case": 20,
+        "dense_dimension_limit": 256,
+        "dimension": 1024,
+        "dimension_smoke": 16,
+        "dimension_standard": 1024,
+        "grid": [
+          32,
+          0
+        ],
+        "id": 20,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Normalized multipole hierarchy",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "baryon_dipole": 0.0,
+          "gamma0": 10000.0,
+          "gamma_exponent": 4,
+          "k": 1.0,
+          "normalization": "orthonormal fixed-m antisymmetric chains; top moment zero; external fixed matter bath"
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          2.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "fixed matter bath and normalized real chains; no full photon-baryon claim"
+      },
+      {
+        "autonomous": true,
+        "case": 21,
+        "dense_dimension_limit": 256,
+        "dimension": 8192,
+        "dimension_smoke": 32,
+        "dimension_standard": 8192,
+        "grid": [
+          64,
+          64
+        ],
+        "id": 21,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Periodic 2D Brusselator",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "A": 1.0,
+          "B": 3.4,
+          "advection_x": 0.1,
+          "boundary": "periodic",
+          "diffusion": 0.01,
+          "variant": "periodic Brusselator; not canonical BRUSS2D forcing/BC"
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          1.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "explicit periodic variant; canonical BRUSS2D source/BC not implied"
+      },
+      {
+        "autonomous": true,
+        "case": 22,
+        "dense_dimension_limit": 256,
+        "dimension": 4096,
+        "dimension_smoke": 16,
+        "dimension_standard": 4096,
+        "grid": [
+          64,
+          64
+        ],
+        "id": 22,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "Anisotropic 2D conduction",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "b": [
+            0.7071067811865476,
+            0.7071067811865476
+          ],
+          "boundary": "periodic",
+          "discretization": "constant tensor 9-point centered stencil",
+          "kappa_parallel": 1.0,
+          "kappa_perp": 1e-06
+        },
+        "reference_kind": "analytic-semidiscrete-endpoint",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          0.1
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "constant oblique tensor9-point stencil, ratio1e6"
+      },
+      {
+        "autonomous": true,
+        "case": 23,
+        "dense_dimension_limit": 256,
+        "dimension": 27648,
+        "dimension_smoke": 128,
+        "dimension_standard": 27648,
+        "grid": [
+          24,
+          24
+        ],
+        "id": 23,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "3D Barkley reaction-diffusion",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "Du": 0.001,
+          "Dv": 0.0,
+          "a": 0.75,
+          "b": 0.02,
+          "boundary": "periodic",
+          "epsilon": 0.02,
+          "variant": "Barkley kinetics, matching supplied polynomial; not Gray-Scott/Schnakenberg"
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          5.0
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "supplied polynomial is Barkley kinetics, not Gray-Scott/Schnakenberg"
+      },
+      {
+        "autonomous": true,
+        "case": 24,
+        "dense_dimension_limit": 256,
+        "dimension": 32768,
+        "dimension_smoke": 64,
+        "dimension_standard": 32768,
+        "grid": [
+          32,
+          32
+        ],
+        "id": 24,
+        "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+        "name": "3D absorbing-obstacle transport",
+        "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+        "parallel_layers": [
+          "serial",
+          "data",
+          "ensemble"
+        ],
+        "parameters": {
+          "D": 0.01,
+          "boundary": "periodic",
+          "opacity": "1e6 inside central radius .2 ball, 1 outside",
+          "source": "exp(-100*((x-.2)^2+(y-.5)^2+(z-.5)^2))",
+          "velocity": [
+            0.1,
+            0.05,
+            0.02
+          ]
+        },
+        "reference_kind": "external-reference-required",
+        "size": "standard",
+        "supported_methods": [
+          "dopri5",
+          "rodas5p-mf",
+          "rodas5p-dense",
+          "switching"
+        ],
+        "t_span": [
+          0.0,
+          0.1
+        ],
+        "units": "dimensionless; normalized variables, not SI physical claims",
+        "variant": "periodic upwind advection, centered diffusion, fixed absorption ball"
+      }
+    ],
+    "endpoint_only": true,
+    "kind": "catalog",
+    "methods": [
+      "dopri5",
+      "rodas5p-mf",
+      "rodas5p-dense",
+      "switching"
+    ],
+    "note": "Dense method refused above256. Stage parallelism uses separate coupled example. Model variants and reference status must be retained.",
+    "parallel_layers": [
+      "serial",
+      "data",
+      "ensemble"
+    ],
+    "schema_version": 1
+  },
+  "host": {
+    "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+    "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+    "hostname": "6c435ac65c1e",
+    "cpu_topology": {
+      "allowed_logical_cpus": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "physical_cpu_selection": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "physical_core_count": 9,
+      "affinity_supported": true,
+      "cpu_rows": [
+        {
+          "cpu": 0,
+          "package": "0",
+          "core": "0",
+          "thread_siblings": "0",
+          "l3_shared_cpus": "0-8",
+          "governor": "unknown"
+        },
+        {
+          "cpu": 1,
+          "package": "0",
+          "core": "1",
+          "thread_siblings": "1",
+          "l3_shared_cpus": "0-8",
+          "governor": "unknown"
+        },
+        {
+          "cpu": 2,
+          "package": "0",
+          "core": "2",
+          "thread_siblings": "2",
+          "l3_shared_cpus": "0-8",
+          "governor": "unknown"
+        },
+        {
+          "cpu": 3,
+          "package": "0",
+          "core": "3",
+          "thread_siblings": "3",
+          "l3_shared_cpus": "0-8",
+          "governor": "unknown"
+        },
+        {
+          "cpu": 4,
+          "package": "0",
+          "core": "4",
+          "thread_siblings": "4",
+          "l3_shared_cpus": "0-8",
+          "governor": "unknown"
+        },
+        {
+          "cpu": 5,
+          "package": "0",
+          "core": "5",
+          "thread_siblings": "5",
+          "l3_shared_cpus": "0-8",
+          "governor": "unknown"
+        },
+        {
+          "cpu": 6,
+          "package": "0",
+          "core": "6",
+          "thread_siblings": "6",
+          "l3_shared_cpus": "0-8",
+          "governor": "unknown"
+        },
+        {
+          "cpu": 7,
+          "package": "0",
+          "core": "7",
+          "thread_siblings": "7",
+          "l3_shared_cpus": "0-8",
+          "governor": "unknown"
+        },
+        {
+          "cpu": 8,
+          "package": "0",
+          "core": "8",
+          "thread_siblings": "8",
+          "l3_shared_cpus": "0-8",
+          "governor": "unknown"
+        }
+      ]
+    },
+    "packages": {
+      "numpy": "2.3.5",
+      "scipy": "1.17.0",
+      "matplotlib": "3.10.8"
+    },
+    "perf": {
+      "path": null,
+      "usable": false,
+      "probe": "NOT_RUN"
+    },
+    "gnu_time": null,
+    "julia": null,
+    "gfortran": null,
+    "ncp_used": false,
+    "external_comparators": {
+      "vode": {
+        "available": true,
+        "adapter": "SciPy wrapper of double-precision VODE; Python callback cost included"
+      },
+      "julia": {
+        "executable_available": false,
+        "packages_verified": false
+      },
+      "diffsol": {
+        "available": false,
+        "reason": "requires explicit built adapter path and matched model verification"
+      }
+    }
+  },
+  "tasks": [
+    {
+      "case": 15,
+      "method": "dopri5",
+      "parallel_layer": "serial",
+      "threads": 1,
+      "repeat": 0,
+      "instrumented": false,
+      "cpus": [
+        0
+      ],
+      "id": "4202ff778f886009"
+    },
+    {
+      "case": 15,
+      "method": "rodas5p-mf",
+      "parallel_layer": "serial",
+      "threads": 1,
+      "repeat": 0,
+      "instrumented": false,
+      "cpus": [
+        0
+      ],
+      "id": "ab37767ac4d028f1"
+    },
+    {
+      "case": 15,
+      "method": "switching",
+      "parallel_layer": "serial",
+      "threads": 1,
+      "repeat": 0,
+      "instrumented": false,
+      "cpus": [
+        0
+      ],
+      "id": "b1abbd05d8e96a81"
+    },
+    {
+      "case": 15,
+      "method": "dopri5",
+      "parallel_layer": "ensemble",
+      "threads": 1,
+      "repeat": 0,
+      "instrumented": false,
+      "cpus": [
+        0
+      ],
+      "id": "453cb04cdafa98fe"
+    },
+    {
+      "case": 15,
+      "method": "rodas5p-mf",
+      "parallel_layer": "ensemble",
+      "threads": 1,
+      "repeat": 0,
+      "instrumented": false,
+      "cpus": [
+        0
+      ],
+      "id": "29d0c748a3f73e90"
+    },
+    {
+      "case": 15,
+      "method": "switching",
+      "parallel_layer": "ensemble",
+      "threads": 1,
+      "repeat": 0,
+      "instrumented": false,
+      "cpus": [
+        0
+      ],
+      "id": "9a2f9558bef4b9c2"
+    },
+    {
+      "case": 15,
+      "method": "dopri5",
+      "parallel_layer": "serial",
+      "threads": 1,
+      "repeat": 0,
+      "instrumented": true,
+      "cpus": [
+        0
+      ],
+      "id": "67298cbbb37b58e6"
+    },
+    {
+      "case": 15,
+      "method": "rodas5p-mf",
+      "parallel_layer": "serial",
+      "threads": 1,
+      "repeat": 0,
+      "instrumented": true,
+      "cpus": [
+        0
+      ],
+      "id": "40fc7474dad6dc89"
+    },
+    {
+      "case": 15,
+      "method": "switching",
+      "parallel_layer": "serial",
+      "threads": 1,
+      "repeat": 0,
+      "instrumented": true,
+      "cpus": [
+        0
+      ],
+      "id": "d590d542e3886e9e"
+    }
+  ],
+  "planned_skips": [],
+  "nominal_case_thread_configurations": 1,
+  "planned_processes": 9,
+  "per_process_timeout_worst_seconds": 45,
+  "cumulative_campaign_budget_seconds": 60,
+  "budget_accounting": "prior completed process wall time plus full timeout for interrupted attempts plus current invocation wall time; earlier controller overhead is not reconstructed",
+  "timing_policy": "one process at a time; independent process repetitions; cyclic method order",
+  "parallelism_policy": "serial latency, data scaling and independent ensemble throughput are separate; no nested solver/data pools",
+  "ncp_used": false,
+  "build_receipt_sha256": null,
+  "build_receipt": null
+}

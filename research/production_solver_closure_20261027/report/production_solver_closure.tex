@@ -1,0 +1,420 @@
+\documentclass[aps,pra,reprint,onecolumn,12pt,notitlepage,superscriptaddress,nofootinbib]{revtex4-2}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{amsmath,amssymb,bm,graphicx,booktabs}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\begin{document}
+\title{Production Closure of Derivative-Free Causal Integration in VigilODE:
+Exact Constants, Full-Space Certificates, Adversarial Profiles, and Local Qualification}
+\author{VigilODE research and implementation audit}
+\noaffiliation
+\date{27 October 2026 (UTC)}
+\begin{abstract}
+Starting from PR91, we independently pursue structural stage verification,
+scalar homotopy implementation, and selective adapter decisions. No newer PR
+was found in the initial remote survey. An exact represented-stage identity
+replaces repeated mean-field full-space verification by an outward enclosure
+of cost $O(sn+s^2)$, while retaining every state component and charging failed
+parallel work. A 2,048-variable, one-worker trajectory has a paired median
+speedup of 2.063 and 62.52\% fewer guest instructions than PR91. Scalar
+homotopy removes allocation overhead without changing numerical bits; a
+proved rational inverse predictor reduces cubic polynomial evaluations from
+1,659 to 1,024 under the same physical certificate. The two routes reduce
+guest instructions by 36.26\% and 39.01\%, respectively. The adapter's
+10.95\% work reduction on one stiff case does not establish a wall-time win;
+its reentrant nonlinear alternative remains slower than RHS-only in every
+paired block. Exact integer comparison and failure accounting are therefore
+kept separate from future-regime optimality. Three, one, and three correction
+passes were used for the respective research tasks. A strict serialized
+production facade, independent error oracles, native regression checks,
+source-bound execution receipts, and a 16-node local development DAG provide
+a reviewable deployment setup. General nonlinear closure/order, temporal
+residence guarantees, and actual deployment-host release qualification
+remain explicit obligations.
+\end{abstract}
+\maketitle
+
+\section{Scope, prior PRs, and research discipline}
+The implementation baseline is commit
+\texttt{206298b4068d923bb47c7160b111b7439098660c}, the head of draft PR91
+when the work began. The initial GitHub survey inspected the recent 30 PRs
+and found no PR newer than 91. PR90 and PR91 remained open drafts, so this
+change is prepared on a separate branch stacked above PR91; it does not
+merge either predecessor or alter the default branch. The exact survey
+receipt and source identities accompany the repository.
+
+The predecessor research is actively reused. PR65's counted common-$W$
+corrections warn that sequential forward solves can double work without
+shortening the critical path. PR74 and PR75 supply the coupled raw-$U$
+target, ordered parallel dispatch, original-residual screening, and charged
+speculation. PR77 and the derivative-free originals supply physical
+collective/transverse closures. PR90 provides careful prefix-work evidence
+and the distinction between residual and physical error. PR91 provides the
+exact two-channel mean-field reduction, the dyadic cubic physical-error
+plan, exact-input causal reuse, and strict entry selection. Existing SPD04
+least-squares workspace reuse is already enabled in the facade; a known
+nonnormal Givens differential failure remains an explicit constraint on any
+replacement. These contributions are controls and premises, not new claims
+of the present report.
+
+Three parallel agents completed separate theory and implementation tracks,
+with parent integration and complementary independent native-agent reviews.
+The PhysMath Research Loop version 1.0.0 organizes R1--R10 and C1--C10.
+Every task records its original target, assumptions, alternatives, exact
+derivation, numerical counterprobes, source-bound implementation, actual
+tests, and bounded corrections. Shared native builds, timings, and profiles
+are serialized by a single lock. Reviewers share project context; their
+reviews are not blinded or heterogeneous-model replications.
+
+\begin{table}[tb]
+\caption{Separate research tasks and correction budgets. The initial attempt
+is recorded separately from a corrective pass. Packaging and environment
+repairs are labeled, rather than silently counted as numerical tuning.}
+\begin{ruledtabular}
+\begin{tabular}{p{.19\textwidth}p{.59\textwidth}r}
+Task & Diagnosed target and implemented response & Corrections\\
+\hline
+Structural & Failed-work loss; repeated full-space residual arithmetic;
+adverse scalar cost. Charged API, proved enclosure, exact $n=1$ degeneration. & 3/3\\
+Homotopy & Vec/station overhead; costly cubic radicals. Scalar representation
+and algebraically derived rational predictor with original certification. & 1/3\\
+Adapter & Discarded useful pilot proposals; empirical return margin;
+expensive residence in nonlinear regimes. Exact comparisons and causal
+proposal reuse, with negative outcomes retained. & 3/3
+\end{tabular}
+\end{ruledtabular}
+\end{table}
+
+The research search used SciSpace for discovery, Exa and primary papers for
+source checking, and Wolfram for symbolic identities and independent
+inequality checks. No retrieved theorem was treated as a blanket convergence
+guarantee for this solver. In particular, modern derivative-free Anderson
+acceleration for monotone nonlinear equations has its own projection and
+monotonicity assumptions~\cite{JinWangDeng2025}. Historical parallel iterated
+RK work separates nonstiff fixed-point iteration from stiff parallel
+constructions~\cite{HouwenSommeijer1990,Sommeijer1993}. Neither an implicit
+corrector's stability nor a paper's favorable timings transfer automatically
+to an arbitrarily truncated causal or homotopy loop.
+
+\section{Evidence hierarchy and main measured outcomes}
+The report distinguishes four different objects: a real-arithmetic identity;
+a floating-point outward enclosure under declared arithmetic assumptions;
+an independent experiment against an original physical target; and a timing
+measurement on one host. A smaller projected residual is insufficient for
+a full-state conclusion. Fewer callback units need not imply fewer machine
+instructions or lower elapsed time. A stage residual bound alone is not a
+trajectory accuracy certificate.
+
+\begin{figure}[tb]
+\centering\includegraphics[width=\textwidth]{performance.pdf}
+\caption{Measured complete-trajectory speed ratios. Dots are medians of five
+ABBA/BAAB blocks; bars are the observed minimum and maximum, not confidence
+intervals. Different rows have their explicitly named baselines. The adapter
+stiff row compares PR91 with observed proposal reuse; its reentrant row
+compares RHS-only with observed proposal reuse and sentinel.}
+\label{fig:performance}
+\end{figure}
+
+The strongest structural timing observation is the one-worker $n=2048$
+enclosure: $2.063\times$, range $[1.226,3.614]$, under the same 64-step
+trajectory and physical cap $10^{-6}$. The all-grid states match PR91 bit for
+bit. The two-worker range crosses one, so it supplies no general parallel
+speed guarantee. A direct fused implementation reduces instructions but
+has a negative final one-worker timing median; it remains a measured
+alternative rather than the recommended universal choice.
+
+For the nonlinear cubic cohort, generic/scalar and generic/rational medians
+are $1.474$ and $1.670$, with all five observed ratios above one. The
+scalar/rational ranges cross one in both cubic cohorts. We therefore expose
+both strong candidates without installing a fitted runtime threshold.
+The recommended scalar Picard representation is a conservative opt-in
+implementation choice; the legacy public entry still selects the generic
+homotopy. Rational prediction is a separately selectable model-specific
+alternative. The original outward physical certificate is retained.
+
+\begin{figure}[tb]
+\centering\includegraphics[width=.98\textwidth]{instructions.pdf}
+\caption{Startup-subtracted Callgrind instruction ratios from the same
+executable within each comparison. These guest instruction counts are
+neither hardware cycles nor estimates of end-to-end native wall time.}
+\label{fig:instructions}
+\end{figure}
+
+The adverse adapter profile is actionable: the adapter dispatcher itself
+has negligible self instruction cost, but its decision to remain implicit
+incurs norm, QR, orthogonalization and GMRES costs. Optimizing a few
+dispatcher branches cannot remove this residence loss. Future work must
+separately improve the mode arithmetic and derive when historical evidence
+is admissible for later regimes. The current public deployment default is
+therefore persistent RHS-only; selective supplied JVP is opt-in.
+
+\input{../structural/section.tex}
+\input{../homotopy/section.tex}
+\input{../adapter/adapter_section.tex}
+
+\section{What is a mathematical gap, and what is code optimization?}
+The following division is based on the claims required by each route.
+It does not infer a strong impossibility theorem from a finite failed
+experiment. A restricted construction can remain useful while a broader
+claim is unsupported.
+
+\subsection{Structural closure and a physical trajectory theorem}
+The affine mean-field quotient is exact because the declared operator
+preserves the span of the collective and transverse projectors. Its
+arbitrary full-state forcing is retained. Repeated full-state verification
+was consequently an implementation bottleneck with a constructive exact
+factorization. Rounding, however, means that a computed mean is not the
+exact projector and a lifted stage is not the exact two-channel state.
+Theorem S1 supplies the missing terms, and S2--S4 turn them into an
+executable enclosure. Discarding these terms would have been a mathematical
+defect in a certificate, not merely an inefficient implementation.
+
+The new stage certificate still does not establish an outward physical
+trajectory bound. The old accumulated algebraic budget is evaluated in
+ordinary binary64, and time truncation, endpoint addition and observation
+time errors have independent contributions. A variable-step extension must
+derive the adjoint/product residual transport, bound every rounding term,
+and state its operator-commutation conditions. A nonlinear extension must
+bound the closure remainder on an explicit invariant domain. PR-N03 carries
+these proof obligations before an adaptive consumer can claim a physical
+certificate.
+
+\subsection{Causal parallelism and high-order nonlinear carriers}
+The finite triangular target admits exact forward substitution and finite
+causal propagation. These statements establish neither cheap parallel
+execution nor the high-order conditions of a changing nonlinear carrier.
+The inherited general causal path still uses a frozen JVP basis and small
+projected linear algebra; calling it universally derivative- or matrix-free
+would be incorrect. Exact cache identity and buffer reuse are implementation
+tasks. Proving original-space residual amplification, closure remainders,
+and order under carrier rebuilding is a theory task.
+
+The relevant performance comparison includes total work and critical path.
+Independent stage or model jobs can execute concurrently, but communication,
+validation, pool startup and the best forward solve are part of the
+comparison. PR-N05 keeps that strong serial baseline and an explicit
+work/span contract. The existing successful structural special case is
+evidence for this restricted algebra, not a general proof that sequential
+RK dependencies can always be removed profitably.
+
+\subsection{Root finding, certificates, and remaining accuracy cost}
+The scalar representation is a direct code optimization: fixed arithmetic
+order and 40 mode/seed/model comparisons establish bit parity. The rational
+inverse is a constructive algebraic alternative whose coefficients and
+defect are proved. Its acceptance continues to use the original equation,
+so no unproved libm cube-root accuracy is trusted. The specific monotone
+cubic model supplies existence, uniqueness, a bracket and a residual-to-root
+constant. A generic nonlinear homotopy needs its own branch, domain,
+monotonicity or inverse-control assumptions. Without them, the finite-budget
+failure contract remains explicit.
+
+After root-cost reduction, interval multiplication accounts for 55.06\%
+of the rational instruction profile. Removing certificate work without a
+replacement proof would relax the scientific target. PR-N02 instead seeks
+a tighter finite-step defect along the actual decay envelope, an outward
+sum of propagated error, and the smallest admitted grid. This targets
+the number of certified steps, while generic vector workspace reuse in
+PR-N04 targets allocation. Their savings must be attributed separately.
+
+\subsection{Selection evidence and future regimes}
+Exact integer comparison proves a current same-target work preference.
+The $2I+6$ sentinel theorem bounds current-window overhead relative to its
+implicit incumbent. Neither statement bounds the incumbent's future cost.
+The measured reentrant loss demonstrates the gap between the selector's
+proxy and actual full-trajectory cost in this cohort. It is not a theorem
+that derivative-free or selective methods are universally inferior.
+
+A defensible future-regime claim must assume a quantitative variation,
+dwell-time or model-domain condition, define evidence epochs, and charge
+exploration and invalidated probes. PR-N06 is distinct from the arithmetic
+cost model in PR-N01. It seeks a finite-horizon residence/exploration bound
+and budget-derived revalidation rules. An empirical multiplier without
+such a theorem would not meet the requested exact-constant standard.
+
+\subsection{Constants and caller choices}
+New method constants have an explicit origin: $2$ and $3$ in the rational
+inverse arise from series matching; $1+hk/2$ is the exact strong-monotonicity
+lower bound; the structural block weight is an induced norm; $2^{-53}$ and
+$2^{-1074}$ are binary64 arithmetic constants; the adapter's $I-1$, $E$ and
+$2I+6$ follow from integer strictness and native attempt overshoot. None is
+a fitted hyperparameter.
+
+This does not erase legitimate user inputs. Physical tolerances, initial
+step proposals, thread count, attempt/resource caps and observation windows
+belong to the client or execution environment. Existing controller and
+pressure/backoff policy constants are preserved operational choices, not
+newly proved universal optima. The JSON templates use one declared smoke
+fixture and label these inputs accordingly. A claim that every inherited
+hyperparameter has been eliminated would exceed the work performed.
+
+\section{Production configuration and failure-preserving execution}
+The additive public API exports \texttt{ProductionConfig},
+\texttt{ProductionSolver}, and schema version one. The default factory
+selects persistent RHS-only execution. The selective factory accepts only
+a supplied JVP, requires replay-safe callbacks, preserves the explicit
+session, and installs strict entry and return evidence. It does not
+automatically enable observed-step reuse or one-window sentinel probing.
+Unsupported derivative permissions and incomplete configuration are
+rejected before callbacks run.
+
+Strict deserialization covers the top level, switching configuration,
+nested options and absolute tolerance. Unknown fields such as a misspelled
+step limit are rejected. The legacy general \texttt{Options}
+deserialization behavior is unchanged; production uses a strict
+intermediate representation. Native feature validation continues to govern
+mass matrices, nonautonomous time derivatives, dense output, events and
+tolerance combinations. This is an endpoint-oriented smooth forward
+identity-mass setup, not a promise that every experimental route supports
+every facade feature.
+
+The result retains success, reached time, method segments, actual callback
+work, accounting completeness and an accepted prefix on numerical failure.
+Callers inspect these fields instead of equating an outer successful return
+with a completed integration. Charged structural APIs are required for new
+adaptive or retrying consumers; legacy wrappers intentionally discard only
+the failure work payload for signature compatibility. A callback panic
+under an aborting process profile cannot fulfill a returned partial-result
+contract. Expected model failures should use the declared callback error.
+
+The executable \texttt{production\_from\_json} emits complete templates and
+reads them back. On $n=16$, $y'=-r y$, $[0,1]$, four combinations of
+RHS-only/selective and $r=1,1000$ pass the original $10^{-6}$ all-returned-state
+cap and atomic work accounting. The RHS-only cases make zero JVP calls.
+The stiff selective case records 1,117 RHS and 426 JVP calls against 2,377
+RHS calls in the default case; its observed accuracy is
+$1.0654\times10^{-9}$. This controlled smoke result does not override the
+adverse nonlinear adapter evidence.
+
+\section{Validation, reproducibility, and interpretation limits}
+The full facade and coupled native test sets pass 297 and 127 tests,
+respectively, with zero failed or ignored tests in the final invocation
+after the integration-accounting repair described below.
+The narrower lane counts (11 structural, 23 homotopy, 35 adapter and five
+production-setup contracts) overlap those complete package sets and are
+not added again. All-target compilation, warning-free rustdoc and two
+doctests are checked separately. Final integration gate receipts and any
+later format-only qualification are authoritative in
+\texttt{evidence/VALIDATION\_SUMMARY.json}; they distinguish tests from
+compilation, linting and publishing.
+
+The broader five-package invocation exposed an inherited lagged-GMRES
+accounting defect after 1,312 passing tests, one failure and 45 ignored tests.
+The solver-level counter already charged attempted operator applications,
+whereas the physical work hook charged successful completions. With $A$
+entered applications and $P$ charged physical applications, the missing
+physical work is exactly $A-P$ for representable counters. Reconciliation
+against the attempted-operator count had incorrectly yielded zero for a
+failed JVP. The local repair separates these ledgers, leaving callbacks,
+numerical arithmetic, tolerances and the original failing assertion unchanged.
+The original regression and successful dense/JVP contracts then pass.
+The recorded post-repair scope covers eight reachable lagged targets and
+the complete facade/coupled sets: 464 distinct tests pass, none fail,
+and four measurement tests remain ignored. This is not a fresh successful five-package
+sweep. Unrelated exact-oracle evidence is reused through source and route
+identity. Full deployment release qualification remains a local gate.
+
+Independent oracles include 728 exact full structural residual components
+and 168 stage bounds across 21 fixtures; 5,404 cubic grid observations
+against Decimal80; and 17,440 nonlinear adapter state components against
+Decimal90. Exact-rational symbolic checks and Wolfram receipts accompany
+the proofs. The unchanged structural rounding-radius routine reuses 8,184
+exponent/mantissa checks. Finite checks supplement the displayed proofs;
+they do not establish unrestricted floating-point correctness by sampling.
+
+The shared host uses an Intel Xeon Platinum 8573C, nine logical CPUs in
+the affinity set, an eight-core CPU quota and an 8-GiB memory limit.
+Rust 1.94.1 and the locked dependency graph are pinned. Cloud measurements
+use opt-level three, no LTO and 16 codegen units. Deployment qualification
+uses the existing release profile with fat LTO and one codegen unit.
+Those profiles and their binary hashes must not be mixed. Native timings
+are descriptive paired observations on a shared host. Oracle evaluation and
+JSON serialization are outside the recorded timer; the relevant model,
+plan, solve, validation and return allocation costs are included as stated
+in each protocol. Thread-pool construction is reported separately.
+
+The new command recorder binds actual argv, environment, source/input hashes,
+executable identity, stdout/stderr hashes, timeout and exit status. Source
+discovery is repeated after execution, so new files also invalidate a
+qualification. A successful command with changed source is recorded as
+stale and returns failure. Owned process groups are cleaned on timeout,
+cancellation and direct-child completion before the suite lock is released.
+Seven actual toy-process contracts exercise success, nonzero exit, missing
+executable, modified/new input and resistant-grandchild timeout/cancellation.
+Code review covers the spawn and lock races; those tests do not exhaust all
+scheduler interleavings.
+
+The initial negative cohorts, compile-time fixture failure, profiler
+environment preflight failure, and unfavorable final measurements are
+retained. Environment repairs do not become numerical improvement claims.
+Raw evidence is stored with a per-member hash manifest and reproducible
+archive, alongside the final source manifest. The package verifier checks
+identity and DAG consistency; its pass is a packaging result, not a
+mathematical proof or a deployment certificate.
+
+\section{Local development DAG and PR contracts}
+The machine-readable plan contains 16 nodes and eight executable suites.
+The completed remote survey feeds the three research lanes; those feed
+production integration, cloud validation, and publication. Local release
+verification precedes hardware measurements. Four development branches can
+then pursue independent scoped work. Native timing and profiling stay
+serialized even when proofs and disjoint edits run concurrently.
+
+\begin{table}[tb]
+\caption{Future local PR contracts. Every research PR starts with its own
+unchanged target and at most three corrective passes. The JSON plan includes
+code targets, expected artifacts, reuse links and explicit acceptance tests.}
+\begin{ruledtabular}
+\begin{tabular}{p{.18\textwidth}p{.25\textwidth}p{.44\textwidth}}
+Node & Prerequisite & Purpose and required evidence\\
+\hline
+PR-N01 & L-HARDWARE & Small Krylov norm/QR/MGS cost; retain existing LS
+workspace; prove true-residual and rank/breakdown conditions.\\
+PR-N02 & L-RELEASE & Finite-step cubic bound on the decay envelope;
+outward error sum and smallest admitted grid.\\
+PR-N03 & L-RELEASE & Variable-step transport, temporal truncation and
+endpoint rounding; charged adaptive consumption.\\
+PR-N04 & L-RELEASE & Complete session/epoch transfer and generic vector
+homotopy workspace with preserved arithmetic.\\
+PR-N05 & L-HARDWARE, N04 & Nonlinear closure/order and total work/span;
+comparison against forward substitution.\\
+PR-N06 & L-HARDWARE, N01 & Temporal residence and exploration loss under
+declared variation or dwell assumptions.
+\end{tabular}
+\end{ruledtabular}
+\end{table}
+
+L-RELEASE pins the published commit and records actual release/LTO tests,
+docs, four smokes, compiler, libm, CPU and source identities. Ignored tests
+retain a separate status. L-HARDWARE then measures paired complete trajectories
+and instruction profiles while preserving scalar and nonlinear negative
+controls. R-QUALIFY admits only actual client/model/provider combinations
+whose original accuracy and resource contracts pass these two gates.
+
+The runner is dry-run by default. A user-specified fresh output directory
+receives a suite receipt and per-command source snapshots, stdout/stderr
+and exit records. Its POSIX/WSL lock serializes builds and measurements.
+The local benchmark suite covers structural $n=1,64,2048$, bounded worker
+counts, paired cubic alternatives and the adverse adapter. The profile
+suite uses two repetition counts to subtract startup. The handoff pins an
+isolated worktree to the published commit; source and evidence manifests
+verify that identity.
+
+\begin{thebibliography}{9}
+\bibitem{OgitaRumpOishi2005} T.~Ogita, S.~M.~Rump, and S.~Oishi,
+Accurate sum and dot product, SIAM J. Sci. Comput. \textbf{26}, 1955--1988
+(2005), \href{https://doi.org/10.1137/030601818}{doi:10.1137/030601818}.
+\bibitem{JinWangDeng2025} J.~Jin, H.~Wang, and K.~Deng,
+Anderson acceleration of derivative-free projection methods for constrained
+monotone nonlinear equations (2025),
+\href{https://arxiv.org/abs/2403.14924}{arXiv:2403.14924},
+\href{https://doi.org/10.1007/s10957-025-02841-y}{doi:10.1007/s10957-025-02841-y}.
+\bibitem{HouwenSommeijer1990} P.~J.~van der Houwen and B.~P.~Sommeijer,
+Parallel iteration of high-order Runge--Kutta methods with stepsize control
+(1990), J. Comput. Appl. Math. \textbf{29}, 111--127,
+\url{https://ir.cwi.nl/pub/1663/1663D.pdf}.
+\bibitem{Sommeijer1993} B.~P.~Sommeijer, Parallel-iterated Runge--Kutta methods
+for stiff ordinary differential equations, J. Comput. Appl. Math.
+\textbf{45}, 151--168 (1993),
+\url{https://ir.cwi.nl/pub/2308/2308D.pdf}.
+\end{thebibliography}
+\end{document}

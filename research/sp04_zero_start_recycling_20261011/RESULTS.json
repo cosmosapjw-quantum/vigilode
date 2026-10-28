@@ -1,0 +1,201 @@
+{
+  "schema": "vigilode-sp04-check-v1",
+  "node": "sp04_zero_start_recycling_20261011",
+  "head": "b34d07d45618371a68f797bedbaa942904482d1b",
+  "tree_clean": true,
+  "base_sha256": "e4afecdab62a83e194da3b52499bcfc5e23c293cc274132c67023f5d757985b5",
+  "runs_sha256": "6e0cc630d4ace53d82bc0bfe64edf2b4523a05397a9201d76af7e1be61b1a276",
+  "profile_sha256": "18b6a74909576dcd625d846879f41c385f262441f4ec71c760d64b92ab87b72e",
+  "verdict": "FAIL",
+  "feasible_cells": [
+    [
+      "E-normal",
+      1e-06
+    ],
+    [
+      "E-normal",
+      1e-08
+    ],
+    [
+      "E-nonnormal",
+      1e-06
+    ],
+    [
+      "E-nonnormal",
+      1e-08
+    ],
+    [
+      "E-nonnormal-strong",
+      1e-06
+    ],
+    [
+      "E-nonnormal-strong",
+      1e-08
+    ]
+  ],
+  "infeasible_cells": [],
+  "s_star_by_cell": {
+    "E-normal_1e-06": "R-P",
+    "E-normal_1e-08": "Lg-P",
+    "E-nonnormal_1e-06": "L-P",
+    "E-nonnormal_1e-08": "L-P",
+    "E-nonnormal-strong_1e-06": "L-P",
+    "E-nonnormal-strong_1e-08": "L-P"
+  },
+  "hypothesis_killed": false,
+  "items": {
+    "1_existing_arms_unchanged": {
+      "pass": true,
+      "errors": []
+    },
+    "2_separation_contract": {
+      "pass": true,
+      "errors": []
+    },
+    "3_current_w_contract": {
+      "pass": true,
+      "errors": []
+    },
+    "4_equal_accuracy_and_failures": {
+      "pass": false,
+      "errors": [
+        "R-Z had linear solve failures for (E-nonnormal, 1e-06)",
+        "R-Z attempts difference 56 exceeds allowed 1 for (E-nonnormal, 1e-06)",
+        "R-Z had linear solve failures for (E-nonnormal-strong, 1e-06)",
+        "R-Z attempts difference 58 exceeds allowed 1 for (E-nonnormal-strong, 1e-06)"
+      ],
+      "details": {
+        "E-normal_1e-06": {
+          "s_star": "R-P",
+          "error_s_star": 8.358998102040752e-08,
+          "error_rz": 8.362532384392213e-08,
+          "error_ratio": 1.0004228117183802,
+          "attempts_s_star": 12,
+          "attempts_rz": 12,
+          "allowed_attempts_diff": 1
+        },
+        "E-normal_1e-08": {
+          "s_star": "Lg-P",
+          "error_s_star": 8.291630380137182e-10,
+          "error_rz": 8.262485984411797e-10,
+          "error_ratio": 0.9964850826207592,
+          "attempts_s_star": 17,
+          "attempts_rz": 17,
+          "allowed_attempts_diff": 1
+        },
+        "E-nonnormal_1e-06": {
+          "s_star": "L-P",
+          "error_s_star": 3.824852550255145e-08,
+          "error_rz": 3.4054973651345228e-09,
+          "error_ratio": 0.08903604309942227,
+          "attempts_s_star": 15,
+          "attempts_rz": 71,
+          "allowed_attempts_diff": 1
+        },
+        "E-nonnormal_1e-08": {
+          "s_star": "L-P",
+          "error_s_star": 3.7705912807038697e-10,
+          "error_rz": 3.7422345713494397e-10,
+          "error_ratio": 0.9924795059333144,
+          "attempts_s_star": 25,
+          "attempts_rz": 25,
+          "allowed_attempts_diff": 1
+        },
+        "E-nonnormal-strong_1e-06": {
+          "s_star": "L-P",
+          "error_s_star": 3.148497936957287e-08,
+          "error_rz": 2.3395065358886884e-09,
+          "error_ratio": 0.07430548098594565,
+          "attempts_s_star": 15,
+          "attempts_rz": 73,
+          "allowed_attempts_diff": 1
+        },
+        "E-nonnormal-strong_1e-08": {
+          "s_star": "L-P",
+          "error_s_star": 4.971608152686572e-10,
+          "error_rz": 4.971513087090077e-10,
+          "error_ratio": 0.9999808783006272,
+          "attempts_s_star": 26,
+          "attempts_rz": 26,
+          "allowed_attempts_diff": 1
+        }
+      }
+    },
+    "5_total_work_gain": {
+      "pass": false,
+      "errors": [
+        "C(R-Z)/C(S*) 1.0076 > 0.90 for (E-normal, 1e-06) with S*=R-P",
+        "C(R-Z)/C(S*) 2.1590 > 0.90 for (E-nonnormal, 1e-06) with S*=L-P",
+        "C(R-Z)/C(S*) 1.8266 > 0.90 for (E-nonnormal, 1e-08) with S*=L-P",
+        "C(R-Z)/C(S*) 1.9760 > 0.90 for (E-nonnormal-strong, 1e-06) with S*=L-P",
+        "C(R-Z)/C(S*) 1.7397 > 0.90 for (E-nonnormal-strong, 1e-08) with S*=L-P"
+      ],
+      "details": {
+        "E-normal_1e-06": {
+          "s_star": "R-P",
+          "cost_s_star": 447167232.0,
+          "cost_rz": 450581248.0,
+          "cost_ratio": 1.0076347633629827
+        },
+        "E-normal_1e-08": {
+          "s_star": "Lg-P",
+          "cost_s_star": 814756352.0,
+          "cost_rz": 588017664.0,
+          "cost_ratio": 0.7217098247305226
+        },
+        "E-nonnormal_1e-06": {
+          "s_star": "L-P",
+          "cost_s_star": 3777944576.0,
+          "cost_rz": 8156604928.0,
+          "cost_ratio": 2.1590059790225995
+        },
+        "E-nonnormal_1e-08": {
+          "s_star": "L-P",
+          "cost_s_star": 2844068864.0,
+          "cost_rz": 5194834432.0,
+          "cost_ratio": 1.8265501576828205
+        },
+        "E-nonnormal-strong_1e-06": {
+          "s_star": "L-P",
+          "cost_s_star": 3768883712.0,
+          "cost_rz": 7447360256.0,
+          "cost_ratio": 1.976012216107346
+        },
+        "E-nonnormal-strong_1e-08": {
+          "s_star": "L-P",
+          "cost_s_star": 2827589376.0,
+          "cost_rz": 4919201024.0,
+          "cost_ratio": 1.7397154854779027
+        }
+      }
+    },
+    "6_no_hidden_cost": {
+      "pass": false,
+      "errors": [
+        "Ir(R-Z) 1656242935 > Ir(S*) 1625299225 (ratio=1.0190) for E-normal",
+        "Ir(R-Z) 32831432185 > Ir(S*) 10878417436 (ratio=3.0180) for E-nonnormal",
+        "Ir(R-Z) 30665660323 > Ir(S*) 10829899354 (ratio=2.8316) for E-nonnormal-strong"
+      ],
+      "details": {
+        "E-normal": {
+          "s_star": "R-P",
+          "ir_s_star": 1625299225,
+          "ir_rz": 1656242935,
+          "ir_ratio": 1.0190387773057603
+        },
+        "E-nonnormal": {
+          "s_star": "L-P",
+          "ir_s_star": 10878417436,
+          "ir_rz": 32831432185,
+          "ir_ratio": 3.0180338618327682
+        },
+        "E-nonnormal-strong": {
+          "s_star": "L-P",
+          "ir_s_star": 10829899354,
+          "ir_rz": 30665660323,
+          "ir_ratio": 2.831573897468743
+        }
+      }
+    }
+  }
+}

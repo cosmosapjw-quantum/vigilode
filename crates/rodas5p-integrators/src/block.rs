@@ -1,6 +1,7 @@
 use rodas5p_core::{
-    CoreError, CoreResult, DenseMatrix, IdentityPreconditioner, LinearOperator, LuFactorization,
-    Preconditioner, WorkCounters, safe_l2,
+    ApplyCategory, CoreError, CoreResult, DenseMatrix, IdentityPreconditioner, LinearOperator,
+    LuFactorization, OperatorApplicationWork, Preconditioner, WorkCounters, apply_counted,
+    apply_jvp_counted, safe_l2,
 };
 use rodas5p_krylov::{GmresConfig, solve_gmres};
 
@@ -41,6 +42,10 @@ pub struct BlockSolveReport {
     pub iterations: u64,
     pub matvecs: u64,
     pub preconditioner_apps: u64,
+    /// `matvecs` and `preconditioner_apps` in state-vector units: s per
+    /// block application (audit F-051). Compare lanes on these only.
+    pub matvec_vectors: u64,
+    pub preconditioner_vectors: u64,
     pub method: String,
     pub polynomial_terms: usize,
 }
@@ -104,9 +109,7 @@ impl<'ctx, 'p> StructuredBlockSystem<'ctx, 'p> {
         let mut out = Vec::with_capacity(self.s);
         for row in k {
             let mut v = vec![0.0; self.n];
-            self.context.jacobian.apply(row, &mut v)?;
-            counters.jvp_calls += 1;
-            counters.jvp_vectors += 1;
+            apply_jvp_counted(self.context.jacobian.as_ref(), row, &mut v, counters)?;
             out.push(v);
         }
         Ok(out)
@@ -414,11 +417,18 @@ impl<'ctx, 'p> StructuredBlockSystem<'ctx, 'p> {
         pcapps: u64,
         terms: usize,
     ) -> CoreResult<BlockSolveReport> {
-        let ak = self.raw_apply(k)?;
-        counters.diagnostic_matvecs += 1;
+        let operator = BlockOperator { system: self };
+        let mut applied = vec![0.0; self.s * self.n];
+        apply_counted(
+            &operator,
+            &flatten(k),
+            &mut applied,
+            counters,
+            ApplyCategory::Diagnostic,
+        )?;
         let residual: Vec<f64> = flatten(rhs)
             .into_iter()
-            .zip(flatten(&ak))
+            .zip(applied)
             .map(|(a, b)| a - b)
             .collect();
         let rn = safe_l2(&residual);
@@ -432,6 +442,8 @@ impl<'ctx, 'p> StructuredBlockSystem<'ctx, 'p> {
             iterations,
             matvecs,
             preconditioner_apps: pcapps,
+            matvec_vectors: matvecs.saturating_mul(self.s as u64),
+            preconditioner_vectors: pcapps.saturating_mul(self.s as u64),
             method,
             polynomial_terms: terms,
         })
@@ -456,9 +468,7 @@ impl<'ctx, 'p> StructuredBlockSystem<'ctx, 'p> {
             }
             let mut jmix = vec![0.0; self.n];
             if mix.iter().any(|v| *v != 0.0) {
-                self.context.jacobian.apply(&mix, &mut jmix)?;
-                counters.jvp_calls += 1;
-                counters.jvp_vectors += 1;
+                apply_jvp_counted(self.context.jacobian.as_ref(), &mix, &mut jmix, counters)?;
             }
             let row: Vec<f64> = (0..self.n)
                 .map(|q| rhs[i][q] + self.context.h * jmix[q])
@@ -534,7 +544,10 @@ impl<'ctx, 'p> StructuredBlockSystem<'ctx, 'p> {
             None
         };
         let pc: Box<dyn Preconditioner> = match preconditioner {
-            BlockPreconditioner::None => Box::new(IdentityPreconditioner::new(self.s * self.n)),
+            BlockPreconditioner::None => Box::new(BlockIdentityPc {
+                inner: IdentityPreconditioner::new(self.s * self.n),
+                s: self.s,
+            }),
             BlockPreconditioner::Direct => Box::new(BlockDirectPc {
                 factor: factor.expect("factor"),
                 s: self.s,
@@ -563,7 +576,6 @@ impl<'ctx, 'p> StructuredBlockSystem<'ctx, 'p> {
         )?;
         let d = counters.delta(before);
         counters.block_linear_iterations += report.iterations;
-        counters.block_matvecs += d.linear_matvecs;
         counters.block_preconditioner_apps += d.preconditioner_apps;
         let k = unflatten(&report.x, self.s, self.n);
         let mut out = self.residual_report(
@@ -616,10 +628,59 @@ impl LinearOperator for BlockOperator<'_, '_, '_> {
         y.copy_from_slice(&flatten(&out));
         Ok(())
     }
+    fn application_work(&self) -> OperatorApplicationWork {
+        let stage_vectors = self.system.s as u64;
+        // One Jacobian application per stage, charged with the provenance the
+        // Jacobian declares (a JVP callback or an explicit product); an
+        // undeclared Jacobian keeps the role-based JVP count (audit F-048).
+        let declared = self.system.context.jacobian.application_work();
+        let (jvp_per_stage, jacobian_per_stage) = if declared == OperatorApplicationWork::default()
+        {
+            (1, 0)
+        } else {
+            (declared.jvp_calls, declared.jacobian_matvecs)
+        };
+        OperatorApplicationWork {
+            jvp_calls: stage_vectors.saturating_mul(jvp_per_stage),
+            jvp_vectors: stage_vectors.saturating_mul(jvp_per_stage),
+            mass_matvecs: if self.system.context.problem.mass_matrix.is_some() {
+                stage_vectors
+            } else {
+                0
+            },
+            block_matvecs: 1,
+            jacobian_matvecs: stage_vectors.saturating_mul(jacobian_per_stage),
+            state_vectors: stage_vectors,
+        }
+    }
     fn token(&self) -> u64 {
         self.system.context.shifted.token() ^ 0xB10C_5A5A
     }
 }
+/// The identity on the flattened s*n block, reporting its s state vectors
+/// per application (audit F-051).
+struct BlockIdentityPc {
+    inner: IdentityPreconditioner,
+    s: usize,
+}
+impl Preconditioner for BlockIdentityPc {
+    fn dimension(&self) -> usize {
+        self.inner.dimension()
+    }
+    fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
+        self.inner.apply(x, y)
+    }
+    fn is_identity(&self) -> bool {
+        true
+    }
+    fn exact_identity(&self) -> Option<rodas5p_core::ExactPreconditionerIdentity> {
+        self.inner.exact_identity()
+    }
+    fn application_vectors(&self) -> u64 {
+        self.s as u64
+    }
+}
+
 struct BlockDirectPc {
     factor: LuFactorization,
     s: usize,
@@ -628,6 +689,9 @@ struct BlockDirectPc {
 impl Preconditioner for BlockDirectPc {
     fn dimension(&self) -> usize {
         self.s * self.n
+    }
+    fn application_vectors(&self) -> u64 {
+        self.s as u64
     }
     fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
         let rows = unflatten(x, self.s, self.n);
@@ -656,6 +720,9 @@ impl BlockJacobiPc {
 impl Preconditioner for BlockJacobiPc {
     fn dimension(&self) -> usize {
         self.s * self.inv.len()
+    }
+    fn application_vectors(&self) -> u64 {
+        self.s as u64
     }
     fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
         if x.len() != self.dimension() || y.len() != self.dimension() {

@@ -1,0 +1,133 @@
+   Compiling version_check v0.9.5
+   Compiling proc-macro2 v1.0.107
+   Compiling autocfg v1.5.1
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling num-traits v0.2.19
+   Compiling bytemuck v1.25.2
+   Compiling nano-gemm-codegen v0.2.1
+   Compiling num-complex v0.4.6
+   Compiling paste v1.0.15
+   Compiling bitflags v2.13.1
+   Compiling libm v0.2.16
+   Compiling raw-cpuid v11.6.0
+   Compiling pulp v0.22.3
+   Compiling cfg-if v1.0.4
+   Compiling pulp-wasm-simd-flag v0.1.1
+   Compiling reborrow v0.5.5
+   Compiling dyn-stack-macros v0.1.3
+   Compiling dyn-stack v0.13.2
+   Compiling seq-macro v0.3.6
+   Compiling once_cell v1.21.4
+   Compiling syn v1.0.109
+   Compiling generic-array v0.14.7
+   Compiling nano-gemm-core v0.2.1
+   Compiling gemm-common v0.19.0
+   Compiling typenum v1.20.1
+   Compiling libc v0.2.189
+   Compiling interpol v0.2.1
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling syn v3.0.3
+   Compiling syn v2.0.119
+   Compiling crossbeam-utils v0.8.22
+   Compiling defer v0.2.1
+   Compiling serde_core v1.0.229
+   Compiling private-gemm-x86 v0.1.20
+   Compiling equator-macro v0.2.1
+   Compiling zmij v1.0.23
+   Compiling crossbeam-epoch v0.9.20
+   Compiling num_cpus v1.17.0
+   Compiling equator v0.2.2
+   Compiling crypto-common v0.1.7
+   Compiling block-buffer v0.10.4
+   Compiling gemm-c32 v0.19.0
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling gemm-f64 v0.19.0
+   Compiling qd v0.8.0
+   Compiling equator-macro v0.6.0
+   Compiling thiserror v2.0.19
+   Compiling crossbeam-deque v0.8.7
+   Compiling serde v1.0.229
+   Compiling serde_json v1.0.151
+   Compiling generativity v1.2.1
+   Compiling faer-traits v0.24.0
+   Compiling equator v0.6.0
+   Compiling gemm v0.19.0
+   Compiling digest v0.10.7
+   Compiling nano-gemm v0.2.2
+   Compiling thiserror-impl v2.0.19
+   Compiling serde_derive v1.0.229
+   Compiling cpufeatures v0.2.17
+   Compiling memchr v2.8.3
+   Compiling itoa v1.0.18
+   Compiling rayon-core v1.13.0
+   Compiling sha2 v0.10.9
+   Compiling faer v0.24.4
+   Compiling hex v0.4.3
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-adapters/crates/rodas5p-integrators)
+   Compiling either v1.17.0
+   Compiling rayon v1.12.0
+   Compiling rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-adapters/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-adapters/crates/rodas5p-krylov)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-adapters/crates/vigilode)
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 39s
+     Running tests/evidence_switch_contracts.rs (/workspace/scratch/0dc1e721cf82/target-switcher/debug/deps/evidence_switch_contracts-aabcfc3b2ee7a413)
+
+running 5 tests
+test evidence_factory_never_grants_derivative_permission ... ok
+test implicit_advance_invalidates_saved_explicit_proposal ... ok
+test native_explicit_step_proposal_is_carried_only_from_committed_state ... ok
+test entry_pilots_are_separated_bounded_and_fully_charged ... ok
+test carry_removes_repeated_startup_work_without_relaxing_tolerance ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/frontier_switch_contracts.rs (/workspace/scratch/0dc1e721cf82/target-switcher/debug/deps/frontier_switch_contracts-a95cb23f4295f144)
+
+running 6 tests
+test screening_configuration_is_checked_before_callbacks ... ok
+test derivative_forbidden_ignores_even_configured_implicit_pilots ... ok
+test implicit_pilot_failure_is_fatal_and_counts_every_callback ... ok
+test pilot_shares_global_budget_and_no_partial_pilot_state_is_committed ... ok
+test stiff_decay_pilot_must_finish_the_same_prefix_before_entry ... ok
+test rapid_rotation_rejects_uneconomical_jvp_entry_and_retains_accuracy ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/switching_contracts.rs (/workspace/scratch/0dc1e721cf82/target-switcher/debug/deps/switching_contracts-7afda70c935434c2)
+
+running 14 tests
+test fatal_callback_is_not_retried_with_another_method ... ok
+test default_is_rhs_only_even_when_derivatives_are_declared ... ok
+test forbidden_persistent_failure_keeps_native_partial_state_and_counts ... ok
+test malformed_output_stops_before_fallback ... ok
+test forbidden_route_preserves_native_observed_session_bit_for_bit ... ok
+test request_preflight_rejects_unsupported_and_resource_contracts_without_callbacks ... ok
+test zero_span_and_representationally_tiny_windows_do_not_loop ... ok
+test serialization_preserves_route_and_original_driver_records ... ok
+test budget_failure_preserves_accepted_state_and_never_forges_success ... ok
+test all_attempts_and_discarded_probes_share_one_budget ... ok
+test bounded_probe_can_return_to_the_rhs_only_route ... ok
+test endpoint_accuracy_for_rotation_is_checked_separately_from_stiffness_routing ... ok
+test finite_difference_requires_its_separate_opt_in ... ok
+test stiff_work_pressure_enters_authorized_fallback_from_accepted_state ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

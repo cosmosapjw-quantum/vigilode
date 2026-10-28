@@ -1,0 +1,23 @@
+.FF
+======================================================================
+FAIL: test_nonfinite_and_overflow_coordinates (__main__.ChartDomainTests.test_nonfinite_and_overflow_coordinates)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/data/vigilode_resume_20261003/repo/../python_red/test_native_reaudit_chart_domain.py", line 14, in test_nonfinite_and_overflow_coordinates
+    with self.assertRaises(ChartDomainError): c.to_chart(x,1.0)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+AssertionError: ChartDomainError not raised
+
+======================================================================
+FAIL: test_parameter_finiteness (__main__.ChartDomainTests.test_parameter_finiteness)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/data/vigilode_resume_20261003/repo/../python_red/test_native_reaudit_chart_domain.py", line 9, in test_parameter_finiteness
+    with self.assertRaises(ValueError): SemilinearChart(*a)
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^
+AssertionError: ValueError not raised
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.001s
+
+FAILED (failures=2)

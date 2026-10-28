@@ -1,0 +1,35 @@
+{
+  "schema": "vigilode.public-record-boundary.v1",
+  "command": [
+    "rg",
+    "-n",
+    "pub .*(rodas5p_core|rodas5p_integrators)::|pub use rodas5p_",
+    "crates/vigilode/src"
+  ],
+  "exit_code": 1,
+  "stdout": "",
+  "stderr": "",
+  "meaning": "rg exit1 means no matches; public field aliases were additionally followed manually.",
+  "manual_scope": [
+    "Stats",
+    "DriverWork",
+    "StopRecord",
+    "RouteRecord",
+    "all records.rs field and variant payload types",
+    "Options and facade callback/event record types"
+  ],
+  "result": "PASS_PUBLIC_RECORD_FIELDS_FACADE_OR_STD_ONLY",
+  "explicit_conversion_note": "From and PartialEq compatibility trait implementations intentionally refer to internal source types, as required by wave4 Task5; these are not public record fields or type re-exports.",
+  "source_sha256": {
+    "crates/vigilode/src/capabilities.rs": "415a6a0ec2893431fba147697ed7c0c4ccb021fd3c9ed2a0cc351e5f034d7dd5",
+    "crates/vigilode/src/error.rs": "6b7ee418dbe34b385a31485bf4d85bb387bbf115ac3becc0ad55796859c1f450",
+    "crates/vigilode/src/events.rs": "88f422c2fbe42c8a989d2b4839b98a81cb420f40e72e9ffbc23efa18b90030c3",
+    "crates/vigilode/src/fd.rs": "043a30a6dba922cd40b7f706b1535013f822180dda7529a7e2d163248da18664",
+    "crates/vigilode/src/lib.rs": "3e153ad610de58a8290465937a345542f78a0f509da221d5a276a8b002292271",
+    "crates/vigilode/src/options.rs": "b0355bd34c7038ff18fd37e15315835b8bc6fb4b01e7e0a59308e1f779269b1e",
+    "crates/vigilode/src/problem.rs": "80508cd74c613bde767873a93e46697b9d04597a1e95e2204a6f9332695cbc8e",
+    "crates/vigilode/src/records.rs": "b5787538970283d62e2d74347f835ef9fcbc51942154dc8794c2951d8f9d2138",
+    "crates/vigilode/src/solution.rs": "d879c9eb6155a0a73b3adda8445d8bcf30d4830863a97b02930290bbddb3d761",
+    "crates/vigilode/src/solve.rs": "d05233df298e206bb096b7e763c280a9248e1ecb8da8cd0c8748b66af2d9f53d"
+  }
+}

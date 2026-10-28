@@ -1,0 +1,334 @@
+{
+  "schema": "vigilode.reaudit.findings.v1",
+  "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+  "verdict": "REWORK",
+  "counts": {
+    "P1": 1,
+    "P2": 6
+  },
+  "findings": [
+    {
+      "id": "R2-OUT-01",
+      "severity": "P1",
+      "status": "CONFIRMED_BOUNDED_NATIVE_REPRODUCTION",
+      "title": "Representable time ordering still overridden by epoch-scaled slack",
+      "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+      "source_locations": [
+        {
+          "path": "crates/rodas5p-integrators/src/output.rs",
+          "lines": [
+            12,
+            20,
+            291,
+            295,
+            354,
+            383
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/integrate.rs",
+          "lines": [
+            92,
+            94
+          ]
+        }
+      ],
+      "observations": [
+        {
+          "probe": "fixed_short_representable_span",
+          "origins": [
+            1000000000000.0,
+            -1000000000000.0
+          ],
+          "span": 0.0009765625,
+          "steps": 0,
+          "success": true,
+          "last_time_equals_origin": true,
+          "last_state": 0,
+          "exact_endpoint_state": 1
+        },
+        {
+          "probe": "dense_boundary",
+          "origin": 1000000000000.0,
+          "velocity": 8192,
+          "request": "next_up(origin+0.25)",
+          "observed": 2048.000000000006,
+          "expected": 2049,
+          "error": -0.9999999999940883,
+          "success": true
+        },
+        {
+          "probe": "clipped_adjacent_times",
+          "observed": "InvalidInput duplicate requested time",
+          "input": "strictly increasing representable times"
+        }
+      ],
+      "claim_ceiling": "Public fixed and matrix-free dense ODE API native reproductions; other drivers source-shared but not all executed",
+      "remediation_node": "DEV-01",
+      "evidence": [
+        "output_cert/native_probe.jsonl",
+        "output_cert/exact_oracles.json"
+      ],
+      "lane_record": "output_cert/FINDINGS.json",
+      "historical_classification": "See prior_closures in REPORT_STATUS.json",
+      "acceptance_criteria": [
+        "t0=±1e12, span=8ULP, y'=1/span에서 endpoint y=1을 계산하거나 명시적으로 실패한다. zero-attempt success는 금지한다.",
+        "next_up(internal_endpoint) 요청은 이전 endpoint에서 소비하지 않는다.",
+        "서로 인접한 representable 요청을 duplicate로 거절하지 않는다.",
+        "hard stop, partial prefix, failure ledger와 BDF history의 의미가 유지된다."
+      ]
+    },
+    {
+      "id": "R2-POL-01",
+      "severity": "P2",
+      "status": "CONFIRMED_BOUNDED_NATIVE_REPRODUCTION",
+      "title": "Mixed output budget masks overflow or NaN of a valid component",
+      "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+      "source_locations": [
+        {
+          "path": "crates/rodas5p-integrators/src/homotopy_policy.rs",
+          "lines": [
+            146,
+            166
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/homotopy.rs",
+          "lines": [
+            1216
+          ]
+        }
+      ],
+      "observations": {
+        "input": {
+          "eta": 10,
+          "embedded_error": 1,
+          "epsilon_ref": 1e-320,
+          "h_ref": 1e-160,
+          "exponent": 2,
+          "h": 1,
+          "output_wrms": 5
+        },
+        "observed_budget": 10,
+        "exact_binary64_input_budget": {
+          "numerator": "2505590639513609676395827429376",
+          "denominator": "2505618534107015908629993881161",
+          "float": 0.999988867182683
+        },
+        "observed_accepted": true,
+        "expected_accepted": false
+      },
+      "claim_ceiling": "Policy API false acceptance and source consumer verified; full ODE false acceptance not executed",
+      "remediation_node": "DEV-02",
+      "evidence": [
+        "output_cert/native_probe.jsonl",
+        "output_cert/exact_oracles.json"
+      ],
+      "lane_record": "output_cert/FINDINGS.json",
+      "historical_classification": "See prior_closures in REPORT_STATUS.json",
+      "acceptance_criteria": [
+        "epsilon_ref=1e-320,h_ref=1e-160,p=2,h=1,eta=10의 represented-input budget≈0.999988867182683; WRMS5를 수락하지 않는다.",
+        "epsilon_ref=0에서 NaN이 min에 숨지 않는다.",
+        "실제 homotopy 소비자의 budget 경계 양쪽을 검사하고 step budget과 embedded budget을 구분한다."
+      ]
+    },
+    {
+      "id": "PHI-R1",
+      "severity": "P2",
+      "status": "CONFIRMED_BOUNDED_NATIVE_REPRODUCTION",
+      "title": "가중치 변환이 표현 가능한 h^k b를 중간 powi 언더플로로 0으로 소실",
+      "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+      "source_locations": [
+        "crates/rodas5p-integrators/src/exponential.rs:1346-1364",
+        "crates/rodas5p-integrators/src/exponential.rs:1774-1777",
+        "crates/rodas5p-core/src/matrix_functions.rs:252-263"
+      ],
+      "observations": {
+        "input": {
+          "A": 0,
+          "h": [
+            1e-100,
+            -1e-100
+          ],
+          "b4": 1e+300,
+          "other_b": 0,
+          "rtol": 1e-12,
+          "atol": 0
+        },
+        "expected": 4.166666666666667e-102,
+        "actual": 0,
+        "overflow_variant": {
+          "h": 1e+100,
+          "b4": 1e-300,
+          "finite_expected": 4.1666666666666665e+98,
+          "actual": "Err(NonFinite)"
+        }
+      },
+      "claim_ceiling": "public scaled fused/dense APIs; prefix shares helper by source trace; ordinary-step integrator failure not established",
+      "remediation_node": "DEV-03",
+      "evidence": [
+        "phi/native_probe.jsonl",
+        "phi/PHI_STATUS.json"
+      ],
+      "lane_record": "phi/PHI_STATUS.json",
+      "historical_classification": "newly identified failure in changed weighting lines; old implementation performance at these inputs NOT_EVALUATED",
+      "acceptance_criteria": [
+        "A=0,h=±1e-100,b4=1e300에서 4.166666666666667e-102, relative error<=1e-12.",
+        "A=0,h=1e100,b4=1e-300에서 finite 4.1666666666666665e98를 보존한다.",
+        "h=0,negative h,ordinary h 및 17개 기존 관련 contracts의 tolerance를 완화하지 않는다.",
+        "원래 nonzero 입력의 transform loss가 converged/error=0으로 위장되지 않는다."
+      ]
+    },
+    {
+      "id": "PHI-R2",
+      "severity": "P2",
+      "status": "CONFIRMED_BOUNDED_NATIVE_REPRODUCTION",
+      "title": "Dense φ oracle의 입력 진폭 비불변성: 유한한 큰 결과가 Ok(0)",
+      "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+      "source_locations": [
+        "crates/rodas5p-core/src/matrix_functions.rs:310-328",
+        "crates/rodas5p-core/src/matrix_functions.rs:85-130"
+      ],
+      "observations": {
+        "input": {
+          "A": -1,
+          "h": 0.1,
+          "w1": 1e+60,
+          "other_w": 0
+        },
+        "expected": 9.516258196404042e+59,
+        "actual": 0,
+        "intermediate_amplitude_errors": {
+          "1e20": 6.801411656098821e-10,
+          "1e40": 0.043049753133909685
+        }
+      },
+      "claim_ceiling": "dense_phi_combination and its oracle role; fused direct combination passes same amplitude sweep",
+      "remediation_node": "DEV-04",
+      "evidence": [
+        "phi/native_probe.jsonl",
+        "phi/PHI_STATUS.json"
+      ],
+      "lane_record": "phi/PHI_STATUS.json",
+      "historical_classification": "remaining amplitude-conditioning failure after time-normalization; not reopening the fixed small-step fixture",
+      "acceptance_criteria": [
+        "A=-1,h=.1,w1=c,c=1e-200…1e300의 finite scalar output relative error<=1e-12, zero collapse 없음.",
+        "큰 항과 작은 항 혼합 및 near cancellation은 별도 conditioning 상태로 표시한다.",
+        "fused와 dense가 동일 helper 오류를 공유해도 independent oracle이 탐지한다."
+      ]
+    },
+    {
+      "id": "R2-STAT-01",
+      "severity": "P2",
+      "status": "CONFIRMED_BOUNDED_NATIVE_REPRODUCTION",
+      "title": "Missing identity becomes independent session; A/A sessions unbound",
+      "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+      "source_locations": [
+        "crates/rodas5p-fair-ab/src/paired_timing.rs:224-228",
+        "crates/rodas5p-fair-ab/src/paired_timing.rs:362-369",
+        "crates/rodas5p-fair-ab/src/paired_timing.rs:693-700"
+      ],
+      "observations": {
+        "producer": "one actual PID, six cases, process_blocks=[]",
+        "actual": "6 independent blocks, authoritative Promote",
+        "control": "explicit ID77 -> 1 block, Inconclusive",
+        "aa_mismatch": "candidate0..5 vs AA100..105 also Promote",
+        "clock": "synthetic"
+      },
+      "claim_ceiling": "Synthetic clock in one actual PID, public producer and assessment. No real speedup claim.",
+      "remediation_node": "DEV-06",
+      "evidence": [
+        "statistics/probe_results.json",
+        "statistics/exact_bootstrap_oracle.json"
+      ],
+      "lane_record": "statistics/RESULT.json",
+      "historical_classification": "residual_and_newly_identified_path",
+      "acceptance_criteria": [
+        "한 실제 PID의 6 case가 independent session 6개로 승격되지 않는다.",
+        "candidate session 0..5와 A/A100..105는 authority를 얻지 못한다.",
+        "matched explicit sessions만 valid count를 얻고 raw receipt에 연결된다."
+      ]
+    },
+    {
+      "id": "R2-STAT-02",
+      "severity": "P2",
+      "status": "CONFIRMED_BOUNDED_NATIVE_REPRODUCTION",
+      "title": "Unknown legacy vector coverage disappears under aggregation",
+      "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+      "source_locations": [
+        "crates/rodas5p-core/src/work.rs:113-120",
+        "crates/rodas5p-core/src/work.rs:191-250",
+        "crates/rodas5p-fair-ab/src/global_error.rs:941-943"
+      ],
+      "observations": {
+        "legacy_calls": 16,
+        "legacy_vectors": null,
+        "modern_calls": 1,
+        "modern_vectors": 1,
+        "actual_aggregate_calls": 17,
+        "actual_pareto_vectors": 1,
+        "expected_pareto_vectors": null
+      },
+      "claim_ceiling": "Original serde + checked_accumulate + Pareto cost executed. No actual campaign mixing demonstrated.",
+      "remediation_node": "DEV-05",
+      "evidence": [
+        "statistics/probe_results.json",
+        "statistics/exact_bootstrap_oracle.json"
+      ],
+      "lane_record": "statistics/RESULT.json",
+      "historical_classification": "followup_aggregation_gap",
+      "acceptance_criteria": [
+        "legacy 16 calls + modern 1 call/1 vector는 17 calls, vector cost Unknown이어야 한다.",
+        "known+known은 정확한 vector 합계; operand order와 grouping에 불변이다.",
+        "Unknown cost는 최종 비교에서 NotEvaluated이며 zero로 취급되지 않는다."
+      ]
+    },
+    {
+      "id": "R2-STAT-03",
+      "severity": "P2",
+      "status": "CONFIRMED_BOUNDED_NATIVE_REPRODUCTION",
+      "title": "One bootstrap resample can produce authoritative promotion",
+      "source_commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+      "source_locations": [
+        "crates/rodas5p-fair-ab/src/paired_timing.rs:90-98"
+      ],
+      "observations": {
+        "session_ratios": [
+          0.8,
+          0.9,
+          1,
+          1.1,
+          1.4,
+          1.5
+        ],
+        "pairs": 30,
+        "bootstrap_resamples": 1,
+        "seed": 1,
+        "point": 1.048808848,
+        "ci": [
+          1.240967365,
+          1.240967365
+        ],
+        "actual": "Promote",
+        "default_B10000_ci": [
+          0.8485281374,
+          1.4491376746
+        ],
+        "default_verdict": "Inconclusive"
+      },
+      "claim_ceiling": "Default B=10000 avoids this input; configurable public protocol and assessment tested.",
+      "remediation_node": "DEV-07",
+      "evidence": [
+        "statistics/probe_results.json",
+        "statistics/exact_bootstrap_oracle.json"
+      ],
+      "lane_record": "statistics/RESULT.json",
+      "historical_classification": "newly_identified_preexisting_public_protocol_gap",
+      "acceptance_criteria": [
+        "B=1 fixture의 degenerate CI는 authoritative Promote가 될 수 없다.",
+        "confidence/threshold 변조와 mismatched schema를 소비자가 거절한다.",
+        "6^6 exact empirical bootstrap endpoints를 유지하며 simulation uncertainty를 보고한다."
+      ]
+    }
+  ]
+}

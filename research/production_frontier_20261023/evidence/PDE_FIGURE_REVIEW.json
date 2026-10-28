@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "figure": "figures/pde_scalability.png",
+  "data": "results/PDE_CAMPAIGN.json",
+  "script": "src/pde_plot.py",
+  "data_sha256": "7379631c754df136abf63c12921a72773c325422f790edc9899374014b7a8286",
+  "passes": [
+    "raw data selection of27same1e-5caprows+9spatialrows",
+    "axes andnorm definitions checked",
+    "operation counts explicitlynotwalltime",
+    "log scales andactualcellticks",
+    "rendered PNG visual inspection",
+    "independent reviewer checked visual layout and numericalpoints",
+    "T=.1 andrelativeweightedL2error explicitlylabeled",
+    "periodicpoint-sampling andsphereuppermu/lowerx fixture distinction explicit"
+  ],
+  "initial_issue": "figure legend overlapped title in firstrender",
+  "resolution": "explicit topmargin, separatelegend/title, actualcellticks; secondrender legible",
+  "scope": "selfreview; root independent figureaudit may addfurtherfindings",
+  "review_corrections": [
+    "periodic spatial curves exclude cell-averageprojection/reconstruction error",
+    "sphere temporal and spatial panels use distinctmodes",
+    "shortwrapped ylabels avoidoverlap"
+  ]
+}

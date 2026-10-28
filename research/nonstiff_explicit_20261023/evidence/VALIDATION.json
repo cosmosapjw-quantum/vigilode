@@ -1,0 +1,52 @@
+{
+  "schema": "vigilode.nonstiff-validation.v1",
+  "source_commit": "45037fc24e8f8101605f309e1fdb3a9a4e3df56d",
+  "source_tree": "b43b69b1ec5b86f3577d7cd6efdefe2d3acb9bad",
+  "status": "PASS_SCOPED",
+  "tests_passed": 25,
+  "tests_failed": 0,
+  "selected_test_receipts": [
+    {
+      "summary": "checks_v2/SUMMARY.json",
+      "result_index": 0,
+      "tests": 13
+    },
+    {
+      "summary": "checks_v3/SUMMARY.json",
+      "result_index": 1,
+      "tests": 12
+    }
+  ],
+  "build": {
+    "summary": "build_v1/SUMMARY.json",
+    "exit_code": 0,
+    "seconds": 340.16320044400345
+  },
+  "environment_failure": {
+    "summary": "checks_v2/SUMMARY.json",
+    "result_index": 1,
+    "exit_code": 101,
+    "failure": "rlib form unavailable at linker",
+    "numerical_tests_started": false,
+    "remedy": "cargo clean -p rodas5p-integrators -p vigilode --profile dev; same source recheck",
+    "resolved": true
+  },
+  "initial_provisional": "checks_v1/IDENTITY_NOTICE.json",
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/dopri5.rs": "f07e5abda0c807a698adc3c9f709b1c3fdf1c22008a7a394fac88188785f8a9c",
+    "crates/rodas5p-integrators/tests/dopri5_contracts.rs": "fef55a1983a817fdc65a8fa7f7f3f153f76ea23ff319dedea003c51ad4ea6acd",
+    "crates/rodas5p-integrators/tests/dopri5_allocation.rs": "8a1fd43f81d7714186bc543a09e10720dbd6d337f1cecef9ed9ed7ee921defa2",
+    "crates/vigilode/src/explicit.rs": "286d3075494d5d0c610eebbc078afb36410555bcde2492ffdd6b40389a943e99",
+    "crates/vigilode/src/explicit_ensemble.rs": "89929842aa63fa3f54771e095c5738a02029e2c8829cef8cec5d3eb403fed511",
+    "crates/vigilode/tests/explicit_contracts.rs": "47d778e23f20c167b7639a14c3b55cad7361390c054ab38d0b5ba96bea83e3a6",
+    "crates/vigilode/tests/explicit_ensemble_contracts.rs": "77bbdc8a356be7bab7ebd76f9f7d6db590cc904c75d8515965e4481f60d6c299",
+    "crates/vigilode/examples/nonstiff_bench.rs": "591215d2ee22651812babb620f885466afcfe45ae844a30a01897e8d7435ff24",
+    "crates/vigilode/examples/nonstiff_ensemble_bench.rs": "f8282ae37b149acfdd8a14611c2c0e10a6a57460f3cd9757712da7ab69e1db3c"
+  },
+  "ncp_used": false,
+  "full_workspace_suite_rerun": false,
+  "binary_sha256": {
+    "nonstiff_bench": "6e871c6068977a270b6d4aaddcecbe54da06159dd57666662e05f38b9a4bafbd",
+    "nonstiff_ensemble_bench": "ccee7f59f81786e0b2a4e07fb2f5e98682caf905518c70579033573e2225ce1a"
+  }
+}

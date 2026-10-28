@@ -1,0 +1,35 @@
+{
+  "baseline": "68a28357d960c4c2743c299770f0a33ef63245b2",
+  "source_files": [
+    {
+      "path": "crates/vigilode-coupled/src/causal.rs",
+      "sha256": "fc297cd8b42c49f95d999078726186c3f09d15818a9355b2c369640aeef04b41"
+    },
+    {
+      "path": "crates/vigilode-coupled/tests/causal_reuse_contracts.rs",
+      "sha256": "1411cc1c8a2d9662a49c1cd26bb98bf3c86d371f9399857e3a6d3cc5fe43b079"
+    },
+    {
+      "path": "crates/vigilode-coupled/examples/causal_reuse_bench.rs",
+      "sha256": "291ef1256d63eb9b63188c27ab5f61a0c4b5543e2c43991d4ab0421b1412090b"
+    }
+  ],
+  "review": {
+    "reviewers": [
+      "/root/theory_derivative_free",
+      "/root"
+    ],
+    "context": "Native complementary review with inherited context; not different-model review",
+    "finding": "Clarify callback numerical determinism and reduced side-effect observations",
+    "resolution": "Public API and report updated; numerical implementation unchanged"
+  },
+  "checks": {
+    "native_tests_passed": 12,
+    "grid_success": 108,
+    "grid_qualified": 108,
+    "all_same_bits": true,
+    "physical_trajectories": 4,
+    "fresh_timing_passes": 1
+  },
+  "status": "complete_scoped"
+}

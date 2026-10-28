@@ -1,0 +1,52 @@
+{
+  "schema_version": "vigilode.affine_norm.symbolic.v1",
+  "preregistration_commit": "83c79b936efc613b73c41897b647fffa6e6d0a1d",
+  "tool": "Wolfram Language evaluator",
+  "date": "2026-10-23",
+  "scope": "Exact affine metric identities and one constructive correlated-error example; not a proof of arbitrary floating-point correctness or global tolerance satisfaction.",
+  "attempts": [
+    {
+      "code": "n=30;m=33;L=Join[IdentityMatrix[n],Table[Table[If[10 (j-1)<i<=10 j,-1,0],{i,n}],{j,3}]];e=ConstantArray[2/5,n]; reduced=Sqrt[(e.e)/n]; physical=Sqrt[((L.e).(L.e))/m];l={{2,3},{-1,4}};d={1,-2};s=DiagonalMatrix[{2,4}];c={1,-2};u0={1/2,-1};u1={3/4,-1/2};eu={1/100,-1/50};a={1/10,1/5};r=3/100;lp=l.Inverse[s];dp=d-lp.c;norm[ll_,dd_,x0_,x1_,er_]:=Sqrt[Total[MapThread[(#1/(#2+r Max[Abs[#3],Abs[#4]]))^2&,{ll.er,a,dd+ll.x0,dd+ll.x1}]]/2];original=norm[l,d,u0,u1,eu];transformed=norm[lp,dp,s.u0+c,s.u1+c,s.eu];ExportString[<|\"reduced_norm\"->ToString[reduced,InputForm],\"physical_norm\"->ToString[physical,InputForm],\"reduced_accept\"->(reduced<=1),\"physical_reject\"->(physical>1),\"physical_numeric\"->N[physical,20],\"nnz\"->Count[Flatten[L],Except[0]],\"dense_entries\"->Length[Flatten[L]],\"affine_norm_difference\"->FullSimplify[original-transformed],\"new_offset\"->dp,\"new_lift\"->lp|>,\"RawJSON\"]",
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Symbol::undefined2: Warning: Global symbols \"L, L, L, L, L\" are undefined.\nGeneral::messages: Messages were generated which may indicate errors.\n\nOut[1]= \"{\\n\\t\\\"reduced_norm\\\":\\\"2\\\\/5\\\",\\n\\t\\\"physical_norm\\\":\\\"2*Sqrt[2\\\\/5]\\\",\\n\\t\\\"reduced_accept\\\":true,\\n\\t\\\"physical_reject\\\":true,\\n\\t\\\"physical_numeric\\\":1.2649110640673517328,\\n\\t\\\"nnz\\\":60,\\n\\t\\\"dense_entries\\\":990,\\n\\t\\\"affine_norm_difference\\\":0,\\n\\t\\\"new_offset\\\":[\\n\\t\\t1.5,\\n\\t\\t0.5\\n\\t],\\n\\t\\\"new_lift\\\":[\\n\\t\\t[\\n\\t\\t\\t1,\\n\\t\\t\\t0.75\\n\\t\\t],\\n\\t\\t[\\n\\t\\t\\t-0.5,\\n\\t\\t\\t1\\n\\t\\t]\\n\\t]\\n}\""
+          }
+        ],
+        "structuredContent": null,
+        "isError": false
+      },
+      "assessment": "Numerical/exact output agrees with derivation; a global-symbol warning appeared, retained here. Repeated in lexical scope to remove warning ambiguity."
+    },
+    {
+      "code": "Module[{lift=Join[IdentityMatrix[30],Table[Table[If[10 (j-1)<i<=10 j,-1,0],{i,30}],{j,3}]],er=ConstantArray[2/5,30],ll={{2,3},{-1,4}},off={1,-2},ss=DiagonalMatrix[{2,4}],cc={1,-2},x={1/2,-1},xx={3/4,-1/2},ee={1/100,-1/50},aa={1/10,1/5},rr=3/100,lp,dp,scales,scalesp,norm2,norm2p},lp=ll.Inverse[ss];dp=off-lp.cc;scales=aa+rr MapThread[Max[Abs[#1],Abs[#2]]&,{off+ll.x,off+ll.xx}];scalesp=aa+rr MapThread[Max[Abs[#1],Abs[#2]]&,{dp+lp.(ss.x+cc),dp+lp.(ss.xx+cc)}];norm2=Total[((ll.ee)/scales)^2]/2;norm2p=Total[((lp.ss.ee)/scalesp)^2]/2;{Sqrt[Total[er^2]/30],Sqrt[Total[(lift.er)^2]/33],Count[Flatten[lift],Except[0]],FullSimplify[norm2-norm2p],FullSimplify[scales-scalesp],TrueQ[Total[er^2]/30<=1&&Total[(lift.er)^2]/33>1]}]",
+      "response": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Out[1]= {2/5, 2*Sqrt[2/5], 60, 0, {0, 0}, True}"
+          }
+        ],
+        "structuredContent": null,
+        "isError": false
+      },
+      "assessment": "PASS: exact result {2/5, 2*Sqrt[2/5], 60, 0, {0,0}, True}, without diagnostic messages."
+    }
+  ],
+  "result": {
+    "reduced_dimension": 30,
+    "physical_dimension": 33,
+    "nonzero_lift_entries": 60,
+    "dense_lift_entries": 990,
+    "reduced_norm": 0.4,
+    "physical_norm": 1.2649110640673518,
+    "reduced_accept": true,
+    "physical_reject": true,
+    "reparameterization_squared_norm_difference": 0,
+    "reparameterization_scale_difference": [
+      0,
+      0
+    ]
+  }
+}

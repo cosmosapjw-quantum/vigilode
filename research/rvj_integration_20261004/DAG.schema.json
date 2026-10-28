@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "vigilode-rvj-integration-development-dag-v1",
+  "type": "object",
+  "required": ["schema_version", "source_commit", "nodes"],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "source_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "title_ko", "depends_on", "status", "priority", "code_seams", "acceptance", "kill_or_abstain", "claim_ceiling", "artifacts", "revalidation_scope"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "title_ko": {"type": "string", "minLength": 1},
+          "depends_on": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+          "optional_dependencies": {"type": "array", "uniqueItems": true, "items": {"type": "string"}},
+          "priority": {"enum": ["P1", "P2", "P3"]},
+          "status": {"enum": ["COMPLETE_RESEARCH_SCOPE", "PROPOSED", "BLOCKED"]},
+          "code_seams": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+          "acceptance": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+          "kill_or_abstain": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+          "claim_ceiling": {"type": "string"},
+          "artifacts": {"type": "array", "items": {"type": "string"}},
+          "revalidation_scope": {"type": "string"},
+          "evidence": {"type": "array", "items": {"type": "string"}}
+        }
+      }
+    }
+  }
+}

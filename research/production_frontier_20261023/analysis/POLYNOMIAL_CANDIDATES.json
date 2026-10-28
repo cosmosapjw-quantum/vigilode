@@ -1,0 +1,86 @@
+{
+  "schema": "vigilode.frontier-candidates.v1",
+  "blocker": "QA01",
+  "search_kind": "bounded MCTS-inspired three-sibling evaluation; no global optimum guarantee",
+  "root": "declared-polynomial-resolvent",
+  "evidence": [
+    "results/polynomial_campaign.json",
+    "results/polynomial_tests.log"
+  ],
+  "candidates": [
+    {
+      "id": "QA01-Q",
+      "parent": "QA01",
+      "single_design_change": "replace iterative linear solve with declared quotient polynomial",
+      "decision": "specialized_for_specific_cases_only",
+      "implementation": "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+      "conditions": [
+        "truthful full-space relation norm witness",
+        "truthful identical-operator infinity norm bound",
+        "q(1) denominator margin",
+        "mandatory original residual",
+        "explicit opt-in; not general driver"
+      ],
+      "outcomes": {
+        "cases": 4,
+        "success": 4,
+        "total_operator_actions": [
+          1,
+          1,
+          2,
+          2
+        ],
+        "targeted_tests_passed": 8
+      },
+      "remaining": [
+        "provider epoch and s-specific witness binding",
+        "actual client/ODE stage adoption",
+        "same-error full-trajectory cost",
+        "outward-rounded certificate if required"
+      ]
+    },
+    {
+      "id": "QA01-N",
+      "parent": "QA01",
+      "single_design_change": "use Neumann recurrence",
+      "decision": "prune_for_noncontractive_tested_cases",
+      "conditions": [
+        "retain as contraction baseline when norm B <1"
+      ],
+      "outcomes": {
+        "cases": 4,
+        "success": 1,
+        "total_operator_actions": [
+          20,
+          65,
+          65,
+          65
+        ]
+      },
+      "scope": "local pruning, not a universal impossibility theorem"
+    },
+    {
+      "id": "QA01-D",
+      "parent": "QA01",
+      "single_design_change": "use known explicit 2x2 inverse",
+      "decision": "retain_specialized_reference",
+      "conditions": [
+        "explicit 2x2 coefficients available",
+        "safe formula and original residual required for production"
+      ],
+      "outcomes": {
+        "cases": 4,
+        "success": 4
+      },
+      "note": "zero operator callbacks does not mean zero work; exact reference here uses ordinary binary64"
+    }
+  ],
+  "derivatives": {
+    "jacobian_assembly": false,
+    "inferred_jvp_ad": false,
+    "newton": false,
+    "operator_action": "declared B action required"
+  },
+  "bound_status": "conditional estimate using floating arithmetic; not interval certificate",
+  "production_integration": "not automatically enabled"
+}

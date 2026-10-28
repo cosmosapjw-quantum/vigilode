@@ -1,0 +1,27 @@
+{
+  "schema": "vigilode.build-resource-recovery.v1",
+  "date": "2026-10-21",
+  "observation": "Filesystem reached0 available while final02 facade link failed with SIGBUS. Disk exhaustion is a coincident concrete resource limit; linker cause not independently proved.",
+  "failed_log": "research/production_reaudit_20261021/evidence/final_02/facade.log",
+  "safe_cleanup_command": [
+    "cargo",
+    "clean",
+    "--target-dir",
+    "/workspace/scratch/0dc1e721cf82/runtime/target"
+  ],
+  "cleanup_scope": "Previously generated inactive Cargo target only. No source, report, supplied archive, or active native target removed.",
+  "exit_code": 0,
+  "stdout_stderr": "Removed 7025 files, 10.2GiB total",
+  "policy": "Preserve initial failure, retry only failed groups at identical source, retain source-bound aggregate receipt; no numerical threshold change.",
+  "additional_safe_cleanup": {
+    "command": [
+      "cargo",
+      "clean",
+      "--target-dir",
+      "/workspace/scratch/0dc1e721cf82/runtime/dense-target"
+    ],
+    "scope": "inactive prior dense Cargo target only",
+    "exit_code": 0,
+    "stdout_stderr": "Removed 7364 files, 8.9GiB total"
+  }
+}

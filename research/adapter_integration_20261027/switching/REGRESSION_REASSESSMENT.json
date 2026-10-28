@@ -1,0 +1,44 @@
+{
+  "schema": "vigilode.switching-regression-reassessment.v1",
+  "date": "2026-10-27",
+  "kind": "focused_test_observation_summary",
+  "note": "Summary of actual tool-run observations. Final aggregate receipts are in the enclosing validation directory.",
+  "stable_rotation": {
+    "original_test": "stable_rotation_reuses_negative_evidence_and_reduces_discarded_work",
+    "first_run": "FAIL",
+    "cause": "Old strict improvement claim used a baseline without the newer native exponential backoff and work ceilings.",
+    "native_evidence": {"pilots": 3, "attempts": 886, "rhs_calls": 5338},
+    "integrated_adaptive": {"pilots": 3, "attempts": 886, "rhs_calls": 5338},
+    "revised_test": "stable_rotation_reuses_negative_evidence_without_regressing_native_backoff",
+    "revised_assertion": "pilots, attempts and RHS no greater than native; original state equality, endpoint accuracy, scheduling and accounting checks retained",
+    "result": "PASS",
+    "performance_conclusion": "observed deterministic-work parity; no added speedup claimed"
+  },
+  "implicit_tiny_tail": {
+    "test": "implicit_tiny_representable_tail_uses_native_endpoint_clipping",
+    "before": {
+      "result": "FAIL",
+      "message": "invalid input: invalid numerical input: adaptive initial step must lie within the configured step bounds",
+      "reached_time": 0.0,
+      "requested_time": 1e-15
+    },
+    "repair": "Use proposal.min(span).max(native_min_step) before native validation, including entry and return replay proposals.",
+    "after": {"result": "PASS", "reached_time": 1e-15}
+  },
+  "focused_runs": [
+    {
+      "phase": "before final implicit tiny-tail clamp",
+      "command": "cargo test --locked --offline -p vigilode --test adaptive_entry_contracts --test switching_integration_contracts --test evidence_switch_contracts",
+      "exit_code": 0,
+      "passed": 20,
+      "failed": 0
+    },
+    {
+      "phase": "after final source changes",
+      "command": "cargo test --locked --offline -p vigilode --lib adaptive_return_productive_contract -- --nocapture",
+      "exit_code": 0,
+      "passed": 4,
+      "failed": 0
+    }
+  ]
+}

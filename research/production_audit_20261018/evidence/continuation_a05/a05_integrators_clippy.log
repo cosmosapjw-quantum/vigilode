@@ -1,0 +1,47 @@
+    Checking rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-krylov)
+    Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+error: the loop variable `i` is used to index `output`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:337:18
+    |
+337 |         for i in 0..output.len() {
+    |                  ^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+    |
+337 -         for i in 0..output.len() {
+337 +         for (i, <item>) in output.iter_mut().enumerate() {
+    |
+
+error: the loop variable `i` is used to index `output`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:371:18
+    |
+371 |         for i in 0..output.len() {
+    |                  ^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+371 -         for i in 0..output.len() {
+371 +         for (i, <item>) in output.iter_mut().enumerate() {
+    |
+
+error: the loop variable `i` is used to index `output`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:405:18
+    |
+405 |         for i in 0..output.len() {
+    |                  ^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+405 -         for i in 0..output.len() {
+405 +         for (i, <item>) in output.iter_mut().enumerate() {
+    |
+
+error: could not compile `rodas5p-integrators` (lib) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rodas5p-integrators` (lib test) due to 3 previous errors

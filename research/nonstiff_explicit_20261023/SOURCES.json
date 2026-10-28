@@ -1,0 +1,145 @@
+{
+  "schema": "vigilode.nonstiff-sources.v1",
+  "retrieval_date": "2026-10-22",
+  "tools_used": [
+    "SciSpace search_papers",
+    "Exa web_search_exa",
+    "Exa web_fetch_exa",
+    "Wolfram wolframlanguageevaluator"
+  ],
+  "sources": [
+    {
+      "id": "DP1980",
+      "authors": [
+        "J. R. Dormand",
+        "P. J. Prince"
+      ],
+      "year": 1980,
+      "title": "A family of embedded Runge-Kutta formulae",
+      "doi": "10.1016/0771-050X(80)90013-3",
+      "url": "https://www.sciencedirect.com/science/article/pii/0771050X80900133",
+      "primary": true,
+      "read_scope": "Publisher metadata via Exa; coefficients cross-checked with Hairer/Wanner original DOPRI5 implementation.",
+      "supports": [
+        "Original embedded Runge-Kutta family attribution"
+      ],
+      "limits": [
+        "No claim of new DOPRI coefficients."
+      ]
+    },
+    {
+      "id": "HAIRER_DOPRI5",
+      "authors": [
+        "E. Hairer",
+        "G. Wanner"
+      ],
+      "title": "DOPRI5 Fortran source",
+      "url": "https://www.unige.ch/~hairer/prog/nonstiff/dopri5.f",
+      "primary": true,
+      "read_scope": "Full source text retrieved via Exa; stage coefficients, FSAL handoff, rejection, norm and stiffness heuristic inspected.",
+      "supports": [
+        "Exact rational tableau and error coefficients",
+        "Six new RHS evaluations per full attempt after initial RHS",
+        "Endpoint alteration requires derivative refresh",
+        "WRMS scale atol+rtol*max(abs(y_old),abs(y_new))",
+        "Stiffness secant diagnostic is operational"
+      ],
+      "limits": [
+        "Current Rust driver is a new integration of these formulas, not a byte-for-byte port or certification by original authors."
+      ]
+    },
+    {
+      "id": "VAN_DER_HOUWEN_SOMMEIJER1990",
+      "authors": [
+        "P. J. van der Houwen",
+        "B. P. Sommeijer"
+      ],
+      "year": 1990,
+      "title": "Parallel iteration of high-order Runge-Kutta methods with stepsize control",
+      "doi": "10.1016/0377-0427(90)90200-J",
+      "url": "https://ir.cwi.nl/pub/1663/1663D.pdf",
+      "primary": true,
+      "read_scope": "Author institute full manuscript retrieved via Exa; sections1–2 on explicit predictor-corrector iterations and RHS-dominated cost assumptions inspected.",
+      "supports": [
+        "Parallel stage iterations can construct high-order explicit methods",
+        "Implicit corrector stability is not inherited by a finite explicit iteration",
+        "Work and sequential RHS depth are distinct costs"
+      ],
+      "limits": [
+        "Published hardware and methods do not establish VigilODE speedup; q4-DOPRI construction here is derived for the present tableau."
+      ]
+    },
+    {
+      "id": "KETCHESON_WAHEED2014",
+      "authors": [
+        "D. I. Ketcheson",
+        "U. bin Waheed"
+      ],
+      "year": 2014,
+      "title": "A comparison of high-order explicit Runge-Kutta, extrapolation, and deferred correction methods in serial and parallel",
+      "doi": "10.2140/camcos.2014.9.175",
+      "url": "https://msp.org/camcos/2014/9-2/p01.xhtml",
+      "preprint": "https://arxiv.org/abs/1305.6165",
+      "primary": true,
+      "read_scope": "Publisher and author arXiv abstract/metadata, independently found by SciSpace and Exa.",
+      "supports": [
+        "Parallel extrapolation and deferred correction are relevant alternatives",
+        "Efficiency depends on order, tolerance and parallel execution"
+      ],
+      "limits": [
+        "Published N-body result is not reused as a VigilODE benchmark."
+      ]
+    },
+    {
+      "id": "HAIRER_SOFTWARE",
+      "authors": [
+        "E. Hairer"
+      ],
+      "title": "Fortran Codes: Nonstiff Differential Equations",
+      "url": "https://unige.ch/~hairer/software.html",
+      "primary": true,
+      "read_scope": "Author-hosted software catalog via Exa.",
+      "supports": [
+        "DOPRI5 fifth-order endpoint and fourth-order dense output are distinct",
+        "DOP853 and ODEX are further established nonstiff routes"
+      ],
+      "limits": [
+        "New endpoint-landing API does not inherit a dense extension merely by using DOPRI5 coefficients."
+      ]
+    }
+  ],
+  "searches": [
+    {
+      "tool": "SciSpace",
+      "question": "What are the original Dormand and Prince fifth-order embedded Runge-Kutta formulas with first-same-as-last derivative reuse, and what established parallel explicit Runge-Kutta or extrapolation methods reduce sequential stages for nonstiff differential equations?",
+      "selected_ids": [
+        "cjihlf5c2e",
+        "yymiobu0p8e7"
+      ],
+      "metadata_correction": "The two records for Ketcheson/Waheed are duplicates; publisher confirms journal year2014, not repository-record year2022."
+    },
+    {
+      "tool": "Exa",
+      "question": "Original Dormand-Prince formula, Hairer DOPRI5 source and parallel iterated Runge-Kutta primary literature"
+    },
+    {
+      "tool": "SciSpace",
+      "question": "How does the 1980 paper A family of embedded Runge-Kutta formulae by J. R. Dormand and P. J. Prince construct its fifth-order embedded method, and how do Runge-Kutta-Chebyshev methods extend explicit stability for diffusion-type mildly stiff systems?",
+      "use": "Exploratory scope only; returned stabilized-method abstracts informed future candidate search, not a new implementation claim."
+    }
+  ],
+  "excluded_candidates": [
+    {
+      "url": "https://en.wikipedia.org/wiki/Dormand-Prince_method",
+      "reason": "Secondary source; exact coefficients taken from author-hosted source."
+    },
+    {
+      "url": "https://msp.org/camcos/2014/9-2/p02.xhtml",
+      "reason": "Initial issue-link guess resolves to unrelated secant-method paper; corrected to p01 after title verification."
+    }
+  ],
+  "new_contribution": "Current integration contracts, explicit cost accounting, and a concrete q4 pruned parallel construction with exact tableau verification; established RK, FSAL and polynomial facts are reused.",
+  "verification": "SYMBOLIC_CHECK.json",
+  "campaign_tag": "20261023",
+  "date_note": "Actual host UTC date; campaign directory tag is not the retrieval date."
+}

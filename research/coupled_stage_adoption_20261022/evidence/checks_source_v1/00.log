@@ -1,0 +1,54 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling vigilode-coupled v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/vigilode-coupled)
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `test` profile [unoptimized] target(s) in 4m 44s
+     Running unittests src/lib.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target/debug/deps/vigilode_coupled-d568d29176372df4)
+
+running 4 tests
+test algebra::common_block_tests::common_block_rejects_structure_changes_before_factoring ... ok
+test algebra::common_block_tests::common_block_singular_diagonal_fails_with_work_preserved ... ok
+test algebra::common_block_tests::common_block_zero_rhs_and_nonfinite_input ... ok
+test algebra::common_block_tests::common_block_matches_independent_dense_lu ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+
+     Running tests/adaptive_trajectory.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target/debug/deps/adaptive_trajectory-fff291ca6fccaf75)
+
+running 9 tests
+test output_session_commits_only_its_issued_finite_dimensioned_endpoint ... ok
+test changed_epoch_cannot_commit_a_candidate ... ok
+test callback_cannot_impersonate_a_retryable_linear_solver_failure ... ok
+test callback_failure_retains_work_and_the_committed_prefix ... ok
+test attempt_budget_returns_partial_result_without_relabelling_final_time ... ok
+test coarse_clock_uses_represented_intervals_and_strict_cap_refuses ... ok
+test singular_trial_operator_retries_a_smaller_physical_step ... FAILED
+test forced_raw_fallback_matches_native_raw_u_driver ... ok
+test adaptive_candidates_commit_only_accepted_states_and_land_on_outputs ... ok
+
+failures:
+
+---- singular_trial_operator_retries_a_smaller_physical_step stdout ----
+
+thread 'singular_trial_operator_retries_a_smaller_physical_step' (1137) panicked at crates/vigilode-coupled/tests/adaptive_trajectory.rs:397:10:
+a neighboring binary64 rate must construct exactly singular W
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    singular_trial_operator_retries_a_smaller_physical_step
+
+test result: FAILED. 8 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+
+error: test failed, to rerun pass `-p vigilode-coupled --test adaptive_trajectory`

@@ -1,0 +1,43 @@
+[
+  {
+    "name": "comparison_build",
+    "command": [
+      "cargo",
+      "build",
+      "--locked",
+      "--offline",
+      "--profile",
+      "measurement",
+      "-p",
+      "rodas5p-integrators",
+      "--example",
+      "collective_structured_compare"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 1.1862764960387722,
+    "stdout": "comparison_build.stdout",
+    "stderr": "comparison_build.stderr"
+  },
+  {
+    "name": "structured_comparison",
+    "command": [
+      "cargo",
+      "run",
+      "--locked",
+      "--offline",
+      "--profile",
+      "measurement",
+      "-p",
+      "rodas5p-integrators",
+      "--example",
+      "collective_structured_compare",
+      "--",
+      "32",
+      "5"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 0.11793452000711113,
+    "stdout": "structured_comparison.stdout",
+    "stderr": "structured_comparison.stderr"
+  }
+]

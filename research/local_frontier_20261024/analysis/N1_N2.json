@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "nodes": [
+    "N1",
+    "N2"
+  ],
+  "status": "implementation-verified",
+  "apis": [
+    "ChartDeclaration",
+    "DeclaredChartOperator",
+    "ConditionedPolynomialPlan::prepare",
+    "ConditionedPolynomialPlan::apply"
+  ],
+  "source_files": [
+    "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+    "crates/rodas5p-integrators/tests/conditioned_polynomial_contracts.rs",
+    "crates/rodas5p-integrators/examples/conditioned_chart_bench.rs"
+  ],
+  "proof_status": "derived; independently reviewed against stored-coefficient implementation by geometry_transfer",
+  "proof": "N1_N2.md",
+  "tests": {
+    "new": 11,
+    "related_existing": 26,
+    "passed": 37,
+    "receipt": "evidence/n1n2-round2-tests.receipt.json"
+  },
+  "revision_rounds": 2,
+  "rounds": [
+    "initial implementation and 9 contract tests",
+    "additional zero-allocation/chart-local-failure tests; setup-charged discriminating benchmark"
+  ],
+  "benchmark": {
+    "rows": 18,
+    "cyclic_groups_per_row": 11,
+    "all_rows_accepted": true,
+    "raw": "evidence/n1n2-chart-benchmark.stdout",
+    "receipt": "evidence/n1n2-chart-benchmark.receipt.json",
+    "summary": [
+      {
+        "dimension": 32,
+        "all_pass": true,
+        "median_seconds": {
+          "conditioned_reused": 4.843428571428572e-07,
+          "conditioned_fresh_setup": 1.226465358675659e-06,
+          "expanded_reused": 4.857348227294804e-07,
+          "dense_lu_reused": 1.1846696269982239e-06,
+          "dense_lu_fresh": 5.369839142091152e-06,
+          "nilpotent_direct": 1.7589262158121537e-07
+        },
+        "reused_lu_over_conditioned": 2.445931863198315,
+        "direct_over_conditioned": 0.36315725314668107,
+        "expanded_over_conditioned": 1.0028739261167894,
+        "fresh_lu_over_fresh_conditioned": 4.37830477975303,
+        "max_reference_error": 2.7755575615628914e-16,
+        "max_original_residual": 2.842170943040401e-14
+      },
+      {
+        "dimension": 128,
+        "all_pass": true,
+        "median_seconds": {
+          "conditioned_reused": 1.8960521327014216e-06,
+          "conditioned_fresh_setup": 2.6767098930481288e-06,
+          "expanded_reused": 2.077441329179647e-06,
+          "dense_lu_reused": 6.041939759036145e-06,
+          "dense_lu_fresh": 0.00013519713333333332,
+          "nilpotent_direct": 6.895642881764908e-07
+        },
+        "reused_lu_over_conditioned": 3.1865894691554835,
+        "direct_over_conditioned": 0.36368424490207785,
+        "expanded_over_conditioned": 1.0956667769571236,
+        "fresh_lu_over_fresh_conditioned": 50.50869863949892,
+        "max_reference_error": 2.220446049250313e-16,
+        "max_original_residual": 2.1316282072803006e-14
+      },
+      {
+        "dimension": 512,
+        "all_pass": true,
+        "median_seconds": {
+          "conditioned_reused": 7.714357692307693e-06,
+          "conditioned_fresh_setup": 8.582213675213675e-06,
+          "expanded_reused": 8.533463829787234e-06,
+          "dense_lu_reused": 5.9138588235294115e-05,
+          "dense_lu_fresh": 0.005289734,
+          "nilpotent_direct": 2.9434970588235295e-06
+        },
+        "reused_lu_over_conditioned": 7.666041761877811,
+        "direct_over_conditioned": 0.3815608734034478,
+        "expanded_over_conditioned": 1.1061794345232794,
+        "fresh_lu_over_fresh_conditioned": 616.3600907860522,
+        "max_reference_error": 9.992007221626409e-16,
+        "max_original_residual": 9.237055564881302e-14
+      }
+    ],
+    "scope": "single-process synthetic exact rank-one nilpotent kernel, n=32/128/512; no ODE or local workstation timing qualification"
+  },
+  "decision": "specialized opt-in; reusable LU crossover observed, retain faster exact structured direct alternative",
+  "remaining": [
+    "Automatic atlas selection over multiple affine charts is not implemented. A denied chart does not deny the original operator.",
+    "Provider full-space relation/norm/callback identity remain caller proof obligations; metadata matching is not callback certification.",
+    "Residual evaluation allowance must include callback and complete floating residual arithmetic.",
+    "Long-trajectory and local workstation profiling remain local-campaign work."
+  ],
+  "geometry_links": [
+    "two_step_normal_reflection_walls_minor_revision_v0_1.pdf: denominator-domain and original-equation substitution",
+    "curved_mirror_integrated_research_report_v13.pdf: conditional elimination charts",
+    "algebraic_geometry_stage5_release/manuscript/sections/07_smooth_cubic.tex: projection atlas",
+    "algebraic_geometry_stage5_release/manuscript/sections/04_residual.tex: nonreduced quotient multiplicity"
+  ],
+  "independent_review": "evidence/n1n2-independent-review.json",
+  "figure_visual_review": {
+    "path": "analysis/conditioned_chart_comparison.png",
+    "status": "checked",
+    "sha256": "54046a7c20be605413017f440224d82c39d626dda8b0a084546c628652029ca7",
+    "notes": "Labels and direct comparator are legible; ratio=1 reference shown; logarithmic axes explicit."
+  }
+}

@@ -1,0 +1,80 @@
+--------------------------------------------------------------------------------
+Profile data file '~/vigilode-integration-followup-20261027/profile_r1/prof2/callgrind/case5__rodas.out' (creator: callgrind-3.22.0)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 2129391
+Trigger: Program termination
+Profiled target:  ~/vigilode-integration-followup-20261027/profile_r1/prof_bin repeat-arm case5 rodas 3 (PID 3453760, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       99
+Include dirs:     
+User annotated:   
+Auto-annotation:  on
+
+--------------------------------------------------------------------------------
+Ir                  
+--------------------------------------------------------------------------------
+14,986,817 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                   file:function
+--------------------------------------------------------------------------------
+14,986,817 (100.0%)  ???:0x000000000001f540 [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+14,552,072 (97.10%)  ???:(below main) [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+14,552,060 (97.10%)  ./csu/../csu/libc-start.c:__libc_start_main@@GLIBC_2.34 [/usr/lib/x86_64-linux-gnu/libc.so.6]
+14,551,877 (97.10%)  ./csu/../sysdeps/nptl/libc_start_call_main.h:(below main) [/usr/lib/x86_64-linux-gnu/libc.so.6]
+14,549,824 (97.08%)  ???:main [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+14,549,809 (97.08%)  /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/rt.rs:std::rt::lang_start_internal [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+14,437,037 (96.33%)  /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/function.rs:std::rt::lang_start_internal
+14,437,036 (96.33%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/rt.rs:std::rt::lang_start::{{closure}} [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+14,437,029 (96.33%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/sys/backtrace.rs:std::sys::backtrace::__rust_begin_short_backtrace [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+14,437,025 (96.33%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/ops/function.rs:std::sys::backtrace::__rust_begin_short_backtrace
+14,437,024 (96.33%)  ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::main [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+14,326,486 (95.59%)  ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::solve_arm [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+14,315,654 (95.52%)  ~/vigilode-integ-dda8d2f/crates/vigilode/src/solve.rs:vigilode::solve::Rodas5p::solve [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+14,315,612 (95.52%)  ~/vigilode-integ-dda8d2f/crates/vigilode/src/solve.rs:vigilode::solve::Rodas5p::solve_observed_bounded [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+14,294,126 (95.38%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/routing.rs:rodas5p_integrators::routing::integrate_rodas5p_routed_observed_with_options [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+14,292,392 (95.37%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:rodas5p_integrators::rodas5p_matrix_free_fast::integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+14,291,924 (95.36%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:rodas5p_integrators::rodas5p_matrix_free_fast::integrate_mf_fast_inner [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+13,724,889 (91.58%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:rodas5p_integrators::rodas5p_matrix_free_fast::Rodas5pMfFastWorkspace::integrate_observed_with_observer [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+13,509,003 (90.14%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:rodas5p_integrators::rodas5p_matrix_free_fast::Rodas5pMfFastWorkspace::attempt [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+13,505,376 (90.12%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:rodas5p_integrators::rodas5p_matrix_free_fast::Rodas5pMfFastWorkspace::attempt_inner [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+12,022,344 (80.22%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-krylov/src/gmres_into.rs:rodas5p_krylov::gmres_into::solve_gmres_into_with_accounting [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+ 4,878,593 (32.55%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-krylov/src/gmres_into.rs:rodas5p_krylov::gmres_into::least_squares_correction [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+ 4,463,967 (29.79%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-krylov/src/small.rs:rodas5p_krylov::small::LeastSquaresWorkspace::solve_into [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+ 3,611,466 (24.10%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-core/src/operator.rs:rodas5p_core::operator::apply_counted [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+ 3,145,680 (20.99%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-core/src/operator.rs:<rodas5p_core::operator::ShiftedOperator as rodas5p_core::operator::LinearOperator>::apply_with_work [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+ 3,014,028 (20.11%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-krylov/src/gmres_into.rs:rodas5p_krylov::gmres_into::arnoldi_column [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+ 2,928,249 (19.54%)  ~/vigilode-integ-dda8d2f/crates/vigilode/src/solve.rs:vigilode::solve::build::{{closure}} [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+ 2,722,893 (18.17%)  ~/vigilode-integ-dda8d2f/crates/vigilode/src/fd.rs:vigilode::fd::Guard::vector_call [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+ 2,617,452 (17.47%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-core/src/operator.rs:<rodas5p_core::operator::ClosureOperator<F> as rodas5p_core::operator::LinearOperator>::apply_with_work [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+ 2,382,282 (15.90%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/problem.rs:<rodas5p_core::operator::ClosureOperator<F> as rodas5p_core::operator::LinearOperator>::apply_with_work
+ 2,203,278 (14.70%)  ~/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faer-0.24.4/src/linalg/qr/col_pivoting/factor.rs:faer::linalg::qr::col_pivoting::factor::qr_in_place [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+ 2,147,883 (14.33%)  ~/vigilode-integ-dda8d2f/crates/vigilode/src/solve.rs:vigilode::fd::Guard::vector_call
+ 2,104,542 (14.04%)  ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::catalog_problem::{{closure}} [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+ 1,979,247 (13.21%)  ~/vigilode-integ-dda8d2f/crates/vigilode/examples/local_bottleneck_support/models.rs:adapter_checkpoint_trace::models::Model::apply [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+ 1,924,722 (12.84%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-krylov/src/common.rs:rodas5p_krylov::gmres_into::arnoldi_column
+ 1,488,156 ( 9.93%)  ~/vigilode-integ-dda8d2f/crates/vigilode/examples/local_bottleneck_support/models.rs:adapter_checkpoint_trace::models::Model::component [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+ 1,419,840 ( 9.47%)  ~/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faer-0.24.4/src/linalg/qr/col_pivoting/solve.rs:faer::linalg::qr::col_pivoting::solve::solve_lstsq_in_place_with_conj [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+ 1,195,416 ( 7.98%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-krylov/src/common.rs:rodas5p_krylov::gmres_into::solve_gmres_into_with_accounting
+ 1,001,772 ( 6.68%)  ~/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faer-0.24.4/src/linalg/qr/no_pivoting/solve.rs:faer::linalg::qr::no_pivoting::solve::solve_lstsq_in_place_with_conj [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+   987,048 ( 6.59%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-krylov/src/common.rs:rodas5p_krylov::common::true_residual_into [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+   759,672 ( 5.07%)  ~/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faer-0.24.4/src/linalg/householder.rs:faer::linalg::householder::apply_block_householder_sequence_transpose_on_the_left_in_place_with_conj [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+   701,625 ( 4.68%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-core/src/norms.rs:rodas5p_core::norms::safe_l2 [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+   627,408 ( 4.19%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/problem.rs:rodas5p_integrators::problem::OdeProblem::eval_rhs_into [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+   605,193 ( 4.04%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/num/f64.rs:adapter_checkpoint_trace::models::Model::component
+   572,706 ( 3.82%)  ./math/../sysdeps/ieee754/dbl-64/s_sincos.c:__sincos_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+   540,246 ( 3.60%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:rodas5p_integrators::rodas5p_matrix_free_fast::Rodas5pMfFastWorkspace::new [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+   520,308 ( 3.47%)  ~/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/faer-0.24.4/src/linalg/householder.rs:faer::linalg::householder::apply_block_householder_transpose_on_the_left_in_place_with_conj [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+   505,042 ( 3.37%)  /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/sync/once/futex.rs:std::sys::sync::once::futex::Once::call [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+   504,467 ( 3.37%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-core/src/coefficients.rs:rodas5p_core::coefficients::rodas5p_coefficients [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+   504,407 ( 3.37%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/sync/once_lock.rs:rodas5p_core::coefficients::rodas5p_coefficients
+   504,402 ( 3.37%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/sync/atomic.rs:std::sync::once_lock::OnceLock<T>::initialize [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+   504,393 ( 3.37%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/sync/once.rs:std::sync::once_lock::OnceLock<T>::initialize
+   504,333 ( 3.37%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/std/src/sync/once.rs:std::sync::once::Once::call_once_force::{{closure}} [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]
+   504,104 ( 3.36%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-core/src/coefficients.rs:std::sync::once::Once::call_once_force::{{closure}}
+   504,100 ( 3.36%)  ~/vigilode-integ-dda8d2f/crates/rodas5p-core/src/coefficients.rs:rodas5p_core::coefficients::parse_rodas5p_coefficients [~/vigilode-integration-followup-20261027/profile_r1/prof_bin]

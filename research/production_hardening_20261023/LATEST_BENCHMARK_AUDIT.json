@@ -1,0 +1,184 @@
+{
+  "schema": "vigilode.latest-benchmark-review.v1",
+  "reviewed_commit": "fbc3c272fa06b443de148631ea78bfa6a34f1b2b",
+  "scope": "New external cohort and its merger with unchanged published nativebaseline",
+  "artifact_audit": "PASS",
+  "new_blocking_corruption_or_false_numeric_claims": [],
+  "general_production": "HOLD",
+  "timing_authority": "diagnostic_only",
+  "independent_evidence": "evidence/LATEST_BENCHMARK_HASH_REPLAY.json",
+  "evidence_reproduction_script": "evidence/audit_latest_benchmark.py",
+  "solver_reruns": 0,
+  "findings": [
+    {
+      "id": "LB-01",
+      "severity": "scope",
+      "status": "OPEN",
+      "title": "Five saved times certify sampled error only",
+      "evidence": [
+        {
+          "path": "research/nonstiff_external_adapters_20261023/REPORT_KO.md",
+          "lines": [
+            54,
+            58
+          ]
+        },
+        {
+          "path": "research/nonstiff_external_adapters_20261023/verify_adapters.py",
+          "lines": [
+            29,
+            31
+          ]
+        }
+      ],
+      "observation": "Every record uses five common observation times; the maximum over these times is not a uniform-time bound or a physical componentwise relative-error bound.",
+      "action": "For changed dense/error-control code use independently prescribed dense interior samples, phase/amplitude metrics and physical scaled norms; retain ordinary rtol semantics."
+    },
+    {
+      "id": "LB-02",
+      "severity": "performance",
+      "status": "OPEN",
+      "title": "Large-vector native throughput trails Julia in latest diagnostic evidence",
+      "evidence": [
+        {
+          "path": "research/nonstiff_external_adapters_20261023/REPORT_KO.md",
+          "lines": [
+            70,
+            71
+          ]
+        },
+        {
+          "path": "crates/vigilode/src/explicit.rs",
+          "lines": [
+            213,
+            236
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/dopri5.rs",
+          "lines": [
+            268,
+            317
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/dopri5.rs",
+          "lines": [
+            327,
+            358
+          ]
+        }
+      ],
+      "observation": "Julia/DOPRI common-cap time ratios are 0.2341/0.1753 at4096 and0.2052/0.1886 at16384. The native facade and kernel both poison/check RHS output. Cross-cohort differences do not identify the bottleneck causally.",
+      "action": "Remove demonstrably redundant vector passes while preserving direct-kernel and facade malformed-callback contracts; paired same-host source/binary-pinned benchmark before/after and counters/state parity. Profile fused unit-stride stage combinations next."
+    },
+    {
+      "id": "LB-03",
+      "severity": "accuracy",
+      "status": "OPEN",
+      "title": "Rapid oscillator does not meet the registered tight sampled-error cap",
+      "evidence": [
+        {
+          "path": "research/nonstiff_external_adapters_20261023/REPORT_KO.md",
+          "lines": [
+            66,
+            66
+          ]
+        },
+        {
+          "path": "research/nonstiff_external_adapters_20261023/REPORT_KO.md",
+          "lines": [
+            86,
+            91
+          ]
+        }
+      ],
+      "observation": "DOPRI best sampled normalized error1.971506e-8 exceeds1e-8 on registered grid. Diffsol5.873e-9 andJulia1.754e-9 meet it. This is a finite-grid result, not an impossibility theorem forDOPRI.",
+      "action": "Separate phase andamplitude error andsample interior trajectory; preregister lower tolerances/longer intervals only asnewexperiment, then assess estimator/controller or higher-order explicit method at common achieved-error targets."
+    },
+    {
+      "id": "LB-04",
+      "severity": "comparability",
+      "status": "OPEN",
+      "title": "Timing evidence remains exploratory",
+      "evidence": [
+        {
+          "path": "research/nonstiff_external_adapters_20261023/REPORT_KO.md",
+          "lines": [
+            139,
+            158
+          ]
+        },
+        {
+          "path": "research/nonstiff_external_adapters_20261023/adapters/julia/adapter.jl",
+          "lines": [
+            65,
+            91
+          ]
+        },
+        {
+          "path": "research/nonstiff_external_adapters_20261023/adapters/diffsol/src/main.rs",
+          "lines": [
+            179,
+            243
+          ]
+        }
+      ],
+      "observation": "Cross-cohort load varied; three repeats are not a statistical speedup estimate; native outputs land steps while external outputs interpolate; Julia prepares one same-request solve outside solver timer and all adapters include setup/output costs. These limitations are correctly disclosed.",
+      "action": "Paired randomized interleaving, fixed affinity/thread settings, more repeats, identical output contract and fullsetup costs; separately report process/JIT/startup latency. Do not retroactively revise old comparisons."
+    },
+    {
+      "id": "LB-05",
+      "severity": "scope",
+      "status": "OPEN",
+      "title": "Large vector is an eight-rate repeated diagonal fixture",
+      "evidence": [
+        {
+          "path": "research/nonstiff_external_adapters_20261023/adapters/diffsol/src/main.rs",
+          "lines": [
+            68,
+            83
+          ]
+        },
+        {
+          "path": "research/nonstiff_external_adapters_20261023/adapters/julia/adapter.jl",
+          "lines": [
+            15,
+            26
+          ]
+        },
+        {
+          "path": "research/nonstiff_external_adapters_20261023/REPORT_KO.md",
+          "lines": [
+            111,
+            117
+          ]
+        }
+      ],
+      "observation": "State dimension alone does not exercise coupled sparse/FVM physics, limiter nonsmoothness, nonlinear stiffness or conservation.",
+      "action": "Nextbroadcampaign add semidiscrete advection/diffusion manufacturedsolutions withconservation/positivity andspatial-refinement separation, plus couplednonlinear clients; retaindiagonalfixture asmemorybaseline."
+    },
+    {
+      "id": "LB-06",
+      "severity": "scope",
+      "status": "OPEN",
+      "title": "Unqualified production use lacks dispatcher and broad client contracts",
+      "evidence": [
+        {
+          "path": "research/nonstiff_external_adapters_20261023/REPORT_KO.md",
+          "lines": [
+            125,
+            135
+          ]
+        }
+      ],
+      "observation": "DOPRI explicitly selected forward identitymass solver; mass/events/dense output refused; noautomatic stiffness switch. Strongstiffcontrol cost reversals persist.",
+      "action": "Keep optin supportcontract; scopedproductionreadiness needscorrectfailure/restart/output/physicalnorm behavior plus clientspecific benchmarks. An optin boundeddispatcher canbe developed separately; do notinferstiffness fromabsenceofJacobian."
+    }
+  ],
+  "unchanged_evidence_reuse": [
+    "Native source45037fc2 tests andorderproofs reused because crates/Cargo graph byteidentity unchanged",
+    "Older campaigns notrerun; merged rawhashes andnewselectionarithmetic checked",
+    "Existing negative findings andfaileddevelopment receipts preserved"
+  ]
+}

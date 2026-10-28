@@ -1,0 +1,27 @@
+{
+  "attempt": 1,
+  "case": 2,
+  "command": [
+    "timeout",
+    "--signal=TERM",
+    "--kill-after=10s",
+    "900s",
+    "/usr/bin/time",
+    "-v",
+    "-o",
+    "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/resource.txt",
+    "--",
+    "/usr/bin/wolframscript",
+    "-file",
+    "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/hires_reference.wl"
+  ],
+  "process_exit_code": 0,
+  "scientific_status": "FAILED_REFERENCE",
+  "reason": "NDSolveValue::nderr in WP50 BDF near t=0.000040494382; script emitted INCOMPLETE_DOMAIN and $Aborted despite process exit 0",
+  "wp35_endpoint_generated": true,
+  "wp50_endpoint_generated": false,
+  "stdout_stderr_capture": "tool_output_only",
+  "elapsed_wall_seconds": 21.59,
+  "source_script_sha256": "4987913ea406e7b25cc67bf79eca9a6163955b96beee18a12bd6c23a8673e7b1",
+  "resource_sha256": "ab96e6858de2d958b76a38a7b5435a3b92d87f34b986e07c3c341f8dbc149b9f"
+}

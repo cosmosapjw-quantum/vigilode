@@ -1,0 +1,329 @@
+{
+  "schema": "vigilode.core-survey-analysis.v1",
+  "raw": "../evidence/runs/core-survey.stdout",
+  "receipt": "../evidence/runs/core-survey.receipt.json",
+  "summary": {
+    "external_comparisons": "NOT_RUN",
+    "failed_or_error": 0,
+    "kind": "summary",
+    "passed": 24,
+    "production_qualification": "NOT_ESTABLISHED_BY_THIS_SURVEY",
+    "rows": 24,
+    "status": "PASS_SCOPED_ENDPOINT_SURVEY",
+    "timing": "NOT_MEASURED",
+    "tolerance_trends": [
+      {
+        "case": "scalar_decay",
+        "endpoint_errors_loose_to_tight": [
+          9.904187112469431e-06,
+          6.638320801388709e-08,
+          6.090086768217873e-10
+        ],
+        "interpretation": "diagnostic only; adaptive endpoint cancellation can make error nonmonotone",
+        "nonincreasing_with_10pct_slack_and_roundoff_floor": true,
+        "roundoff_floor": 1.6134084763118222e-14
+      },
+      {
+        "case": "nonautonomous_tracking_cos",
+        "endpoint_errors_loose_to_tight": [
+          2.4461589087643176e-07,
+          6.647514722013526e-08,
+          5.346169063003003e-10
+        ],
+        "interpretation": "diagnostic only; adaptive endpoint cancellation can make error nonmonotone",
+        "nonincreasing_with_10pct_slack_and_roundoff_floor": true,
+        "roundoff_floor": 2.012465694956436e-14
+      },
+      {
+        "case": "stiff_diagonal",
+        "endpoint_errors_loose_to_tight": [
+          2.4211237525939566e-07,
+          3.886987065548908e-09,
+          2.0708851300454967e-11
+        ],
+        "interpretation": "diagnostic only; adaptive endpoint cancellation can make error nonmonotone",
+        "nonincreasing_with_10pct_slack_and_roundoff_floor": true,
+        "roundoff_floor": 1.6134084763118222e-14
+      },
+      {
+        "case": "nonnormal_stable_jordan",
+        "endpoint_errors_loose_to_tight": [
+          1.0231862368481615e-06,
+          1.7934793650198344e-08,
+          1.1447331971226049e-10
+        ],
+        "interpretation": "diagnostic only; adaptive endpoint cancellation can make error nonmonotone",
+        "nonincreasing_with_10pct_slack_and_roundoff_floor": true,
+        "roundoff_floor": 2.982770771103632e-14
+      },
+      {
+        "case": "stiff_nonlinear_tracking_cos",
+        "endpoint_errors_loose_to_tight": [
+          1.5715882162314898e-07,
+          4.556319532778019e-08,
+          1.184430331591102e-11
+        ],
+        "interpretation": "diagnostic only; adaptive endpoint cancellation can make error nonmonotone",
+        "nonincreasing_with_10pct_slack_and_roundoff_floor": true,
+        "roundoff_floor": 2.012465694956436e-14
+      },
+      {
+        "case": "nonstiff_riccati",
+        "endpoint_errors_loose_to_tight": [
+          3.860809745076521e-05,
+          2.158162456522561e-07,
+          1.3964202572047668e-09
+        ],
+        "interpretation": "diagnostic only; adaptive endpoint cancellation can make error nonmonotone",
+        "nonincreasing_with_10pct_slack_and_roundoff_floor": true,
+        "roundoff_floor": 1.8947806286936004e-14
+      },
+      {
+        "case": "rapid_rotation",
+        "endpoint_errors_loose_to_tight": [
+          0.0004918681365339017,
+          1.373731133069711e-06,
+          5.974048755685857e-09
+        ],
+        "interpretation": "diagnostic only; adaptive endpoint cancellation can make error nonmonotone",
+        "nonincreasing_with_10pct_slack_and_roundoff_floor": true,
+        "roundoff_floor": 2.6621155729088667e-14
+      },
+      {
+        "case": "damped_rapid_rotation",
+        "endpoint_errors_loose_to_tight": [
+          0.00029925603997527084,
+          8.440722196745298e-07,
+          3.5743820125944126e-09
+        ],
+        "interpretation": "diagnostic only; adaptive endpoint cancellation can make error nonmonotone",
+        "nonincreasing_with_10pct_slack_and_roundoff_floor": true,
+        "roundoff_floor": 2.1738082776387044e-14
+      }
+    ]
+  },
+  "cap_definition": "100*(atol+rtol*max_abs_reference_endpoint), fixed before execution",
+  "rows": [
+    {
+      "case": "scalar_decay",
+      "rtol": 0.0001,
+      "method": "dopri5",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 9.904187112469431e-06,
+      "cap": 0.0013633528323661272,
+      "error_over_cap": 0.0072645810221265384
+    },
+    {
+      "case": "scalar_decay",
+      "rtol": 1e-06,
+      "method": "dopri5",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 6.638320801388709e-08,
+      "cap": 1.363352832366127e-05,
+      "error_over_cap": 0.004869114321541963
+    },
+    {
+      "case": "scalar_decay",
+      "rtol": 1e-08,
+      "method": "dopri5",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 6.090086768217873e-10,
+      "cap": 1.363352832366127e-07,
+      "error_over_cap": 0.004466992420185464
+    },
+    {
+      "case": "nonautonomous_tracking_cos",
+      "rtol": 0.0001,
+      "method": "dopri5",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 2.4461589087643176e-07,
+      "cap": 0.004171468365471425,
+      "error_over_cap": 5.864023634967379e-05
+    },
+    {
+      "case": "nonautonomous_tracking_cos",
+      "rtol": 1e-06,
+      "method": "dopri5",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 6.647514722013526e-08,
+      "cap": 4.171468365471424e-05,
+      "error_over_cap": 0.0015935670942723978
+    },
+    {
+      "case": "nonautonomous_tracking_cos",
+      "rtol": 1e-08,
+      "method": "dopri5",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 5.346169063003003e-10,
+      "cap": 4.171468365471424e-07,
+      "error_over_cap": 0.0012816036451948076
+    },
+    {
+      "case": "stiff_diagonal",
+      "rtol": 0.0001,
+      "method": "rodas5p",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 2.4211237525939566e-07,
+      "cap": 0.0013633528323661272,
+      "error_over_cap": 0.0001775859993918116
+    },
+    {
+      "case": "stiff_diagonal",
+      "rtol": 1e-06,
+      "method": "rodas5p",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 3.886987065548908e-09,
+      "cap": 1.363352832366127e-05,
+      "error_over_cap": 0.0002851049980072262
+    },
+    {
+      "case": "stiff_diagonal",
+      "rtol": 1e-08,
+      "method": "rodas5p",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 2.0708851300454967e-11,
+      "cap": 1.363352832366127e-07,
+      "error_over_cap": 0.0001518964923006345
+    },
+    {
+      "case": "nonnormal_stable_jordan",
+      "rtol": 0.0001,
+      "method": "rodas5p",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 1.0231862368481615e-06,
+      "cap": 0.01099938333324051,
+      "error_over_cap": 9.302214550119896e-05
+    },
+    {
+      "case": "nonnormal_stable_jordan",
+      "rtol": 1e-06,
+      "method": "rodas5p",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 1.7934793650198344e-08,
+      "cap": 0.00010999383333240508,
+      "error_over_cap": 0.00016305271947381625
+    },
+    {
+      "case": "nonnormal_stable_jordan",
+      "rtol": 1e-08,
+      "method": "rodas5p",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 1.1447331971226049e-10,
+      "cap": 1.0999383333240507e-06,
+      "error_over_cap": 0.00010407248865153945
+    },
+    {
+      "case": "stiff_nonlinear_tracking_cos",
+      "rtol": 0.0001,
+      "method": "rodas5p",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 1.5715882162314898e-07,
+      "cap": 0.004171468365471425,
+      "error_over_cap": 3.7674700574023936e-05
+    },
+    {
+      "case": "stiff_nonlinear_tracking_cos",
+      "rtol": 1e-06,
+      "method": "rodas5p",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 4.556319532778019e-08,
+      "cap": 4.171468365471424e-05,
+      "error_over_cap": 0.0010922579613673045
+    },
+    {
+      "case": "stiff_nonlinear_tracking_cos",
+      "rtol": 1e-08,
+      "method": "rodas5p",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 1.184430331591102e-11,
+      "cap": 4.171468365471424e-07,
+      "error_over_cap": 2.839360694653734e-05
+    },
+    {
+      "case": "nonstiff_riccati",
+      "rtol": 0.0001,
+      "method": "dopri5",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 3.860809745076521e-05,
+      "cap": 0.0033433333333333336,
+      "error_over_cap": 0.011547785877596773
+    },
+    {
+      "case": "nonstiff_riccati",
+      "rtol": 1e-06,
+      "method": "dopri5",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 2.158162456522561e-07,
+      "cap": 3.343333333333333e-05,
+      "error_over_cap": 0.006455122003557012
+    },
+    {
+      "case": "nonstiff_riccati",
+      "rtol": 1e-08,
+      "method": "dopri5",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 1.3964202572047668e-09,
+      "cap": 3.343333333333334e-07,
+      "error_over_cap": 0.004176730579874676
+    },
+    {
+      "case": "rapid_rotation",
+      "rtol": 0.0001,
+      "method": "rodas5p",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 0.0004918681365339017,
+      "cap": 0.008742972972139947,
+      "error_over_cap": 0.056258682041139964
+    },
+    {
+      "case": "rapid_rotation",
+      "rtol": 1e-06,
+      "method": "rodas5p",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 1.373731133069711e-06,
+      "cap": 8.742972972139946e-05,
+      "error_over_cap": 0.01571240283422121
+    },
+    {
+      "case": "rapid_rotation",
+      "rtol": 1e-08,
+      "method": "rodas5p",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 5.974048755685857e-09,
+      "cap": 8.742972972139946e-07,
+      "error_over_cap": 0.006832971775988046
+    },
+    {
+      "case": "damped_rapid_rotation",
+      "rtol": 0.0001,
+      "method": "rodas5p",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 0.00029925603997527084,
+      "cap": 0.00530681585804464,
+      "error_over_cap": 0.056390884473902836
+    },
+    {
+      "case": "damped_rapid_rotation",
+      "rtol": 1e-06,
+      "method": "rodas5p",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 8.440722196745298e-07,
+      "cap": 5.3068158580446376e-05,
+      "error_over_cap": 0.01590543637188758
+    },
+    {
+      "case": "damped_rapid_rotation",
+      "rtol": 1e-08,
+      "method": "rodas5p",
+      "status": "PASS_ENDPOINT",
+      "max_abs_error": 3.5743820125944126e-09,
+      "cap": 5.306815858044639e-07,
+      "error_over_cap": 0.006735455135824964
+    }
+  ],
+  "limits": [
+    "Endpoint only; no continuous maximum error certificate.",
+    "Small analytic/manufactured systems do not validate all stiff nonlinear dynamics.",
+    "No current external comparisons or wall-time ranking."
+  ]
+}

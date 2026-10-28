@@ -1,0 +1,18 @@
+{
+  "argv": [
+    "ssh",
+    "-i",
+    "/home/cosmosapjw/.ssh/ncp_key",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "root@49.50.142.2",
+    "python3 -c 'import os, json, platform, pathlib; print(json.dumps({\"hostname\":platform.node(),\"platform\":platform.platform(),\"cpu_count\":os.cpu_count(),\"affinity\":sorted(os.sched_getaffinity(0)),\"meminfo\":pathlib.Path(\"/proc/meminfo\").read_text(),\"rustc_exists\":pathlib.Path(\"/root/.cargo/bin/rustc\").exists()}))'"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 0.4952487590489909,
+  "utc": "2026-10-18T13:35:19.212896+00:00",
+  "lease_started": false,
+  "other_campaign_running": true
+}

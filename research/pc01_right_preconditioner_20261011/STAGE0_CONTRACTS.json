@@ -1,0 +1,62 @@
+{
+  "schema": "vigilode-pc01-stage0-contracts-v1",
+  "node": "research/pc01_right_preconditioner_20261011",
+  "prerequisites": {
+    "F1": {
+      "description": "Sparse direct kernel with symbolic reuse and zero-allocation solve",
+      "test": "crates/rodas5p-core/tests/sparse_direct_contract.rs",
+      "passed": true,
+      "details": {
+        "matrices_tested": 200,
+        "max_backward_error": 8.42e-15,
+        "brusselator_rel_error": 4.12e-14
+      }
+    },
+    "F2": {
+      "description": "Right preconditioner path in GMRES-into with left-path bitwise parity and typed refusals",
+      "test": "crates/rodas5p-integrators/tests/right_preconditioner_contract.rs",
+      "passed": true,
+      "details": {
+        "gmres_residual_norm": 4.18e-15,
+        "left_bitwise_identical": true,
+        "refusals_verified": [
+          "gcrodr",
+          "lgmres",
+          "lgmres_into"
+        ]
+      }
+    },
+    "F3": {
+      "description": "Declared linear part verification against nonlinear RHS f(t,y) = A y + N(t,y)",
+      "test": "crates/rodas5p-integrators/tests/right_preconditioner_contract.rs",
+      "passed": true,
+      "details": {
+        "verified_relative_error": 1.25e-16,
+        "mismatch_detected": true
+      }
+    },
+    "F4": {
+      "description": "Gray-Scott 2D equations, parameters, and analytic JVP consistency",
+      "test": "crates/rodas5p-integrators/tests/right_preconditioner_contract.rs",
+      "passed": true,
+      "details": {
+        "tested_sizes": [
+          4,
+          8
+        ],
+        "jvp_rel_error": 2.15e-14
+      }
+    },
+    "R": {
+      "description": "Reference prerequisite: at most 5% of gated cells reference-limited",
+      "test": "none (reference held under budget rule)",
+      "passed": false,
+      "details": {
+        "gated_cells_count": 6,
+        "reference_limited_count": 6,
+        "threshold_percent": 5.0,
+        "reason": "Reference generation at N in {128, 256} exceeds budget / reference-limited count 6 of 6 gated cells (100% > 5%)"
+      }
+    }
+  }
+}

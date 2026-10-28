@@ -1,0 +1,234 @@
+{
+  "schema": "vigilode.evidence_audit.v1",
+  "date": "2026-10-27",
+  "scope": "Published baseline evidence, preceding current integration. No native rerun; published full segment analyses and code reviewed.",
+  "production_decision": "NOT_ESTABLISHED_FOR_GENERAL_PURPOSE",
+  "measured_source": "596dcdfae8b95d24f27b57975d9f4626267b8149",
+  "published_source": "e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824",
+  "timing_authority": "diagnostic_only",
+  "findings": [
+    {
+      "id": "E01",
+      "kind": "source_selection",
+      "priority": "P0",
+      "claim": "Native optimized branch and joint research branch diverged; baseline latest native and integrate joint selectively.",
+      "source": "https://github.com/cosmosapjw-quantum/vigilode/blob/e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824/crates/vigilode/src/switching.rs"
+    },
+    {
+      "id": "E02",
+      "kind": "measurement",
+      "priority": "P1",
+      "claim": "Published work reductions are deterministic; reported wall speed ratios cannot establish speedup under failed drift control.",
+      "drift_ratio": 1.83,
+      "source": "https://github.com/cosmosapjw-quantum/vigilode/blob/e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824/research/adapter_switcher_economy_20261026/evidence/HOST.json"
+    },
+    {
+      "id": "E03",
+      "kind": "report_version",
+      "priority": "P1",
+      "claim": "ANALYSIS_KO sections 1 and 5 contain run1 source/times; latest COMPARISON and GATES are run2 authority.",
+      "source": "https://github.com/cosmosapjw-quantum/vigilode/blob/e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824/research/adapter_switcher_economy_20261026/evidence/COMPARISON.md"
+    },
+    {
+      "id": "E04",
+      "kind": "backend_confound",
+      "priority": "P1",
+      "claim": "Case5 switching MF vs best direct dense mixes selector overhead and backend cost.",
+      "after_diagnostic_ms": {
+        "switching": 0.82,
+        "direct_mf": 0.594,
+        "direct_dense": 0.122
+      },
+      "direct_rhs_both": 307,
+      "source": "https://github.com/cosmosapjw-quantum/vigilode/blob/e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824/research/adapter_switcher_economy_20261026/evidence/COMPARISON.md"
+    },
+    {
+      "id": "E05",
+      "kind": "label_error",
+      "priority": "P2",
+      "claim": "Noncommitted successful advisory implicit pilots are labeled discarded along with losing/incomplete trials.",
+      "rotation_headline_169_to_15_affected": false,
+      "source": "https://github.com/cosmosapjw-quantum/vigilode/blob/e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824/research/adapter_switcher_economy_20261026/tools/analyze.py"
+    },
+    {
+      "id": "E06",
+      "kind": "accuracy_scope",
+      "priority": "P0",
+      "claim": "Default-tolerance gyro violates external error cap and is report-only, despite aggregate G3 true.",
+      "error": 0.0309,
+      "cap": 0.0001,
+      "tight_rtol_error": 0.0000389,
+      "source": "https://github.com/cosmosapjw-quantum/vigilode/blob/e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824/research/adapter_switcher_economy_20261026/evidence/GATES.json"
+    },
+    {
+      "id": "E07",
+      "kind": "coverage",
+      "priority": "P2",
+      "claim": "Direct comparison covers 8 summary fields, not all WorkCounters; key intersection and unavailable direct candidate can omit future missing/failing cells.",
+      "current_recorded_direct_cells": 9,
+      "current_recorded_all_cells": 18,
+      "source": "https://github.com/cosmosapjw-quantum/vigilode/blob/e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824/research/adapter_switcher_economy_20261026/tools/compare.py"
+    },
+    {
+      "id": "E08",
+      "kind": "algorithm",
+      "priority": "P1",
+      "claim": "Latest native return test compares new explicit window against prior coalesced implicit average; same-window comparison is needed.",
+      "source": "https://github.com/cosmosapjw-quantum/vigilode/blob/e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824/crates/vigilode/src/switching.rs"
+    },
+    {
+      "id": "E09",
+      "kind": "availability",
+      "priority": "P1",
+      "claim": "Upfront validation of optional implicit challenger can reject RHS-only solvable request.",
+      "source": "https://github.com/cosmosapjw-quantum/vigilode/blob/e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824/crates/vigilode/src/automatic.rs"
+    },
+    {
+      "id": "E10",
+      "kind": "known_edge_case",
+      "priority": "P2",
+      "claim": "carry_explicit_step=false tail below 1e-14 can fail initial-step validation.",
+      "source": "https://github.com/cosmosapjw-quantum/vigilode/blob/e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824/research/adapter_switcher_economy_20261026/ANALYSIS_KO.md"
+    },
+    {
+      "id": "E11",
+      "kind": "review_scope",
+      "priority": "P2",
+      "claim": "24 reported findings; only 3 independently verified, 21 author rechecked.",
+      "source": "https://github.com/cosmosapjw-quantum/vigilode/blob/e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824/external_reports/adapter_switcher_economy_20261026/review/REVIEW_FINDINGS.json"
+    }
+  ],
+  "measured_work": [
+    {
+      "cell": "bench:rotation:evidence",
+      "attempts": [
+        1046,
+        892
+      ],
+      "rhs": [
+        6597,
+        5371
+      ],
+      "uncommitted_implicit_pilot_attempts": [
+        169,
+        15
+      ]
+    },
+    {
+      "cell": "bench:stiff-forced:evidence",
+      "attempts": [
+        137,
+        66
+      ],
+      "rhs": [
+        1002,
+        456
+      ],
+      "implicit_batches": [
+        8,
+        3
+      ],
+      "implicit_attempts": [
+        81,
+        21
+      ]
+    },
+    {
+      "cell": "suite:c5:switching",
+      "attempts": [
+        232,
+        115
+      ],
+      "rhs": [
+        1633,
+        748
+      ],
+      "implicit_batches": [
+        16,
+        4
+      ],
+      "implicit_attempts": [
+        97,
+        26
+      ]
+    },
+    {
+      "cell": "suite:c10t:switching",
+      "attempts": [
+        4271,
+        4159
+      ],
+      "rhs": [
+        26018,
+        25102
+      ],
+      "uncommitted_implicit_pilot_attempts": [
+        128,
+        16
+      ]
+    },
+    {
+      "cell": "bench:rotation:pressure-only",
+      "attempts": [
+        701,
+        666
+      ],
+      "rhs": [
+        5430,
+        5144
+      ]
+    }
+  ],
+  "candidates": [
+    {
+      "id": "bounded_trials_and_coalescing",
+      "disposition": "RETAIN_BASELINE",
+      "acceptance": "Existing native economy contracts preserved after integration"
+    },
+    {
+      "id": "same_window_productive_return",
+      "disposition": "INTEGRATE_AND_MEASURE",
+      "acceptance": "Common checkpoint/span/tolerances; all trial work charged; better implicit comparison can commit without repeated solve; fatal callback semantics tested"
+    },
+    {
+      "id": "optional_implicit_provider",
+      "disposition": "REPAIR",
+      "acceptance": "RHS-only request succeeds where permitted; invalid structure/options continue failing"
+    },
+    {
+      "id": "small_dimension_backend_selection",
+      "disposition": "CONDITIONAL_RESEARCH",
+      "acceptance": "Separate same-backend overhead from best-backend regret; derivative permissions honored"
+    },
+    {
+      "id": "global_exploration_credit",
+      "disposition": "RESEARCH",
+      "acceptance": "Explicit global exploration fraction with late-transition recovery"
+    },
+    {
+      "id": "full_implicit_session",
+      "disposition": "MEASURE_RESIDUAL_FIRST",
+      "acceptance": "Additional benefit over existing coalescing, correct callback lifetime and provider changes"
+    },
+    {
+      "id": "pressure_only_default",
+      "disposition": "EXCLUDE_FROM_GENERAL_DEFAULT",
+      "acceptance": "Only use on explicitly selected domains with suitable evidence"
+    },
+    {
+      "id": "declared_charts_and_quotients",
+      "disposition": "SPECIALIZED",
+      "acceptance": "Declared structure plus original-state error verification"
+    },
+    {
+      "id": "causal_stage_data_parallel",
+      "disposition": "SPECIALIZED_RESEARCH",
+      "acceptance": "Calibration-inclusive benefit on expensive callbacks; serial fallback for small work"
+    },
+    {
+      "id": "default_tolerance_gyro",
+      "disposition": "ACCURACY_NOT_MET",
+      "acceptance": "Trajectory/phase error resolved against prescribed external cap"
+    }
+  ]
+}

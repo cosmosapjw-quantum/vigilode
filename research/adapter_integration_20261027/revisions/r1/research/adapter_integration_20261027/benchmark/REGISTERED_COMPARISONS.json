@@ -1,0 +1,34 @@
+{
+  "schema": "vigilode.adapter-integration-registration.v1",
+  "date_utc": "2026-10-27",
+  "purpose": "selection-policy economics with same physical endpoint caps",
+  "primary_arms": ["evidence", "adaptive"],
+  "cases": ["rotation", "decay", "case5", "stiff-forced", "relaxation", "transition-39", "transition-79", "gyro-tight", "gyro-default"],
+  "same_family_parameter_holdouts": ["transition-39", "transition-79"],
+  "report_only_cases": ["gyro-default"],
+  "additional_case5_controls": ["adaptive/rodas-dense", "rodas/rodas-dense"],
+  "entry_seed_ablation": {
+    "arms": ["adaptive-unseeded", "adaptive"],
+    "cases": ["case5", "stiff-forced", "relaxation", "transition-39", "transition-79"],
+    "difference": "reuse_entry_pilot_step false versus true; all other adaptive policy settings identical"
+  },
+  "timing": {
+    "concurrent_cells": 1,
+    "blocks": 5,
+    "order": "ABBA and BAAB alternating",
+    "target_batch_seconds": 0.025,
+    "minimum_qualifying_batch_seconds": 0.020,
+    "early_late_drift_limit": 1.15,
+    "block_spread_limit": 1.30,
+    "external_cell_timeout_seconds": 60,
+    "clear_improvement_requires_all_paired_ratios_below": 0.95,
+    "uncertainty_display": "empirical range of five paired block ratios, not a confidence interval"
+  },
+  "full_state_error_caps": {"case5": 0.0001, "gyro-tight": 0.0001, "gyro-default": 0.0001, "other": 0.00001},
+  "all_attempt_limit": 100000,
+  "availability_check": "RHS-only, optional ProvidedOnly permission, replay permission false; compare all native counters/states to direct observed DOPRI",
+  "previous_native_source": "596dcdfae8b95d24f27b57975d9f4626267b8149",
+  "previous_native_tip": "e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824",
+  "cross_commit_parity": "not assumed; configuration and provider differences explicitly documented",
+  "cloud_execution": false
+}

@@ -1,0 +1,386 @@
+{
+  "schema_version": 1,
+  "measurements": 81,
+  "warmups": 27,
+  "negative_controls": [
+    {
+      "bad_candidate_refused": true,
+      "dense_error_upper": 0.001953125,
+      "dimension": 32,
+      "fallback_certified": true,
+      "fallback_count": 1,
+      "fallback_seconds": 6.55e-06,
+      "fixture": "normal-diagonal",
+      "kind": "negative_control",
+      "structured_error_upper": 0.001953125
+    },
+    {
+      "bad_candidate_refused": true,
+      "dense_error_upper": 0.0020751953125,
+      "dimension": 32,
+      "fallback_certified": true,
+      "fallback_count": 1,
+      "fallback_seconds": 6.3e-06,
+      "fixture": "nonnormal-upper-bidiagonal",
+      "kind": "negative_control",
+      "structured_error_upper": 0.0020751953125
+    },
+    {
+      "bad_candidate_refused": true,
+      "dense_error_upper": 0.0020751953125,
+      "dimension": 32,
+      "fallback_certified": true,
+      "fallback_count": 1,
+      "fallback_seconds": 6.199e-06,
+      "fixture": "nonnormal-cancellation",
+      "kind": "negative_control",
+      "structured_error_upper": 0.002197265625
+    },
+    {
+      "bad_candidate_refused": true,
+      "dense_error_upper": 0.001953125,
+      "dimension": 128,
+      "fallback_certified": true,
+      "fallback_count": 1,
+      "fallback_seconds": 2.012e-05,
+      "fixture": "normal-diagonal",
+      "kind": "negative_control",
+      "structured_error_upper": 0.001953125
+    },
+    {
+      "bad_candidate_refused": true,
+      "dense_error_upper": 0.0020751953125,
+      "dimension": 128,
+      "fallback_certified": true,
+      "fallback_count": 1,
+      "fallback_seconds": 2.5829e-05,
+      "fixture": "nonnormal-upper-bidiagonal",
+      "kind": "negative_control",
+      "structured_error_upper": 0.0020751953125
+    },
+    {
+      "bad_candidate_refused": true,
+      "dense_error_upper": 0.0020751953125,
+      "dimension": 128,
+      "fallback_certified": true,
+      "fallback_count": 1,
+      "fallback_seconds": 2.5769e-05,
+      "fixture": "nonnormal-cancellation",
+      "kind": "negative_control",
+      "structured_error_upper": 0.002197265625
+    },
+    {
+      "bad_candidate_refused": true,
+      "dense_error_upper": 0.001953125,
+      "dimension": 512,
+      "fallback_certified": true,
+      "fallback_count": 1,
+      "fallback_seconds": 7.7597e-05,
+      "fixture": "normal-diagonal",
+      "kind": "negative_control",
+      "structured_error_upper": 0.001953125
+    },
+    {
+      "bad_candidate_refused": true,
+      "dense_error_upper": 0.0020751953125,
+      "dimension": 512,
+      "fallback_certified": true,
+      "fallback_count": 1,
+      "fallback_seconds": 0.000104177,
+      "fixture": "nonnormal-upper-bidiagonal",
+      "kind": "negative_control",
+      "structured_error_upper": 0.0020751953125
+    },
+    {
+      "bad_candidate_refused": true,
+      "dense_error_upper": 0.0020751953125,
+      "dimension": 512,
+      "fallback_certified": true,
+      "fallback_count": 1,
+      "fallback_seconds": 0.000105539,
+      "fixture": "nonnormal-cancellation",
+      "kind": "negative_control",
+      "structured_error_upper": 0.002197265625
+    }
+  ],
+  "checks": [
+    {
+      "kind": "checks",
+      "negative_controls_passed": 30,
+      "production_integration": false,
+      "status": "PASS_SCOPED"
+    }
+  ],
+  "summary": [
+    {
+      "dimension": 32,
+      "fixture": "nonnormal-cancellation",
+      "mode": "dense-directed",
+      "samples": 3,
+      "median_certification_seconds": 8.3345e-05,
+      "median_total_seconds": 8.3626e-05,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 32,
+      "fixture": "nonnormal-cancellation",
+      "mode": "structured-directed",
+      "samples": 3,
+      "median_certification_seconds": 6.009e-06,
+      "median_total_seconds": 6.29e-06,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 32,
+      "fixture": "nonnormal-cancellation",
+      "mode": "trusted-exact",
+      "samples": 3,
+      "median_certification_seconds": 1.192e-06,
+      "median_total_seconds": 1.463e-06,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 32,
+      "fixture": "nonnormal-upper-bidiagonal",
+      "mode": "dense-directed",
+      "samples": 3,
+      "median_certification_seconds": 8.3566e-05,
+      "median_total_seconds": 8.3846e-05,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 32,
+      "fixture": "nonnormal-upper-bidiagonal",
+      "mode": "structured-directed",
+      "samples": 3,
+      "median_certification_seconds": 6.039e-06,
+      "median_total_seconds": 6.329e-06,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 32,
+      "fixture": "nonnormal-upper-bidiagonal",
+      "mode": "trusted-exact",
+      "samples": 3,
+      "median_certification_seconds": 1.212e-06,
+      "median_total_seconds": 1.492e-06,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 32,
+      "fixture": "normal-diagonal",
+      "mode": "dense-directed",
+      "samples": 3,
+      "median_certification_seconds": 8.3035e-05,
+      "median_total_seconds": 8.3395e-05,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 32,
+      "fixture": "normal-diagonal",
+      "mode": "structured-directed",
+      "samples": 3,
+      "median_certification_seconds": 4.417e-06,
+      "median_total_seconds": 4.707e-06,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 32,
+      "fixture": "normal-diagonal",
+      "mode": "trusted-exact",
+      "samples": 3,
+      "median_certification_seconds": 1.172e-06,
+      "median_total_seconds": 1.542e-06,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 128,
+      "fixture": "nonnormal-cancellation",
+      "mode": "dense-directed",
+      "samples": 3,
+      "median_certification_seconds": 0.001384135,
+      "median_total_seconds": 0.001384977,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 128,
+      "fixture": "nonnormal-cancellation",
+      "mode": "structured-directed",
+      "samples": 3,
+      "median_certification_seconds": 2.4187e-05,
+      "median_total_seconds": 2.4978e-05,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 128,
+      "fixture": "nonnormal-cancellation",
+      "mode": "trusted-exact",
+      "samples": 3,
+      "median_certification_seconds": 4.526e-06,
+      "median_total_seconds": 5.338e-06,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 128,
+      "fixture": "nonnormal-upper-bidiagonal",
+      "mode": "dense-directed",
+      "samples": 3,
+      "median_certification_seconds": 0.001449974,
+      "median_total_seconds": 0.001450987,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 128,
+      "fixture": "nonnormal-upper-bidiagonal",
+      "mode": "structured-directed",
+      "samples": 3,
+      "median_certification_seconds": 2.4166e-05,
+      "median_total_seconds": 2.5058e-05,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 128,
+      "fixture": "nonnormal-upper-bidiagonal",
+      "mode": "trusted-exact",
+      "samples": 3,
+      "median_certification_seconds": 4.667e-06,
+      "median_total_seconds": 5.578e-06,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 128,
+      "fixture": "normal-diagonal",
+      "mode": "dense-directed",
+      "samples": 3,
+      "median_certification_seconds": 0.001472799,
+      "median_total_seconds": 0.00147366,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 128,
+      "fixture": "normal-diagonal",
+      "mode": "structured-directed",
+      "samples": 3,
+      "median_certification_seconds": 1.7437e-05,
+      "median_total_seconds": 1.8268e-05,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 128,
+      "fixture": "normal-diagonal",
+      "mode": "trusted-exact",
+      "samples": 3,
+      "median_certification_seconds": 4.226e-06,
+      "median_total_seconds": 5.238e-06,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 512,
+      "fixture": "nonnormal-cancellation",
+      "mode": "dense-directed",
+      "samples": 3,
+      "median_certification_seconds": 0.022888006,
+      "median_total_seconds": 0.022890961,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 512,
+      "fixture": "nonnormal-cancellation",
+      "mode": "structured-directed",
+      "samples": 3,
+      "median_certification_seconds": 0.000114483,
+      "median_total_seconds": 0.000117237,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 512,
+      "fixture": "nonnormal-cancellation",
+      "mode": "trusted-exact",
+      "samples": 3,
+      "median_certification_seconds": 1.7847e-05,
+      "median_total_seconds": 2.1362e-05,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 512,
+      "fixture": "nonnormal-upper-bidiagonal",
+      "mode": "dense-directed",
+      "samples": 3,
+      "median_certification_seconds": 0.022342824,
+      "median_total_seconds": 0.022346249,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 512,
+      "fixture": "nonnormal-upper-bidiagonal",
+      "mode": "structured-directed",
+      "samples": 3,
+      "median_certification_seconds": 9.7026e-05,
+      "median_total_seconds": 9.983e-05,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 512,
+      "fixture": "nonnormal-upper-bidiagonal",
+      "mode": "trusted-exact",
+      "samples": 3,
+      "median_certification_seconds": 1.8027e-05,
+      "median_total_seconds": 2.1413e-05,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 512,
+      "fixture": "normal-diagonal",
+      "mode": "dense-directed",
+      "samples": 3,
+      "median_certification_seconds": 0.023308189,
+      "median_total_seconds": 0.023311294,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 512,
+      "fixture": "normal-diagonal",
+      "mode": "structured-directed",
+      "samples": 3,
+      "median_certification_seconds": 7.0517e-05,
+      "median_total_seconds": 7.3281e-05,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    },
+    {
+      "dimension": 512,
+      "fixture": "normal-diagonal",
+      "mode": "trusted-exact",
+      "samples": 3,
+      "median_certification_seconds": 1.5854e-05,
+      "median_total_seconds": 1.9339e-05,
+      "all_certified": true,
+      "maximum_error_bound": 0.0
+    }
+  ]
+}

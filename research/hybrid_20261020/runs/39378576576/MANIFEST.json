@@ -1,0 +1,53 @@
+{
+  "binary_sha256": "364b6cd4595b0204d1174c77cb79b8d37d5178ff76145b7ebc92b1c2f543ef19",
+  "blocks": 4,
+  "cases": [
+    [
+      16,
+      0
+    ],
+    [
+      16,
+      1
+    ],
+    [
+      64,
+      0
+    ],
+    [
+      64,
+      1
+    ]
+  ],
+  "external": [
+    "fast",
+    "diffsol",
+    "dvode"
+  ],
+  "external_tolerance_ladder": [
+    0.0001,
+    1e-05,
+    1e-06,
+    1e-07,
+    1e-08,
+    1e-09
+  ],
+  "matched_error_ratio_limit": 2.0,
+  "native": [
+    "auto",
+    "structured",
+    "eager-full",
+    "lazy-full",
+    "lazy-local",
+    "sequential",
+    "cubic-auto"
+  ],
+  "native_budget": 1e-06,
+  "numpy": "2.3.5",
+  "reference": "independent Python Radau ladder, empirical radius; NOT native admission authority",
+  "reps": 3,
+  "scipy": "1.16.3",
+  "shared_runner_diagnostic": true,
+  "source": "49ca3150c68d527a275c855ecf814122ff9c533a",
+  "timing": "whole trajectory including certificate where provided, setup and pools"
+}
