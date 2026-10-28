@@ -1,0 +1,49 @@
+--- a/crates/rodas5p-integrators/src/dense_output_v2.rs
++++ b/crates/rodas5p-integrators/src/dense_output_v2.rs
+@@ -323,7 +323,46 @@
+     identity: DenseSegmentIdentity,
+ }
+ 
++/// Exact copied stored binary64 representation; contains no acceptance claim.
++#[derive(Clone, Debug, PartialEq, Eq)]
++pub struct Rodas5pQuarticSnapshotBits {
++    pub t_old: u64,
++    pub t_new: u64,
++    pub h: u64,
++    pub delta_center: u64,
++    pub delta_exact_lo: u64,
++    pub delta_exact_hi: u64,
++    pub y_old: Vec<u64>,
++    pub y_new: Vec<u64>,
++    pub d0: Vec<u64>,
++    pub d1: Vec<u64>,
++    pub d2: Vec<u64>,
++}
++
+ impl Rodas5pQuarticSegment {
++    /// Copies stored bits after existing identity validation. The caller must
++    /// independently bind an owner accepted post-transaction record.
++    pub fn snapshot_bits(
++        &self,
++        work: &mut DenseSegmentWork,
++    ) -> DenseOutputResult<Rodas5pQuarticSnapshotBits> {
++        self.validate_identity(work)?;
++        work.construction_items += 6 + 5 * self.y_old.len() as u64;
++        Ok(Rodas5pQuarticSnapshotBits {
++            t_old: self.t_old.to_bits(),
++            t_new: self.t_new.to_bits(),
++            h: self.h.to_bits(),
++            delta_center: self.delta_center.to_bits(),
++            delta_exact_lo: self.delta_exact.lo.to_bits(),
++            delta_exact_hi: self.delta_exact.hi.to_bits(),
++            y_old: self.y_old.iter().map(|value| value.to_bits()).collect(),
++            y_new: self.y_new.iter().map(|value| value.to_bits()).collect(),
++            d0: self.d0.iter().map(|value| value.to_bits()).collect(),
++            d1: self.d1.iter().map(|value| value.to_bits()).collect(),
++            d2: self.d2.iter().map(|value| value.to_bits()).collect(),
++        })
++    }
++
+     /// Exact represented time span for sealed model verifiers.
+     pub(crate) fn scalar_span_and_power(
+         &self,
