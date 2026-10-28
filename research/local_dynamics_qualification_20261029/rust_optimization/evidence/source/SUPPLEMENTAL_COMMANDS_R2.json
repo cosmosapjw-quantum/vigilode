@@ -1,0 +1,138 @@
+[
+  {
+    "argv": [
+      "flock",
+      "/tmp/vigilode-cargo-20261027.lock",
+      "taskset",
+      "-c",
+      "0",
+      "heaptrack",
+      "-o",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/heaptrack-r2/dense-fd",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-candidate-r2/release/examples/rust_allocation_probe",
+      "--case",
+      "dense-fd",
+      "--mode",
+      "timing",
+      "--repeats",
+      "12"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 0.11398886819370091,
+    "started_utc": "2026-10-28T22:17:59.649627+00:00"
+  },
+  {
+    "argv": [
+      "flock",
+      "/tmp/vigilode-cargo-20261027.lock",
+      "taskset",
+      "-c",
+      "0",
+      "heaptrack",
+      "-o",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/heaptrack-r2/time-jvp",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-candidate-r2/release/examples/rust_allocation_probe",
+      "--case",
+      "time-jvp",
+      "--mode",
+      "timing",
+      "--repeats",
+      "12"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 0.16412499290890992,
+    "started_utc": "2026-10-28T22:17:59.813826+00:00"
+  },
+  {
+    "argv": [
+      "flock",
+      "/tmp/vigilode-cargo-20261027.lock",
+      "taskset",
+      "-c",
+      "0",
+      "/usr/bin/time",
+      "-v",
+      "-o",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/rss-instrumented-r2/dense-fd.resource",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-candidate-r2/release/examples/rust_allocation_probe",
+      "--case",
+      "dense-fd",
+      "--mode",
+      "alloc",
+      "--repeats",
+      "1"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 0.007868054788559675,
+    "started_utc": "2026-10-28T22:17:59.821765+00:00"
+  },
+  {
+    "argv": [
+      "flock",
+      "/tmp/vigilode-cargo-20261027.lock",
+      "taskset",
+      "-c",
+      "0",
+      "/usr/bin/time",
+      "-v",
+      "-o",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/rss-instrumented-r2/banded-fd.resource",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-candidate-r2/release/examples/rust_allocation_probe",
+      "--case",
+      "banded-fd",
+      "--mode",
+      "alloc",
+      "--repeats",
+      "1"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 0.00782244885340333,
+    "started_utc": "2026-10-28T22:17:59.829628+00:00"
+  },
+  {
+    "argv": [
+      "flock",
+      "/tmp/vigilode-cargo-20261027.lock",
+      "taskset",
+      "-c",
+      "0",
+      "/usr/bin/time",
+      "-v",
+      "-o",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/rss-instrumented-r2/time-jvp.resource",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-candidate-r2/release/examples/rust_allocation_probe",
+      "--case",
+      "time-jvp",
+      "--mode",
+      "alloc",
+      "--repeats",
+      "1"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 0.00763667793944478,
+    "started_utc": "2026-10-28T22:17:59.837297+00:00"
+  },
+  {
+    "argv": [
+      "flock",
+      "/tmp/vigilode-cargo-20261027.lock",
+      "taskset",
+      "-c",
+      "0",
+      "/usr/bin/time",
+      "-v",
+      "-o",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/rss-instrumented-r2/autonomous-jvp.resource",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-candidate-r2/release/examples/rust_allocation_probe",
+      "--case",
+      "autonomous-jvp",
+      "--mode",
+      "alloc",
+      "--repeats",
+      "1"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 0.007595058996230364,
+    "started_utc": "2026-10-28T22:17:59.844923+00:00"
+  }
+]

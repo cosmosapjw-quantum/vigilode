@@ -1,0 +1,41 @@
+{
+  "schema": "vigilode.read-only-independent-review.v1",
+  "reviewer_task": "/root/rust_optimization_review",
+  "requested_profile": "costroute-research-review: gpt-6-astra/xhigh",
+  "runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+  "implementation_participation": false,
+  "verdict": "PASS_SCOPED_PUBLICATION",
+  "broad_production": "HOLD",
+  "execution_source": "a682f609a1f2db1da714bea6da671b362f56baf4",
+  "reviewed_artifacts": {
+    "research/local_dynamics_qualification_20261029/rust_optimization/REPORT_KO.md": "6e903487b5ad4cba4a2c8d87ccc0f2602091e3f9c973dd52612b5b9c926354e1",
+    "research/local_dynamics_qualification_20261029/rust_optimization/SUMMARY.json": "40dd9503238b24cd2aadf6d00d6db0e4822372d54a8eee78577c2110dc2a3f9e",
+    "research/local_dynamics_qualification_20261029/rust_optimization/ANALYSIS_FINAL_VALIDATION.json": "c274db69270d3893e4d5456eea9be58e28e917e76be085dbe18749874e70e498",
+    "research/local_dynamics_qualification_20261029/rust_optimization/PRESERVATION_NOTES.json": "de10e7e4422d44d6d32fdd6509daaa05d0974df4053ab7b3b52a683612aa7d04",
+    "research/local_dynamics_qualification_20261029/rust_optimization/evidence/PACKET_MANIFEST.json": "fe9e5ef88c8f0f05c22f0d06cccf30b7e3aebf46a3605ead62e1afd28310d34e",
+    "research/local_dynamics_qualification_20261029/rust_optimization/evidence_reentrant_rows/SUPPLEMENT_MANIFEST.json": "75e3cc36a42531c08c29ce044b56d59ed4c60141d903bad84ee7c994a02b481c"
+  },
+  "independently_checked": [
+    "Actual binary SHA256/source snapshots and final-source FD tests 40+13",
+    "18 returned checkpoint/state/Stats/callback parity pairs",
+    "22 reentrant last-result row parity pairs; previous31 repeats unobserved individually",
+    "Four timing cohorts: block ratios recomputed from original manifest and matched SUMMARY",
+    "Both public packet compressed/uncompressed hashes verified with exit0",
+    "R1/R2 separation, first failures, unknown costs, original patch packaging limitation, preserved correction counters"
+  ],
+  "closed_findings": [
+    "FD BandShape source identity mismatch closed by final-source 40+13 tests",
+    "Missing reentrant stdout closed by separate create-only row supplement and packet reaggregation",
+    "Stale rendered packet-size text regenerated and final analyzer SHA fixed"
+  ],
+  "claim_limits": [
+    "No whole-solver zero-allocation approval",
+    "No stable generic speedup approval",
+    "No all-accepted-state/dense-interior or full trajectory qualification",
+    "No mathematical necessity inference for remaining cost",
+    "Delivery documentation commit differs from actual execution SHA"
+  ],
+  "native_commands_by_reviewer": false,
+  "code_modified_by_reviewer": false,
+  "publication_authorized_scope": "Bounded software-equivalence/allocation-reduction and diagnostic bottleneck evidence only"
+}

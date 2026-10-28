@@ -2,6 +2,8 @@
 
 ## 현 상태
 
+- 후속 Rust 최적화의 최신 결과는 [별도 보고서](rust_optimization/REPORT_KO.md)와 [SUMMARY](rust_optimization/SUMMARY.json)를 먼저 읽는다. 아래 누적 qualification source와 새 FD 최적화 실행 source `a682f609a1f2db1da714bea6da671b362f56baf4`는 구분한다. 소프트웨어 변경은 기존 과제의 continuation이며 correction counter를 초기화하지 않았다. 로컬 raw는 `/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh`에 보존한다. 기존 장기 campaign은 재개하지 않는다.
+
 - Claim ceiling: **HOLD**, broad production 미승인.
 - 검증 소스: 현재 실행 `0255297e4f865bb78753cad9fe51d6f27536d188` (tree `4b1b7e7da6fa5e1fdcd064c0de1d19671c31e5b3`).
 - 8 suite receipt source: `a1a459f2be186d9f67ff86bf38c19ae24b769768`.

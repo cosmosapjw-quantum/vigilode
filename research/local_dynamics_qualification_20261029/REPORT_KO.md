@@ -198,3 +198,13 @@ Suite 명령의 정확한 argv, 시작시각, 종료상태, stdout/stderr hashes
 `c9c734529cf5bbbc33683987006bf71fca3f122d`, tree `32243dae409795171a63210e38a2709b605a4bf6`를 non-force push하고 fetch로 확인했다. `0255297e` 이후 변경은 authority checker와 그 테스트 두 파일뿐이므로 이전 native source와 구분한다. 이 source의 회귀 41개는 exit 0, full authority는 exit 1이다. 해당 full 검사는 비추적 결과 보고서가 존재한 worktree에서 실행되었다. [회귀](evidence/qledger-c9-tests/RECEIPT.json), [authority 영수증](evidence/qledger-c9-authority/RECEIPT.json), [raw 진단](evidence/qledger-c9-authority/stdout.log). 독립 감사는 해당 source·증거에 대해 PASS_SCOPED, broad production에 대해 HOLD로 판정했다.
 
 최종 checker source와 결과 문서가 staged된 worktree에서 `check-research-node --base bf308589...`는 183 ledger rows와 새 노드를 대상으로 exit 0이었다. `--base origin/main`은 기존 40 diagnostics로 exit 1이었다. 각 [scoped 영수증](evidence/final-node-check/RECEIPT.json)과 [main-base 진단](evidence/final-main-node-check/stdout.log)은 별도다. 이 metadata gate는 full authority pass가 아니다.
+
+## 후속 Rust 할당 최적화와 병목 측정
+
+후속 소프트웨어 변경은 [별도 보고서](rust_optimization/REPORT_KO.md)와 [기계 판독 결과](rust_optimization/SUMMARY.json)에 기록한다. 기존 `SUMMARY.json`, L-0186의 근거 및 원시 실패는 수정하지 않았다. 새 구현은 FD scratch 재사용과 기존 stage 버퍼 연결이며, solver·controller·허용오차·callback 권한·산술 순서를 변경하지 않는다. baseline, 최초 최적화 R1, 최종 R2 실행은 서로 다른 source/binary identity로 보존한다.
+
+현재 반환 checkpoint의 상태·시간·Stats·실제 callback 횟수 동치와 endpoint 정확도, 한정된 무할당 계약, 진단용 timing/profile을 각각 구분한다. 모든 내부 수락 스텝의 상태, solver 전체 무할당, 일반적인 속도 향상 또는 잔여 문제의 수학적 원인이 입증된 것은 아니다. Q-API·Q-LEDGER·10개 interaction과 broad production **HOLD**는 유지한다.
+
+[보존상의 한계](rust_optimization/PRESERVATION_NOTES.json)도 별도로 기록한다. 초기 test-only diff 파일 한 개는 fixture 준비 중 갱신됐지만, 최초 컴파일 실패 때의 실제 Rust 시험 소스는 별도 파일로 남아 있고 그 SHA256이 당시 입력 영수증과 일치한다. 현재 diff 파일의 해시를 최초 시도의 입력 해시로 소급 사용하지 않는다.
+
+후속 [독립 검토](rust_optimization/INDEPENDENT_REVIEW.json)는 `PASS_SCOPED_PUBLICATION`, broad production은 `HOLD`다. [최종 분석 재현](rust_optimization/ANALYSIS_FINAL_VALIDATION.json)과 [최종 한정 검사](rust_optimization/FINAL_CHECKS.json)를 연결한다. 실행 소스는 `a682f609a1f2db1da714bea6da671b362f56baf4`이며 결과 문서 delivery commit과 구분한다. 연구 node 검사는 원장 184행으로 통과했고 full authority는 이번 문서 tree에서 재실행하지 않았다. 기존 FAIL을 유지한다.

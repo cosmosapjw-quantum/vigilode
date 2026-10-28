@@ -1,0 +1,107 @@
+{
+  "artifacts": {
+    "research/local_dynamics_qualification_20261029/rust_optimization/REPORT_KO.md": {
+      "bytes": 12599,
+      "sha256": "003d9b75065f614a4c60aca8b4106141bd46b7090c96505a4f311d7234f6d0d8"
+    },
+    "research/local_dynamics_qualification_20261029/rust_optimization/SUMMARY.json": {
+      "bytes": 341321,
+      "sha256": "3c5eaabadede617f227425498446cdb5adb1338c2c5318519e930d7358a0c40b"
+    },
+    "research/local_dynamics_qualification_20261029/rust_optimization/analyze_results.py": {
+      "bytes": 60220,
+      "sha256": "266ba05a663dce52216364326ce6d70950995579a3fd4bba91c2f17d455eb4e0"
+    },
+    "research/local_dynamics_qualification_20261029/rust_optimization/evidence/PACKET_MANIFEST.json": {
+      "bytes": 125477,
+      "sha256": "fe9e5ef88c8f0f05c22f0d06cccf30b7e3aebf46a3605ead62e1afd28310d34e"
+    },
+    "research/local_dynamics_qualification_20261029/rust_optimization/evidence/RAW_INDEX.json": {
+      "bytes": 889193,
+      "sha256": "7de6f7af02234f25ea364f66dfff43b8f330da599446b5bc45c74b97c25aee62"
+    },
+    "research/local_dynamics_qualification_20261029/rust_optimization/evidence_reentrant_rows/SUPPLEMENT_MANIFEST.json": {
+      "bytes": 410400,
+      "sha256": "75e3cc36a42531c08c29ce044b56d59ed4c60141d903bad84ee7c994a02b481c"
+    },
+    "research/local_dynamics_qualification_20261029/rust_optimization/figures/rust-optimization-r2.png": {
+      "bytes": 188683,
+      "sha256": "ac62177950a79e47c9b84355fbe43c4e1c6aa8dcb65ffaade0a23c234a36a0c5"
+    }
+  },
+  "first_packet_without_supplement": {
+    "argv_template": [
+      "python3",
+      "-B",
+      "research/local_dynamics_qualification_20261029/rust_optimization/analyze_results.py",
+      "--packet",
+      "research/local_dynamics_qualification_20261029/rust_optimization/evidence",
+      "--out-dir",
+      "$PACKET_CHECK_DIR"
+    ],
+    "classification": "INPUT_DEPENDENCY_NOT_RUN",
+    "exit_code": 1,
+    "missing_reentrant_stdout_count": 52,
+    "stderr_excerpt": "INPUT_DEPENDENCY (NOT_RUN): packet omits reentrant per-attempt stdout needed to recompute returned-row parity/work/error; missing /tmp/vigilode-r2-packet-sftbie1t/source-root/reentrant-control-r2/warmup-rhs-only-baseline.stdout, /tmp/vigilode-r2-packet-sftbie1t/source-root/reentrant-control-r2/warmup-rhs-only-candidate.stdout, /tmp/vigilode-r2-packet-sftbie1t/source-root/reentrant-control-r2/timing-rhs-only-block1-0-baseline.stdout, /tmp/vigilode-r2-packet-sftbie1t/source-root/reentrant-control-r2/timing-rhs-only-block1-1-candidate.stdout ... (52 files)",
+    "stderr_path": "/tmp/vigilode-packet-check.stderr",
+    "stderr_sha256": "630b8d2c9f19bc0868654a9c63032ca07d8bffc09da0f0ee28826dcf57f4f257"
+  },
+  "limitations": [
+    "R1 supplemental heaptrack/RSS elapsed is unknown; do not infer full cap completion from known subtotal.",
+    "Endpoint reference uncertainty was not rigorously bounded; analytic f64 manufactured endpoint comparison only.",
+    "Timing is diagnostic_only; broad production remains HOLD."
+  ],
+  "local_analysis": {
+    "analysis_script_sha256_at_execution": "NOT_CAPTURED; current script hash is in artifacts and differs from the last recorded report render after final textual corrections.",
+    "argv": [
+      "python3",
+      "-B",
+      "research/local_dynamics_qualification_20261029/rust_optimization/analyze_results.py",
+      "--root",
+      "/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh",
+      "--worktree",
+      "/home/cosmosapjw/vigilode-local-20261028T170155Z",
+      "--out-dir",
+      "research/local_dynamics_qualification_20261029/rust_optimization"
+    ],
+    "exit_code": 0,
+    "max_endpoint_error": 4.4617096683907675e-09,
+    "parity_pairs": 18,
+    "status": "SCOPED_DIAGNOSTIC_COMPLETE"
+  },
+  "packet_reaggregation": {
+    "argv": [
+      "/usr/bin/python3",
+      "/home/cosmosapjw/vigilode-local-20261028T170155Z/research/local_dynamics_qualification_20261029/rust_optimization/analyze_results.py",
+      "--packet",
+      "research/local_dynamics_qualification_20261029/rust_optimization/evidence",
+      "--packet-supplement",
+      "research/local_dynamics_qualification_20261029/rust_optimization/evidence_reentrant_rows",
+      "--out-dir",
+      "/tmp/vigilode-r2-packet-replay-hi329poi"
+    ],
+    "exit_code": 0,
+    "hashed_raw_input_count": 199,
+    "max_endpoint_error": 4.4617096683907675e-09,
+    "packet_manifest_sha256": "fe9e5ef88c8f0f05c22f0d06cccf30b7e3aebf46a3605ead62e1afd28310d34e",
+    "r2_parity_pairs": 18,
+    "reentrant_parity_pairs": 22,
+    "status": "PASS_REAGGREGATED",
+    "stderr_sha256": "55db772ccecf91045aeaa03c8bf66fae5dfa8ce2a75a4c3e77d53dc7f2b03852",
+    "stdout_sha256": "4d352f5ba151a20c78aeb4d78eb078aaf963301fc0a29150516502afd754c990",
+    "supplement_manifest_sha256": "75e3cc36a42531c08c29ce044b56d59ed4c60141d903bad84ee7c994a02b481c",
+    "wall_seconds": 1.0853609999176115
+  },
+  "schema": "vigilode-rust-optimization-analysis-validation-v1",
+  "scoped_source_tests": {
+    "all_exit_zero": true,
+    "fd_unit_count": 13,
+    "integration_count": 40,
+    "receipt_hashes": [
+      "d0bebdf9abdd6cbf9c460574548e1e29a84ceac73cc356a3558df710f30d6a67",
+      "ca1bd0db4356b7798d847108c42f82cc4a9abf3cbb110c039dc3685787a64400"
+    ],
+    "source_sha": "a682f609a1f2db1da714bea6da671b362f56baf4"
+  },
+  "validation_scope": "artifact syntax/hash and recorded local plus compact-packet aggregation results; no Cargo/native benchmark execution"
+}
