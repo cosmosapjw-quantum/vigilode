@@ -1,0 +1,8 @@
+{
+  "classification": "EXPLORATORY symbolic sanity check; not native performance or a general proof",
+  "code": "Clear[a1,a2,a3,w1,w2,w3,B]; aa={a1,a2,a3}; ww={w1,w2,w3}; ee=B aa/(ww Total[aa]); lam=Total[aa]/B; assumptions=And@@Thread[Join[aa,ww,{B}]>0]; <|\"BudgetResidual\"->FullSimplify[ww.ee-B,assumptions],\"Stationarity\"->FullSimplify[-aa/ee+lam ww,assumptions],\"HessianPositive\"->FullSimplify[And@@Thread[aa/ee^2>0],assumptions],\"RationalExample\"->(ee/.{a1->1,a2->2,a3->3,w1->2,w2->1,w3->4,B->1/100})|>",
+  "content": [
+    "Symbol::undefined2: Warning: Global symbols \"B, B, B, B, B, B\" are undefined.\nGeneral::messages: Messages were generated which may indicate errors.\n\nOut[1]= <|\"BudgetResidual\" -> 0, \"Stationarity\" -> {0, 0, 0}, \"HessianPositive\" -> True, \"RationalExample\" -> {1/1200, 1/300, 1/800}|>"
+  ],
+  "isError": false
+}

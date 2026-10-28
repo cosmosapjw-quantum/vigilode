@@ -32,12 +32,34 @@ supporting exact computations must not become a new solver-performance claim.
 
 ## Progress
 
-PR93 checkout restored from the remote after scratch maintenance. Primary PR
-metadata and current main fetched. PR93 presently has two failed remote workflows;
-their concrete causes will enter the integration validation plan.
+PR93 checkout was restored from the remote after scratch maintenance. The four
+conversation PRs and current main were inspected; exact ancestry is recorded.
+Three parallel agents completed error, algebra and cumulative-validation lanes.
+One complementary mathematical review is closed; its four local corrections
+were made before source registration. No recursive review was started.
+
+Registered mathematical source:
+`af7f3e9f55d652554042d2386bf07abb7d857d75`.
+Both exact support programs ran once with unchanged source inputs and exit 0:
+six error groups, nine compiler fixtures and refinement/refusal controls PASS.
+Raw JSON and receipts are in evidence; L-0177/L-0178 append the admitted scope.
+Native solver tests, benchmarks and profiles for this new theory remain NOT_RUN.
+
+REPORT_KO.md, EXECUTION_CONTRACT.md and the two THEORY.md files supply the
+integrated constructions. The REVTeX report is in report/. The independent-PR
+handoff, safe preparation helper and INDEPENDENT_VALIDATION.json preserve the
+old 23-node/34-edge/eight-suite plan and its correction counts. All 73 changed
+crate/workflow paths map to semantic gates; ten cross-PR interactions are planned.
+
+PR93's actual CI failures are preserved: 23 distinct Clippy sites and skipped
+offline follow-through; full authority identity failures despite full-depth
+checkout. No Q/N native gate has been marked passed by this research package.
 
 ## Next action
 
-Dispatch disjoint derivation/assumption and cumulative-validation work, integrate
-one theorem spine with a small executable validation manifest, check it once,
-then publish the research package and exact-SHA handoff.
+Use the final delivered full commit SHA from the PR/delivery to materialize a
+fresh independent validation branch targeting main. Follow
+INDEPENDENT_PR_HANDOFF_KO.md. Replay historical source-sensitive artifacts in
+disposable worktrees; run cumulative native/physical interactions at the actual
+final implementation tree. Preserve every old failure and correction budget.
+The worktree helper is dry-run by default and never performs solver validation.

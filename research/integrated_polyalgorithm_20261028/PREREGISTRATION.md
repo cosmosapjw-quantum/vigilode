@@ -66,3 +66,15 @@ admitted by this protocol.
 ## Result append point
 
 Execution results will be appended after the registered run.
+## Registered execution results — 2026-10-28 UTC
+
+The two commands ran once from published source commit
+`af7f3e9f55d652554042d2386bf07abb7d857d75`. Both source-bound receipts report
+exit 0, unchanged registered inputs and complete stdout/stderr hashes. Error
+checks: all six groups PASS. Algebra checks: nine compiler fixtures PASS,
+denominator refusal PASS and refinement checks PASS, including minimum count6
+and theta0 equality. See evidence/ERROR_RESULTS.json and
+evidence/ALGEBRA_RESULTS.json; ledger rows L-0177 and L-0178 admit only these
+finite supporting checks. No native solver test, benchmark or profiling was
+run under this protocol. The original preregistration bytes remain recoverable
+from the source commit and their digest is bound in each receipt.
