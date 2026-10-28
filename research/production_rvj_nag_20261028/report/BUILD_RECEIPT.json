@@ -1,0 +1,69 @@
+{
+  "schema": "vigilode.rvj-report-build.v1",
+  "created_utc": "2026-10-28T10:53:16.645182+00:00",
+  "source_sha": "64004e23042f2cf076da5378be724f50c3856f4c",
+  "report_only_no_native_execution": true,
+  "commands": [
+    {
+      "pass": 1,
+      "argv": [
+        "pdflatex",
+        "-interaction=nonstopmode",
+        "-halt-on-error",
+        "-output-directory",
+        "/tmp/vigilode-rvj-report-build",
+        "rvj_production.tex"
+      ],
+      "exit_code": 0
+    },
+    {
+      "pass": 2,
+      "argv": [
+        "pdflatex",
+        "-interaction=nonstopmode",
+        "-halt-on-error",
+        "-output-directory",
+        "/tmp/vigilode-rvj-report-build",
+        "rvj_production.tex"
+      ],
+      "exit_code": 0
+    }
+  ],
+  "texinputs_support": "/tmp/vigilode-integrated-report-build/tex_support",
+  "support_sha256": {
+    "ltxutil.sty": "847d54f1b7a5cab3edccdb0ae2efd2d03f49c18f7b0e0cef8eff1f34ef63d63f",
+    "revtex4-2.cls": "58727044fa47fff2663615774f8f24baab978944bbc55f84f8dc08ef91f67358",
+    "README": "b047d33f9a7c79d990bcc9627baff23e2aa154fc57b2b129b7d593c8cb9c12c0",
+    "revsymb4-2.sty": "7614d7446d929f49917e54c8590d7ff7408572a9d2d293d209ea718540947d3e",
+    "aps10pt4-2.rtx": "0cc5d7fab6ffd59ba5779f9ddfad990cb8a71438ea390277bafff1824bbcb8e4",
+    "aps4-2.rtx": "52d33501cae6dfdf339efeb2a79fda0a2780d1d39d96b61a1c6a6311da6ca05e",
+    "ltxgrid.sty": "18c9dc3288f8eebbb9401eab5deb6f378954da29b4176a12be3ae3567b5dae7f",
+    "aps12pt4-2.rtx": "ed800427c862eee9fec9c705ca7fb1d82dc1f6abee5598257653e89d875e94bd",
+    "ltxfront.sty": "99e79d9d491f87c7ecf59eede97dd2a91c210519e57da1144ad618766c774ee2",
+    "aps11pt4-2.rtx": "f0ad65dcca6ed1352c3edda5b086b678301bce743a6ac44e69d4dc34a114a6de"
+  },
+  "warnings": [
+    "Package nameref Warning: The definition of \\label has changed! ",
+    "LaTeX Warning: `h' float specifier changed to `ht'."
+  ],
+  "pdf_sha256": "b625b12ae826ec721671e2e6fe5d37847ba895841fe6febdf8941d9994b446e1",
+  "visual_review": {
+    "status": "PASS",
+    "all_pages_contact_reviewed": 11,
+    "full_page_reviews": [
+      4,
+      7,
+      8,
+      9
+    ],
+    "findings": "No clipping, overlapping labels, missing symbols or unresolved citations. Two layout-only warnings retained (nameref label hook and h-to-ht float placement).",
+    "reviewed_utc": "2026-10-28T10:54:38.730697+00:00",
+    "final_pdf_contact_reviewed": true,
+    "final_pdf_pages": 11,
+    "final_reviewed_utc": "2026-10-28T11:00:27.884189+00:00"
+  },
+  "layout_revision": "xurl line breaking for identifiers; explicit author metadata",
+  "layout_passes": 6,
+  "warnings_are_layout_only": true,
+  "last_revision": "Add actual cached-object authority failure and incomparable prior checkout scope."
+}

@@ -99,3 +99,14 @@ hardware/external-solver comparisons or broad production qualification.
 ## Results append point
 
 No new scientific execution recorded at source registration time.
+
+## Completed results (appended after registered execution)
+
+Actual execution source: 64004e23042f2cf076da5378be724f50c3856f4c. Remote readback preceded native execution.
+Run status PASS; cyclic6 and trace9 tests passed; independent all-slab oracle
+completed732947 checks; registered Wolfram identities10/10 passed.
+Whole-state cap and all nonadmitted grids remain unchanged. Cyclic direct/tight
+first-passing whole-call ratios8.7206/9.3338/9.1984 are scoped to this cohort.
+Trace whole-trajectory speed improvement is not established. See RESULTS.json,
+analysis/BENCHMARK_ANALYSIS.json and evidence/registered01/RUN_RECEIPT.json.
+Production remains HOLD; inherited gates and correction budgets persist.

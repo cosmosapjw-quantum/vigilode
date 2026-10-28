@@ -13,3 +13,14 @@ Current: latest PR96 and related PR95 discovered; selected attachment sources sa
 Parent has read and admitted the completed closure/trace proofs and PR96 audit in THEORY_ADMISSION.md. Coding phase now authorized for disjoint native modules and independent oracle. No new scientific native execution yet; source publication is next execution prerequisite.
 
 Coding initial modules/examples and independent original-equation oracle are complete. Central lib/test-binary/example compilation succeeded; scientific tests have not run. One coherent prepublication C9 repair episode is charged to inherited N03/N05 (1/3), covering exact decimal cap, complete private-workspace timing, partial failure work and constant/linear trace work elimination. Parent is freezing the actual source for remote publication before registered execution.
+
+## Completed scientific execution and delivery
+
+Published execution source 64004e23042f2cf076da5378be724f50c3856f4c passed the registered native cohort and
+all-slab exact oracle (732947 checks); Wolfram10/10 supporting identities passed.
+Native/runtime/oracle/theory files are unchanged after execution. Posthoc analysis
+preserves all repeats, refused grids and the trace whole-trajectory non-result.
+The final source-bound RESULTS.json, Korean/REVTeX report, local DAG and standalone
+LOCAL_CODEX_HANDOFF_KO.md are delivery artifacts. SOURCE_PUBLICATION.json is the
+historical pre-execution snapshot (its false flag refers to that timestamp).
+Overall production HOLD persists. No fourth repair or renamed budget was used.

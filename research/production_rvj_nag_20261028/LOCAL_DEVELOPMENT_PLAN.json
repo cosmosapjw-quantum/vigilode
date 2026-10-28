@@ -6,7 +6,7 @@
   "pr_base": "validation/cumulative-polyalgorithm",
   "source_pr96": "13f3298bd0213f121e07385903f9508c435ad6a1",
   "related_pr95": "36104bfc65d1fdc695c8acea383c54b50a1c4e78",
-  "execution_source_sha": null,
+  "execution_source_sha": "64004e23042f2cf076da5378be724f50c3856f4c",
   "production_status": "HOLD",
   "inherited_plan": {
     "path": "research/polyalgorithm_alternatives_20261028/LOCAL_DEVELOPMENT_PLAN.json",
@@ -1391,7 +1391,7 @@
         "PR-N03",
         "PR-N05"
       ],
-      "status": "IMPLEMENTED_UNEXECUTED",
+      "status": "PASS_SCOPED_FIXED_MODEL",
       "purpose": "Original-model derivative-free cyclic lift and whole-path certificate with proof-derived fixed Bernstein constants.",
       "source": [
         "crates/vigilode-coupled/src/cyclic_closure.rs",
@@ -1403,14 +1403,55 @@
         "same endpoints old/new certificate cost",
         "all-state physical cap1e-8"
       ],
-      "activation_gate": "Opt-in fixed model only; generic native routing remains unqualified."
+      "activation_gate": "Opt-in fixed model only; generic native routing remains unqualified.",
+      "source_sha": "64004e23042f2cf076da5378be724f50c3856f4c",
+      "evidence": [
+        "evidence/registered01/RUN_RECEIPT.json",
+        "evidence/registered01/RAW_INDEX.json",
+        "RESULTS.json",
+        "analysis/BENCHMARK_ANALYSIS.json"
+      ],
+      "result_scope": {
+        "all_exported_slabs_checked": true,
+        "slab_records": 2160,
+        "coefficient_intervals": 383040,
+        "first_passing_grid_historical": 64,
+        "first_passing_grid_direct": 32,
+        "consistent_first_passing_speed_ratios": [
+          {
+            "n": 4,
+            "baseline_grid": 64,
+            "candidate_grid": 32,
+            "baseline_median_seconds": 0.00314895,
+            "candidate_median_seconds": 0.000361093,
+            "ratio_of_medians": 8.72060660273
+          },
+          {
+            "n": 8,
+            "baseline_grid": 64,
+            "candidate_grid": 32,
+            "baseline_median_seconds": 0.005880571,
+            "candidate_median_seconds": 0.000630028,
+            "ratio_of_medians": 9.33382484588
+          },
+          {
+            "n": 16,
+            "baseline_grid": 64,
+            "candidate_grid": 32,
+            "baseline_median_seconds": 0.011620309,
+            "candidate_median_seconds": 0.001263291,
+            "ratio_of_medians": 9.19844200584
+          }
+        ],
+        "production_promoted": false
+      }
     },
     {
       "id": "RVJ-TRACE",
       "parent_tasks": [
         "PR-N05"
       ],
-      "status": "IMPLEMENTED_UNEXECUTED",
+      "status": "PASS_SCOPED_FIXED_MODEL",
       "purpose": "All-complex-root algebraic-multiplicity polynomial observables and shared F6 field, with exact semantic boundaries.",
       "source": [
         "crates/vigilode-coupled/src/trace_quotient.rs",
@@ -1422,7 +1463,23 @@
         "selected/real-only refusal",
         "controlled original ODE whole-path oracle"
       ],
-      "activation_gate": "Explicit observable class; cannot replace selected real closure."
+      "activation_gate": "Explicit observable class; cannot replace selected real closure.",
+      "source_sha": "64004e23042f2cf076da5378be724f50c3856f4c",
+      "evidence": [
+        "evidence/registered01/RUN_RECEIPT.json",
+        "evidence/registered01/RAW_INDEX.json",
+        "RESULTS.json",
+        "analysis/BENCHMARK_ANALYSIS.json"
+      ],
+      "result_scope": {
+        "all_exported_slabs_checked": true,
+        "slabs": 992,
+        "first_passing_residual_grid": 256,
+        "native_whole_path_certificate": false,
+        "trajectory_speedup_claim_supported": false,
+        "full_certified_speedup_claim_supported": false,
+        "production_promoted": false
+      }
     }
   ],
   "local_pr_sequence": [
@@ -1431,7 +1488,7 @@
       "purpose": "Reproduce this exact source and raw evidence in a new independent PR/worktree.",
       "depends_on": [],
       "commands": [
-        "code/run_registered.py --source-sha PINNED_PUBLISHED_SHA --output NEW_DIRECTORY"
+        "python3 research/production_rvj_nag_20261028/code/run_registered.py --source-sha ACTUAL_LOCAL_PUBLISHED_SHA --remote-ref origin/ACTUAL_VALIDATION_BRANCH --output NEW_DIRECTORY --cargo cargo --lock /tmp/vigilode-cargo-20261027.lock"
       ],
       "gate": "original equation and immutable source receipts, no overwritten failures"
     },
@@ -1490,7 +1547,26 @@
     {
       "task": "polynomial-router",
       "question": "Retain Chebyshev/Laguerre/Leja/nonnormal action certificates, full trajectory truncation and selective derivative permission."
+    },
+    {
+      "task": "trace-signed-residual-primitive",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "question": "Derive a tighter original-flow certificate from the signed residual primitive, with corrected-path domain/tube, representation/rounding and return-to-original-path terms; do not replace residual gate by the manufactured oracle posthoc.",
+      "lambda_exact": "39/64",
+      "absolute_lipschitz_exact": "75/64",
+      "evidence": "analysis/BENCHMARK_ANALYSIS.json"
+    },
+    {
+      "task": "parallel-affine-scan",
+      "status": "EXACT_WORK_SPAN_PROOF_ONLY",
+      "question": "Implement O(n) work/O(log n) span cyclic affine composition only after outward reassociation and complete synchronization/workspace cost justify a crossover against the O(n) serial recurrence.",
+      "proof": "theory/INTEGRATION_SCOPE.md"
     }
   ],
-  "budget_policy": "Original maximum3 persists. R-STRUCT3/3 and R-ADAPT3/3 remain exhausted; Q-LEDGER cumulative1/3. This node creates no new allowance."
+  "budget_policy": "Original maximum3 persists. R-STRUCT3/3 and R-ADAPT3/3 remain exhausted; Q-LEDGER cumulative1/3. This node creates no new allowance.",
+  "execution_receipt": "evidence/registered01/RUN_RECEIPT.json",
+  "results": "RESULTS.json",
+  "execution_plan_warning": "This DAG is not the execution_suites schema consumed by old run_local.py. Use research/production_solver_closure_20261027/DEVELOPMENT_PLAN.json for eight-suite execution and the handoff for actual argv.",
+  "current_metadata": "FINAL_CHECKS.json",
+  "authority_current_status": "FAIL_LOCAL_CACHE_AUDIT_DIFFERENT_FROM_PRIOR_FULLER_CHECKOUT"
 }
