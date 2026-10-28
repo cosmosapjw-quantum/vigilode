@@ -92,7 +92,10 @@
         "cancellation and range stresses",
         "current forward signed-adjoint comparator"
       ],
-      "maximum_correction_loops": 3
+      "maximum_correction_loops": 3,
+      "correction_budget_owners": [
+        "PR-N01"
+      ]
     },
     {
       "id": "N01-P-RES",
@@ -127,7 +130,10 @@
         "small GMRES",
         "existing eight-stage shared projected basis"
       ],
-      "maximum_correction_loops": 3
+      "maximum_correction_loops": 3,
+      "correction_budget_owners": [
+        "PR-N01"
+      ]
     },
     {
       "id": "N01-P-HYB",
@@ -160,7 +166,10 @@
         "finite precision total",
         "full fallback accounting"
       ],
-      "maximum_correction_loops": 3
+      "maximum_correction_loops": 3,
+      "correction_budget_owners": [
+        "PR-N01"
+      ]
     },
     {
       "id": "N01-P-NONNORMAL",
@@ -188,7 +197,10 @@
         "https://arxiv.org/pdf/1702.00668",
         "https://iris.univr.it/retrieve/e14ff6e5-9f54-0209-e053-6605fe0ad24c/CKOR16_pre.pdf"
       ],
-      "maximum_correction_loops": 3
+      "maximum_correction_loops": 3,
+      "correction_budget_owners": [
+        "PR-N01"
+      ]
     }
   ],
   "cost_contract": {
@@ -294,5 +306,6 @@
     "execution_status_at_authoring": "not_run",
     "needs_registration_before_execution": true,
     "scope": "exact rational algebra checks only"
-  }
+  },
+  "correction_budget_rule": "All candidates share the remaining budget of their parent PR-N task; alternative names do not reset or multiply it. The global LOCAL_DEVELOPMENT_PLAN.json is authoritative."
 }

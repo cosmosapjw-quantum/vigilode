@@ -60,3 +60,7 @@ the six PR-N01--06 contracts and the seven outstanding qualification tasks.
 Existing per-task correction budgets are not reset by this theory supplement.
 After at most one production/verification pass and one justified review pass,
 publish the useful results and explicit remaining native obligations.
+
+## Results appended after the registered run
+
+All three commands exited 0 with exact-rational checks passing. Ledger rows L-0174, L-0175, L-0176 bind the source commit, checker hashes and actual output hashes. See RESULTS.json and evidence/*_RECEIPT.json. This PASS concerns only the declared supporting checks; native solver correctness, timing, profiling and production qualification were not tested. The L=0 residence prose clarification changed no equation or checker.

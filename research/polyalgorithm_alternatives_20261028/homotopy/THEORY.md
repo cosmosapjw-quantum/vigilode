@@ -525,12 +525,16 @@ For certified cost rates \(c_A,c_B\) with
  \int_0^H(c_B-c_A)\,dt\ge dH-\frac{LH^2}2. \tag{9}
 \]
 
-Therefore \(H\le d/L\) gives nonnegative pointwise advantage, and
+For \(L>0\), \(H\le d/L\) gives nonnegative pointwise advantage, and
 \(dH-LH^2/2>S\) pays the overhead. When \(L>0\), the maximum of this
 quadratic on that interval is \(d^2/(2L)\); thus
 \(d^2>2LS\) is necessary for this sufficient-bound family to certify a
 strictly positive net gain. It is not a necessary condition for actual
 performance to improve.
+
+For \(L=0\), every \(H\ge0\) has the same certified positive rate
+advantage, and strict payback is exactly \(dH>S\). No division by \(L\)
+is used in this branch.
 
 ### Why the certificate is still an open production bridge
 

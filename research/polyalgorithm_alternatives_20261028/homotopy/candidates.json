@@ -120,7 +120,10 @@
         "planner cost",
         "native elapsed distribution and allocation profile"
       ],
-      "correction_loop_budget": "inherit remaining per-task budget; do not reset"
+      "correction_loop_budget": "inherit remaining per-task budget; do not reset",
+      "correction_budget_owners": [
+        "PR-N02"
+      ]
     },
     {
       "id": "N02-CONTRACTIVE-PREFIX",
@@ -140,7 +143,10 @@
         "final-only bound does not certify intermediate outputs"
       ],
       "derivative_policy": "analytic model bounds; no runtime JVP",
-      "native_status": "NOT_RUN"
+      "native_status": "NOT_RUN",
+      "correction_budget_owners": [
+        "PR-N02"
+      ]
     },
     {
       "id": "N04-MONOTONE-BRANCH",
@@ -166,7 +172,10 @@
         "removing q_B requires decoupling Picard fallback",
         "numerical positivity and L-stability are separate properties"
       ],
-      "native_status": "NOT_RUN"
+      "native_status": "NOT_RUN",
+      "correction_budget_owners": [
+        "PR-N04"
+      ]
     },
     {
       "id": "N04-CERTIFIED-STATIONS",
@@ -207,7 +216,10 @@
         "e exhausts radius margin",
         "intermediate stations cost more than direct solve"
       ],
-      "native_status": "NOT_RUN"
+      "native_status": "NOT_RUN",
+      "correction_budget_owners": [
+        "PR-N04"
+      ]
     },
     {
       "id": "N04-WINNING-SESSION",
@@ -242,7 +254,10 @@
         "cumulative budget not reset",
         "allocator and startup RHS counts"
       ],
-      "native_status": "NOT_RUN"
+      "native_status": "NOT_RUN",
+      "correction_budget_owners": [
+        "PR-N04"
+      ]
     },
     {
       "id": "N06-DISCRETE-RESIDENCE",
@@ -301,7 +316,10 @@
         "stale epoch",
         "overhead exceeding guaranteed savings"
       ],
-      "native_status": "NOT_RUN"
+      "native_status": "NOT_RUN",
+      "correction_budget_owners": [
+        "PR-N06"
+      ]
     }
   ],
   "exploratory_checks": {
@@ -330,7 +348,7 @@
             "passes_exact": false
           },
           "rational_decay_1over12": {
-            "value": 0.00005514905661544183,
+            "value": 5.514905661544183e-05,
             "passes_exact": false
           }
         },
@@ -338,15 +356,15 @@
           "n": 128,
           "qB_lt_1_exact": true,
           "original_1over8": {
-            "value": 0.00007124726410505837,
+            "value": 7.124726410505837e-05,
             "passes_exact": false
           },
           "constant_1over12": {
-            "value": 0.00004749817607003891,
+            "value": 4.749817607003891e-05,
             "passes_exact": false
           },
           "rational_decay_1over12": {
-            "value": 0.00001362317403574928,
+            "value": 1.362317403574928e-05,
             "passes_exact": false
           }
         },
@@ -354,15 +372,15 @@
           "n": 256,
           "qB_lt_1_exact": true,
           "original_1over8": {
-            "value": 0.000017846536915204677,
+            "value": 1.7846536915204677e-05,
             "passes_exact": false
           },
           "constant_1over12": {
-            "value": 0.000011897691276803118,
+            "value": 1.1897691276803118e-05,
             "passes_exact": false
           },
           "rational_decay_1over12": {
-            "value": 0.0000033853071298603906,
+            "value": 3.3853071298603906e-06,
             "passes_exact": true
           }
         },
@@ -370,15 +388,15 @@
           "n": 512,
           "qB_lt_1_exact": true,
           "original_1over8": {
-            "value": 0.0000044659870426829266,
+            "value": 4.4659870426829266e-06,
             "passes_exact": true
           },
           "constant_1over12": {
-            "value": 0.0000029773246951219513,
+            "value": 2.9773246951219513e-06,
             "passes_exact": true
           },
           "rational_decay_1over12": {
-            "value": 8.437676264817364e-7,
+            "value": 8.437676264817364e-07,
             "passes_exact": true
           }
         }
@@ -396,5 +414,6 @@
       "identity-safe session continuation",
       "optional temporal-certificate provider"
     ]
-  }
+  },
+  "correction_budget_rule": "All candidates share the remaining budget of their parent PR-N task; alternative names do not reset or multiply it. The global LOCAL_DEVELOPMENT_PLAN.json is authoritative."
 }
