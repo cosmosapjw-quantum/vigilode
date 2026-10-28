@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "reused_source_catalog": "research/polyalgorithm_alternatives_20261028/SOURCES.json",
+  "discovery": {
+    "scispace": "10 papers returned; used to locate Ranocha–Giesselmann and Estep, then primary sources read",
+    "exa": "5 results returned; used to locate Cao–Petzold author manuscript",
+    "wolfram": "context retrieval succeeded; symbolic KKT calculation returned zero residual/stationarity and positive Hessian, with undefined-global-symbol warning retained"
+  },
+  "primary_extensions": [
+    {
+      "id": "RG2024",
+      "title": "Stability of step size control based on a posteriori error estimates",
+      "authors": [
+        "Hendrik Ranocha",
+        "Jan Giesselmann"
+      ],
+      "year": 2024,
+      "url": "https://link.springer.com/article/10.1007/s44207-024-00001-0",
+      "locations": [
+        "Section 2.1 Lemma 1",
+        "Section 3"
+      ],
+      "use": "One-sided Lipschitz residual-to-error propagation; reliable estimator and stable controller are distinct. Reconstruction must have suitable order; no generic derivative-free ODE certificate is supplied."
+    },
+    {
+      "id": "CP2004",
+      "title": "A Posteriori Error Estimation and Global Error Control for Ordinary Differential Equations by the Adjoint Method",
+      "authors": [
+        "Yang Cao",
+        "Linda Petzold"
+      ],
+      "year": 2004,
+      "url": "https://people.cs.vt.edu/~ycao/publication/siam_42096.pdf",
+      "doi": "10.1137/S1064827503420969",
+      "use": "Adjoint-based global error/conditioning context. Full derivative-based adjoint software is not assumed available in a derivative-free provider."
+    }
+  ],
+  "failed_retrievals": [
+    {
+      "url": "https://arxiv.org/html/2307.12677",
+      "result": "DisabledError",
+      "repair": "arxiv PDF and primary published HTML read"
+    },
+    {
+      "url": "https://escholarship.org/content/qt3c59x9vs/qt3c59x9vs.pdf",
+      "result": "HTTP 429",
+      "repair": "author-hosted PDF retrieved through publication list"
+    }
+  ],
+  "scope": "Primary formulas support background; integrated project lemmas are proved in the new THEORY files and are not attributed as novelty of these papers."
+}

@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "skill_context_used": {
+    "skill": "physmath-research-loop",
+    "version": "1.3.0",
+    "stages": ["R3", "R5", "R9"],
+    "actual_read_paths": ["../SKILL_CONTEXT.md", "../RESUME.md"]
+  },
+  "source_commit": "384dba091a3d9e1aac0ecddec264958298239253",
+  "derivation_status": "constructed_with_proofs",
+  "supporting_checker": {
+    "path": "CHECK.py",
+    "worker_execution_status": "NOT_RUN",
+    "reason": "parent must register source before the recorded scientific check",
+    "expected_compiler_cases": 9,
+    "expected_adverse_controls": [
+      "nonzero full-space residual when near-annihilator defect is ignored",
+      "zero quotient denominator refuses this plan without declaring all solves impossible",
+      "uniform refinement bound cannot reach a target below its derived floor"
+    ],
+    "scope": "exact finite rational identities, not floating-point or performance validation"
+  },
+  "extensions": [
+    {
+      "id": "IA-QUOTIENT-COMPILE",
+      "parent_tasks": ["PR-N01", "PR-N03", "PR-N05"],
+      "new_result": "compile all declared affine raw-U stages modulo one annihilator and evaluate only requested stage-linear outputs",
+      "work_bound": "at most d-1 full-space chart actions per endpoint-only call after scalar preparation; no stage RHS calls beyond an unavailable base RHS",
+      "input_contract": "same immutable full-space chart, norm, stage target, tableau and model epoch; declared affine identity",
+      "output_contract": "raw-U endpoint or named stage-linear functional at the actual numerical input",
+      "physical_anchor": "algebraic distance to exact discrete stage target at the same numerical input; no temporal defect included",
+      "evidence_kind": "direct elementary proof",
+      "implementation_status": "pending_local",
+      "correction_budget": "share existing parent-task budget; do not reset"
+    },
+    {
+      "id": "IA-QUOTIENT-DEFECT",
+      "parent_tasks": ["PR-N01", "PR-N03", "PR-N05"],
+      "new_result": "every degree<d stored stage polynomial has degree<=d target residual alpha_i*pi+e_i; near-structure, coefficient, base-RHS and nonlinear remainder defects feed the existing finite causal endpoint transfer",
+      "signed_specialization": "affine self-adjoint case keeps the common pi(C)f0 defect and signed scalar adjoint transfer",
+      "input_contract": "whole-space relation defect, valid virtual/exact stage domain and inverse norm; outward coefficient/evaluation enclosures required in native code",
+      "output_contract": "original-target algebraic endpoint bound with all local roles explicitly charged",
+      "evidence_kind": "direct elementary proof plus reused nilpotent causal theorem",
+      "implementation_status": "pending_local",
+      "correction_budget": "share existing parent-task budget; do not reset"
+    },
+    {
+      "id": "IA-PRECISION-REFINE",
+      "parent_tasks": ["PR-N01", "PR-N05"],
+      "new_result": "R_next <= theta*R + (1+theta)*eta + norm(A)*(zeta+upsilon), exact uniform floor and least sufficient correction inequality",
+      "input_contract": "true right-defect norm bound plus actual residual, correction and update error enclosures",
+      "output_contract": "linear residual bound; original residual controls commit",
+      "replaces_mathematical_role_of": ["maximum_relation_ratio=0.5", "stagnation_ratio=0.95"],
+      "retains": ["explicit resource caps", "charged failures", "same-target original residual gate", "fixed versus flexible outer Krylov distinction"],
+      "evidence_kind": "direct elementary proof",
+      "implementation_status": "pending_local",
+      "correction_budget": "share existing parent-task budget; do not reset"
+    }
+  ],
+  "runtime_changes": false,
+  "native_solver_tests": "NOT_RUN",
+  "native_benchmarks": "NOT_RUN",
+  "external_literature_novelty_claim": false
+}
