@@ -1,0 +1,785 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Found 10 relevant papers on 'Which rigorous a posteriori error bounds for ordinary differential equations use logarithmic norms and residual transport, and how can finite symbolic abstractions of dynamical systems safely guide adaptive numerical solver switching?'.\n\n\n1. Global, rigorous and realistic bounds for the solution of dissipative differential equations. Part I: Theory\n   ID: 3t9mmmyy2r\n   1994 · Arnold Neumaier · Computing\n   DOI: 10.1007/BF02276880\n   Abstract: It is shown how interval analysis can be used to calculate rigorously valid enclosures of solutions to initial value problems for ordinary differential equations. In contrast to previously known methods, the enclosures obtained are valid over larger time intervals, and for uniformly dissipative systems even globally. This paper discusses the underlying theory; main tools are logarithmic norms and differential inequalities. Numerical results will be given in a subsequent paper.\n\n2. Trajectory-based reachability analysis of switched nonlinear systems using matrix measures\n   ID: 4nif2gulmm\n   2014 · John Maidens, Murat Arcak\n   DOI: 10.1109/CDC.2014.7040386\n   Abstract: Matrix measures, or logarithmic norms, have historically been used to provide bounds on the divergence of trajectories of a system of ordinary differential equations (ODEs). In this paper we use them to compute guaranteed overapproximations of reachable sets for switched nonlinear dynamical systems using numerically simulated trajectories, and to bound the accumulation of numerical errors along simulation traces. To improve the tightness of the computed approximations, we connect these classical tools for ODE analysis with modern techniques for optimization and demonstrate that minimizing the volume of the computed reachable set enclosure can be formulated as a convex problem. Using a benchmark problem for the verification of hybrid systems, we show that this technique enables the efficient computation of reachable sets for systems with over 100 continuous state variables.\n\n3. The Flow of ODEs\n   ID: 59ebon3ypa\n   2016 · Fabian Immler, Christoph Traut\n   DOI: 10.1007/978-3-319-43144-4_12\n   Abstract: Formal analysis of ordinary differential equations (ODEs) and dynamical systems requires a solid formalization of the underlying theory. The formalization needs to be at the correct level of abstraction, in order to avoid drowning in tedious reasoning about technical details. The flow of an ODE, i.e., the solution depending on initial conditions, and a dedicated type of bounded linear functions yield suitable abstractions. The dedicated type integrates well with the type-class based analysis in Isabelle and we prove advanced properties of the flow, most notably, differentiable dependence on initial conditions via the variational equation and a rigorous numerical algorithm to solve it.\n\n4. Rigorous defect control and the numerical solution of ordinary differential equations\n   ID: 4bwz63p6ka\n   2017 · John+ Ernsthausen\n   Abstract: Modern numerical ordinary differential equation initial-value problem (ODE-IVP) solvers compute a piecewise polynomial approximate solution to the mathematical problem. Evaluating the mathematical problem at this approximate solution defines the defect. Corless and Corliss proposed rigorous defect control of numerical ODE-IVP. This thesis automates rigorous defect control for explicit, first-order, nonlinear ODE-IVP. Defect control is residual-based backward error analysis for ODE, a special case of Wilkinson’s backward error analysis. This thesis describes a complete software implementation of the Corless and Corliss algorithm and extensive numerical studies. Basic time-stepping software is adapted to defect control and implemented. Advances in software developed for validated computing applications and advances in programming languages supporting operator overloading enable the computation of a tight rigorous enclosure of the defect evaluated at the approximate solution with Taylor models. Rigorously bounding a norm of the defect, the Corless and Corliss algorithm controls to mathematical certainty the norm of the defect to be less than a user specified tolerance over the integration interval. The validated computing software used in this thesis happens to compute a rigorous supremum norm. The defect of an approximate solution to the mathematical problem is associated with a new problem, the perturbed reference problem. This approximate solution is\n\n5. New convergence results for Carleman linearization\n   ID: y3pzlmmbro5c\n   2026 · Michele Boreale, Luisa Collodi\n   DOI: 10.48550/arxiv.2606.24473\n   Abstract: We prove new error bounds for finite Carleman truncations of polynomial ordinary differential equations. The analysis works directly in the original monomial basis and for selected observables, such as state coordinates. Using a Dyson--Duhamel expansion, we separate the degree-preserving linear part from the degree-raising nonlinear part and track how truncation errors can propagate back to the observable. The resulting bounds are degree-aware and retain logarithmic-norm information from the original linear dynamics. We obtain explicit finite-degree estimates and geometric convergence over certified time horizons. Comparisons with existing bounds, in particular those of Forets--Pouly, are given on the Stuart--Landau and Van der Pol systems. \n\n6. A Verified ODE Solver and Smale's 14th Problem\n   ID: 5ew80s989b\n   2018 · Fabian Immler\n   Abstract: This dissertation presents a formalization of ordinary differential equations (ODEs) and the verification of rigorous (with guaranteed error bounds) numerical algorithms in the interactive theorem prover Isabelle/HOL. The formalization comprises flow and Poincare map of dynamical systems. The verified algorithms are based on Runge-Kutta methods and affine arithmetic. They certify numerical bounds for the Lorenz attractor and thereby lift the numerical part of Tucker's proof of Smale's 14th problem onto a formal foundation.\n\n7. Reachability Analysis of Nonlinear Systems Using Matrix Measures\n   ID: 2e1c8vcp3c\n   2015 · John Maidens, Murat Arcak · IEEE Transactions on Automatic Control\n   DOI: 10.1109/TAC.2014.2325635\n   Abstract: Matrix measures, also known as logarithmic norms, have historically been used to provide bounds on the divergence of trajectories of a system of ordinary differential equations. In this technical note we use them to compute guaranteed overapproximations of reachable sets for nonlinear continuous-time systems using numerically simulated trajectories and to bound the accumulation of numerical simulation errors along simulation traces. Our method employs a user-supplied bound on the matrix measure of the system's Jacobian matrix to compute bounds on the behavior of nearby trajectories, leading to efficient computation of reachable sets when such bounds are available. We demonstrate that the proposed technique scales well to systems with a large number of states.\n\n8. On the a-posteriori error bounds for the solution of ordinary nonlinear differential equations\n   ID: 4weu283af1\n   1975 · E.G. Geisler, A.A. Tal, Devendra P. Garg · Computers & Mathematics With Applications\n   DOI: 10.1016/0898-1221(75)90042-5\n   Abstract: This paper advances a procedure to compute the a-posteriori error bounds for the solution of a wide class of ordinary differential equations with given initial conditions. The method is based on an iterative scheme which yields upper and lower bounds which approach each other. The convergence of these iterations is proved analytically. Application of the proposed method is demonstrated by several examples. The method is independent of the integration scheme used. Also, separate bounds for each component of the solution are specifically available as a function of time compared to the bound on the norm yielded by conventional methods.\n\n9. Reliable Error Estimation for PINNs: Lower and Upper A Posteriori Bounds\n   ID: 9n9iaias239i\n   2026 · Ismail T. Huseynov, Arzu Ahmadova, Agamirza E. Bashirov\n   DOI: 10.48550/arxiv.2606.12050\n   Abstract: Physics-informed neural networks (PINNs) combine machine learning with physical laws to solve differential equations. While existing results provide rigorous \\emph{a posteriori} upper bounds for PINN prediction errors, complete certification also requires complementary lower information in order to obtain computable two-sided error enclosures. In this paper, we derive computable \\emph{a posteriori} lower bounds for PINN errors in ordinary differential equations on suitable certified state-space domains under a localized strong monotonicity condition. We combine these estimates with complementary localized upper bounds under a one-sided Lipschitz condition, which is weaker than the global Lipschitz assumption used in previous work and can yield sharper upper error bands. The resulting bounds depend only on the neural-network approximation, the ODE residual, and local monotonicity and growth constants, and therefore do not require access to the exact solution. For linear time-invariant and time-varying systems, we further derive explicit formulas in terms of the minimal and maximal eigenvalues of the symmetric part of the system matrix. We also discuss the distinction between soft and hard enforcement of initial conditions in PINNs and explain why exact enforcement can make the scalar lower certificate uninformative. To recover nontrivial lower information in the linear setting, we use a signed-residual finite-probe certificate based on coordinate unit vectors. We also formulate a certificate-informed training strategy in which the propagated upper certificate is used as an auxiliary regularizer, while lower certificates remain post-training diagnostics. Altogether, the proposed framework provides rigorous and practically computable error certificates for PINN approximations of ODEs, while making explicit the domains and model classes for which the assumptions can be verified. \n\n10. Error Estimation and Adaptivity for Differential Equations with Multiple Scales in Time\n   ID: 4tqnpu60cb\n   2021 · Leopold Lautsch, Thomas Richter · Computational methods in applied mathematics\n   DOI: 10.1515/CMAM-2021-0030\n   Abstract: We consider systems of ordinary differential equations with multiple scales in time. In general, we are interested in the long time horizon of a slow variable that is coupled to solution components that act on a fast scale. Although being an essential part of the coupled problem these fast variables are often of no interest themselves. But, they are essential for the dynamics of the coupled problem. Recently we have proposed a temporal multiscale method that fits into the framework of the heterogeneous multiscale method and that allows for efficient simulations with significant speedups. Fast and slow scales are decoupled by introducing local averages and by replacing fast scale contributions by localized periodic-in-time problems. Here, we derive an a posteriori error estimator based on the dual weighted residual method that allows for a splitting of the error into averaging error, error on the slow scale and error on the fast scale. We demonstrate the accuracy of the error estimator and also its use for adaptive control of a numerical multiscale scheme."
+    }
+  ],
+  "structuredContent": {
+    "searchTerm": "Which rigorous a posteriori error bounds for ordinary differential equations use logarithmic norms and residual transport, and how can finite symbolic abstractions of dynamical systems safely guide adaptive numerical solver switching?",
+    "papers": [
+      {
+        "id": 2130311368,
+        "title": "Global, rigorous and realistic bounds for the solution of dissipative differential equations. Part I: Theory",
+        "is_archived": false,
+        "full_slug": "global-rigorous-and-realistic-bounds-for-the-solution-of-3t9mmmyy2r",
+        "journal": {
+          "display_name": "Computing",
+          "official_page": "https://www.springer.com/journal/607",
+          "issn": "0010-485X",
+          "alias": [
+            "computer technology"
+          ],
+          "id": 35593046,
+          "slug": "computing",
+          "unique_id": "3rms29f3",
+          "full_slug": "computing-3rms29f3"
+        },
+        "conference_series": null,
+        "date": "1994-12-01T00:00:00Z",
+        "is_oa": true,
+        "publication_type": "Journal Article",
+        "doi": "10.1007/BF02276880",
+        "unique_id": "3t9mmmyy2r",
+        "abstract": "It is shown how interval analysis can be used to calculate rigorously valid enclosures of solutions to initial value problems for ordinary differential equations. In contrast to previously known methods, the enclosures obtained are valid over larger time intervals, and for uniformly dissipative systems even globally. This paper discusses the underlying theory; main tools are logarithmic norms and differential inequalities. Numerical results will be given in a subsequent paper.",
+        "authors": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "Arnold Neumaier",
+              "id": 2215179809,
+              "slug": "arnold-neumaier",
+              "unique_id": "55fqzewnf5",
+              "full_slug": "arnold-neumaier-55fqzewnf5",
+              "affiliation_full_slug": "at-t-or5pssv1"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "AT&T",
+              "city": "Bedminster",
+              "region": "New Jersey",
+              "country": "United States",
+              "id": 1283103587,
+              "slug": "at-t",
+              "unique_id": "or5pssv1",
+              "full_slug": "at-t-or5pssv1"
+            }
+          ]
+        },
+        "fulltext_url": "/pdf/global-rigorous-and-realistic-bounds-for-the-solution-of-3t9mmmyy2r.pdf",
+        "fulltext_url_no_follow": false,
+        "paper_urls": {
+          "order": [
+            "Pdf",
+            "Html",
+            "Others"
+          ],
+          "data": {
+            "Html": [
+              "https://link.springer.com/article/10.1007/BF02276880",
+              "https://dblp.uni-trier.de/db/journals/computing/computing52.html#Neumaier94"
+            ],
+            "Pdf": [
+              "https://www.mat.univie.ac.at/~neum/ms/ode.pdf",
+              "https://solon.cma.univie.ac.at/ms/ode.pdf"
+            ],
+            "Others": [
+              "https://link.springer.com/content/pdf/10.1007/BF02276880.pdf"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": 14
+          }
+        },
+        "tldr": "It is shown how interval analysis can be used to calculate rigorously valid enclosures of solutions to initial value problems for ordinary differential equations in contrast to previously known methods.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 2003777434,
+        "title": "Trajectory-based reachability analysis of switched nonlinear systems using matrix measures",
+        "is_archived": false,
+        "full_slug": "trajectory-based-reachability-analysis-of-switched-nonlinear-4nif2gulmm",
+        "journal": null,
+        "conference_series": {
+          "display_name": "Conference on Decision and Control",
+          "id": 1198780418,
+          "slug": "conference-on-decision-and-control",
+          "unique_id": "1msdazxf",
+          "full_slug": "conference-on-decision-and-control-1msdazxf"
+        },
+        "date": "2014-12-01T00:00:00Z",
+        "is_oa": false,
+        "publication_type": "Proceedings Article",
+        "doi": "10.1109/CDC.2014.7040386",
+        "unique_id": "4nif2gulmm",
+        "abstract": "Matrix measures, or logarithmic norms, have historically been used to provide bounds on the divergence of trajectories of a system of ordinary differential equations (ODEs). In this paper we use them to compute guaranteed overapproximations of reachable sets for switched nonlinear dynamical systems using numerically simulated trajectories, and to bound the accumulation of numerical errors along simulation traces. To improve the tightness of the computed approximations, we connect these classical tools for ODE analysis with modern techniques for optimization and demonstrate that minimizing the volume of the computed reachable set enclosure can be formulated as a convex problem. Using a benchmark problem for the verification of hybrid systems, we show that this technique enables the efficient computation of reachable sets for systems with over 100 continuous state variables.",
+        "authors": {
+          "total": 2,
+          "data": [
+            {
+              "display_name": "John Maidens",
+              "id": 2295352116,
+              "slug": "john-maidens",
+              "unique_id": "4fn78hhvg0",
+              "full_slug": "john-maidens-4fn78hhvg0",
+              "affiliation_full_slug": "university-of-california-berkeley-24veh4gb"
+            },
+            {
+              "display_name": "Murat Arcak",
+              "id": 254511066,
+              "slug": "murat-arcak",
+              "unique_id": "51yvqrkvu6",
+              "full_slug": "murat-arcak-51yvqrkvu6",
+              "affiliation_full_slug": "university-of-california-berkeley-24veh4gb"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "University of California, Berkeley",
+              "city": "Berkeley",
+              "region": "California",
+              "country": "United States",
+              "id": 95457486,
+              "slug": "university-of-california-berkeley",
+              "unique_id": "24veh4gb",
+              "full_slug": "university-of-california-berkeley-24veh4gb"
+            }
+          ]
+        },
+        "fulltext_url": null,
+        "fulltext_url_no_follow": true,
+        "paper_urls": {
+          "order": [
+            "Html",
+            "Others"
+          ],
+          "data": {
+            "Html": [
+              "https://dblp.uni-trier.de/db/conf/cdc/cdc2014.html#MaidensA14",
+              "https://ieeexplore.ieee.org/document/7040386/"
+            ],
+            "Others": [
+              "https://www.eecs.berkeley.edu/~maidens/papers/2014CDC.pdf"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": 4
+          }
+        },
+        "tldr": "This paper uses logarithmic norms to compute guaranteed overapproximations of reachable sets for switched nonlinear dynamical systems using numerically simulated trajectories, and shows that minimizing the volume of the computed reachable set enclosure can be formulated as a convex problem.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 2483648716,
+        "title": "The Flow of ODEs",
+        "is_archived": false,
+        "full_slug": "the-flow-of-odes-59ebon3ypa",
+        "journal": null,
+        "conference_series": {
+          "display_name": "Interactive Theorem Proving",
+          "id": 1177357382,
+          "slug": "interactive-theorem-proving",
+          "unique_id": "3cz48va0",
+          "full_slug": "interactive-theorem-proving-3cz48va0"
+        },
+        "date": "2016-08-22T00:00:00Z",
+        "is_oa": false,
+        "publication_type": "Book Chapter",
+        "doi": "10.1007/978-3-319-43144-4_12",
+        "unique_id": "59ebon3ypa",
+        "abstract": "Formal analysis of ordinary differential equations (ODEs) and dynamical systems requires a solid formalization of the underlying theory. The formalization needs to be at the correct level of abstraction, in order to avoid drowning in tedious reasoning about technical details. The flow of an ODE, i.e., the solution depending on initial conditions, and a dedicated type of bounded linear functions yield suitable abstractions. The dedicated type integrates well with the type-class based analysis in Isabelle and we prove advanced properties of the flow, most notably, differentiable dependence on initial conditions via the variational equation and a rigorous numerical algorithm to solve it.",
+        "authors": {
+          "total": 2,
+          "data": [
+            {
+              "display_name": "Fabian Immler",
+              "id": 2119110787,
+              "slug": "fabian-immler",
+              "unique_id": "3y6ezkofep",
+              "full_slug": "fabian-immler-3y6ezkofep",
+              "affiliation_full_slug": "technische-universitat-munchen-3oeglcts"
+            },
+            {
+              "display_name": "Christoph Traut",
+              "id": 2565184363,
+              "slug": "christoph-traut",
+              "unique_id": "22oc3di58s",
+              "full_slug": "christoph-traut-22oc3di58s",
+              "affiliation_full_slug": "technische-universitat-munchen-3oeglcts"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "Technische Universität München",
+              "city": "Munich",
+              "region": null,
+              "country": "Germany",
+              "id": 62916508,
+              "slug": "technische-universitat-munchen",
+              "unique_id": "3oeglcts",
+              "full_slug": "technische-universitat-munchen-3oeglcts"
+            }
+          ]
+        },
+        "fulltext_url": null,
+        "fulltext_url_no_follow": true,
+        "paper_urls": {
+          "order": [
+            "Html",
+            "Others"
+          ],
+          "data": {
+            "Html": [
+              "https://link.springer.com/chapter/10.1007%2F978-3-319-43144-4_12",
+              "https://dblp.uni-trier.de/db/conf/itp/itp2016.html#ImmlerT16"
+            ],
+            "Others": [
+              "https://link.springer.com/chapter/10.1007/978-3-319-43144-4_12/fulltext.html",
+              "https://link.springer.com/10.1007/978-3-319-43144-4_12"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": 23
+          }
+        },
+        "tldr": "The dedicated type integrates well with the type-class based analysis in Isabelle and is proved advanced properties of the flow, most notably, differentiable dependence on initial conditions via the variational equation and a rigorous numerical algorithm to solve it.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 3066486437,
+        "title": "Rigorous defect control and the numerical solution of ordinary differential equations",
+        "is_archived": false,
+        "full_slug": "rigorous-defect-control-and-the-numerical-solution-of-4bwz63p6ka",
+        "journal": null,
+        "conference_series": null,
+        "date": "2017-10-01T00:00:00Z",
+        "is_oa": true,
+        "publication_type": "Dissertation",
+        "doi": null,
+        "unique_id": "4bwz63p6ka",
+        "abstract": "Modern numerical ordinary differential equation initial-value problem (ODE-IVP) solvers compute a piecewise polynomial approximate solution to the mathematical problem. Evaluating the mathematical problem at this approximate solution defines the defect. Corless and Corliss proposed rigorous defect control of numerical ODE-IVP. This thesis automates rigorous defect control for explicit, first-order, nonlinear ODE-IVP. Defect control is residual-based backward error analysis for ODE, a special case of Wilkinson’s backward error analysis. This thesis describes a complete software implementation of the Corless and Corliss algorithm and extensive numerical studies. Basic time-stepping software is adapted to defect control and implemented. Advances in software developed for validated computing applications and advances in programming languages supporting operator overloading enable the computation of a tight rigorous enclosure of the defect evaluated at the approximate solution with Taylor models. Rigorously bounding a norm of the defect, the Corless and Corliss algorithm controls to mathematical certainty the norm of the defect to be less than a user specified tolerance over the integration interval. The validated computing software used in this thesis happens to compute a rigorous supremum norm. The defect of an approximate solution to the mathematical problem is associated with a new problem, the perturbed reference problem. This approximate solution is",
+        "authors": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "John+ Ernsthausen",
+              "id": 3065483070,
+              "slug": "john-ernsthausen",
+              "unique_id": "1yzr9pgr4f",
+              "full_slug": "john-ernsthausen-1yzr9pgr4f"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "fulltext_url": "/pdf/rigorous-defect-control-and-the-numerical-solution-of-4bwz63p6ka.pdf",
+        "fulltext_url_no_follow": false,
+        "paper_urls": {
+          "order": [
+            "Pdf",
+            "Html"
+          ],
+          "data": {
+            "Pdf": [
+              "https://macsphere.mcmaster.ca/bitstream/11375/22733/2/ernsthausen_john_m_finalsubmission2017october_msc.pdf"
+            ],
+            "Html": [
+              "https://macsphere.mcmaster.ca/handle/11375/22733"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": 1
+          }
+        },
+        "tldr": "This thesis automates rigorous defect control for explicit, first-order, nonlinear ODE-IVP, a special case of Wilkinson's backward error analysis for ODE, with complete software implementation of the Corless and Corliss algorithm and extensive numerical studies.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 4127752583,
+        "title": "New convergence results for Carleman linearization",
+        "is_archived": false,
+        "full_slug": "new-convergence-results-for-carleman-linearization-y3pzlmmbro5c",
+        "journal": null,
+        "conference_series": null,
+        "date": "2026-06-23T00:00:00Z",
+        "is_oa": null,
+        "publication_type": "Journal Article",
+        "doi": "10.48550/arxiv.2606.24473",
+        "unique_id": "y3pzlmmbro5c",
+        "abstract": "We prove new error bounds for finite Carleman truncations of polynomial ordinary differential equations. The analysis works directly in the original monomial basis and for selected observables, such as state coordinates. Using a Dyson--Duhamel expansion, we separate the degree-preserving linear part from the degree-raising nonlinear part and track how truncation errors can propagate back to the observable. The resulting bounds are degree-aware and retain logarithmic-norm information from the original linear dynamics. We obtain explicit finite-degree estimates and geometric convergence over certified time horizons. Comparisons with existing bounds, in particular those of Forets--Pouly, are given on the Stuart--Landau and Van der Pol systems. ",
+        "authors": {
+          "total": 2,
+          "data": [
+            {
+              "display_name": "Michele Boreale",
+              "full_slug": null
+            },
+            {
+              "display_name": "Luisa Collodi",
+              "full_slug": null
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "fulltext_url": "pdf/new-convergence-results-for-carleman-linearization-y3pzlmmbro5c.pdf",
+        "fulltext_url_no_follow": false,
+        "paper_urls": {
+          "order": [
+            "Pdf"
+          ],
+          "data": {
+            "Pdf": [
+              "https://arxiv.org/pdf/2606.24473"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": null
+          }
+        },
+        "tldr": null,
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 2965054276,
+        "title": "A Verified ODE Solver and Smale's 14th Problem",
+        "is_archived": false,
+        "full_slug": "a-verified-ode-solver-and-smale-s-14th-problem-5ew80s989b",
+        "journal": null,
+        "conference_series": null,
+        "date": "2018-01-01T00:00:00Z",
+        "is_oa": true,
+        "publication_type": null,
+        "doi": null,
+        "unique_id": "5ew80s989b",
+        "abstract": "This dissertation presents a formalization of ordinary differential equations (ODEs) and the verification of rigorous (with guaranteed error bounds) numerical algorithms in the interactive theorem prover Isabelle/HOL. The formalization comprises flow and Poincare map of dynamical systems. The verified algorithms are based on Runge-Kutta methods and affine arithmetic. They certify numerical bounds for the Lorenz attractor and thereby lift the numerical part of Tucker's proof of Smale's 14th problem onto a formal foundation.",
+        "authors": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "Fabian Immler",
+              "id": 2119110787,
+              "slug": "fabian-immler",
+              "unique_id": "3y6ezkofep",
+              "full_slug": "fabian-immler-3y6ezkofep"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "fulltext_url": null,
+        "fulltext_url_no_follow": true,
+        "paper_urls": {
+          "order": [
+            "Html",
+            "Others"
+          ],
+          "data": {
+            "Html": [
+              "https://dl.gi.de/handle/20.500.12116/36728",
+              "https://mediatum.ub.tum.de/1422071"
+            ],
+            "Others": [
+              "https://dl.gi.de/20.500.12116/36728"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": 12
+          }
+        },
+        "tldr": "This dissertation presents a formalization of ordinary differential equations (ODEs) and the verification of rigorous numerical algorithms in the interactive theorem prover Isabelle/HOL using Runge-Kutta methods and affine arithmetic.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 2024171867,
+        "title": "Reachability Analysis of Nonlinear Systems Using Matrix Measures",
+        "is_archived": false,
+        "full_slug": "reachability-analysis-of-nonlinear-systems-using-matrix-2e1c8vcp3c",
+        "journal": {
+          "display_name": "IEEE Transactions on Automatic Control",
+          "official_page": "http://ieeexplore.ieee.org/servlet/opac?punumber=9",
+          "issn": "0018-9286",
+          "alias": [
+            "Transactions on automatic control",
+            "Automatic control",
+            "Automatic control, IEEE transactions on"
+          ],
+          "id": 184954342,
+          "slug": "ieee-transactions-on-automatic-control",
+          "unique_id": "1ra13n3z",
+          "full_slug": "ieee-transactions-on-automatic-control-1ra13n3z"
+        },
+        "conference_series": null,
+        "date": "2015-01-01T00:00:00Z",
+        "is_oa": false,
+        "publication_type": "Journal Article",
+        "doi": "10.1109/TAC.2014.2325635",
+        "unique_id": "2e1c8vcp3c",
+        "abstract": "Matrix measures, also known as logarithmic norms, have historically been used to provide bounds on the divergence of trajectories of a system of ordinary differential equations. In this technical note we use them to compute guaranteed overapproximations of reachable sets for nonlinear continuous-time systems using numerically simulated trajectories and to bound the accumulation of numerical simulation errors along simulation traces. Our method employs a user-supplied bound on the matrix measure of the system's Jacobian matrix to compute bounds on the behavior of nearby trajectories, leading to efficient computation of reachable sets when such bounds are available. We demonstrate that the proposed technique scales well to systems with a large number of states.",
+        "authors": {
+          "total": 2,
+          "data": [
+            {
+              "display_name": "John Maidens",
+              "id": 2295352116,
+              "slug": "john-maidens",
+              "unique_id": "4fn78hhvg0",
+              "full_slug": "john-maidens-4fn78hhvg0",
+              "affiliation_full_slug": "university-of-california-berkeley-24veh4gb"
+            },
+            {
+              "display_name": "Murat Arcak",
+              "id": 254511066,
+              "slug": "murat-arcak",
+              "unique_id": "51yvqrkvu6",
+              "full_slug": "murat-arcak-51yvqrkvu6",
+              "affiliation_full_slug": "university-of-california-berkeley-24veh4gb"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "University of California, Berkeley",
+              "city": "Berkeley",
+              "region": "California",
+              "country": "United States",
+              "id": 95457486,
+              "slug": "university-of-california-berkeley",
+              "unique_id": "24veh4gb",
+              "full_slug": "university-of-california-berkeley-24veh4gb"
+            }
+          ]
+        },
+        "fulltext_url": null,
+        "fulltext_url_no_follow": true,
+        "paper_urls": {
+          "order": [
+            "Html",
+            "Others"
+          ],
+          "data": {
+            "Html": [
+              "https://dblp.uni-trier.de/db/journals/tac/tac60.html#MaidensA15",
+              "https://ieeexplore.ieee.org/document/6818376/"
+            ],
+            "Others": [
+              "http://ieeexplore.ieee.org/document/6818376/",
+              "http://dblp.uni-trier.de/db/journals/tac/tac60.html#MaidensA15"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": null
+          }
+        },
+        "tldr": "This paper employs a user-supplied bound on the matrix measure of the system's Jacobian matrix to compute bounds on the behavior of nearby trajectories, leading to efficient computation of reachable sets when such bounds are available and scales well to systems with a large number of states.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 2035705815,
+        "title": "On the a-posteriori error bounds for the solution of ordinary nonlinear differential equations",
+        "is_archived": false,
+        "full_slug": "on-the-a-posteriori-error-bounds-for-the-solution-of-4weu283af1",
+        "journal": {
+          "display_name": "Computers & Mathematics With Applications",
+          "official_page": "https://www.journals.elsevier.com/computers-and-mathematics-with-applications/",
+          "issn": "0898-1221",
+          "alias": [
+            "Computers and mathematics with applications"
+          ],
+          "id": 73535193,
+          "slug": "computers-mathematics-with-applications",
+          "unique_id": "1354r9ia",
+          "full_slug": "computers-mathematics-with-applications-1354r9ia"
+        },
+        "conference_series": null,
+        "date": "1975-01-01T00:00:00Z",
+        "is_oa": true,
+        "publication_type": "Journal Article",
+        "doi": "10.1016/0898-1221(75)90042-5",
+        "unique_id": "4weu283af1",
+        "abstract": "This paper advances a procedure to compute the a-posteriori error bounds for the solution of a wide class of ordinary differential equations with given initial conditions. The method is based on an iterative scheme which yields upper and lower bounds which approach each other. The convergence of these iterations is proved analytically. Application of the proposed method is demonstrated by several examples. The method is independent of the integration scheme used. Also, separate bounds for each component of the solution are specifically available as a function of time compared to the bound on the norm yielded by conventional methods.",
+        "authors": {
+          "total": 3,
+          "data": [
+            {
+              "display_name": "E.G. Geisler",
+              "id": 2634695906,
+              "slug": "e-g-geisler",
+              "unique_id": "12i8ht55e6",
+              "full_slug": "e-g-geisler-12i8ht55e6",
+              "affiliation_full_slug": "charles-stark-draper-laboratory-2uur73f1"
+            },
+            {
+              "display_name": "A.A. Tal",
+              "id": 2655074673,
+              "slug": "a-a-tal",
+              "unique_id": "2iotpgfbxx",
+              "full_slug": "a-a-tal-2iotpgfbxx",
+              "affiliation_full_slug": "technion-israel-institute-of-technology-3s7bh4fv"
+            },
+            {
+              "display_name": "Devendra P. Garg",
+              "id": 2162004787,
+              "slug": "devendra-p-garg",
+              "unique_id": "3125ng7660",
+              "full_slug": "devendra-p-garg-3125ng7660",
+              "affiliation_full_slug": "duke-university-2i50v772"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 3,
+          "data": [
+            {
+              "display_name": "Charles Stark Draper Laboratory",
+              "city": "Cambridge",
+              "region": "Massachusetts",
+              "country": "United States",
+              "id": 1343143571,
+              "slug": "charles-stark-draper-laboratory",
+              "unique_id": "2uur73f1",
+              "full_slug": "charles-stark-draper-laboratory-2uur73f1"
+            },
+            {
+              "display_name": "Technion – Israel Institute of Technology",
+              "city": "Haifa",
+              "region": null,
+              "country": "Israel",
+              "id": 174306211,
+              "slug": "technion-israel-institute-of-technology",
+              "unique_id": "3s7bh4fv",
+              "full_slug": "technion-israel-institute-of-technology-3s7bh4fv"
+            },
+            {
+              "display_name": "Duke University",
+              "city": "Durham",
+              "region": "North Carolina",
+              "country": "United States",
+              "id": 170897317,
+              "slug": "duke-university",
+              "unique_id": "2i50v772",
+              "full_slug": "duke-university-2i50v772"
+            }
+          ]
+        },
+        "fulltext_url": null,
+        "fulltext_url_no_follow": true,
+        "paper_urls": {
+          "order": [
+            "Html",
+            "Others"
+          ],
+          "data": {
+            "Html": [
+              "https://core.ac.uk/display/82229533",
+              "https://www.sciencedirect.com/science/article/pii/0898122175900425"
+            ],
+            "Others": [
+              "https://www.sciencedirect.com/science/article/abs/pii/0898122175900425"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": 1
+          }
+        },
+        "tldr": "This paper advances a procedure to compute the a-posteriori error bounds for the solution of a wide class of ordinary differential equations with given initial conditions based on an iterative scheme which yields upper and lower bounds which approach each other.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 4128217018,
+        "title": "Reliable Error Estimation for PINNs: Lower and Upper A Posteriori Bounds",
+        "is_archived": false,
+        "full_slug": "reliable-error-estimation-for-pinns-lower-and-upper-a-9n9iaias239i",
+        "journal": null,
+        "conference_series": null,
+        "date": "2026-06-10T00:00:00Z",
+        "is_oa": null,
+        "publication_type": "Journal Article",
+        "doi": "10.48550/arxiv.2606.12050",
+        "unique_id": "9n9iaias239i",
+        "abstract": "Physics-informed neural networks (PINNs) combine machine learning with physical laws to solve differential equations. While existing results provide rigorous \\emph{a posteriori} upper bounds for PINN prediction errors, complete certification also requires complementary lower information in order to obtain computable two-sided error enclosures. In this paper, we derive computable \\emph{a posteriori} lower bounds for PINN errors in ordinary differential equations on suitable certified state-space domains under a localized strong monotonicity condition. We combine these estimates with complementary localized upper bounds under a one-sided Lipschitz condition, which is weaker than the global Lipschitz assumption used in previous work and can yield sharper upper error bands. The resulting bounds depend only on the neural-network approximation, the ODE residual, and local monotonicity and growth constants, and therefore do not require access to the exact solution. For linear time-invariant and time-varying systems, we further derive explicit formulas in terms of the minimal and maximal eigenvalues of the symmetric part of the system matrix. We also discuss the distinction between soft and hard enforcement of initial conditions in PINNs and explain why exact enforcement can make the scalar lower certificate uninformative. To recover nontrivial lower information in the linear setting, we use a signed-residual finite-probe certificate based on coordinate unit vectors. We also formulate a certificate-informed training strategy in which the propagated upper certificate is used as an auxiliary regularizer, while lower certificates remain post-training diagnostics. Altogether, the proposed framework provides rigorous and practically computable error certificates for PINN approximations of ODEs, while making explicit the domains and model classes for which the assumptions can be verified. ",
+        "authors": {
+          "total": 3,
+          "data": [
+            {
+              "display_name": "Ismail T. Huseynov",
+              "full_slug": null
+            },
+            {
+              "display_name": "Arzu Ahmadova",
+              "full_slug": null
+            },
+            {
+              "display_name": "Agamirza E. Bashirov",
+              "full_slug": null
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "fulltext_url": "pdf/reliable-error-estimation-for-pinns-lower-and-upper-a-9n9iaias239i.pdf",
+        "fulltext_url_no_follow": false,
+        "paper_urls": {
+          "order": [
+            "Pdf"
+          ],
+          "data": {
+            "Pdf": [
+              "https://arxiv.org/pdf/2606.12050"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": null
+          }
+        },
+        "tldr": null,
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 3159820639,
+        "title": "Error Estimation and Adaptivity for Differential Equations with Multiple Scales in Time",
+        "is_archived": false,
+        "full_slug": "error-estimation-and-adaptivity-for-differential-equations-4tqnpu60cb",
+        "journal": {
+          "display_name": "Computational methods in applied mathematics",
+          "official_page": "http://www.degruyter.com/view/j/cmam",
+          "issn": "1609-4840",
+          "alias": [
+            "Computational methods in applied mathematics (Print)",
+            "Computational methods in applied mathematics (Online)"
+          ],
+          "id": 2765013998,
+          "slug": "computational-methods-in-applied-mathematics",
+          "unique_id": "3tdeo73t",
+          "full_slug": "computational-methods-in-applied-mathematics-3tdeo73t"
+        },
+        "conference_series": null,
+        "date": "2021-10-01T00:00:00Z",
+        "is_oa": true,
+        "publication_type": "Journal Article",
+        "doi": "10.1515/CMAM-2021-0030",
+        "unique_id": "4tqnpu60cb",
+        "abstract": "We consider systems of ordinary differential equations with multiple scales in time. In general, we are interested in the long time horizon of a slow variable that is coupled to solution components that act on a fast scale. Although being an essential part of the coupled problem these fast variables are often of no interest themselves. But, they are essential for the dynamics of the coupled problem. Recently we have proposed a temporal multiscale method that fits into the framework of the heterogeneous multiscale method and that allows for efficient simulations with significant speedups. Fast and slow scales are decoupled by introducing local averages and by replacing fast scale contributions by localized periodic-in-time problems. Here, we derive an a posteriori error estimator based on the dual weighted residual method that allows for a splitting of the error into averaging error, error on the slow scale and error on the fast scale. We demonstrate the accuracy of the error estimator and also its use for adaptive control of a numerical multiscale scheme.",
+        "authors": {
+          "total": 2,
+          "data": [
+            {
+              "display_name": "Leopold Lautsch",
+              "id": 3034960970,
+              "slug": "leopold-lautsch",
+              "unique_id": "4x7slqouoo",
+              "full_slug": "leopold-lautsch-4x7slqouoo",
+              "affiliation_full_slug": "otto-von-guericke-university-magdeburg-19sjqfzc"
+            },
+            {
+              "display_name": "Thomas Richter",
+              "id": 2295908812,
+              "slug": "thomas-richter",
+              "unique_id": "394vk89r5f",
+              "full_slug": "thomas-richter-394vk89r5f",
+              "affiliation_full_slug": "otto-von-guericke-university-magdeburg-19sjqfzc"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "Otto-von-Guericke University Magdeburg",
+              "city": "Magdeburg",
+              "region": null,
+              "country": "Germany",
+              "id": 95793202,
+              "slug": "otto-von-guericke-university-magdeburg",
+              "unique_id": "19sjqfzc",
+              "full_slug": "otto-von-guericke-university-magdeburg-19sjqfzc"
+            }
+          ]
+        },
+        "fulltext_url": null,
+        "fulltext_url_no_follow": true,
+        "paper_urls": {
+          "order": [
+            "Html",
+            "Others"
+          ],
+          "data": {
+            "Html": [
+              "https://dblp.uni-trier.de/db/journals/corr/corr2006.html#abs-2006-05420",
+              "https://www.degruyter.com/document/doi/10.1515/cmam-2021-0030/html"
+            ],
+            "Others": [
+              "https://dblp.uni-trier.de/db/journals/cmam/cmam21.html#LautschR21"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": null
+          }
+        },
+        "tldr": "In this paper, a posteriori error estimator based on the dual weighted residual method that allows for a splitting of the error into averaging error, error on the slow scale and error on a fast scale is presented.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      }
+    ]
+  },
+  "isError": false
+}

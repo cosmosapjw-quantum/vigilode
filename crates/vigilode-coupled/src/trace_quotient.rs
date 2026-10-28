@@ -234,6 +234,45 @@ fn all_moments<V: Value>(a: V, b: V, work: &mut TraceWork) -> CoreResult<[V; 7]>
     ])
 }
 
+// A polynomial request only needs the moments in its live coefficient support.
+// In particular S3=-3 and S5=-10a do not depend on a^2 or a^3. Keep this
+// request-specific circuit separate from the full-moment and field APIs.
+fn supported_moments(
+    a: Interval,
+    b: Interval,
+    live: &[bool; 7],
+    work: &mut TraceWork,
+) -> CoreResult<[Interval; 7]> {
+    let mut moments = [Interval::constant(0.0); 7];
+    moments[0] = Interval::constant(4.0);
+    moments[3] = Interval::constant(-3.0);
+    if live[2] || live[4] || live[5] || live[6] {
+        charge(&mut work.moment_batches)?;
+    }
+    if live[2] {
+        moments[2] = a.times(Interval::constant(4.0), work)?;
+    }
+    if live[5] {
+        moments[5] = a.times(Interval::constant(-10.0), work)?;
+    }
+    if live[4] || live[6] {
+        let a2 = a.times(a, work)?;
+        if live[4] {
+            moments[4] = a2.plus(b, work)?.times(Interval::constant(4.0), work)?;
+        }
+        if live[6] {
+            let a3 = a2.times(a, work)?;
+            let ab = a.times(b, work)?;
+            let four_a3 = a3.times(Interval::constant(4.0), work)?;
+            let twelve_ab = ab.times(Interval::constant(12.0), work)?;
+            moments[6] = four_a3
+                .plus(twelve_ab, work)?
+                .plus(Interval::constant(3.0), work)?;
+        }
+    }
+    Ok(moments)
+}
+
 fn field<V: Value>(a: V, b: V, route: TraceFieldRoute, work: &mut TraceWork) -> CoreResult<[V; 2]> {
     match route {
         TraceFieldRoute::DirectMoments => {
@@ -326,6 +365,10 @@ pub fn quartic_invariant(
 /// Coefficients are real enclosures, including any exact-rational conversion
 /// allowance. An empty coefficient slice is the zero polynomial. This fixed
 /// surface has no general compiler, root filter or implicit degree fallback.
+/// Every coefficient is validated before exact-zero support is removed. Only
+/// live moments are evaluated; the identically zero first moment needs no
+/// arithmetic. A moment batch is charged when a parameter-dependent moment
+/// is constructed, not for the fixed constants S0=4 and S3=-3.
 pub fn quartic_polynomial_trace(
     semantics: TraceSemantics,
     parameters: QuarticParameters,
@@ -342,21 +385,22 @@ pub fn quartic_polynomial_trace(
         for coefficient in coefficients {
             Interval::new(coefficient.lo, coefficient.hi)?;
         }
-        if coefficients.is_empty() {
-            return Ok(Interval::constant(0.0));
+        let mut live = [false; 7];
+        for (k, coefficient) in coefficients.iter().enumerate() {
+            live[k] = k != 1 && (coefficient.lo != 0.0 || coefficient.hi != 0.0);
         }
-        if coefficients.len() <= 2 {
-            // Tr(1)=4 and Tr(q1)=0, including multiple roots. Avoid computing
-            // unused high moments that can overflow for a finite constant trace.
-            return coefficients[0].times(Interval::constant(4.0), work);
+        let moments = supported_moments(parameters.a, parameters.b, &live, work)?;
+        let mut result: Option<Interval> = None;
+        for (k, &coefficient) in coefficients.iter().enumerate() {
+            if live[k] {
+                let term = coefficient.times(moments[k], work)?;
+                result = Some(match result {
+                    Some(sum) => sum.plus(term, work)?,
+                    None => term,
+                });
+            }
         }
-        let moments = all_moments(parameters.a, parameters.b, work)?;
-        let mut result = Interval::constant(0.0);
-        for (&coefficient, &moment) in coefficients.iter().zip(&moments) {
-            let term = coefficient.times(moment, work)?;
-            result = result.plus(term, work)?;
-        }
-        Ok(result)
+        Ok(result.unwrap_or_else(|| Interval::constant(0.0)))
     })
 }
 
@@ -576,6 +620,134 @@ mod tests {
         ];
         assert!(quartic_polynomial_trace(ALL, parameters, &malformed, &mut work).is_err());
         assert_eq!(work.requests_rejected, 1);
+    }
+
+    #[test]
+    fn live_support_matches_exact_companion_traces_for_every_support_mask() {
+        // All values in this small dyadic oracle sum are exactly representable.
+        // It includes the triple root and a double real root plus conjugate pair.
+        for (aq, bq) in [(2, 3), (3, 3), (-1, -1), (8, 8)] {
+            let parameters = QuarticParameters::point(aq as f64 / 4.0, bq as f64 / 4.0).unwrap();
+            let moments = exact_companion_moments(aq, bq);
+            for mask in 0_u16..128 {
+                let coefficients = std::array::from_fn::<_, 7, _>(|k| {
+                    let value = if mask & (1 << k) == 0 {
+                        0.0
+                    } else {
+                        let sign = if k % 2 == 0 { 1.0 } else { -1.0 };
+                        sign * (k as f64 + 1.0) / 4.0
+                    };
+                    Interval::point(value).unwrap()
+                });
+                let expected = coefficients
+                    .iter()
+                    .zip(moments)
+                    .map(|(coefficient, moment)| coefficient.lo * moment)
+                    .sum::<f64>();
+                let mut work = TraceWork::default();
+                let actual =
+                    quartic_polynomial_trace(ALL, parameters, &coefficients, &mut work).unwrap();
+                assert!(
+                    actual.contains(expected),
+                    "mask={mask}, ({aq},{bq}): {actual:?}"
+                );
+                assert_eq!(work.requests_attempted, 1);
+                assert_eq!(work.requests_completed, 1);
+                assert_eq!(work.root_enumerations, 0);
+            }
+        }
+        let triple = QuarticParameters::point(0.75, 0.75).unwrap();
+        let coefficients = [0.0, 0.0, 0.0, 1.0].map(|v| Interval::point(v).unwrap());
+        let mut work = TraceWork::default();
+        let value = quartic_polynomial_trace(ALL, triple, &coefficients, &mut work).unwrap();
+        assert_eq!(value.as_pair(), [-3.0, -3.0]);
+        assert!(!value.contains(-13.0 / 4.0)); // Distinct-root cubic sum changes the target.
+        assert_eq!(work.moment_batches, 0);
+    }
+
+    #[test]
+    fn finite_sparse_low_moments_do_not_compute_unused_powers() {
+        let large = 2.0_f64.powi(600);
+        let square_base = 2.0_f64.powi(400);
+        for (degree, a, b, exact) in [
+            (2, large, f64::MAX, 4.0 * large),
+            (3, f64::MAX, f64::MAX, -3.0),
+            (4, square_base, 0.0, 2.0_f64.powi(802)),
+            (5, large, f64::MAX, -10.0 * large),
+        ] {
+            let parameters = QuarticParameters::point(a, b).unwrap();
+            let mut coefficients = [Interval::constant(0.0); 7];
+            coefficients[degree] = Interval::constant(1.0);
+            let mut work = TraceWork::default();
+            let value =
+                quartic_polynomial_trace(ALL, parameters, &coefficients, &mut work).unwrap();
+            assert!(value.contains(exact), "degree {degree}: {value:?}");
+            assert_eq!(work.requests_completed, 1);
+            assert!(work.interval_multiplications <= 3);
+        }
+        let parameters = QuarticParameters::point(f64::MAX, f64::MAX).unwrap();
+        let mut coefficients = [Interval::constant(-0.0); 7];
+        coefficients[0] = Interval::constant(1.0);
+        coefficients[1] = Interval::constant(f64::MAX);
+        let mut work = TraceWork::default();
+        let value = quartic_polynomial_trace(ALL, parameters, &coefficients, &mut work).unwrap();
+        assert_eq!(value.as_pair(), [4.0, 4.0]);
+        assert_eq!(work.moment_batches, 0);
+        assert_eq!(work.interval_multiplications, 1);
+        assert_eq!(work.interval_additions, 0);
+    }
+
+    #[test]
+    fn support_liveness_preserves_interval_uncertainty_and_validates_dead_coefficients() {
+        let parameters = QuarticParameters::point(0.75, 0.75).unwrap();
+        let mut coefficients = [Interval::constant(0.0); 7];
+        coefficients[2] = Interval::new(-1.0, 1.0).unwrap();
+        let mut work = TraceWork::default();
+        let value = quartic_polynomial_trace(ALL, parameters, &coefficients, &mut work).unwrap();
+        assert!(value.contains(-3.0) && value.contains(3.0));
+        assert_eq!(work.interval_multiplications, 2);
+        for (index, malformed) in [
+            (
+                1,
+                Interval {
+                    lo: f64::NAN,
+                    hi: 0.0,
+                },
+            ),
+            (6, Interval { lo: 1.0, hi: -1.0 }),
+            (
+                6,
+                Interval {
+                    lo: 0.0,
+                    hi: f64::INFINITY,
+                },
+            ),
+        ] {
+            coefficients[index] = malformed;
+            let mut rejected = TraceWork::default();
+            assert!(
+                quartic_polynomial_trace(ALL, parameters, &coefficients, &mut rejected).is_err()
+            );
+            assert_eq!(rejected.requests_rejected, 1);
+            assert_eq!(rejected.moment_batches, 0);
+            assert_eq!(rejected.interval_multiplications, 0);
+            coefficients[index] = Interval::constant(0.0);
+        }
+    }
+
+    #[test]
+    fn required_sixth_moment_overflow_is_rejected_and_charged() {
+        let parameters = QuarticParameters::point(f64::MAX, 0.0).unwrap();
+        let mut coefficients = [Interval::constant(0.0); 7];
+        coefficients[6] = Interval::constant(1.0);
+        let mut work = TraceWork::default();
+        assert!(quartic_polynomial_trace(ALL, parameters, &coefficients, &mut work).is_err());
+        assert_eq!(work.requests_attempted, 1);
+        assert_eq!(work.requests_rejected, 1);
+        assert_eq!(work.requests_completed, 0);
+        assert_eq!(work.polynomial_queries, 1);
+        assert_eq!(work.moment_batches, 1);
+        assert!(work.interval_multiplications > 0);
     }
 
     #[test]

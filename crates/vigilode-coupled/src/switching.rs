@@ -213,8 +213,9 @@ pub struct CausalSwitchReceipt {
     pub reference_state_distance: Option<f64>,
     pub reference_model_epoch: Option<u64>,
     pub current_model_epoch: Option<u64>,
-    /// Maximum state coordinates inspected/copied by prepare, charged even
-    /// when the physical attempt is rejected. Neither is a callback count.
+    /// State coordinates inspected/copied by prepare, charged even when the
+    /// physical attempt is rejected. Reference promotion transfers ownership
+    /// and copies no coordinates. Neither is a callback count.
     pub reference_state_coordinates_inspected: usize,
     pub reference_state_coordinates_copied: usize,
     pub candidate_work_units: Option<f64>,
@@ -394,11 +395,11 @@ impl SwitchState {
             self.baseline_h = self.pending_h;
             self.baseline_epoch = Some(self.pending_epoch);
             if self.policy.reference_guard.is_some() {
-                self.baseline_state.clear();
-                self.baseline_state.extend_from_slice(&self.pending_state);
-                self.coordinates_copied = self
-                    .coordinates_copied
-                    .saturating_add(self.pending_state.len());
+                // prepare owns the exact accepted-start snapshot. Move that
+                // buffer into the reference; the old reference is scratch that
+                // the next prepare clears before reading. This preserves the
+                // guarded routing word without a second coordinate copy.
+                std::mem::swap(&mut self.baseline_state, &mut self.pending_state);
             }
         }
         let decision;
@@ -820,5 +821,399 @@ mod tests {
         ] {
             assert!(CausalWorkWeights::from_measured_serial_means(bad).is_err());
         }
+    }
+
+    /// Frozen 87465835 observe implementation: a native historical comparator.
+    /// prepare/skip are shared because this patch leaves them unchanged.
+    struct LegacySwitchState(SwitchState);
+    impl LegacySwitchState {
+        fn observe(&mut self, r: &CoupledTrajectoryAttempt) -> CausalSwitchReceipt {
+            let phase = if self.0.calibration {
+                "calibration"
+            } else if self.0.cooldown > 0 {
+                "cooldown"
+            } else if self.0.reentry {
+                "reentry-probe"
+            } else {
+                "candidate"
+            };
+            let reference = self.0.baseline;
+            if r.accepted {
+                self.0.accepted_clock = self.0.accepted_clock.saturating_add(1);
+            }
+            let candidate = self.0.policy.weights.candidate_score(r);
+            let protected = self.0.policy.weights.protected_score(r);
+            // Only successful protected endpoints update the moving cost estimate.
+            // Saturating/overflowed scores trigger conservative selection below.
+            if r.accepted && r.fallback_attempted && protected.is_finite() && protected > 0.0 {
+                self.0.baseline = Some(
+                    match (self.0.baseline, self.0.policy.reference_guard.is_some()) {
+                        (Some(old), false) => 0.75 * old + 0.25 * protected,
+                        _ => protected,
+                    },
+                );
+                self.0.baseline_clock = self.0.accepted_clock;
+                self.0.baseline_h = self.0.pending_h;
+                self.0.baseline_epoch = Some(self.0.pending_epoch);
+                if self.0.policy.reference_guard.is_some() {
+                    self.0.baseline_state.clear();
+                    self.0
+                        .baseline_state
+                        .extend_from_slice(&self.0.pending_state);
+                    self.0.coordinates_copied = self
+                        .0
+                        .coordinates_copied
+                        .saturating_add(self.0.pending_state.len());
+                }
+            }
+            let decision;
+            let mut cooldown_rule = "not-updated";
+            let mut cooldown_limited_by_maximum = false;
+            let mut predicted_exploration_overhead = None;
+            if r.terminal_failure.is_some() && !r.retryable_failure {
+                decision = "terminal-failure";
+            } else if r.candidate_skipped {
+                if r.accepted {
+                    if self.0.calibration {
+                        self.0.calibration = false;
+                    } else {
+                        self.0.cooldown = self.0.cooldown.saturating_sub(1);
+                    }
+                }
+                decision = if r.accepted {
+                    "protected-accepted"
+                } else {
+                    "protected-retry"
+                };
+            } else if r.fallback_attempted {
+                self.0.decline();
+                cooldown_rule = "exponential";
+                // Prefer a successful same-attempt protected score. For a rejected
+                // physical step, use the last successful reference, not incomplete
+                // failed GMRES work. No answer/reference error enters this decision.
+                let cadence_reference = if r.accepted && protected.is_finite() && protected > 0.0 {
+                    Some(protected)
+                } else {
+                    reference.filter(|p| p.is_finite() && *p > 0.0)
+                };
+                if let (Some(epsilon), Some(p)) = (
+                    self.0.policy.exploration_overhead_fraction,
+                    cadence_reference,
+                ) {
+                    if candidate.is_finite() {
+                        let relative = candidate / p;
+                        let required = (relative / epsilon).ceil() - 1.0;
+                        let desired = required.max(1.0);
+                        cooldown_limited_by_maximum =
+                            !desired.is_finite() || desired > self.0.policy.max_cooldown as f64;
+                        self.0.cooldown = if cooldown_limited_by_maximum {
+                            self.0.policy.max_cooldown
+                        } else {
+                            desired as usize
+                        };
+                        cooldown_rule = "priced-failed-exploration";
+                        let predicted = relative / (self.0.cooldown as f64 + 1.0);
+                        predicted_exploration_overhead = predicted.is_finite().then_some(predicted);
+                    }
+                }
+                decision = "candidate-declined-cooldown";
+            } else if !r.accepted {
+                // An embedded local-error rejection is corrected by h adaptation;
+                // it is not evidence that another solver avoids truncation error.
+                decision = "local-error-retry-same-route";
+            } else {
+                let ratio = if self.0.reentry {
+                    self.0.policy.reentry_ratio
+                } else {
+                    self.0.policy.retain_ratio
+                };
+                let economical = candidate.is_finite()
+                    && self.0.baseline.is_some_and(|b| candidate <= ratio * b);
+                if economical {
+                    self.0.reentry = false;
+                    self.0.next_cooldown = self.0.policy.initial_cooldown;
+                    decision = "candidate-retained";
+                } else {
+                    self.0.decline();
+                    cooldown_rule = "exponential-valid-candidate-cost";
+                    decision = "work-proxy-cooldown";
+                }
+            }
+            CausalSwitchReceipt {
+                phase,
+                candidate: self.0.policy.candidate,
+                protected_work_reference: reference,
+                reference_status: self.0.reference_status,
+                reference_age_accepted_steps: self.0.reference_age,
+                reference_step_ratio: self.0.reference_step_ratio,
+                reference_state_distance: self.0.reference_state_distance,
+                reference_model_epoch: self.0.reference_epoch,
+                current_model_epoch: self.0.pending_epoch,
+                reference_state_coordinates_inspected: self.0.coordinates_inspected,
+                reference_state_coordinates_copied: self.0.coordinates_copied,
+                candidate_work_units: candidate.is_finite().then_some(candidate),
+                protected_work_units: protected.is_finite().then_some(protected),
+                work_scores_finite: candidate.is_finite() && protected.is_finite(),
+                cooldown_rule,
+                cooldown_limited_by_maximum,
+                predicted_exploration_overhead,
+                decision,
+                accepted_protected_steps_until_probe: self.0.cooldown,
+            }
+        }
+    }
+
+    fn bits(values: &[f64]) -> Vec<u64> {
+        values.iter().map(|x| x.to_bits()).collect()
+    }
+
+    #[test]
+    fn guarded_symbolic_words_preserve_legacy_routing_and_snapshot_bits() {
+        let policy = CausalSwitchPolicy {
+            initial_cooldown: 1,
+            max_cooldown: 4,
+            reference_guard: Some(CausalReferenceGuard {
+                max_step_ratio: 2.0,
+                state_absolute_scale: 0.25,
+                state_relative_scale: 0.0,
+                max_accepted_age: 3,
+            }),
+            ..Default::default()
+        };
+        // Six outcome symbols, all words of length five. Guard perturbations
+        // are applied in a second pass; terminal symbols end the legal word.
+        for perturbed in [false, true] {
+            for encoded in 0_u32..6_u32.pow(5) {
+                let mut current = SwitchState::new(&policy);
+                let mut legacy = LegacySwitchState(SwitchState::new(&policy));
+                let mut word = encoded;
+                let mut epoch = 0;
+                for depth in 0..5 {
+                    let symbol = word % 6;
+                    word /= 6;
+                    if perturbed && symbol == 2 {
+                        epoch += 1;
+                    }
+                    let dimension = if perturbed && symbol == 4 { 7 } else { 2 };
+                    let h = if perturbed && symbol == 3 { 0.8 } else { 0.1 };
+                    let mut y = vec![0.0; dimension];
+                    y[0] = if depth % 2 == 0 { -0.0 } else { 0.0 };
+                    y[1] = if perturbed && symbol == 1 { 2.0 } else { 0.125 };
+                    current.prepare(h, &y, Some(epoch));
+                    legacy.0.prepare(h, &y, Some(epoch));
+                    assert_eq!(current.skip(), legacy.0.skip());
+                    assert_eq!(bits(&current.pending_state), bits(&legacy.0.pending_state));
+                    let skipped = current.skip();
+                    let accepted = matches!(symbol, 0 | 2 | 4);
+                    let fallback = skipped || matches!(symbol, 2..=5);
+                    let mut input = record(
+                        skipped,
+                        fallback,
+                        accepted,
+                        if skipped { 0 } else { 20 },
+                        if fallback { 100 } else { 0 },
+                    );
+                    if symbol == 5 {
+                        input.terminal_failure = Some(crate::Failure::new(
+                            crate::FailureKind::Callback,
+                            "symbolic-word terminal input",
+                        ));
+                    } else if !accepted && fallback {
+                        input.retryable_failure = true;
+                    }
+                    let got = current.observe(&input);
+                    let expected = legacy.observe(&input);
+                    assert_eq!(got.reference_state_coordinates_copied, dimension);
+                    assert_eq!(
+                        expected.reference_state_coordinates_copied,
+                        dimension * if accepted && fallback { 2 } else { 1 }
+                    );
+                    let mut got_json = serde_json::to_value(&got).unwrap();
+                    let mut expected_json = serde_json::to_value(&expected).unwrap();
+                    got_json
+                        .as_object_mut()
+                        .unwrap()
+                        .remove("reference_state_coordinates_copied");
+                    expected_json
+                        .as_object_mut()
+                        .unwrap()
+                        .remove("reference_state_coordinates_copied");
+                    assert_eq!(got_json, expected_json, "word={encoded}, depth={depth}");
+                    assert_eq!(
+                        bits(&current.baseline_state),
+                        bits(&legacy.0.baseline_state)
+                    );
+                    assert_eq!(current.skip(), legacy.0.skip());
+                    if symbol == 5 {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn promoted_snapshot_survives_scratch_reuse_and_rejected_attempts() {
+        let policy = CausalSwitchPolicy {
+            reference_guard: Some(CausalReferenceGuard::default()),
+            ..Default::default()
+        };
+        let mut state = SwitchState::new(&policy);
+        state.prepare(0.1, &[-0.0, 0.125], Some(7));
+        let first = state.observe(&record(true, true, true, 0, 100));
+        assert_eq!(first.reference_state_coordinates_copied, 2);
+        assert_eq!(bits(&state.baseline_state), bits(&[-0.0, 0.125]));
+        let saved = bits(&state.baseline_state);
+        state.prepare(0.1, &[0.0, 0.125], Some(7));
+        state.observe(&record(false, false, false, 20, 0));
+        assert_eq!(bits(&state.baseline_state), saved);
+        state.prepare(0.1, &[0.0, 0.125], Some(7));
+        state.observe(&record(false, false, true, 20, 0));
+        assert_eq!(bits(&state.baseline_state), saved);
+        state.prepare(0.1, &[0.0, 0.125], Some(8));
+        assert!(state.skip());
+        state.observe(&record(true, true, false, 0, 100));
+        assert!(state.baseline.is_none());
+        state.prepare(0.1, &[-0.0, 0.125, 0.25], Some(8));
+        let grown = state.observe(&record(true, true, true, 0, 100));
+        assert_eq!(grown.reference_state_coordinates_copied, 3);
+        assert_eq!(bits(&state.baseline_state), bits(&[-0.0, 0.125, 0.25]));
+    }
+
+    #[test]
+    #[ignore = "registered native paired benchmark; set VIGILODE_SWITCH_BENCH_OUT"]
+    fn benchmark_snapshot_transfer_against_legacy() {
+        use std::{hint::black_box, time::Instant};
+        fn run(
+            dimension: usize,
+            iterations: usize,
+            scenario: &str,
+            legacy: bool,
+        ) -> serde_json::Value {
+            let policy = CausalSwitchPolicy {
+                reference_guard: (scenario != "unguarded_protected").then(|| {
+                    CausalReferenceGuard {
+                        max_accepted_age: usize::MAX,
+                        ..Default::default()
+                    }
+                }),
+                ..Default::default()
+            };
+            let y = vec![0.125; dimension];
+            let begin = Instant::now();
+            // Both allocations of the reference buffers occur inside timing.
+            let mut current = SwitchState::new(&policy);
+            let mut historical = LegacySwitchState(SwitchState::new(&policy));
+            let mut copied = 0_u64;
+            let mut inspected = 0_u64;
+            let mut protected_updates = 0_u64;
+            let mut decisions = Vec::with_capacity(iterations);
+            for index in 0..iterations {
+                let state = if legacy {
+                    &mut historical.0
+                } else {
+                    &mut current
+                };
+                state.prepare(0.1, black_box(&y), Some(1));
+                let skipped = state.skip();
+                let fallback = scenario != "candidate_only" || index == 0;
+                let input = record(
+                    skipped,
+                    fallback,
+                    true,
+                    if skipped { 0 } else { 20 },
+                    if fallback { 100 } else { 0 },
+                );
+                let output = if legacy {
+                    historical.observe(&input)
+                } else {
+                    current.observe(&input)
+                };
+                copied += output.reference_state_coordinates_copied as u64;
+                inspected += output.reference_state_coordinates_inspected as u64;
+                protected_updates += u64::from(fallback);
+                decisions.push((
+                    output.phase,
+                    output.decision,
+                    output.accepted_protected_steps_until_probe,
+                ));
+                black_box(&output);
+            }
+            let elapsed = begin.elapsed().as_secs_f64();
+            let state = if legacy { &historical.0 } else { &current };
+            serde_json::json!({
+                "seconds": elapsed,
+                "copied_coordinates": copied,
+                "inspected_coordinates": inspected,
+                "protected_updates": protected_updates,
+                "final_snapshot_bits": bits(&state.baseline_state),
+                "routing_word": decisions,
+            })
+        }
+        let mut rows = Vec::new();
+        let mut rng = 0x51a7_2026_1028_u64;
+        for (dimension, iterations) in [(2, 10000), (32, 5000), (4096, 256), (65536, 32)] {
+            for scenario in ["guarded_protected", "candidate_only", "unguarded_protected"] {
+                // One preregistered warmup per arm/case, excluded from rows.
+                // Each measured arm still starts from empty owned buffers.
+                black_box(run(dimension, iterations, scenario, true));
+                black_box(run(dimension, iterations, scenario, false));
+                for block in 0..7 {
+                    rng = rng.wrapping_mul(6364136223846793005).wrapping_add(1);
+                    let legacy_first = (rng >> 32) & 1 == 0;
+                    let (mut old, mut new) = if legacy_first {
+                        let old = run(dimension, iterations, scenario, true);
+                        (old, run(dimension, iterations, scenario, false))
+                    } else {
+                        let new = run(dimension, iterations, scenario, false);
+                        (run(dimension, iterations, scenario, true), new)
+                    };
+                    assert_eq!(old["routing_word"], new["routing_word"]);
+                    assert_eq!(old["final_snapshot_bits"], new["final_snapshot_bits"]);
+                    assert_eq!(old["inspected_coordinates"], new["inspected_coordinates"]);
+                    let saved = if scenario == "unguarded_protected" {
+                        0
+                    } else {
+                        dimension as u64 * new["protected_updates"].as_u64().unwrap()
+                    };
+                    assert_eq!(
+                        old["copied_coordinates"].as_u64().unwrap()
+                            - new["copied_coordinates"].as_u64().unwrap(),
+                        saved
+                    );
+                    // Full words are checked in memory; raw timing/count rows
+                    // retain sizes and parity without megabytes of repeated words.
+                    for result in [&mut old, &mut new] {
+                        result.as_object_mut().unwrap().remove("routing_word");
+                        result
+                            .as_object_mut()
+                            .unwrap()
+                            .remove("final_snapshot_bits");
+                    }
+                    rows.push(serde_json::json!({
+                        "dimension": dimension, "iterations": iterations,
+                        "scenario": scenario, "block": block,
+                        "order": if legacy_first { "legacy,new" } else { "new,legacy" },
+                        "legacy": old, "new": new,
+                        "saved_coordinate_copies": saved,
+                        "routing_and_snapshot_bit_parity": true
+                    }));
+                }
+            }
+        }
+        let output = std::env::var("VIGILODE_SWITCH_BENCH_OUT")
+            .expect("explicit benchmark output path required");
+        let file = std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(output)
+            .unwrap();
+        serde_json::to_writer_pretty(file, &serde_json::json!({
+            "scope": "SwitchState prepare plus observe with synthetic work receipts and no RHS/ODE solve, includes buffer allocation; not an end-to-end solver speedup",
+            "baseline": "87465835d9d21298d235917f036580b0b53ab645 switching.rs::observe",
+            "blocks": 7, "order_seed": "0x51a720261028",
+            "warmup_per_arm_per_case": 1, "total_warmup_runs": 24,
+            "rows": rows
+        })).unwrap();
     }
 }
