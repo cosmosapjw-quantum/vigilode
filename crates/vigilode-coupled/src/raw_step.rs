@@ -108,10 +108,10 @@ pub fn conditional_l2_error_estimate(
     let mut stage_l2 = [0.0; 8];
     for i in 0..8 {
         let mut rhs = residual_l2[i] + assumptions.residual_roundoff_l2;
-        for j in 0..i {
+        for (j, previous_stage_l2) in stage_l2.iter().take(i).enumerate() {
             let coupling = (c.gamma * c.c_matrix[(i, j)]).abs()
                 + (h * c.gamma).abs() * assumptions.rhs_lipschitz_bound * c.a[(i, j)].abs();
-            rhs += coupling * stage_l2[j];
+            rhs += coupling * *previous_stage_l2;
         }
         stage_l2[i] = assumptions.inverse_norm_bound * rhs;
         if !stage_l2[i].is_finite() {
@@ -626,10 +626,10 @@ fn validate_raw(
         work.stage_tasks_scheduled += 1;
         let mut state = y.to_vec();
         let mut mix = vec![0.0; y.len()];
-        for j in 0..i {
+        for (j, previous_stage) in u.iter().take(i).enumerate() {
             for k in 0..y.len() {
-                state[k] += c.a[(i, j)] * u[j][k];
-                mix[k] += c.c_matrix[(i, j)] * u[j][k];
+                state[k] += c.a[(i, j)] * previous_stage[k];
+                mix[k] += c.c_matrix[(i, j)] * previous_stage[k];
             }
         }
         finite(&state)?;

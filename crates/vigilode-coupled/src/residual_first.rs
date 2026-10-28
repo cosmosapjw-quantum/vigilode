@@ -148,12 +148,12 @@ fn derivative(
     for (_, result) in results {
         values.push(result?);
     }
-    for i in 0..S {
+    for (i, value) in values.iter().enumerate().take(S) {
         for u in 0..m {
             for j in 0..i {
                 for v in 0..m {
                     snapshot.affine[(i * m + u, j * m + v)] -=
-                        lambda * f.hg * f.c.a[(i, j)] * values[i][(u, v)];
+                        lambda * f.hg * f.c.a[(i, j)] * value[(u, v)];
                 }
             }
         }

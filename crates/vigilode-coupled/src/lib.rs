@@ -17,6 +17,7 @@ pub mod rhs_homotopy;
 pub mod structural_mean_field;
 pub mod cyclic_closure;
 pub mod trace_quotient;
+pub mod trace_certificate;
 pub use adaptive::{
     COUPLED_ADAPTIVE_DRIVER_ID, CoupledIntegrationResult, CoupledTrajectoryAttempt,
     integrate_causal_observed, integrate_coupled_observed, integrate_sequential_raw_observed,

@@ -300,41 +300,41 @@ impl SwitchState {
         if self.baseline.is_some() && self.baseline_epoch.is_some_and(|old| old != epoch) {
             status = "model-epoch-changed";
             invalidate = true;
-        } else if self.baseline.is_some() {
-            if let Some(g) = &self.policy.reference_guard {
-                status = "local-reference-admitted";
-                let ratio = self.baseline_h.map(|old| (h / old).max(old / h));
-                self.reference_step_ratio = ratio.filter(|x| x.is_finite());
-                if ratio.is_none_or(|x| !x.is_finite() || x > g.max_step_ratio) {
-                    status = "step-ratio-changed";
-                    invalidate = true;
-                } else if self
-                    .reference_age
-                    .is_some_and(|age| age >= g.max_accepted_age)
-                {
-                    status = "reference-age-expired";
-                    invalidate = true;
-                } else if self.baseline_state.len() != y.len() {
-                    status = "state-dimension-changed";
-                    invalidate = true;
-                } else {
-                    let mut distance = 0.0_f64;
-                    for (&now, &old) in y.iter().zip(&self.baseline_state) {
-                        self.coordinates_inspected += 1;
-                        let scale = g.state_absolute_scale
-                            + g.state_relative_scale * now.abs().max(old.abs());
-                        let delta = (now - old).abs() / scale;
-                        if !scale.is_finite() || !delta.is_finite() {
-                            distance = f64::INFINITY;
-                            break;
-                        }
-                        distance = distance.max(delta);
+        } else if self.baseline.is_some()
+            && let Some(g) = &self.policy.reference_guard
+        {
+            status = "local-reference-admitted";
+            let ratio = self.baseline_h.map(|old| (h / old).max(old / h));
+            self.reference_step_ratio = ratio.filter(|x| x.is_finite());
+            if ratio.is_none_or(|x| !x.is_finite() || x > g.max_step_ratio) {
+                status = "step-ratio-changed";
+                invalidate = true;
+            } else if self
+                .reference_age
+                .is_some_and(|age| age >= g.max_accepted_age)
+            {
+                status = "reference-age-expired";
+                invalidate = true;
+            } else if self.baseline_state.len() != y.len() {
+                status = "state-dimension-changed";
+                invalidate = true;
+            } else {
+                let mut distance = 0.0_f64;
+                for (&now, &old) in y.iter().zip(&self.baseline_state) {
+                    self.coordinates_inspected += 1;
+                    let scale =
+                        g.state_absolute_scale + g.state_relative_scale * now.abs().max(old.abs());
+                    let delta = (now - old).abs() / scale;
+                    if !scale.is_finite() || !delta.is_finite() {
+                        distance = f64::INFINITY;
+                        break;
                     }
-                    self.reference_state_distance = distance.is_finite().then_some(distance);
-                    if !distance.is_finite() || distance > 1.0 {
-                        status = "state-displacement-changed";
-                        invalidate = true;
-                    }
+                    distance = distance.max(delta);
+                }
+                self.reference_state_distance = distance.is_finite().then_some(distance);
+                if !distance.is_finite() || distance > 1.0 {
+                    status = "state-displacement-changed";
+                    invalidate = true;
                 }
             }
         }
@@ -434,22 +434,21 @@ impl SwitchState {
             };
             if let (Some(epsilon), Some(p)) =
                 (self.policy.exploration_overhead_fraction, cadence_reference)
+                && candidate.is_finite()
             {
-                if candidate.is_finite() {
-                    let relative = candidate / p;
-                    let required = (relative / epsilon).ceil() - 1.0;
-                    let desired = required.max(1.0);
-                    cooldown_limited_by_maximum =
-                        !desired.is_finite() || desired > self.policy.max_cooldown as f64;
-                    self.cooldown = if cooldown_limited_by_maximum {
-                        self.policy.max_cooldown
-                    } else {
-                        desired as usize
-                    };
-                    cooldown_rule = "priced-failed-exploration";
-                    let predicted = relative / (self.cooldown as f64 + 1.0);
-                    predicted_exploration_overhead = predicted.is_finite().then_some(predicted);
-                }
+                let relative = candidate / p;
+                let required = (relative / epsilon).ceil() - 1.0;
+                let desired = required.max(1.0);
+                cooldown_limited_by_maximum =
+                    !desired.is_finite() || desired > self.policy.max_cooldown as f64;
+                self.cooldown = if cooldown_limited_by_maximum {
+                    self.policy.max_cooldown
+                } else {
+                    desired as usize
+                };
+                cooldown_rule = "priced-failed-exploration";
+                let predicted = relative / (self.cooldown as f64 + 1.0);
+                predicted_exploration_overhead = predicted.is_finite().then_some(predicted);
             }
             decision = "candidate-declined-cooldown";
         } else if !r.accepted {

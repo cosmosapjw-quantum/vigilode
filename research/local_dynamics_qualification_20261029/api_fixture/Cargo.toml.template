@@ -1,0 +1,17 @@
+[package]
+name = "vigilode-api-compat-consumer"
+version = "0.0.0"
+edition = "2024"
+
+[dependencies]
+vigilode = { path = "__VIGILODE_PATH__" }
+
+[workspace]
+
+[[bin]]
+name = "legacy-config-literal"
+path = "legacy_config_literal.rs"
+
+[[bin]]
+name = "legacy-exhaustive-evidence-match"
+path = "legacy_exhaustive_evidence_match.rs"

@@ -202,7 +202,7 @@ pub(crate) fn small_solve(a: &DenseMatrix, b: &[f64], work: &mut Work) -> Result
     finite(a.as_slice())?;
     finite(b)?;
     let n = b.len();
-    if n == 0 || n % STAGES != 0 || a.nrows() != n || a.ncols() != n {
+    if n == 0 || !n.is_multiple_of(STAGES) || a.nrows() != n || a.ncols() != n {
         return Err(Failure::new(
             FailureKind::Input,
             "projected solve requires a square eight-block system",

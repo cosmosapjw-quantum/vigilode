@@ -254,9 +254,9 @@ impl MeanFieldAffine {
             let mut transfer = [0.0; S];
             for i in 0..S {
                 let mut rhs = hg;
-                for j in 0..i {
-                    rhs +=
-                        (c.gamma * c.c_matrix[(i, j)] - shifted_rate * c.a[(i, j)]) * transfer[j];
+                for (j, previous_transfer) in transfer.iter().take(i).enumerate() {
+                    rhs += (c.gamma * c.c_matrix[(i, j)] - shifted_rate * c.a[(i, j)])
+                        * *previous_transfer;
                 }
                 transfer[i] = rhs / denominator;
             }
@@ -287,6 +287,9 @@ impl MeanFieldAffine {
     }
 
     /// Sequential reference with partial work on every returned failure.
+    // Keep the full charged failure inline; boxing changes the error payload and
+    // introduces allocation on the failure path.
+    #[allow(clippy::result_large_err)]
     pub fn sequential_step_charged(
         &self,
         y: &[f64],
@@ -311,10 +314,10 @@ impl MeanFieldAffine {
             for i in 0..S {
                 let mut state = y.to_vec();
                 let mut mix = vec![0.0; n];
-                for j in 0..i {
+                for (j, previous_stage) in stages.iter().take(i).enumerate() {
                     for k in 0..n {
-                        state[k] += c.a[(i, j)] * stages[j][k];
-                        mix[k] += c.c_matrix[(i, j)] * stages[j][k];
+                        state[k] += c.a[(i, j)] * previous_stage[k];
+                        mix[k] += c.c_matrix[(i, j)] * previous_stage[k];
                     }
                     work.full_state_causal_accumulations += (2 * n) as u64;
                 }
@@ -353,9 +356,9 @@ impl MeanFieldAffine {
             let mut residual_components = 0_u64;
             let result = (|| {
                 let mut state = y.to_vec();
-                for j in 0..i {
+                for (j, previous_stage) in stages.iter().take(i).enumerate() {
                     for k in 0..n {
-                        state[k] += c.a[(i, j)] * stages[j][k];
+                        state[k] += c.a[(i, j)] * previous_stage[k];
                     }
                 }
                 let mut fy = vec![0.0; n];
@@ -366,8 +369,8 @@ impl MeanFieldAffine {
                 for k in 0..n {
                     mixed_components += 1;
                     let mut mix = 0.0;
-                    for j in 0..i {
-                        mix += c.c_matrix[(i, j)] * stages[j][k];
+                    for (j, previous_stage) in stages.iter().take(i).enumerate() {
+                        mix += c.c_matrix[(i, j)] * previous_stage[k];
                     }
                     let ju = -self.decay * stages[i][k] + shared_u;
                     if !ju.is_finite() {
@@ -430,9 +433,9 @@ impl MeanFieldAffine {
 fn endpoint(y: &[f64], stages: &[Vec<f64>]) -> CoreResult<(Vec<f64>, Vec<f64>)> {
     let c = rodas5p_coefficients()?;
     let mut y_new = y.to_vec();
-    for i in 0..S {
+    for (i, stage) in stages.iter().enumerate().take(S) {
         for k in 0..y.len() {
-            y_new[k] += c.b_code[i] * stages[i][k];
+            y_new[k] += c.b_code[i] * stage[k];
         }
     }
     finite(&y_new)?;
@@ -481,8 +484,8 @@ impl MeanFieldPlan {
             let mut w = [0.0; S];
             for j in (0..S).rev() {
                 let mut rhs = c.b_code[j];
-                for i in (j + 1)..S {
-                    rhs -= (hr * c.a[(i, j)] - c.gamma * c.c_matrix[(i, j)]) * w[i];
+                for (i, weight) in w.iter().enumerate().take(S).skip(j + 1) {
+                    rhs -= (hr * c.a[(i, j)] - c.gamma * c.c_matrix[(i, j)]) * *weight;
                 }
                 w[j] = rhs / denominator;
             }
@@ -551,6 +554,9 @@ impl MeanFieldPlan {
     }
 
     /// Quotient step with all scheduled work retained on both success/failure.
+    // Keep the charged StructuralFailure payload inline; it carries the exact
+    // partial work record together with the original error.
+    #[allow(clippy::result_large_err)]
     pub fn step_charged(
         &self,
         model: &MeanFieldAffine,
@@ -737,11 +743,11 @@ impl MeanFieldPlan {
             let mut residual = [0.0; S];
             for i in 0..S {
                 let mut value = point(1.0)?.add(hr)?.mul(point(t[i])?)?.sub(hg)?;
-                for j in 0..i {
+                for (j, t_j) in t.iter().take(i).enumerate() {
                     let lower = hr
                         .mul(point(c.a[(i, j)])?)?
                         .sub(gamma.mul(point(c.c_matrix[(i, j)])?)?)?;
-                    value = value.add(lower.mul(point(t[j])?)?)?;
+                    value = value.add(lower.mul(point(*t_j)?)?)?;
                 }
                 residual[i] = value.mag();
             }
@@ -760,10 +766,10 @@ impl MeanFieldPlan {
         };
         for i in 0..S {
             let mut lifting = point(self.transverse[i])?;
-            for j in 0..i {
+            for (j, weight) in lift_defect_weights[i].iter_mut().take(i).enumerate() {
                 lifting = lifting.add(point(c.a[(i, j)])?.mul(point(self.transverse[j])?)?)?;
                 let common = gamma.mul(point(c.c_matrix[(i, j)])?)?;
-                lift_defect_weights[i][j] = row_norm(
+                *weight = row_norm(
                     hdt.mul(point(c.a[(i, j)])?)?.sub(common)?,
                     hdc.mul(point(c.a[(i, j)])?)?.sub(common)?,
                 )?;
@@ -782,17 +788,17 @@ impl MeanFieldPlan {
             let underflow_radius = f64::from_bits(1);
             for i in 0..S {
                 scalar_residual_factor[i] = collective_residual[i];
-                for j in 0..=i {
+                for (j, weight) in lift_defect_weights[i].iter().take(i + 1).enumerate() {
                     scalar_residual_factor[i] = directed::add_up(
                         scalar_residual_factor[i],
                         directed::mul_up(
-                            lift_defect_weights[i][j],
+                            *weight,
                             directed::mul_up(UNIT_ROUNDOFF, self.collective[j].abs())?,
                         )?,
                     )?;
                     scalar_underflow_offset[i] = directed::add_up(
                         scalar_underflow_offset[i],
-                        directed::mul_up(lift_defect_weights[i][j], underflow_radius)?,
+                        directed::mul_up(*weight, underflow_radius)?,
                     )?;
                 }
             }
@@ -884,6 +890,8 @@ impl MeanFieldEnclosurePlan {
     /// unsafe floating-point reassociation. The library uses no fast-math flags.
     /// This is a stage certificate; physical time truncation and endpoint
     /// addition errors remain separate contributions.
+    // Keep the full charged failure inline to retain its work counters and error.
+    #[allow(clippy::result_large_err)]
     pub fn step(
         &self,
         model: &MeanFieldAffine,
@@ -962,20 +970,22 @@ impl MeanFieldEnclosurePlan {
             }
             let rhs_defect = directed::mul_up(self.hg_upper, rhs_error)?;
             let mut stage_residual_upper_bounds = [0.0; S];
-            for i in 0..S {
+            for (i, stage_residual_upper_bound) in
+                stage_residual_upper_bounds.iter_mut().enumerate().take(S)
+            {
                 let mut bound = directed::sum_up([
                     directed::mul_up(self.transverse_residual[i], difference_bound)?,
                     directed::mul_up(self.collective_residual[i], mu.abs())?,
                     directed::mul_up(self.mean_defect_coefficient[i], mean_error)?,
                     rhs_defect,
                 ])?;
-                for j in 0..=i {
+                for (j, lift_error) in lift_errors.iter().take(i + 1).enumerate() {
                     bound = directed::add_up(
                         bound,
-                        directed::mul_up(self.lift_defect_weights[i][j], lift_errors[j])?,
+                        directed::mul_up(self.lift_defect_weights[i][j], *lift_error)?,
                     )?;
                 }
-                stage_residual_upper_bounds[i] = bound;
+                *stage_residual_upper_bound = bound;
                 work.factorized_residual_stages += 1;
                 work.original_space_residual_components += self.dimension as u64;
             }

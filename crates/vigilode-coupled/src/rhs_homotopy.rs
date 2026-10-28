@@ -303,75 +303,66 @@ fn run<M: RhsOnlyMap + ?Sized>(
             // Do not spend a speculative map call after the Picard root passes.
             if selected.norm > cfg.residual_l2_tolerance
                 && cfg.acceleration != RhsAcceleration::Picard
+                && let Some(old) = &previous
             {
-                if let Some(old) = &previous {
-                    let slow = current.norm >= cfg.min_residual_ratio * old.norm;
-                    let exact_dominance = cfg.acceleration == RhsAcceleration::ResidualDominance;
-                    if exact_dominance
-                        || (rejected < cfg.max_rejected_trials_per_lambda
-                            && (cfg.acceleration == RhsAcceleration::Screened || slow))
-                    {
-                        // Normalize both vectors before forming dot products.
-                        // This prevents overflow/underflow from squaring their
-                        // common absolute residual scale.
-                        let scale = current
-                            .residual
-                            .iter()
-                            .chain(&old.residual)
-                            .fold(0.0_f64, |s, &v| s.max(v.abs()));
-                        let mut numerator = 0.0;
-                        let mut denominator = 0.0;
-                        if scale > 0.0 {
-                            for (&r, &r_old) in current.residual.iter().zip(&old.residual) {
-                                let dr = r / scale - r_old / scale;
-                                numerator += (r / scale) * dr;
-                                denominator += dr * dr;
-                            }
+                let slow = current.norm >= cfg.min_residual_ratio * old.norm;
+                let exact_dominance = cfg.acceleration == RhsAcceleration::ResidualDominance;
+                if exact_dominance
+                    || (rejected < cfg.max_rejected_trials_per_lambda
+                        && (cfg.acceleration == RhsAcceleration::Screened || slow))
+                {
+                    // Normalize both vectors before forming dot products.
+                    // This prevents overflow/underflow from squaring their
+                    // common absolute residual scale.
+                    let scale = current
+                        .residual
+                        .iter()
+                        .chain(&old.residual)
+                        .fold(0.0_f64, |s, &v| s.max(v.abs()));
+                    let mut numerator = 0.0;
+                    let mut denominator = 0.0;
+                    if scale > 0.0 {
+                        for (&r, &r_old) in current.residual.iter().zip(&old.residual) {
+                            let dr = r / scale - r_old / scale;
+                            numerator += (r / scale) * dr;
+                            denominator += dr * dr;
                         }
-                        out.work.residual_dot_passes += 1;
-                        let gamma = numerator / denominator;
-                        if gamma.is_finite()
-                            && (exact_dominance || gamma.abs() <= cfg.max_coefficient)
-                        {
-                            let trial: Vec<_> = current
-                                .mapped
-                                .iter()
-                                .zip(&old.mapped)
-                                .map(|(g, g_old)| g - gamma * (g - g_old))
-                                .collect();
-                            if trial.iter().all(|v| v.is_finite()) && map.admits(&trial) {
-                                out.work.extrapolation_trials += 1;
-                                let extrapolated = evaluate(
-                                    map,
-                                    anchor,
-                                    trial,
-                                    lambda,
-                                    epoch,
-                                    cfg,
-                                    &mut out.work,
-                                )?;
-                                let limit = if exact_dominance {
-                                    selected.norm
-                                } else {
-                                    cfg.improvement_factor * selected.norm
-                                };
-                                if extrapolated.norm <= limit {
-                                    selected = extrapolated;
-                                    out.work.extrapolations_accepted += 1;
-                                } else {
-                                    rejected += 1;
-                                    out.work.extrapolations_rejected += 1;
-                                }
+                    }
+                    out.work.residual_dot_passes += 1;
+                    let gamma = numerator / denominator;
+                    if gamma.is_finite() && (exact_dominance || gamma.abs() <= cfg.max_coefficient)
+                    {
+                        let trial: Vec<_> = current
+                            .mapped
+                            .iter()
+                            .zip(&old.mapped)
+                            .map(|(g, g_old)| g - gamma * (g - g_old))
+                            .collect();
+                        if trial.iter().all(|v| v.is_finite()) && map.admits(&trial) {
+                            out.work.extrapolation_trials += 1;
+                            let extrapolated =
+                                evaluate(map, anchor, trial, lambda, epoch, cfg, &mut out.work)?;
+                            let limit = if exact_dominance {
+                                selected.norm
+                            } else {
+                                cfg.improvement_factor * selected.norm
+                            };
+                            if extrapolated.norm <= limit {
+                                selected = extrapolated;
+                                out.work.extrapolations_accepted += 1;
                             } else {
                                 rejected += 1;
-                                out.work.domain_skipped_trials += 1;
+                                out.work.extrapolations_rejected += 1;
                             }
                         } else {
-                            out.work.coefficient_skips += 1;
+                            rejected += 1;
+                            out.work.domain_skipped_trials += 1;
                         }
                     } else {
-                        out.work.policy_skips += 1;
+                        out.work.coefficient_skips += 1;
                     }
+                } else {
+                    out.work.policy_skips += 1;
                 }
             }
             previous = Some(current);
@@ -654,43 +645,43 @@ fn cubic_scalar_stage(
     let mut rejected = 0usize;
     while current.norm > map.plan.stage_residual_target {
         let mut selected = cubic_scalar_value(map, seed, current.mapped, out)?;
-        if selected.norm > map.plan.stage_residual_target && acceleration != RhsAcceleration::Picard
+        if selected.norm > map.plan.stage_residual_target
+            && acceleration != RhsAcceleration::Picard
+            && let Some(old) = previous
         {
-            if let Some(old) = previous {
-                let exact = acceleration == RhsAcceleration::ResidualDominance;
-                // Legacy heuristic modes retain their existing defaults.
-                if exact
-                    || (rejected < 2
-                        && (acceleration == RhsAcceleration::Screened
-                            || current.norm >= 0.5 * old.norm))
-                {
-                    let scale = current.residual.abs().max(old.residual.abs());
-                    let (mut numerator, mut denominator) = (0.0, 0.0);
-                    if scale > 0.0 {
-                        let dr = current.residual / scale - old.residual / scale;
-                        numerator += (current.residual / scale) * dr;
-                        denominator += dr * dr;
-                    }
-                    let gamma = numerator / denominator;
-                    if gamma.is_finite() && (exact || gamma.abs() <= 1024.0) {
-                        let trial = current.mapped - gamma * (current.mapped - old.mapped);
-                        if trial.is_finite() && map.admits(&[trial]) {
-                            out.extrapolation_trials += 1;
-                            let extrapolated = cubic_scalar_value(map, seed, trial, out)?;
-                            let limit = if exact {
-                                selected.norm
-                            } else {
-                                0.9 * selected.norm
-                            };
-                            if extrapolated.norm <= limit {
-                                selected = extrapolated;
-                                out.extrapolations_accepted += 1;
-                            } else {
-                                rejected += 1;
-                            }
+            let exact = acceleration == RhsAcceleration::ResidualDominance;
+            // Legacy heuristic modes retain their existing defaults.
+            if exact
+                || (rejected < 2
+                    && (acceleration == RhsAcceleration::Screened
+                        || current.norm >= 0.5 * old.norm))
+            {
+                let scale = current.residual.abs().max(old.residual.abs());
+                let (mut numerator, mut denominator) = (0.0, 0.0);
+                if scale > 0.0 {
+                    let dr = current.residual / scale - old.residual / scale;
+                    numerator += (current.residual / scale) * dr;
+                    denominator += dr * dr;
+                }
+                let gamma = numerator / denominator;
+                if gamma.is_finite() && (exact || gamma.abs() <= 1024.0) {
+                    let trial = current.mapped - gamma * (current.mapped - old.mapped);
+                    if trial.is_finite() && map.admits(&[trial]) {
+                        out.extrapolation_trials += 1;
+                        let extrapolated = cubic_scalar_value(map, seed, trial, out)?;
+                        let limit = if exact {
+                            selected.norm
+                        } else {
+                            0.9 * selected.norm
+                        };
+                        if extrapolated.norm <= limit {
+                            selected = extrapolated;
+                            out.extrapolations_accepted += 1;
                         } else {
                             rejected += 1;
                         }
+                    } else {
+                        rejected += 1;
                     }
                 }
             }

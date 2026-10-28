@@ -321,9 +321,9 @@ fn full_check(
     let n = f.y.len();
     let u: Vec<_> = (0..S).map(|i| basis.lift(&z[i * m..(i + 1) * m])).collect();
     let mut ynew = f.y.to_vec();
-    for i in 0..S {
+    for (i, stage) in u.iter().enumerate().take(S) {
         for k in 0..n {
-            ynew[k] += f.c.b_code[i] * u[i][k];
+            ynew[k] += f.c.b_code[i] * stage[k];
         }
     }
     finite(&ynew)?;
@@ -354,10 +354,10 @@ fn full_check(
             let result = (|| -> Result<Vec<f64>> {
                 let mut state = f.y.to_vec();
                 let mut mix = vec![0.0; n];
-                for j in 0..i {
+                for (j, previous_stage) in u.iter().take(i).enumerate() {
                     for k in 0..n {
-                        state[k] += f.c.a[(i, j)] * u[j][k];
-                        mix[k] += f.c.c_matrix[(i, j)] * u[j][k];
+                        state[k] += f.c.a[(i, j)] * previous_stage[k];
+                        mix[k] += f.c.c_matrix[(i, j)] * previous_stage[k];
                     }
                 }
                 let fy = callback_rhs(f, &state, &mut local)?;
@@ -525,6 +525,8 @@ fn validate(p: &OdeProblem, t: f64, y: &[f64], h: f64, c: &Config, work: &mut Wo
     }
     Ok(())
 }
+// Keep the explicit step context at this crate-private numerical boundary.
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn run(
     p: &OdeProblem,
     t: f64,

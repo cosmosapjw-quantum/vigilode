@@ -358,6 +358,8 @@ fn interval_lift(
     Ok((full, denominator))
 }
 
+// Preserve the recurrence's written operation tree and operand order.
+#[allow(clippy::assign_op_pattern)]
 fn lifted_rhs(model: &CyclicModel, state: &[f64], work: &mut CyclicWork) -> CoreResult<Vec<f64>> {
     work.candidate_rhs_evaluations += 1;
     model.validate_state(state)?;

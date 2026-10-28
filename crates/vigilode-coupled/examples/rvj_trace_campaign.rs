@@ -6,6 +6,7 @@ use rodas5p_core::{CoreError, CoreResult, directed};
 use serde::Serialize;
 use serde_json::{Value, json};
 use std::{hint::black_box, time::Instant};
+use vigilode_coupled::trace_certificate::{TraceNode, certify_trace_path};
 use vigilode_coupled::trace_quotient::{
     QuarticInvariant, QuarticParameters, TRACE_TARGET_ID, TraceFieldRoute, TraceSemantics,
     TraceWork, quartic_field, quartic_field_enclosure, quartic_invariant, quartic_moments,
@@ -319,7 +320,20 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Ok(states) => {
                     let (maximum, terminal) = node_error(&states);
                     let point_certificate = node_field_enclosures(&states, route);
+                    let certificate_start = Instant::now();
+                    let certificate_nodes: Vec<TraceNode> = states
+                        .iter()
+                        .map(|node| TraceNode {
+                            t: node.t,
+                            state: node.state,
+                        })
+                        .collect();
+                    let path_certificate = certify_trace_path(slabs, &certificate_nodes);
+                    let certificate_seconds = certificate_start.elapsed().as_secs_f64();
                     if point_certificate["status"] != "completed" {
+                        all_completed = false;
+                    }
+                    if path_certificate.status != "completed" {
                         all_completed = false;
                     }
                     if slabs == TIMING_SLABS && route == TraceFieldRoute::DirectMoments {
@@ -333,7 +347,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                         "forcing_route": "direct_moments for both state routes",
                         "work": work, "integration_seconds": integration_seconds,
                         "node_field_enclosure": point_certificate,
-                        "whole_path_certified_natively": false,
+                        "whole_path_certified_natively": path_certificate.status == "completed",
+                        "native_path_certificate": path_certificate,
+                        "native_certificate_seconds": certificate_seconds,
+                        "native_integration_plus_certificate_seconds": integration_seconds + certificate_seconds,
                     }));
                 }
                 Err(error) => {
@@ -360,8 +377,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         "grid": SLABS,
         "clock": "t=-1+2*k/N; exact dyadic nodes/midpoints on registered grids",
         "reference": "p(t)=3/4+t/8+t^5/64; exact node reference on registered dyadic grids",
-        "native_certificate_scope": "point or parameter-box all-root observable/aggregate field only",
-        "whole_path_scope": "separate independent exact-rational Hermite/Bernstein oracle on the exported native state bits",
+        "native_certificate_scope": "fixed manufactured F6 exact-original-slope Hermite path; original controlled F residual on every complete slab, outward Bernstein/domain/T19 bounds",
+        "whole_path_scope": "native outward whole-slab certificate plus separate independent exact-rational oracle on the exported native state bits",
         "production_solver_admission": false,
         "interval_cases": cases, "semantics_checks": semantics, "runs": runs,
         "diagnostic_preparation_seconds": preparation_seconds,
