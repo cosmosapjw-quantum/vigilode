@@ -89,3 +89,7 @@ n=2 guarded case는 중앙값 회귀이고, n=4096/65536의 범위도1을 가로
 다음 핵심 구현은 native trace whole-path certificate다. 이미 확보된 contraction 식에 original-field residual, domain tube와 rounding을 연결해야 한다. Q-API, prior Givens CI/profile, negative-cost evidence,10 interaction, full release/features/vendor, SUNDIALS/MPI와 실제 physical client gate도 남아 있다. F5 global count와 selected singular branch는 이 trace 최적화로 해결되지 않는다.
 
 복사 가능한 다음 지시는 [LOCAL_CODEX_HANDOFF_KO.md](LOCAL_CODEX_HANDOFF_KO.md)에 있다. 실행/원자료/분석/검토 provenance는 RESULTS.json, SOURCE_BINDING.json, evidence/RAW_MANIFEST.json, reviews/와 MANIFEST.json에 연결했다.
+
+## 게시 후 품질 검사
+
+PR98 게시 후 source03ee868에서 coupled all-targets strict Clippy를 실행했고26개 기존 diagnostic site로 exit101을 얻었다. 각 지적 행이 PR97 source에 이미 있음을 원본 행 매핑으로 확인했다. 라이브러리 lint 실패로 전체 test/example lint 완료는 아직 확인되지 않았다. 기존 production workflow의 facade/core lint와 범위가 다르며, checker를 완화하거나 수치 코드를 추가 변경하지 않았다. Q-LINT의 coupled 범위는 OPEN이다. `CURRENT_STATE.json`과 `POST_PUBLICATION_CHECKS.json`을 기존 RESULTS와 함께 읽는다.

@@ -46,7 +46,7 @@ merge되지 않았다. 현재 main이 ancestor면 그대로 진행하고, 실제
 
 ## 읽을 자료
 
-이번 node `research/dynamics_symbolic_validation_20261028/`의 REPORT_KO.md,
+이번 node `research/dynamics_symbolic_validation_20261028/`의 CURRENT_STATE.json, POST_PUBLICATION_CHECKS.json, REPORT_KO.md,
 RESULTS.json, PRESERVATION.json, WORKFLOW.json, MANIFEST.json,
 THEORY_ADMISSION.md, theory/{DYNAMICS,ATTACHMENT}.md, reviews/CODE_REVIEW.md,
 PREREGISTRATION.md 및 evidence/를 먼저 읽는다. 실행 stdout/stderr와 exact bits는
@@ -128,6 +128,10 @@ huge input을 거절한 경우는 범위 개선으로 기록하며 speedup ratio
    의 실제 argv로 integration tests, supported features, fat-LTO release, docs,
    smoke, downstream enum/struct compatibility를 검증한다. 이번 library/scoped
    check가 full workspace/모든 지원 조합을 대체하지 않는다.
+   추가 Q-LINT: 게시 후 coupled all-targets strict Clippy가 PR97부터 존재한26개
+   diagnostic site에서 실패했다. POST_PUBLICATION_CHECKS.json의 정확한 위치를
+   검토하고 원래 산술 순서/오류 계약을 보존하는 최소 교정을 수행하라.
+   기존 facade/core CI lint와 범위를 혼동하지 않는다.
 3. **Q-LEDGER:** typed repository/object authority를 고친다. PR94 missing53,
    PR96 missing49, PR97 CI missing56, partial-clone178은 다른 source/checkout
    관측이다. 이번 full checkout은 authority56 missing, main-base node checker는 기존22노드/40건 누락으로 FAIL이며, PR97-base scoped node/ledger는180행 PASS다. 이 관측들도 별도 기록한다. 일괄 allowlist나
