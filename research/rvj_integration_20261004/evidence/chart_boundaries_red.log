@@ -1,0 +1,137 @@
+   Compiling version_check v0.9.5
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling autocfg v1.5.1
+   Compiling bytemuck v1.25.2
+   Compiling nano-gemm-codegen v0.2.1
+   Compiling libm v0.2.16
+   Compiling bitflags v2.13.1
+   Compiling paste v1.0.15
+   Compiling raw-cpuid v11.6.0
+   Compiling cfg-if v1.0.4
+   Compiling pulp-wasm-simd-flag v0.1.1
+   Compiling reborrow v0.5.5
+   Compiling pulp v0.22.3
+   Compiling dyn-stack-macros v0.1.3
+   Compiling num-traits v0.2.19
+   Compiling dyn-stack v0.13.2
+   Compiling seq-macro v0.3.6
+   Compiling once_cell v1.21.4
+   Compiling syn v1.0.109
+   Compiling generic-array v0.14.7
+   Compiling nano-gemm-core v0.2.1
+   Compiling typenum v1.20.1
+   Compiling libc v0.2.189
+   Compiling syn v2.0.119
+   Compiling syn v3.0.3
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling num-complex v0.4.6
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling defer v0.2.1
+   Compiling serde_core v1.0.229
+   Compiling crossbeam-utils v0.8.22
+   Compiling zmij v1.0.23
+   Compiling crossbeam-epoch v0.9.20
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling num_cpus v1.17.0
+   Compiling interpol v0.2.1
+   Compiling equator-macro v0.2.1
+   Compiling private-gemm-x86 v0.1.20
+   Compiling gemm-common v0.19.0
+   Compiling equator v0.2.2
+   Compiling qd v0.8.0
+   Compiling gemm-c32 v0.19.0
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling gemm-f64 v0.19.0
+   Compiling generativity v1.2.1
+   Compiling crossbeam-deque v0.8.7
+   Compiling equator-macro v0.6.0
+   Compiling serde_json v1.0.151
+   Compiling thiserror v2.0.19
+   Compiling serde v1.0.229
+   Compiling equator v0.6.0
+   Compiling gemm v0.19.0
+   Compiling faer-traits v0.24.0
+   Compiling serde_derive v1.0.229
+   Compiling thiserror-impl v2.0.19
+   Compiling digest v0.10.7
+   Compiling nano-gemm v0.2.2
+   Compiling rayon-core v1.13.0
+   Compiling memchr v2.8.3
+   Compiling cpufeatures v0.2.17
+   Compiling itoa v1.0.18
+   Compiling sha2 v0.10.9
+   Compiling faer v0.24.4
+   Compiling hex v0.4.3
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+   Compiling either v1.17.0
+   Compiling rayon v1.12.0
+   Compiling rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-krylov)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 42.27s
+     Running tests/rvj_integration_boundaries.rs (/workspace/scratch/0dc1e721cf82/runtime_integration/target/debug/deps/rvj_integration_boundaries-5f3f19fd1434d45c)
+
+running 8 tests
+test regular_chart_steps_still_reach_the_requested_output ... ok
+test chart_rejects_nonfinite_configuration_and_output_times ... FAILED
+test chart_refuses_before_advancing_at_an_unchanged_time ... FAILED
+test wrong_forward_length_is_a_dimension_error ... ok
+test malformed_target_is_an_error_not_a_panic ... FAILED
+test nan_problem_cannot_report_converged ... FAILED
+test wrong_jvp_length_is_a_dimension_error_not_a_panic ... FAILED
+test nonfinite_jvp_is_explicitly_nonfinite ... FAILED
+
+failures:
+
+---- chart_rejects_nonfinite_configuration_and_output_times stdout ----
+
+thread 'chart_rejects_nonfinite_configuration_and_output_times' (2224) panicked at crates/rodas5p-integrators/tests/rvj_integration_boundaries.rs:93:5:
+assertion failed: chart_integrate(&identity, -1.0, 0.025, 0.0, 0.25, &[], &invalid).is_err()
+
+---- chart_refuses_before_advancing_at_an_unchanged_time stdout ----
+
+thread 'chart_refuses_before_advancing_at_an_unchanged_time' (2223) panicked at crates/rodas5p-integrators/tests/rvj_integration_boundaries.rs:86:5:
+must refuse before advancing state at t + h == t
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- malformed_target_is_an_error_not_a_panic stdout ----
+
+thread 'malformed_target_is_an_error_not_a_panic' (2225) panicked at crates/rodas5p-integrators/src/stage_chart_candidate.rs:140:44:
+index out of bounds: the len is 0 but the index is 1
+
+---- nan_problem_cannot_report_converged stdout ----
+
+thread 'nan_problem_cannot_report_converged' (2226) panicked at crates/rodas5p-integrators/tests/rvj_integration_boundaries.rs:46:5:
+assertion failed: matches!(result, Err(_) |
+    Ok(rodas5p_integrators::ChartCandidate
+    { status: ChartStatus::NonFinite, .. }))
+
+---- wrong_jvp_length_is_a_dimension_error_not_a_panic stdout ----
+
+thread 'wrong_jvp_length_is_a_dimension_error_not_a_panic' (2230) panicked at crates/rodas5p-integrators/src/stage_chart_candidate.rs:126:73:
+index out of bounds: the len is 0 but the index is 0
+
+---- nonfinite_jvp_is_explicitly_nonfinite stdout ----
+
+thread 'nonfinite_jvp_is_explicitly_nonfinite' (2227) panicked at crates/rodas5p-integrators/tests/rvj_integration_boundaries.rs:72:5:
+assertion failed: matches!(result, Err(rodas5p_core::CoreError::NonFinite(_)) |
+    Ok(rodas5p_integrators::ChartCandidate
+    { status: ChartStatus::NonFinite, .. }))
+
+
+failures:
+    chart_refuses_before_advancing_at_an_unchanged_time
+    chart_rejects_nonfinite_configuration_and_output_times
+    malformed_target_is_an_error_not_a_panic
+    nan_problem_cannot_report_converged
+    nonfinite_jvp_is_explicitly_nonfinite
+    wrong_jvp_length_is_a_dimension_error_not_a_panic
+
+test result: FAILED. 2 passed; 6 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test rvj_integration_boundaries`

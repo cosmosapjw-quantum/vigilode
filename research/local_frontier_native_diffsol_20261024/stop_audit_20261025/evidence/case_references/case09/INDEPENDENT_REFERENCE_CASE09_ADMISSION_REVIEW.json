@@ -1,0 +1,217 @@
+{
+  "actual_solver_launches_by_reviewer": 0,
+  "broad_scientific_admission": "HOLD",
+  "certified_error_bound": false,
+  "checks": {
+    "RHS_equations_match_frozen_Rust_model": true,
+    "RHS_scaled_probe_limit": 2.842170943040401e-14,
+    "all_four_levels_success_at_t_end": true,
+    "allocation_scope": "Warmed standalone primal RHS callback only; whole-solver, automatic-differentiation and integration allocations are not certified.",
+    "descriptor_embedded_value_equality": true,
+    "descriptor_source_and_evidence_hashes_verified": true,
+    "empirical_uncertainty": 1.4022220040654787e-06,
+    "empirical_uncertainty_limit": 1e-05,
+    "empirical_uncertainty_rule": "max(1e-12, 10 times largest pairwise infinity difference)",
+    "full_finite_vectors_dimension": 512,
+    "independently_recomputed_RHS_max_scaled_residuals": [
+      1.8894982552892182e-16,
+      2.1956244967748533e-16,
+      2.195624496775825e-16
+    ],
+    "initial_energy": 131.8551206886616,
+    "invariants_scope": "Diagnostic energy and momentum values; Tsit5 energy drift decreases with tighter tolerance. No new invariant acceptance threshold or trajectory certificate is asserted.",
+    "pairwise_infinity_differences_independently_recomputed": {
+      "tsit5_coarse__rodas5p_tight": 1.2816621830502584e-07,
+      "tsit5_coarse__tsit5_middle": 1.4022220040654787e-07,
+      "tsit5_coarse__tsit5_tight": 1.314893940396189e-07,
+      "tsit5_middle__rodas5p_tight": 1.327537779705068e-08,
+      "tsit5_middle__tsit5_tight": 8.73297412162799e-09,
+      "tsit5_tight__rodas5p_tight": 4.5425100347884495e-09
+    },
+    "recomputed_endpoint_invariant_diagnostics": [
+      {
+        "absolute_energy_drift": 0.00019053912461686195,
+        "energy": 131.85493014953698,
+        "label": "tsit5_coarse",
+        "relative_energy_drift": 1.4450642767736413e-06,
+        "total_momentum": 1.8318679906315083e-14
+      },
+      {
+        "absolute_energy_drift": 2.150526503896799e-05,
+        "energy": 131.85509918339656,
+        "label": "tsit5_middle",
+        "relative_energy_drift": 1.6309768575273284e-07,
+        "total_momentum": -1.509903313490213e-13
+      },
+      {
+        "absolute_energy_drift": 2.334181544938474e-06,
+        "energy": 131.85511835448006,
+        "label": "tsit5_tight",
+        "relative_energy_drift": 1.7702623400193764e-08,
+        "total_momentum": 1.8252066524837574e-13
+      },
+      {
+        "absolute_energy_drift": 1.2688417427852983e-08,
+        "energy": 131.85512067597318,
+        "label": "rodas5p_tight",
+        "relative_energy_drift": 9.62299936595794e-11,
+        "total_momentum": 1.887379141862766e-13
+      }
+    ],
+    "reference_state_is_tsit5_tight": true,
+    "rhs_callback_zero_allocation_samples": 10,
+    "tsit5_successive_endpoint_differences_decrease": true,
+    "verified_bound_files_count": 29
+  },
+  "claim_ceiling": "Admit only this hash-bound full 512-component empirical endpoint reference for the exact frozen standard case 9 periodic FPUT IVP at t=1. U is a heuristic inter-solver/refinement spread, not a certified bound. No trajectory, physical continuum, timing superiority or production claim.",
+  "conditions": [
+    "Use the exact admitted reference/descriptor/evidence hashes and preserve the additive empirical U in endpoint comparison.",
+    "Any subsequent candidate endpoint accuracy assessment must independently satisfy the frozen max-component-absolute threshold with U added; no old task status is retroactively promoted by this reference admission.",
+    "Preserve original case 9 setup failure and its conservative charge, successful raw outputs, and all cumulative costs."
+  ],
+  "control": {
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/01_case9/reference_output/PROBE_CONTROL.json",
+    "sha256": "0ac559cba45397e9fba268f5af796c6e0d79c1da36b78fa40682ab299f655fb1"
+  },
+  "cost": {
+    "accounting_note": "Snapshot through completed case 9 retry; later separately approved case 11 events may append. No accounting reset or fixture subtraction.",
+    "case9_terminal_event": {
+      "attempt_id": "independent-julia-reference-a20309d36acd47e886a790604ab37f9c",
+      "category": "julia",
+      "charge_basis": "whole_serial_controller_wall_including_preflight",
+      "charged_seconds": 221.58432687004097,
+      "event_id": "independent-julia-reference-a20309d36acd47e886a790604ab37f9c-terminal",
+      "evidence_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/CAMPAIGN_SUMMARY.json",
+      "evidence_sha256": "7593301728c9d5766e1d4917337085d20dbf53bef036223874e527e1b157f84a",
+      "exact_duration_known": true,
+      "observed_utc": "2026-10-25T10:50:50.163062+00:00",
+      "phase": "TERMINAL",
+      "prev_event_sha256": "d89504c21db3653d4ad20f4262412efc6b079fad8e958c6ed143408eef1ae156",
+      "schema": "vigilode.local-continuation-cost-event.v1"
+    },
+    "charged_or_conservatively_reserved_total_after_case9_seconds": 3222.5229949189306,
+    "events_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/COST_EVENTS.jsonl",
+    "global_cap_seconds": 172800,
+    "hard_deadline_utc": "2026-10-27T08:07:00Z",
+    "preserved_first_setup_failure_charge_seconds": 10,
+    "recursive_synthetic_fixture_seconds_included": 236,
+    "reviewed_prefix_event_count": 181,
+    "reviewed_prefix_sha256": "dcd0012b09b5136cd07d16260d6e3049f0c3dada13338c512fe25e8bdf371d79"
+  },
+  "decision": "PASS_SCOPED_ADMITTED_REFERENCE",
+  "descriptor": {
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/describe_contracts/case09_standard.stdout",
+    "sha256": "a3bd78505e8dd32bd5ecdf0b8a434748fb20e8db2446bdbdf4ef2f422a075b43"
+  },
+  "dimension": 512,
+  "evidence": {
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/01_case9/reference_output/REFERENCE_EVIDENCE.json",
+    "sha256": "c4251470ae71bd924815844b2feb20451a51c12f48e2b6c1932b7aedf853e0c2"
+  },
+  "execution": {
+    "actual_cpu_affinity": [
+      0
+    ],
+    "child_elapsed_seconds": 214.82352041290142,
+    "configured_threads": 1,
+    "controller_gate": "PASS_PROCESS",
+    "exit_code": 0,
+    "pgid": 2670302,
+    "process_group_absent_at_review": true,
+    "source_or_input_mutation": false,
+    "status": "COMPLETED",
+    "whole_campaign_summary_seconds": 221.5712215588428
+  },
+  "findings": [],
+  "frozen_launch_core_sha256": "a0233a86ef181ae8d782b75ca5699ab6a7c4d0e8f2c6e3bb11005fce4836b4b6",
+  "historical_task_status_promotion": "NONE",
+  "launch_approval": {
+    "bytes": 7085,
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/INDEPENDENT_REFERENCE_CASE09_RETRY_APPROVAL_20261025T1046.json",
+    "sha256": "89152f1e715eb701776f3c3949a111bdc832965e1aa7bf18fc7dcad9aa867819"
+  },
+  "level_artifacts": [
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/01_case9/reference_output/tsit5_coarse.json",
+      "sha256": "4772a7365ba9c7e1971086da372867251836829be751704e78efbb2ec607ec0b"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/01_case9/reference_output/tsit5_middle.json",
+      "sha256": "8ad474f2e0a6ce3c835fa89dc5d428424da102ce693a72bde907030624db08fa"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/01_case9/reference_output/tsit5_tight.json",
+      "sha256": "93183ab8fb98d70e62e482963ddff19596c15f7b2a6c51532766d0c6c9725b09"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/01_case9/reference_output/rodas5p_tight.json",
+      "sha256": "05baf12ee4c907f75cb3111035c91e73e87bb43f0102a6a90b1c9c1a0f4f32d3"
+    }
+  ],
+  "model_id": "vigilode.local-bottleneck.case9.v1",
+  "observed_runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+  "preserved_first_setup_failure": {
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/CASE09_CONTROLLER_SETUP_FAILURE_20261025T1043/SETUP_FAILURE.json",
+    "sha256": "b032aeeb5465705d715db9beed548417f1f171550bc9e426f107776b1761c3a5"
+  },
+  "production_admission": "HOLD",
+  "provenance_artifacts": [
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/CAMPAIGN_START.json",
+      "sha256": "97db33f25fa788722307e7a500bfc8e7fa7211275cfadfe743cb3bf6c36b2ec0"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/CAMPAIGN_SUMMARY.json",
+      "sha256": "7593301728c9d5766e1d4917337085d20dbf53bef036223874e527e1b157f84a"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/01_case9/START.json",
+      "sha256": "b818ab4d15279d17052aea0341bb4416825b82e1dc3d0abe2f85c488c5513aab"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/01_case9/TERMINAL.json",
+      "sha256": "910402927958bb4342f279ffc4ac85872042b6c48f687a6c645194792fd15a72"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/01_case9/stdout.raw.PROCESS.json",
+      "sha256": "227538c03d869ea2886550c8e195882bf0425ef91af4f518b722d9404607058a"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/01_case9/resources.jsonl",
+      "sha256": "f467b5a8e25ff9e15c51d2f950caec7d5741b9dd9c996ccdcc62ebb88390b5cc"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/01_case9/stdout.raw",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/01_case9/stderr.raw",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "reference": {
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/01_case9/reference_output/EXTERNAL_REFERENCE.json",
+    "sha256": "23a75474da4114bb4a762d3af02e1eb866834a0da80b6f6201fa7680a9c8bac1"
+  },
+  "reference_admission": "ADMITTED_EMPIRICAL_ENDPOINT_REFERENCE",
+  "reviewed_utc": "2026-10-25T10:53:24.641728+00:00",
+  "reviewer_independent_of_implementation": true,
+  "reviewer_task": "/root/runner_gate_independent_review",
+  "schema": "vigilode.independent-reference-admission-review.v1",
+  "selected_case": 9,
+  "size": "standard",
+  "source": {
+    "head": "2a4bf90d1445b67542bdac5030b4c5d10da20445",
+    "status_porcelain": "",
+    "tree": "98a0af41837653065e5346d1dd21272474f34c52"
+  },
+  "source_script": {
+    "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/independent_julia_reference.jl",
+    "sha256": "375ab44df130a62c99f552207617fa938bda4ea12d8c65a3d32db111224f982f"
+  },
+  "t_span": [
+    0.0,
+    1.0
+  ],
+  "timing_authority": "diagnostic_only"
+}

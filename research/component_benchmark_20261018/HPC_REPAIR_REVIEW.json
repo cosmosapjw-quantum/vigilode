@@ -1,0 +1,21 @@
+{
+  "reviewer_task": "/root/component_hpc_checkpoint_review",
+  "requested_model": "gpt-6-astra",
+  "requested_effort": "ultra",
+  "observed_runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+  "verdict": "PASS_CHECKPOINT_P1_P2",
+  "reviewed_base": "5abd3cec1342adc34e5f2284e6e80fef7b648941",
+  "reviewed_file_sha256": {
+    "tools/component_benchmark/hpc.py": "568e9eb88a19335131eb8cfb27f8a562f55fba499437bf35fe2636f2855e142d",
+    "tools/component_benchmark/confirmation.py": "9604ea1db45b67a06265cdd8e3f1a4c80a3a3ebd5e4ac1649b70d78d3dbfed62"
+  },
+  "tests": "20 passed; raw first failures retained",
+  "scope": "pure source checkpoint, P1, then receipt-gated P2. P3 inference and scientific admission HOLD",
+  "conditions": [
+    "same cumulative72instance-hour ledger",
+    "sequential HPC queues",
+    "unchanged tolerance/grid",
+    "missing prerequisites HOLD without spawn",
+    "P3 resume fails closed preserving prior evidence"
+  ]
+}

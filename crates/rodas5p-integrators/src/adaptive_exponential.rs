@@ -1,12 +1,12 @@
-use rodas5p_core::{CoreError, CoreResult, WorkCounters, error_scale, safe_l2, wrms};
+use rodas5p_core::{CoreError, CoreResult, WorkCounters, error_scale, wrms};
 use serde::{Deserialize, Serialize};
 
 use crate::output::OutputCollector;
 use crate::{
     AdaptiveControllerState, AdaptiveStepConfig, EarlyFlowDefectTelemetry,
     EarlyFlowDefectTelemetryMode, FusedPhiKrylovConfig, ObservedIntegrationResult, OdeProblem,
-    OutputSchedule, ParallelExecution, pexprb54s4_fused_step_with_telemetry_mode,
-    pexprb54s4_fused_step_with_tolerance_scaled_telemetry,
+    OutputSchedule, ParallelExecution, adaptive_next_step_after_attempt,
+    exponential::pexprb54s4_fused_step_charged,
 };
 
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -90,7 +90,17 @@ fn phi_error_proxy(reports: &[crate::FusedPhiActionReport], h: f64, scale: &[f64
                 .then_some(report.error_estimate)
         })
         .sum::<f64>();
-    h.abs() * estimate / safe_l2(scale).max(f64::MIN_POSITIVE)
+    // The Krylov estimates are Euclidean. Convert them to a WRMS bound with
+    // ||e||_wrms <= ||e||_2 / (sqrt(n) min_i w_i), not by dividing by the
+    // norm of the weight vector, which understates the error by a factor up
+    // to n max w / min w (audit F-043).
+    let smallest_weight = scale
+        .iter()
+        .copied()
+        .fold(f64::INFINITY, f64::min)
+        .max(f64::MIN_POSITIVE);
+    let root_n = (scale.len().max(1) as f64).sqrt();
+    h.abs() * estimate / (root_n * smallest_weight)
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -182,23 +192,32 @@ fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
     }
     let (mut t, tf) = t_span;
     let mut y = y0.to_vec();
-    let mut h = adaptive.initial_step.min(tf - t);
-    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
+    let mut collector =
+        OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
     let mut controller = AdaptiveControllerState::default();
     let mut counters = WorkCounters::default();
     let mut diagnostics = AdaptiveFusedExponentialDiagnostics::default();
-    let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
 
-    while t < tf - tolerance && diagnostics.attempts < adaptive.max_attempts {
-        h = h.min(adaptive.max_step).min(tf - t);
-        if h < adaptive.min_step {
+    while t < tf && diagnostics.attempts < adaptive.max_attempts {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
+            break;
+        };
+        h = next_h;
+        // A final piece that lands on tf is taken even below min_step.
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf) || t + h == t {
             break;
         }
         let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
         diagnostics.attempts += 1;
+        // The trial charges a local ledger that survives a failed trial, so
+        // rejected-trial work stays in the run counters (audit F-039).
+        let mut trial_work = WorkCounters::default();
         let trial = match telemetry_request {
             AdaptiveEarlyFlowTelemetryRequest::Legacy(telemetry_mode) => {
-                pexprb54s4_fused_step_with_telemetry_mode(
+                pexprb54s4_fused_step_charged(
                     problem,
                     t,
                     &y,
@@ -206,20 +225,24 @@ fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
                     phi_config,
                     execution,
                     telemetry_mode,
+                    None,
+                    &mut trial_work,
                 )
             }
             AdaptiveEarlyFlowTelemetryRequest::ToleranceScaled {
                 norm_component_count,
-            } => pexprb54s4_fused_step_with_tolerance_scaled_telemetry(
+            } => pexprb54s4_fused_step_charged(
                 problem,
                 t,
                 &y,
                 trial_h,
                 phi_config,
                 execution,
-                norm_component_count,
-                adaptive.atol,
-                adaptive.rtol,
+                EarlyFlowDefectTelemetryMode::ReadOnly {
+                    norm_component_count,
+                },
+                Some((adaptive.atol, adaptive.rtol)),
+                &mut trial_work,
             ),
         };
         let report = match trial {
@@ -240,17 +263,29 @@ fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
                             candidate_state_finite: None,
                             maximum_krylov_dimension: None,
                             phi_substeps: None,
+                            // The telemetry row stays unscorable; the measured
+                            // work is charged to the run counters below.
                             trial_work: None,
                             failure: Some(error.to_string()),
                         });
                 }
+                counters.accumulate(trial_work);
                 diagnostics.rejected_steps += 1;
                 diagnostics.rejected_step_sizes.push(trial_h);
                 diagnostics.time_error_norms.push(f64::INFINITY);
                 diagnostics.phi_error_norms.push(f64::INFINITY);
                 diagnostics.total_error_norms.push(f64::INFINITY);
                 counters.rejected_steps += 1;
-                h = trial_h * adaptive.min_factor;
+                h = adaptive_next_step_after_attempt(
+                    &mut controller,
+                    adaptive,
+                    h,
+                    trial_h,
+                    f64::INFINITY,
+                    5,
+                    false,
+                    clipped,
+                )?;
                 continue;
             }
             Err(error) => return Err(error),
@@ -311,22 +346,28 @@ fn integrate_pexprb54s4_fused_adaptive_observed_with_telemetry_request(
             diagnostics.accepted_steps += 1;
             diagnostics.accepted_step_sizes.push(trial_h);
             counters.accepted_steps += 1;
-            controller.record_acceptance(total_error)?;
-            h = trial_h * controller.propose_factor(adaptive, total_error.max(1.0e-16), 5, true)?;
         } else {
             diagnostics.rejected_steps += 1;
             diagnostics.rejected_step_sizes.push(trial_h);
             counters.rejected_steps += 1;
-            controller.record_rejection(total_error.max(1.0e-16))?;
-            h = trial_h
-                * if total_error.is_finite() {
-                    controller.propose_factor(adaptive, total_error.max(1.0e-16), 5, false)?
-                } else {
-                    adaptive.min_factor
-                };
+        }
+        // Preserve the preceding accepted error for PI/predictive control and
+        // preserve the pre-output-clipping request. This also records rejected
+        // trials for the represented-clock strict-shrink rule.
+        if t < tf {
+            h = adaptive_next_step_after_attempt(
+                &mut controller,
+                adaptive,
+                h,
+                trial_h,
+                total_error,
+                5,
+                accepted,
+                clipped,
+            )?;
         }
     }
-    let success = t >= tf - tolerance;
+    let success = t >= tf;
     let (times, states, output_clipped_steps) = if success {
         collector.finish()?
     } else {

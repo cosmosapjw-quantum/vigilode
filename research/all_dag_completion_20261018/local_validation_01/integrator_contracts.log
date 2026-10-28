@@ -1,0 +1,139 @@
+   Compiling crossbeam-utils v0.8.22
+   Compiling crossbeam-epoch v0.9.20
+   Compiling crossbeam-deque v0.8.7
+   Compiling rayon-core v1.13.0
+   Compiling rodas5p-integrators v0.1.0 (/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators)
+   Compiling either v1.17.0
+   Compiling rodas5p-krylov v0.1.0 (/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-krylov)
+   Compiling rayon v1.12.0
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 26.49s
+     Running tests/actual_k_homotopy_contracts.rs (target/debug/deps/actual_k_homotopy_contracts-79a3b44868d28e6e)
+
+running 3 tests
+test actual_stage_budgets_and_target_are_not_relaxed ... ok
+test direct_and_continued_actual_stage_targets_have_overlapping_outputs ... ok
+test full_represented_k_retains_leakage_and_closes_common_tube ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/all_dag_a01_packet.rs (target/debug/deps/all_dag_a01_packet-b422b739bbbee414)
+
+running 2 tests
+test frozen_component_reference_is_independent_of_allocator_measurement ... {"allocation_authority":"NOT_EVALUATED","allocation_calibration_clone_allocations":null,"arms":4,"disk_checks":80,"exact_zero_residual_coefficients":1056,"input_sha256":"872e07ecd33a34878304933b648d5c064466e462219686d4cd35c42674bdd7ad","largest_epsilon40_float":5.731249241462306e-92,"largest_epsilon48_float":3.844019301161647e-110,"negative_endpoint_controls":"both rejected","orders":[40,48],"requested_times":5,"status":"PASS"}
+ok
+test frozen_weighted_owner_preserves_arithmetic_and_refusal_contract ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 64.65s
+
+     Running tests/all_dag_a05_verified.rs (target/debug/deps/all_dag_a05_verified-1ca488de4868d921)
+
+running 7 tests
+test collective_two_components_use_same_generic_verified_driver ... A05_GENERIC_COLLECTIVE accepted=30 rejected=20 provider_ops=1750
+ok
+test generic_collective_cubic_orbit_is_enclosed ... ok
+test generic_pr101_original_101_point_witness_and_continuous_inheritance ... A05_GENERIC_PR101 outputs=101 accepted=492 rejected=292 rhs=6272 dense_ops=575551 max_error=8.382183835919932e-15
+ok
+test generic_zero_span_still_validates_configuration_and_model_domain ... ok
+test interval_power_form_retains_small_variation_on_large_offset ... ok
+test one_failed_trial_exposes_only_initial_committed_output ... ok
+test unbound_point_problem_cannot_request_verified_authority ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.28s
+
+     Running tests/all_dag_a06_direct.rs (target/debug/deps/all_dag_a06_direct-51e4d57669fd506f)
+
+running 3 tests
+test exactly_singular_schur_refuses_and_invalidates_reusable_factors ... ok
+test non_neumann_inverse_covers_exact_dyadic_solutions_at_native_sizes ... ok
+test opt_in_witnesses_preserve_every_stage_and_charge_eight_interval_passes ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/all_dag_a10_bernstein.rs (target/debug/deps/all_dag_a10_bernstein-ad977c1b83e3c94e)
+
+running 4 tests
+test cheap_pass_does_no_transform_or_allocation_and_exhaustion_is_visible ... ok
+test degree_cap_and_invalid_budget_refuse_before_allocating ... ok
+test exact_binomial_family_and_complex_vector_share_outward_contract ... ok
+test unchanged_physical_gate_recovers_actual_nonlinear_packet ... Fraction Taylor disk containments: 42
+
+A10_WITNESS old_residual=2.60646648294942523e-3 refined_residual=2.60530687932307653e-3 old_radius=1.96828195665799382e-3 refined_radius=1.96740627813520768e-3 fixed_physical_budget=1.96784411739660096e-3 exact_formula_discrepancy=2.53259212144508214e-4 work={"identity_snapshot_items":137,"identity_comparison_items":135,"model_copy_items":9,"model_bounds_snapshot_items":2,"model_bounds_comparison_items":4,"output_copy_items":0,"output_value_items":46,"output_restriction_multiplies":0,"certificate_items":6254,"outward_spectral_power_terms":0,"bernstein_transform_terms":2756,"bernstein_refinement_terms":0,"bernstein_queries":2,"bernstein_cheap_accepts":0,"bernstein_budget_exhaustions":0,"bernstein_allocation_requests":4,"bernstein_reserved_items":208,"bernstein_copy_items":104,"bernstein_residual_attempts":2,"bernstein_residual_false_rejections_saved":2,"reconstruction_terms":204,"moment_terms":10,"poly_multiply_terms":210,"volterra_terms":195,"nonlinear_evaluations":2,"output_horner_terms":414,"curve_setup_allocation_requests":23,"curve_setup_reserved_items":419,"curve_setup_interval_ops":2,"curve_time_normalization_ops":69,"curve_model_revalidation_items":0,"curve_model_constructor_payload_items":8,"curve_model_constructor_arithmetic_ops":8,"curve_output_certificate_ops":1219,"curve_output_allocation_requests":3,"curve_frozen_allocation_requests":0,"curve_frozen_radius_items":1,"curve_frozen_query_attempts":23,"curve_frozen_query_refusals":0}
+ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/all_dag_a11_verified.rs (target/debug/deps/all_dag_a11_verified-3ac0cd026061ad9c)
+
+running 7 tests
+test actual_gray_scott_homogeneous_mode_requires_offdiagonal_symmetric_part ... ok
+test failed_gray_scott_trial_preserves_only_committed_prefix ... ok
+test full_symmetric_bound_charges_linear_work_in_cell_count ... A11_LOGNORM_WORK [(4, 101), (9, 221), (16, 389)]
+ok
+test fused_callbacks_preserve_stencil_values_and_interval_rhs_encloses_samples ... ok
+test gray_scott_nonlinear_nonuniform_trajectory_matches_independent_rk4 ... A11_NONLINEAR outputs=11 accepted=6 rejected=2 max_error=8.938889858629839e-15 ref_spread=9.506558148265855e-15 provider_ops=6328
+ok
+test gray_scott_verified_homogeneous_exact_decay_with_inherited_radius ... A11_EXACT accepted=34 rejected=21 provider_ops=24640
+ok
+test interval_refusals_keep_attempted_work_and_grid_overflow_is_typed ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 2.33s
+
+     Running tests/collective_rodas5p_allocation_contract.rs (target/debug/deps/collective_rodas5p_allocation_contract-16edc2eb4c0bbce7)
+
+running 1 test
+test calibrated_complete_attempts_allocate_nothing_after_construction ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/nonlinear_homotopy_contracts.rs (target/debug/deps/nonlinear_homotopy_contracts-d778cd5b7ccad24c)
+
+running 7 tests
+test budget_driven_refinement_reduces_split_error_without_changing_tolerance ... ok
+test common_damping_uses_original_ode_verifier ... ok
+test direct_target_and_explicit_homotopy_both_certify_original_source ... ok
+test nonlinear_equal_frequency_orbit_is_inside_verified_endpoints ... ok
+test target_and_mesh_refusals_never_return_partial_certificate ... ok
+test unachievable_tolerance_preserves_attempted_work ... ok
+test unequal_frequency_nonzero_coupling_is_thread_reproducible ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.11s
+
+     Running tests/production_audit_damped_packet.rs (target/debug/deps/production_audit_damped_packet-ad930853124f1eaa)
+
+running 8 tests
+test actual_nonunit_stored_weight_sum_is_used ... ok
+test failed_budgets_and_inexact_mesh_are_typed ... ok
+test immutable_multimesh_trajectory_carries_nonzero_ball ... ok
+test large_moment_uses_stable_alternate_or_refuses_width ... ok
+test linear_large_damping_remains_finite ... ok
+test one_mode_cubic_and_confluent_limit ... ok
+test source_descriptor_is_owned_and_wrong_frame_refuses ... ok
+test unequal_frequencies_refine_without_relaxing_tolerance ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.26s
+
+     Running tests/production_audit_packet_adaptive.rs (target/debug/deps/production_audit_packet_adaptive-3667626f28440694)
+
+running 5 tests
+test adaptive_requested_mesh_and_nonzero_initial_ball_match_independent_oracle ... {"method": "Fraction Taylor + analytic Cauchy remainder", "results": [{"containments": 10, "max_reference_coordinate_remainder": 3.300031520273509e-17, "degree": 28}, {"containments": 10, "max_reference_coordinate_remainder": 3.300031520273509e-17, "degree": 28}, {"containments": 10, "max_reference_coordinate_remainder": 3.300031538479502e-17, "degree": 28}]}
+
+accepted=16 rejected=14
+ok
+test invalid_and_overflow_inputs_refuse_without_state_mutation ... ok
+test rejected_window_is_transactional_and_failed_work_is_retained ... ok
+test resource_exhaustion_preserves_failure_and_never_relaxes_budget ... ok
+test subnormal_time_resolution_and_depth_size_refuse_explicitly ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.78s
+
+     Running tests/production_audit_packet_verified.rs (target/debug/deps/production_audit_packet_verified-f3137518ca0ca44b)
+
+running 3 tests
+test refuses_wrong_frame_bad_mesh_and_unsatisfied_original_tolerance ... ok
+test unequal_frequencies_multwindow_against_independent_rational_solution ... {"method": "Fraction Taylor + analytic Cauchy remainder", "results": [{"containments": 20, "max_reference_coordinate_remainder": 3.300031520273509e-17, "degree": 28}, {"containments": 20, "max_reference_coordinate_remainder": 3.3000315220941086e-17, "degree": 28}, {"containments": 20, "max_reference_coordinate_remainder": 4.026531840000007e-21, "degree": 28}, {"containments": 20, "max_reference_coordinate_remainder": 4.026531840134225e-21, "degree": 28}, {"containments": 20, "max_reference_coordinate_remainder": 3.300031520273509e-17, "degree": 28}, {"containments": 20, "max_reference_coordinate_remainder": 3.3000315220941086e-17, "degree": 28}]}
+
+ok
+test weighted_ball_does_not_inflate_by_sqrt_modes_each_window ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.26s
+

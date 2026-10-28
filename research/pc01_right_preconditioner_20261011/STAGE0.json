@@ -1,0 +1,69 @@
+{
+  "claim": "decision HOLD(reference)",
+  "decision": "HOLD(reference)",
+  "node": "research/pc01_right_preconditioner_20261011",
+  "numeric_summary": {
+    "gated_cells_count": 6,
+    "prerequisites_met": 4,
+    "prerequisites_total": 5,
+    "prerequisites_unmet": 1,
+    "reference_limited_count": 6,
+    "reference_limited_fraction": 1.0,
+    "reference_limited_percent": 100.0
+  },
+  "prerequisites": {
+    "F1": {
+      "details": {
+        "brusselator_rel_error": 4.12e-14,
+        "matrices_tested": 200,
+        "max_backward_error": 8.42e-15
+      },
+      "evidence": "crates/rodas5p-core/tests/sparse_direct_contract.rs: Sparse direct kernel with symbolic reuse and zero-allocation solve",
+      "met": true
+    },
+    "F2": {
+      "details": {
+        "gmres_residual_norm": 4.18e-15,
+        "left_bitwise_identical": true,
+        "refusals_verified": [
+          "gcrodr",
+          "lgmres",
+          "lgmres_into"
+        ]
+      },
+      "evidence": "crates/rodas5p-integrators/tests/right_preconditioner_contract.rs: Right preconditioner path in GMRES-into with left-path bitwise parity and typed refusals",
+      "met": true
+    },
+    "F3": {
+      "details": {
+        "mismatch_detected": true,
+        "verified_relative_error": 1.25e-16
+      },
+      "evidence": "crates/rodas5p-integrators/tests/right_preconditioner_contract.rs: Declared linear part verification against nonlinear RHS f(t,y) = A y + N(t,y)",
+      "met": true
+    },
+    "F4": {
+      "details": {
+        "jvp_rel_error": 2.15e-14,
+        "tested_sizes": [
+          4,
+          8
+        ]
+      },
+      "evidence": "crates/rodas5p-integrators/tests/right_preconditioner_contract.rs: Gray-Scott 2D equations, parameters, and analytic JVP consistency",
+      "met": true
+    },
+    "R": {
+      "details": {
+        "gated_cells_count": 6,
+        "reason": "Reference generation at N in {128, 256} exceeds budget / reference-limited count 6 of 6 gated cells (100% > 5%)",
+        "reference_limited_count": 6,
+        "threshold_percent": 5.0
+      },
+      "evidence": "none (reference held under budget rule): Reference prerequisite: at most 5% of gated cells reference-limited",
+      "met": false
+    }
+  },
+  "schema": "vigilode-pc01-stage0-v1",
+  "verdict": "PASS"
+}

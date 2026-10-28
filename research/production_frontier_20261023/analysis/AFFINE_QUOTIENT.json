@@ -1,0 +1,42 @@
+{
+  "schema": "vigilode.production-frontier.affine-quotient.v1",
+  "blocker": "QF01",
+  "decision": "specialized_for_declared_affine_or_harmonic_cases",
+  "broad_production": "HOLD",
+  "original_negative_control": {
+    "file": "crates/rodas5p-integrators/examples/quotient_flow_bench.rs",
+    "case": "stiff-forcing-control",
+    "forcing": "time-dependent sin/cos; not constant",
+    "constant_affine_extension_closes_original_case": false,
+    "harmonic_exact_endpoint_applies": true,
+    "general_time_dependent_nonlinear_forcing_resolved": false
+  },
+  "candidates": [
+    {"id":"QF.BASE","parent":"QF01","change":"none","decision":"retain_comparator","reason":"general smooth residual support, observed stiff forcing loss reused"},
+    {"id":"QF.EQUILIBRIUM","parent":"QF01","change":"equilibrium shift using A inverse","decision":"prune_as_default","reason":"singular zero block and cancellation near small generators","scope":"default candidate only, not universal impossibility"},
+    {"id":"QF.PHI","parent":"QF01","change":"entire phi1 quotient action","decision":"selected","assumptions":["declared constant damped-rotation block A","constant b for affine integration"],"complexity":"O(n+g) refresh and action; O(n) cached action; no RHS/JVP/Newton"},
+    {"id":"QF.PHI.HARMONIC","parent":"QF.PHI","change":"two shifted frequencies for declared single harmonic forcing","decision":"selected_specialized_endpoint","assumptions":["constant A","constant cosine/sine coefficient vectors","constant represented frequency","finite endpoint phase and shifted frequencies"],"complexity":"O(n) per requested endpoint","nonlinear_wrapper":false}
+  ],
+  "implemented": [
+    "DampedRotationFlow::affine_into",
+    "DampedRotationAffineWorkspace",
+    "LawsonDopri5Workspace::new_affine",
+    "integrate_affine_lawson_dopri5_observed",
+    "integrate_affine_lawson_dopri5_observed_with_norm",
+    "LawsonDopri5::solve_affine_observed",
+    "LawsonDopri5::solve_affine_observed_with_norm",
+    "DampedRotationFlow::harmonic_into"
+  ],
+  "test_targets": ["rodas5p-integrators/frontier_affine_contracts","rodas5p-integrators/quotient_flow_contracts","vigilode/frontier_affine_facade","vigilode/lawson_contracts"],
+  "execution_status": "see root sequential validation receipts",
+  "benchmark": {"example":"frontier_affine_bench","expected_rows":192,"cases":6,"tolerances":2,"methods":4,"repeats":4,"warmup_repeat":0,"same_observation_times":17,"required_comparison":"matched measured sampled error; timing isolated by root"},
+  "counterexamples_fixed": [
+    {"id":"QF.CEX.SUBNORMAL_HALF","classification":"implementation","input":"A=0; nu=1e-308; h=1e308; c=[min_subnormal,0]; d=0","old_result":0,"expected_approx":4.157e-16,"fix":"Scaled coefficients before half-split"},
+    {"id":"QF.CEX.ORACLE_CONTEXT","classification":"validation_oracle","input":"symmetric huge generator/forcing","old_false_residual":"5e-120","fix":"1600-digit Decimal context preserves binary64 expansions before unary signs"}
+  ],
+  "next_steps": [
+    {"id":"QF02","task":"cache harmonic shifted coefficients and add smooth nonlinear residual stage wrapper","acceptance":["resonance tests","physical norm","noncommuting residual convergence","real accepted trajectories"]},
+    {"id":"QF03","task":"piecewise polynomial forcing representation with explicit approximation budget","acceptance":["local phi_j identity","global semigroup error bound","independent forcing interpolation residual","no unconditional fifth-order claim from frozen forcing"]},
+    {"id":"QF04","task":"same-host external work-precision comparison for declared and undeclared forcing classes","acceptance":["VODE/DVODE, diffsol or Julia comparator","failures preserved","single-thread","actual common error targets"]}
+  ]
+}

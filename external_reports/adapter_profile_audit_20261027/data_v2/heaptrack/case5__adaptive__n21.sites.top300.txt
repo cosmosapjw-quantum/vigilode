@@ -1,0 +1,300 @@
+reading file "~/vigilode-integration-followup-20261027/profile_r2/prof/heaptrack/case5__adaptive__n21.zst" - please wait, this might take some time...
+Debuggee command was: ~/vigilode-integration-followup-20261027/profile_r2/prof_bin repeat-arm case5 adaptive 21
+finished reading file, now analyzing data:
+
+MOST CALLS TO ALLOCATION FUNCTIONS
+1951 calls to allocation functions with 736B peak consumption from
+finish_grow<>::allocate::alloc_impl::alloc_impl_runtime::alloc
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:95
+  in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+finish_grow<>::allocate::alloc_impl::alloc_impl_runtime
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:190
+finish_grow<>::allocate::alloc_impl
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:312
+finish_grow<>::allocate
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:429
+finish_grow<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:543
+63 calls with 0B peak consumption from:
+    grow_one<>::grow_one<>::grow_amortized<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:512
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    grow_one<>::grow_one<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:476
+    grow_one<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:188
+    run::push<>::push_mut<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:1034
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    run::push<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:994
+    run
+      at ~/vigilode-integ-dda8d2f/crates/vigilode/src/switching.rs:1940
+    drive_windows
+      at crates/vigilode/src/switching.rs:1170
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    solve
+      at crates/vigilode/src/switching.rs:587
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}::solve_only
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:588
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}
+      at ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:667
+    main
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:674
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+63 calls with 32B peak consumption from:
+    grow_one<>::grow_one<>::grow_amortized<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:512
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    grow_one<>::grow_one<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:476
+    grow_one<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:188
+    drive_windows::push<>::push_mut<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:1034
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    drive_windows::push<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:994
+    drive_windows
+      at ~/vigilode-integ-dda8d2f/crates/vigilode/src/switching.rs:1167
+    solve
+      at crates/vigilode/src/switching.rs:587
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}::solve_only
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:588
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}
+      at ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:667
+    main
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:674
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+63 calls with 32B peak consumption from:
+    do_reserve_and_handle<>::grow_amortized<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:512
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    do_reserve_and_handle<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:651
+    prepare::ensure_len::resize<>::extend_with<>::reserve<>::reserve<>::reserve<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:658
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    prepare::ensure_len::resize<>::extend_with<>::reserve<>::reserve<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:340
+    prepare::ensure_len::resize<>::extend_with<>::reserve<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:1451
+    prepare::ensure_len::resize<>::extend_with<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3528
+    prepare::ensure_len::resize<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3405
+    prepare::ensure_len
+      at ~/vigilode-integ-dda8d2f/crates/rodas5p-krylov/src/workspace.rs:6
+    prepare
+      at ~/vigilode-integ-dda8d2f/crates/rodas5p-krylov/src/workspace.rs:32
+    solve_gmres_into_with_accounting
+      at crates/rodas5p-krylov/src/gmres_into.rs:221
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    attempt_inner
+      at crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2852
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    attempt
+      at crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2573
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_observed_with_observer
+      at crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2184
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_mf_fast_inner
+      at crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:3256
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace
+      at crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:3142
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_rodas5p_routed_observed_with_options
+      at crates/rodas5p-integrators/src/routing.rs:506
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    solve_observed_bounded
+      at crates/vigilode/src/solve.rs:222
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    run
+      at crates/vigilode/src/switching.rs:1901
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    drive_windows
+      at crates/vigilode/src/switching.rs:1170
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    solve
+      at crates/vigilode/src/switching.rs:587
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}::solve_only
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:588
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}
+      at ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:667
+    main
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:674
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+63 calls with 32B peak consumption from:
+    do_reserve_and_handle<>::grow_amortized<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:512
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    do_reserve_and_handle<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:651
+    prepare::ensure_len::resize<>::extend_with<>::reserve<>::reserve<>::reserve<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:658
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    prepare::ensure_len::resize<>::extend_with<>::reserve<>::reserve<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:340
+    prepare::ensure_len::resize<>::extend_with<>::reserve<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:1451
+    prepare::ensure_len::resize<>::extend_with<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3528
+    prepare::ensure_len::resize<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3405
+    prepare::ensure_len
+      at ~/vigilode-integ-dda8d2f/crates/rodas5p-krylov/src/workspace.rs:6
+    prepare
+      at ~/vigilode-integ-dda8d2f/crates/rodas5p-krylov/src/workspace.rs:34
+    solve_gmres_into_with_accounting
+      at crates/rodas5p-krylov/src/gmres_into.rs:221
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    attempt_inner
+      at crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2852
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    attempt
+      at crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2573
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_observed_with_observer
+      at crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2184
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_mf_fast_inner
+      at crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:3256
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace
+      at crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:3142
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_rodas5p_routed_observed_with_options
+      at crates/rodas5p-integrators/src/routing.rs:506
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    solve_observed_bounded
+      at crates/vigilode/src/solve.rs:222
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    run
+      at crates/vigilode/src/switching.rs:1901
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    drive_windows
+      at crates/vigilode/src/switching.rs:1170
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    solve
+      at crates/vigilode/src/switching.rs:587
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}::solve_only
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:588
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}
+      at ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:667
+    main
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:674
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+63 calls with 32B peak consumption from:
+    do_reserve_and_handle<>::grow_amortized<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:512
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    do_reserve_and_handle<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:651
+    prepare::ensure_len::resize<>::extend_with<>::reserve<>::reserve<>::reserve<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:658
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    prepare::ensure_len::resize<>::extend_with<>::reserve<>::reserve<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:340
+    prepare::ensure_len::resize<>::extend_with<>::reserve<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:1451
+    prepare::ensure_len::resize<>::extend_with<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3528
+    prepare::ensure_len::resize<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3405
+    prepare::ensure_len
+      at ~/vigilode-integ-dda8d2f/crates/rodas5p-krylov/src/workspace.rs:6
+    prepare
+      at ~/vigilode-integ-dda8d2f/crates/rodas5p-krylov/src/workspace.rs:35
+    solve_gmres_into_with_accounting
+      at crates/rodas5p-krylov/src/gmres_into.rs:221
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    attempt_inner
+      at crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2852
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    attempt
+      at crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2573
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_observed_with_observer
+      at crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2184
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_mf_fast_inner
+      at crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:3256
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace
+      at crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:3142
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    integrate_rodas5p_routed_observed_with_options
+      at crates/rodas5p-integrators/src/routing.rs:506
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    solve_observed_bounded
+      at crates/vigilode/src/solve.rs:222
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    run
+      at crates/vigilode/src/switching.rs:1901
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    drive_windows
+      at crates/vigilode/src/switching.rs:1170
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    solve
+      at crates/vigilode/src/switching.rs:587
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}::solve_only
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:588
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    {closure#0}
+      at ~/vigilode-integ-dda8d2f/crates/vigilode/examples/adapter_checkpoint_trace.rs:667
+    main
+      at crates/vigilode/examples/adapter_checkpoint_trace.rs:674
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+  and 1636 from 41 other places
+
+1470 calls to allocation functions with 512B peak consumption from
+from_iter<>::with_capacity<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>::try_allocate_in<>::allocate::alloc_impl::alloc_impl_runtime::alloc
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:95
+  in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+from_iter<>::with_capacity<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>::try_allocate_in<>::allocate::alloc_impl::alloc_impl_runtime
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:190
+from_iter<>::with_capacity<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>::try_allocate_in<>::allocate::alloc_impl
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:312
+from_iter<>::with_capacity<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>::try_allocate_in<>::allocate
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/alloc.rs:429
+from_iter<>::with_capacity<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>::try_allocate_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:449
+from_iter<>::with_capacity<>::with_capacity_in<>::with_capacity_in<>::with_capacity_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:418
+from_iter<>::with_capacity<>::with_capacity_in<>::with_capacity_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/raw_vec/mod.rs:177
+from_iter<>::with_capacity<>::with_capacity_in<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:967
+from_iter<>::with_capacity<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:526
+from_iter<>
+  at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_iter_nested.rs:30
+441 calls with 256B peak consumption from:
+    new::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>::fold<>::fold<>::{closure#0}<>::{closure#1}::{closure#0}::collect<>::from_iter<>::from_iter<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/spec_from_iter.rs:33
+      in ~/vigilode-integration-followup-20261027/profile_r2/prof_bin
+    new::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>::fold<>::fold<>::{closure#0}<>::{closure#1}::{closure#0}::collect<>::from_iter<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/alloc/src/vec/mod.rs:3801
+    new::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>::fold<>::fold<>::{closure#0}<>::{closure#1}::{closure#0}::collect<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs:2035
+    new::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>::fold<>::fold<>::{closure#0}<>::{closure#1}::{closure#0}
+      at ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:1458
+    new::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>::fold<>::fold<>::{closure#0}<>::{closure#1}
+      at ~/vigilode-integ-dda8d2f/crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:1466
+    new::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>::fold<>::fold<>::{closure#0}<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:88
+    new::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>::fold<>::fold<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/traits/iterator.rs:2610
+    new::collect<>::from_iter<>::from_iter<>::from_iter<>::spec_extend<>::extend_trusted<>::for_each<>::fold<>
+      at ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/adapters/map.rs:128

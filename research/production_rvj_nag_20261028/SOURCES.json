@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "date_kst": "2026-10-28",
+  "task_date_id": "20261028",
+  "reused_catalog": "research/integrated_polyalgorithm_20261028/SOURCES.json",
+  "attachments_manifest": "intake/INPUTS.json",
+  "primary_extensions": [
+    {
+      "id": "MRD2018",
+      "authors": [
+        "Victor Magron",
+        "Alexandre Rocca",
+        "Thao Dang"
+      ],
+      "title": "Certified Roundoff Error Bounds using Bernstein Expansions and Sparse Krivine-Stengle Representations",
+      "url": "https://arxiv.org/html/1802.04385v1",
+      "read_sections": [
+        "II-B",
+        "III-A"
+      ],
+      "use": "Bernstein range enclosure and outward/exact arithmetic distinction; no project-specific theorem attributed to this source."
+    },
+    {
+      "id": "CLM2025",
+      "authors": [
+        "Jehanzeb H. Chaudhry",
+        "Owen L. Lewis",
+        "Md Al Amin Molla"
+      ],
+      "title": "Adjoint-based A Posteriori Error Analysis for Semi-explicit Index-1 and Hessenberg Index-2 Differential-Algebraic Equations",
+      "url": "https://arxiv.org/html/2507.03712v2",
+      "read_sections": [
+        "2",
+        "3",
+        "4"
+      ],
+      "use": "DAE residual and bounded-linear QoI context; not substituted for whole-state physical error."
+    },
+    {
+      "id": "BFSS2002",
+      "authors": [
+        "Alin Bostan",
+        "Philippe Flajolet",
+        "Bruno Salvy",
+        "Eric Schost"
+      ],
+      "title": "Fast Computation With Two Algebraic Numbers",
+      "url": "https://algo.inria.fr/flajolet/Publications/BoFlSaSc02.pdf",
+      "read_sections": [
+        "2",
+        "4.1",
+        "4.3"
+      ],
+      "use": "Multiplicity-preserving quotient trace and power sums; project T1 proved directly."
+    }
+  ],
+  "discovery": {
+    "scispace": "Queried DAE residual certificates; primary arXiv candidate followed. Unrelated low-quality hits excluded.",
+    "exa": "Queried Bernstein rigorous residual and rounding; primary arXiv followed.",
+    "wolfram": "Broad context response not used as proof; registered explicit identities follow."
+  },
+  "failed_retrievals": [
+    {
+      "url": "https://laas.hal.science/hal-02088529/document",
+      "result": "inaccessible",
+      "use": "none"
+    }
+  ],
+  "pr95_theory": {
+    "commit": "36104bfc65d1fdc695c8acea383c54b50a1c4e78",
+    "path": "intake/PR95_THEORY_KO.md",
+    "sha256": "cd2133d5d4810dce854243c793d6fbd4882f91d1633f140e3c5498281513cc6b",
+    "coverage": "Parent/audit full theory-document read; branch not merged, historical experiments not replayed."
+  }
+}

@@ -1,0 +1,13 @@
+Manifest capture first attempt:
+Command: python3 src/validate_report.py capture --grid .../grid.json --reference .../reference.json --timing-binary .../vigilode-a07-timing --allocator-binary .../vigilode-a07-allocator --out .../manifest.json
+Working directory: tools/benchmarks/diffsol/a07
+Exit code: 2
+Output: A07 validation failed: locked offline cargo identity commands failed
+
+Follow-up isolated statuses:
+- cargo tree --locked --offline --edges normal: exit 0
+- cargo tree --locked --offline --edges features: exit 0
+- cargo metadata --locked --offline --format-version 1: exit 101; missing cached aho-corasick v1.1.5 attempted HTTP while offline
+- cargo metadata --locked --offline --no-deps --format-version 1: exit 0
+
+Adjustment: manifest uses cargo metadata --no-deps for the harness package metadata while separately retaining normal/features cargo tree output, standalone Cargo.lock hash, and exact build source hashes. No lock or root Cargo files changed.

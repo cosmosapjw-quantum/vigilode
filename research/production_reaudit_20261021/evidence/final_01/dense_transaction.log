@@ -1,0 +1,108 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.08s
+     Running tests/a1_zero_tolerance_scale.rs (/workspace/scratch/0dc1e721cf82/runtime/dense-target/debug/deps/a1_zero_tolerance_scale-3d74d666070ab3ee)
+
+running 9 tests
+test fast_banded_driver_accepts_a_zero_component_with_zero_atol ... ok
+test fast_dense_driver_accepts_a_zero_component_with_zero_atol ... ok
+test fast_small_batch_driver_accepts_a_zero_component_with_zero_atol ... ok
+test fast_small_driver_accepts_a_zero_component_with_zero_atol ... ok
+test lagged_driver_refuses_a_zero_richardson_weight_with_a_typed_error ... ok
+test lagged_driver_with_forced_refresh_accepts_a_zero_component_with_zero_atol ... ok
+test matrix_free_fast_driver_accepts_a_zero_component_with_zero_atol ... ok
+test protected_sequential_driver_accepts_a_zero_component_with_zero_atol ... ok
+test staged_coupled_target_refuses_a_zero_start_weight_with_a_typed_error ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.05s
+
+     Running tests/c1_transaction_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime/dense-target/debug/deps/c1_transaction_contracts-4ddf3186893e7dc3)
+
+running 20 tests
+test a_custom_work_measure_sets_the_units ... ok
+test admission_is_deterministic ... ok
+test always_failing_candidate_costs_at_most_ten_percent_of_the_protected_path ... ok
+test always_succeeding_cheaper_candidate_is_admitted_every_time_within_fifty_attempts ... ok
+test attempted_equals_committed_plus_rolled_back_over_a_mixed_sequence ... ok
+test budget_refuses_overflowing_requests ... ok
+test budget_reserves_up_to_the_cap_exactly_and_reports_work_used ... ok
+test commit_returns_the_trial_state_and_counts_its_work_as_committed ... ok
+test concurrent_reservation_never_exceeds_the_cap ... ok
+test dropping_a_trial_is_a_counted_rollback ... ok
+test invalid_config_is_rejected ... ok
+test invalid_costs_are_typed_errors ... ok
+test ledger_serializes ... ok
+test posterior_is_updated_only_by_charged_attempts ... ok
+test rollback_discards_the_state_but_keeps_the_work_attempted ... ok
+test telemetry_is_plain_serde_data ... ok
+test throttle_and_overhead_guard_decline_with_distinct_statuses ... ok
+test throttle_interval_is_the_ceiling_of_ten_tau ... ok
+test trial_reservations_are_recorded_and_refusals_counted ... ok
+test upper_confidence_bound_is_monotone_and_inside_the_unit_interval ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/dense_wfiltered_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime/dense-target/debug/deps/dense_wfiltered_contracts-9f27edbede42506e)
+
+running 11 tests
+test dp01_nonlinear_witness_off_enforce_wfiltered ... ok
+test lemma3_ratio_on_the_scalar_test_equation_with_constant_defect ... ok
+test prothero_robinson_wfiltered_enforce_interior_within_two_units ... ok
+test prothero_robinson_wfiltered_enforce_kill_gate ... ignored, kill gate FAIL: 2.143x the Off accepted-step count at rtol 1e-6 (gate 1.3x)
+test wfiltered_enforce_charges_its_work_to_the_run ... ok
+test wfiltered_enforce_interior_rejections_keep_the_counter_ledger ... ok
+test wfiltered_estimate_is_the_report_estimate_up_to_lemma3_on_linear_pr ... ok
+test wfiltered_modes_refuse_a_problem_without_an_explicit_jacobian ... ok
+test wfiltered_modes_refuse_sabr_instead_of_evaluating_a_new_jacobian ... ok
+test wfiltered_report_never_changes_the_run_and_reuses_the_step_factorization ... ok
+test wfiltered_without_a_step_factorization_factors_once_per_sample ... ok
+
+test result: ok. 10 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running tests/p0_partial_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime/dense-target/debug/deps/p0_partial_contracts-07ec078903d44335)
+
+running 9 tests
+test every_step_sampling_off_is_the_named_driver_and_wfiltered_samples_every_step ... ok
+test fast_banded_partial_after_a_latched_rhs_failure_and_none_on_success ... ok
+test fast_dense_partial_after_a_latched_rhs_failure ... ok
+test fast_dense_partial_is_none_on_success_and_the_run_is_bit_identical ... ok
+test fast_dense_partial_reports_the_attempt_budget_and_the_last_accepted_state ... ok
+test matrix_free_partial_after_a_latched_rhs_failure_and_none_on_success ... ok
+test router_carries_the_partial_record_of_the_routed_driver ... ok
+test segment_driver_reports_a_partial_record_on_failure ... ok
+test segment_driver_with_output_time_sampling_is_the_named_driver_bit_for_bit ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+     Running tests/reaudit_admission_overflow.rs (/workspace/scratch/0dc1e721cf82/runtime/dense-target/debug/deps/reaudit_admission_overflow-bd20f82f2d33b79d)
+
+running 4 tests
+test attempted_cost_overflow_is_refused_without_mutating_the_bin ... ok
+test numerically_unrepresentable_posterior_configuration_is_refused ... ok
+test protected_cost_overflow_is_refused_without_mutating_the_bin ... ok
+test saved_cost_overflow_is_refused_without_mutating_the_bin ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/sequential_estimate_failure_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime/dense-target/debug/deps/sequential_estimate_failure_contracts-ad0ddfb029d7aeb3)
+
+running 4 tests
+test estimate_failure_rejects_under_enforcing_modes ... ok
+test report_modes_still_count_unavailable_without_changing_the_run ... ok
+test runs_without_estimate_errors_are_unchanged ... ok
+test unclassified_estimate_error_stops_the_run ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+

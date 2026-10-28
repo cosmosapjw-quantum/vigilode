@@ -1,0 +1,33 @@
+{
+  "schema": "vigilode-a04-setup-repair-independent-review-v1",
+  "decision": "SCOPED_PASS",
+  "reviewed_head": "b38a1212f1d6e6566c0ca40cc67e7eee26717435",
+  "reviewer": {"requested_profile":"research-review/Astra-xhigh","observed_runtime":"NOT_INDEPENDENTLY_OBSERVED"},
+  "source_sha256": {
+    "crates/rodas5p-core/src/leja_action.rs":"25904301d40f11d6a5fee1d27aac7454ca02874a9e995634e7909af2e4ae97e8",
+    "crates/rodas5p-core/src/leja_setup_work.rs":"b8dd7b8d74339209448ea512427b7813d63c49f2bda2f82d6e423f3135249baf",
+    "crates/rodas5p-core/tests/leja_setup_work_contract.rs":"7584be6525113fec606649a72425d5ee918d36eda60e502bbc67ddf66eae41c0",
+    "crates/rodas5p-core/tests/leja_total_contract.rs":"a9ac0d148eb0151f73c266d91cd18c15f40131f8225640ab8db634fb5a5047c6"
+  },
+  "verified": [
+    "prefix Interval::new separately charged; six invocation calls per prefix interval",
+    "failed first-column exponential refusal charges 10 allocation requests and 48 items, excluding unattempted output vectors",
+    "cache history propagates PartialUnattributed legacy dependency coverage",
+    "fallible coefficient setup attempts are retained in historical WorkCounters on error",
+    "real Leja points initializer cold/warm local-cell test and initializer-winner attribution",
+    "counted warmed action reports zero allocation; counted and legacy report and WorkCounters agree",
+    "numeric formula, threshold, operation order, and total authority unchanged"
+  ],
+  "evidence": {
+    "core_lib_27":"setup_repair_lib_final2.log",
+    "setup_contract_5":"setup_repair_contract_final2.log",
+    "legacy_coverage_1":"setup_repair_legacy_coverage_final.log",
+    "counted_warmed_alloc_0":"setup_repair_counted_warm_alloc_final.log",
+    "legacy_warmed_alloc_0":"setup_repair_legacy_warm_alloc_final.log",
+    "clippy":"setup_repair_clippy_final2.log",
+    "workspace_all_targets_log":"../continuation_workspace_check_a01_a04_a05_frozen.log",
+    "workspace_all_targets_sha256":"2dbafe9e89b170ca3a0cd4d38a963fc919177a71f44887b555ef3fc6ab1b8f4c",
+    "workspace_all_targets_exit_code":0
+  },
+  "claim_ceiling": "Setup-cost receipt subunit only. Total Leja arithmetic remains EstimateOnly; A04/Leja production promotion remains HOLD."
+}

@@ -1,0 +1,86 @@
+{
+  "schema": "vigilode.historical_followup_extract.v1",
+  "numerical_source_commit": "5fd6e459a3f67cee90e002821b9b4b740c47475b",
+  "source_report": "external_audits/vigilode_ncp_followup_fvm_5fd6e45_20261021/CAMPAIGN_REPORT_v2.json",
+  "source_sha256": "8f5c17c50b62fbccb7fa5a0118525162fd29076770cc0f96f43366775fce756c",
+  "verdicts": [
+    {
+      "item": "analytic_stencil Jacobian (opt-in, periodic_heat n128)",
+      "verdict": "optimization_possible -> CONFIRMED scoped; specialized_for_specific_cases_only (periodic_heat/advection_diffusion)",
+      "promote": "HOLD (VG-1 allocation not measured; single n; STATISTICAL_AUTHORITY_HOLD; P01 pending)",
+      "basis": "deterministic: bit-identical times/states across all 1046 runs and arms, identical solver counters, RHS incl. derivative 5712->336 (-94.1%); diagnostic: warmed elapsed STEN/BASE median 0.586 (IQR 0.582-0.590), process 0.620, CPU 0.616, 489/489 blocks STEN faster, RSS equal ~17 MB"
+    },
+    {
+      "item": "basis-JVP default path",
+      "verdict": "keep as default (general callbacks); no prune"
+    },
+    {
+      "item": "BorderedBandedPreconditioner (manufactured probe)",
+      "verdict": "specialized_for_specific_cases_only",
+      "promote": "HOLD (no ODE driver factory; not a BASS benchmark)",
+      "basis": "n1600 residual 1.108e-13 / error 5.88e-14; n4096 8.9e-16 / 4.4e-16; Vec lengths = design 8n+4 (12804, 32772; circular check, not allocator evidence); factor median 147 us (1600) / 385 us (4096), apply 40.3 / 101.3 us (diagnostic ~linear in n); non-power-of-2 n shows ~n*eps growth"
+    },
+    {
+      "item": "VODE MF20 archived functional-iteration BDF",
+      "verdict": "hold as archived reference arm; not representative stiff baseline",
+      "basis": "pass with 1% margin (0.990 at t=0.025); NST 1060, NCFN 349; ~8x slower per solve than STEN (scope-biased against STEN)"
+    },
+    {
+      "item": "VODE MF21/MF22 Jacobian chord BDF",
+      "verdict": "hold (fails application budget at internal=application: 4.72 / 5.97 significant); no prune of VODE; needs P01 internal-tolerance arm",
+      "basis": "reproduced; converges when internal rtol tightened (verifier local)"
+    },
+    {
+      "item": "Julia Rodas5P",
+      "verdict": "hold (comparator ready; passes 1.3e-3 with 5 steps); no parity/superiority claim",
+      "basis": "per-solve 5.8-9.1 ms + GC rep 47-55 ms; process 16-17 s is JIT/package load"
+    },
+    {
+      "item": "diffsol BDF",
+      "verdict": "hold (passes 5.5e-3 states-only; times inferred; counters unavailable)",
+      "basis": "per-solve ~4.2 ms narrower scope; faster per solve than STEN on this case at lower accuracy, magnitude scope-biased"
+    },
+    {
+      "item": "VigilODE output-landing step policy",
+      "verdict": "optimization_possible (hypothesis)",
+      "basis": "42 steps for 40 output intervals vs Julia 5 interpolated steps; requires endpoint-only/internal_steps experiment and dense-output accuracy contract"
+    },
+    {
+      "item": "rotation correction 7/140, 7/7 at internal 1e-10",
+      "verdict": "unchanged archived evidence; NOT re-run with full trajectory in this pass"
+    },
+    {
+      "item": "broad production",
+      "verdict": "HOLD"
+    }
+  ],
+  "coverage": {
+    "handoff_1_builds": "EXECUTED (2/2 exit 0, offline, locked, Cargo.lock unchanged)",
+    "handoff_2_requests": "EXECUTED (status OK, 41 exact times, full states valid, application pass)",
+    "handoff_3_alternating_pairs": "EXECUTED (A0 9 + A 480 confirmation blocks; full raw times/states every run)",
+    "handoff_4_bordered_probe": "EXECUTED (default n16/64/256, n1600, n4096; 9 runs each)",
+    "handoff_5_comparators": "EXECUTED VODE_MF20, VODE_MF21, VODE_MF22, JULIA_RODAS5P, DIFFSOL_BDF (7 paired confirmation each)",
+    "NOT_RUN": [
+      "VG-1 allocation mode (--measurement-mode allocation) for BASE/STEN",
+      "heat n32/512/1600/4096 (P02 grid)",
+      "VigilODE banded and true matrix-free heat arms (P02)",
+      "tightened-internal-tolerance arms (P01 separation) for any solver",
+      "VODE banded MF24/25 (periodic wrap not banded)",
+      "diffsol counters / times (archived adapter API lacks them)",
+      "other Julia algorithms",
+      "rotation full-trajectory rerun (not in first-run list)",
+      "endpoint-only output run to isolate output-landing step policy",
+      "P01 evaluator adoption in tools/"
+    ],
+    "P02_status": "PARTIAL / pending (only n128; P01 dependency pending)"
+  },
+  "timing_scopes": {
+    "VIGILODE (BASE/STEN)": "timing.elapsed_ns = 2nd in-process invoke(): problem construction + integration + serde output Value (scope warmed_solver_setup_integration_output_certificate); process = startup + 1 warm + 1 timed solve + JSON print",
+    "VODE_*": "perf_counter around ode() construction + integrate over 40 outputs (+tolist), Python RHS callbacks; t0 state injected by harness (t0_injected_by_harness=true); process = python import + 2 warm + 7 measured",
+    "JULIA_RODAS5P": "time_ns around solve() only (ODEProblem outside, GC inside); process = package load + JIT (~6 s first solve) + 2 warm + 7 measured",
+    "DIFFSOL_BDF": "Instant around solve_dense only; builder and Vec conversion outside; times not returned (requested grid assumed, times_supplied_by_solver=false); counters unavailable; process = 2 warm + 7 measured",
+    "cross_solver_statement_limit": "STEN has the broadest timer scope (bias against STEN). Defensible: VODE_MF20 ~8x slower per solve; diffsol faster per solve (magnitude scope-biased, ~0.49x); Julia same order of magnitude. Process-wall ratios across solvers are NOT solver speed."
+  },
+  "new_solver_executions": 0,
+  "derived_statement": "Repeated heat output agreement and derivative-cost reduction support a model-specific optimization; timing and comparator precision require their stated scopes."
+}

@@ -1,0 +1,45 @@
+{
+  "schema_version": 1,
+  "unit": "A04-PROOF-ORACLE-01-POSTEXEC",
+  "verdict": "READY_SCOPED",
+  "scope": "Post-EXEC receipts and L-0136 claim ceiling only",
+  "reviewer": "a04_oracle_independent_review",
+  "role": "COSTROUTE01 research-review",
+  "read_only": true,
+  "runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+  "exec_sha": "9e35f12c85abff34d85185f866180b616a8ba208",
+  "remote_ref_sha_at_review": "9e35f12c85abff34d85185f866180b616a8ba208",
+  "checked": {
+    "exec_sha_git_blob_inputs": 11,
+    "input_hashes_match": true,
+    "ledger_id": "L-0136",
+    "ledger_output_hashes": 9,
+    "output_hashes_match": true,
+    "execution_identity_result_ledger_binding": true,
+    "duplicate_ledger_id": false,
+    "native_output_byte_identical_to_prior_reviewed_result": true,
+    "fraction_rows": 218,
+    "fraction_order": 64,
+    "fraction_results_identical": true,
+    "allocation_positive_control": 3,
+    "warmed_allocations": [0,0,0],
+    "failed_relative_path_attempt_exit": 101,
+    "absolute_path_retry_exit": 0,
+    "fraction_command_exit": 0
+  },
+  "reviewed_artifact_sha256": {
+    "native.json":"55a467bf8a3314ad4772362fc24624832952d31b7515e91afbab9effaad7e0d0",
+    "fraction_results.json":"c75947829b4d7a7f10bf1c5bbc36249e5e3984cf989a57e4588f3c0240199ef9",
+    "EXECUTION_IDENTITY.json":"0bfcdcd5da4c4ef05ce948c8c47b3c9b402582712b6ffc27fbfc464c4ac54641",
+    "RESULT.json":"9b390ffc01d5e2cd507299a6f1166659ca40d673d2c58dda489cec2e0731d796"
+  },
+  "nonblocking_evidence_gap": "The exact relative string of the first A04_ORACLE_NATIVE_OUTPUT attempt is not preserved; do not reconstruct or guess it. The first failure class, exit, log, successful absolute path and result are retained.",
+  "limitations": [
+    "F09 tests initial outward norm overflow refusal, not matvec overflow.",
+    "Coefficient checks use public helper tables, not a direct export of the internal cache table.",
+    "M>64 was not executed.",
+    "Reviewer did not rerun Rust or Fraction execution."
+  ],
+  "full_A04_authority": "EstimateOnly",
+  "full_A04_decision": "HOLD"
+}

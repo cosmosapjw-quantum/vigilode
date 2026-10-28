@@ -1,0 +1,568 @@
+{
+  "schema_version": "1.0",
+  "reviewer": "/root/review_dynamics",
+  "review_date": "2026-10-11",
+  "source_commit": "8ce9bda0d72d308facd615ac42ec137560fd68c6",
+  "independence": {
+    "candidate_generation": false,
+    "validation_design": false,
+    "candidate_source_edited_by_reviewer": false,
+    "separate_reviewer_context": true,
+    "formal_proof_assistant": false,
+    "actual_model_identity": "UNKNOWN"
+  },
+  "overall_decision": "PROMOTE_CONDITIONAL_THEORY_HOLD_EXECUTABLE_AND_RUNTIME",
+  "scope": "One focused proof and source-binding review, including author revisions responding to identified issues; not a recursive meta-audit.",
+  "frozen_candidate_inputs": [
+    {
+      "path": "HOMOTOPY.md",
+      "sha256": "6ea6ffee160fa7989d07565f430dfb87ab02e03f7d5dbc149d24efdc4a66a687"
+    },
+    {
+      "path": "HOMOTOPY.json",
+      "sha256": "5e8fd7e781fb59de1f910688be17a0c7d2153a630627e84b7c6df24c750b3ff3"
+    },
+    {
+      "path": "THEORY_GLOBAL.md",
+      "sha256": "036af4f517aa0a91f345bceeede77fe3dedbb698f4a999982ff0dba8e2919d2f"
+    },
+    {
+      "path": "GLOBAL_CLAIMS.json",
+      "sha256": "0cdeb721a8a583a44cf8db126dc7e573023862c3c166622d27051b573fe78c0f"
+    },
+    {
+      "path": "homotopy_exact_check.py",
+      "sha256": "ded7f8322a064cc882e74e6c2d91fa2977ce6029f53c47cf53396c483dacc13a"
+    },
+    {
+      "path": "HOMOTOPY_EXACT_CHECK.json",
+      "sha256": "aeec5e1351007d8db9483df5e8af119e1e0b4d3a7d56992549ca9de5a6364e57"
+    },
+    {
+      "path": "check_global_exact.py",
+      "sha256": "41b1ebb3a620930ad81131f44f4a215ea21341fa02a27e1c1179cbcb77d22559"
+    },
+    {
+      "path": "GLOBAL_EXACT_CHECKS.json",
+      "sha256": "d9bae20bd989cf544b9279f0f1ccacc0e129f44aede031fc63eaae47748c0c52"
+    }
+  ],
+  "published_counterevidence_reused": {
+    "path": "research/adversarial_reaudit_20261001_r3/homotopy/coefficient_structure.json",
+    "sha256": "ae4073e013078b3a4dfa3aeb8b9724e54e6bd03ca5eec45c25b4380a21dca736",
+    "reexecuted": false,
+    "scope": "Historical represented coefficient leakage witness reused; current source retains generic inverse and all-entry mixing, but historical exact bit values are not claimed remeasured on current binary."
+  },
+  "theorem_decisions": [
+    {
+      "id": "H1",
+      "decision": "PROMOTE",
+      "promoted_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "title": "Unique regular triangular root graph and no fold",
+      "proof_location": "HOMOTOPY.md#H1",
+      "necessary_scope": "Exactly causal declared/reference target; common frozen invertible linear W; C^k callbacks on every recursive state; fixed theta.",
+      "limits": "Not automatic for represented K coefficients; arbitrary finite-difference JVP is not a linear matrix.",
+      "evidence_status": [
+        "derived",
+        "independently_reviewed"
+      ],
+      "native_claim_promoted": false
+    },
+    {
+      "id": "H2a",
+      "decision": "PROMOTE",
+      "promoted_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "title": "Finite causal majorant certificate without norm contraction",
+      "proof_location": "HOMOTOPY.md#H2a",
+      "necessary_scope": "Nonnegative strictly lower B valid on same product tube; actual candidate defect d; d+B r<=r and finite callback domain.",
+      "limits": "Nilpotent spectral radius zero does not imply small path-weight bounds.",
+      "evidence_status": [
+        "derived",
+        "independently_reviewed"
+      ],
+      "native_claim_promoted": false
+    },
+    {
+      "id": "H2b",
+      "decision": "PROMOTE",
+      "promoted_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "title": "At most s exact rounds and inexact error convolution",
+      "proof_location": "HOMOTOPY.md#H2b",
+      "necessary_scope": "Exactly causal map; each round reads only previous iterate; root and all iterates inside fixed tube; round errors enclosed.",
+      "limits": "No exact-s claim for near-causal actual map; output weights and assembly rounding remain necessary.",
+      "evidence_status": [
+        "derived",
+        "independently_reviewed"
+      ],
+      "native_claim_promoted": false
+    },
+    {
+      "id": "H3ab",
+      "decision": "PROMOTE",
+      "promoted_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "title": "Independent windows and analytic jet predictor",
+      "proof_location": "HOMOTOPY.md#H3",
+      "necessary_scope": "Common predictor independent of preceding corrected roots; exact-causal branch identity or uniform actual-map root witness; R>1 holomorphic ball with uniform Rb<1 and invariant radius.",
+      "limits": "Independent local unique roots need not be same branch; coefficient orders/jet convolution costs are not parallel-free.",
+      "evidence_status": [
+        "derived",
+        "independently_reviewed"
+      ],
+      "native_claim_promoted": false
+    },
+    {
+      "id": "H3c",
+      "decision": "PROMOTE",
+      "promoted_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "title": "Strict counted-cost span reduction",
+      "proof_location": "HOMOTOPY.md#H3c",
+      "necessary_scope": "Same target and output budget; upper bounds include setup, wave schedule, certificate, dispatch, failures and fallback; independently established comparator lower cost exceeds sum.",
+      "limits": "Eight-stage three-wave example is span reduction, not work reduction or measured speed.",
+      "evidence_status": [
+        "derived",
+        "independently_reviewed"
+      ],
+      "native_claim_promoted": false
+    },
+    {
+      "id": "H4",
+      "decision": "PROMOTE",
+      "promoted_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "title": "Exact affine invariant dimension reduction",
+      "proof_location": "HOMOTOPY.md#H4",
+      "necessary_scope": "Exact RHS, J, mass and f_t intertwining; full-column-rank U; invertible W; causal uniqueness or H5 uniqueness plus lifted reduced root inside full tube; physical lift metric and costs included.",
+      "limits": "Nonlinear coordinates, near-invariance, off-manifold projection and strongest-solver asymptotic claims excluded.",
+      "evidence_status": [
+        "derived",
+        "independently_reviewed"
+      ],
+      "native_claim_promoted": false
+    },
+    {
+      "id": "H5",
+      "decision": "PROMOTE",
+      "promoted_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "title": "Actual-target near-causal root certificate and geometric rate",
+      "proof_location": "HOMOTOPY.md#H5",
+      "necessary_scope": "A=B+E>=0 bounds actual full-map Lipschitz terms on closed tube; B strict lower; S=(I-B)^-1; 0<=norm(S E)<=q<1; verified radius closure; uniform common tube for branch claim.",
+      "limits": "Actual current B/E/q and radius not evaluated; positive certificate-action tail and actual A-power iteration are distinct.",
+      "evidence_status": [
+        "derived",
+        "independently_reviewed"
+      ],
+      "native_claim_promoted": false
+    },
+    {
+      "id": "G1",
+      "decision": "PROMOTE",
+      "promoted_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "title": "Whole-stage nonlinear contamination and adjoint influence",
+      "proof_location": "THEORY_GLOBAL.md#3",
+      "necessary_scope": "Full-space inverse gain or proved invariant error input subspace; actual U target; Lipschitz stage tubes; residual/operator/RHS/output uncertainty outward bounded.",
+      "limits": "A gain on one observed residual direction cannot certify coupling-generated directions.",
+      "evidence_status": [
+        "derived",
+        "independently_reviewed"
+      ],
+      "native_claim_promoted": false
+    },
+    {
+      "id": "G2",
+      "decision": "PROMOTE",
+      "promoted_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "title": "Local truncation upper bound independent of embedded estimator",
+      "proof_location": "THEORY_GLOBAL.md#4",
+      "necessary_scope": "Actual coefficient Taylor defects d1..d5 and full-step C6 remainder/resolvent bound, or rigorous reconstruction defect integral including quadrature remainder.",
+      "limits": "No sampling-only derivative/quadrature authority; no implicit exact order condition for stored binary64 coefficients.",
+      "evidence_status": [
+        "derived",
+        "independently_reviewed"
+      ],
+      "native_claim_promoted": false
+    },
+    {
+      "id": "G3",
+      "decision": "PROMOTE",
+      "promoted_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "title": "Finite-trajectory global error with metric/time transport",
+      "proof_location": "THEORY_GLOBAL.md#5",
+      "necessary_scope": "G1/G2 for every accepted step; certified initial/time uncertainty; exact-flow logarithmic norm over valid full trajectory tube; positive scales and outward metric ratios.",
+      "limits": "No current native trajectory certificate; stiffness-independent order constant and online future weights require extra premises.",
+      "evidence_status": [
+        "derived",
+        "independently_reviewed"
+      ],
+      "native_claim_promoted": false
+    },
+    {
+      "id": "G4",
+      "decision": "PROMOTE",
+      "promoted_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "title": "Optimal continuous residual allocation and discrete sufficient work saving",
+      "proof_location": "THEORY_GLOBAL.md#6",
+      "necessary_scope": "Fixed valid influences; rho(k)<=R q^k+eta with certified 0<q<1; precharged floors/mandatory costs; B>0; same backend scheduled comparator; all extra costs counted.",
+      "limits": "Not generic integer optimum after ceiling except exact integer cases; not universal early-stop speedup; q=0 handled separately.",
+      "evidence_status": [
+        "derived",
+        "independently_reviewed"
+      ],
+      "native_claim_promoted": false
+    },
+    {
+      "id": "TG5",
+      "decision": "PROMOTE",
+      "promoted_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "title": "Positive parametric scheduled-work complexity reduction",
+      "proof_location": "THEORY_GLOBAL.md#6.3",
+      "necessary_scope": "m=2^r, L>=r, b>=1, fixed q=1/2,R=c=1 and weights (2^L,1,...,1); equal certified budget and full overhead condition.",
+      "limits": "Not spatial-n scaling of fixed eight-stage RODAS; bit cost and future global weights not free.",
+      "evidence_status": [
+        "derived",
+        "independently_reviewed"
+      ],
+      "native_claim_promoted": false
+    }
+  ],
+  "gate_decisions": [
+    {
+      "id": "CURRENT_K_UNQUALIFIED_CAUSAL_CLAIM",
+      "decision": "REJECT",
+      "scope": "Withdrawn blanket native no-fold and exact-s-round claim; published coefficient counterevidence invalidates automatic premise transfer."
+    },
+    {
+      "id": "CURRENT_K_H5_APPLICABILITY",
+      "decision": "HOLD",
+      "reason": "Actual current E,q,r/domain enclosures not calculated."
+    },
+    {
+      "id": "PRODUCTION",
+      "decision": "HOLD",
+      "reason": "No new native contract implementation/authority integration performed in this theory loop."
+    },
+    {
+      "id": "ACTUAL_GLOBAL_TRAJECTORY",
+      "decision": "HOLD",
+      "reason": "G1-G3 witnesses not executed for a full new trajectory."
+    },
+    {
+      "id": "MEASURED_SPEED",
+      "decision": "HOLD",
+      "reason": "No new same-accuracy full-cost wall-time execution."
+    }
+  ],
+  "review_findings": [
+    {
+      "id": "RD01",
+      "status": "CORRECTED",
+      "issue": "Direction-specific inverse gain was allowed for complete propagated stage error.",
+      "resolution": "Full-space gain or proved containing invariant error subspace required."
+    },
+    {
+      "id": "RD02",
+      "status": "CORRECTED",
+      "issue": "Truncation tau inequality direction obscured certificate authority.",
+      "resolution": "Actual error<=tau; tau is outward evaluated upper bound."
+    },
+    {
+      "id": "RD03",
+      "status": "CORRECTED_SCOPE_APPLICATION_STILL_HOLD",
+      "issue": "Automatic strict-causal native K target conflicted with prior represented-coefficient leakage evidence.",
+      "resolution": "Initial claim explicitly withdrawn; H1/H2 restricted to exact causal targets; H5 positive actual-target rescue supplied conditionally, not executed."
+    },
+    {
+      "id": "RD04",
+      "status": "CORRECTED",
+      "issue": "Frozen JVP did not establish a linear operator and stage epsilon did not directly equal output budget.",
+      "resolution": "Reference W plus mismatch authority and output coefficient/roundoff transfer explicit."
+    },
+    {
+      "id": "RD05",
+      "status": "CORRECTED",
+      "issue": "H5 q-bound notation, zero-log edge, and H4 lifted-root tube membership were incomplete.",
+      "resolution": "0<=norm(T)<=q<1; zero cases handled; lifted reduced root inclusion required."
+    },
+    {
+      "id": "RD06",
+      "status": "CORRECTED",
+      "issue": "Richardson q=0 edge and earlier model-specific global certificate reuse needed explicit treatment.",
+      "resolution": "One-step/floor special case and L0048 reuse/novelty limit explicit."
+    }
+  ],
+  "reproducibility_scope": {
+    "published_scientific_campaigns_rerun": 0,
+    "reviewer_new_native_runs": 0,
+    "reviewer_diagnostic_reruns": 0,
+    "candidate_exact_diagnostic_code_and_results_read": true,
+    "finite_diagnostics_are_general_proof": false
+  },
+  "positive_results_confirmed": {
+    "residual_budget_example": {
+      "uniform_work": 68,
+      "allocated_work": 36,
+      "weighted_budget": "1/16",
+      "required_extra_work_below": 32,
+      "unit": "scheduled unit-cost iterations"
+    },
+    "complexity_family": {
+      "uniform": "m(L+b+1)",
+      "allocated": "L+m(r+b)",
+      "asymptotic_regime": "fixed b, L >> m log m",
+      "scope": "same certified scheduled backend"
+    },
+    "homotopy_span_example": {
+      "stages": 8,
+      "waves": 3,
+      "ratio_upper": "5/8",
+      "scope": "stated full counted-cost model; not measured"
+    }
+  },
+  "integration_review": {
+    "path": "docs/reviews/20261011_promotion_theory/REPORT_KO.md",
+    "sections_read": [
+      "2.2",
+      "5"
+    ],
+    "status": "PASS_SCOPE_INTEGRATION",
+    "scope": "Sections 2.2 and 5 preserve conditional theory vs actual-target/native/global/runtime boundaries; H4 summary now explicitly requires certified uniqueness and lifted root inside full tube."
+  },
+  "report": "REVIEW_DYNAMICS.md",
+  "remaining_theory_blockers": [],
+  "application_boundaries": [
+    "No exact causal structure inferred from tiny represented coefficients.",
+    "No projection silently changes original target.",
+    "No finite rational example proves a generic theorem.",
+    "No conditional work/span theorem is a production or wall-time result."
+  ],
+  "inputs": [
+    {
+      "path": "HOMOTOPY.md",
+      "sha256": "6ea6ffee160fa7989d07565f430dfb87ab02e03f7d5dbc149d24efdc4a66a687"
+    },
+    {
+      "path": "HOMOTOPY.json",
+      "sha256": "5e8fd7e781fb59de1f910688be17a0c7d2153a630627e84b7c6df24c750b3ff3"
+    },
+    {
+      "path": "THEORY_GLOBAL.md",
+      "sha256": "036af4f517aa0a91f345bceeede77fe3dedbb698f4a999982ff0dba8e2919d2f"
+    },
+    {
+      "path": "GLOBAL_CLAIMS.json",
+      "sha256": "0cdeb721a8a583a44cf8db126dc7e573023862c3c166622d27051b573fe78c0f"
+    },
+    {
+      "path": "homotopy_exact_check.py",
+      "sha256": "ded7f8322a064cc882e74e6c2d91fa2977ce6029f53c47cf53396c483dacc13a"
+    },
+    {
+      "path": "HOMOTOPY_EXACT_CHECK.json",
+      "sha256": "aeec5e1351007d8db9483df5e8af119e1e0b4d3a7d56992549ca9de5a6364e57"
+    },
+    {
+      "path": "check_global_exact.py",
+      "sha256": "41b1ebb3a620930ad81131f44f4a215ea21341fa02a27e1c1179cbcb77d22559"
+    },
+    {
+      "path": "GLOBAL_EXACT_CHECKS.json",
+      "sha256": "d9bae20bd989cf544b9279f0f1ccacc0e129f44aede031fc63eaae47748c0c52"
+    }
+  ],
+  "decisions": [
+    {
+      "id": "H1",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "required_assumptions": [
+        "Exactly causal declared/reference target; common frozen invertible linear W; C^k callbacks on every recursive state; fixed theta."
+      ],
+      "approved_conclusion": "Unique regular triangular root graph and no fold",
+      "limits": [
+        "Not automatic for represented K coefficients; arbitrary finite-difference JVP is not a linear matrix."
+      ],
+      "proof_location": "HOMOTOPY.md#H1"
+    },
+    {
+      "id": "H2a",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "required_assumptions": [
+        "Nonnegative strictly lower B valid on same product tube; actual candidate defect d; d+B r<=r and finite callback domain."
+      ],
+      "approved_conclusion": "Finite causal majorant certificate without norm contraction",
+      "limits": [
+        "Nilpotent spectral radius zero does not imply small path-weight bounds."
+      ],
+      "proof_location": "HOMOTOPY.md#H2a"
+    },
+    {
+      "id": "H2b",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "required_assumptions": [
+        "Exactly causal map; each round reads only previous iterate; root and all iterates inside fixed tube; round errors enclosed."
+      ],
+      "approved_conclusion": "At most s exact rounds and inexact error convolution",
+      "limits": [
+        "No exact-s claim for near-causal actual map; output weights and assembly rounding remain necessary."
+      ],
+      "proof_location": "HOMOTOPY.md#H2b"
+    },
+    {
+      "id": "H3ab",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "required_assumptions": [
+        "Common predictor independent of preceding corrected roots; exact-causal branch identity or uniform actual-map root witness; R>1 holomorphic ball with uniform Rb<1 and invariant radius."
+      ],
+      "approved_conclusion": "Independent windows and analytic jet predictor",
+      "limits": [
+        "Independent local unique roots need not be same branch; coefficient orders/jet convolution costs are not parallel-free."
+      ],
+      "proof_location": "HOMOTOPY.md#H3"
+    },
+    {
+      "id": "H3c",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "required_assumptions": [
+        "Same target and output budget; upper bounds include setup, wave schedule, certificate, dispatch, failures and fallback; independently established comparator lower cost exceeds sum."
+      ],
+      "approved_conclusion": "Strict counted-cost span reduction",
+      "limits": [
+        "Eight-stage three-wave example is span reduction, not work reduction or measured speed."
+      ],
+      "proof_location": "HOMOTOPY.md#H3c"
+    },
+    {
+      "id": "H4",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "required_assumptions": [
+        "Exact RHS, J, mass and f_t intertwining; full-column-rank U; invertible W; causal uniqueness or H5 uniqueness plus lifted reduced root inside full tube; physical lift metric and costs included."
+      ],
+      "approved_conclusion": "Exact affine invariant dimension reduction",
+      "limits": [
+        "Nonlinear coordinates, near-invariance, off-manifold projection and strongest-solver asymptotic claims excluded."
+      ],
+      "proof_location": "HOMOTOPY.md#H4"
+    },
+    {
+      "id": "H5",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "required_assumptions": [
+        "A=B+E>=0 bounds actual full-map Lipschitz terms on closed tube; B strict lower; S=(I-B)^-1; 0<=norm(S E)<=q<1; verified radius closure; uniform common tube for branch claim."
+      ],
+      "approved_conclusion": "Actual-target near-causal root certificate and geometric rate",
+      "limits": [
+        "Actual current B/E/q and radius not evaluated; positive certificate-action tail and actual A-power iteration are distinct."
+      ],
+      "proof_location": "HOMOTOPY.md#H5"
+    },
+    {
+      "id": "G1",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "required_assumptions": [
+        "Full-space inverse gain or proved invariant error input subspace; actual U target; Lipschitz stage tubes; residual/operator/RHS/output uncertainty outward bounded."
+      ],
+      "approved_conclusion": "Whole-stage nonlinear contamination and adjoint influence",
+      "limits": [
+        "A gain on one observed residual direction cannot certify coupling-generated directions."
+      ],
+      "proof_location": "THEORY_GLOBAL.md#3"
+    },
+    {
+      "id": "G2",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "required_assumptions": [
+        "Actual coefficient Taylor defects d1..d5 and full-step C6 remainder/resolvent bound, or rigorous reconstruction defect integral including quadrature remainder."
+      ],
+      "approved_conclusion": "Local truncation upper bound independent of embedded estimator",
+      "limits": [
+        "No sampling-only derivative/quadrature authority; no implicit exact order condition for stored binary64 coefficients."
+      ],
+      "proof_location": "THEORY_GLOBAL.md#4"
+    },
+    {
+      "id": "G3",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "required_assumptions": [
+        "G1/G2 for every accepted step; certified initial/time uncertainty; exact-flow logarithmic norm over valid full trajectory tube; positive scales and outward metric ratios."
+      ],
+      "approved_conclusion": "Finite-trajectory global error with metric/time transport",
+      "limits": [
+        "No current native trajectory certificate; stiffness-independent order constant and online future weights require extra premises."
+      ],
+      "proof_location": "THEORY_GLOBAL.md#5"
+    },
+    {
+      "id": "G4",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "required_assumptions": [
+        "Fixed valid influences; rho(k)<=R q^k+eta with certified 0<q<1; precharged floors/mandatory costs; B>0; same backend scheduled comparator; all extra costs counted."
+      ],
+      "approved_conclusion": "Optimal continuous residual allocation and discrete sufficient work saving",
+      "limits": [
+        "Not generic integer optimum after ceiling except exact integer cases; not universal early-stop speedup; q=0 handled separately."
+      ],
+      "proof_location": "THEORY_GLOBAL.md#6"
+    },
+    {
+      "id": "TG5",
+      "decision": "PROMOTE",
+      "promotion_scope": "CONDITIONAL_DERIVED_THEOREM_AND_IMPLEMENTATION_CONTRACT",
+      "required_assumptions": [
+        "m=2^r, L>=r, b>=1, fixed q=1/2,R=c=1 and weights (2^L,1,...,1); equal certified budget and full overhead condition."
+      ],
+      "approved_conclusion": "Positive parametric scheduled-work complexity reduction",
+      "limits": [
+        "Not spatial-n scaling of fixed eight-stage RODAS; bit cost and future global weights not free."
+      ],
+      "proof_location": "THEORY_GLOBAL.md#6.3"
+    },
+    {
+      "id": "CURRENT_K_UNQUALIFIED_CAUSAL_CLAIM",
+      "decision": "REJECT",
+      "promotion_scope": "NOT_PROMOTED",
+      "required_assumptions": [],
+      "approved_conclusion": null,
+      "reason": "Withdrawn blanket native no-fold and exact-s-round claim; published coefficient counterevidence invalidates automatic premise transfer."
+    },
+    {
+      "id": "CURRENT_K_H5_APPLICABILITY",
+      "decision": "HOLD",
+      "promotion_scope": "NOT_PROMOTED",
+      "required_assumptions": [],
+      "approved_conclusion": null,
+      "reason": "Actual current E,q,r/domain enclosures not calculated."
+    },
+    {
+      "id": "PRODUCTION",
+      "decision": "HOLD",
+      "promotion_scope": "NOT_PROMOTED",
+      "required_assumptions": [],
+      "approved_conclusion": null,
+      "reason": "No new native contract implementation/authority integration performed in this theory loop."
+    },
+    {
+      "id": "ACTUAL_GLOBAL_TRAJECTORY",
+      "decision": "HOLD",
+      "promotion_scope": "NOT_PROMOTED",
+      "required_assumptions": [],
+      "approved_conclusion": null,
+      "reason": "G1-G3 witnesses not executed for a full new trajectory."
+    },
+    {
+      "id": "MEASURED_SPEED",
+      "decision": "HOLD",
+      "promotion_scope": "NOT_PROMOTED",
+      "required_assumptions": [],
+      "approved_conclusion": null,
+      "reason": "No new same-accuracy full-cost wall-time execution."
+    }
+  ]
+}

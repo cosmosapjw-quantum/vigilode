@@ -1,0 +1,101 @@
+{
+  "schema": "vigilode.external-design-independent-review.v1",
+  "reviewer": "math_audit_1024 independent numerical/code reviewer",
+  "reviewed_document": "docs/general_ode_design_20261024/DESIGN_KO.md",
+  "document_sha256": "6c0b0c424cba54d76a5c254febe6e00105b38d1903c1a3a739a44f92737d1565",
+  "scope": "Numerical mathematics, selected algorithms, actual public API/output contracts and linear solver settings. No native build or new benchmark performed for this review.",
+  "result": "PASS_WITH_EXPLICIT_SCOPE_LIMITS",
+  "unresolved_blocking_findings": [],
+  "checks": [
+    {
+      "item": "DOPRI5 tableau and nonlinear order proof",
+      "result": "PASS",
+      "evidence": "17 exact endpoint rooted-tree conditions through order five and 8 embedded conditions through order four in analysis/NUMERICS_CHECK.json; c=A*1 verified."
+    },
+    {
+      "item": "FSAL and pause/resume statements",
+      "result": "PASS",
+      "evidence": "Same immutable provider, registered schedule and full transition state explicitly required; exact cached endpoint derivative follows last-row tableau identity."
+    },
+    {
+      "item": "Oscillatory bound",
+      "result": "PASS",
+      "evidence": "Exact stability polynomial, contractivity for absolute phase increment <=0.9, Taylor remainder and variable-step telescoping bound verified; nonlinear/nonnormal extrapolation excluded."
+    },
+    {
+      "item": "RODAS stage count and transformation",
+      "result": "PASS",
+      "evidence": "Eight stages; Gamma=(gamma^-1 I-C)^-1, alpha=A Gamma, g=Gamma*1 match coefficients.rs. Equations13–17 algebraically equivalent in exact arithmetic."
+    },
+    {
+      "item": "Linear residual amplification",
+      "result": "PASS",
+      "evidence": "Residual now defined against approximate prior-stage RHS; nonnegative triangular propagation Q is nilpotent of degree8; endpoint weighting bound valid."
+    },
+    {
+      "item": "Actual JVP/GMRES algorithm",
+      "result": "PASS",
+      "evidence": "Routing default: restart40,totalArnoldi200,zero initial guess,no preconditioner. Raw-U absolute residual budget is downward-rounded |gamma|*1e-14, relative budget1e-10 times raw-U RHS2norm; maximum criterion matches gmres_into/common."
+    },
+    {
+      "item": "Local/global error theorem",
+      "result": "PASS_CONDITIONAL",
+      "evidence": "Uniform exact-flow Lipschitz and numerical local-defect assumptions stated on common neighborhood including computed states; local tolerance not represented as global certificate."
+    },
+    {
+      "item": "Dense output definitions",
+      "result": "PASS",
+      "evidence": "Quartic DOPRI samples, transformed RODAS quartic polynomial and W-filtered midpoint defect correspond to source; no interior global certificate claimed."
+    },
+    {
+      "item": "Public output/authorization contracts",
+      "result": "PASS",
+      "evidence": "General selector refuses mass/events/dense; explicit sampled output distinguished from retained interpolant; RODAS public arbitrary landing schedule not claimed; JVP vector atol and dense output separately refused."
+    },
+    {
+      "item": "Scope and audience",
+      "result": "PASS",
+      "evidence": "No BASS/rei-specific modeling, internal DAG/claim-gate status, candidate development history or timing benchmark results. References retain original paper titles. Methods and direct output extensions are the selected DOPRI5/RODAS5P families."
+    }
+  ],
+  "resolved_findings": [
+    {
+      "id": "DESIGN-R1",
+      "issue": "JVP defaults and absence of user preconditioner API were underspecified",
+      "resolution": "Actual40/200 settings, zero guess and no preconditioner now stated."
+    },
+    {
+      "id": "DESIGN-R2",
+      "issue": "Configured and effective raw-U GMRES absolute residual tolerances were not distinguished",
+      "resolution": "Added shifted system, gamma scaling, downward rounding and full maximum residual criterion."
+    },
+    {
+      "id": "DESIGN-R3",
+      "issue": "RODAS observation-table wording could imply public arbitrary landing schedules",
+      "resolution": "Table now says public interface only provides interval endpoints."
+    },
+    {
+      "id": "DESIGN-R4",
+      "issue": "JVP vector-atol/dense-output wording could imply only their combination was unsupported",
+      "resolution": "Both restrictions separately explicit."
+    },
+    {
+      "id": "DESIGN-R5",
+      "issue": "Stage residual used in triangular error proof needed precise RHS definition",
+      "resolution": "Residual explicitly uses approximate previous stages."
+    },
+    {
+      "id": "DESIGN-R6",
+      "issue": "Machine-readable session target requirement omitted current accepted-time exception",
+      "resolution": "target_must_be_current_or_registered=true verified in final specification."
+    }
+  ],
+  "limitations": [
+    "This is a bounded specification review, not an unrestricted production qualification or security review.",
+    "No independent proof of all nonlinear RODAS order conditions from rounded decimal literals is asserted.",
+    "The stated classical order, exact arithmetic identities and observed floating-point tests must remain distinct.",
+    "Final PDF rendering/layout is handled by the document writer, not assessed in this numerical review.",
+    "Published references are checked for method relevance; this review does not reproduce their full proofs."
+  ],
+  "machine_specification_sha256": "342e45c0452a8711cee72337e006affac0666faff767fe91c1020c2c2e3e2876"
+}

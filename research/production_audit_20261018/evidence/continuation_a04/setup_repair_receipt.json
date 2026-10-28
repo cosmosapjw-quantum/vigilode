@@ -1,0 +1,126 @@
+{
+  "schema": "vigilode-a04-setup-repair-v1",
+  "base_head": "2e232d3c4ed3d46bd7ba36041aa653f17fa71107",
+  "scope": [
+    "crates/rodas5p-core/src/leja_action.rs",
+    "crates/rodas5p-core/src/leja_setup_work.rs",
+    "crates/rodas5p-core/tests/leja_setup_work_contract.rs",
+    "crates/rodas5p-core/tests/leja_total_contract.rs"
+  ],
+  "source_sha256": {
+    "crates/rodas5p-core/src/leja_action.rs": "25904301d40f11d6a5fee1d27aac7454ca02874a9e995634e7909af2e4ae97e8",
+    "crates/rodas5p-core/src/leja_setup_work.rs": "b8dd7b8d74339209448ea512427b7813d63c49f2bda2f82d6e423f3135249baf",
+    "crates/rodas5p-core/tests/leja_setup_work_contract.rs": "7584be6525113fec606649a72425d5ee918d36eda60e502bbc67ddf66eae41c0",
+    "crates/rodas5p-core/tests/leja_total_contract.rs": "a9ac0d148eb0151f73c266d91cd18c15f40131f8225640ab8db634fb5a5047c6"
+  },
+  "repair": {
+    "prefix_interval_construction_charged": true,
+    "coefficient_result_allocation_requests_delayed_until_exponential_success": true,
+    "coefficient_cache_entry_stores_dependency_coverage_with_setup_subtotal": true,
+    "warm_counted_entry_propagates_partial_dependency_coverage": true,
+    "coefficient_setup_attempt_retained_on_fallible_cache_miss": true,
+    "fresh_local_static_initializer_cold_warm_count_test": true,
+    "actual_leja_points_builder_cold_warm_test": true,
+    "counted_warmed_zero_allocation_test": true,
+    "counted_legacy_report_and_work_counter_equality_test": true,
+    "numeric_thresholds_math_and_total_authority_changed": false
+  },
+  "first_failures": [
+    {
+      "command": "cargo test --locked --offline -p rodas5p-core --test leja_setup_work_contract counted_cache_history_inherits_legacy_static_dependency_coverage -- --exact --test-threads=1",
+      "exit_code": 101,
+      "log": "setup_repair_first_failure.log",
+      "sha256": "26d8f68964655c5317b1dc85b3ab4fb843eef51d7bf0a158e8c7e08e4bd4980f",
+      "finding": "Cold counted cache history lost the legacy points dependency and reported Complete instead of PartialUnattributed."
+    },
+    {
+      "command": "cargo check --locked --offline -p rodas5p-core",
+      "exit_code": 101,
+      "log": "setup_repair_compile1.log",
+      "sha256": "bb2b6d2394e9e53e4d88121598d8823f4612c26c652bfd939da48f1ea177288c",
+      "finding": "Initial repair compile lacked the SetupCoverage import; fixed before final verification."
+    },
+    {
+      "command": "cargo test --locked --offline -p rodas5p-core --lib leja_action::tests::counted_node_prefix_includes_interval_domain_construction -- --exact --test-threads=1",
+      "exit_code": 101,
+      "log": "setup_repair_prefix.log",
+      "sha256": "2f3bac0c5cbb0308476b3f7b8b176b4edb8206cd394fef06f0d4b2047f907634",
+      "finding": "The test initially expected 7 invocations per interval; the formula is 6 including point, domain interval, two endpoint subtractions, factor interval, and product."
+    },
+    {
+      "command": "cargo test --locked --offline -p rodas5p-core --lib leja_action::tests::failed_exponential_does_not_charge_unattempted_result_vectors -- --exact --test-threads=1",
+      "exit_code": 101,
+      "log": "setup_repair_result_alloc.log",
+      "sha256": "2dcc6480f74278862fcd26c1259af8250ee2fc965bf117ceb4782960387841f1",
+      "finding": "The test initially charged all five Taylor columns although overflow occurs in the first; the preserved-attempt expectation is 10 allocation requests and 48 requested items, with no final d/d_rad vectors."
+    },
+    {
+      "command": "cargo clippy --locked --offline -p rodas5p-core --all-targets -- -D warnings",
+      "exit_code": 101,
+      "log": "setup_repair_clippy.log",
+      "finding": "Initial lint pass identified mechanical style findings; all were fixed and final clippy passed."
+    }
+  ],
+  "final_gates": [
+    {
+      "command": "cargo test --locked --offline -p rodas5p-core --lib -- --test-threads=1",
+      "exit_code": 0,
+      "log": "setup_repair_lib_final2.log",
+      "sha256": "11c0e46b9189875d421995032b22e28a463999dd8d2bc617cadf2d0771791157",
+      "result": "27 passed"
+    },
+    {
+      "command": "cargo test --locked --offline -p rodas5p-core --test leja_setup_work_contract -- --test-threads=1",
+      "exit_code": 0,
+      "log": "setup_repair_contract_final2.log",
+      "sha256": "d210397d85409f8148490dda31940b57a4c02c51f503c58c7f717dbf1fdedaf3",
+      "result": "5 passed"
+    },
+    {
+      "command": "cargo test --locked --offline -p rodas5p-core --test leja_setup_work_contract counted_cache_history_inherits_legacy_static_dependency_coverage -- --exact --test-threads=1",
+      "exit_code": 0,
+      "log": "setup_repair_legacy_coverage_final.log",
+      "sha256": "8834cecf8b25af3624f3438875bc85c17d23673ade8a0aaa266569b0f2d08dc7",
+      "result": "1 passed in fresh test process"
+    },
+    {
+      "command": "cargo test --locked --offline -p rodas5p-core --test leja_total_contract test_a04_counted_warmed_certified_leja_action_zero_allocation -- --exact --test-threads=1",
+      "exit_code": 0,
+      "log": "setup_repair_counted_warm_alloc_final.log",
+      "sha256": "7877f6612cad0da6ab77d9ec13a27beaf19455d8b52c2491e3b02edd0301433e",
+      "result": "1 passed; 0 warmed allocations"
+    },
+    {
+      "command": "cargo test --locked --offline -p rodas5p-core --test leja_total_contract test_vg1_zero_allocation_warmed_certified_leja_action -- --exact --test-threads=1",
+      "exit_code": 0,
+      "log": "setup_repair_legacy_warm_alloc_final.log",
+      "sha256": "43af3cd7bb6081e6cf225e96fe43dede27b93c4623a6e44bcf5ef1b9aa0c07e0",
+      "result": "1 passed; 0 warmed allocations"
+    },
+    {
+      "command": "cargo clippy --locked --offline -p rodas5p-core --all-targets -- -D warnings",
+      "exit_code": 0,
+      "log": "setup_repair_clippy_final2.log",
+      "sha256": "5026de1cac4142ab60b029c09a4bd7819967d12f8b0b6d14fec22a722286f170",
+      "result": "passed"
+    },
+    {
+      "command": "rustfmt --edition 2024 --check crates/rodas5p-core/src/leja_action.rs crates/rodas5p-core/src/leja_setup_work.rs crates/rodas5p-core/tests/leja_setup_work_contract.rs crates/rodas5p-core/tests/leja_total_contract.rs",
+      "exit_code": 0,
+      "log": "setup_repair_fmt_final2.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": "passed"
+    },
+    {
+      "command": "git diff --check -- crates/rodas5p-core/src/leja_action.rs crates/rodas5p-core/src/leja_setup_work.rs crates/rodas5p-core/tests/leja_setup_work_contract.rs crates/rodas5p-core/tests/leja_total_contract.rs",
+      "exit_code": 0,
+      "log": "setup_repair_diff_final2.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "result": "passed"
+    }
+  ],
+  "pending": [
+    "Package cargo check --locked --offline -p rodas5p-core --all-targets is delegated to parent to avoid duplicate shared-tree builds."
+  ],
+  "decision_ceiling": "Scoped setup-cost repair only. Total Leja certificate authority remains EstimateOnly; A04 production promotion remains HOLD."
+}

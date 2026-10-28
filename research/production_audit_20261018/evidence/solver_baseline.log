@@ -1,0 +1,19 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 43.52s
+     Running `target/debug/examples/audit_solver_baseline`
+FORGED_CACHE status=Certified { bound: 1.3435695494301256e-7 } fused=[0.0, 0.0] bound=0.00000013435695494301256 actual_error=0.3919833186825007
+SUFFIX prefix_bound=4.0625 actual_suffix_at_2=7.999999999999999 nodes=[2.0, -2.0, 1.2246467991473532e-16]
+
+thread 'main' (5) panicked at crates/rodas5p-core/src/sparse_direct.rs:45:13:
+Assertion failed at /workspace/scratch/0dc1e721cf82/runtime/vendor_extract/rust-offline-rodas5p-rs-20260806/vendor/faer-0.24.4/src/sparse/csc/mod.rs:474:5
+Assertion failed: i < nrows
+- i = 2
+- nrows = 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+SPARSE_INVALID_ROW Err(Any { .. })
+
+thread 'main' (5) panicked at /workspace/scratch/0dc1e721cf82/runtime/vendor_extract/rust-offline-rodas5p-rs-20260806/vendor/faer-0.24.4/src/sparse/linalg/lu.rs:1875:9:
+incompatible symbolic and numeric variants
+SPARSE_BEFORE_FACTOR Err(Any { .. })
+SPARSE_ALTERED_PATTERN Ok(Ok(()))

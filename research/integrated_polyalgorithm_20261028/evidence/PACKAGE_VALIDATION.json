@@ -1,0 +1,48 @@
+{
+  "checks": [
+    {
+      "name": "artifact",
+      "argv": [
+        "python3",
+        "research/integrated_polyalgorithm_20261028/verify.py"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.2334452909999527,
+      "output": "research/integrated_polyalgorithm_20261028/evidence/ARTIFACT_CHECK.json",
+      "output_sha256": "ca258851552dc2aeb32b917e095d305fc127561b0f4cd0982dba8d395dc87166"
+    },
+    {
+      "name": "research_node",
+      "argv": [
+        "python3",
+        "tools/check-research-node.py",
+        "--base",
+        "384dba091a3d9e1aac0ecddec264958298239253"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 1.8164476609999838,
+      "output": "research/integrated_polyalgorithm_20261028/evidence/RESEARCH_NODE_CHECK.txt",
+      "output_sha256": "9f084f9f928eb7b1a015da95b72f2a55390fc5d84f3c709dcd1ff2a681dbc303"
+    },
+    {
+      "name": "source_authority",
+      "argv": [
+        "python3",
+        "tools/check-authority-refs.py",
+        "--paths",
+        "research/integrated_polyalgorithm_20261028/PREREGISTRATION.md",
+        "research/integrated_polyalgorithm_20261028/RESUME.md",
+        "research/integrated_polyalgorithm_20261028/error_contract",
+        "research/integrated_polyalgorithm_20261028/algebra_contract",
+        "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json",
+        "research/integrated_polyalgorithm_20261028/MANIFEST.json"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.09161988900086726,
+      "output": "research/integrated_polyalgorithm_20261028/evidence/SOURCE_AUTHORITY_CHECK.txt",
+      "output_sha256": "8ba7923dd8ef7a4a2274934cfdd049c6ebe079b98967c5a946f6454b445fd61e"
+    }
+  ],
+  "native_solver_validation": "NOT_RUN",
+  "full_repository_authority": "Known remote FAIL; not rerun or claimed repaired. Source-authority check covers the named mathematical inputs and integration plan only."
+}

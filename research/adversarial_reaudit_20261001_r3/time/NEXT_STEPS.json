@@ -1,0 +1,40 @@
+{
+  "schema": "vigilode.r3.time.next_steps.v1",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "nodes": [
+    {
+      "id": "TIME-01",
+      "priority": "P1",
+      "title": "Bind physical step equations to the represented integration interval",
+      "depends_on": [],
+      "targets": ["crates/rodas5p-integrators/src/output.rs", "crates/rodas5p-integrators/src/integrate.rs", "crates/rodas5p-integrators/src/dense_output_v2.rs", "crates/rodas5p-integrators/src/bdf.rs", "crates/rodas5p-integrators/src/radau.rs", "crates/rodas5p-integrators/src/adaptive_exponential.rs"],
+      "minimal_implementation": ["Use one planning value containing represented t_start, t_end and consumed h_eff; require t_end > t_start and verify the addition/subtraction relationship explicitly.", "In the local Sterbenz regime choose t_end from the nominal proposal and targets, then h_eff=t_end-t_start; pass that same h_eff through stage equations, dense extension, error/controller history and work receipt.", "Recheck user max_step and method constraints against h_eff, not the nominal h; if the next representable endpoint would exceed a hard maximum, report time-resolution failure instead of silently enlarging the step.", "Outside exact subtraction regime retain a documented multi-piece or compensated local-clock policy; do not claim the local prototype solves opposite-sign cancellation globally.", "Check internal Radau/BDF half-step clocks separately; outer-step advancement does not prove each substep advances.", "Feed actual successive h_eff to variable-step BDF coefficients, or explicitly restart BDF history where the fixed-step coefficient assumptions fail."],
+      "acceptance": ["Constant flow on the 8-ULP span at t0=+-1e12 with nominal h=1e-4 reaches y(tf)=1 within 1e-12 or returns a typed failure; no successful 0.8192 endpoint.", "Repeat identical local problem with time origin 0, large positive/negative origins and power-of-two unit changes; distinguish representational conditioning from truncation.", "Check exact requested endpoints, adjacent interior samples, hard stops, opposite-sign crossing and below-ULP steps.", "Check nonautonomous analytic problems and BDF history/order with changed effective h, including power-of-two ULP boundaries.", "Every successful recorded step has a receipt connecting physical h, represented endpoints and all accepted internal reports."],
+      "failure_policy": "Typed time-resolution or inconsistent-clock failure; never silently relabel a state to an unintegrated physical time.",
+      "candidate_evidence": ["probe/src/main.rs: represented_h_candidate", "exact_oracle.json"],
+      "claim_ceiling": "Standalone candidate checks constant-flow local clock consistency only; production, nonautonomous order and full BDF history still require implementation and tests."
+    },
+    {
+      "id": "TIME-02",
+      "priority": "P2",
+      "title": "Make nonzero-span output endpoint ownership unambiguous",
+      "depends_on": [],
+      "targets": ["crates/rodas5p-integrators/src/output.rs:OutputSchedule::uniform", "crates/rodas5p-integrators/src/output.rs:OutputSchedule::validate_span", "crates/rodas5p-integrators/src/output.rs:OutputCollector::new/due"],
+      "minimal_implementation": ["For nonzero spans require at least two represented output points and require actual endpoints in the output schedule.", "Reject uniform grids whose rounded interval count is zero for a nonzero span; do not let an epoch-scaled validation tolerance certify divisibility.", "Adopt strict endpoint equality, as in the standalone candidate, or expose an explicit endpoint-alias policy returning canonical actual timestamps and separate requested labels.", "Keep one-point schedules valid only for an exactly zero span."],
+      "acceptance": ["uniform(1e12,nextafter^4(1e12),1) rejects as indivisible or produces both true endpoints with a documented rule; it must not silently emit only y0 labelled tf.", "Explicit [tf] for t0<tf is rejected.", "Two adjacent distinct endpoint values remain distinct, including subnormal and large-epoch spans.", "The valid [t0,tf] control integrates to the analytic final value, while shifted endpoint labels are either rejected or canonically reported with alias metadata.", "Dense and clipped collectors produce identical endpoint semantics."],
+      "failure_policy": "Typed invalid-schedule error before integration; no success receipt with initial state at the final timestamp.",
+      "candidate_evidence": ["probe/src/main.rs: strict_schedule", "exact_oracle.json"],
+      "claim_ceiling": "Minimal admission contract only; production API compatibility decision remains with maintainers."
+    },
+    {
+      "id": "TIME-03",
+      "priority": "P2",
+      "title": "Separate fixed-grid construction from long-run accumulated clock drift",
+      "depends_on": ["TIME-01", "TIME-02"],
+      "targets": ["crates/rodas5p-integrators/src/output.rs", "crates/rodas5p-integrators/src/bdf.rs"],
+      "minimal_implementation": ["Define fixed-step grid ownership by indexed or compensated local timestamps, including exact final landing.", "Base BDF history on actual intervals; do not merely enlarge a tolerance to hide an extra step.", "Version the research replay clock policy explicitly before changing sealed research-driver histories."],
+      "acceptance": ["1000 nominal steps of 0.01 on (0,10) have the documented grid count without a final roundoff micro-step.", "BDF startup count and applied-order history match the chosen grid policy; endpoint accuracy remains controlled.", "Existing sealed research replays retain identity or receive a distinct, documented policy version and new evidence."],
+      "failure_policy": "Preserve the documented existing limitation until the new grid contract is tested; no generic fixed-step invariance claim."
+    }
+  ]
+}

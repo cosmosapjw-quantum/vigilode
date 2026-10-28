@@ -1,0 +1,60 @@
+--------------------------------------------------------------------------------
+Profile data file '~/vigilode-integration-followup-20261027/profile_r2/prof/callgrind/decay__adaptive.out' (creator: callgrind-3.22.0)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 725079
+Trigger: Program termination
+Profiled target:  ~/vigilode-integration-followup-20261027/profile_r2/prof_bin repeat-arm decay adaptive 30 (PID 3730845, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       99
+Include dirs:     
+User annotated:   
+Auto-annotation:  on
+
+--------------------------------------------------------------------------------
+Ir                 
+--------------------------------------------------------------------------------
+4,267,664 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                file:function
+--------------------------------------------------------------------------------
+322,830 ( 7.56%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/adapters/zip.rs:rodas5p_integrators::dopri5::Dopri5Session<F>::advance_to
+318,240 ( 7.46%)  crates/rodas5p-integrators/src/dopri5.rs:rodas5p_integrators::dopri5::Dopri5Session<F>::advance_to [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+223,626 ( 5.24%)  ./string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S:__memcpy_avx_unaligned_erms [/usr/lib/x86_64-linux-gnu/libc.so.6]
+216,406 ( 5.07%)  ./malloc/./malloc/malloc.c:_int_malloc [/usr/lib/x86_64-linux-gnu/libc.so.6]
+191,070 ( 4.48%)  crates/rodas5p-integrators/src/output.rs:rodas5p_integrators::output::land_capped [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+158,850 ( 3.72%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:rodas5p_integrators::dopri5::Dopri5Session<F>::advance_to
+147,789 ( 3.46%)  ./malloc/./malloc/malloc.c:_int_free [/usr/lib/x86_64-linux-gnu/libc.so.6]
+146,880 ( 3.44%)  crates/rodas5p-integrators/src/output.rs:rodas5p_integrators::output::step_to [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 96,960 ( 2.27%)  crates/vigilode/src/switching.rs:vigilode::switching::drive_windows [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 95,790 ( 2.24%)  crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::model::{{closure}} [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 89,610 ( 2.10%)  crates/vigilode/src/session.rs:vigilode::session::<impl vigilode::explicit::Dopri5>::with_session::{{closure}} [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 79,894 ( 1.87%)  ./elf/./elf/dl-lookup.c:do_lookup_x [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+ 75,320 ( 1.76%)  ./malloc/./malloc/malloc.c:malloc [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 69,788 ( 1.64%)  ./elf/../sysdeps/x86_64/dl-machine.h:_dl_relocate_object
+ 67,830 ( 1.59%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/iter/range.rs:rodas5p_integrators::dopri5::Dopri5Session<F>::advance_to
+ 66,660 ( 1.56%)  ./math/../sysdeps/ieee754/dbl-64/e_pow.c:__ieee754_pow_fma [/usr/lib/x86_64-linux-gnu/libm.so.6]
+ 66,240 ( 1.55%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:rodas5p_integrators::dopri5::Dopri5Session<F>::advance_to
+ 58,501 ( 1.37%)  ./elf/./elf/dl-tunables.c:__GI___tunables_init [/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2]
+ 54,334 ( 1.27%)  ./malloc/./malloc/malloc.c:malloc_consolidate [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 53,550 ( 1.25%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/f64.rs:rodas5p_integrators::output::land_capped
+ 53,188 ( 1.25%)  ./stdio-common/./stdio-common/vfscanf-internal.c:__vfscanf_internal [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 52,584 ( 1.23%)  ./malloc/./malloc/malloc.c:free [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 49,426 ( 1.16%)  ./elf/./elf/do-rel.h:_dl_relocate_object
+ 45,360 ( 1.06%)  crates/rodas5p-core/src/work.rs:rodas5p_core::work::WorkCounters::delta [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 42,000 ( 0.98%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/uint_macros.rs:rodas5p_core::work::WorkCounters::delta
+ 41,640 ( 0.98%)  crates/rodas5p-integrators/src/adaptive.rs:rodas5p_integrators::adaptive::adaptive_next_step_after_attempt_prevalidated [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 38,250 ( 0.90%)  crates/rodas5p-integrators/src/output.rs:rodas5p_integrators::output::OutputCollector::limit_step [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 38,100 ( 0.89%)  crates/rodas5p-integrators/src/adaptive.rs:rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor_prevalidated [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 37,080 ( 0.87%)  crates/vigilode/examples/adapter_checkpoint_trace.rs:adapter_checkpoint_trace::rec [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 35,910 ( 0.84%)  crates/rodas5p-integrators/src/dopri5.rs:rodas5p_integrators::dopri5::error_norm [~/vigilode-integration-followup-20261027/profile_r2/prof_bin]
+ 35,165 ( 0.82%)  ./malloc/./malloc/malloc.c:realloc [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 34,736 ( 0.81%)  ./malloc/./malloc/malloc.c:_int_realloc [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 33,660 ( 0.79%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/num/f64.rs:rodas5p_integrators::output::step_to
+ 30,900 ( 0.72%)  ~/.rustup/toolchains/1.94.1-x86_64-unknown-linux-gnu/lib/rustlib/src/rust/library/core/src/slice/iter/macros.rs:vigilode::session::<impl vigilode::explicit::Dopri5>::with_session::{{closure}}
+ 25,672 ( 0.60%)  ./stdlib/../stdlib/strtol_l.c:____strtoul_l_internal [/usr/lib/x86_64-linux-gnu/libc.so.6]

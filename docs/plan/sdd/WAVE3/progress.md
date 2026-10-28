@@ -1,0 +1,38 @@
+# SDD ledger — plan: docs/plan/IMPLEMENTATION_WAVE3.md
+- Base: production/wave2-integration 08fd052 (Task 0 absorbed: w2-final-fix + h-checker merged)
+- Task 0: complete (08fd052)
+- Pre-flight scan: preflight-scan.md (opus), 7 conflicts C1–C7, false premises FP1–FP6, corrections B*. Table lives in that file.
+- Ruling: adopt R-C1..R-C7, B0, B1a–c, B2a–d, B3c–f, FP1–FP5 fixes exactly as written in preflight-scan.md §(b)/(c) — scan verified against 08fd052; spec authority is PRODUCTION_PLAN — cost if wrong: rework on seam tasks.
+- Ruling: B0 applied as new branch production/wave3-integration = 08fd052 + plan branch merge (75a0c6c), leaving wave2-integration untouched — cost if wrong: none.
+- Ruling: dispatch order per scan §(a): batch 1 = T2 b1c-staleness (opus), T3 p0-fastdense (opus), T4 p0-atol (sonnet); T5 after T4 merges; T6, T1a as slots free; T3 rebases onto T4+T5 before its regression step.
+- Ruling: heavy suites/benchmarks go to workstation handoffs (user request 07:49); cloud runs targeted tests only.
+- Dispatched p0-atol (BASE 75a0c6c)
+- Dispatched b1c-staleness (BASE 75a0c6c)
+- Dispatched p0-fastdense (BASE 75a0c6c)
+- Task 4: implementer DONE_WITH_CONCERNS 997fefe; review dispatched
+- Task 4: review ✅/Approved, 0C/0I/5M. Ruling: Minor 1 (Stats.adaptive.atol for vectors) carried to T7; Minors 2–3 (asymmetric-vector order test, nonempty atol_vector allocation guard) parked for T8 seam tests — test-strength only, code verified by inspection. Task 4: complete (997fefe), merged into wave3-integration 997fefe.
+- Task 5 dispatched from 997fefe (R-C4).
+- Task 2: implementer DONE 21ed134..129aa46; gate FAIL (HIRES fact/acc 0.588 > 0.4; Bruss PASS); L-0141; review dispatched
+- Task 5: implementer DONE_WITH_CONCERNS 547cd79. Ruling: STATS_SCHEMA bump deferred to T3, which already plans schema v3 — one bump covers events + fast-dense fields — cost if wrong: one extra bump. Ruling: NaN event function truncates to step start (implementer reading) accepted pending review.
+- Task 5: review ✅/Approved 0C/0I/6M. Ruling: fix round 1 (resume implementer) for M1 docs, M2 test name, M3 cap path, M6 failure overwrite; M4 (fast-route rerun) and M5 (silent no-op paths) parked for T8 seam work.
+- Task 2: review ✅(⚠ Robertson GMRES pin has no wave-2 cross-record; pinned from base 75a0c6c per B2b, accepted)/Approved 0C/0I/2M. Ruling: M1 (verdict field on ungated arms in results.json) and M2 parked — results.json is ledger-bound, change would need a superseding row; note for wave-4 B1 card. Task 2: complete (129aa46), merged 021d28c. Gate FAIL recorded; lagged stays unrouted.
+- Task 5: re-review ALL ADDRESSED. Task 5: complete (f65d968), merged e9c5bbd. T3 notified to merge integration tip for facade step.
+- Task 1a dispatched (e1b-dense, base e9c5bbd, sonnet); T1b = workstation handoff LOCAL_E1B_HANDOFF_W3.md; controller appends L-0142 after results return.
+- Task 6: implementer DONE_WITH_CONCERNS 93399d6. Ruling: clippy job --no-deps accepted — rodas5p-core too_many_arguments at damped_moments.rs:492 is research-crate debt, not production gate scope — cost if wrong: core lints unchecked in CI.
+- Task 6: review ✅/Approved 0C/0I/7M. Ruling: fix round 1 for M1–M5, M7; M6 resolved by ruling — T7 must not mark input structs Options/Atol #[non_exhaustive] (plan text already says so) — carry into T7 dispatch.
+- Task 6: re-review ALL ADDRESSED; new minor (Robertson y1 reference tolerance wider than value) parked for T7 example pass. Task 6: complete (eabe19d), merged 323ffec.
+- Task 1a: implementer DONE_WITH_CONCERNS 219a140..0700689. Ruling: e1b-dense not merged into wave3-integration until T1b results + L-0142 land (checker requires ledger row for new node) — cost if wrong: later merge conflict in bench crate, small.
+- Task 3: implementer DONE_WITH_CONCERNS 90b8826,4702b4f,7b1eb8b,169cbf2 (D1–D9). Review dispatched (opus) on diff vs current integration tip.
+- Task 1a: review ❌/Needs fixes 0C/2I/5M (I1 record executed control + interior counters; I2 handoff apt deps). Reviewer confirmed Enforce reaches facade; Enforce=Off on Bruss n=100 legitimate. Fix round 1 (resume implementer).
+- Task 1a: re-review ALL ADDRESSED; M2/M4/M5 parked (safe for single T1b run). Task 1a: complete (58e7f0f), held off integration until T1b + L-0142. Pending for T1b: FastDense if-let branch after T3 merges; R-C5 rerun after T7; fill SHA_UNDER_TEST.
+- Task 3: review ✅/Approved 0C/0I/6M; D3 accepted (reject = documented Recoverable contract). Ruling: sequential route accept-unavailable under Enforce/WFilteredEnforce is the real defect — parked for T8/wave 4 (behaviour change on sequential driver, needs own tests) — cost if wrong: one more wave carries the weaker guarantee on mass/Enforce route. Fix round 1 for M1,M2,M5,M6 + docs M3,M4.
+- Task 3: re-review ALL ADDRESSED. Task 3: complete (35d6604), merged 6594d10; vigilode all-targets green and 4 examples exit 0 on merged tip (now routed through fast dense).
+- Task 7: implementer DONE_WITH_CONCERNS d816b9f,4945683. Ruling: Unsupported unit variants accepted — a future payload ships as a new variant (enum is #[non_exhaustive]), not by changing an old one — cost if wrong: one breaking change later.
+- T1b prep: e1b-dense 7173ea7 (merge 6b5ebd0 of 6594d10). Fast-dense smoke: clipped 0, violations 0, Enforce samples 78 / rejections 0 / max est 0.641; Off samples 0. Ruling: control read from stats.options.interior_error with control_source tag accepted (FastDense has no control field); samples>0 assertion is the real drop detector.
+- Task 7: review ✅/Approved 0C/0I/5M (doc wording) — parked for T8 final fix wave. Task 7: complete (4945683), merged 4945683. Stage 1+2 code complete; next T1b + T8.
+- Final review (opus): FIXES NEEDED 0C/2I/6M — I1 facade uniform-vector=scalar under dense output test, I2 terminal-event test across all dense routes; minors docs. Ruling: one fix dispatch on production/w3-final-fix (base 4945683) also absorbs parked T4 M2/M3 and T7 doc minors.
+- Final fix: 5c6978d (DONE_WITH_CONCERNS). Ruling: final-review M5 (allocation margin + extra fast-dense allocation/B3d tests) and M6 (CI timing) parked for wave 4 — test-strength/process, no defect — cost if wrong: weaker allocation regression net one wave longer.
+- Final re-review ALL ADDRESSED. Task 8 integration (code): wave3-integration 5c6978d. Pending: local Job A (4945683) + Job B (e1b 33e60cf) results, L-0142, merge e1b-dense.
+- Local results (owner workstation, Rust 1.94.1): wave-2 08fd052 1580 pass / 0 fail / 110 ignored — wave-2 verified. Wave-3 4945683 1634 pass / 2 fail / 111 ignored; examples, hybrid, bench, checker all OK; all new wave-3 targets pass. E1b 33e60cf: 132 rows, 0 protocol violations, 0 clipped steps in 30 dense rows, dense driver ids as expected; verdict INCONCLUSIVE by preregistration; host load ~23/24 (systemd-udevd/modprobe) so timing diagnostic only.
+- Wave-3 failures diagnosed in cloud on 5c6978d: leja_setup_work_contract parallel 30/40 fail, serial 0/10 (rodas5p-core and test unchanged since 08fd052 — pre-existing order dependence on process-global OnceLock tables; also failed in wave-1 integration); production_audit_bound_collective parallel 3/40, serial 0/10 (global ALLOCATIONS counter, same pattern as krylov flake fixed in 08fd052). Ruling: pre-existing flakes, not wave-3 regressions; fix on node production/w3-flakes.
+- Flake fix 9b12bff (test-only; leja assert now biconditional on InitializedByThisCall — stronger, not weaker; bound_collective thread-local gate) 60/60 parallel, 10/10 serial; controller reviewed diff. Merged f2f20c1. E1b ingested 3e00b94 (L-0142) and merged. Wave 3: complete.

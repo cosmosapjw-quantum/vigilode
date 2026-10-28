@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "kind": "append_only_local_postflight",
+  "source_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+  "source_tree": "8cc5c76544b4cfa5c288f4d63a066cc6a4578eb9",
+  "ledger_row": "L-0141",
+  "checks": {
+    "check_research_node": {
+      "exit_code": 1,
+      "classification": "INHERITED_LEDGER_ERRORS_AND_HASH_DRIFT; L-0141 has no reported validation error",
+      "log_prefix": "check_research_node"
+    },
+    "check_authority_refs": {
+      "exit_code": 1,
+      "classification": "INHERITED_MISSING_HISTORICAL_COMMIT_40a36d922e915e1d1c296adc136b7e5b7676eb67",
+      "log_prefix": "check_authority_refs"
+    }
+  },
+  "classification": {
+    "new_local_numerical_failures": 0,
+    "historical_ledger_failures": "L-0124 two output SHA mismatches; L-0138 output SHA mismatch; L-0140 schema errors (verdict and supersedes). Preserved unchanged.",
+    "authority_reference_failure": "40a36d922e915e1d1c296adc136b7e5b7676eb67 is absent from local object database and advertised refs inspected; do not fabricate ref or rewrite history.",
+    "local_l0141": "The appended row is not named in check-research-node failure output; its referenced output hashes were bound when appended.",
+    "production_promotion": "HOLD",
+    "speed_promotion": "HOLD"
+  },
+  "historical_records_mutated": false,
+  "independent_review": {
+    "verdict": "PASS_LOCAL_EXECUTION_AND_NUMERIC_EVIDENCE; REPORTING_CORRECTION_RECORDED",
+    "reviewer": "read-only reviewer; did not implement LOCAL-01..05",
+    "verified": "82 earlier manifest entries and 414 source hashes matched; all six validation groups and six examples had exit 0; 450 benchmark rows passed; correction accurately interprets timing direction.",
+    "findings": [
+      "L-0142 must not replace L-0141 without inheriting its numeric output hashes.",
+      "Ledger review inputs must exist in the commit named by the row."
+    ],
+    "resolution_plan": "Resolved by L-0142, which references the evidence commit containing review inputs and inherits L-0141 outputs plus LOCAL_TIMING_ERRATUM_KO.md."
+  },
+  "reporting_erratum": {
+    "record": "LOCAL_TIMING_ERRATUM_KO.md",
+    "raw_measurements_unchanged": true,
+    "ledger_revision": "L-0142",
+    "ledger_commit": "3527b051872857f2c24851dbe7e2aa5fb1e4482d"
+  },
+  "repository_checkers": {
+    "check_research_node_final": {
+      "exit_code": 1,
+      "classification": "inherited L-0124 hash drift, L-0138 hash drift, L-0140 schema defects; no L-0141/L-0142 error",
+      "logs": "local_validation_01/check_research_node_final.*"
+    },
+    "check_authority_refs": {
+      "exit_code": 1,
+      "classification": "missing historical commit 40a36d922e915e1d1c296adc136b7e5b7676eb67; ordinary advertised branch fetch cannot recover it",
+      "logs": "local_validation_01/check_authority_refs*.{stdout,stderr,exit_code}"
+    }
+  },
+  "published_postflight": {
+    "branch": "research/all-dag-completion-20261018",
+    "published_head_at_check": "7a59f535b0c1f6ce72cef041727f6a28bcc88da8",
+    "check_research_node": {
+      "exit_code": 1,
+      "remaining_errors": [
+        "L-0124 two historical output SHA mismatches",
+        "L-0138 historical output SHA mismatch",
+        "L-0140 historical verdict/supersedes schema errors"
+      ],
+      "new_rows_clean": [
+        "L-0141",
+        "L-0142"
+      ]
+    },
+    "check_authority_refs": {
+      "exit_code": 1,
+      "counts": "1748 citations, 308 distinct SHAs; missing=1 (40a36d922e915e1d1c296adc136b7e5b7676eb67), missing+allowlisted=26, non-commit=53, reachable=227, unreachable+allowlisted=1",
+      "new_published_commits_reachable": true
+    }
+  }
+}

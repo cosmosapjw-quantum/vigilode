@@ -1,0 +1,129 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-tree-1023/crates/rodas5p-integrators)
+warning: function `integrate_affine_lawson_dopri5_observed` is never used
+   --> crates/rodas5p-integrators/src/quotient_flow.rs:786:8
+    |
+786 | pub fn integrate_affine_lawson_dopri5_observed<
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-tree-1023/crates/vigilode)
+warning: `rodas5p-integrators` (lib) generated 2 warnings
+error[E0463]: can't find crate for `vigilode`
+ --> crates/vigilode/tests/frontier_switch_contracts.rs:5:5
+  |
+5 | use vigilode::{
+  |     ^^^^^^^^ can't find crate
+
+error[E0463]: can't find crate for `vigilode`
+ --> crates/vigilode/tests/switching_contracts.rs:5:5
+  |
+5 | use vigilode::{
+  |     ^^^^^^^^ can't find crate
+
+error[E0282]: type annotations needed
+  --> crates/vigilode/tests/switching_contracts.rs:12:30
+   |
+12 |     let p = Problem::new(2, |t, y, out| {
+   |                              ^
+13 |         out[0] = -y[0];
+14 |         out[1] = t.cos();
+   |                  - type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+12 |     let p = Problem::new(2, |t: /* Type */, y, out| {
+   |                               ++++++++++++
+
+For more information about this error, try `rustc --explain E0463`.
+error: could not compile `vigilode` (test "frontier_switch_contracts") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error[E0282]: type annotations needed
+  --> crates/vigilode/tests/switching_contracts.rs:82:22
+   |
+82 |     Problem::new(1, |t, y, dy| {
+   |                      ^
+83 |         dy[0] = -10_000.0 * (y[0] - t.cos()) - t.sin();
+   |                                     - type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+82 |     Problem::new(1, |t: /* Type */, y, dy| {
+   |                       ++++++++++++
+
+error[E0282]: type annotations needed
+  --> crates/vigilode/tests/switching_contracts.rs:90:23
+   |
+90 |     .time_derivative(|t, _, f| {
+   |                       ^
+91 |         f[0] = -10_000.0 * t.sin() - t.cos();
+   |                            - type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+90 |     .time_derivative(|t: /* Type */, _, f| {
+   |                        ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/switching_contracts.rs:98:30
+    |
+ 98 |     let p = Problem::new(2, |t, y, dy| {
+    |                              ^
+ 99 |         dy[0] = -y[0];
+100 |         dy[1] = t.cos();
+    |                 - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+ 98 |     let p = Problem::new(2, |t: /* Type */, y, dy| {
+    |                               ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/vigilode/tests/switching_contracts.rs:199:30
+    |
+199 |     let p = Problem::new(1, |t, y, dy| {
+    |                              ^
+200 |         dy[0] = -10000.0 * (y[0] - t.cos()) - t.sin();
+    |                                    - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+199 |     let p = Problem::new(1, |t: /* Type */, y, dy| {
+    |                               ++++++++++++
+
+error[E0689]: can't call method `cos` on ambiguous numeric type `{float}`
+   --> crates/vigilode/tests/switching_contracts.rs:412:35
+    |
+412 |     assert!((r.final_state[0] - w.cos()).hypot(r.final_state[1] - w.sin()) < 3e-6);
+    |                                   ^^^
+    |
+help: you must specify a type for this binding, like `f32`
+    |
+403 |     let w: f32 = 80.0;
+    |          +++++
+
+error[E0689]: can't call method `sin` on ambiguous numeric type `{float}`
+   --> crates/vigilode/tests/switching_contracts.rs:412:69
+    |
+412 |     assert!((r.final_state[0] - w.cos()).hypot(r.final_state[1] - w.sin()) < 3e-6);
+    |                                                                     ^^^
+    |
+help: you must specify a type for this binding, like `f32`
+    |
+403 |     let w: f32 = 80.0;
+    |          +++++
+
+Some errors have detailed explanations: E0282, E0463, E0689.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `vigilode` (test "switching_contracts") due to 8 previous errors

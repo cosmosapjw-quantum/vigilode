@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-24",
+  "status": "completed_with_explicit_scopes",
+  "document": "docs/general_ode_design_20261024/DESIGN.pdf",
+  "maintained_chapter": "docs/general_ode_design_20261024/DISTINCTIVE_ALGORITHMS_KO.md",
+  "main_document_integration": "full chapter embedded before classical DOPRI/RODAS method chapters, not merely an appendix or navigation link",
+  "writing_skill": {
+    "package": "c39/my-writing-style",
+    "protocol": "WRITING_PROTOCOL_V4.md",
+    "register": "Korean academic, equation-led exposition with assumptions and complete proof sketches; no invented user style samples"
+  },
+  "toolkit": {
+    "paragraph_logic": {
+      "result": "38 short-paragraph warnings reviewed manually",
+      "limitation": "Korean displayed-math and theorem-adjacent segments are short in token/paragraph metrics; these warnings are not mathematical defects",
+      "evidence": "evidence/external/document_toolkit.json"
+    },
+    "citation_checks": {
+      "result": "Correctly formatted single-source snippet passed; full six-source parser submission did not parse all notes",
+      "limitations": [
+        "Initial Source-line format mismatch retained in raw evidence",
+        "Single-note parser limitation prevents claiming a complete automated citation audit",
+        "Local checked snippet [1] mapped to manuscript [4] at call time and [3] after final first-appearance renumbering"
+      ],
+      "evidence": [
+        "evidence/external/document_citations_final.json",
+        "evidence/external/document_citations_scoped.json"
+      ]
+    },
+    "bibtex": {
+      "entries": 6,
+      "syntax_issues": 0,
+      "online_metadata_verified_by_tool": false,
+      "evidence": "evidence/external/document_bibtex.json"
+    }
+  },
+  "independent_technical_review": {
+    "reviewer": "rescue_theory",
+    "scope": [
+      "C1 shared-factor causal uniqueness",
+      "C2 exact finite prefix propagation",
+      "C3 triangular homotopy determinant and domain-qualified path regularity",
+      "C4 polynomial quotient inverse",
+      "C5 bounded-defect residual contraction",
+      "C6 original-space causal residual amplification",
+      "CRT projectors and conditioning qualification"
+    ],
+    "correction_applied": "k simultaneous updates use k+1 evaluated residual batches; all final original-space validation costs kept separate",
+    "evidence": "analysis/THEORY_REASSESSMENT.json"
+  },
+  "implementation_distinctions": [
+    "GeneralOde conservative selection is separate from opt-in causal/quotient algorithms",
+    "Base JVP and projected dense factors remain in the current causal construction; current-stage Newton elimination does not mean fully derivative-free",
+    "Polynomial approximate-annihilator refinement is an operator component and is not automatically inserted into all nonlinear trajectories",
+    "Fixed-P nonlinear homotopy, invariant-ideal reduction, parameter cells and general moment providers are proved extensions with explicitly stated implementation gaps"
+  ],
+  "final_adaptive_policy_review": {
+    "default_exploration_fraction": 0.25,
+    "failed_probe_wait": "min(max_cooldown,max(1,ceil(C/(epsilon*P))-1))",
+    "accepted_expensive_wait": "exponential accepted-protected-step backoff, initially 4 and capped at 64",
+    "cost_budget_assumptions": [
+      "Identical representative nonnegative candidate cost C and positive protected cost P",
+      "Each failed probe has a physically accepted protected fallback for an accepted-progress interpretation",
+      "No maximum clipping",
+      "Exact arithmetic for theorem; binary64 ceil and finite score guards described separately"
+    ],
+    "rejected_fallback_scope": "previous reference produces only a cost prediction, not an accepted-progress theorem",
+    "derivative_permission_contract_unchanged": true
+  },
+  "scope_controls": {
+    "no_application_specific_physics": true,
+    "no_internal_status_vocabulary_in_reader_manuscript": true,
+    "no_unmeasured_performance_numbers": true,
+    "no_blanket_production_or_novelty_claim": true,
+    "figure_values": "exact causal dependency pattern and theoretical residual-contraction bounds; existing stability/flow figures are also analytical or structural"
+  },
+  "render_check": "docs/general_ode_design_20261024/editorial/RENDER_CHECK.json",
+  "render_pages": 20,
+  "document_sha256": {
+    "DESIGN_KO.md": "c8b94a9dc4213e6071f22b088e648d0998b15b9a11222d2a8afbc2366bd30eac",
+    "DISTINCTIVE_ALGORITHMS_KO.md": "3ef1c3fd8d679e9baa428c5f54a78fc46122aa4b89d3f139e167843d8cc10f7a",
+    "DESIGN.tex": "81840a4c2e616087a74565aa343997289b0354fbe537e090a8a3df06545e6793",
+    "DESIGN.pdf": "39da62d4e6de7a52b176ad78f4cfb6aef68037be802c8aeeb14b8101125e5096",
+    "SPECIFICATION.json": "699c517087df5f1913bc127ff2445037a107354de46cb2c48d3dacd174d69e5b",
+    "REFERENCES.bib": "6663c01a0a8d2359eeb48811e531b0822872f1d994d4aa7a8f2fcf25ef421e02"
+  },
+  "remaining_limitations": [
+    "The full bibliography did not receive a successful all-in-one automated citation-entailment review",
+    "Derived extensions require typed model bounds/providers before generic implementation",
+    "This design document is not the separate benchmark report and makes no universal timing guarantee"
+  ]
+}

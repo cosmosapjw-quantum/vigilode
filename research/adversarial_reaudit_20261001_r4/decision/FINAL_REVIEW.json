@@ -1,0 +1,349 @@
+{
+  "schema_version": "vigilode.r4.independent_final_review.v1",
+  "reviewer": "independent decision agent /root/r4_decision",
+  "audited_source": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "preregistration_commit": "b2914f3e3c03eda60a8547619db6284aac8250a2",
+  "independence": {
+    "candidate_design_performed": false,
+    "candidate_tuning_performed": false,
+    "owner_scripts_imported_by_exact_checks": false,
+    "native_replay": "Separate reviewer process invokes same frozen binary; not independent solver implementation",
+    "recursive_review_performed": false
+  },
+  "technical_verdict": "REWORK",
+  "integrated_report_review": "PASS_SCOPE_PRESERVED",
+  "production_decision": "HOLD",
+  "new_walltime_promotion": "NOT_EVALUATED",
+  "finding_counts": {
+    "total": 9,
+    "P2": 8,
+    "P3": 1,
+    "acknowledged_BDF_residual": 1
+  },
+  "findings": [
+    {
+      "id": "R4-TIME-01",
+      "severity": "P2",
+      "decision": "CONFIRMED_WITH_SCOPE",
+      "scope": "Public fixed BDF reference implementation, scalar identity-mass constant flow on the preregistered unit grid. No new full-BDF or production-comparator promotion.",
+      "evidence": [
+        "../time/FINDINGS.json",
+        "time_independent_native.jsonl"
+      ],
+      "impact_scope": "REFERENCE_INTEGRATOR"
+    },
+    {
+      "id": "R4-TIME-02",
+      "severity": "P2",
+      "decision": "CONFIRMED_WITH_SCOPE",
+      "scope": "Executed on native public Radau1 kernels and adaptive observed driver. Dense driver shares the trial by source inspection, not a second native execution. Nonconstant BDF startup is only a followup risk because it also changes order/history; no unchecked transfer of the Radau1 correction.",
+      "evidence": [
+        "../time/FINDINGS.json",
+        "time_independent_native.jsonl"
+      ],
+      "impact_scope": "REFERENCE_INTEGRATOR"
+    },
+    {
+      "id": "R4-ARITH-01",
+      "severity": "P2",
+      "decision": "CONFIRMED_WITH_SCOPE",
+      "scope": "Research-only public transform_bound helper; not currently called by production fused-phi integrators",
+      "evidence": [
+        "../polynomial/FINDINGS.json",
+        "polynomial_independent_native.jsonl"
+      ],
+      "impact_scope": "NOT_DEMONSTRATED_IN_PRODUCTION_CONSUMER"
+    },
+    {
+      "id": "R4-ARITH-02",
+      "severity": "P2",
+      "decision": "CONFIRMED_WITH_SCOPE",
+      "scope": "Research-only public helper accepts arbitrary vector order; current joint polynomial module only uses orders0..4",
+      "evidence": [
+        "../polynomial/FINDINGS.json",
+        "polynomial_independent_native.jsonl"
+      ],
+      "impact_scope": "NOT_DEMONSTRATED_IN_PRODUCTION_CONSUMER"
+    },
+    {
+      "id": "R4-ARITH-03",
+      "severity": "P3",
+      "decision": "CONFIRMED_WITH_SCOPE",
+      "scope": "Public helper malformed/externally supplied input; weight_phi_vectors itself always preserves b0",
+      "evidence": [
+        "../polynomial/FINDINGS.json",
+        "polynomial_independent_native.jsonl"
+      ],
+      "impact_scope": "NOT_DEMONSTRATED_IN_PRODUCTION_CONSUMER"
+    },
+    {
+      "id": "R4-HOM-01",
+      "severity": "P2",
+      "decision": "CONFIRMED_WITH_SCOPE",
+      "scope": "public/serde witness interface; native eight-stage target; built-in constructors and published HOM06 campaign are not shown wrong",
+      "evidence": [
+        "../homotopy/FINDINGS.json",
+        "homotopy_independent_native.jsonl"
+      ],
+      "impact_scope": "NOT_DEMONSTRATED_IN_PRODUCTION_CONSUMER"
+    },
+    {
+      "id": "R4-HOM-02",
+      "severity": "P2",
+      "decision": "CONFIRMED_WITH_SCOPE",
+      "scope": "public generic StageTarget API with s>8; native Rodas5P eight-stage path passes this control",
+      "evidence": [
+        "../homotopy/FINDINGS.json",
+        "homotopy_independent_native.jsonl"
+      ],
+      "impact_scope": "NOT_DEMONSTRATED_IN_PRODUCTION_CONSUMER"
+    },
+    {
+      "id": "R4-STAT-01",
+      "severity": "P2",
+      "decision": "CONFIRMED_WITH_SCOPE",
+      "scope": "The library path and published receipt replay were executed. CLI mapping was read; a full fresh CLI performance campaign was not executed. No corruption or overclaim by the prior author is alleged: prose correctly discloses the hold.",
+      "evidence": [
+        "../statistics/RESULT.json",
+        "statistics_independent_native.jsonl"
+      ],
+      "impact_scope": "PUBLIC_TIMING_VERIFIER_AND_SOURCE_CONSUMER"
+    },
+    {
+      "id": "R4-STAT-02",
+      "severity": "P2",
+      "decision": "CONFIRMED_WITH_SCOPE",
+      "scope": "Synthetic malformed-record construction and current public verifier were executed; genuine recorded campaign corruption was not observed. Unauthenticated JSON provenance is a separately acknowledged limitation and is not the finding.",
+      "evidence": [
+        "../statistics/RESULT.json",
+        "statistics_independent_native.jsonl"
+      ],
+      "impact_scope": "PUBLIC_TIMING_VERIFIER_AND_SOURCE_CONSUMER"
+    }
+  ],
+  "claims": [
+    {
+      "id": "R4-POLY-C01",
+      "decision": "ACCEPT_SCOPED_RESEARCH_RESULT",
+      "production_decision": "HOLD",
+      "scope": "Four fused/prefix reports and two dense reports; not a proof of all possible weighting behavior.",
+      "review_basis": "source and derivation read; frozen native replay and exact cross-checks where applicable",
+      "evidence": [
+        "../polynomial/CLAIMS.json"
+      ],
+      "independent_disposition": "ACCEPT_SCOPED_RESEARCH_RESULT"
+    },
+    {
+      "id": "R4-POLY-C02",
+      "decision": "ACCEPT_SCOPED_RESEARCH_RESULT",
+      "production_decision": "HOLD",
+      "scope": "No nonnormal operator certification and no global proof from the finite sweep.",
+      "review_basis": "source and derivation read; frozen native replay and exact cross-checks where applicable",
+      "evidence": [
+        "../polynomial/CLAIMS.json"
+      ],
+      "independent_disposition": "ACCEPT_SCOPED_RESEARCH_RESULT"
+    },
+    {
+      "id": "R4-POLY-C03",
+      "decision": "ACCEPT_SCOPED_RESEARCH_RESULT",
+      "production_decision": "HOLD",
+      "scope": "Directed-rounding runtime assumptions remain necessary; source review is not formal verification.",
+      "review_basis": "source and derivation read; frozen native replay and exact cross-checks where applicable",
+      "evidence": [
+        "../polynomial/CLAIMS.json"
+      ],
+      "independent_disposition": "ACCEPT_SCOPED_RESEARCH_RESULT"
+    },
+    {
+      "id": "R4-POLY-C04",
+      "decision": "ACCEPT_SCOPED_RESEARCH_RESULT",
+      "production_decision": "HOLD",
+      "scope": "Candidate only; not integrated into polynomial recurrence. A complete dynamic-range action contract remains open.",
+      "review_basis": "source and derivation read; frozen native replay and exact cross-checks where applicable",
+      "evidence": [
+        "../polynomial/CLAIMS.json"
+      ],
+      "independent_disposition": "ACCEPT_SCOPED_RESEARCH_RESULT"
+    },
+    {
+      "id": "R4-POLY-C05",
+      "decision": "ACCEPT_SCOPED_RESEARCH_RESULT",
+      "production_decision": "HOLD",
+      "scope": "Standalone candidate; full nilpotent-series implementation not changed.",
+      "review_basis": "source and derivation read; frozen native replay and exact cross-checks where applicable",
+      "evidence": [
+        "../polynomial/CLAIMS.json"
+      ],
+      "independent_disposition": "ACCEPT_SCOPED_RESEARCH_RESULT"
+    },
+    {
+      "id": "R4-POLY-C06",
+      "decision": "ACCEPT_SCOPED_RESEARCH_RESULT",
+      "production_decision": "HOLD",
+      "scope": "Analytic-only addition; not run, not implemented, not a total-roundoff or runtime optimum.",
+      "review_basis": "source and derivation read; frozen native replay and exact cross-checks where applicable",
+      "evidence": [
+        "../polynomial/CLAIMS.json"
+      ],
+      "independent_disposition": "ACCEPT_SCOPED_RESEARCH_RESULT"
+    },
+    {
+      "id": "R4-HOM-C01",
+      "decision": "ACCEPT_SCOPED_RESEARCH_RESULT",
+      "production_decision": "HOLD",
+      "scope": "stage target error; not ODE truncation/global error",
+      "review_basis": "source and derivation read; frozen native replay and exact cross-checks where applicable",
+      "evidence": [
+        "../homotopy/CLAIMS.json"
+      ],
+      "independent_disposition": "ACCEPT_SCOPED_RESEARCH_RESULT"
+    },
+    {
+      "id": "R4-HOM-C02",
+      "decision": "ACCEPT_SCOPED_RESEARCH_RESULT",
+      "production_decision": "HOLD",
+      "scope": "standalone Fraction candidate; no production change or speed evidence",
+      "review_basis": "source and derivation read; frozen native replay and exact cross-checks where applicable",
+      "evidence": [
+        "../homotopy/CLAIMS.json"
+      ],
+      "independent_disposition": "ACCEPT_SCOPED_RESEARCH_RESULT"
+    },
+    {
+      "id": "R4-HOM-C03",
+      "decision": "ACCEPT_SCOPED_RESEARCH_RESULT",
+      "production_decision": "HOLD",
+      "scope": "exact structural candidate and algebraic counts, not Rust outward integration or measured acceleration",
+      "review_basis": "source and derivation read; frozen native replay and exact cross-checks where applicable",
+      "evidence": [
+        "../homotopy/CLAIMS.json"
+      ],
+      "independent_disposition": "ACCEPT_SCOPED_RESEARCH_RESULT"
+    },
+    {
+      "id": "R4-HOM-C04",
+      "decision": "ACCEPT_SCOPED_RESEARCH_RESULT",
+      "production_decision": "HOLD",
+      "scope": "no fresh timing execution; shared host measured population only",
+      "review_basis": "source and derivation read; frozen native replay and exact cross-checks where applicable",
+      "evidence": [
+        "../homotopy/CLAIMS.json"
+      ],
+      "independent_disposition": "ACCEPT_SCOPED_RESEARCH_RESULT"
+    },
+    {
+      "id": "R4-HOM-C05",
+      "decision": "ACCEPT_SCOPED_RESEARCH_RESULT",
+      "production_decision": "HOLD",
+      "scope": "q2 certificate branch only; full integration not globally certified",
+      "review_basis": "source and derivation read; frozen native replay and exact cross-checks where applicable",
+      "evidence": [
+        "../homotopy/CLAIMS.json"
+      ],
+      "independent_disposition": "ACCEPT_SCOPED_RESEARCH_RESULT"
+    },
+    {
+      "id": "R4-STAT-MATH-01",
+      "decision": "ACCEPT_SCOPED_RESEARCH_RESULT",
+      "production_decision": "HOLD",
+      "scope": [
+        "Not identical to pooled-pair estimand outside the symmetric additive law",
+        "No arbitrary missingness guarantee",
+        "No float-rounding or speed guarantee"
+      ],
+      "review_basis": "source and derivation read; frozen native replay and exact cross-checks where applicable",
+      "evidence": [
+        "../statistics/RESULT.json"
+      ],
+      "independent_disposition": "ACCEPT_SCOPED_RESEARCH_RESULT"
+    },
+    {
+      "id": "R4-STAT-MATH-02",
+      "decision": "ACCEPT_SCOPED_RESEARCH_RESULT",
+      "production_decision": "HOLD",
+      "scope": [
+        "No fresh simulation or numeric coverage estimate for that limit"
+      ],
+      "review_basis": "source and derivation read; frozen native replay and exact cross-checks where applicable",
+      "evidence": [
+        "../statistics/RESULT.json"
+      ],
+      "independent_disposition": "ACCEPT_SCOPED_RESEARCH_RESULT"
+    },
+    {
+      "id": "R4-TIME-C01",
+      "decision": "ACCEPT_SCOPED_RESEARCH_RESULT",
+      "claim": "Variable-step BDF2 reproduces exact linear flow; isolated existing public variable-step kernel closes frozen four-unit fixtures.",
+      "production_decision": "HOLD",
+      "scope": "Frozen scalar flow and independently derived coefficient identity; not complete BDF stability/order proof.",
+      "independent_disposition": "ACCEPT_SCOPED_RESEARCH_RESULT"
+    },
+    {
+      "id": "R4-TIME-C02",
+      "decision": "ACCEPT_SCOPED_RESEARCH_RESULT",
+      "claim": "Unequal-split Richardson geometry factor eta/(1-eta); exact5/4 at frozen Radau1 quadratic primitive.",
+      "production_decision": "HOLD",
+      "scope": "Constant leading LTE coefficient regime; exact for one quadratic primitive; not a rigorous global error bound or blanket BDF correction.",
+      "independent_disposition": "ACCEPT_SCOPED_RESEARCH_RESULT"
+    }
+  ],
+  "independent_execution": {
+    "native_rows": 144,
+    "native_binary_replays": 4,
+    "native_replays_all_exit0_and_semantic_equal": true,
+    "exact_median_designs": 32,
+    "exact_spotchecks": 36,
+    "evidence": [
+      "native_replay_receipt.json",
+      "median_execution_receipt.json",
+      "exact_execution_receipt.json"
+    ]
+  },
+  "corrections_requested": [
+    {
+      "id": "DEC-SCOPE-01",
+      "status": "RESOLVED",
+      "target": "R4-TIME-02",
+      "request": "Do not claim regression from a previously correct source without a before/after check; updated-path mismatch is established."
+    },
+    {
+      "id": "DEC-SIGN-01",
+      "status": "RESOLVED",
+      "target": "REVIEW_KO.md section3.2",
+      "request": "Use magnitude |ehat_fine|=eta/(1-eta)|fine-coarse|, or include the minus sign for signed fine-minus-exact error."
+    }
+  ],
+  "process_notes": [
+    "Owner candidate experiments began after committed-and-published preregistration.",
+    "Independent post-evidence spotcheck script is a verifier in registered independent review, not a preregistered candidate experiment.",
+    "A reviewer serializer hit Python4300-digit integer conversion limit; initial script/error retained and repaired without changing mathematical comparisons.",
+    "Integrated report read once; final selected count/reference/DAG review completed. Scientific assertions preserve their individual claim ceilings."
+  ],
+  "runtime_summary_review": {
+    "status": "PASS_FOR_RECORDED_SCOPE",
+    "named_tests": 735,
+    "PASS": 671,
+    "IGNORED_NOT_RUN": 4,
+    "UNRESOLVED_BOUNDED_TIMEOUT": 20,
+    "NOT_RUN_TOTAL_BUDGET": 40,
+    "full_suite": "NOT_COMPLETE",
+    "evidence": "runtime_count_check.json"
+  },
+  "machine_bundle_review": "PASS_SELECTED_CROSSCHECK",
+  "publication_review": "PASS_FOR_AUDIT_REPORT_ONLY",
+  "review_complete": true,
+  "recursive_review_needed": false,
+  "format_advisory": "Normalize time claim evidence labels to derived/numerically checked/implementation-verified; no scientific disposition changes.",
+  "claim_admission_count": 15,
+  "crosscheck_evidence": "machine_crosscheck.json",
+  "unresolved_scientific_limits": [
+    "No production source repair applied.",
+    "No new wall-time performance campaign.",
+    "Witness input findings do not invalidate unchanged built-in constructors or historical q2 campaign.",
+    "Stage-count finding is generic s>8 API; native Rodas5P s8 control passes.",
+    "Time split mismatch is established on current source; previously-correct regression is not established.",
+    "Statistical candidate has explicit session-cell median estimand and iid/completeness/fixed-stopping assumptions.",
+    "Runtime has20timeout-unresolved+40budget-not-run+4ignored; doctests not run."
+  ]
+}

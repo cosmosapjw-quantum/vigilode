@@ -1,0 +1,940 @@
+{
+  "schema_version": 1,
+  "review_id": "independent-causal-integration-review-20261024",
+  "reviewer": "candidate_archaeology (did not implement reviewed controller or benchmark)",
+  "status": "final_round3_source_and_saved_measurements_review_pass_scoped",
+  "source_sha256": {
+    "crates/vigilode-coupled/src/switching.rs": "01f0f210f6b930544b888635a4323361210bcff6a5c361b4bed0b47afa46376d",
+    "crates/vigilode-coupled/src/adaptive.rs": "73cd56de05f1bff7867b53bcbb5763b00d7df3ef0eaf3481ccfd84fe9838cb11",
+    "crates/vigilode-coupled/src/raw_step.rs": "60d3d829e4bfdc2aa9719f852c95dc496b47faddada11145d36ec98a981556a3",
+    "crates/vigilode-coupled/src/solver.rs": "f467a19966a88d1b1de66cfef17c2c0fdf1033caeb87a1da2319457f9c70029c",
+    "crates/vigilode-coupled/examples/reconsideration_bench.rs": "39bd6bd65e3b6362f1a36852baa534313d68a8d0834a866f22c161743855fd8a",
+    "crates/vigilode-coupled/tests/switching_contracts.rs": "243b46989615317a02b650a4fcbf3d870301d875c833ec8ca5adbf55a9628b83",
+    "crates/vigilode-coupled/README.md": "2268b7b70e2be25e80dbaea2491631b1ea927846f65fc876456d82979d0958c4",
+    "research/candidate_reconsideration_20261024/analysis/BENCHMARK_PROTOCOL.md": "44eb79a6b8bee2b26271a9935a5dba39488a4d6d732bfce76086f431b3b6ceca"
+  },
+  "scope": [
+    "Opt-in causal candidate versus protected raw-U adaptive dispatch",
+    "Fatal error propagation, residual and embedded acceptance, successful-state commit",
+    "Callback and validation accounting",
+    "Causal routing without benchmark identity or reference access",
+    "Analytic benchmark models, band indexing and timing protocol",
+    "At most three implementation revision loops"
+  ],
+  "not_performed": [
+    "No production source edits by this reviewer",
+    "No numerical test or benchmark re-execution by this reviewer",
+    "No full-workspace correctness certification",
+    "No external solver comparison rerun",
+    "No claim of production-wide speed or stability improvement"
+  ],
+  "blocking_findings": [],
+  "contract_checks": [
+    {
+      "id": "IC01",
+      "result": "pass_source_and_reused_test_evidence",
+      "topic": "same_target_and_acceptance",
+      "evidence": [
+        "crates/vigilode-coupled/src/raw_step.rs:272",
+        "crates/vigilode-coupled/src/raw_step.rs:605",
+        "crates/vigilode-coupled/src/adaptive.rs:209"
+      ],
+      "detail": "The direct protected route and candidate fallback use the same protected workspace and original eight raw-U residuals. Candidate and protected results pass the same adaptive finite-value and effective-error <= 1 test. Accepted trajectory/history commit remains after output acceptance and model-epoch checks. This preserves existing acceptance contracts; it does not establish a global error estimator theorem."
+    },
+    {
+      "id": "IC02",
+      "result": "pass_source_and_reused_test_evidence",
+      "topic": "fatal_callback_propagation",
+      "evidence": [
+        "crates/vigilode-coupled/src/raw_step.rs",
+        "crates/vigilode-coupled/tests/switching_contracts.rs"
+      ],
+      "detail": "Guarded callbacks independently flag model errors before solver error classification, so a user callback that returns CoreError::LinearSolve cannot become a retryable trusted solver failure. Nonfinite callback output and model epoch mutation remain terminal. Focused test verifies one callback, one attempt and unchanged accepted state."
+    },
+    {
+      "id": "IC03",
+      "result": "pass_source_and_reused_test_evidence",
+      "topic": "work_accounting",
+      "detail": "Candidate callback work, protected workspace counters and separate original-residual validation are accumulated. Protected callback counters are replaced with actual guarded callback attempts, not added twice. The controller adds validation cost to protected cost; unit contract covers the overlapping-counter hazard. Atomic callback tests check both actual totals and zero candidate work during skips. Orthogonalization/vector/setup/time coverage is limited by the documented work proxy."
+    },
+    {
+      "id": "IC04",
+      "result": "pass_source",
+      "topic": "no_oracle_routing",
+      "detail": "CandidateRoute is caller declared. State decisions consume only prior protected work, current accepted/rejected status and current work receipts. Analytic references, model names, exact errors and benchmark winners never enter switching state. The registered uniform policy is not retrospectively fitted to individual case results."
+    },
+    {
+      "id": "IC05",
+      "result": "pass_source_and_reused_test_evidence",
+      "topic": "cooldown_and_hysteresis",
+      "detail": "Only accepted protected steps decrement cooldown. Ordinary local-error rejection does not mark a successfully solved candidate as a root failure. Candidate decline invokes immediate guarded fallback. Final priced cadence chooses L=clamp(ceil(C/(epsilon*P))-1,1,max_cooldown); legacy None retains exponential backoff. Successful re-entry resets backoff. P_probes <= 1 + floor(A/c) uses c=1 for priced mode and initial_cooldown for legacy mode. It is not a bound on total trajectory work or wall time."
+    },
+    {
+      "id": "IC06",
+      "result": "pass_manual_derivation",
+      "topic": "benchmark_exact_solutions",
+      "detail": "Checked initial conditions and derivatives for all seven model families: diagonal exponentials; unchanged synthetic-cost diagonal model; scalar Riccati y=a*y0*exp(a*t)/(a+0.5*y0*(1-exp(a*t))); triangular block y0=5*(exp(-t)-exp(-20*t))/19, y1=0.1*exp(-20*t); damped rotation exp(-0.1*t)*(cos(1000*t),sin(1000*t)); clock-augmented varying rate y=0.1*exp(-a*t-b*(1-exp(-40*t))/40). JVP clock derivative is +40*b*exp(-40*clock)*y. Ordinary floating-point evaluation is not interval certified."
+    },
+    {
+      "id": "IC07",
+      "result": "pass_source",
+      "topic": "band_storage",
+      "detail": "Benchmark uses row-major compact storage row*(lower+upper+1)+col+lower-row, consistent with the BandedJacobian contract. Oscillatory 2x2 blocks use lower=upper=1; triangular blocks use lower=0,upper=1; diagonal models use zero bandwidth. Clock-augmented global first column is excluded from compact-band arm."
+    },
+    {
+      "id": "IC08",
+      "result": "pass_with_scope_limits",
+      "topic": "benchmark_fairness",
+      "detail": "Primary experiment includes fixed/adaptive causal, same-target raw protected, fast matrix-free, dense and applicable banded controls; common observation schedule and physical error cap; failed/incomplete/inaccurate rows retained; one warmup and cyclic interleaving; complete per-solve workspace/probes/rejection/fallback/receipt allocation timed. Resource permissions differ explicitly (analytic dense/banded Jacobian versus supplied JVP). Root-variant extension must be interpreted jointly with primary banded controls, not as evidence of superiority over the fastest applicable structural solver."
+    },
+    {
+      "id": "IC09",
+      "result": "pass_source_and_reused_test_evidence",
+      "topic": "priced_failed_exploration_round3",
+      "detail": "The final rule uses actual candidate work C and successful same-attempt protected P, otherwise previous successful P; neither exact answers nor benchmark identities enter the choice. Code computes ceil((C/P)/epsilon)-1, clamps below at one and above at max_cooldown, records upper clipping, and leaves valid-but-expensive candidates on legacy exponential backoff. None reproduces the original failure cadence. Candidate or protected score overflow is explicitly nullable and flagged; invalid epsilon and nonfinite/negative input weights are refused."
+    },
+    {
+      "id": "IC10",
+      "result": "pass_conditional_real_arithmetic_derivation",
+      "topic": "priced_cadence_bound_scope",
+      "detail": "For representative fixed positive C,P, no upper clipping and exact real arithmetic, L+1 >= C/(epsilon*P), hence C/((L+1)P) <= epsilon. An accepted-step interpretation additionally requires the failed-probe attempt to have an accepted protected endpoint: it plus the next L accepted protected steps gives L+1. If that endpoint is rejected, only a prediction is valid; L accepted cooldown steps alone do not justify the L+1 accepted-progress denominator. Binary64 computations are estimates, not outward interval certificates. CAUSAL_SWITCH.md and README now state these conditions."
+    },
+    {
+      "id": "IC11",
+      "result": "pass_experiment_design_source",
+      "topic": "legacy_and_persistent_failure_controls",
+      "detail": "Final primary modes include legacy-switching-causal alongside fixed, priced and applicable protected solvers. The explicit --basis-limit setting creates a separately named stress case with actual small projection rank; it is caller-supplied and does not grant the controller case-name access. The stress case must remain separate from the original seven models and cannot support a general speed claim."
+    }
+  ],
+  "observations": [
+    {
+      "id": "IR01",
+      "severity": "low",
+      "topic": "timing_metadata",
+      "source": "crates/vigilode-coupled/examples/reconsideration_bench.rs:309",
+      "finding": "Raw header says complete solve including setup without explicitly excluding creation of the reusable Rayon executor, which occurs before timing. BENCHMARK_PROTOCOL already states that executor construction is excluded.",
+      "recommendation": "Make raw timing metadata explicitly say per-solve setup included; reusable executor construction excluded. Keep parallel comparisons scoped to an already-created pool, or separately measure cold construction.",
+      "status": "protocol_clear_header_clarification_requested"
+    },
+    {
+      "id": "IR02",
+      "severity": "informational",
+      "topic": "protected_attempt_semantics",
+      "source": "crates/vigilode-coupled/examples/reconsideration_bench.rs:254",
+      "finding": "fallback_attempts includes intentional protected calibration/cooldown dispatch, not just failed candidate probes. candidate_skipped preserves the distinction; README already explains compatibility.",
+      "recommendation": "In report tables call this protected-route attempts, or present a separate actual fallback count = fallback_attempted and not candidate_skipped. Do not infer root failure rate from this field alone.",
+      "status": "documented_ensure_analysis_labels"
+    },
+    {
+      "id": "IR03",
+      "severity": "informational",
+      "topic": "initial_protected_failure",
+      "source": "crates/vigilode-coupled/src/switching.rs:166",
+      "finding": "Calibration does not finish until a protected step is accepted, so a candidate is not a rescue for a trajectory whose initial protected route never succeeds.",
+      "recommendation": "State this limitation. A future protected-failure rescue would need separately bounded eligibility, original-residual acceptance and fatal-error rules; do not silently add it to this experiment.",
+      "status": "explicitly_documented_no_required_code_change"
+    },
+    {
+      "id": "IR04",
+      "severity": "informational",
+      "topic": "reference_and_accuracy_scope",
+      "source": "crates/vigilode-coupled/examples/reconsideration_bench.rs:240",
+      "finding": "Eligibility is a predeclared sampled absolute-error cap of 1e-5 on 17 times. Scaled error is diagnostic, analytic references use ordinary f64, and continuous trajectory/reference uncertainty is not certified.",
+      "recommendation": "Do not state rigorous global accuracy or all-tolerance superiority. Retain errors alongside speedups; test tighter tolerances and independent high precision before such claims.",
+      "status": "disclosed_protocol_scope"
+    },
+    {
+      "id": "IR05",
+      "severity": "informational",
+      "topic": "exit_code_is_not_numerical_pass",
+      "source": "crates/vigilode-coupled/examples/reconsideration_bench.rs:278",
+      "finding": "Campaign can exit zero after serializing individual failed solver rows.",
+      "recommendation": "Aggregate success, completed observations, finite error and common error cap from each row; never use process exit alone as solver eligibility.",
+      "status": "analysis_requirement"
+    },
+    {
+      "id": "IR06",
+      "severity": "informational",
+      "topic": "work_proxy_staleness",
+      "source": "crates/vigilode-coupled/src/switching.rs",
+      "finding": "Protected EWMA may come from another state or h; default equal RHS/JVP cost omits machine-dependent vector/projection overhead and h-progress normalization.",
+      "recommendation": "Present achieved wall time separately; do not infer regret/runtime guarantee. Future work may use h-normalized measured costs with explicit bounded exploration, not benchmark identities.",
+      "status": "already_documented_and_stationary_bound_scoped"
+    },
+    {
+      "id": "IR07",
+      "severity": "informational",
+      "topic": "raw_benchmark_recomputation",
+      "source": "crates/vigilode-coupled/examples/reconsideration_bench.rs:240",
+      "finding": "Benchmark rows preserve reference-error metrics and counters but not full sampled state vectors, so the saved rows alone cannot independently recompute analytic errors.",
+      "recommendation": "Before external accuracy certification, export sampled states/reference identifiers or a deterministic independent check artifact. This does not invalidate the present executable-source-scoped smoke experiment.",
+      "status": "future_reproducibility_enhancement"
+    }
+  ],
+  "revision_loop_check": {
+    "result": "exactly_three_in_reviewed_causal_scope",
+    "distinct_recorded_revisions_observed": 3,
+    "evidence": "CAUSAL_SWITCH revision record, retained baseline_policy analysis and source_sha256 in execution receipts",
+    "round1": "Implementation plus five integration contracts; 73 tests pass.",
+    "round2": "Three controller unit tests added; 76 tests pass after recovery. Seven-model baseline measured no adaptive timing win versus unconditional forward; previous work-reduction fixture alone was insufficient.",
+    "round3": "Final diagnosed revision adds priced failure cadence, None legacy reproduction, overflow telemetry and five unit tests. 81 coupled tests pass at reviewed source hash. No fourth algorithm revision is authorized by this review.",
+    "environment_retries": "Earlier damaged archive and missing built crate failures used identical relevant source; they are infrastructure retries rather than extra algorithm loops.",
+    "limit": "This check covers the causal-controller workstream, not independent algebraic workstream changes."
+  },
+  "reused_execution_evidence": [
+    {
+      "receipt": "research/candidate_reconsideration_20261024/evidence/runs/causal-round1-tests.receipt.json",
+      "exit_code": 0,
+      "passed_tests_in_stdout": 73,
+      "sha256": "01056ce3514b045a61bbec81d1196abbdff39838afb519f9317a58b0fbd32159"
+    },
+    {
+      "receipt": "research/candidate_reconsideration_20261024/evidence/runs/causal-final-tests.receipt.json",
+      "exit_code": 101,
+      "passed_tests_in_stdout": 0,
+      "sha256": "a4e7666c451dee7393b79dab1f29a48ca6cae06f350b6d4ca7cea603e9540e14"
+    },
+    {
+      "receipt": "research/candidate_reconsideration_20261024/evidence/runs/causal-round2-tests.receipt.json",
+      "exit_code": 101,
+      "passed_tests_in_stdout": 0,
+      "sha256": "0c09e8d3065c3d03d34aff4a7e14c822aa166431b8ce9653dbc1e002f2464b17"
+    },
+    {
+      "receipt": "research/candidate_reconsideration_20261024/evidence/runs/causal-recovered-tests.receipt.json",
+      "exit_code": 0,
+      "passed_tests_in_stdout": 76,
+      "sha256": "693b04af6f792a326f90076f88725b7c6409f1f65aea87d88e264279379318db"
+    },
+    {
+      "receipt": "research/candidate_reconsideration_20261024/evidence/runs/causal-round3-tests.receipt.json",
+      "exit_code": 0,
+      "passed_tests_in_stdout": 81,
+      "sha256": "295781498eb515f8f9a846b57e4d6c710e48536b7fd93d1d3272434ab8b919ee",
+      "reviewed_switching_source_matches": true
+    }
+  ],
+  "measurement_review": {
+    "status": "independent_saved_raw_reaggregation_complete_no_new_solver_runs",
+    "campaign_sample_counts": {
+      "primary": 275,
+      "root-variants": 240
+    },
+    "total_timed_samples": 515,
+    "ineligible_timed_samples": [],
+    "ineligible_warmups": [],
+    "source_or_receipt_mismatches": [],
+    "raw_sources": [
+      {
+        "path": "research/candidate_reconsideration_20261024/evidence/runs/round3-causal-broad.stdout",
+        "sha256": "54474b4f47100bde68766fea5afc9907ec79293421e2ff61b7f93454e037255d",
+        "receipt_exit_code": 0,
+        "stdout_hash_matches": true,
+        "reviewed_code_hashes_match": true,
+        "case": "broad",
+        "threads": 1,
+        "modes": [
+          "fixed-causal",
+          "switching-causal",
+          "legacy-switching-causal",
+          "protected-raw",
+          "protected-mf",
+          "protected-dense",
+          "protected-band"
+        ],
+        "repeats": 5
+      },
+      {
+        "path": "research/candidate_reconsideration_20261024/evidence/runs/round3-causal-changing-rate.stdout",
+        "sha256": "53cd6089abc08a08ec024dccb261511001978a0db704ddbfd497bcfd1df72bc6",
+        "receipt_exit_code": 0,
+        "stdout_hash_matches": true,
+        "reviewed_code_hashes_match": true,
+        "case": "changing-rate",
+        "threads": 1,
+        "modes": [
+          "fixed-causal",
+          "switching-causal",
+          "legacy-switching-causal",
+          "protected-raw",
+          "protected-mf",
+          "protected-dense"
+        ],
+        "repeats": 5
+      },
+      {
+        "path": "research/candidate_reconsideration_20261024/evidence/runs/round3-causal-expensive-few-mode.stdout",
+        "sha256": "6e336d3dc0390c67fe949e84c1dae32817c883c1fb63931cdfb363a494b7ae57",
+        "receipt_exit_code": 0,
+        "stdout_hash_matches": true,
+        "reviewed_code_hashes_match": true,
+        "case": "expensive-few-mode",
+        "threads": 1,
+        "modes": [
+          "fixed-causal",
+          "switching-causal",
+          "legacy-switching-causal",
+          "protected-raw",
+          "protected-mf",
+          "protected-dense",
+          "protected-band"
+        ],
+        "repeats": 5
+      },
+      {
+        "path": "research/candidate_reconsideration_20261024/evidence/runs/round3-causal-few-mode-basis1.stdout",
+        "sha256": "44b0b18532e41fd74ef7b14b79037a19f7bfb9b37a2d24bc10767cc717593598",
+        "receipt_exit_code": 0,
+        "stdout_hash_matches": true,
+        "reviewed_code_hashes_match": true,
+        "case": "few-mode-basis1",
+        "threads": 1,
+        "modes": [
+          "fixed-causal",
+          "switching-causal",
+          "legacy-switching-causal",
+          "protected-raw",
+          "protected-mf",
+          "protected-dense",
+          "protected-band"
+        ],
+        "repeats": 5
+      },
+      {
+        "path": "research/candidate_reconsideration_20261024/evidence/runs/round3-causal-few-mode.stdout",
+        "sha256": "b113d63ea958bea11a8341d6e75ae020fa01d43ce1683bde55b7bf905c14a1db",
+        "receipt_exit_code": 0,
+        "stdout_hash_matches": true,
+        "reviewed_code_hashes_match": true,
+        "case": "few-mode",
+        "threads": 1,
+        "modes": [
+          "fixed-causal",
+          "switching-causal",
+          "legacy-switching-causal",
+          "protected-raw",
+          "protected-mf",
+          "protected-dense",
+          "protected-band"
+        ],
+        "repeats": 5
+      },
+      {
+        "path": "research/candidate_reconsideration_20261024/evidence/runs/round3-causal-nonnormal.stdout",
+        "sha256": "d3609c60f13779013a7ded0339ddebfed2bf2da005183c7a5e52704453395b6a",
+        "receipt_exit_code": 0,
+        "stdout_hash_matches": true,
+        "reviewed_code_hashes_match": true,
+        "case": "nonnormal",
+        "threads": 1,
+        "modes": [
+          "fixed-causal",
+          "switching-causal",
+          "legacy-switching-causal",
+          "protected-raw",
+          "protected-mf",
+          "protected-dense",
+          "protected-band"
+        ],
+        "repeats": 5
+      },
+      {
+        "path": "research/candidate_reconsideration_20261024/evidence/runs/round3-causal-oscillatory.stdout",
+        "sha256": "4b97951f45a3e88fa4d136fa006b0fc0ede361813a35e80866823f6d62159a6f",
+        "receipt_exit_code": 0,
+        "stdout_hash_matches": true,
+        "reviewed_code_hashes_match": true,
+        "case": "oscillatory",
+        "threads": 1,
+        "modes": [
+          "fixed-causal",
+          "switching-causal",
+          "legacy-switching-causal",
+          "protected-raw",
+          "protected-mf",
+          "protected-dense",
+          "protected-band"
+        ],
+        "repeats": 5
+      },
+      {
+        "path": "research/candidate_reconsideration_20261024/evidence/runs/round3-causal-riccati.stdout",
+        "sha256": "a582036b3aa4e16b15f717281d3afbbc2de2b501bea8b2a84a154f3f1546ffea",
+        "receipt_exit_code": 0,
+        "stdout_hash_matches": true,
+        "reviewed_code_hashes_match": true,
+        "case": "riccati",
+        "threads": 1,
+        "modes": [
+          "fixed-causal",
+          "switching-causal",
+          "legacy-switching-causal",
+          "protected-raw",
+          "protected-mf",
+          "protected-dense",
+          "protected-band"
+        ],
+        "repeats": 5
+      },
+      {
+        "path": "research/candidate_reconsideration_20261024/evidence/runs/round3-roots-expensive-few-mode-1.stdout",
+        "sha256": "b856961875f56b7b1e60f296dd679729e37e345166fd7ac0cfe59f3fd78b52d3",
+        "receipt_exit_code": 0,
+        "stdout_hash_matches": true,
+        "reviewed_code_hashes_match": true,
+        "case": "expensive-few-mode",
+        "threads": 1,
+        "modes": [
+          "fixed-causal",
+          "switching-causal",
+          "fixed-picard",
+          "switching-picard",
+          "fixed-residual-first",
+          "switching-residual-first",
+          "protected-raw",
+          "protected-dense"
+        ],
+        "repeats": 5
+      },
+      {
+        "path": "research/candidate_reconsideration_20261024/evidence/runs/round3-roots-expensive-few-mode-2.stdout",
+        "sha256": "91ff2353b0c1412ef14235d7dae4b55eb51de8560f6572abdf40db0c70a57b69",
+        "receipt_exit_code": 0,
+        "stdout_hash_matches": true,
+        "reviewed_code_hashes_match": true,
+        "case": "expensive-few-mode",
+        "threads": 2,
+        "modes": [
+          "fixed-causal",
+          "switching-causal",
+          "fixed-picard",
+          "switching-picard",
+          "fixed-residual-first",
+          "switching-residual-first",
+          "protected-raw",
+          "protected-dense"
+        ],
+        "repeats": 5
+      },
+      {
+        "path": "research/candidate_reconsideration_20261024/evidence/runs/round3-roots-few-mode-1.stdout",
+        "sha256": "3c744a562d60b80d1da3157efbf9ebdf562ade6deb82b39aff20cedcb4df6c96",
+        "receipt_exit_code": 0,
+        "stdout_hash_matches": true,
+        "reviewed_code_hashes_match": true,
+        "case": "few-mode",
+        "threads": 1,
+        "modes": [
+          "fixed-causal",
+          "switching-causal",
+          "fixed-picard",
+          "switching-picard",
+          "fixed-residual-first",
+          "switching-residual-first",
+          "protected-raw",
+          "protected-dense"
+        ],
+        "repeats": 5
+      },
+      {
+        "path": "research/candidate_reconsideration_20261024/evidence/runs/round3-roots-few-mode-2.stdout",
+        "sha256": "631bcf25d7baec6bc7b6f766f6f05a5617400723e1560fa705f0f8f68c1b5975",
+        "receipt_exit_code": 0,
+        "stdout_hash_matches": true,
+        "reviewed_code_hashes_match": true,
+        "case": "few-mode",
+        "threads": 2,
+        "modes": [
+          "fixed-causal",
+          "switching-causal",
+          "fixed-picard",
+          "switching-picard",
+          "fixed-residual-first",
+          "switching-residual-first",
+          "protected-raw",
+          "protected-dense"
+        ],
+        "repeats": 5
+      },
+      {
+        "path": "research/candidate_reconsideration_20261024/evidence/runs/round3-roots-riccati-1.stdout",
+        "sha256": "b92d97e5971e23d96550100ba8d5de7e0a0aba2ed8a28c38981b31e2e96cccac",
+        "receipt_exit_code": 0,
+        "stdout_hash_matches": true,
+        "reviewed_code_hashes_match": true,
+        "case": "riccati",
+        "threads": 1,
+        "modes": [
+          "fixed-causal",
+          "switching-causal",
+          "fixed-picard",
+          "switching-picard",
+          "fixed-residual-first",
+          "switching-residual-first",
+          "protected-raw",
+          "protected-dense"
+        ],
+        "repeats": 5
+      },
+      {
+        "path": "research/candidate_reconsideration_20261024/evidence/runs/round3-roots-riccati-2.stdout",
+        "sha256": "f01f2066dea3fe35afd47c17103a3ba1e57157e15955e9b39678dc10b7e4a1d0",
+        "receipt_exit_code": 0,
+        "stdout_hash_matches": true,
+        "reviewed_code_hashes_match": true,
+        "case": "riccati",
+        "threads": 2,
+        "modes": [
+          "fixed-causal",
+          "switching-causal",
+          "fixed-picard",
+          "switching-picard",
+          "fixed-residual-first",
+          "switching-residual-first",
+          "protected-raw",
+          "protected-dense"
+        ],
+        "repeats": 5
+      }
+    ],
+    "primary_independent_medians": [
+      {
+        "case": "broad",
+        "fixed_over_priced": 0.9324195631310557,
+        "legacy_over_priced": 1.0536142829378032,
+        "fastest_protected": "protected-band",
+        "protected_over_priced": 0.0010401784099930717,
+        "median_seconds": {
+          "fixed-causal": 0.520105858,
+          "switching-causal": 0.557802387,
+          "legacy-switching-causal": 0.587708562,
+          "protected-raw": 0.582664922,
+          "protected-mf": 0.589155556,
+          "protected-dense": 0.001113178,
+          "protected-band": 0.000580214
+        },
+        "samples_per_mode": {
+          "fixed-causal": 5,
+          "switching-causal": 5,
+          "legacy-switching-causal": 5,
+          "protected-raw": 5,
+          "protected-mf": 5,
+          "protected-dense": 5,
+          "protected-band": 5
+        }
+      },
+      {
+        "case": "changing-rate",
+        "fixed_over_priced": 0.920890183009455,
+        "legacy_over_priced": 1.270626334302182,
+        "fastest_protected": "protected-dense",
+        "protected_over_priced": 0.005387802423081724,
+        "median_seconds": {
+          "fixed-causal": 0.131816556,
+          "switching-causal": 0.143140364,
+          "legacy-switching-causal": 0.181877916,
+          "protected-raw": 0.183732471,
+          "protected-mf": 0.17363807,
+          "protected-dense": 0.000771212
+        },
+        "samples_per_mode": {
+          "fixed-causal": 5,
+          "switching-causal": 5,
+          "legacy-switching-causal": 5,
+          "protected-raw": 5,
+          "protected-mf": 5,
+          "protected-dense": 5
+        }
+      },
+      {
+        "case": "expensive-few-mode",
+        "fixed_over_priced": 0.9980512134328313,
+        "legacy_over_priced": 1.0247407112812135,
+        "fastest_protected": "protected-band",
+        "protected_over_priced": 0.48260544921258114,
+        "median_seconds": {
+          "fixed-causal": 0.015423603,
+          "switching-causal": 0.015453719,
+          "legacy-switching-causal": 0.015836055,
+          "protected-raw": 0.017264276,
+          "protected-mf": 0.009190751,
+          "protected-dense": 0.007982981,
+          "protected-band": 0.007458049
+        },
+        "samples_per_mode": {
+          "fixed-causal": 5,
+          "switching-causal": 5,
+          "legacy-switching-causal": 5,
+          "protected-raw": 5,
+          "protected-mf": 5,
+          "protected-dense": 5,
+          "protected-band": 5
+        }
+      },
+      {
+        "case": "few-mode",
+        "fixed_over_priced": 0.8917197339198901,
+        "legacy_over_priced": 0.9719545814703969,
+        "fastest_protected": "protected-band",
+        "protected_over_priced": 0.13087684522758508,
+        "median_seconds": {
+          "fixed-causal": 0.001004994,
+          "switching-causal": 0.001127029,
+          "legacy-switching-causal": 0.001095421,
+          "protected-raw": 0.002361569,
+          "protected-mf": 0.001827624,
+          "protected-dense": 0.000661918,
+          "protected-band": 0.000147502
+        },
+        "samples_per_mode": {
+          "fixed-causal": 5,
+          "switching-causal": 5,
+          "legacy-switching-causal": 5,
+          "protected-raw": 5,
+          "protected-mf": 5,
+          "protected-dense": 5,
+          "protected-band": 5
+        }
+      },
+      {
+        "case": "few-mode-basis1",
+        "fixed_over_priced": 1.1149652920543287,
+        "legacy_over_priced": 0.8521711491880358,
+        "fastest_protected": "protected-band",
+        "protected_over_priced": 0.049966149508289745,
+        "median_seconds": {
+          "fixed-causal": 0.003237799,
+          "switching-causal": 0.002903946,
+          "legacy-switching-causal": 0.002474659,
+          "protected-raw": 0.002339325,
+          "protected-mf": 0.001878621,
+          "protected-dense": 0.000582418,
+          "protected-band": 0.000145099
+        },
+        "samples_per_mode": {
+          "fixed-causal": 5,
+          "switching-causal": 5,
+          "legacy-switching-causal": 5,
+          "protected-raw": 5,
+          "protected-mf": 5,
+          "protected-dense": 5,
+          "protected-band": 5
+        }
+      },
+      {
+        "case": "nonnormal",
+        "fixed_over_priced": 0.7904620953558128,
+        "legacy_over_priced": 0.9593712027397197,
+        "fastest_protected": "protected-band",
+        "protected_over_priced": 0.19010522549482006,
+        "median_seconds": {
+          "fixed-causal": 0.000340222,
+          "switching-causal": 0.000430409,
+          "legacy-switching-causal": 0.000412922,
+          "protected-raw": 0.000886005,
+          "protected-mf": 0.000874758,
+          "protected-dense": 0.000141293,
+          "protected-band": 8.1823e-05
+        },
+        "samples_per_mode": {
+          "fixed-causal": 5,
+          "switching-causal": 5,
+          "legacy-switching-causal": 5,
+          "protected-raw": 5,
+          "protected-mf": 5,
+          "protected-dense": 5,
+          "protected-band": 5
+        }
+      },
+      {
+        "case": "oscillatory",
+        "fixed_over_priced": 0.9066483828751088,
+        "legacy_over_priced": 0.9636656568869237,
+        "fastest_protected": "protected-band",
+        "protected_over_priced": 0.2963100458311391,
+        "median_seconds": {
+          "fixed-causal": 0.00173887,
+          "switching-causal": 0.00191791,
+          "legacy-switching-causal": 0.001848224,
+          "protected-raw": 0.004237105,
+          "protected-mf": 0.003372993,
+          "protected-dense": 0.000616849,
+          "protected-band": 0.000568296
+        },
+        "samples_per_mode": {
+          "fixed-causal": 5,
+          "switching-causal": 5,
+          "legacy-switching-causal": 5,
+          "protected-raw": 5,
+          "protected-mf": 5,
+          "protected-dense": 5,
+          "protected-band": 5
+        }
+      },
+      {
+        "case": "riccati",
+        "fixed_over_priced": 1.0822981905994562,
+        "legacy_over_priced": 1.1767097228133876,
+        "fastest_protected": "protected-band",
+        "protected_over_priced": 0.14489319932940123,
+        "median_seconds": {
+          "fixed-causal": 0.000498381,
+          "switching-causal": 0.000460484,
+          "legacy-switching-causal": 0.000541856,
+          "protected-raw": 0.001236463,
+          "protected-mf": 0.000987658,
+          "protected-dense": 0.000240843,
+          "protected-band": 6.6721e-05
+        },
+        "samples_per_mode": {
+          "fixed-causal": 5,
+          "switching-causal": 5,
+          "legacy-switching-causal": 5,
+          "protected-raw": 5,
+          "protected-mf": 5,
+          "protected-dense": 5,
+          "protected-band": 5
+        }
+      }
+    ],
+    "parallel_independent_medians": [
+      {
+        "case": "expensive-few-mode",
+        "mode": "fixed-causal",
+        "one_thread_median_seconds": 0.017308872,
+        "two_thread_median_seconds": 0.016999716,
+        "one_over_two_thread": 1.0181859508711792
+      },
+      {
+        "case": "expensive-few-mode",
+        "mode": "switching-causal",
+        "one_thread_median_seconds": 0.01682241,
+        "two_thread_median_seconds": 0.016953967,
+        "one_over_two_thread": 0.992240341154374
+      },
+      {
+        "case": "expensive-few-mode",
+        "mode": "fixed-picard",
+        "one_thread_median_seconds": 0.017128841,
+        "two_thread_median_seconds": 0.013849014,
+        "one_over_two_thread": 1.23682747378261
+      },
+      {
+        "case": "expensive-few-mode",
+        "mode": "switching-picard",
+        "one_thread_median_seconds": 0.017109772,
+        "two_thread_median_seconds": 0.013029053,
+        "one_over_two_thread": 1.3132015043610612
+      },
+      {
+        "case": "expensive-few-mode",
+        "mode": "fixed-residual-first",
+        "one_thread_median_seconds": 0.018858227,
+        "two_thread_median_seconds": 0.013135304,
+        "one_over_two_thread": 1.435690182731972
+      },
+      {
+        "case": "expensive-few-mode",
+        "mode": "switching-residual-first",
+        "one_thread_median_seconds": 0.018686299,
+        "two_thread_median_seconds": 0.013445731,
+        "one_over_two_thread": 1.3897570165578947
+      },
+      {
+        "case": "few-mode",
+        "mode": "fixed-causal",
+        "one_thread_median_seconds": 0.001019747,
+        "two_thread_median_seconds": 0.002134115,
+        "one_over_two_thread": 0.4778313258657571
+      },
+      {
+        "case": "few-mode",
+        "mode": "switching-causal",
+        "one_thread_median_seconds": 0.001052856,
+        "two_thread_median_seconds": 0.002153134,
+        "one_over_two_thread": 0.48898768028371664
+      },
+      {
+        "case": "few-mode",
+        "mode": "fixed-picard",
+        "one_thread_median_seconds": 0.001316624,
+        "two_thread_median_seconds": 0.003134704,
+        "one_over_two_thread": 0.42001541453355723
+      },
+      {
+        "case": "few-mode",
+        "mode": "switching-picard",
+        "one_thread_median_seconds": 0.001510076,
+        "two_thread_median_seconds": 0.002834992,
+        "one_over_two_thread": 0.5326561768075535
+      },
+      {
+        "case": "few-mode",
+        "mode": "fixed-residual-first",
+        "one_thread_median_seconds": 0.001472279,
+        "two_thread_median_seconds": 0.003245561,
+        "one_over_two_thread": 0.45362850983235253
+      },
+      {
+        "case": "few-mode",
+        "mode": "switching-residual-first",
+        "one_thread_median_seconds": 0.001658369,
+        "two_thread_median_seconds": 0.00325878,
+        "one_over_two_thread": 0.5088925917060986
+      },
+      {
+        "case": "riccati",
+        "mode": "fixed-causal",
+        "one_thread_median_seconds": 0.000424209,
+        "two_thread_median_seconds": 0.001009001,
+        "one_over_two_thread": 0.4204247567643639
+      },
+      {
+        "case": "riccati",
+        "mode": "switching-causal",
+        "one_thread_median_seconds": 0.000428886,
+        "two_thread_median_seconds": 0.001026056,
+        "one_over_two_thread": 0.4179947293325121
+      },
+      {
+        "case": "riccati",
+        "mode": "fixed-picard",
+        "one_thread_median_seconds": 0.000908579,
+        "two_thread_median_seconds": 0.003395287,
+        "one_over_two_thread": 0.2676000585517513
+      },
+      {
+        "case": "riccati",
+        "mode": "switching-picard",
+        "one_thread_median_seconds": 0.00092914,
+        "two_thread_median_seconds": 0.002822073,
+        "one_over_two_thread": 0.32924024289945725
+      },
+      {
+        "case": "riccati",
+        "mode": "fixed-residual-first",
+        "one_thread_median_seconds": 0.001222602,
+        "two_thread_median_seconds": 0.003799371,
+        "one_over_two_thread": 0.32179063323902823
+      },
+      {
+        "case": "riccati",
+        "mode": "switching-residual-first",
+        "one_thread_median_seconds": 0.001255201,
+        "two_thread_median_seconds": 0.002934632,
+        "one_over_two_thread": 0.42772006847877353
+      }
+    ],
+    "published_primary_summary_crosschecks": [
+      {
+        "case": "broad",
+        "fixed_ratio_matches": true,
+        "protected_ratio_matches": true
+      },
+      {
+        "case": "changing-rate",
+        "fixed_ratio_matches": true,
+        "protected_ratio_matches": true
+      },
+      {
+        "case": "expensive-few-mode",
+        "fixed_ratio_matches": true,
+        "protected_ratio_matches": true
+      },
+      {
+        "case": "few-mode",
+        "fixed_ratio_matches": true,
+        "protected_ratio_matches": true
+      },
+      {
+        "case": "few-mode-basis1",
+        "fixed_ratio_matches": true,
+        "protected_ratio_matches": true
+      },
+      {
+        "case": "nonnormal",
+        "fixed_ratio_matches": true,
+        "protected_ratio_matches": true
+      },
+      {
+        "case": "oscillatory",
+        "fixed_ratio_matches": true,
+        "protected_ratio_matches": true
+      },
+      {
+        "case": "riccati",
+        "fixed_ratio_matches": true,
+        "protected_ratio_matches": true
+      }
+    ],
+    "findings": [
+      "All 515 timed rows satisfy success, complete output, finite errors, 17 sampled errors and the common 1e-5 absolute-error threshold. This is sampled numerical eligibility, not rigorous continuous global accuracy.",
+      "Among the original seven primary models, only Riccati has priced/fixed improvement (fixed/priced median 1.082). The other six remain slower than unconditional forward. The separately registered basis1 projection-failure stress case gives 1.115 versus fixed, while legacy is faster than priced there (legacy/priced 0.852).",
+      "Priced cadence improves retained legacy medians on broad (1.054) and changing-rate (1.271) but is not faster than the fastest applicable protected solver on any primary or stress case. This is partial recovery of prior regression, not general production speed qualification.",
+      "Two-worker Picard/residual-first shows synthetic expensive-RHS gains over the same algorithm at one worker (about 1.237-1.436), while cheap few-mode and Riccati are slower with two workers. Pool construction is amortized/excluded. Do not generalize synthetic gains to arbitrary applications.",
+      "The final algorithm revision was evaluated rather than replaced after these mixed results; no fourth tuning loop is justified or performed by this review."
+    ],
+    "limitations": [
+      "Five repetitions in one process, no independent-process confidence interval",
+      "Analytic f64 references and sampled absolute-error eligibility",
+      "Structured protected controls receive explicit analytic Jacobians; callback capabilities differ visibly",
+      "Standalone root extension excludes banded arm and must be read with primary strongest-control results",
+      "No new external VODE, diffsol or Julia comparison"
+    ]
+  },
+  "previous_source_review": {
+    "revision": 2,
+    "result": "no blocking source defect; 76 reused tests passed",
+    "switching_sha256": "0d87c4be921f3291305c4072ac875c2243b7ece979f05ba88f75b08d238b49eb"
+  },
+  "baseline_measurement_review": {
+    "status": "aggregate_and_source_design_reviewed_raw_reaggregation_pending",
+    "sample_count": 205,
+    "source": "research/candidate_reconsideration_20261024/analysis/baseline_policy/CAUSAL_BENCHMARK.json",
+    "finding": "All seven initial switching/fixed median ratios were below one; initial controller was not a demonstrated speed optimization. All seven passed the sampled error cap. Baseline preserved; final policy requires fresh measurements.",
+    "ratios": [
+      {
+        "case": "few-mode",
+        "fixed_over_adaptive": 0.9739728851848644,
+        "best_protected": "protected-band",
+        "best_protected_over_adaptive": 0.14553470132565968
+      },
+      {
+        "case": "expensive-few-mode",
+        "fixed_over_adaptive": 0.9982906613564809,
+        "best_protected": "protected-band",
+        "best_protected_over_adaptive": 0.4587593248581291
+      },
+      {
+        "case": "broad",
+        "fixed_over_adaptive": 0.8814376239333545,
+        "best_protected": "protected-band",
+        "best_protected_over_adaptive": 0.0009428464735304087
+      },
+      {
+        "case": "riccati",
+        "fixed_over_adaptive": 0.9101566482041523,
+        "best_protected": "protected-band",
+        "best_protected_over_adaptive": 0.14846806438093943
+      },
+      {
+        "case": "nonnormal",
+        "fixed_over_adaptive": 0.8704089884966069,
+        "best_protected": "protected-band",
+        "best_protected_over_adaptive": 0.20774267885977654
+      },
+      {
+        "case": "oscillatory",
+        "fixed_over_adaptive": 0.9715104957296411,
+        "best_protected": "protected-band",
+        "best_protected_over_adaptive": 0.3089127068095742
+      },
+      {
+        "case": "changing-rate",
+        "fixed_over_adaptive": 0.7309789944759673,
+        "best_protected": "protected-dense",
+        "best_protected_over_adaptive": 0.004249571674227959
+      }
+    ]
+  }
+}

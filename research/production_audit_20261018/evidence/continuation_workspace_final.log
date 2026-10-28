@@ -1,0 +1,35 @@
+   Compiling rodas5p-fair-ab v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-fair-ab)
+    Checking rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-krylov)
+    Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+error[E0004]: non-exhaustive patterns: `DenseOutputError::InvalidSegment(_)`, `DenseOutputError::ModifiedSegment` and `DenseOutputError::ContinuousResidualProviderUnavailable` not covered
+   --> crates/rodas5p-fair-ab/src/adaptive_global_error.rs:466:34
+    |
+466 |     result.map_err(|error| match error {
+    |                                  ^^^^^ patterns `DenseOutputError::InvalidSegment(_)`, `DenseOutputError::ModifiedSegment` and `DenseOutputError::ContinuousResidualProviderUnavailable` not covered
+    |
+note: `DenseOutputError` defined here
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:24:1
+    |
+ 24 | pub enum DenseOutputError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+ 28 |     InvalidSegment(&'static str),
+    |     -------------- not covered
+ 29 |     #[error("dense segment identity no longer matches its generated coefficients")]
+ 30 |     ModifiedSegment,
+    |     --------------- not covered
+...
+ 34 |     ContinuousResidualProviderUnavailable,
+    |     ------------------------------------- not covered
+    = note: the matched value is of type `DenseOutputError`
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern, a match arm with multiple or-patterns as shown, or multiple match arms
+    |
+467 ~         DenseOutputError::Core(error) => error,
+468 ~         DenseOutputError::InvalidSegment(_) | DenseOutputError::ModifiedSegment | DenseOutputError::ContinuousResidualProviderUnavailable => todo!(),
+    |
+
+For more information about this error, try `rustc --explain E0004`.
+error: could not compile `rodas5p-fair-ab` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rodas5p-fair-ab` (lib test) due to 1 previous error

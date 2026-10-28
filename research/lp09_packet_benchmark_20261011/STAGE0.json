@@ -1,0 +1,41 @@
+{
+  "schema": "vigilode-lp09-stage0-v1",
+  "node_id": "LP09",
+  "decision": "FEASIBLE",
+  "verdict": "PASS",
+  "claim": "Stage 0 decision FEASIBLE: native fair benchmark rigorously verifies matched physical accuracy between packet candidate and direct Rosenbrock baseline, confirms complete online elimination of Jacobian evaluations, LU factorizations, and linear solves, enforces hoisted O(N) baseline fairness, and strictly refuses unfair unhoisted comparisons.",
+  "scientific_gates": {
+    "vg1_zero_online_solver_counters": {
+      "packet_jacobian_evals": 0,
+      "packet_jvp_calls": 0,
+      "packet_lu_decompositions": 0,
+      "packet_linear_solves": 0,
+      "direct_jacobian_evals_positive": true,
+      "direct_lu_decompositions_positive": true,
+      "direct_linear_solves_positive": true,
+      "passed": true
+    },
+    "vg2_matched_accuracy": {
+      "mean_discrepancy_within_tolerance": true,
+      "matched_physical_tolerance": true,
+      "passed": true
+    },
+    "vg3_fairness_and_hoisting_verification": {
+      "hoisted_ode_problem_verified": true,
+      "unhoisted_unfair_baseline_refused": true,
+      "timing_authority_diagnostic_only": true,
+      "negative_gates_verified": true,
+      "passed": true
+    }
+  },
+  "target_file_hashes": {
+    "crates/rodas5p-fair-ab/src/packet_benchmark.rs": "2250f4e5099064d32bd4fc69862034e6dd16f25cc1b83b8999f6c9f78fa24192",
+    "crates/rodas5p-fair-ab/tests/packet_benchmark_contracts.rs": "e1aa5c2547f2ad5ecdaae0337a6e1350b8fde4b643349f8292063c1cb0b32537"
+  },
+  "test_execution": {
+    "command": "cargo test --offline --locked -p rodas5p-fair-ab --test packet_benchmark_contracts -- --test-threads=1",
+    "exit_code": 0,
+    "tests_passed": 5,
+    "status": "PASS"
+  }
+}

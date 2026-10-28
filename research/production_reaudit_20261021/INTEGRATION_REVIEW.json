@@ -1,0 +1,424 @@
+{
+  "schema": "vigilode.phase2.integration-review.v1",
+  "reviewed_at_utc": "2026-10-21T05:10:21.764473+00:00",
+  "reviewer": "research_dag_audit",
+  "review_status": "SCOPED_SOURCE_AND_CLAIM_CONSISTENCY_ACCEPTED_FINAL_EXECUTION_AND_PUBLICATION_PENDING",
+  "overall_production": "HOLD_BROAD_PRODUCTION_GLOBAL_ACCURACY_AND_SPEED",
+  "review_method": {
+    "actual_current_sources_and_reports_read": true,
+    "published_proofs_rerun": false,
+    "historical_solver_campaigns_rerun": false,
+    "native_tests_run_in_this_review": false,
+    "source_edits_in_this_review": false,
+    "only_new_files": [
+      "INTEGRATION_REVIEW.md",
+      "INTEGRATION_REVIEW.json"
+    ]
+  },
+  "authorship_disclosure": {
+    "reviewed_other_agent_implementations": [
+      "N01",
+      "N02",
+      "N03",
+      "N04",
+      "N05",
+      "N08"
+    ],
+    "self_authored_clients": [
+      "N06",
+      "N07",
+      "reaudit_bound_clients"
+    ],
+    "self_authored_validation_authority": "Independent parent source review and recorded native contracts/smokes; this final consistency review does not count as an independent re-review of self-authored implementations."
+  },
+  "nodes": [
+    {
+      "id": "N01",
+      "delivered": "Facade-owned recursive records, exhaustive conversions and executable capability query",
+      "api": [
+        "vigilode::Rodas5p::capabilities",
+        "vigilode::Stats",
+        "vigilode::WorkRecord"
+      ],
+      "source": [
+        "crates/vigilode/src/capabilities.rs",
+        "crates/vigilode/src/records.rs",
+        "crates/vigilode/src/solve.rs"
+      ],
+      "validation": "Owner receipt: 85 native tests, 2 compile-fail doctests, 384 capability combinations; final integrated result belongs to EXECUTION.json",
+      "closure": "IMPLEMENTED_SCOPED",
+      "remaining": [
+        "Stable Rust API release review: public type identity changed despite retained v4 JSON representation",
+        "Unsupported numerical combinations remain typed refusals; no new global-error authority"
+      ],
+      "evidence": [
+        "NEXT_N01_IMPLEMENTATION.json"
+      ]
+    },
+    {
+      "id": "N02",
+      "delivered": "Embedded source closure, source/corpus/binary boundary verification and strict independent RADAU5/CVODE refinement protocol",
+      "api": [
+        "source_identity::RunGuard",
+        "harness::independent_reference_for",
+        "wp --require-independent-reference --source-root"
+      ],
+      "source": [
+        "crates/vigilode-bench/build.rs",
+        "crates/vigilode-bench/src/source_identity.rs",
+        "crates/vigilode-bench/src/harness.rs",
+        "crates/vigilode-bench/src/reference_policy.rs"
+      ],
+      "validation": "Standalone source/policy and actual harness with explicit mock adapters validated; full native bench typecheck/link NOT RUN",
+      "closure": "IMPLEMENTED_NATIVE_INTEGRATION_PENDING",
+      "remaining": [
+        "Exact locked dependencies, GNU Fortran and SUNDIALS development dependencies required",
+        "Independent grid agreement is empirical, not a continuous error enclosure",
+        "Boundary hashes do not attest an adversarial host or continuously monitor execution"
+      ],
+      "evidence": [
+        "NEXT_N02_IMPLEMENTATION.json"
+      ]
+    },
+    {
+      "id": "N03",
+      "delivered": "Private model/run-bound fixed-L2 global replay over sealed verified residual segments, charging initial radius, jumps, positive logarithmic gain and returned-query rounding",
+      "api": [
+        "global_budget::integrate_verified_residual_global",
+        "global_budget::VerifiedGlobalBudget",
+        "GlobalBudgetCertificate::binds_run"
+      ],
+      "source": [
+        "crates/rodas5p-integrators/src/global_budget.rs",
+        "crates/rodas5p-integrators/src/generic_verified.rs"
+      ],
+      "validation": "Targeted owner receipts plus two bound-client PR101 smoke arms; final original-budget and grouped-allocation delta assigned to final integrated matrix",
+      "closure": "IMPLEMENTED_SEALED_MODEL_SCOPE",
+      "remaining": [
+        "Post-run replay, not an online adaptive controller",
+        "Budget larger than the source run original absolute-L2 budget is refused",
+        "Source provider already supplies tube validity; no arbitrary callback authority",
+        "Full-curve PR101 fixture does not establish all models or facade routes"
+      ],
+      "evidence": [
+        "NEXT_N03_IMPLEMENTATION.json",
+        "evidence/theory/N03_INDEPENDENT_REVIEW.json",
+        "BOUND_CLIENT_BENCHMARKS.json"
+      ]
+    },
+    {
+      "id": "N04",
+      "delivered": "Resource-bounded integer allocation with outward error/work validation and equal-denominator grouping",
+      "api": [
+        "global_budget::allocate_global_work",
+        "global_budget::validate_work_allocation"
+      ],
+      "source": [
+        "crates/rodas5p-integrators/src/global_budget.rs"
+      ],
+      "validation": "Native bound-client uniform/optimized witness passes with original error budget 0.5; final ninth boundary test authority is EXECUTION.json",
+      "closure": "IMPLEMENTED_ALGEBRAIC_SCOPE",
+      "remaining": [
+        "Supplied A_j and c_j are algebraic inputs, not internally certified ODE laws",
+        "Floating seed is a heuristic followed by validation, not a floating-point exact optimum",
+        "Work upper bound is not measured wall time or executed ODE step count"
+      ],
+      "evidence": [
+        "NEXT_N03_IMPLEMENTATION.json",
+        "evidence/theory/N03_INDEPENDENT_REVIEW.json",
+        "BOUND_CLIENT_BENCHMARKS.json"
+      ]
+    },
+    {
+      "id": "N05",
+      "delivered": "Owned immutable linear model and fixed-norm Cayley/Bernstein target planning/assessment; actual diagonal staleness policy in lagged solvers",
+      "api": [
+        "stage_target_policy::BoundLinearStageModel",
+        "LinearStageTargetPlan::assess",
+        "StalenessRule::Diagonal"
+      ],
+      "source": [
+        "crates/rodas5p-integrators/src/stage_target_policy.rs",
+        "crates/rodas5p-integrators/src/rodas5p_lagged.rs"
+      ],
+      "validation": "Owner reports 4 planner and 3 diagonal native contracts; three equal-input bound-client arms pass endpoint oracle with zero fallback",
+      "closure": "IMPLEMENTED_SCOPED_PLANNER_AND_DIAGONAL_ROUTE",
+      "remaining": [
+        "Planner used_by_driver=false in generic lagged comparison; execution of planner is not integration of its targets",
+        "Output/embedded-estimator perturbation assessment does not enclose ODE truncation or nonlinear drift",
+        "Diagonal scan remains O(n^2); Bounded baseline already avoids extra inverse RHS on this fixture",
+        "Band/low-rank and nonlinear segment-average drift require separate scoped work"
+      ],
+      "evidence": [
+        "NEXT_N05_IMPLEMENTATION.json",
+        "evidence/theory/N05_INDEPENDENT_REVIEW.json",
+        "BOUND_CLIENT_BENCHMARKS.json"
+      ]
+    },
+    {
+      "id": "N06",
+      "delivered": "Actual equal-input polynomial-priority and Krylov comparison with original-budget interval endpoint oracle, failed-candidate/fallback cost retained",
+      "api": [
+        "reaudit_comparison --suite polynomial"
+      ],
+      "source": [
+        "crates/rodas5p-integrators/examples/reaudit_comparison.rs",
+        "crates/rodas5p-integrators/examples/reaudit_comparison_support/mod.rs"
+      ],
+      "validation": "Shared comparison contract suite and protected/laguerre p4 smoke receipts; new complete NCP grid pending",
+      "closure": "IMPLEMENTED_BOUND_DIAGONAL_ENDPOINT_CLIENT",
+      "remaining": [
+        "The protected arm is labelled analytic diagonal-exponential baseline, not protected RODAS5P",
+        "Laguerre/Chebyshev/Leja names mean priority routing with guarded fallback; selected backend must be read",
+        "Requested endpoints only; no full-curve or arbitrary nonnormal/nonlinear claim"
+      ],
+      "evidence": [
+        "NEXT_N06_N07_IMPLEMENTATION.json"
+      ]
+    },
+    {
+      "id": "N07",
+      "delivered": "Direct lambda=1 versus continuation clients on identical bound endpoint and actual-K stage-functional requests",
+      "api": [
+        "reaudit_comparison --suite homotopy",
+        "reaudit_comparison --suite actual-k"
+      ],
+      "source": [
+        "crates/rodas5p-integrators/examples/reaudit_comparison_support/mod.rs"
+      ],
+      "validation": "Direct/continuation smoke pairs pass original endpoint or stage-functional budgets; full paired campaign pending",
+      "closure": "IMPLEMENTED_COMPARISON_CLIENTS",
+      "remaining": [
+        "Actual-K certificate has STAGE_FUNCTIONAL_ONLY scope, excluding ODE truncation/global trajectory",
+        "Solver transaction and process end-to-end timing are separate; NCP owns outer process timing",
+        "No certified scheduling span or universal parallel speedup is inferred from wall time",
+        "Independent-window scheduling and broader model transport remain future research"
+      ],
+      "evidence": [
+        "NEXT_N06_N07_IMPLEMENTATION.json"
+      ]
+    },
+    {
+      "id": "N08",
+      "delivered": "Frozen clean-source NCP preflight, verification, resumable comparison campaign and separate typed receipt consumer",
+      "api": [
+        "tools/run_ncp_reaudit.py",
+        "tools/production_promotion_gate.py"
+      ],
+      "source": [
+        "tools/run_ncp_reaudit.py",
+        "tools/production_promotion_gate.py"
+      ],
+      "validation": "Owner reports 139 Python passes and 3 unavailable-Hairer skips; 7 existing bound-client rows accepted; dry-run correctly HOLD; actual NCP campaign NOT RUN",
+      "closure": "IMPLEMENTED_EXECUTION_AND_RECEIPT_PIPELINE",
+      "remaining": [
+        "Exact dependency/native host setup and full 3221-result campaign remain execution obligations",
+        "Observed RSS is not a certified process-tree peak; unknown RSS holds",
+        "Logical CPU affinity does not prove exclusive host occupancy",
+        "Result consumer retains broad_production=HOLD; successful receipt parsing is not release or speed promotion"
+      ],
+      "evidence": [
+        "NCP_IMPLEMENTATION.json",
+        "NCP_CONFIG.json",
+        "NCP_RUNBOOK.md"
+      ]
+    }
+  ],
+  "bound_client_closure": {
+    "implemented": true,
+    "case_arms": {
+      "diagonal": [
+        "bounded",
+        "resolvent",
+        "diagonal"
+      ],
+      "global": [
+        "provider",
+        "replay"
+      ],
+      "allocation": [
+        "uniform",
+        "optimized"
+      ]
+    },
+    "actual_native_smoke_rows": 7,
+    "accepted_by_typed_ncp_consumer": 7,
+    "scopes": [
+      "REQUESTED_ODE_ENDPOINTS_ONLY",
+      "BOUND_MODEL_FULL_CURVE",
+      "ALGEBRAIC_ALLOCATION_ONLY"
+    ],
+    "scope_interchange_allowed": false,
+    "same_request_identity_across_arms": true,
+    "original_budgets_unchanged": true,
+    "full_curve_true_only_for_complete_sealed_global_case": true,
+    "evidence": "BOUND_CLIENT_BENCHMARKS.json"
+  },
+  "constructive_benefits": [
+    {
+      "id": "B-GLOBAL",
+      "claim": "Sealed full-horizon/query accounting is executable and run-bound",
+      "kind": "AUTHORITY_AND_ACCOUNTING_IMPROVEMENT",
+      "scope": "Same sealed PR101 curve, original absolute L2 budget 1e-4",
+      "provider_bound": 8.391931330096254e-12,
+      "replay_bound": 9.494606810899762e-12,
+      "smaller_radius_claim": false,
+      "wall_speedup_claim": false
+    },
+    {
+      "id": "B-ALLOCATION",
+      "claim": "Outward validated work-model ceiling decreases from 40 to 32 at unchanged error budget 0.5",
+      "kind": "CONSTRUCTIVE_MODEL_WORK_REDUCTION",
+      "uniform_counts": [
+        20,
+        20
+      ],
+      "optimized_counts": [
+        8,
+        24
+      ],
+      "A": [
+        1,
+        9
+      ],
+      "c": [
+        1,
+        1
+      ],
+      "p": 1,
+      "relative_model_work_reduction": 0.2,
+      "actual_ode_steps_executed": 0,
+      "wall_speedup_claim": false
+    },
+    {
+      "id": "B-DIAGONAL",
+      "claim": "Same-input diagonal witness removes 32 extra inverse-construction RHS solves relative to full Resolvent setup",
+      "kind": "STRUCTURAL_OPERATION_COUNT_REDUCTION",
+      "resolvent_extra_rhs": 32,
+      "diagonal_extra_rhs": 0,
+      "bounded_extra_rhs": 0,
+      "diagonal_checks": 15,
+      "diagonal_matrix_entries": 15360,
+      "fallbacks": 0,
+      "endpoint_bound": 3.133308233243001e-15,
+      "original_budget": 1e-07,
+      "fastest_policy_claim": false,
+      "wall_speedup_claim": false
+    },
+    {
+      "id": "B-STAGE",
+      "claim": "Cayley/Bernstein transfer bounds are implemented as scoped target planning and candidate assessment",
+      "kind": "CONDITIONAL_OPERATOR_BOUND_AND_PLANNER",
+      "frozen_dissipative_output_bound": 31.334688503951696,
+      "negative_real_output_bound": 23.334835830430087,
+      "normal_operator_preconditioned_theory_bound": 23.35,
+      "coordinate_warning": "Output normalized transfer bound differs from preconditioned-residual theory; constants are not interchangeable",
+      "generic_driver_target_integration": false,
+      "wall_speedup_claim": false
+    }
+  ],
+  "branch_preservation": {
+    "authority": "INDEPENDENT_BRANCH_REVIEW.json",
+    "new_historical_revalidation_performed": false,
+    "prior_incoming_delta_paths": 1133,
+    "prior_byte_identical_paths": 1109,
+    "prior_explicit_adaptations": 24,
+    "prior_missing_paths": 0,
+    "prior_incoming_full_tree_paths": 6451,
+    "prior_production_full_tree_paths": 6344,
+    "incoming_added_files": 788,
+    "qualified_ledger_entries": 284,
+    "ledger_semantic_collisions": 7,
+    "qualified_namespaces": [
+      "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1",
+      "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+    ],
+    "current_component_registry": 256,
+    "historical_component_registry": 246,
+    "historical_receipts_rewritten": false,
+    "final_tree_note": "Earlier byte-identity totals describe the integration checkpoint, not equality after documented phase2 edits. Final SOURCE_MANIFEST and publication tree must bind the delivered union."
+  },
+  "resolved_report_consistency": [
+    "DECISION B03/B04 now distinguish implemented N01/N02 code from pending stable release/native execution",
+    "REPORT_KO section6 and NEXT_STEPS delivered_scope distinguish implemented scope from future numerical research",
+    "N05 used_by_driver=false and analytic polynomial baseline naming remain explicit"
+  ],
+  "report_source_hash_crosscheck": {
+    "entries_checked": 40,
+    "all_match": true,
+    "mismatches": [],
+    "applies_at": "reviewed_at_utc",
+    "current_source_assertion": false
+  },
+  "reviewed_source_sha256": {
+    "crates/rodas5p-integrators/examples/reaudit_bound_clients.rs": "eaf16386fbf1d644a44662c97c0c3cefa4236c9363bbbff10ae44b9d75a1b913",
+    "crates/rodas5p-integrators/examples/reaudit_bound_clients_support/mod.rs": "9692aeaff5babdafa9b1026d9dec58b812856257a2973a973888ad24e8d1f79f",
+    "crates/rodas5p-integrators/examples/reaudit_comparison.rs": "a22dc348890bbbd20ac470b4bb5137758e7c8db3c3954980188f87e1e69f2c50",
+    "crates/rodas5p-integrators/examples/reaudit_comparison_support/mod.rs": "c3a0d6a881953d23de86dc2b75c0ad717d4c71514f0f012b3aa1a4ca043c5a4c",
+    "crates/rodas5p-integrators/src/generic_verified.rs": "b8944a94d0909e4746f080abebc8aa33d43c850d704c4c13c2f4ed0f9fcffb1a",
+    "crates/rodas5p-integrators/src/global_budget.rs": "f4270f3b37d1fb1675e4b98649eb4a5b4403690ea8830f4401a79c6704653e04",
+    "crates/rodas5p-integrators/src/rodas5p_lagged.rs": "3f726d226fbee4ee093fff751adc9c61cd85a819a53d1ac8c8fad53163fb1e66",
+    "crates/rodas5p-integrators/src/stage_target_policy.rs": "87315f1b7d53128f17238686665dee6219d90c1a4a4b790538bfe3da22e03990",
+    "crates/vigilode-bench/build.rs": "b75aa931516e40dd4bfcb6eb0adf25dccc5c29696bf6e400a5fbd75aeb35c0b6",
+    "crates/vigilode-bench/src/harness.rs": "10a555102243fdcbac9b3afaeb3f8aa0499c6aca7e782cac13ffcf10a5b10330",
+    "crates/vigilode-bench/src/reference_policy.rs": "9deeac060a1f979dad4aa86fce519f4b88c1932bab7c1a939af47aa5a8f695fc",
+    "crates/vigilode-bench/src/source_identity.rs": "bf4dfb3053e1cc1fa09765b850bbd40b29c4991a1857eb77dc3888cf359c50b4",
+    "crates/vigilode/src/capabilities.rs": "415a6a0ec2893431fba147697ed7c0c4ccb021fd3c9ed2a0cc351e5f034d7dd5",
+    "crates/vigilode/src/records.rs": "b5787538970283d62e2d74347f835ef9fcbc51942154dc8794c2951d8f9d2138",
+    "crates/vigilode/src/solve.rs": "d05233df298e206bb096b7e763c280a9248e1ecb8da8cd0c8748b66af2d9f53d",
+    "tools/production_promotion_gate.py": "6855f3a8f852de8a8fdbc345f5a3245c13ca37423f0767ba21f8bc7b5ecd5892",
+    "tools/run_ncp_reaudit.py": "ffa045eae0866163a8e591a0fbb02c04e6a0c75c613d64a4de2539e18e879393"
+  },
+  "final_validation": {
+    "status_at_review": "PENDING_PARENT_FINAL_MATRIX",
+    "authoritative_report": "EXECUTION.json",
+    "authoritative_source_manifest": "SOURCE_MANIFEST.json",
+    "authoritative_evidence_manifest": "EVIDENCE_MANIFEST.json",
+    "earlier_receipt": "evidence/final_01/EXECUTION.json",
+    "earlier_failure_preserved": "Commands passed individually but source changed during the earlier matrix; it is not a final source-consistent PASS.",
+    "node_counts_must_not_be_summed": true,
+    "n02_native_adapter_status": "BLOCKED_NOT_RUN",
+    "ncp_campaign_status": "NOT_RUN",
+    "post_review_source_delta": "solve.rs one-file lint rewrite; final_04 reruns the full selected 19-command matrix on one unchanged source snapshot. Consult EXECUTION.json for actual completion/status."
+  },
+  "publication": {
+    "status_at_review": "PENDING_PARENT_COMMIT_AND_PUSH",
+    "required_ancestors": [
+      "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1",
+      "cc2e1a009ac6802ef01a289392e9715074a882ba",
+      "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406"
+    ],
+    "remote_tree_and_manifest_match_required": true,
+    "this_review_authorizes_promotion": false
+  },
+  "remaining_execution": [
+    "Read final EXECUTION.json and require unchanged-source validation for delivered changes",
+    "On prepared clean host, run frozen native workspace/benchmark verification without changing locks or budgets",
+    "Run preregistered 2-warmup/21-repeat 1/2/4/8-thread campaign and retain every required row, refusal, timing and resource receipt",
+    "Run separate result consumer and inspect case-level scopes; receipt integrity alone is not scientific promotion"
+  ],
+  "future_research_not_hidden_executor_tasks": [
+    "Bind allocation coefficients and costs to actual ODE local-error laws and accepted-step traces",
+    "Wire bounded stage targets into a declared nonlinear drift enclosure; generic current planner is not that driver",
+    "Construct band/low-rank resolvent witnesses and independent-window homotopy scheduling with complete work/span/certificate cost",
+    "Develop unsupported numerical routes and conduct stable API/external release review"
+  ],
+  "reviewed_source_sha256_semantics": "Immutable source snapshot at reviewed_at_utc; not an assertion that every file remains identical after documented review amendments. Final delivered-source authority is SOURCE_MANIFEST.json plus EXECUTION.json.",
+  "post_review_amendments": [
+    {
+      "recorded_at_utc": "2026-10-21T05:24:26.130630+00:00",
+      "path": "crates/vigilode/src/solve.rs",
+      "classification": "ONE_FILE_LINT_CONTROL_FLOW_REWRITE",
+      "review_snapshot_sha256": "d05233df298e206bb096b7e763c280a9248e1ecb8da8cd0c8748b66af2d9f53d",
+      "observed_amended_sha256": "e1ad9ea19c0cd948b33fc67e67876b111262a3252ad807cc62af119e2e2331f8",
+      "change": "Clippy single_match: Jacobian::Banded match with an empty wildcard arm changed to if let; band validation predicates, refusal messages and following capability validation are preserved.",
+      "independent_review": "FACADE_FINAL_LINT_REVIEW",
+      "independent_review_state_at_amendment": "PENDING_FACADE_REVIEWER_RECEIPT",
+      "final_execution_authority": "EXECUTION.json",
+      "execution_state_at_amendment": "PARENT_FINAL_04_UNIFORM_SOURCE_MATRIX_RERUN_IN_PROGRESS",
+      "old_receipts_rebound": false,
+      "old_review_source_hashes_rewritten": false,
+      "new_native_tests_run_by_this_reviewer": false
+    }
+  ]
+}

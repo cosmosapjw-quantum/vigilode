@@ -602,6 +602,13 @@ pub fn stiff_van_der_pol_problem(mu: f64) -> CoreResult<(OdeProblem, Vec<f64>)> 
         out[1] = (-2.0 * mu * y[0] * y[1] - 1.0) * v[0] + mu * (1.0 - y[0] * y[0]) * v[1];
         Ok(())
     });
+    let jacobian_into = Arc::new(move |_t: f64, y: &[f64], out: &mut DenseMatrix| {
+        out[(0, 0)] = 0.0;
+        out[(0, 1)] = 1.0;
+        out[(1, 0)] = -2.0 * mu * y[0] * y[1] - 1.0;
+        out[(1, 1)] = mu * (1.0 - y[0] * y[0]);
+        Ok(())
+    });
     Ok((
         OdeProblem::new(
             format!("stiff-van-der-pol-mu{mu}"),
@@ -614,7 +621,8 @@ pub fn stiff_van_der_pol_problem(mu: f64) -> CoreResult<(OdeProblem, Vec<f64>)> 
             true,
             None,
             None,
-        )?,
+        )?
+        .with_jacobian_into(jacobian_into),
         vec![2.0, 0.0],
     ))
 }
@@ -661,6 +669,16 @@ pub fn robertson_problem() -> CoreResult<(OdeProblem, Vec<f64>)> {
         out[2] = 6.0e7 * y[1] * v[1];
         Ok(())
     });
+    let jacobian_into = Arc::new(|_t: f64, y: &[f64], out: &mut DenseMatrix| {
+        out[(0, 0)] = -0.04;
+        out[(0, 1)] = 1.0e4 * y[2];
+        out[(0, 2)] = 1.0e4 * y[1];
+        out[(1, 0)] = 0.04;
+        out[(1, 1)] = -1.0e4 * y[2] - 6.0e7 * y[1];
+        out[(1, 2)] = -1.0e4 * y[1];
+        out[(2, 1)] = 6.0e7 * y[1];
+        Ok(())
+    });
     Ok((
         OdeProblem::new(
             "robertson",
@@ -673,7 +691,8 @@ pub fn robertson_problem() -> CoreResult<(OdeProblem, Vec<f64>)> {
             true,
             None,
             None,
-        )?,
+        )?
+        .with_jacobian_into(jacobian_into),
         vec![1.0, 0.0, 0.0],
     ))
 }

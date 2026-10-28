@@ -1,0 +1,118 @@
+{
+  "task": "RUNTIME_INTERRUPTION_RECOVERY",
+  "time_utc": "2026-10-20T07:23:07.674484+00:00",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "pr": 77,
+  "branch": "research/hybrid-structure-ad-20261020",
+  "prior_measured_source": "49ca3150c68d527a275c855ecf814122ff9c533a",
+  "verified_published_head": "f738fb481bad3f086b568c8493105576851093f2",
+  "source_to_published_comparison": {
+    "tool": "GitHub.compare_commits",
+    "ahead_by": 1,
+    "behind_by": 0,
+    "change_scope": "only additions to research/hybrid_20261020/runs/39378576576",
+    "numerical_sources_changed": false
+  },
+  "historical_observations": {
+    "run_id": 39378576576,
+    "rust_tests_passed": 19,
+    "calibration_controls": 102,
+    "calibration_valid": 84,
+    "selected_configs": 40,
+    "timing_processes": 160,
+    "timed_trajectories": 480,
+    "pairs": 32,
+    "matched_empirical_error_pairs": 22,
+    "archived_proof_coefficients": 87056,
+    "archived_continuous_segments": 203,
+    "archived_returned_outputs": 600,
+    "archived_audit": "PASS_SCOPED_RATIONAL_CERTIFICATE_AND_RAW_READBACK"
+  },
+  "fresh_recovery": {
+    "checked_error_pairs": 32,
+    "csv_git_blob": "dce680be180ff551d1a00f1f572c29ece2cd19ef",
+    "csv_sha256": "dbea376ee7c526ba85cfdaf4b59f8883de9ec0f5b1665dcbe76f15ae1b70e8ad",
+    "external_certificates_verified": false,
+    "external_rows": 12,
+    "full_rational_certificate_replayed_in_this_check": false,
+    "matched_empirical_error_pairs": 22,
+    "matched_error_and_same_certificate_pairs": 18,
+    "measured_run": 39378576576,
+    "measured_source": "49ca3150c68d527a275c855ecf814122ff9c533a",
+    "native_rows": 28,
+    "new_exact_algebra_checks": {
+      "exact_shift_systems": 32,
+      "is_rust_execution": false,
+      "sampled_rational_models": 32,
+      "scope": "exact rational test instances; general identities derived in report and Wolfram check",
+      "status": "PASS_EXACT_RATIONAL_MODEL_IDENTITIES",
+      "verified_gain_rows": 136
+    },
+    "new_recovery_tests": {
+      "errors": 0,
+      "failures": 0,
+      "run": 9
+    },
+    "new_solver_executions": 0,
+    "new_timing_samples": 0,
+    "published_source": "f738fb481bad3f086b568c8493105576851093f2",
+    "status": "PASS_SCOPED_RECOVERED_CSV",
+    "verified_csv_bytes": 5048,
+    "verified_rows": 40
+  },
+  "new_material_finding": {
+    "category": "TIMING_SCOPE_CLARIFICATION",
+    "source": "crates/vigilode-hybrid/examples/hybrid_bench.rs",
+    "description": "run() includes serde_json::to_value of proof/integration and statistics objects inside timer. Outer JSON string emission is outside. Do not attribute complete wall-time gap solely to numerical solver/certificate arithmetic.",
+    "historical_values_modified": false
+  },
+  "mutation_status": {
+    "original_implementation_and_results_already_pushed": true,
+    "new_commit_created_in_recovery": false,
+    "new_push_performed": false,
+    "blocker": "Current GitHub connector exposes reads only; no authenticated CLI or remote command-write capability exposed.",
+    "fallback_artifact": "additive docs/checker patch; no production source modification"
+  },
+  "native_subagent": "NOT_RUN_NO_NATIVE_RUNTIME",
+  "independent_personnel_review": false,
+  "full_proof_replayed_in_this_session": false,
+  "new_rust_tests_executed": false,
+  "new_timing_samples": 0,
+  "provided_source_hashes": [
+    {
+      "path": "/mnt/data/Pasted markdown (2)(20261020-050238).md",
+      "bytes": 20829,
+      "sha256": "c877a1bbd30439c4488373754ba1c189ea4a99c2e2b8544d37cf8703e93d74ad"
+    },
+    {
+      "path": "/mnt/data/Pasted text(20261020-050145).txt",
+      "bytes": 22670,
+      "sha256": "a517b6fc3f2729b359b879426d604fb303403265e2540ecfcdb0a3b9f2a3da7d"
+    },
+    {
+      "path": "/mnt/data/vigilode_rhs_only_research/SYMBOLIC_CHECK.wl",
+      "bytes": 701,
+      "sha256": "3d461677625c3dda33f875101bd4ac9afe5cf1df18c571e3597b6b09b514f3f6"
+    },
+    {
+      "path": "/mnt/data/vigilode_rhs_only_research/RESULTS.json",
+      "bytes": 11433,
+      "sha256": "5a96f91a531b25dbfa254a9dabf09139735c0457db1ec89cf5b3b9fafe4c07a0"
+    },
+    {
+      "path": "/mnt/data/vigilode_rhs_only_research/CERTIFICATE_READBACK.json",
+      "bytes": 688,
+      "sha256": "539c8ded772488857bdbbe5e673570f7889865cfcd7287c10debf629e08c9e5b"
+    },
+    {
+      "path": "/mnt/data/vigilode_rhs_only_research/ADAPTIVE_SCALAR_RESULT.json",
+      "bytes": 248829,
+      "sha256": "9689704fa36dae6a55459ee5298554e70533cf51607d9e1ed976df13d388768d"
+    },
+    {
+      "path": "/mnt/data/vigilode_rhs_only_research/REPORT_KO.md",
+      "bytes": 29797,
+      "sha256": "541069b81ddebd98e0dae93c20a3eac1cc355ec297360c737e22320f89665640"
+    }
+  ]
+}

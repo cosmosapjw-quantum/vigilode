@@ -1,0 +1,13 @@
+# 다음 독립 연구 인계: Loop12
+
+SSOT는 RESEARCH_NOTE_KO.md, rvj_packet/{packet,convergence}.py, CLAIM_LEDGER.json, COST_CONTRACT.json, FINAL_VERIFICATION.json이다. 날짜2026-10-11. 새로운연구루프의결과이며백업단계의보존파일을수정하지않았다.
+
+완료: exactcollective/transversereconstruction,heterogeneousmomentkernel의원모델오차,동일unroundedwaveform의kernel연산n배감소,explicitanalyticball에서p/D/s의logepsilon자원상계,0onlineJVP표준라이브러리reference,전체1025mode까지오차대조,adaptiveorder선택및잔여tail반례,Loop11inversejet의명시적JVP제거항등식.
+
+현재구현은knowncarrier,scalarcubicmeanfield,kappa0,singlefinitewindow이다. 모든initialamplitude를보존한다. Metadatahash·모드별bound출력에도O(n)작업이남고precisioncost는별도다. Blocksolve속의JVP를없앴다고속여계상하지않는다.
+
+연구승격은HOLD다. Independentreview없음. NativeRust/FFT/JVP/Krylov가아니며historicaltests를새PASS로상속하지않는다. Delta0의binary64oracle가certificate를분해하지못한사례는100digitexactanalyticcheck로구분했다. 새로돌릴때같은오류를방법실패로오인하지말것.
+
+다음은NEXT_DEVELOPMENT_DAG의아직하지않은작업만이어받는다. 특히nonzerodampingclient,rank-rkernel,multiwindowinheritederror,실제모델의structuraladmission,bit/nativecost와properbaseline이필요하다. 원geometrymissinginput은추측복원하지않는다.
+
+하네스의remote현재경로는 /bianchi/htt_base/harness/physmath-research-gpt6-astra 이며중복폴더가없었다. 이미원격core를읽었다는사실과추후현재내용은구별한다. 새Vigilode적용은현재branch를읽고별도로승인받은범위에서만한다.

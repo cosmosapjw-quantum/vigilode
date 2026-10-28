@@ -1,0 +1,254 @@
+{
+  "schema_version": "1.0",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "branch": "claude/jolly-wozniak-7wl15h-wu22-reaudit-r2",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "source_tree": "182fa306067b84ee10ec1f1b1e5fbad9e769aae1",
+  "research_process_verdict": "INCONCLUSIVE",
+  "process_reason": "Exploratory protocol text was not committed before runs and exact commands/holdout were not fully frozen.",
+  "claims": [
+    {
+      "id": "R3-POLY-01",
+      "claim": "Joint distinct-vector Chebyshev phi exact-arithmetic truncation bound and bounded comparison with Laguerre",
+      "evidence_status": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "evidence": [
+        "polynomial/RESULTS.json",
+        "polynomial/RESEARCH_KO.md",
+        "polynomial/WOLFRAM_CHECK.json",
+        "decision/polynomial_independent_check.json"
+      ],
+      "results": {
+        "joint_actions": 20,
+        "column_comparisons": 100,
+        "maximum_fused_error": 3.499735408025149e-14,
+        "largest_diagonal_degrees": {
+          "laguerre": 245,
+          "chebyshev": 56
+        }
+      },
+      "claim_ceiling": [
+        "rigorous total floating-point error",
+        "quadrature certificate",
+        "independent holdout optimization",
+        "wall-clock speedup",
+        "general nonnormal guarantee",
+        "production backend"
+      ],
+      "production_decision": "HOLD",
+      "independent_decision_file": "decision/INDEPENDENT_DECISION.json"
+    },
+    {
+      "id": "R3-HOM-01",
+      "title": "Quadratic componentwise outward stage and observable enclosure",
+      "status": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "scope": "Explicit strict-lower projection of native rounded RODAS5P tableau; h>0, M=I, dimension1/2, quadratic remainder, exact rational inverse witness; fixed candidate WRMS scale",
+      "evidence": [
+        "certified_majorant.py",
+        "results.json",
+        "EXECUTION_RECEIPT.json"
+      ],
+      "results": {
+        "candidate_rows": 24,
+        "all_exact_checks": true,
+        "primitive_exact_checks": 162,
+        "output_budget_01_accepts": 12,
+        "combined_proxy_1_accepts": 8
+      },
+      "excluded": [
+        "unprojected native full-block target",
+        "exact native sequential arithmetic parity",
+        "general nonlinear callbacks",
+        "ODE truncation or global error",
+        "large matrix-free inverse witness",
+        "performance"
+      ],
+      "production_decision": "HOLD",
+      "detail_file": "homotopy/CLAIMS.json",
+      "evidence_base": "homotopy/",
+      "independent_decision_file": "decision/INDEPENDENT_DECISION.json",
+      "claim_ceiling": [
+        "unprojected native full-block target",
+        "exact native sequential arithmetic parity",
+        "general nonlinear callbacks",
+        "ODE truncation or global error",
+        "large matrix-free inverse witness",
+        "performance"
+      ]
+    },
+    {
+      "id": "R3-HOM-02",
+      "title": "Finite path-sum doubling certificate with a priori state radius",
+      "status": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "scope": "Strict-lower 8-stage block H, preset D=1e-4 independent of exact root; H^8=0; upward arithmetic; explicit radius closure",
+      "equation": "E=(I+H)(I+H^2)(I+H^4)a; require |alpha|E<=D",
+      "results": {
+        "algebraic_doubling_levels": 3,
+        "dense_matrix_multiplications": 5,
+        "radius_closures": 22,
+        "explicit_rejects": 2,
+        "false_enclosures_among_closures": 0,
+        "actual_parallel_execution": false
+      },
+      "evidence": [
+        "certified_majorant.py",
+        "results.json"
+      ],
+      "excluded": [
+        "wall-clock speedup",
+        "cheap dense U construction",
+        "native unprojected nilpotency"
+      ],
+      "production_decision": "HOLD",
+      "detail_file": "homotopy/CLAIMS.json",
+      "evidence_base": "homotopy/",
+      "independent_decision_file": "decision/INDEPENDENT_DECISION.json",
+      "claim_ceiling": [
+        "wall-clock speedup",
+        "cheap dense U construction",
+        "native unprojected nilpotency"
+      ]
+    },
+    {
+      "id": "R3-HOM-03",
+      "title": "Native transformed coefficient strict-lower premise fails bitwise",
+      "status": [
+        "implementation-verified",
+        "numerically checked"
+      ],
+      "scope": "Native load_rodas5p_coefficients() exported binary64 bit patterns interpreted as exact real entries",
+      "classification": "CERTIFICATION_PREMISE_LIMITATION",
+      "severity": null,
+      "results": {
+        "alpha_upper_diagonal_nonzero": 28,
+        "alpha_max_abs_leakage": 5.577737968635803e-16,
+        "l_upper_diagonal_nonzero": 34,
+        "l_max_abs_leakage": 3.7683229960916457e-16,
+        "native_alpha_eighth_power_exact_zero": false,
+        "native_l_eighth_power_exact_zero": false,
+        "initial_native_probe_exit": 1
+      },
+      "evidence": [
+        "native_tableau_bits.json",
+        "coefficient_structure.py",
+        "coefficient_structure.json",
+        "first_failure.json",
+        "first_run.stderr"
+      ],
+      "excluded": [
+        "demonstrated macroscopic solver inaccuracy",
+        "new false native acceptance",
+        "silent projection repair"
+      ],
+      "production_decision": "HOLD",
+      "detail_file": "homotopy/CLAIMS.json",
+      "evidence_base": "homotopy/",
+      "independent_decision_file": "decision/INDEPENDENT_DECISION.json",
+      "claim_ceiling": [
+        "demonstrated macroscopic solver inaccuracy",
+        "new false native acceptance",
+        "silent projection repair"
+      ]
+    },
+    {
+      "id": "R3-HOM-04",
+      "title": "q2 diagnostic replacement development path and complete cost condition",
+      "status": [
+        "derived"
+      ],
+      "scope": "Source q2 state created at seventh W batch; eighth q=0 diagnostic does not modify state. Replacing its gate needs a valid output/embedded certificate for identical native target. Ideal equal-cost common-W model, >=8 workers",
+      "equation_with_diagnostic": "T/tW=8-2*p1+8*pf+c1+(1-p1)*c2+a+r",
+      "equation_diagnostic_replaced": "T/tW=7-p1+8*pf+c1+(1-p1)*c2+a+r",
+      "evidence": [
+        "HOMOTOPY_RESEARCH_KO.md",
+        "../evidence/source/SOURCE_MANIFEST.json"
+      ],
+      "source_locations": [
+        {
+          "path": "crates/rodas5p-integrators/src/transactional_q1_q2.rs",
+          "lines": "658-708"
+        }
+      ],
+      "excluded": [
+        "measured speedup",
+        "authorized immediate production diagnostic removal"
+      ],
+      "production_decision": "HOLD",
+      "detail_file": "homotopy/CLAIMS.json",
+      "evidence_base": "homotopy/",
+      "independent_decision_file": "decision/INDEPENDENT_DECISION.json",
+      "claim_ceiling": [
+        "measured speedup",
+        "authorized immediate production diagnostic removal"
+      ]
+    },
+    {
+      "id": "R3-STAT-RESEARCH-01",
+      "claim": "Fixed-threshold Bernoulli Hoeffding bounds can propagate conditional bootstrap Monte Carlo error into a conservative gate",
+      "evidence_status": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "formula": "epsilon=sqrt(log(2/delta)/(2B)); U=clip(K/B+epsilon); L=clip(K/B-epsilon); Promote if U<0.025, Block if L>0.975, otherwise Inconclusive",
+      "assumptions": [
+        "iid bootstrap replicates conditional on fixed empirical data",
+        "fixed threshold and B",
+        "two-sided failure budget delta",
+        "PRNG implementation is a numerical demonstration, not proof of ideal iid sampling"
+      ],
+      "execution": "bootstrap_mc_candidate.json",
+      "claim_ceiling": "Conditional resampling error only; no population coverage guarantee and no observed speedup",
+      "production_status": "NOT_APPLIED",
+      "evidence_base": "statistics/",
+      "independent_decision_file": "decision/INDEPENDENT_DECISION.json"
+    },
+    {
+      "id": "R3-REPAIR-01",
+      "claim": "Standalone local effective-h and endpoint-admission candidates discriminate recorded clock/schedule fixtures",
+      "evidence_status": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "evidence": [
+        "time/exact_oracle.json",
+        "time/probe/src/main.rs"
+      ],
+      "claim_ceiling": "Constant-flow local candidate only; not production BDF history/nonautonomous/half-step solution",
+      "production_decision": "HOLD",
+      "independent_decision_file": "decision/INDEPENDENT_DECISION.json"
+    },
+    {
+      "id": "R3-REPAIR-02",
+      "claim": "Conservative weighting-loss guard and exact nilpotent reordering prevent recorded unsafe partial-loss success",
+      "evidence_status": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "evidence": [
+        "arithmetic/EXACT_ORACLES.json",
+        "arithmetic/probe/src/main.rs"
+      ],
+      "claim_ceiling": "Guard rejects harmless control too; reordering specialized to 2D nilpotent structure",
+      "production_decision": "HOLD",
+      "independent_decision_file": "decision/INDEPENDENT_DECISION.json"
+    }
+  ],
+  "speedup_measured": false,
+  "general_nonnormal_certificate": false,
+  "native_homotopy_target_parity": false,
+  "production_changed": false
+}

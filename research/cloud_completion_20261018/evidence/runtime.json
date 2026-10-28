@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-18T09:11:11.881999+00:00",
+  "purpose": "Restore native offline compiler environment only; this record does not assert solver validation",
+  "runtime_root": "/workspace/scratch/0dc1e721cf82/runtime",
+  "env_command": "source /workspace/scratch/0dc1e721cf82/runtime/env.sh",
+  "env": {
+    "PATH_prefix": "/workspace/scratch/0dc1e721cf82/runtime/rust/bin",
+    "CARGO_HOME": "/workspace/scratch/0dc1e721cf82/runtime/cargo-home"
+  },
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+  "rustfmt": "rustfmt 1.8.0-stable (e408947bfd 2026-03-25)",
+  "clippy": "clippy 0.1.94 (e408947bfd 2026-03-25)",
+  "LLVM": "21.1.8",
+  "vendor_path": "/workspace/scratch/0dc1e721cf82/runtime/vendor_extract/rust-offline-rodas5p-rs-20260806/vendor",
+  "repo_dependency_files_modified": false,
+  "offline_metadata": {
+    "command": "cargo metadata --manifest-path vigilode/Cargo.toml --locked --offline --format-version 1",
+    "exit_code": 0
+  },
+  "native_hello": {
+    "command": "rustc runtime/hello.rs -o runtime/hello && runtime/hello",
+    "exit_code": 0,
+    "stdout": "ok"
+  },
+  "core_check": {
+    "command": "cargo check --manifest-path vigilode/Cargo.toml -p rodas5p-core --locked --offline",
+    "status": "PASS",
+    "log_path": "research/cloud_completion_20261018/evidence/runtime_core_check.log",
+    "exit_code": 0,
+    "elapsed_seconds": 27.23,
+    "log_sha256": "8316ae3084dea2271707021d8702ccb67b9fabe9fc7f5b7f1fc8f843305f9f71"
+  },
+  "environment_repair": {
+    "failure": "Initial extracted core .rmeta was incomplete: header root offset62696557 exceeded file size50368000; second tar extraction likewise incomplete11281920",
+    "repair": "Read exact named tar member using Python tarfile and copied full62697252-byte contents. All temporary .rlib metadata replacement experiments reverted to original bundle bytes before successful hello.",
+    "core_rmeta_bytes": 62697252,
+    "core_rmeta_sha256": "ebd3c75be419d190b5fdf9159b21e6aa6b6b062aaefc3f7bee8e3348258a4bf7",
+    "classification": "environment",
+    "archive_modified": false,
+    "compiler_or_dependency_source_modified": false
+  },
+  "python_mpmath": {
+    "system_python": false,
+    "primary_runtime_python": false,
+    "alternative": "Python stdlib decimal/Fraction exact oracles"
+  }
+}

@@ -1,0 +1,105 @@
+\section{Physical budgets from analytic constants}
+
+The user-directed extension adds a \texttt{ResidualDominance} policy with
+$\eta=1$. It applies no fitted gain margin, observed-ratio threshold,
+coefficient-magnitude cap, or rejection-count cap. The finite/domain checks
+and the original residual evaluation remain. The older heuristic policies
+are retained as controls. A separate sealed polynomial consumer derives its
+step grid and residual target from the requested physical error budget;
+no unproved global contraction factor is assigned to a generic RHS callback.
+
+For $y'=-\Phi(y)$, $\Phi(y)=ky+gy^3$, $k>0$, $g\ge0$, and $y(0)=Y\ge0$,
+the exact orbit stays in $[0,Y]$. The sharp derivative extrema on this interval
+are
+\begin{align}
+M_1&=\Phi(Y),& L&=k+3gY^2,\\
+M_2&=L\Phi(Y),&
+M_3&=\Phi''(Y)\Phi(Y)^2+L^2\Phi(Y).
+\end{align}
+For an exact ODE increment, the midpoint stage residual is $A-B$, where
+$A=h[\Phi((y_0+y_1)/2)-\Phi(y(h/2))]\ge0$ and
+$B=\int_0^h\Phi(y(t))dt-h\Phi(y(h/2))\ge0$. Endpoint interpolation and
+midpoint quadrature give $A\le h^3LM_2/8$ and $B\le h^3M_3/24$.
+The exact polynomial identity
+\begin{equation}
+2\Phi'(Y)^2-\Phi''(Y)\Phi(Y)=2k^2+6kgY^2+12g^2Y^4\ge0
+\end{equation}
+implies $M_3\le3LM_2$. Taking the larger of the two positive-defect bounds
+therefore gives
+\begin{equation}
+|F(K_{\rm exact\ ODE})|\le Ch^3,\qquad
+C=\frac{L^2\Phi(Y)}8.
+\end{equation}
+This is a proved finite-step upper bound, not an optimal sharp truncation
+constant. The factor $1/8$ is the interpolation remainder constant, not a fit.
+
+Writing the ideal midpoint step as $\Psi_h(y)=2m-y$, where
+$m+(h/2)\Phi(m)=y$, yields
+\begin{equation}
+\Psi_h'(y)=\frac{1-(h/2)\Phi'(m)}{1+(h/2)\Phi'(m)},
+\qquad |\Psi_h'(y)|\le1.
+\end{equation}
+This global nonexpansivity transports algebraic errors without an assumed
+Jacobian norm along the computed trajectory. With $D=1+hk/2$, the physical
+error at step $n$ is bounded by $nCh^3/D+\sum_{j\le n}\alpha_j$.
+
+For user budget $\epsilon$, the native plan selects the smallest dyadic $N$
+such that represented $h=T/N$ is exact, $Nh=T$, and
+\begin{equation}
+E_{\rm trunc}=\frac{NCh^3}{D}<\epsilon,
+\qquad q_B=\frac h2\left[k+3g(Y+\epsilon)^2\right]<1.
+\end{equation}
+The enlarged interval follows from the preceding physical-error induction.
+The dyadic grid is an explicit representation constraint; minimality is
+claimed only within that class. The remaining budget determines
+\begin{equation}
+\alpha_{\rm budget}=\frac{\epsilon-E_{\rm trunc}}N,
+\qquad \tau_F=D\alpha_{\rm budget}.
+\end{equation}
+There is no guessed split of $\epsilon$ or station spacing. Direct
+$\lambda=1$ is used: intermediate contraction cannot repair a noncontractive
+final target, and here $q_B<1$ is already supplied by the proved step choice.
+
+Each candidate receives an outward interval evaluation of the original
+polynomial $F(K)$, divided by a lower bound for $D$, plus the represented
+addition displacement in $\operatorname{fl}(y+K)$. A value-only monotone
+bisection polish is available if this bound requires refinement. A residual
+rounding floor produces refusal, preserving accepted points. The reported
+grid bound additionally includes $M_1|\operatorname{fl}(nh)-nh|$ for time
+labels. The native directed-arithmetic contract assumes correct binary64/FMA
+operations, gradual underflow, and no invalidating reassociation.
+
+\begin{table*}[t]
+\caption{New physically accuracy-matched runs for $k=1,g=1/2,Y=T=1$.
+All scientific budgets follow the formulas above. RHS and interval-polynomial
+evaluations are reported separately. Zero and warm seeds use the same plan.}
+\label{tab:cubic-physical-constants}
+\begin{ruledtabular}
+\begin{tabular}{rrllrrrr}
+$\epsilon$ & $N$ & Policy & Seed & RHS & Interval & Max. grid error & Final bound\\
+$10^{-3}$&64&Picard&zero&192&64&$5.063\times10^{-5}$&$4.143\times10^{-4}$\\
+$10^{-3}$&64&Picard&warm&134&64&$8.011\times10^{-5}$&$4.710\times10^{-4}$\\
+$10^{-3}$&64&Dominance&zero&192&64&$5.063\times10^{-5}$&$4.143\times10^{-4}$\\
+$10^{-3}$&64&Dominance&warm&134&64&$8.011\times10^{-5}$&$4.710\times10^{-4}$\\
+$10^{-4}$&128&Picard&zero&430&128&$3.664\times10^{-6}$&$8.014\times10^{-5}$\\
+$10^{-4}$&128&Picard&warm&334&128&$3.834\times10^{-6}$&$7.931\times10^{-5}$\\
+$10^{-4}$&128&Dominance&zero&430&128&$3.579\times10^{-6}$&$8.002\times10^{-5}$\\
+$10^{-4}$&128&Dominance&warm&334&128&$3.831\times10^{-6}$&$7.930\times10^{-5}$\\
+$10^{-5}$&512&Picard&zero&1580&512&$4.988\times10^{-7}$&$5.878\times10^{-6}$\\
+$10^{-5}$&512&Picard&warm&1147&512&$7.086\times10^{-7}$&$6.095\times10^{-6}$\\
+$10^{-5}$&512&Dominance&zero&1580&512&$4.991\times10^{-7}$&$5.877\times10^{-6}$\\
+$10^{-5}$&512&Dominance&warm&1147&512&$7.086\times10^{-7}$&$6.095\times10^{-6}$\\
+\end{tabular}
+\end{ruledtabular}
+\end{table*}
+
+All twelve runs complete and every observed error lies below its outward
+bound and requested cap. Decimal80 independently checks the constants,
+remaining-budget inequalities, dyadic minimality, and exact-solution
+observations. Seventeen distinct native contracts pass, including a focused
+rounding-floor refusal. At $\epsilon=10^{-5}$, zero-seed Picard uses 2092
+total polynomial evaluations and warm-seed dominance 1659, a $20.70\%$
+reduction. The two policies have equal RHS counts for each seed on these
+rapidly contractive grids; the savings here belong to accepted-stage reuse
+under the derived physical budget. These counts do not assert equal cost per
+ordinary versus interval evaluation, or a wall-clock speedup.

@@ -1,0 +1,13 @@
+{
+  "schema": "vigilode.environment-failure.v1",
+  "failure": "Filesystem ENOSPC during cargo build; run_recorded receipt write also failed",
+  "tool_process_exit": 1,
+  "cargo_exit_code": null,
+  "source_identity": "SOURCE_INPUTS.json",
+  "scientific_tests_completed": false,
+  "preserved_logs": {
+    "stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "stderr.log": "bfa467c195fe24745326928c2355ba3d3c74e6050266525dd4fde5518b1c20e5"
+  },
+  "repair": "Removed only current-task target-joint/debug build cache. Retry with CARGO_PROFILE_DEV_DEBUG=0,CARGO_PROFILE_TEST_DEBUG=0,CARGO_INCREMENTAL=0. Original logs and failed empty receipt retained."
+}

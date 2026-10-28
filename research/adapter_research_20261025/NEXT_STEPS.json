@@ -1,0 +1,166 @@
+{
+  "schema": "vigilode.next-development.v1",
+  "base_commit": "d79326648a7273c0decd641eaf94d94f5bea7c63",
+  "objective": "general-purpose stiff/oscillatory ODE solver with effective automatic selection and small-host performance",
+  "nodes": [
+    {
+      "id": "N01",
+      "title": "Preserve and bind actual local raw",
+      "routing": "low-cost / Luna low",
+      "depends_on": [],
+      "actions": [
+        "read stop packet and actual local raw/source/binary/reference manifests",
+        "create-only durable raw backup after capacity check; retain originals"
+      ],
+      "acceptance": [
+        "actual raw location and hashes",
+        "unavailable files remain missing, not synthesized"
+      ],
+      "status": "planned_local"
+    },
+    {
+      "id": "N02",
+      "title": "Trace h limits and phase errors",
+      "routing": "low-cost extraction; Astra ultra only for unresolved mechanism",
+      "depends_on": [
+        "N01"
+      ],
+      "actions": [
+        "case5, KS, chirp, gyromotion, Robertson and one nonstiff control",
+        "record requested/trial/proposed h, error, acceptance, clipping, method, per-path cost; short bounded runs only when absent"
+      ],
+      "acceptance": [
+        "same-state/time matched traces",
+        "separate stability/accuracy/controller/output/domain/runtime causes"
+      ],
+      "status": "planned_local"
+    },
+    {
+      "id": "N03",
+      "title": "Persistent method sessions",
+      "routing": "workhorse low/medium; focused Astra ultra for validity proof",
+      "depends_on": [
+        "N02"
+      ],
+      "actions": [
+        "retain DOPRI PI/FSAL/workspace and native implicit controller across windows",
+        "invalidate caches on method/model/chart epoch changes",
+        "replay-safe checkpoints and all attempted-work accounting"
+      ],
+      "acceptance": [
+        "single uninterrupted versus windowed solve state/counter consistency under fixed conditions",
+        "no stale FSAL after implicit advancement",
+        "reduced same-cap regret on untouched evaluation cases"
+      ],
+      "status": "planned_local"
+    },
+    {
+      "id": "N04",
+      "title": "Physical norm and chart providers",
+      "routing": "Astra ultra + physmath for derivation; workhorse implementation",
+      "depends_on": [
+        "N02"
+      ],
+      "actions": [
+        "dynamic physical norm for nonlinear/time-dependent charts",
+        "phase rounding and physical velocity transport",
+        "carrier residual exactness/epoch registration; non-equivariant and noncommuting controls"
+      ],
+      "acceptance": [
+        "full original state accuracy across time grid",
+        "reject changed or unsupported chart declarations",
+        "positive same-cap cost result with all setup counted"
+      ],
+      "status": "planned_local"
+    },
+    {
+      "id": "N05",
+      "title": "Measured method choice and re-evaluation",
+      "routing": "workhorse; Astra ultra only for new decision theorem",
+      "depends_on": [
+        "N03"
+      ],
+      "actions": [
+        "calibrate RHS/JVP/solve work proxy against actual per-window wall time",
+        "cap shadow overhead, update cost on epoch drift, separate probe timing from timing repeats",
+        "declare structural capabilities first, then observed method fitness; no stiffness claim from h alone"
+      ],
+      "acceptance": [
+        "same checkpoint actual candidate and relevant alternative replay",
+        "failed/less accurate alternatives excluded",
+        "initial rotation overhead measured and reduced without worsening stiff tests"
+      ],
+      "status": "planned_local"
+    },
+    {
+      "id": "N06",
+      "title": "Extend execution adapter beyond ensembles",
+      "routing": "workhorse low/medium",
+      "depends_on": [
+        "N02"
+      ],
+      "actions": [
+        "coarse chunks and persistent pools for large-grid RHS",
+        "stage parallelism only if observed critical-path gain and sufficient work",
+        "calibration economics before probing; sunk cost excluded from future dispatch; include total overhead in report"
+      ],
+      "acceptance": [
+        "ordered physical output parity",
+        "no nested oversubscription",
+        "warmup/raw pair and heldout drift recorded",
+        "single-item no pool/calibration regression remains valid"
+      ],
+      "status": "planned_local"
+    },
+    {
+      "id": "N07",
+      "title": "Selection-centred evaluation",
+      "routing": "Luna low after fixed protocol",
+      "depends_on": [
+        "N04",
+        "N05",
+        "N06"
+      ],
+      "actions": [
+        "selected path plus one relevant challenger per checkpoint",
+        "separate tuning and unseen holdout intervals",
+        "use selection_window.schema.json and analyze_selection.py; external VODE/DVODE/diffsol/Julia controls retain own explicit source maps"
+      ],
+      "acceptance": [
+        "qualified observed cost ratio and failure taxonomy",
+        "calibration/setup/probe/transition charged exactly once",
+        "no full Cartesian campaign or NCP"
+      ],
+      "status": "planned_local"
+    },
+    {
+      "id": "N08",
+      "title": "Scoped release decision and publication",
+      "routing": "low-cost synthesis; one precise review if new material risk",
+      "depends_on": [
+        "N07"
+      ],
+      "actions": [
+        "publish code, small raw evidence and human/machine findings",
+        "promote only demonstrated feature scope; retain specialized cases and unresolved ones"
+      ],
+      "acceptance": [
+        "exact source/tree/build tests reported",
+        "no blanket production promotion from pilot",
+        "local handoff return and durable raw pointers"
+      ],
+      "status": "planned_local"
+    }
+  ],
+  "limits": {
+    "new_broad_campaign": false,
+    "ncp": false,
+    "repair_loops_per_bounded_cause": 3,
+    "initial_diagnostic_budget_minutes": 60
+  },
+  "routing": {
+    "default": "Luna low or available low-cost model",
+    "precision_only": "Astra ultra with relevant research skills/plugins",
+    "capability_policy": "verify actual availability; do not claim unavailable model/tool execution; do not provision external API"
+  }
+}

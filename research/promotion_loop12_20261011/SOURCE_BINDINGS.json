@@ -1,0 +1,315 @@
+{
+  "schema": "vigilode-loop12-source-bindings-v1",
+  "commit": "2e944afc36a20fd20ce33438b2a1d4f4e0a6a5c4",
+  "tree": "d19fe946006130beaf139c0b2c22c0821af3e19f",
+  "read_kind": "SELECTIVE_CURRENT_SOURCE_READ_NO_NATIVE_EXECUTION",
+  "implementation_tests_run": false,
+  "scientific_identity_warning": "Hashes and exact anchors bind read source, not scientific proof or test PASS.",
+  "items": [
+    {
+      "id": "problem_api",
+      "path": "crates/rodas5p-integrators/src/problem.rs",
+      "status": "EXISTS_SOURCE_READ",
+      "file_sha256": "097afeb2f2c05bcba68acf684cdefa015e29fd92082b18feb92fba780d0e0f44",
+      "line_count": 707,
+      "anchors": [
+        {
+          "label": "callbacks",
+          "start_line": 20,
+          "end_line": 31,
+          "excerpt_sha256": "1cb14bca3d527607c576437e9d170b97cbfd2a334f11d8b89595c9b7d3b2e43e"
+        },
+        {
+          "label": "structure_variants",
+          "start_line": 40,
+          "end_line": 60,
+          "excerpt_sha256": "d78779d531091ab700e05df67811dc62b43781cbf01c33a36d9ecd8730d272f1"
+        },
+        {
+          "label": "OdeProblem_struct",
+          "start_line": 127,
+          "end_line": 144,
+          "excerpt_sha256": "2537cbe0ce25bfdbbda9bd8e6d36c4749a61be866a4978729ae9736f5a2773e4"
+        },
+        {
+          "label": "identity_and_epoch_limit",
+          "start_line": 146,
+          "end_line": 203,
+          "excerpt_sha256": "9215bc080c15159dd5c4bca926d1a359b9e69d2f4e912000d030df3346a8c47d"
+        },
+        {
+          "label": "constructor_requires_derivative",
+          "start_line": 207,
+          "end_line": 250,
+          "excerpt_sha256": "afe873a9b0e62ac2d362f0c8ac5f229d37e63677a3dfe0934723630d7d284bd4"
+        },
+        {
+          "label": "structure_validation",
+          "start_line": 253,
+          "end_line": 301,
+          "excerpt_sha256": "2ca3d6b9eb8a21c4d89d824b803160733e3e770e29467f487bef35db38919622"
+        }
+      ],
+      "source_claim": "Existing OdeProblem struct requires Jacobian or JVP; no pure packet entry exists."
+    },
+    {
+      "id": "router",
+      "path": "crates/rodas5p-integrators/src/routing.rs",
+      "status": "EXISTS_SOURCE_READ",
+      "file_sha256": "0660ec28082159cf93e0ea319b83388d391f23bbb2278b24e6b99584785a429c",
+      "line_count": 675,
+      "anchors": [
+        {
+          "label": "route_problem",
+          "start_line": 241,
+          "end_line": 277,
+          "excerpt_sha256": "c8188381c4e818bad977c48319af95db40016c589298ba98e8e256360a20b764"
+        },
+        {
+          "label": "sampled_band_verification",
+          "start_line": 294,
+          "end_line": 350,
+          "excerpt_sha256": "71847cbd86399523ca85155d958d8d92b6ece112767f9223329623bbd9db4131"
+        }
+      ],
+      "source_claim": "Existing router is dense/banded/matrix-free; sampled band verification is not whole-domain collective proof."
+    },
+    {
+      "id": "polynomial_api",
+      "path": "crates/rodas5p-core/src/polynomial_action.rs",
+      "status": "EXISTS_SOURCE_READ",
+      "file_sha256": "a4ee9654df6009f4d7910fd079528016b5f8293d96fe6975e53ad3680041caf9",
+      "line_count": 2128,
+      "anchors": [
+        {
+          "label": "symmetric_type",
+          "start_line": 477,
+          "end_line": 483,
+          "excerpt_sha256": "6c3de8ecba68b06be81464f005ec8226c2e0275470dd680d697fa9effabc8587"
+        },
+        {
+          "label": "symmetric_rejection",
+          "start_line": 558,
+          "end_line": 572,
+          "excerpt_sha256": "543a8dc0117ee9c9846a436515f04f49b47afe3c1c0bbab2e28b5622f8c79736"
+        },
+        {
+          "label": "basis_cache",
+          "start_line": 616,
+          "end_line": 642,
+          "excerpt_sha256": "c83d870ed4410d870d21dc8ed9c0e6d874dad94a030e7ec29f325aaeec97df7a"
+        },
+        {
+          "label": "joint_phi_action",
+          "start_line": 1355,
+          "end_line": 1378,
+          "excerpt_sha256": "b54b74a8f7e192b92371b3efd8c1dd4937b263fed00ad55a47e496686ddc63b6"
+        },
+        {
+          "label": "scalar_phi_range",
+          "start_line": 1434,
+          "end_line": 1437,
+          "excerpt_sha256": "6307a8a0408b9e98bf3e3deb91e2cfff11495d24f2691d3644f4fe5530c7bcf1"
+        }
+      ],
+      "source_claim": "Current symmetric nonpositive phi action is not oscillatory packet admission; scalar phi0..4 range limited."
+    },
+    {
+      "id": "shared_shift_existing",
+      "path": "crates/rodas5p-core/src/shared_shift_jet.rs",
+      "status": "EXISTS_SOURCE_READ",
+      "file_sha256": "d96b00329a6bff5db8fe767cad5838045f4b3933a1577aec09cf512227b19773",
+      "line_count": 422,
+      "anchors": [
+        {
+          "label": "normalized_identity_contract",
+          "start_line": 3,
+          "end_line": 18,
+          "excerpt_sha256": "a407601f8c8be21c9bda50c5378c7e28b3397b54804d7b0912f107e948c2f941"
+        },
+        {
+          "label": "work_ledger",
+          "start_line": 105,
+          "end_line": 127,
+          "excerpt_sha256": "b398a3e8c895c060bfb81f05ca4f09a8428d028f79a640cffee14568c543e31e"
+        },
+        {
+          "label": "actual_normalized_jet",
+          "start_line": 363,
+          "end_line": 375,
+          "excerpt_sha256": "e2b568da9a687ca9e35b7d6b4a542403c07d182a851407a1667fc03309a61231"
+        }
+      ],
+      "source_claim": "Loop12 Section11 normalized inverse-jet identity already implemented; LU and residual work retained."
+    },
+    {
+      "id": "generated_transaction",
+      "path": "crates/rodas5p-integrators/src/transactional_q1_q2.rs",
+      "status": "EXISTS_SOURCE_READ",
+      "file_sha256": "72a9bf2405a181fefae2aa5e7483224ccd419046ede636a40416694b9d0fd7ad",
+      "line_count": 2001,
+      "anchors": [
+        {
+          "label": "generated_model_binding",
+          "start_line": 154,
+          "end_line": 166,
+          "excerpt_sha256": "633ebb402a1e213baf458b9889c21ba8fd244d95f19b1838ebfa172221e89473"
+        },
+        {
+          "label": "generated_rhs",
+          "start_line": 218,
+          "end_line": 238,
+          "excerpt_sha256": "4e689f2f49c3398d0747ee502b94cc4f98b19ace3f607e1f9951dfb068e31b56"
+        },
+        {
+          "label": "actual_entrypoint",
+          "start_line": 1717,
+          "end_line": 1745,
+          "excerpt_sha256": "9cf371629a5500d9116a05e0685d07e4bc5a9c45baa3a4c537350cafe2aa319b"
+        },
+        {
+          "label": "speculative_failure",
+          "start_line": 1815,
+          "end_line": 1839,
+          "excerpt_sha256": "29287a9feb07946bbf8c759d355d20a52423758237ec059007ba37c7bc260d40"
+        },
+        {
+          "label": "admission_fallback_ledger",
+          "start_line": 1847,
+          "end_line": 1916,
+          "excerpt_sha256": "de6c0f35afa2ffd1b1a1137d2a0021d64d6b2b63e41d69febdbb8d70a9a7a44e"
+        }
+      ],
+      "source_claim": "Generated-model and transaction design patterns exist, but target is 8-stage RODAS5P and componentwise quadratic."
+    },
+    {
+      "id": "problem_clients",
+      "path": "crates/rodas5p-integrators/src/problems.rs",
+      "status": "EXISTS_SOURCE_READ",
+      "file_sha256": "26279ee48dd78dd80266467ff7e6ef413f82aafa8be60c9177e799a5b96aa6bd",
+      "line_count": 824,
+      "anchors": [
+        {
+          "label": "manufactured_vector",
+          "start_line": 86,
+          "end_line": 243,
+          "excerpt_sha256": "97ad5899989da7834e68a357f4ab7148dad9d1abb539cb87d176533686a9da86"
+        },
+        {
+          "label": "complex_dahlquist",
+          "start_line": 435,
+          "end_line": 501,
+          "excerpt_sha256": "e9c49996f8fe9db3ad702baea595c6cd2c3e8dee4b9a4fb4efab11863d38e850"
+        },
+        {
+          "label": "van_der_pol",
+          "start_line": 571,
+          "end_line": 627,
+          "excerpt_sha256": "89681eb61a10ddc4946d652edd90170a5f402628bf93fc9e9ee1a6261f85d522"
+        },
+        {
+          "label": "robertson",
+          "start_line": 630,
+          "end_line": 697,
+          "excerpt_sha256": "3a258ce5888a8016be306eeee232bd757045516c02acf990c635176f02b4d60e"
+        },
+        {
+          "label": "semilinear_rhs",
+          "start_line": 700,
+          "end_line": 752,
+          "excerpt_sha256": "98d82d53a47f9da7e210b02a5019b45d3e90d893e80e72d09bef695e44f13f67"
+        }
+      ],
+      "source_claim": "Read client RHS: only uncoupled common-frequency Dahlquist degenerate g=0 fits simple carrier boundary; no nonlinear mean-feedback actual client established."
+    },
+    {
+      "id": "chart_scope",
+      "path": "crates/rodas5p-integrators/src/chart_transport.rs",
+      "status": "EXISTS_SOURCE_READ",
+      "file_sha256": "645bd6438f29e3ae4fcf318b046f1d87bb43a0925db4d12979b17b25dc21a765",
+      "line_count": 490,
+      "anchors": [
+        {
+          "label": "scope",
+          "start_line": 1,
+          "end_line": 14,
+          "excerpt_sha256": "9d74f38c2a2ca8822570eb8d4dee316843ccb4615730194c805fcda836aa3f51"
+        },
+        {
+          "label": "private_certificate",
+          "start_line": 25,
+          "end_line": 59,
+          "excerpt_sha256": "35b425a967a90e3c57e95e549fc33c6bf5cb87dac898e447936b4afc9a6997be"
+        }
+      ],
+      "source_claim": "Model-specific conditional reconstruction, not packet/global error certificate."
+    },
+    {
+      "id": "work_counters",
+      "path": "crates/rodas5p-core/src/work.rs",
+      "status": "EXISTS_SOURCE_READ",
+      "file_sha256": "8e45d23ac8d07bf2d7fa857a94e57453807c6832711363b627c8376ea0f899f0",
+      "line_count": 475,
+      "anchors": [
+        {
+          "label": "work_fields",
+          "start_line": 4,
+          "end_line": 110,
+          "excerpt_sha256": "8410a13332de030f31228d7e786c6c4398ac2a1e90c4a72219934c69dc6a7be5"
+        },
+        {
+          "label": "checked_delta",
+          "start_line": 396,
+          "end_line": 409,
+          "excerpt_sha256": "415b9b0fa03c4626673895eb68c7b0bea52925c06c89c972c9b29e2e6ffc1843"
+        }
+      ],
+      "source_claim": "Counters distinguish derivative channels and offer checked ledger delta; packet-specific scalar work requires new proposed ledger."
+    },
+    {
+      "id": "interval_primitives",
+      "path": "crates/rodas5p-core/src/directed.rs",
+      "status": "EXISTS_SOURCE_READ",
+      "file_sha256": "0227b1c605b1ad399d8a9675d3bab7c665b25d3de9c9da8577a537e57183b045",
+      "line_count": 366,
+      "anchors": [
+        {
+          "label": "Interval",
+          "start_line": 172,
+          "end_line": 181,
+          "excerpt_sha256": "85d6f18844bddcd06e2da1584e0e3c627b1f4526ab3c56222c8e0c08a812e43c"
+        }
+      ],
+      "source_claim": "Potential native outward arithmetic primitive; packet usage not implemented or tested."
+    },
+    {
+      "id": "workspace",
+      "path": "Cargo.toml",
+      "status": "EXISTS_SOURCE_READ",
+      "file_sha256": "86e27546665f923265a8addd3c464ac6017fe35558ab95fe0af7248cd99fb73b",
+      "line_count": 49,
+      "anchors": [
+        {
+          "label": "workspace_rust",
+          "start_line": 1,
+          "end_line": 16,
+          "excerpt_sha256": "2ec2ab5268282f05a8ea1996dfe4835220fa16a8d71c740035e01d6ba1ba07c6"
+        }
+      ],
+      "source_claim": "Existing workspace targets Rust1.94.1; this source read did not install/build/test toolchain."
+    }
+  ],
+  "search_scope": {
+    "glob": "crates/**/*.rs",
+    "patterns": [
+      "mean.?field",
+      "collective",
+      "moment.?packet",
+      "frequency.?packet",
+      "rank.?one",
+      "low.?rank.?feedback"
+    ],
+    "finding": "Only rank telemetry / unrelated numerical rank matches; no collective packet module found.",
+    "claim_ceiling": "No existing nonlinear admitted real client established in source scope, not proof about all external clients."
+  }
+}

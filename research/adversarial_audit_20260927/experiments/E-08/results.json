@@ -1,0 +1,886 @@
+{
+ "id": "E-08",
+ "purpose": "WorkCounters vs AtomicU64 ground truth on wrapped rhs/jvp/partial_t/jacobian closures: Prothero-Robinson(-1e4,1,0) (JVP-only and with-Jacobian) and ScientificCorpusV2 robertson-ramped n=96 rtol1e-8 (segment 0, t in [0,0.1]); arms: matrix-free adaptive (forced rejections: h0=max_step=0.1*span, rtol 1e-8), forced GMRES failures (maxiter 4, restart 4), dense variants, pexprb54s4 fused exponential, fixed Direct, generic adaptive Direct and generic adaptive GMRES; one dev-profile run for debug_assert.",
+ "commands": [
+  "bin/cargo-wrapped.sh build --profile measurement --bin e08_work_counters",
+  "RAYON_NUM_THREADS=1 cargo-target/measurement/e08_work_counters exp/E-08/e08_out.jsonl",
+  "bin/cargo-wrapped.sh build --bin e08_work_counters   # dev profile",
+  "RAYON_NUM_THREADS=1 cargo-target/debug/e08_work_counters exp/E-08/e08_dev_out.jsonl"
+ ],
+ "inputs": [
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/harness/src/bin/e08_work_counters.rs",
+   "sha256": "b88a95d4cfebbec09caa24b76a0627a00baaece86b55ff680bd0a071d23363e5"
+  }
+ ],
+ "outputs": [
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-08/e08_out.jsonl",
+   "sha256": "6bebee2703f615daafdb3393ca512a433a1b3d8f45930cbab5ba8c958ae97787"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-08/e08_stdout.txt",
+   "sha256": "f86bb221459e35a537ba610e35a0e1d1c65b5b2c85bf034a8ed8692b4e8b2311"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-08/e08_stderr.txt",
+   "sha256": "4170529bc5e1ff475319c0f66a41b37e12004c827cba6c3b138ecc20517901bf"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-08/e08_dev_out.jsonl",
+   "sha256": "6bebee2703f615daafdb3393ca512a433a1b3d8f45930cbab5ba8c958ae97787"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-08/e08_dev_stdout.txt",
+   "sha256": "59d43f942e5b87c219d075a793e60802c9b5cf0a0de813d2a60fb21cd961aa65"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-08/e08_dev_stderr.txt",
+   "sha256": "12a21d0e6dbe58b2c6771f00ce3bf455de1f1fd04e37df74fd01010c63376428"
+  },
+  {
+   "path": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/exp/E-08/build.log",
+   "sha256": "da32ae4291ac4daa6b414e23d873bbfe4b5ca18a8b7e67ced33abde0b7bcd258"
+  }
+ ],
+ "env": {
+  "RAYON_NUM_THREADS": "1",
+  "profile": "measurement",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "tree_ref": "b3e8165c8dc3b5016702821d280daea1a3f1feb7",
+  "python": "numpy/scipy/mpmath 1.3 (E-06 reference)"
+ },
+ "summary_metrics": {
+  "arms": 24,
+  "rhs_calls_mismatches_on_ok_runs": 0,
+  "ft_calls_mismatches_on_ok_runs": 0,
+  "matrix_free_path_jvp_calls_minus_atomic": [
+   [
+    "PR-jvp-only",
+    "mf_adaptive_reject",
+    0
+   ],
+   [
+    "PR-jvp-only",
+    "mf_dense_reject",
+    0
+   ],
+   [
+    "PR-jvp-only",
+    "mf_adaptive_gmresfail",
+    0
+   ],
+   [
+    "PR-jvp-only",
+    "mf_dense_gmresfail",
+    0
+   ],
+   [
+    "PR-with-jac",
+    "mf_adaptive_reject",
+    0
+   ],
+   [
+    "PR-with-jac",
+    "mf_dense_reject",
+    0
+   ],
+   [
+    "PR-with-jac",
+    "mf_adaptive_gmresfail",
+    0
+   ],
+   [
+    "PR-with-jac",
+    "mf_dense_gmresfail",
+    0
+   ],
+   [
+    "robertson-ramped-n96-jvp-only",
+    "mf_adaptive_reject",
+    0
+   ],
+   [
+    "robertson-ramped-n96-jvp-only",
+    "mf_dense_reject",
+    0
+   ],
+   [
+    "robertson-ramped-n96-jvp-only",
+    "mf_adaptive_gmresfail",
+    0
+   ],
+   [
+    "robertson-ramped-n96-jvp-only",
+    "mf_dense_gmresfail",
+    0
+   ]
+  ],
+  "generic_path_jvp_calls_vs_atomic": [
+   [
+    "PR-jvp-only",
+    "adaptive_gmres_gmresfail_generic",
+    140,
+    760,
+    460,
+    160
+   ],
+   [
+    "PR-with-jac",
+    "adaptive_gmres_gmresfail_generic",
+    140,
+    0,
+    460,
+    160
+   ],
+   [
+    "robertson-ramped-n96-jvp-only",
+    "adaptive_gmres_gmresfail_generic",
+    8841,
+    74897,
+    55952,
+    10104
+   ]
+  ],
+  "forced_failures": [
+   [
+    "PR-jvp-only",
+    "adaptive_direct_reject",
+    0,
+    19,
+    19
+   ],
+   [
+    "robertson-ramped-n96-jvp-only",
+    "mf_adaptive_reject",
+    76,
+    10,
+    0
+   ],
+   [
+    "robertson-ramped-n96-jvp-only",
+    "mf_dense_reject",
+    66,
+    8,
+    0
+   ],
+   [
+    "robertson-ramped-n96-jvp-only",
+    "mf_adaptive_gmresfail",
+    158,
+    93,
+    84
+   ],
+   [
+    "robertson-ramped-n96-jvp-only",
+    "mf_dense_gmresfail",
+    172,
+    121,
+    114
+   ],
+   [
+    "robertson-ramped-n96-jvp-only",
+    "adaptive_direct_reject",
+    0,
+    17,
+    17
+   ],
+   [
+    "robertson-ramped-n96-jvp-only",
+    "adaptive_gmres_gmresfail_generic",
+    1260,
+    1231,
+    1228
+   ]
+  ],
+  "dev_profile_identical_counters_and_atomics": true,
+  "dev_debug_assert_failures": 0,
+  "table": [
+   {
+    "problem": "PR-jvp-only",
+    "arm": "mf_adaptive_reject",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 20,
+     "jac": 0,
+     "jvp": 760,
+     "rhs": 160
+    },
+    "rhs_calls": 160,
+    "ft_calls": 20,
+    "jvp_calls": 760,
+    "linear_matvecs": 460,
+    "diagnostic_matvecs": 160,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 160,
+    "preconditioner_apps": 320,
+    "accepted_steps": 20,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 620
+   },
+   {
+    "problem": "PR-jvp-only",
+    "arm": "mf_dense_reject",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 10,
+     "jac": 0,
+     "jvp": 380,
+     "rhs": 80
+    },
+    "rhs_calls": 80,
+    "ft_calls": 10,
+    "jvp_calls": 380,
+    "linear_matvecs": 230,
+    "diagnostic_matvecs": 80,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 80,
+    "preconditioner_apps": 160,
+    "accepted_steps": 10,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 310
+   },
+   {
+    "problem": "PR-jvp-only",
+    "arm": "mf_adaptive_gmresfail",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 20,
+     "jac": 0,
+     "jvp": 760,
+     "rhs": 160
+    },
+    "rhs_calls": 160,
+    "ft_calls": 20,
+    "jvp_calls": 760,
+    "linear_matvecs": 460,
+    "diagnostic_matvecs": 160,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 160,
+    "preconditioner_apps": 320,
+    "accepted_steps": 20,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 620
+   },
+   {
+    "problem": "PR-jvp-only",
+    "arm": "mf_dense_gmresfail",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 10,
+     "jac": 0,
+     "jvp": 380,
+     "rhs": 80
+    },
+    "rhs_calls": 80,
+    "ft_calls": 10,
+    "jvp_calls": 380,
+    "linear_matvecs": 230,
+    "diagnostic_matvecs": 80,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 80,
+    "preconditioner_apps": 160,
+    "accepted_steps": 10,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 310
+   },
+   {
+    "problem": "PR-jvp-only",
+    "arm": "expo_pexprb54s4_fused",
+    "ok": false,
+    "message": "Err: invalid numerical input: G2 foundation currently supports autonomous problems only",
+    "atomic": {
+     "ft": 0,
+     "jac": 0,
+     "jvp": 0,
+     "rhs": 0
+    },
+    "rhs_calls": 0,
+    "ft_calls": 0,
+    "jvp_calls": 0,
+    "linear_matvecs": 0,
+    "diagnostic_matvecs": 0,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 0,
+    "preconditioner_apps": 0,
+    "accepted_steps": 0,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 0
+   },
+   {
+    "problem": "PR-jvp-only",
+    "arm": "fixed_direct",
+    "ok": false,
+    "message": "Err: linear solve failed: direct action needs explicit shifted matrix",
+    "atomic": {
+     "ft": 1,
+     "jac": 0,
+     "jvp": 0,
+     "rhs": 1
+    },
+    "rhs_calls": 0,
+    "ft_calls": 0,
+    "jvp_calls": 0,
+    "linear_matvecs": 0,
+    "diagnostic_matvecs": 0,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 0,
+    "preconditioner_apps": 0,
+    "accepted_steps": 0,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": -1,
+    "ft_minus_atomic": -1,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 0
+   },
+   {
+    "problem": "PR-jvp-only",
+    "arm": "adaptive_direct_reject",
+    "ok": false,
+    "message": "maximum step count or minimum step reached",
+    "atomic": {
+     "ft": 19,
+     "jac": 0,
+     "jvp": 0,
+     "rhs": 19
+    },
+    "rhs_calls": 19,
+    "ft_calls": 19,
+    "jvp_calls": 0,
+    "linear_matvecs": 0,
+    "diagnostic_matvecs": 0,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 0,
+    "preconditioner_apps": 0,
+    "accepted_steps": 0,
+    "rejected_steps": 19,
+    "linear_solve_failures": 19,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 0
+   },
+   {
+    "problem": "PR-jvp-only",
+    "arm": "adaptive_gmres_gmresfail_generic",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 20,
+     "jac": 0,
+     "jvp": 760,
+     "rhs": 160
+    },
+    "rhs_calls": 160,
+    "ft_calls": 20,
+    "jvp_calls": 140,
+    "linear_matvecs": 460,
+    "diagnostic_matvecs": 160,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 160,
+    "preconditioner_apps": 320,
+    "accepted_steps": 20,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": -620,
+    "preregistered_sum_minus_atomic": 0
+   },
+   {
+    "problem": "PR-with-jac",
+    "arm": "mf_adaptive_reject",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 20,
+     "jac": 0,
+     "jvp": 760,
+     "rhs": 160
+    },
+    "rhs_calls": 160,
+    "ft_calls": 20,
+    "jvp_calls": 760,
+    "linear_matvecs": 460,
+    "diagnostic_matvecs": 160,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 160,
+    "preconditioner_apps": 320,
+    "accepted_steps": 20,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 620
+   },
+   {
+    "problem": "PR-with-jac",
+    "arm": "mf_dense_reject",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 10,
+     "jac": 0,
+     "jvp": 380,
+     "rhs": 80
+    },
+    "rhs_calls": 80,
+    "ft_calls": 10,
+    "jvp_calls": 380,
+    "linear_matvecs": 230,
+    "diagnostic_matvecs": 80,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 80,
+    "preconditioner_apps": 160,
+    "accepted_steps": 10,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 310
+   },
+   {
+    "problem": "PR-with-jac",
+    "arm": "mf_adaptive_gmresfail",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 20,
+     "jac": 0,
+     "jvp": 760,
+     "rhs": 160
+    },
+    "rhs_calls": 160,
+    "ft_calls": 20,
+    "jvp_calls": 760,
+    "linear_matvecs": 460,
+    "diagnostic_matvecs": 160,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 160,
+    "preconditioner_apps": 320,
+    "accepted_steps": 20,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 620
+   },
+   {
+    "problem": "PR-with-jac",
+    "arm": "mf_dense_gmresfail",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 10,
+     "jac": 0,
+     "jvp": 380,
+     "rhs": 80
+    },
+    "rhs_calls": 80,
+    "ft_calls": 10,
+    "jvp_calls": 380,
+    "linear_matvecs": 230,
+    "diagnostic_matvecs": 80,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 80,
+    "preconditioner_apps": 160,
+    "accepted_steps": 10,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 310
+   },
+   {
+    "problem": "PR-with-jac",
+    "arm": "expo_pexprb54s4_fused",
+    "ok": false,
+    "message": "Err: invalid numerical input: G2 foundation currently supports autonomous problems only",
+    "atomic": {
+     "ft": 0,
+     "jac": 0,
+     "jvp": 0,
+     "rhs": 0
+    },
+    "rhs_calls": 0,
+    "ft_calls": 0,
+    "jvp_calls": 0,
+    "linear_matvecs": 0,
+    "diagnostic_matvecs": 0,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 0,
+    "preconditioner_apps": 0,
+    "accepted_steps": 0,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 0
+   },
+   {
+    "problem": "PR-with-jac",
+    "arm": "fixed_direct",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 50,
+     "jac": 50,
+     "jvp": 0,
+     "rhs": 400
+    },
+    "rhs_calls": 400,
+    "ft_calls": 50,
+    "jvp_calls": 350,
+    "linear_matvecs": 0,
+    "diagnostic_matvecs": 400,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 50,
+    "linear_solves": 400,
+    "preconditioner_apps": 0,
+    "accepted_steps": 50,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 350,
+    "preregistered_sum_minus_atomic": 750
+   },
+   {
+    "problem": "PR-with-jac",
+    "arm": "adaptive_direct_reject",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 20,
+     "jac": 20,
+     "jvp": 0,
+     "rhs": 160
+    },
+    "rhs_calls": 160,
+    "ft_calls": 20,
+    "jvp_calls": 140,
+    "linear_matvecs": 0,
+    "diagnostic_matvecs": 160,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 20,
+    "linear_solves": 160,
+    "preconditioner_apps": 0,
+    "accepted_steps": 20,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 140,
+    "preregistered_sum_minus_atomic": 300
+   },
+   {
+    "problem": "PR-with-jac",
+    "arm": "adaptive_gmres_gmresfail_generic",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 20,
+     "jac": 20,
+     "jvp": 0,
+     "rhs": 160
+    },
+    "rhs_calls": 160,
+    "ft_calls": 20,
+    "jvp_calls": 140,
+    "linear_matvecs": 460,
+    "diagnostic_matvecs": 160,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 20,
+    "linear_solves": 160,
+    "preconditioner_apps": 320,
+    "accepted_steps": 20,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 140,
+    "preregistered_sum_minus_atomic": 760
+   },
+   {
+    "problem": "robertson-ramped-n96-jvp-only",
+    "arm": "mf_adaptive_reject",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 86,
+     "jac": 0,
+     "jvp": 29385,
+     "rhs": 688
+    },
+    "rhs_calls": 688,
+    "ft_calls": 86,
+    "jvp_calls": 29385,
+    "linear_matvecs": 28095,
+    "diagnostic_matvecs": 688,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 688,
+    "preconditioner_apps": 27493,
+    "accepted_steps": 76,
+    "rejected_steps": 10,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 28783
+   },
+   {
+    "problem": "robertson-ramped-n96-jvp-only",
+    "arm": "mf_dense_reject",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 74,
+     "jac": 0,
+     "jvp": 25717,
+     "rhs": 592
+    },
+    "rhs_calls": 592,
+    "ft_calls": 74,
+    "jvp_calls": 25717,
+    "linear_matvecs": 24607,
+    "diagnostic_matvecs": 592,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 592,
+    "preconditioner_apps": 24089,
+    "accepted_steps": 66,
+    "rejected_steps": 8,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 25199
+   },
+   {
+    "problem": "robertson-ramped-n96-jvp-only",
+    "arm": "mf_adaptive_gmresfail",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 251,
+     "jac": 0,
+     "jvp": 9800,
+     "rhs": 1420
+    },
+    "rhs_calls": 1420,
+    "ft_calls": 251,
+    "jvp_calls": 9800,
+    "linear_matvecs": 7295,
+    "diagnostic_matvecs": 1336,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 1336,
+    "preconditioner_apps": 6126,
+    "accepted_steps": 158,
+    "rejected_steps": 93,
+    "linear_solve_failures": 84,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 8631
+   },
+   {
+    "problem": "robertson-ramped-n96-jvp-only",
+    "arm": "mf_dense_gmresfail",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 293,
+     "jac": 0,
+     "jvp": 10504,
+     "rhs": 1546
+    },
+    "rhs_calls": 1546,
+    "ft_calls": 293,
+    "jvp_calls": 10504,
+    "linear_matvecs": 7819,
+    "diagnostic_matvecs": 1432,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 1432,
+    "preconditioner_apps": 6566,
+    "accepted_steps": 172,
+    "rejected_steps": 121,
+    "linear_solve_failures": 114,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 9251
+   },
+   {
+    "problem": "robertson-ramped-n96-jvp-only",
+    "arm": "expo_pexprb54s4_fused",
+    "ok": false,
+    "message": "Err: invalid numerical input: G2 foundation currently supports autonomous problems only",
+    "atomic": {
+     "ft": 0,
+     "jac": 0,
+     "jvp": 0,
+     "rhs": 0
+    },
+    "rhs_calls": 0,
+    "ft_calls": 0,
+    "jvp_calls": 0,
+    "linear_matvecs": 0,
+    "diagnostic_matvecs": 0,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 0,
+    "preconditioner_apps": 0,
+    "accepted_steps": 0,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 0
+   },
+   {
+    "problem": "robertson-ramped-n96-jvp-only",
+    "arm": "fixed_direct",
+    "ok": false,
+    "message": "Err: linear solve failed: direct action needs explicit shifted matrix",
+    "atomic": {
+     "ft": 1,
+     "jac": 0,
+     "jvp": 0,
+     "rhs": 1
+    },
+    "rhs_calls": 0,
+    "ft_calls": 0,
+    "jvp_calls": 0,
+    "linear_matvecs": 0,
+    "diagnostic_matvecs": 0,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 0,
+    "preconditioner_apps": 0,
+    "accepted_steps": 0,
+    "rejected_steps": 0,
+    "linear_solve_failures": 0,
+    "rhs_minus_atomic": -1,
+    "ft_minus_atomic": -1,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 0
+   },
+   {
+    "problem": "robertson-ramped-n96-jvp-only",
+    "arm": "adaptive_direct_reject",
+    "ok": false,
+    "message": "maximum step count or minimum step reached",
+    "atomic": {
+     "ft": 17,
+     "jac": 0,
+     "jvp": 0,
+     "rhs": 17
+    },
+    "rhs_calls": 17,
+    "ft_calls": 17,
+    "jvp_calls": 0,
+    "linear_matvecs": 0,
+    "diagnostic_matvecs": 0,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 0,
+    "preconditioner_apps": 0,
+    "accepted_steps": 0,
+    "rejected_steps": 17,
+    "linear_solve_failures": 17,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": 0,
+    "preregistered_sum_minus_atomic": 0
+   },
+   {
+    "problem": "robertson-ramped-n96-jvp-only",
+    "arm": "adaptive_gmres_gmresfail_generic",
+    "ok": true,
+    "message": "success",
+    "atomic": {
+     "ft": 2491,
+     "jac": 0,
+     "jvp": 74897,
+     "rhs": 11332
+    },
+    "rhs_calls": 11332,
+    "ft_calls": 2491,
+    "jvp_calls": 8841,
+    "linear_matvecs": 55952,
+    "diagnostic_matvecs": 10104,
+    "recycle_refresh_matvecs": 0,
+    "jacobian_builds": 0,
+    "linear_solves": 10104,
+    "preconditioner_apps": 47111,
+    "accepted_steps": 1260,
+    "rejected_steps": 1231,
+    "linear_solve_failures": 1228,
+    "rhs_minus_atomic": 0,
+    "ft_minus_atomic": 0,
+    "jvp_calls_minus_atomic": -66056,
+    "preregistered_sum_minus_atomic": 0
+   }
+  ]
+ },
+ "pass_fail": "FAIL (pre-registered JVP accounting rule; rhs/ft rules PASS)",
+ "hypothesis_verdicts": [
+  "rhs_calls and ft_calls: PASS - equal to the atomic counts in all 24 arms (including 84/114/1228 forced GMRES failures and 10-1231 rejected steps); work of failed linear solves is counted (no rollback; Krylov solvers only snapshot counters for the report delta).",
+  "jvp_calls semantics differ by code path. Strict matrix-free path (integrate_sequential_matrix_free_adaptive_[dense_]observed): jvp_calls == atomic JVP callbacks exactly (760/380/29385/9800...), because the shifted W operator declares application_work=1 JVP per apply (operator.rs:504-506) and apply_counted charges it on every Krylov/diagnostic apply (operator.rs:225-240); hence jvp_calls already contains linear_matvecs+diagnostic_matvecs and the pre-registered sum formula over-counts by exactly that (FAIL under the literal rule, no physical work lost). Generic path (integrate_adaptive_observed_with_config + LinearMethod::Gmres on a JVP-only problem): jvp_calls=140 while 760 JVP callbacks ran (robertson: 8841 vs 74897); the Krylov JVPs appear only as linear_matvecs/diagnostic_matvecs because OdeProblem::linearize wraps the JVP in a ClosureOperator with the default zero application_work (problem.rs:239-251, operator.rs:123-125). With an explicit Jacobian, jvp_calls=140 while zero JVP callbacks ran (apply_jvp_counted counts logical J*v products, sequential.rs:357). Any cross-path comparison or cost model keyed on jvp_calls is therefore inconsistent (uncounted-work / doc-drift class).",
+  "Direct solver on a JVP-only problem: integrate_fixed returns a hard Err('direct action needs explicit shifted matrix', sequential.rs:324) and drops all counters (1 rhs + 1 ft evaluated but unreported); the generic adaptive path classifies the same non-transient configuration error as an adaptive LinearSolve failure and retries 19 (PR) / 17 (robertson) times down to min_step, ending with the misleading message 'maximum step count or minimum step reached'.",
+  "Exponential arm (integrate_pexprb54s4_fused_adaptive_observed): NOT RUN for these problems - rejects non-autonomous problems ('G2 foundation currently supports autonomous problems only'); both problems are non-autonomous.",
+  "Dev profile (debug_assertions=true): identical counters/atomics to the measurement profile in all 24 arms; no debug_assert fired."
+ ],
+ "notes": [
+  "mf_adaptive_gmresfail on PR (n=1) does not produce GMRES failures (n=1 converges in 1 iteration); the robertson n=96 arm does (84 failures adaptive, 114 dense).",
+  "Dense variant takes half the steps of the observed variant on PR (10 vs 20) because output points do not clip steps.",
+  "The pre-registered README (written before running) defined the JVP rule as atomic == jvp_calls + matvec categories; that rule is what the FAIL refers to. The finding is the path-dependent meaning of jvp_calls, not lost work."
+ ]
+}

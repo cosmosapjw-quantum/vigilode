@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "validation_commit": "80af642dee82785ddc02d705e3859cae05d46a9c",
+  "command": "bash .agents/skills/vigilode-ledger-ci-gate/scripts/run_prepush_gates.sh de990927d0f9197f0e37fcaeccee33bea6c7b8af",
+  "exit_code": 0,
+  "overall": "PASS",
+  "gates": [
+    {
+      "id": "1",
+      "name": "cargo fmt --all -- --check",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "id": "2",
+      "name": "cargo clippy --workspace --all-targets --locked -- -D warnings",
+      "status": "PASS",
+      "exit_code": 0
+    },
+    {
+      "id": "3",
+      "name": "tools/check-research-node.py --base de990927d0f9197f0e37fcaeccee33bea6c7b8af",
+      "status": "PASS",
+      "exit_code": 0,
+      "ledger_rows": 125
+    },
+    {
+      "id": "4",
+      "name": "tools/check-authority-refs.py",
+      "status": "PASS",
+      "exit_code": 0,
+      "citations": 1492,
+      "distinct_shas": 270,
+      "reachable": 196,
+      "allowlisted_missing_or_noncommit": 74
+    },
+    {
+      "id": "5",
+      "name": "tools/check_ignored_tests_in_ci.py",
+      "status": "PASS",
+      "exit_code": 0,
+      "ignored_tests": 79
+    },
+    {
+      "id": "6a",
+      "name": "tools/test_e4_build_modes.py -v",
+      "status": "PASS",
+      "exit_code": 0,
+      "tests": 13
+    },
+    {
+      "id": "6b",
+      "name": "tools/test_e4_final_review_regressions.py -v",
+      "status": "PASS",
+      "exit_code": 0,
+      "tests": 5
+    },
+    {
+      "id": "7",
+      "name": "git diff --check and tracked-tree clean",
+      "status": "PASS",
+      "exit_code": 0
+    }
+  ],
+  "raw_log": "research/production_audit_20261018/evidence/continuation_prepush_gates_final.log",
+  "claim_ceiling": "Repository publication gate pass only; scientific production promotion remains HOLD."
+}

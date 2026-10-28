@@ -1,0 +1,89 @@
+{
+  "started_utc": "2026-10-27T12:42:12.071729+00:00",
+  "source": {
+    "crates/vigilode-coupled/src/structural_mean_field.rs": "9bb28291d15a75a354861a2fac5046870cc8d5cb4df33319f75c8606ea0ade5f",
+    "crates/vigilode-coupled/src/switching.rs": "f99e64b6c28a8ef256d5d87ec53e0604574fc74758aadc4bd18a1821c5ec1905",
+    "crates/vigilode-coupled/tests/structural_mean_field_contracts.rs": "5d1ea221ef19a30856e9f4dbc441845c0e8ee8748f634772a696839a77bf1590",
+    "crates/vigilode-coupled/tests/switching_contracts.rs": "50d020782769c8df37a201a2a84d745ead216c315e90e161d1c13cec06e4eab4",
+    "crates/vigilode-coupled/examples/structural_mean_field_bench_20261027.rs": "13a0250b72c2594b777a32babddcb1753c9fefc17b88c46eb55ea817f26e1961"
+  },
+  "commands": [
+    {
+      "name": "structural_contracts",
+      "command": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode-coupled",
+        "--test",
+        "structural_mean_field_contracts",
+        "--test",
+        "switching_contracts",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 36.313636920000135
+    },
+    {
+      "name": "structural_build",
+      "command": [
+        "cargo",
+        "build",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode-coupled",
+        "--example",
+        "structural_mean_field_bench_20261027"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 8.424385735001124
+    },
+    {
+      "name": "structural_n64_t1",
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/structural_mean_field_bench_20261027",
+        "64",
+        "64",
+        "5",
+        "1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.7226354839949636
+    },
+    {
+      "name": "structural_n2048_t1",
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/structural_mean_field_bench_20261027",
+        "2048",
+        "64",
+        "5",
+        "1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.000646323002002
+    },
+    {
+      "name": "structural_n2048_t2",
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/structural_mean_field_bench_20261027",
+        "2048",
+        "64",
+        "5",
+        "2"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 5.5517134580004495
+    }
+  ],
+  "binary_sha256": "e5294fd3fadbfb208f5478a12b90b40f3e94211ddc12691289b5f631c96f9f06",
+  "finished_utc": "2026-10-27T12:43:10.103943+00:00"
+}

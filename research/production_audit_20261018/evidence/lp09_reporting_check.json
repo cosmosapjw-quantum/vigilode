@@ -1,0 +1,20 @@
+{
+  "schema": "vigilode-lp09-reporting-repair-check-v1",
+  "status": "PASS_SCOPED",
+  "tests_passed": 5,
+  "tests_failed": 0,
+  "command": "PATH=/workspace/scratch/0dc1e721cf82/runtime/rust/bin:$PATH CARGO_HOME=/workspace/scratch/0dc1e721cf82/runtime/cargo-home cargo test --offline --locked -p rodas5p-fair-ab --test packet_benchmark_contracts -- --test-threads=1",
+  "exit_code": 0,
+  "compiler": "rustc 1.94.1",
+  "scope": "diagnostic serialization and absence of unsupported promotion; test execution not an independent physical reference",
+  "source_hashes": {
+    "crates/rodas5p-fair-ab/src/packet_benchmark.rs": "f9c0fb2f4e2e36f3e94322caaba89db89958b8d905bbe37caad0a03e086bf063",
+    "crates/rodas5p-fair-ab/tests/packet_benchmark_contracts.rs": "c9552ac6806c65dcd4366c3a929d1d1bcdc0aa9216f3fabde53a68858365282a"
+  },
+  "rustfmt": "executed on changed files after test; whitespace only",
+  "notes": [
+    "original 5-case contract suite reused with corrected reporting acceptance",
+    "null allocations and null independent errors asserted for both arms",
+    "reported packet radius and inter-method discrepancy remain distinct"
+  ]
+}

@@ -1,0 +1,8 @@
+    Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+error: mismatched closing delimiter: `}`
+   --> /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:692:206
+    |
+692 | ...ex { re: -ib.im.scale(ix.div(Interval::point(k as f64).map_err(|_| PacketError::OutwardRefusal("factorial"))?).map_err(|_| PacketError::OutwardRefusal("basis"))?, im: ib.re.scale(ix.div(Interval::point(k as f64).map_err(|_| PacketError::OutwardRefusal("factorial"))?).map_err(|_| PacketError::OutwardRefusal("basis"))? };
+    |       - closing delimiter possibly meant for this                                                                                                                                    ^ unclosed delimiter                                                                                                                         ^ mismatched closing delimiter
+
+error: could not compile `rodas5p-integrators` (lib) due to 1 previous error

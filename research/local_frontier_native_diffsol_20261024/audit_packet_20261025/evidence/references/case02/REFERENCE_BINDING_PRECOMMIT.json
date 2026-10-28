@@ -1,0 +1,38 @@
+{
+  "case": 2,
+  "status": "DESCRIPTOR_BOUND_PRECOMMIT_PENDING_MEASUREMENT_BINARY_FREEZE",
+  "descriptor_probes": [
+    {
+      "label": "frozen",
+      "command": [
+        "/tmp/vigilode-local-run-20261024.geLVCp9Q/target/measurement/examples/local_bottleneck_suite",
+        "--describe",
+        "--case",
+        "2",
+        "--size",
+        "standard"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "452e48b84a2130ff037c711c7aca48f12b4f00b1014e3b74143da8b9b7e38e16",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "label": "patched_debug",
+      "command": [
+        "/tmp/vigilode-native-diffsol.qrGY78PY/reference-target/debug/examples/local_bottleneck_suite",
+        "--describe",
+        "--case",
+        "2",
+        "--size",
+        "standard"
+      ],
+      "exit_code": 0,
+      "stdout_sha256": "452e48b84a2130ff037c711c7aca48f12b4f00b1014e3b74143da8b9b7e38e16",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "reference_file": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/EXTERNAL_REFERENCE_PRECOMMIT.json",
+  "reference_sha256": "6a66646bfb1dd6c826cb66e340419703281f07dc41d6260725b4c19927624559",
+  "evidence_file": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case02/REFERENCE_EVIDENCE.json",
+  "evidence_sha256": "efa94eb3f0bfe1e83735aad6e8be6099480b951b569c9c30f917dd38c12e3414"
+}

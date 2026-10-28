@@ -1,0 +1,29 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.10s
+     Running tests/global_budget_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime/final-target/debug/deps/global_budget_contracts-8e77d71d0102d61b)
+
+running 9 tests
+test allocator_checks_underflow_overflow_zero_blocks_and_resource_caps ... ok
+test bound_stationary_trajectory_covers_whole_curve_and_stored_centres ... ok
+test empty_span_preserves_initial_ball_and_unforgeable_model_identity ... ok
+test equal_denominator_grouping_preserves_outward_refusals_and_overflow_fallback ... ok
+test exact_integer_allocation_and_heuristic_seed_are_both_outward_validated ... ok
+test gray_scott_factory_uses_the_same_sealed_global_route ... ok
+test incomplete_run_cannot_be_promoted_by_changing_public_telemetry ... ok
+test nonlinear_positive_gain_is_replayed_without_changing_solver_work ... ok
+test refusal_keeps_scientific_prefix_and_charges_repeated_attempts ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+

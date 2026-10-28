@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "/home/runner/work/vigilode/vigilode/research/coupled_economy_20261020/closeout.py", line 13, in <module>
+    want,p=line.split('  ',1);assert hashlib.sha256((run/p).read_bytes()).hexdigest()==want,p;count+=1
+                                                    ~~~~~~~~~~~~~~~~~~^^
+  File "/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/pathlib/_abc.py", line 625, in read_bytes
+    with self.open(mode='rb') as f:
+         ~~~~~~~~~^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.13.16/x64/lib/python3.13/pathlib/_local.py", line 537, in open
+    return io.open(self, mode, buffering, encoding, errors, newline)
+           ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+FileNotFoundError: [Errno 2] No such file or directory: '/home/runner/work/vigilode/vigilode/research/coupled_economy_20261020/runs/39355449893/REFERENCES.json'

@@ -1,0 +1,68 @@
+    Blocking waiting for file lock on artifact directory
+warning: failed to garbage collect finalized incremental compilation session directory `/workspace/scratch/0dc1e721cf82/runtime/target/debug/incremental/rodas5p_integrators-1pfn70xp06xqc/s-hneor9tlkc-0scgwdn-aim1qfjynpb7nypn231wa8xyg`: Directory not empty (os error 39)
+
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 2 warnings
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.59s
+     Running tests/reaudit_admission_overflow.rs (/workspace/scratch/0dc1e721cf82/runtime/target/debug/deps/reaudit_admission_overflow-bd20f82f2d33b79d)
+
+running 4 tests
+test attempted_cost_overflow_is_refused_without_mutating_the_bin ... FAILED
+test numerically_unrepresentable_posterior_configuration_is_refused ... FAILED
+test protected_cost_overflow_is_refused_without_mutating_the_bin ... FAILED
+test saved_cost_overflow_is_refused_without_mutating_the_bin ... FAILED
+
+failures:
+
+---- attempted_cost_overflow_is_refused_without_mutating_the_bin stdout ----
+
+thread 'attempted_cost_overflow_is_refused_without_mutating_the_bin' (54) panicked at crates/rodas5p-integrators/tests/reaudit_admission_overflow.rs:21:5:
+assertion failed: rule.record_attempt(bin, attempt).is_err()
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- numerically_unrepresentable_posterior_configuration_is_refused stdout ----
+
+thread 'numerically_unrepresentable_posterior_configuration_is_refused' (55) panicked at crates/rodas5p-integrators/tests/reaudit_admission_overflow.rs:37:5:
+assertion failed: AdmissionRule::try_new(AdmissionConfig {
+            prior_alpha: 1e308,
+            prior_beta: 1e308,
+            ..Default::default()
+        }).is_err()
+
+---- protected_cost_overflow_is_refused_without_mutating_the_bin stdout ----
+
+thread 'protected_cost_overflow_is_refused_without_mutating_the_bin' (56) panicked at crates/rodas5p-integrators/tests/reaudit_admission_overflow.rs:10:5:
+assertion failed: rule.record_protected_step(bin, 1e308).is_err()
+
+---- saved_cost_overflow_is_refused_without_mutating_the_bin stdout ----
+
+thread 'saved_cost_overflow_is_refused_without_mutating_the_bin' (57) panicked at crates/rodas5p-integrators/tests/reaudit_admission_overflow.rs:31:5:
+assertion failed: rule.record_attempt(bin,
+        AttemptRecord {
+            charged_units: 1.0,
+            success: true,
+            replaced_protected_units: 1e308,
+        }).is_err()
+
+
+failures:
+    attempted_cost_overflow_is_refused_without_mutating_the_bin
+    numerically_unrepresentable_posterior_configuration_is_refused
+    protected_cost_overflow_is_refused_without_mutating_the_bin
+    saved_cost_overflow_is_refused_without_mutating_the_bin
+
+test result: FAILED. 0 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test reaudit_admission_overflow`

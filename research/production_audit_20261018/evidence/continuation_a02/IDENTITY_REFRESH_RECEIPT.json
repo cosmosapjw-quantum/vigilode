@@ -1,0 +1,33 @@
+{
+  "unit": "A02_LINEAR_DEPENDENCY_IDENTITY_REFRESH",
+  "classification": "DEPENDENCY_IDENTITY_REFRESH",
+  "cwd": "/home/cosmosapjw/vigilode",
+  "branch": "audit/production-readiness-20261018",
+  "head": "c3036c63da02ca9b04cd39ccf580cd67d00ccb0c",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+  "sources_and_inputs": {
+    "crates/rodas5p-integrators/src/packet_trajectory.rs": "1bf3552d5aaf9a9df0f03a85ca34c1ac055e449b92826a9f8199cffdea57c5e9",
+    "crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs": "8615cc94a95349dccc6b734ef1b8c7ae683be4a29f42b3668c6f16e60919f03f",
+    "crates/rodas5p-integrators/src/packet_window.rs": "cca2b7c008f062e38d784de3127789d05dba0d07e322349a81ac7744a9004084",
+    "crates/rodas5p-integrators/src/packet_work.rs": "846fafd24f163a0c1ab7f89a094a9552f2c92c2a0ff93beef3703c8ed1efc9ad",
+    "research/production_audit_20261018/evidence/continuation_a02/linear_oracle_mpmath.py": "b7da06f9a544c0b750691bb9546a16d5b95febdf4159b1c7b664c652ad23eab0",
+    "research/production_audit_20261018/evidence/continuation_a02/linear_oracle_mpmath.json": "aa98e27d25020e351991a0df273a160c75e69304d99b86d3380d7b683873895c"
+  },
+  "previous_oracle_repair_receipt_sha256": "1a0750dddabe74896267159b6e9f33f66e684dd2ad6763048888daa9eaa8def8",
+  "log": {
+    "path": "research/production_audit_20261018/evidence/continuation_a02/identity_refresh_contract.log",
+    "sha256": "8b1fa7e9435457f7766751cba5b2761a483528ef3c0c7b377eab5e6c9f49245f",
+    "command": "cargo test --locked --offline -p rodas5p-integrators --test packet_trajectory_contracts",
+    "exit_code": 0,
+    "copied_exactly_from": "/tmp/vigilode_a02_identity_refresh_contract.log",
+    "result": "10 passed; 0 failed"
+  },
+  "reason": "A10 changed packet_window.rs after the A02 oracle repair receipt; rerun the narrow A02 contract against the current shared dependency identity. A10 Bernstein helper edits are outside the A02 linear path.",
+  "decision": "LINEAR_SUBSCOPE_REVIEW_PENDING; FULL_A02_HOLD",
+  "limits": [
+    "roundoff_enclosed=false; provisional point radii have no certified admission",
+    "nonlinear continuous reconstructed residual and verified T1 global tube absent",
+    "VG-1 zero hot allocations and CausalWeights setup work remain open"
+  ]
+}

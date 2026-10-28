@@ -1,0 +1,592 @@
+{
+  "schema": "vigilode.adapter-research.v1",
+  "base_commit": "d79326648a7273c0decd641eaf94d94f5bea7c63",
+  "publication_branch": "research/adapter-diagnostics-20261025",
+  "overall": "SPECIALIZED_PILOTS_VALIDATED_GENERAL_PRODUCTION_NOT_YET_QUALIFIED",
+  "findings": [
+    {
+      "id": "F01",
+      "topic": "rapid oscillation",
+      "evidence_state": [
+        "derived",
+        "numerically_checked",
+        "implementation_verified"
+      ],
+      "decision": "specialized_declared_chart_candidate",
+      "sources": [
+        "oscillation/THEORY_AND_PORT_KO.md",
+        "oscillation/SOURCE_INVENTORY.json"
+      ],
+      "results": [
+        {
+          "accepted": 192996,
+          "actual_endpoint_linf_error": 7.650263457037454e-05,
+          "analytic_binary64_reference": [
+            0.001297736120983991,
+            -15.321258513752412
+          ],
+          "case": "catalog-15-exponential-chirp",
+          "endpoint_cap_1e_minus_4_pass": true,
+          "final_time": 8.0,
+          "jacobian_builds": 0,
+          "jvp_calls": 0,
+          "linear_solves": 0,
+          "median_seconds": 0.078166492,
+          "method": "physical-dopri5",
+          "nonlinear_solves": 0,
+          "physical_final_state": [
+            0.0012977270139822102,
+            -15.321182011117841
+          ],
+          "physical_local_atol": 1e-08,
+          "rejected": 6580,
+          "rhs_calls": 1197457,
+          "rtol": 0.0,
+          "scope": "declared family; transformed physical error majorant; actual errors differ; no generic winner",
+          "success": true,
+          "timed_samples_seconds": [
+            0.072232012,
+            0.077596204,
+            0.078166492,
+            0.078389677,
+            0.078982704
+          ],
+          "transformed_atol": 1e-08
+        },
+        {
+          "accepted": 267,
+          "actual_endpoint_linf_error": 1.240509917010968e-09,
+          "analytic_binary64_reference": [
+            0.001297736120983991,
+            -15.321258513752412
+          ],
+          "case": "catalog-15-exponential-chirp",
+          "endpoint_cap_1e_minus_4_pass": true,
+          "final_time": 8.0,
+          "jacobian_builds": 0,
+          "jvp_calls": 0,
+          "linear_solves": 0,
+          "median_seconds": 0.000289388,
+          "method": "declared-chart-dopri5",
+          "nonlinear_solves": 0,
+          "physical_final_state": [
+            0.0012977361210890644,
+            -15.321258514992921
+          ],
+          "physical_local_atol": 1e-08,
+          "rejected": 0,
+          "rhs_calls": 1603,
+          "rtol": 0.0,
+          "scope": "declared family; transformed physical error majorant; actual errors differ; no generic winner",
+          "success": true,
+          "timed_samples_seconds": [
+            0.00027719,
+            0.000277921,
+            0.000289388,
+            0.000354925,
+            0.000638554
+          ],
+          "transformed_atol": 4.788885409261581e-13
+        }
+      ],
+      "remaining": [
+        "dynamic physical norm",
+        "time-grid/phase certification",
+        "structure registration and charge-aware residual handling"
+      ],
+      "not_claimed": [
+        "automatic structure discovery",
+        "unconditional frequency independence",
+        "matched-achieved-error generic speedup"
+      ]
+    },
+    {
+      "id": "F02",
+      "topic": "step accumulation",
+      "evidence_state": [
+        "derived",
+        "numerically_checked",
+        "implementation_verified"
+      ],
+      "decision": "stability_limited_hypothesis_strongly_supported; cofactor_specialized_candidate",
+      "stability": [
+        {
+          "source": "research/local_frontier_native_diffsol_20261024/audit_packet_20261025/evidence/failures/case05_step_budget_09e9da3ca5aa705b/RECEIPT.json",
+          "source_sha256": "12f92823f906fb8eed3f35a010ecfbd3e849b846840474c0fcfd3b29a29c1fab",
+          "case": 5,
+          "method": "dopri5",
+          "attempts": 200000,
+          "accepted": 195112,
+          "rejected": 4888,
+          "accepted_fraction": 0.97556,
+          "final_time": 0.645495998875149,
+          "elapsed_seconds": 15.470179546,
+          "output_clipped_steps": 0,
+          "dopri_negative_real_radius": 3.3065678926349467,
+          "limiting_linear_rate": -1000000.0,
+          "predicted_stability_h": 3.3065678926349467e-06,
+          "observed_mean_accepted_h": 3.3083357193568256e-06,
+          "ratio_to_linear_stability_limit": 1.000534640987054,
+          "interpretation": "linear-mode consistency; nonlinear per-step attribution still needs trace"
+        },
+        {
+          "source": "research/local_frontier_native_diffsol_20261024/audit_packet_20261025/evidence/failures/case12_step_budget_00dfd4c0fbf8dcd8/RECEIPT.json",
+          "source_sha256": "d3300d578f497d72d7df3b92a2d601facd5da8200301fff40999f267f1c8a28f",
+          "case": 12,
+          "method": "dopri5",
+          "attempts": 200000,
+          "accepted": 195117,
+          "rejected": 4883,
+          "accepted_fraction": 0.975585,
+          "final_time": 3.757461472896645,
+          "elapsed_seconds": 32.739113137,
+          "output_clipped_steps": 0,
+          "dopri_negative_real_radius": 3.3065678926349467,
+          "limiting_linear_rate": -171819.59017080712,
+          "predicted_stability_h": 1.9244417294604552e-05,
+          "observed_mean_accepted_h": 1.92574787071175e-05,
+          "ratio_to_linear_stability_limit": 1.0006787117693925,
+          "interpretation": "linear-mode consistency; nonlinear per-step attribution still needs trace"
+        }
+      ],
+      "cofactor_result": {
+        "epsilon": 1e-06,
+        "end": 2.0,
+        "method": "cofactor",
+        "median_seconds": 5.298e-06,
+        "attempts": 12,
+        "accepted": 12,
+        "rejected": 0,
+        "success": true,
+        "endpoint_max_abs_error": 7.305111393574037e-08,
+        "reference_kind": "published independent Wolfram WP40/WP50 cofactor reduction",
+        "reference_empirical_uncertainty": 1e-12,
+        "raw_repetitions": 3
+      },
+      "implementation_defect": "fused exponential PI/history update fixed separately; not cause of historical DOPRI campaign"
+    },
+    {
+      "id": "F03",
+      "topic": "method switching",
+      "evidence_state": [
+        "implementation_verified",
+        "numerically_checked"
+      ],
+      "decision": "opt_in_pilot_optimization_possible",
+      "results_h0_1e_minus4": [
+        {
+          "case": "decay",
+          "h0": 0.0001,
+          "mode": "evidence",
+          "samples": 3,
+          "all_accuracy_pass": true,
+          "median_seconds": 4.2964e-05,
+          "max_endpoint_error": 3.3718316472253207e-09,
+          "rhs_calls": [
+            86,
+            86,
+            86
+          ],
+          "switches": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "decay",
+          "h0": 0.0001,
+          "mode": "pressure-only",
+          "samples": 3,
+          "all_accuracy_pass": true,
+          "median_seconds": 4.9063e-05,
+          "max_endpoint_error": 6.359213156059695e-11,
+          "rhs_calls": [
+            296,
+            296,
+            296
+          ],
+          "switches": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "decay",
+          "h0": 0.0001,
+          "mode": "dopri",
+          "samples": 3,
+          "all_accuracy_pass": true,
+          "median_seconds": 2.691e-05,
+          "max_endpoint_error": 8.019027775141296e-09,
+          "rhs_calls": [
+            73,
+            73,
+            73
+          ],
+          "switches": [
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "case": "decay",
+          "h0": 0.0001,
+          "mode": "rodas",
+          "samples": 3,
+          "all_accuracy_pass": true,
+          "median_seconds": 0.000122811,
+          "max_endpoint_error": 2.4554086541783704e-10,
+          "rhs_calls": [
+            80,
+            80,
+            80
+          ],
+          "switches": [
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "case": "rotation",
+          "h0": 0.0001,
+          "mode": "evidence",
+          "samples": 3,
+          "all_accuracy_pass": true,
+          "median_seconds": 0.002158453,
+          "max_endpoint_error": 9.254595551011491e-07,
+          "rhs_calls": [
+            6426,
+            6426,
+            6426
+          ],
+          "switches": [
+            0,
+            0,
+            0
+          ]
+        },
+        {
+          "case": "rotation",
+          "h0": 0.0001,
+          "mode": "pressure-only",
+          "samples": 3,
+          "all_accuracy_pass": true,
+          "median_seconds": 0.007406144,
+          "max_endpoint_error": 8.328354894615586e-08,
+          "rhs_calls": [
+            5163,
+            5163,
+            5163
+          ],
+          "switches": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "case": "rotation",
+          "h0": 0.0001,
+          "mode": "dopri",
+          "samples": 3,
+          "all_accuracy_pass": true,
+          "median_seconds": 0.000301126,
+          "max_endpoint_error": 9.272037038154934e-07,
+          "rhs_calls": [
+            5227,
+            5227,
+            5227
+          ],
+          "switches": [
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "case": "rotation",
+          "h0": 0.0001,
+          "mode": "rodas",
+          "samples": 3,
+          "all_accuracy_pass": true,
+          "median_seconds": 0.008055956,
+          "max_endpoint_error": 5.735572217169249e-08,
+          "rhs_calls": [
+            4962,
+            4962,
+            4962
+          ],
+          "switches": [
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "case": "stiff-forced",
+          "h0": 0.0001,
+          "mode": "evidence",
+          "samples": 3,
+          "all_accuracy_pass": true,
+          "median_seconds": 0.000232895,
+          "max_endpoint_error": 3.2427505125554035e-11,
+          "rhs_calls": [
+            706,
+            706,
+            706
+          ],
+          "switches": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "case": "stiff-forced",
+          "h0": 0.0001,
+          "mode": "pressure-only",
+          "samples": 3,
+          "all_accuracy_pass": true,
+          "median_seconds": 0.000218303,
+          "max_endpoint_error": 3.2427505125554035e-11,
+          "rhs_calls": [
+            674,
+            674,
+            674
+          ],
+          "switches": [
+            1,
+            1,
+            1
+          ]
+        },
+        {
+          "case": "stiff-forced",
+          "h0": 0.0001,
+          "mode": "dopri",
+          "samples": 3,
+          "all_accuracy_pass": true,
+          "median_seconds": 0.001055091,
+          "max_endpoint_error": 1.264482152318891e-08,
+          "rhs_calls": [
+            18637,
+            18637,
+            18637
+          ],
+          "switches": [
+            null,
+            null,
+            null
+          ]
+        },
+        {
+          "case": "stiff-forced",
+          "h0": 0.0001,
+          "mode": "rodas",
+          "samples": 3,
+          "all_accuracy_pass": true,
+          "median_seconds": 0.000144584,
+          "max_endpoint_error": 1.3635703677294941e-10,
+          "rhs_calls": [
+            80,
+            80,
+            80
+          ],
+          "switches": [
+            null,
+            null,
+            null
+          ]
+        }
+      ],
+      "changes": [
+        "AutomaticOde resource/permission/replay preflight",
+        "evidence_driven cost-screened repeated bounded probes",
+        "native post-acceptance step proposal carry across intermediate windows",
+        "exact-target attempt-quota success handling",
+        "typed decision telemetry"
+      ],
+      "remaining": [
+        "persistent PI/FSAL/workspace/implicit state",
+        "calibrated true-cost proxy",
+        "rotation probe overhead",
+        "declared structural candidate registry"
+      ],
+      "scope": "method fitness, not comprehensive physical stiffness classifier"
+    },
+    {
+      "id": "F04",
+      "topic": "parallel dispatch",
+      "evidence_state": [
+        "derived",
+        "implementation_verified",
+        "numerically_checked"
+      ],
+      "decision": "opt_in_ensemble_pilot; extend_after_local_evaluation",
+      "results": [
+        {
+          "batch_len": 1,
+          "workers": 2,
+          "heldout_median_seconds": {
+            "serial": 5.643499999999999e-06,
+            "parallel": 2.8968e-05,
+            "adaptive": 5.6785e-06
+          },
+          "heldout_faster_arm": "serial",
+          "adaptive_time_over_best_median": 1.006201825108532,
+          "selected_parallel_fraction": 0.0,
+          "choice_disagreement_fraction": 0.0,
+          "reasons": {
+            "SingleWorker": 20
+          },
+          "calibration_seconds": 0.0,
+          "startup_seconds": 0.0,
+          "warmup_seconds": 0.0,
+          "calibration_samples": [],
+          "first_selection": {
+            "estimated_cost_recovery_calls": null,
+            "horizon_recovers_calibration": false,
+            "mode": "Serial",
+            "parallel_upper_seconds": null,
+            "probe_due": false,
+            "reason": "SingleWorker",
+            "serial_lower_seconds": null
+          },
+          "adaptive_total_with_calibration_and_startup": 0.000133948,
+          "serial_total": 0.000277592,
+          "parallel_total_excluding_pool_startup": 0.000922004,
+          "checksum_equal": true
+        },
+        {
+          "batch_len": 64,
+          "workers": 2,
+          "heldout_median_seconds": {
+            "serial": 0.000627638,
+            "parallel": 0.00041043199999999996,
+            "adaptive": 0.00040006199999999997
+          },
+          "heldout_faster_arm": "parallel",
+          "adaptive_time_over_best_median": 0.9747339388741618,
+          "selected_parallel_fraction": 1.0,
+          "choice_disagreement_fraction": 0.0,
+          "reasons": {
+            "MeasuredGain": 1,
+            "HysteresisRetained": 19
+          },
+          "calibration_seconds": 0.004240601,
+          "startup_seconds": 7.2137e-05,
+          "warmup_seconds": 0.001065396,
+          "calibration_samples": [
+            {
+              "parallel_seconds": 0.000464717,
+              "serial_first": false,
+              "serial_seconds": 0.000599657
+            },
+            {
+              "parallel_seconds": 0.000395405,
+              "serial_first": true,
+              "serial_seconds": 0.000592146
+            },
+            {
+              "parallel_seconds": 0.00043915,
+              "serial_first": false,
+              "serial_seconds": 0.000681708
+            }
+          ],
+          "first_selection": {
+            "estimated_cost_recovery_calls": 33.844242676313876,
+            "horizon_recovers_calibration": false,
+            "mode": "Parallel",
+            "parallel_upper_seconds": 0.000464717,
+            "probe_due": false,
+            "reason": "MeasuredGain",
+            "serial_lower_seconds": 0.000592146
+          },
+          "adaptive_total_with_calibration_and_startup": 0.012788644,
+          "serial_total": 0.013072443,
+          "parallel_total_excluding_pool_startup": 0.008554245,
+          "checksum_equal": true
+        },
+        {
+          "batch_len": 256,
+          "workers": 2,
+          "heldout_median_seconds": {
+            "serial": 0.002528859,
+            "parallel": 0.0021178815,
+            "adaptive": 0.0016053385
+          },
+          "heldout_faster_arm": "parallel",
+          "adaptive_time_over_best_median": 0.7579925977917084,
+          "selected_parallel_fraction": 1.0,
+          "choice_disagreement_fraction": 0.0,
+          "reasons": {
+            "MeasuredGain": 1,
+            "HysteresisRetained": 19
+          },
+          "calibration_seconds": 0.015534008,
+          "startup_seconds": 0.000205589,
+          "warmup_seconds": 0.004109536,
+          "calibration_samples": [
+            {
+              "parallel_seconds": 0.001356195,
+              "serial_first": false,
+              "serial_seconds": 0.002444024
+            },
+            {
+              "parallel_seconds": 0.00141407,
+              "serial_first": true,
+              "serial_seconds": 0.002428471
+            },
+            {
+              "parallel_seconds": 0.001388253,
+              "serial_first": false,
+              "serial_seconds": 0.002388962
+            }
+          ],
+          "first_selection": {
+            "estimated_cost_recovery_calls": 16.144964775585397,
+            "horizon_recovers_calibration": true,
+            "mode": "Parallel",
+            "parallel_upper_seconds": 0.00141407,
+            "probe_due": false,
+            "reason": "MeasuredGain",
+            "serial_lower_seconds": 0.002388962
+          },
+          "adaptive_total_with_calibration_and_startup": 0.047244585,
+          "serial_total": 0.051421395,
+          "parallel_total_excluding_pool_startup": 0.036293267,
+          "checksum_equal": true
+        }
+      ],
+      "repairs": [
+        "post-calibration sunk cost separated from future dispatch",
+        "lazy pool and singleton skip",
+        "charged warmup and raw paired observations"
+      ],
+      "remaining": [
+        "pre-calibration economics",
+        "PDE coarse-chunk/data and coupled-stage integration",
+        "host drift calibration"
+      ],
+      "initial_poor_selection_preserved": "parallel/initial/"
+    },
+    {
+      "id": "F05",
+      "topic": "benchmark design",
+      "evidence_state": [
+        "implementation_verified"
+      ],
+      "decision": "use_same_checkpoint_selection_evaluation",
+      "tests": 22,
+      "artifact": "selection_benchmark/PROTOCOL_KO.md",
+      "strict_measured_window_input_status": "NOT_YET_COLLECTED; current native pilots are whole trajectory or heldout batch comparisons"
+    }
+  ],
+  "local_raw": "/tmp/vigilode-local-run-20261024.geLVCp9Q",
+  "old_campaign": "STOPPED per published receipt; no local process action performed here",
+  "no_ncp": true
+}

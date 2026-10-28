@@ -1,0 +1,25 @@
+{
+ "schema": "bassrei-p02-post-verdict-diagnosis-v1",
+ "not_part_of_verdict": true,
+ "purpose": "identify which side limits the C6 S2 reference-uncertainty criterion (u_ref = VigilODE dense rtol 1e-12 vs Radau rtol 1e-13)",
+ "scenario": "S2_R+_phys_g1e6 (G2, gamma 1e6, outputs 0..3 step 0.5)",
+ "metric": "max over outputs of sum|a-b|/sum|b|",
+ "values": {
+  "radau_1e-12_s": 38.79529047012329,
+  "radau_1e-13_s": 88.30082678794861,
+  "radau_1e-14_s": 52.967456102371216,
+  "radau_1e-12_vs_radau_best": 1.3851555515307793e-12,
+  "radau_1e-13_vs_radau_best": 3.5893354192948174e-13,
+  "radau_1e-14_vs_radau_best": 0.0,
+  "vig_dense_1e-12_vs_radau_best": 1.19764842028508e-11,
+  "vig_dense_1e-12_vs_vig_1e-14": 1.3748992309953746e-11,
+  "vig_dense_1e-13_vs_radau_best": 8.931640764357698e-12,
+  "vig_dense_1e-13_vs_vig_1e-14": 9.007216526412918e-12,
+  "vig_dense_1e-14_vs_radau_best": 3.4558473549720265e-12,
+  "vig_dense_1e-14_vs_vig_1e-14": 0.0,
+  "vig_1e-8_vs_radau_best": 3.605550604819979e-11,
+  "vig_1e-8_vs_vig_1e-14": 3.6831402603341214e-11
+ },
+ "finding": "Radau converges (rtol 1e-12 and 1e-13 within 1.4e-12 and 3.6e-13 of rtol 1e-14), so the reference is accurate to ~4e-13. VigilODE dense at rtol 1e-12/1e-13/1e-14 differs from Radau(1e-14) by 1.2e-11/8.9e-12/3.5e-12: the preregistered u_ref measured the method's own tight-tolerance roundoff floor at gamma=1e6, not reference uncertainty. The rtol 1e-8 rung error 3.6e-11 is within ~3x of that floor.",
+ "implication": "C6 criterion definition defect plus a real double-precision accuracy floor of RODAS5P at gamma=1e6 (~1e-11 relative); no adapter defect indicated. P02 verdict FAIL stands; a new node (P02b) with a corrected reference-uncertainty definition is required before P03-P06."
+}

@@ -1,0 +1,219 @@
+{
+  "schema": "vigilode.next-development.v2",
+  "base_commit": "4fe67602502440d76aa9dd245c6b1d67558c14bf",
+  "objective": "General-purpose stiff/oscillatory ODE with derivative-free-first structure-aware adaptation and selection",
+  "tasks": [
+    {
+      "id": "J01",
+      "priority": 1,
+      "title": "Keep implicit controller and workspace across accepted windows",
+      "status": "planned",
+      "depends_on": [],
+      "files": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/src/solve.rs",
+        "crates/rodas5p-integrators/src/adaptive.rs"
+      ],
+      "actions": [
+        "Introduce a persistent RODAS tenure with exact model/provider/norm/chart epoch binding.",
+        "Carry accepted controller state and bounded workspaces; invalidate numerical caches after incompatible state/operator changes.",
+        "Reuse only mathematically identical factorizations or separately bounded approximate operators."
+      ],
+      "acceptance": [
+        "Compare uninterrupted and windowed output at identical requested physical observations.",
+        "Keep fatal/attempt-budget and replay ownership contracts.",
+        "Reduce setup overhead at common physical accuracy cap, including transition cost; count RHS/JVP/factor/solve separately."
+      ],
+      "routing": "workhorse implementation; Astra ultra only for unresolved reuse correctness",
+      "risk": "Stale operator or controller after a change of provider/chart; mutable side effects must not enter replay."
+    },
+    {
+      "id": "J02",
+      "priority": 1,
+      "title": "Cache settled causal prefixes and allocate precision by output influence",
+      "status": "planned",
+      "depends_on": [],
+      "files": [
+        "crates/vigilode-coupled/src/causal.rs",
+        "crates/vigilode/src/causal_budget.rs"
+      ],
+      "actions": [
+        "Skip RHS recomputation only for stages whose causal predecessors are unchanged bitwise under deterministic pure callbacks.",
+        "Cache original-target interval values separately from candidate residual subtraction.",
+        "Use adjoint seed allowances; evaluate cost-weighted allocation after measuring per-stage refinement costs."
+      ],
+      "acceptance": [
+        "Bitwise stage root and original-target residual parity against full-round baseline under fixed environment.",
+        "Epoch/state/h/provider changes invalidate all affected prefix caches.",
+        "Compare candidate+verification+cache costs against causal-forward, strongest reused direct method, and full-round iteration.",
+        "For expensive real RHS only, evaluate one stage parallel split with actual wall time."
+      ],
+      "routing": "Astra ultra for domain/rounding proof; workhorse code; low-cost prescribed runs",
+      "risk": "A cached target can remain valid while the candidate residual must change; side-effectful callbacks are ineligible."
+    },
+    {
+      "id": "J03",
+      "priority": 1,
+      "title": "Register derivative-free structures under one physical error contract",
+      "status": "planned",
+      "depends_on": [],
+      "files": [
+        "crates/vigilode/src/automatic.rs",
+        "crates/vigilode/src/selection_evidence.rs",
+        "crates/vigilode/src/oscillatory_chart.rs",
+        "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+        "crates/rodas5p-integrators/src/fourier_path_certificate.rs"
+      ],
+      "actions": [
+        "Register declared chart/quotient/Fourier/Laguerre/causal providers with applicability, original-state reconstruction and error transport.",
+        "Use h-dependent eta(h) and valid inverse/Lipschitz bounds to screen inner solvers before costly probes.",
+        "Permit JVP/AD only under explicit authority and observed inadequacy of qualified derivative-free alternatives.",
+        "Preserve non-equivariant, noncommuting, near-pole and alias controls.",
+        "Separate capability discovery from route validation: an unavailable implicit challenger must be excluded without rejecting an otherwise admissible explicit solve."
+      ],
+      "acceptance": [
+        "No stale physical norm/provider identity reuse.",
+        "Full-state output errors and reconstruction/phase uncertainty at requested observation grid.",
+        "Unsupported structure declines before callbacks; no guessed algebraic closure.",
+        "Positive same-cap total-cost evidence against strongest applicable fallback.",
+        "RHS-only valid problems remain solvable when an optional implicit challenger is unavailable; derivative permission alone never manufactures a provider."
+      ],
+      "routing": "focused Astra ultra plus research tools for new hypotheses; routine workhorse implementation"
+    },
+    {
+      "id": "J04",
+      "priority": 1,
+      "title": "Bound exploration spending and calibrate actual future cost",
+      "status": "planned",
+      "depends_on": [],
+      "files": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/src/selection_evidence.rs"
+      ],
+      "actions": [
+        "Pre-reserve a valid worst-case probe cost before entering it; charge failures and return-side comparators.",
+        "Implement prefix credit bound Cprobe <= B0 + epsilon*Cproductive in a declared unit.",
+        "Calibrate RHS/JVP/factor/solve scores to measured window costs; retain independent accuracy qualification.",
+        "Keep previous-window rate only as a cheap return trigger; study false-negative suppression by drift/expiry.",
+        "Assess small-budget endpoint utilization separately from future method adoption."
+      ],
+      "acceptance": [
+        "Exact prefix accounting under exhausted budgets, fatal callbacks and incomplete comparisons.",
+        "No economic switch from unmatched windows.",
+        "Untuned transition holdouts with paired source/build/host/physical output.",
+        "Record unproductive probes, wrong committed switches and whole-run overhead as separate metrics."
+      ],
+      "routing": "Astra ultra only for bounded-credit proof; workhorse code; Luna low measurements"
+    },
+    {
+      "id": "J05",
+      "priority": 2,
+      "title": "Extend physical error and domain contracts to continuous general outputs",
+      "status": "planned",
+      "depends_on": [
+        "J03"
+      ],
+      "files": [
+        "crates/vigilode/src/session.rs",
+        "crates/vigilode/src/lawson.rs",
+        "crates/vigilode/src/oscillatory_chart.rs"
+      ],
+      "actions": [
+        "Translate time-dependent/nonlinear lift errors and phase uncertainty to full physical state.",
+        "Integrate stage-domain and accepted-only callback contracts reused from separate D2-D5 research branch through narrow interfaces.",
+        "Specify event, dense-output, mass-matrix eligibility independently of endpoint automatic selection."
+      ],
+      "acceptance": [
+        "Observe full-state errors on time grid, not only endpoint or amplitude.",
+        "No out-of-domain stage callback or silently clipped physical state.",
+        "Recompute only dependencies affected by changed norm/chart/closure."
+      ],
+      "routing": "Astra ultra precise math audit; workhorse implementation"
+    },
+    {
+      "id": "J06",
+      "priority": 2,
+      "title": "Use measured execution selection for actual grid/data/stage work",
+      "status": "planned",
+      "depends_on": [
+        "J02",
+        "J03"
+      ],
+      "files": [
+        "crates/vigilode/src/execution_policy.rs"
+      ],
+      "actions": [
+        "Bind real grid callback with explicit dimension/mesh/chart/method/work identity.",
+        "Choose one relevant parallel partition against serial and account pool/setup/calibration/verification.",
+        "Exercise abrupt and smooth cost drift, nested execution and late model changes without hidden replay."
+      ],
+      "acceptance": [
+        "Ordered physical output parity and same accuracy scope.",
+        "Calibration-inclusive total cost and heldout decisions, separate startup.",
+        "A gain on ensembles is never reused as a stage/data speed claim."
+      ],
+      "routing": "workhorse implementation; low-cost fixed protocol"
+    },
+    {
+      "id": "J07",
+      "priority": 3,
+      "title": "Source-locked selection evaluation on local raw evidence",
+      "status": "prepared",
+      "depends_on": [
+        "J01",
+        "J02",
+        "J03",
+        "J04"
+      ],
+      "files": [
+        "research/joint_controller_20261025/tools/run_switch_pilot.py",
+        "research/adapter_research_20261025/selection_benchmark/analyze_selection.py"
+      ],
+      "actions": [
+        "Preserve local originals and bind source/binary/reference hashes.",
+        "Selected route plus one relevant same-checkpoint alternative; keep tuning and unseen evaluation windows separate.",
+        "External controls restricted to VODE/DVODE, Diffsol and Julia when a broader qualification campaign is justified.",
+        "Use one thread first on small-host workloads; no NCP or full method-by-thread Cartesian sweep."
+      ],
+      "acceptance": [
+        "Failures/timeouts and inaccurate alternatives remain separate from comparable cost observations.",
+        "All probe/transition/setup costs counted once.",
+        "Return diagnosis for any faster qualified alternative instead of just plotting a ranking."
+      ],
+      "routing": "Luna low or available low-cost mode"
+    },
+    {
+      "id": "J08",
+      "priority": 3,
+      "title": "Qualify release scope from reproduced robustness and accuracy evidence",
+      "status": "planned",
+      "depends_on": [
+        "J05",
+        "J06",
+        "J07"
+      ],
+      "actions": [
+        "Publish scoped capabilities and unsupported automatic features.",
+        "Run changed-dependency tests and predeclared robustness holdouts; reuse unchanged prior evidence.",
+        "Update human review, machine decisions and exact publication/source identities."
+      ],
+      "acceptance": [
+        "No broad production promotion from stage pilot or synthetic timing alone.",
+        "Independent material findings closed with actual evidence.",
+        "Ship opt-in features only at their demonstrated scope."
+      ],
+      "routing": "low-cost synthesis; one focused independent audit"
+    }
+  ],
+  "benchmark_policy": {
+    "no_ncp": true,
+    "no_exhaustive_method_thread_matrix": true,
+    "selected_plus_one_qualified_alternative": true,
+    "local_raw_required_for_fine_diagnosis": true
+  },
+  "routing": {
+    "default": "Luna low or actual available low-cost executor for fixed parsing/testing; workhorse for code",
+    "precision_only": "Astra ultra with physmath/SciSpace/Exa/Wolfram when a specific unresolved research question merits it",
+    "availability": "Verify available runtime; never claim an unavailable model or create external credentials"
+  }
+}

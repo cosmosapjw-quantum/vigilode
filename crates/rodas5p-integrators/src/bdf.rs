@@ -1,11 +1,13 @@
-use rodas5p_core::{CoreError, CoreResult, DenseMatrix, WorkCounters};
+use rodas5p_core::{CoreError, CoreResult, DenseMatrix, WorkCounters, error_scale, wrms};
 use serde::Serialize;
 
+use crate::adaptive::record_adaptive_work_failure;
 use crate::output::OutputCollector;
 use crate::{
-    AdaptiveControllerState, AdaptiveObservedIntegrationResult, AdaptiveRunDiagnostics,
-    AdaptiveStepConfig, NewtonConfig, NewtonReport, ObservedIntegrationResult, OdeProblem,
-    OutputSchedule, solve_dense_newton, step_doubling_wrms_error,
+    AdaptiveControllerState, AdaptiveFailureKind, AdaptiveObservedIntegrationResult,
+    AdaptiveRunDiagnostics, AdaptiveStepConfig, BDF_NEWTON_TOLERANCE_FACTOR, ComparatorFidelity,
+    NewtonConfig, NewtonReport, NewtonTolerancePolicy, ObservedIntegrationResult, OdeProblem,
+    OutputSchedule, adaptive_next_step_after_attempt, solve_dense_newton, step_doubling_wrms_error,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
@@ -28,6 +30,8 @@ impl BdfOrder {
 pub struct BdfConfig {
     pub order: BdfOrder,
     pub newton: NewtonConfig,
+    /// Opt-in Tier-A Newton stopping policy (audit F-052).
+    pub newton_tolerance: NewtonTolerancePolicy,
 }
 
 impl Default for BdfConfig {
@@ -35,6 +39,36 @@ impl Default for BdfConfig {
         Self {
             order: BdfOrder::Two,
             newton: NewtonConfig::default(),
+            newton_tolerance: NewtonTolerancePolicy::FixedNewtonConfig,
+        }
+    }
+}
+
+impl BdfConfig {
+    /// Audit F-052 label carried by every record this configuration produces.
+    /// The internal BDF integrator is a reference implementation; opting into
+    /// a Tier-A flag is recorded separately but still does not make it a
+    /// production comparator.
+    pub fn comparator_fidelity(&self) -> ComparatorFidelity {
+        if self.newton_tolerance == NewtonTolerancePolicy::FixedNewtonConfig {
+            ComparatorFidelity::ReferenceImplementationOnly
+        } else {
+            ComparatorFidelity::TierAModifiedNewton
+        }
+    }
+
+    /// Effective configuration for one adaptive trial at the outer tolerance.
+    fn for_adaptive_trial(&self, adaptive: &AdaptiveStepConfig) -> Option<Self> {
+        match self.newton_tolerance {
+            NewtonTolerancePolicy::FixedNewtonConfig => None,
+            NewtonTolerancePolicy::ScaledToOuterTolerance => Some(Self {
+                newton: self.newton.scaled_to_outer_tolerance(
+                    adaptive.atol,
+                    adaptive.rtol,
+                    BDF_NEWTON_TOLERANCE_FACTOR,
+                ),
+                ..self.clone()
+            }),
         }
     }
 }
@@ -43,6 +77,8 @@ impl Default for BdfConfig {
 pub struct BdfHistory {
     previous_state: Option<Vec<f64>>,
     previous_step: Option<f64>,
+    older_state: Option<Vec<f64>>,
+    older_step: Option<f64>,
 }
 
 impl BdfHistory {
@@ -54,9 +90,19 @@ impl BdfHistory {
         self.previous_step
     }
 
+    pub fn older_state(&self) -> Option<&[f64]> {
+        self.older_state.as_deref()
+    }
+
+    pub fn older_step(&self) -> Option<f64> {
+        self.older_step
+    }
+
     pub fn clear(&mut self) {
         self.previous_state = None;
         self.previous_step = None;
+        self.older_state = None;
+        self.older_step = None;
     }
 
     pub fn with_previous(previous_state: Vec<f64>, previous_step: f64) -> CoreResult<Self> {
@@ -73,6 +119,45 @@ impl BdfHistory {
         Ok(Self {
             previous_state: Some(previous_state),
             previous_step: Some(previous_step),
+            older_state: None,
+            older_step: None,
+        })
+    }
+
+    /// Construct a complete two-step history for numerical-oracle and restart
+    /// boundaries.  `previous_state` is one step behind the current state and
+    /// `older_state` is the state preceding it; each step is the interval from
+    /// that state to its successor.
+    pub fn with_two_previous(
+        previous_state: Vec<f64>,
+        previous_step: f64,
+        older_state: Vec<f64>,
+        older_step: f64,
+    ) -> CoreResult<Self> {
+        if previous_state.is_empty()
+            || previous_state.len() != older_state.len()
+            || !previous_state
+                .iter()
+                .chain(&older_state)
+                .all(|value| value.is_finite())
+        {
+            return Err(CoreError::InvalidInput(
+                "BDF two-step history states must be finite, nonempty, and shape-compatible".into(),
+            ));
+        }
+        if ![previous_step, older_step]
+            .iter()
+            .all(|step| *step > 0.0 && step.is_finite())
+        {
+            return Err(CoreError::InvalidInput(
+                "BDF two-step history steps must be finite and positive".into(),
+            ));
+        }
+        Ok(Self {
+            previous_state: Some(previous_state),
+            previous_step: Some(previous_step),
+            older_state: Some(older_state),
+            older_step: Some(older_step),
         })
     }
 }
@@ -85,6 +170,13 @@ pub struct BdfStepReport {
     pub applied_order: BdfOrder,
     pub used_startup: bool,
     pub step_ratio: Option<f64>,
+    /// Polynomial extrapolation used as the Newton initial value and by the
+    /// step-geometry-derived pure-BDF predictor/corrector LTE estimator.
+    pub predictor: Vec<f64>,
+    /// State immediately before `y` in the accepted BDF history, retained for
+    /// dense interpolation of this interval.
+    pub interpolation_previous_state: Option<Vec<f64>>,
+    pub interpolation_previous_step: Option<f64>,
     pub newton: NewtonReport,
 }
 
@@ -104,6 +196,14 @@ pub struct VariableBdf2Coefficients {
     pub a1: f64,
     pub a2: f64,
 }
+
+/// Largest adjacent-step growth ratio for zero-stable variable-step BDF2.
+///
+/// The parasitic root is `r^2 / (1 + 2r)`, so root stability requires
+/// `r <= 1 + sqrt(2)`.  The variable-step kernel takes one BDF1 restart when
+/// a requested step exceeds this boundary instead of applying unstable BDF2
+/// coefficients.
+pub const BDF2_ZERO_STABILITY_RATIO_MAX: f64 = 2.414_213_562_373_095;
 
 pub fn variable_bdf2_coefficients(
     current_step: f64,
@@ -162,15 +262,139 @@ pub fn variable_bdf2_predictor(
         .collect())
 }
 
+/// Leading-order local-error magnitude per BDF1 predictor/corrector
+/// difference for the actual two-interval geometry.
+///
+/// The linear history predictor has quadratic defect `h(h+a)y''/2`, while
+/// backward Euler has one-step local error `-h^2 y''/2`.  Their computed
+/// difference therefore yields the magnitude factor `h / (a + 2h)`.
+pub fn bdf1_predictor_correction_lte_factor(
+    current_step: f64,
+    previous_step: f64,
+) -> CoreResult<f64> {
+    if ![current_step, previous_step]
+        .iter()
+        .all(|step| *step > 0.0 && step.is_finite())
+    {
+        return Err(CoreError::InvalidInput(
+            "BDF1 estimator step geometry must be finite and positive".into(),
+        ));
+    }
+    let ratio = current_step / previous_step;
+    if !(ratio > 0.0 && ratio.is_finite()) {
+        return Err(CoreError::NonFinite(
+            "BDF1 estimator step ratio is non-finite".into(),
+        ));
+    }
+    Ok(ratio / (1.0 + 2.0 * ratio))
+}
+
+/// Leading-order local-error magnitude per BDF2 predictor/corrector
+/// difference for the actual three-interval geometry.
+///
+/// Let `h`, `a`, and `b` denote the current, previous, and older step sizes.
+/// The quadratic history predictor has cubic defect
+/// `h(h+a)(h+a+b)y'''/6`.  Variable-step BDF2 has one-step local error
+/// `-h^2(h+a)y'''/(6*a0)`, where `a0=(a+2h)/(a+h)`.  Eliminating `y'''`
+/// between that error and the computed corrector-minus-predictor difference
+/// gives the positive magnitude factor returned here:
+///
+/// `h / (a0*(h+a+b) + h)`.
+pub fn bdf2_predictor_correction_lte_factor(
+    current_step: f64,
+    previous_step: f64,
+    older_step: f64,
+) -> CoreResult<f64> {
+    if ![current_step, previous_step, older_step]
+        .iter()
+        .all(|step| *step > 0.0 && step.is_finite())
+    {
+        return Err(CoreError::InvalidInput(
+            "BDF2 estimator step geometry must be finite and positive".into(),
+        ));
+    }
+    let ratio = current_step / previous_step;
+    let older_ratio = older_step / previous_step;
+    if !(ratio > 0.0 && ratio.is_finite() && older_ratio > 0.0 && older_ratio.is_finite()) {
+        return Err(CoreError::NonFinite(
+            "BDF2 estimator step geometry ratio is non-finite".into(),
+        ));
+    }
+    let a0 = (1.0 + 2.0 * ratio) / (1.0 + ratio);
+    let denominator = a0 * (ratio + 1.0 + older_ratio) + ratio;
+    let factor = ratio / denominator;
+    if !(factor > 0.0 && factor.is_finite()) {
+        return Err(CoreError::NonFinite(
+            "BDF2 estimator factor is non-finite".into(),
+        ));
+    }
+    Ok(factor)
+}
+
+fn variable_quadratic_predictor(
+    current: &[f64],
+    previous: &[f64],
+    older: &[f64],
+    current_step: f64,
+    previous_step: f64,
+    older_step: f64,
+) -> CoreResult<Vec<f64>> {
+    if current.len() != previous.len() || current.len() != older.len() || current.is_empty() {
+        return Err(CoreError::Dimension(
+            "BDF quadratic predictor state shape mismatch".into(),
+        ));
+    }
+    if !current
+        .iter()
+        .chain(previous)
+        .chain(older)
+        .all(|value| value.is_finite())
+        || ![current_step, previous_step, older_step]
+            .iter()
+            .all(|step| *step > 0.0 && step.is_finite())
+    {
+        return Err(CoreError::NonFinite(
+            "BDF quadratic predictor inputs must be finite".into(),
+        ));
+    }
+
+    // Lagrange extrapolation through y_n, y_{n-1}, y_{n-2}.  For equal
+    // steps this is the standard order-two backward-difference predictor
+    // y_{n+1}^{(0)} = y_n + Delta y_n + Delta^2 y_n.
+    let h = current_step;
+    let a = previous_step;
+    let b = older_step;
+    let l0 = (h + a) * (h + a + b) / (a * (a + b));
+    let l1 = -h * (h + a + b) / (a * b);
+    let l2 = h * (h + a) / (b * (a + b));
+    Ok(current
+        .iter()
+        .zip(previous)
+        .zip(older)
+        .map(|((now, old), oldest)| l0 * now + l1 * old + l2 * oldest)
+        .collect())
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum BdfStepMode {
     Fixed,
     Variable,
 }
 
+/// Exactly equal represented steps (re-audit R4, R4-TIME-DEV-01). The R3
+/// test `|h - k| <= 32 eps max(|h|, |k|, 1)` gave the number 1 a time unit:
+/// below it, distinct steps such as 2 and 1 ULP of 1.0 were "equal", and
+/// the constant coefficients `3, -4, 1` left the residual `v (h - k)` on an
+/// exact linear flow (a 2.08% endpoint error). Unequal steps of any size
+/// now take the variable coefficients of their actual ratio, so the rule is
+/// invariant under power-of-two changes of the time unit.
 fn same_step(previous: f64, current: f64) -> bool {
-    let scale = previous.abs().max(current.abs()).max(1.0);
-    (previous - current).abs() <= 32.0 * f64::EPSILON * scale
+    previous == current
+}
+
+fn requires_bdf2_stability_restart(current_step: f64, previous_step: f64) -> bool {
+    let ratio = current_step / previous_step;
+    !ratio.is_finite() || ratio > BDF2_ZERO_STABILITY_RATIO_MAX
 }
 
 fn scaled_mass_jacobian(
@@ -245,17 +469,32 @@ fn bdf_step_impl(
     }
     let previous = history.previous_state.as_ref().filter(|state| {
         state.len() == y.len()
-            && history.previous_step.is_some_and(|previous_h| match mode {
-                BdfStepMode::Fixed => same_step(previous_h, h),
-                BdfStepMode::Variable => previous_h > 0.0 && previous_h.is_finite(),
-            })
+            && history
+                .previous_step
+                .is_some_and(|previous_h| previous_h > 0.0 && previous_h.is_finite())
     });
+    // Fixed mode keeps the constant-step coefficients only while successive
+    // represented steps agree; a step that differs (a clipped or final step,
+    // or a represented step whose size changes at a power-of-two ULP
+    // boundary) uses the variable-step coefficients of the actual steps
+    // instead of assuming equal spacing (re-audit R3, R3-TIME-01).
+    let variable_spacing = mode == BdfStepMode::Variable
+        || history
+            .previous_step
+            .is_some_and(|previous_h| !same_step(previous_h, h));
+    let stability_restart = config.order == BdfOrder::Two
+        && variable_spacing
+        && previous.is_some()
+        && requires_bdf2_stability_restart(
+            h,
+            history.previous_step.expect("BDF2 history validated"),
+        );
     let (applied_order, used_startup) = match config.order {
         BdfOrder::One => (BdfOrder::One, false),
-        BdfOrder::Two if previous.is_some() => (BdfOrder::Two, false),
+        BdfOrder::Two if previous.is_some() && !stability_restart => (BdfOrder::Two, false),
         BdfOrder::Two => (BdfOrder::One, true),
     };
-    let variable_coefficients = if applied_order == BdfOrder::Two && mode == BdfStepMode::Variable {
+    let variable_coefficients = if applied_order == BdfOrder::Two && variable_spacing {
         Some(variable_bdf2_coefficients(
             h,
             history.previous_step.expect("BDF2 history validated"),
@@ -263,9 +502,22 @@ fn bdf_step_impl(
     } else {
         None
     };
-    let predictor = match (applied_order, previous) {
-        (BdfOrder::Two, Some(previous_state)) => {
+    let predictor = match (
+        applied_order,
+        previous,
+        history.older_state.as_ref(),
+        history.older_step,
+    ) {
+        (BdfOrder::Two, Some(previous_state), Some(older_state), Some(older_h)) => {
+            let previous_h = history.previous_step.expect("BDF2 history validated");
+            variable_quadratic_predictor(y, previous_state, older_state, h, previous_h, older_h)?
+        }
+        (BdfOrder::Two, Some(previous_state), _, _) => {
             let ratio = variable_coefficients.map_or(1.0, |coefficients| coefficients.step_ratio);
+            variable_bdf2_predictor(y, previous_state, ratio)?
+        }
+        (BdfOrder::One, Some(previous_state), _, _) => {
+            let ratio = h / history.previous_step.expect("BDF1 history validated");
             variable_bdf2_predictor(y, previous_state, ratio)?
         }
         _ => y.to_vec(),
@@ -283,7 +535,7 @@ fn bdf_step_impl(
             let rhs = problem.eval_rhs(t_new, candidate, local_counters)?;
             let (mass_next, mass_current, mass_previous, rhs_scale) = match applied_order {
                 BdfOrder::One => (1.0, -1.0, 0.0, h),
-                BdfOrder::Two if mode == BdfStepMode::Fixed => (3.0, -4.0, 1.0, 2.0 * h),
+                BdfOrder::Two if !variable_spacing => (3.0, -4.0, 1.0, 2.0 * h),
                 BdfOrder::Two => {
                     let coefficients = variable_coefficients.expect("BDF2 coefficients validated");
                     (coefficients.a0, coefficients.a1, coefficients.a2, h)
@@ -309,7 +561,7 @@ fn bdf_step_impl(
             let jacobian = problem.dense_jacobian(t_new, candidate, local_counters)?;
             match applied_order {
                 BdfOrder::One => scaled_mass_jacobian(&mass, &jacobian, 1.0, -h),
-                BdfOrder::Two if mode == BdfStepMode::Fixed => {
+                BdfOrder::Two if !variable_spacing => {
                     scaled_mass_jacobian(&mass, &jacobian, 3.0, -2.0 * h)
                 }
                 BdfOrder::Two => {
@@ -320,6 +572,18 @@ fn bdf_step_impl(
         },
     )?;
 
+    let interpolation_previous_state = history.previous_state.clone();
+    let interpolation_previous_step = history.previous_step;
+    if stability_restart {
+        // A BDF1 restart intentionally discards the pre-jump polynomial.  The
+        // accepted interval becomes the sole new-history interval, and the
+        // following step may rebuild a zero-stable BDF2 history from it.
+        history.older_state = None;
+        history.older_step = None;
+    } else {
+        history.older_state = history.previous_state.take();
+        history.older_step = history.previous_step.take();
+    }
     history.previous_state = Some(y.to_vec());
     history.previous_step = Some(h);
     Ok(BdfStepReport {
@@ -329,6 +593,9 @@ fn bdf_step_impl(
         applied_order,
         used_startup,
         step_ratio: variable_coefficients.map(|coefficients| coefficients.step_ratio),
+        predictor,
+        interpolation_previous_state,
+        interpolation_previous_step,
         newton,
     })
 }
@@ -353,8 +620,11 @@ pub fn integrate_bdf_fixed(
     let mut states = vec![state.clone()];
     let mut applied_orders = Vec::new();
     let mut startup_steps = 0;
-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
-        let step = h.min(tf - t);
+    // Indexed grid t0 + k h (re-audit R3, R3-TIME-03).
+    let grid = crate::output::FixedGrid::new(t_span.0, tf, h)?;
+    while t < tf {
+        let step = crate::output::end_step(t, grid.step_from(t)?, tf)?;
+        crate::output::require_progress(t, step)?;
         let report = bdf_step(
             problem,
             t,
@@ -402,8 +672,10 @@ pub fn integrate_bdf_fixed_observed(
     let mut counters = WorkCounters::default();
     let mut collector = OutputCollector::new(output, t_span, y0)?;
     let mut internal_steps = 0_usize;
-    while t < tf - 10.0 * f64::EPSILON * tf.abs().max(1.0) {
-        let (step, clipped) = collector.limit_step(t, h, tf)?;
+    // Indexed grid t0 + k h (re-audit R3, R3-TIME-03).
+    let grid = crate::output::FixedGrid::new(t_span.0, tf, h)?;
+    while t < tf {
+        let (step, clipped) = collector.limit_step(t, grid.step_from(t)?, tf)?;
         let report = bdf_step(
             problem,
             t,
@@ -431,6 +703,245 @@ pub fn integrate_bdf_fixed_observed(
     })
 }
 
+const BDF_STARTUP_ESTIMATOR_ID: &str = "bdf-explicit-startup-step-doubling";
+/// Startup from an empty history with the derived geometry divisor
+/// (re-audit R4, R4-TIME-DEV-03; see [`bdf_startup_divisor`]).
+pub const BDF_STARTUP_BDF1_BDF1_ESTIMATOR_ID: &str = "bdf-startup-bdf1-bdf1-geometry-v1";
+pub const BDF_STARTUP_BDF1_BDF2_ESTIMATOR_ID: &str = "bdf-startup-bdf1-bdf2-mixed-v1";
+
+/// The Richardson divisor `D` of a BDF startup trial from an empty history
+/// (re-audit R4, R4-TIME-DEV-03): the fine error is `(fine - coarse) / D`
+/// in magnitude at leading order. Coarse is BDF1 over `H = h1 + h2` from
+/// the exact start, local error `e_c = H^2 y''/2`.
+///
+/// * BDF1 + BDF1 (order-one configuration): `e_f = (h1^2 + h2^2) y''/2`
+///   (implicit Euler carries the first error unchanged at leading order),
+///   so `D = (1 - eta) / eta`, `eta = theta^2 + (1 - theta)^2`, the Radau1
+///   rule of [`crate::step_doubling_divisor`] with `p = 1`.
+/// * BDF1 + BDF2 (order-two configuration): BDF1 over `h1` leaves
+///   `e_1 = h1^2 y''/2`; variable BDF2 over `h2` with `r = h2 / h1` is exact
+///   on quadratics and carries `e_1` by `-a1/a0 = (1 + r)^2 / (1 + 2r)` at
+///   leading order, so `e_f = (1 + r)^2 / (1 + 2r) h1^2 y''/2 = H^2 y''/2 /
+///   (1 + 2r)` and `|e_f| = |fine - coarse| / (2r)`: `D = 2 r`. Equal
+///   halves give `D = 2`; the old rule used `2^1 - 1 = 1` from the smaller
+///   applied order (conservative for `r >= 1/2`, which every represented
+///   split has, but not derived).
+///
+/// Exact for solutions whose second derivative is constant and a RHS that
+/// does not depend on the state (the quadratic-primitive family); an
+/// asymptotic estimate otherwise, not a certificate.
+pub fn bdf_startup_divisor(h1: f64, h2: f64, second_order: BdfOrder) -> CoreResult<f64> {
+    match second_order {
+        BdfOrder::One => crate::step_doubling_divisor(h1, h2, 1),
+        BdfOrder::Two => {
+            if !(h1.is_finite() && h2.is_finite() && h1 > 0.0 && h2 > 0.0) {
+                return Err(CoreError::InvalidInput(format!(
+                    "time resolution: BDF startup halves ({h1:e}, {h2:e}) must be positive and finite"
+                )));
+            }
+            let divisor = 2.0 * (h2 / h1);
+            if !(divisor.is_finite() && divisor > 0.0) {
+                return Err(CoreError::InvalidInput(format!(
+                    "time resolution: BDF startup halves ({h1:e}, {h2:e}) give no finite divisor"
+                )));
+            }
+            Ok(divisor)
+        }
+    }
+}
+const BDF1_PREDICTOR_ESTIMATOR_ID: &str = "bdf1-pure-bdf-backward-difference-lte";
+const BDF2_PREDICTOR_ESTIMATOR_ID: &str = "bdf2-pure-bdf-backward-difference-lte";
+
+#[derive(Clone, Debug)]
+pub(crate) struct AdaptiveBdfTrial {
+    pub(crate) accepted_reports: Vec<BdfStepReport>,
+    pub(crate) accepted_history: BdfHistory,
+    pub(crate) error_norm: f64,
+    pub(crate) estimator_order: usize,
+    pub(crate) estimator_id: &'static str,
+}
+
+impl AdaptiveBdfTrial {
+    pub(crate) fn y_new(&self) -> &[f64] {
+        self.accepted_reports
+            .last()
+            .expect("adaptive BDF trial has at least one accepted report")
+            .y_new
+            .as_slice()
+    }
+
+    pub(crate) fn accepted_internal_steps(&self) -> usize {
+        self.accepted_reports.len()
+    }
+}
+
+fn bdf_predictor_estimator_ready(history: &BdfHistory, order: BdfOrder) -> bool {
+    match order {
+        BdfOrder::One => history.previous_state.is_some() && history.previous_step.is_some(),
+        BdfOrder::Two => {
+            history.previous_state.is_some()
+                && history.previous_step.is_some()
+                && history.older_state.is_some()
+                && history.older_step.is_some()
+        }
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(crate) fn adaptive_bdf_trial(
+    problem: &OdeProblem,
+    t: f64,
+    state: &[f64],
+    h: f64,
+    config: &BdfConfig,
+    adaptive: &AdaptiveStepConfig,
+    history: &BdfHistory,
+    counters: &mut WorkCounters,
+) -> CoreResult<AdaptiveBdfTrial> {
+    let scaled = config.for_adaptive_trial(adaptive);
+    let config = scaled.as_ref().unwrap_or(config);
+    if !bdf_predictor_estimator_ready(history, config.order) {
+        // Startup is explicit and finite: two advancing half steps are kept,
+        // while the one coarse solve exists solely to certify their error.
+        // Once those half steps are accepted, both BDF1 and BDF2 have enough
+        // backward differences for the single-solve steady-state estimator.
+        let mut coarse_history = history.clone();
+        let mut fine_history = history.clone();
+        let coarse =
+            bdf_step_variable(problem, t, state, h, config, &mut coarse_history, counters)?;
+        // Represented halves that tile [t, t + h] (re-audit R3, R3-TIME-01).
+        let (first_half, t_mid, second_half) = crate::output::split_clock(t, h)?;
+        let fine_first = bdf_step_variable(
+            problem,
+            t,
+            state,
+            first_half,
+            config,
+            &mut fine_history,
+            counters,
+        )?;
+        let fine_second = bdf_step_variable(
+            problem,
+            t_mid,
+            &fine_first.y_new,
+            second_half,
+            config,
+            &mut fine_history,
+            counters,
+        )?;
+        let method_order = coarse
+            .applied_order
+            .value()
+            .min(fine_first.applied_order.value())
+            .min(fine_second.applied_order.value());
+        // The derived divisor needs the empty-history sequence it was
+        // derived for: BDF1 coarse, BDF1 first half, then BDF1 or BDF2
+        // (re-audit R4, R4-TIME-DEV-03). Anything else keeps the previous
+        // rule under its own estimator id.
+        let derived = history.previous_state.is_none()
+            && coarse.applied_order == BdfOrder::One
+            && fine_first.applied_order == BdfOrder::One;
+        let (estimate, estimator_id) = if derived {
+            let divisor = bdf_startup_divisor(first_half, second_half, fine_second.applied_order)?;
+            let mut estimate = crate::adaptive::step_doubling_estimate(
+                state,
+                &coarse.y_new,
+                &fine_second.y_new,
+                adaptive.atol,
+                adaptive.rtol,
+                1,
+                divisor,
+            )?;
+            estimate.halves = Some((first_half, second_half));
+            let id = match fine_second.applied_order {
+                BdfOrder::One => BDF_STARTUP_BDF1_BDF1_ESTIMATOR_ID,
+                BdfOrder::Two => BDF_STARTUP_BDF1_BDF2_ESTIMATOR_ID,
+            };
+            (estimate, id)
+        } else {
+            (
+                step_doubling_wrms_error(
+                    state,
+                    &coarse.y_new,
+                    &fine_second.y_new,
+                    adaptive.atol,
+                    adaptive.rtol,
+                    method_order,
+                )?,
+                BDF_STARTUP_ESTIMATOR_ID,
+            )
+        };
+        return Ok(AdaptiveBdfTrial {
+            accepted_reports: vec![fine_first, fine_second],
+            accepted_history: fine_history,
+            error_norm: estimate.error_norm,
+            estimator_order: estimate.estimator_order,
+            estimator_id,
+        });
+    }
+
+    let mut accepted_history = history.clone();
+    let report = bdf_step_variable(
+        problem,
+        t,
+        state,
+        h,
+        config,
+        &mut accepted_history,
+        counters,
+    )?;
+    let lte_factor = match report.applied_order {
+        BdfOrder::One => bdf1_predictor_correction_lte_factor(
+            h,
+            history
+                .previous_step
+                .expect("steady BDF1 estimator history validated"),
+        )?,
+        BdfOrder::Two => bdf2_predictor_correction_lte_factor(
+            h,
+            history
+                .previous_step
+                .expect("steady BDF2 estimator history validated"),
+            history
+                .older_step
+                .expect("steady BDF2 estimator geometry validated"),
+        )?,
+    };
+    // These factors belong to this implementation's explicit history
+    // extrapolants.  They are derived by eliminating the leading derivative
+    // between the BDF local truncation error and predictor defect; importing
+    // a constant-step Nordsieck/NDF coefficient would use a different state
+    // representation and is not valid here.
+    let error_vector = report
+        .y_new
+        .iter()
+        .zip(&report.predictor)
+        .map(|(corrected, predicted)| lte_factor * (corrected - predicted))
+        .collect::<Vec<_>>();
+    let scale = error_scale(state, &report.y_new, &[adaptive.atol], adaptive.rtol)?;
+    let error_norm = wrms(&error_vector, &scale)?;
+    let estimator_id = match report.applied_order {
+        BdfOrder::One => BDF1_PREDICTOR_ESTIMATOR_ID,
+        BdfOrder::Two => BDF2_PREDICTOR_ESTIMATOR_ID,
+    };
+    Ok(AdaptiveBdfTrial {
+        accepted_reports: vec![report.clone()],
+        accepted_history,
+        error_norm,
+        estimator_order: report.applied_order.value() + 1,
+        estimator_id,
+    })
+}
+
+fn adaptive_failure_kind(error: &CoreError) -> Option<AdaptiveFailureKind> {
+    match error {
+        CoreError::NonFinite(_) => Some(AdaptiveFailureKind::NonFinite),
+        CoreError::LinearSolve(_) => Some(AdaptiveFailureKind::LinearSolve),
+        CoreError::NonlinearSolve(_) => Some(AdaptiveFailureKind::NonlinearSolve),
+        _ => None,
+    }
+}
+
 pub fn integrate_bdf_adaptive_observed(
     problem: &OdeProblem,
     t_span: (f64, f64),
@@ -450,123 +961,109 @@ pub fn integrate_bdf_adaptive_observed(
     let mut history = BdfHistory::default();
     let mut counters = WorkCounters::default();
     let mut controller = AdaptiveControllerState::default();
-    let mut collector = OutputCollector::new(output, t_span, y0)?;
+    let mut collector =
+        OutputCollector::new(output, t_span, y0)?.with_max_step(adaptive.step_cap());
     let mut diagnostics = AdaptiveRunDiagnostics::default();
-    let mut h = adaptive.initial_step.min(tf - t);
+    let mut h = adaptive.initial_step.min(crate::output::step_to(t, tf)?);
     let mut internal_steps = 0_usize;
 
     while t < tf && diagnostics.attempts < adaptive.max_attempts {
-        h = h.min(adaptive.max_step).min(tf - t);
-        if h < adaptive.min_step || 0.5 * h <= f64::MIN_POSITIVE {
+        let Some(next_h) =
+            crate::output::adaptive_end_step(t, h, tf, adaptive.step_cap(), &controller)?
+        else {
+            break;
+        };
+        h = next_h;
+        // A final piece that lands on tf is taken even below min_step.
+        if (crate::output::below_min_step(t, h, adaptive.min_step) && t + h < tf)
+            || 0.5 * h <= f64::MIN_POSITIVE
+            || t + h == t
+        {
             break;
         }
-        let (trial_h, clipped) = collector.limit_step(t, h, tf)?;
-        let mut coarse_history = history.clone();
-        let mut fine_history = history.clone();
-        let trial = (|| {
-            let coarse = bdf_step_variable(
-                problem,
-                t,
-                &state,
-                trial_h,
-                config,
-                &mut coarse_history,
-                &mut counters,
-            )?;
-            let half = 0.5 * trial_h;
-            let fine_first = bdf_step_variable(
-                problem,
-                t,
-                &state,
-                half,
-                config,
-                &mut fine_history,
-                &mut counters,
-            )?;
-            let fine_second = bdf_step_variable(
-                problem,
-                t + half,
-                &fine_first.y_new,
-                half,
-                config,
-                &mut fine_history,
-                &mut counters,
-            )?;
-            Ok::<_, CoreError>((coarse, fine_first, fine_second))
-        })();
-
-        let (coarse, fine_first, fine_second) = match trial {
+        let requested_h = h;
+        let (trial_h, clipped) = collector.limit_step(t, requested_h, tf)?;
+        let trial = match adaptive_bdf_trial(
+            problem,
+            t,
+            &state,
+            trial_h,
+            config,
+            adaptive,
+            &history,
+            &mut counters,
+        ) {
             Ok(value) => value,
-            Err(
-                CoreError::NonFinite(_) | CoreError::LinearSolve(_) | CoreError::NonlinearSolve(_),
-            ) => {
+            Err(error) if adaptive_failure_kind(&error).is_some() => {
+                let failure = adaptive_failure_kind(&error).expect("failure kind checked");
                 counters.rejected_steps += 1;
-                diagnostics.record(trial_h, f64::INFINITY, 2, "bdf-step-doubling-failed", false);
-                h = trial_h * adaptive.min_factor;
+                record_adaptive_work_failure(&mut counters, failure);
+                diagnostics.record_with_failure(
+                    trial_h,
+                    f64::INFINITY,
+                    config.order.value() + 1,
+                    "bdf-trial-failed",
+                    false,
+                    Some(failure),
+                );
+                h = adaptive_next_step_after_attempt(
+                    &mut controller,
+                    adaptive,
+                    requested_h,
+                    trial_h,
+                    f64::INFINITY,
+                    config.order.value() + 1,
+                    false,
+                    clipped,
+                )?;
                 continue;
             }
             Err(error) => return Err(error),
         };
-        let method_order = if config.order == BdfOrder::One
-            || coarse.applied_order == BdfOrder::One
-            || fine_first.applied_order == BdfOrder::One
-            || fine_second.applied_order == BdfOrder::One
-        {
-            1
-        } else {
-            2
-        };
-        let estimate = step_doubling_wrms_error(
-            &state,
-            &coarse.y_new,
-            &fine_second.y_new,
-            adaptive.atol,
-            adaptive.rtol,
-            method_order,
-        )?;
-        let estimator_id = if method_order == 1 {
-            "bdf1-step-doubling"
-        } else {
-            "bdf2-step-doubling"
-        };
         let accepted =
-            estimate.error_norm <= 1.0 && fine_second.y_new.iter().all(|value| value.is_finite());
+            trial.error_norm <= 1.0 && trial.y_new().iter().all(|value| value.is_finite());
         diagnostics.record(
             trial_h,
-            estimate.error_norm,
-            estimate.estimator_order,
-            estimator_id,
+            trial.error_norm,
+            trial.estimator_order,
+            trial.estimator_id,
             accepted,
         );
         if accepted {
+            let accepted_internal_steps = trial.accepted_internal_steps();
             t += trial_h;
-            state = fine_second.y_new;
-            history = fine_history;
+            state = trial.y_new().to_vec();
+            history = trial.accepted_history;
             collector.accept(t, &state, clipped)?;
-            counters.accepted_steps += 2;
-            internal_steps += 2;
-            controller.record_acceptance(estimate.error_norm)?;
-            h = trial_h
-                * controller.propose_factor(
-                    adaptive,
-                    estimate.error_norm,
-                    estimate.estimator_order,
-                    true,
-                )?;
+            counters.accepted_steps += accepted_internal_steps as u64;
+            internal_steps += accepted_internal_steps;
+            h = adaptive_next_step_after_attempt(
+                &mut controller,
+                adaptive,
+                requested_h,
+                trial_h,
+                trial.error_norm,
+                trial.estimator_order,
+                true,
+                clipped,
+            )?;
         } else {
             counters.rejected_steps += 1;
-            controller.record_rejection(estimate.error_norm)?;
-            h = trial_h
-                * controller.propose_factor(
-                    adaptive,
-                    estimate.error_norm.max(1.0e-16),
-                    estimate.estimator_order,
-                    false,
-                )?;
+            record_adaptive_work_failure(&mut counters, AdaptiveFailureKind::LocalError);
+            h = adaptive_next_step_after_attempt(
+                &mut controller,
+                adaptive,
+                requested_h,
+                trial_h,
+                trial.error_norm,
+                trial.estimator_order,
+                false,
+                clipped,
+            )?;
         }
     }
 
-    let success = t >= tf - 10.0 * f64::EPSILON * tf.abs().max(1.0);
+    let success = t >= tf;
     let observed = if success {
         let (times, states, output_clipped_steps) = collector.finish()?;
         ObservedIntegrationResult {
@@ -579,14 +1076,15 @@ pub fn integrate_bdf_adaptive_observed(
             output_clipped_steps,
         }
     } else {
+        let (times, states, output_clipped_steps) = collector.finish_partial();
         ObservedIntegrationResult {
-            t: Vec::new(),
-            y: Vec::new(),
+            t: times,
+            y: states,
             success: false,
             message: "maximum step count or minimum step reached".into(),
             counters,
             internal_steps,
-            output_clipped_steps: 0,
+            output_clipped_steps,
         }
     };
     Ok(AdaptiveObservedIntegrationResult {

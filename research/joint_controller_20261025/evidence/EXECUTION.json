@@ -1,0 +1,26 @@
+{
+  "schema": "vigilode.joint-controller.evidence-execution.v1",
+  "scope": "read-only reanalysis and plotting of the latest published local selection packet",
+  "new_solver_runs": 0,
+  "executions": [
+    {
+      "command": "python3 research/joint_controller_20261025/tools/audit_published_selection.py --output research/joint_controller_20261025/evidence/PUBLISHED_SELECTION_AUDIT.json",
+      "exit_code": 0,
+      "stdout": {"rows": 50, "paired_blocks": 25, "receipt_manifest_links": 50, "error_count": 0, "errors": [], "result": "PASS_SCOPED"}
+    },
+    {
+      "command": "python3 research/joint_controller_20261025/tools/plot_published_selection.py --audit research/joint_controller_20261025/evidence/PUBLISHED_SELECTION_AUDIT.json --outdir research/joint_controller_20261025/evidence/figures",
+      "exit_code": 0,
+      "outputs": ["figures/published_selection_costs.png", "figures/published_selection_costs.svg", "figures/published_selection_costs.pdf"]
+    }
+  ],
+  "visual_review": {
+    "method": "rendered PNG opened with view_image",
+    "result": "PASS_SCOPED",
+    "observations": [
+      "All five paired cohorts are visible; log axes include the declared chart improvement and automatic-wrapper cost excess.",
+      "RHS labels match the audited group summaries and the dashed ratio-one reference.",
+      "Footnote identifies source, repeated-measurement unit, common cap with differing achieved errors and diagnostic timing scope."
+    ]
+  }
+}

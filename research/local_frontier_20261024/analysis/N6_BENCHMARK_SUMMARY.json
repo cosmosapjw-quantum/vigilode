@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "input_sha256": "cbb0d14552e5abe741b7a675e5a89be38556737ba5c354dc81573ebc272ec977",
+  "warmup_rows": 15,
+  "measurement_rows": 135,
+  "all_certified": true,
+  "summary": [
+    {
+      "dimension": 16,
+      "mode": "direct_jordan_blocks",
+      "samples": 9,
+      "median_seconds": 1.5223e-05,
+      "min_seconds": 1.5112e-05,
+      "max_seconds": 1.6895e-05,
+      "all_certified": true,
+      "max_error_l2_upper": 2.220446049250313e-15
+    },
+    {
+      "dimension": 16,
+      "mode": "fresh_full_lu",
+      "samples": 9,
+      "median_seconds": 2.7261e-05,
+      "min_seconds": 2.6099e-05,
+      "max_seconds": 0.003102853,
+      "all_certified": true,
+      "max_error_l2_upper": 2.220446049250313e-15
+    },
+    {
+      "dimension": 16,
+      "mode": "new_module",
+      "samples": 9,
+      "median_seconds": 4.4477e-05,
+      "min_seconds": 4.2745e-05,
+      "max_seconds": 5.1258e-05,
+      "all_certified": true,
+      "max_error_l2_upper": 2.220446049250313e-15
+    },
+    {
+      "dimension": 16,
+      "mode": "reuse_full_lu",
+      "samples": 9,
+      "median_seconds": 1.5754e-05,
+      "min_seconds": 1.5633e-05,
+      "max_seconds": 2.0761e-05,
+      "all_certified": true,
+      "max_error_l2_upper": 2.220446049250313e-15
+    },
+    {
+      "dimension": 16,
+      "mode": "reuse_module",
+      "samples": 9,
+      "median_seconds": 1.6115e-05,
+      "min_seconds": 1.5974e-05,
+      "max_seconds": 1.8318e-05,
+      "all_certified": true,
+      "max_error_l2_upper": 2.220446049250313e-15
+    },
+    {
+      "dimension": 64,
+      "mode": "direct_jordan_blocks",
+      "samples": 9,
+      "median_seconds": 0.000231639,
+      "min_seconds": 0.000230568,
+      "max_seconds": 0.000308776,
+      "all_certified": true,
+      "max_error_l2_upper": 8.881784197001252e-15
+    },
+    {
+      "dimension": 64,
+      "mode": "fresh_full_lu",
+      "samples": 9,
+      "median_seconds": 0.000401876,
+      "min_seconds": 0.000389077,
+      "max_seconds": 0.000430369,
+      "all_certified": true,
+      "max_error_l2_upper": 8.881784197001252e-15
+    },
+    {
+      "dimension": 64,
+      "mode": "new_module",
+      "samples": 9,
+      "median_seconds": 0.000617441,
+      "min_seconds": 0.000594146,
+      "max_seconds": 0.000736911,
+      "all_certified": true,
+      "max_error_l2_upper": 8.881784197001252e-15
+    },
+    {
+      "dimension": 64,
+      "mode": "reuse_full_lu",
+      "samples": 9,
+      "median_seconds": 0.000233872,
+      "min_seconds": 0.000233202,
+      "max_seconds": 0.00029173,
+      "all_certified": true,
+      "max_error_l2_upper": 8.881784197001252e-15
+    },
+    {
+      "dimension": 64,
+      "mode": "reuse_module",
+      "samples": 9,
+      "median_seconds": 0.000232521,
+      "min_seconds": 0.00023183,
+      "max_seconds": 0.000292571,
+      "all_certified": true,
+      "max_error_l2_upper": 8.881784197001252e-15
+    },
+    {
+      "dimension": 128,
+      "mode": "direct_jordan_blocks",
+      "samples": 9,
+      "median_seconds": 0.001101551,
+      "min_seconds": 0.000946287,
+      "max_seconds": 0.001231216,
+      "all_certified": true,
+      "max_error_l2_upper": 1.7763568394002505e-14
+    },
+    {
+      "dimension": 128,
+      "mode": "fresh_full_lu",
+      "samples": 9,
+      "median_seconds": 0.001777359,
+      "min_seconds": 0.001667654,
+      "max_seconds": 0.001892703,
+      "all_certified": true,
+      "max_error_l2_upper": 1.7763568394002505e-14
+    },
+    {
+      "dimension": 128,
+      "mode": "new_module",
+      "samples": 9,
+      "median_seconds": 0.002524355,
+      "min_seconds": 0.002425416,
+      "max_seconds": 0.002767943,
+      "all_certified": true,
+      "max_error_l2_upper": 1.7763568394002505e-14
+    },
+    {
+      "dimension": 128,
+      "mode": "reuse_full_lu",
+      "samples": 9,
+      "median_seconds": 0.000969592,
+      "min_seconds": 0.000943342,
+      "max_seconds": 0.001243425,
+      "all_certified": true,
+      "max_error_l2_upper": 1.7763568394002505e-14
+    },
+    {
+      "dimension": 128,
+      "mode": "reuse_module",
+      "samples": 9,
+      "median_seconds": 0.001024104,
+      "min_seconds": 0.000941439,
+      "max_seconds": 0.001237826,
+      "all_certified": true,
+      "max_error_l2_upper": 1.7763568394002505e-14
+    }
+  ],
+  "limitations": [
+    "synthetic repeated damped Jordan blocks with in-module RHS",
+    "one host, no CPU affinity, nine samples per cell",
+    "original dense outward residual is included and asymptotically O(n^2)",
+    "full-plan admission is excluded from reuse and direct rows; cold new_module includes matrix cloning",
+    "full shifted A construction is excluded from fresh_full_lu because A is preconstructed",
+    "no whole-ODE timing or automatic production dispatch claim"
+  ]
+}

@@ -1,0 +1,190 @@
+{
+  "schema": "vigilode.next-implementation.v1",
+  "task": "N01",
+  "date": "2026-10-21",
+  "status": "IMPLEMENTED_NATIVE_VALIDATED",
+  "scope": "Facade-owned Stats v4 records and executable supported-feature query; no new numerical driver enabled.",
+  "code_complete": true,
+  "native_validation_complete": true,
+  "implemented": [
+    {
+      "id": "N01-RECORDS",
+      "files": [
+        "crates/vigilode/src/records.rs",
+        "crates/vigilode/src/solution.rs",
+        "crates/vigilode/src/solve.rs"
+      ],
+      "record_types": [
+        "LinearMethodRecord",
+        "PreconditionerRecord",
+        "InitialGuessRecord",
+        "ControllerRecord",
+        "MaxStepPolicyRecord",
+        "StepFailureKind",
+        "StopReason",
+        "LuRecord",
+        "InteriorControlRecord",
+        "InteriorSamplingRecord",
+        "BandReferenceRecord",
+        "RoutingReasonRecord",
+        "RoutedDriverRecord",
+        "WorkRecord",
+        "LinearSolverRecord",
+        "AdaptiveRecord",
+        "BandedWorkRecord",
+        "FastInteriorRecord",
+        "RoutingDecisionRecord",
+        "BandVerificationRecord",
+        "StructureRecord",
+        "RoutingFallbackRecord"
+      ],
+      "work_counter_fields": 61,
+      "schema_before": "vigilode.stats.v4",
+      "schema_after": "vigilode.stats.v4",
+      "conversion_checks": [
+        "exhaustive source struct destructuring without rest pattern",
+        "exhaustive source enum matches without wildcard",
+        "all numeric fields nonzero in source/mirror serialization fixture",
+        "all source enum variants exercised",
+        "owned router conversion preserves mismatch Vec storage",
+        "12 field-level skip_serializing_if zero attributes preserved; all-zero and all61-nonzero records compared"
+      ]
+    },
+    {
+      "id": "N01-QUERY",
+      "files": [
+        "crates/vigilode/src/capabilities.rs",
+        "crates/vigilode/src/error.rs"
+      ],
+      "api": "Rodas5p::capabilities(&Problem, &Options) -> Result<Capabilities, Unsupported>",
+      "combinations": 384,
+      "route_families": 6,
+      "refusal_variants": 7,
+      "callback_execution": false,
+      "solver_workspace_allocation": false,
+      "support_predicates_shared_with_solve": true
+    }
+  ],
+  "compatibility": {
+    "public_field_names_unchanged": true,
+    "serde_fields_and_order_unchanged": true,
+    "golden_captured_before_mirror_conversion": true,
+    "rust_type_identity_unchanged": false,
+    "migration": "Output field types intentionally become facade-owned before a stable semver baseline. Explicit From<&Source> and direct cross-type PartialEq bridges are available; enum patterns, Option/tuple/struct literal annotations, and WorkCounters-specific methods require migration. The facade does not re-export internal types."
+  },
+  "accuracy_contract": {
+    "local_estimates_only": true,
+    "global_error_certified": false,
+    "consistent_dae_initialization": false,
+    "tier_performance_executes": "Protected",
+    "event_processing": "postprocessing accepted segments; no in-loop terminal stop"
+  },
+  "not_implemented": [
+    "vector absolute tolerance on sequential or matrix-free routes",
+    "declared band on JVP-only problems",
+    "mass matrix or dense output for JVP-only problems",
+    "dense Jacobian plus declared band with mass/dense output",
+    "in-loop event termination and guaranteed detection of tangent/multiple roots",
+    "unconditional production promotion or matched-time performance claim"
+  ],
+  "evidence_reused": [
+    "facade.md",
+    "facade.json",
+    "evidence/facade/facade_peer_review.json",
+    "evidence/n01/baseline_snapshot.rs",
+    "evidence/n01/baseline_source.sha256",
+    "evidence/n01/baseline_snapshot_retry.log",
+    "evidence/n01/baseline_golden.sha256"
+  ],
+  "retained_failures": [
+    {
+      "path": "evidence/n01/baseline_snapshot.log",
+      "kind": "infrastructure compile error with old shared target; not a semantic RED test",
+      "exit_code": 101
+    },
+    {
+      "path": "evidence/n01/contracts_01.log",
+      "kind": "test macro syntax compile failure; fixed parenthesized expression",
+      "exit_code": 101
+    },
+    {
+      "path": "evidence/n01/contracts_02.log",
+      "kind": "semantic RED: two JSON tests fail because 12 source zero-suppression serde attributes were absent; fixed without changing golden",
+      "exit_code": 101
+    },
+    {
+      "path": "evidence/n01/facade_all.log",
+      "kind": "existing direct-driver comparison still used Option<internal enum>; migrated explicitly",
+      "exit_code": 101
+    }
+  ],
+  "validation": {
+    "baseline_snapshot_fresh_target": "PASS",
+    "record_tests": "PASS_3",
+    "capability_matrix": "PASS_384_COMBINATIONS",
+    "facade_regressions": "PASS_85",
+    "doc_tests": "PASS_2",
+    "docs_warnings": "PASS_RUSTDOCFLAGS_D_WARNINGS",
+    "examples": "PASS_4",
+    "peer_review": "PASS_CORRECTED_SOURCE_REVIEW",
+    "root_integrated_suite": "ROOT_OWNED_PENDING"
+  },
+  "local_handoff": {
+    "code_task_required": false,
+    "remaining": "Pinned-toolchain integration verification, semver-baseline policy check and registered native comparator/NCP benchmark campaign. Root also runs final integrated tests and separate-target clippy here. No remaining N01 source implementation is assigned locally."
+  },
+  "validation_receipts": [
+    "evidence/n01/contracts_03.json",
+    "evidence/n01/facade_all_02.json",
+    "evidence/n01/facade_docs.json",
+    "evidence/n01/CAPABILITY_MATRIX.json",
+    "evidence/n01/facade_rustdoc.json",
+    "evidence/n01/example_robertson.json",
+    "evidence/n01/example_dense_output.json",
+    "evidence/n01/example_dae_mass.json",
+    "evidence/n01/example_banded_fd.json",
+    "evidence/n01/public_api_audit.json",
+    "evidence/n01/peer_review_final.json"
+  ],
+  "test_totals": {
+    "native": 85,
+    "doc_tests": 2,
+    "examples_executed": 4,
+    "capability_cases": 384
+  },
+  "source_sha256": {
+    "crates/vigilode/examples/banded_fd.rs": "4adbeab948f5450a27821546a4bf6e227e4b14e81eb216c0a2769acf49f8ea3b",
+    "crates/vigilode/examples/dae_mass.rs": "8790487a8ab726cbd20c5a5c7c2dd3209f47162b8f430b5d21b7d30b7a13848e",
+    "crates/vigilode/examples/dense_output.rs": "fc4ec8cfd22e5fddb08927e178bc762de0c7eb40000fbcf61dec250c76d96d58",
+    "crates/vigilode/examples/robertson.rs": "7ef3691686ad69c1973174345a39611f6e66be7ad6bdc908b5a19698aa2c6473",
+    "crates/vigilode/src/capabilities.rs": "415a6a0ec2893431fba147697ed7c0c4ccb021fd3c9ed2a0cc351e5f034d7dd5",
+    "crates/vigilode/src/error.rs": "6b7ee418dbe34b385a31485bf4d85bb387bbf115ac3becc0ad55796859c1f450",
+    "crates/vigilode/src/events.rs": "88f422c2fbe42c8a989d2b4839b98a81cb420f40e72e9ffbc23efa18b90030c3",
+    "crates/vigilode/src/fd.rs": "043a30a6dba922cd40b7f706b1535013f822180dda7529a7e2d163248da18664",
+    "crates/vigilode/src/lib.rs": "3e153ad610de58a8290465937a345542f78a0f509da221d5a276a8b002292271",
+    "crates/vigilode/src/options.rs": "b0355bd34c7038ff18fd37e15315835b8bc6fb4b01e7e0a59308e1f779269b1e",
+    "crates/vigilode/src/problem.rs": "80508cd74c613bde767873a93e46697b9d04597a1e95e2204a6f9332695cbc8e",
+    "crates/vigilode/src/records.rs": "b5787538970283d62e2d74347f835ef9fcbc51942154dc8794c2951d8f9d2138",
+    "crates/vigilode/src/solution.rs": "d879c9eb6155a0a73b3adda8445d8bcf30d4830863a97b02930290bbddb3d761",
+    "crates/vigilode/src/solve.rs": "d05233df298e206bb096b7e763c280a9248e1ecb8da8cd0c8748b66af2d9f53d",
+    "crates/vigilode/tests/capabilities_contracts.rs": "67c32c3f60ce24a12b454d950864f6a51462db7eae2ac6ee636270468968e255",
+    "crates/vigilode/tests/events_contracts.rs": "b577a86334b96e505b529193168a7239c995785fcafca6bb85af0dae3069cae1",
+    "crates/vigilode/tests/facade_contracts.rs": "cfc4b7b5865fb8eab0da8286a5fbb3a6be26d2fe4e2b4223829562dd914c1679",
+    "crates/vigilode/tests/p0_api_contracts.rs": "0b5af0250b5cd1aeac0c0331cd0acab9f361d886f0d971e7b0f1c7cbaa416b90",
+    "crates/vigilode/tests/p0_contracts.rs": "17807916544e8d2cd817677c7d3132ecdbd72c2d772eda4ab796f5c5e02c270b",
+    "crates/vigilode/tests/records_contracts.rs": "06ae8968af2c8ed610c72d33af2685d8a6d568d1fe90f2520b0a8ec9edda1b44"
+  },
+  "golden_sha256": {
+    "crates/vigilode/tests/golden/robertson_dense_event_stats.json": "98d92105aecad10eb5358d3b9fedf6e9118e64c98f48622242cc9c8908d2ce4a",
+    "crates/vigilode/tests/golden/robertson_stats.json": "1024678d0141d83b0e3342764ab47f0de6640cac195273a3e2c531c0d128da06"
+  },
+  "future_code_required_for_N01": [],
+  "source_identity_addendum": {
+    "original_hashes": "Preserved N01 node execution snapshot before final equivalent Clippy correction",
+    "changed_file": "crates/vigilode/src/solve.rs",
+    "post_lint_sha256": "e1ad9ea19c0cd948b33fc67e67876b111262a3252ad807cc62af119e2e2331f8",
+    "review": "FACADE_FINAL_LINT_REVIEW.json",
+    "current_execution_authority": "EXECUTION.json and evidence/final_04",
+    "historical_tests_rebound": false
+  }
+}

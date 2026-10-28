@@ -1,0 +1,31 @@
+{
+  "status": "EXACT_RATIONAL_DERIVATION_PASS",
+  "source": "crates/rodas5p-integrators/src/dopri5.rs DOPRI5_A/B/B_EMBEDDED",
+  "baseline_commit": "3064d453091af1dec7f99f0c8afabd98b447ea34",
+  "arithmetic": "Python standard-library Fraction; exact formal coefficients",
+  "R": {
+    "0": "1",
+    "1": "1",
+    "2": "1/2",
+    "3": "1/6",
+    "4": "1/24",
+    "5": "1/120",
+    "6": "1/600"
+  },
+  "log_R": {
+    "1": "1",
+    "6": "1/3600",
+    "7": "-1/2100",
+    "8": "1/3200",
+    "9": "-1/8100",
+    "10": "1/28800"
+  },
+  "R_minus_embedded": {
+    "5": "-97/120000",
+    "6": "13/40000",
+    "7": "-1/24000"
+  },
+  "regime": "scalar constant-frequency oscillator, constant small positive step; exact arithmetic",
+  "conclusion": "No general adaptive physical phase-error-versus-rtol law is inferred.",
+  "initial_attempt": "Default Python sympy import failed (package missing); replaced with exact standard-library arithmetic; no claim of an ODE run."
+}

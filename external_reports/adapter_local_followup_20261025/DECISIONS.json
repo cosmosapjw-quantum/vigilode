@@ -1,0 +1,543 @@
+{
+  "schema": "vigilode.adapter-local-followup.decisions.v1",
+  "created_utc": "2026-10-25T14:02:37.566285+00:00",
+  "base_research_commit": "5db28c42dccaf57cafcebf3752aec2d50360a8a6",
+  "base_tree": "9cf8d5a450d5571083c2f7b2b023d28daad0fe71",
+  "measurement_source_commit": "d914b4c8a53405ea846f710e07f77fff5f45b16f",
+  "measurement_source_tree": "438b9602dae0728121363fa0a40a8acb58bfb2c3",
+  "timing_authority": "diagnostic_only",
+  "raw_archive": "/home/cosmosapjw/vigilode-local-archive/n01-vigilode-local-run-20261024.geLVCp9Q",
+  "new_raw_root": "/tmp/vigilode-adapter-local-followup.1PRDjIEs",
+  "selection_analyzer_summary": {
+    "COMPARABLE": 25
+  },
+  "cohorts": {
+    "case5_endpoint": {
+      "candidates": {
+        "direct_rodas": {
+          "measured_run_count": 5,
+          "warmup_count": 1,
+          "solver_timing_seconds": {
+            "min": 0.000157166,
+            "median": 0.000193113,
+            "max": 0.001167378,
+            "n": 5
+          },
+          "controller_wall_seconds": {
+            "min": 0.004679400008171797,
+            "median": 0.005924344062805176,
+            "max": 0.006962740095332265,
+            "n": 5
+          },
+          "max_observed_physical_error": 1.0382010309220643e-07,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "all_five_pass": true,
+          "rhs_calls_per_run": {
+            "min": 307.0,
+            "median": 307.0,
+            "max": 307.0,
+            "n": 5
+          },
+          "attempts_per_run": {
+            "min": 39.0,
+            "median": 39.0,
+            "max": 39.0,
+            "n": 5
+          },
+          "physical_error_cap": 0.0001,
+          "reference_uncertainty_bound": 1e-12
+        },
+        "selected_switch": {
+          "measured_run_count": 5,
+          "warmup_count": 1,
+          "solver_timing_seconds": {
+            "min": 0.002466915,
+            "median": 0.002620304,
+            "max": 0.003428205,
+            "n": 5
+          },
+          "controller_wall_seconds": {
+            "min": 0.009199381107464433,
+            "median": 0.010791748994961381,
+            "max": 0.012681397143751383,
+            "n": 5
+          },
+          "max_observed_physical_error": 9.856757853537725e-10,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "all_five_pass": true,
+          "rhs_calls_per_run": {
+            "min": 1633.0,
+            "median": 1633.0,
+            "max": 1633.0,
+            "n": 5
+          },
+          "attempts_per_run": {
+            "min": 232.0,
+            "median": 232.0,
+            "max": 232.0,
+            "n": 5
+          },
+          "physical_error_cap": 0.0001,
+          "reference_uncertainty_bound": 1e-12
+        }
+      },
+      "paired_selected_over_best_tested_diagnostic": {
+        "blocks": 5,
+        "min": 2.1132101170315014,
+        "median": 14.596883689860341,
+        "max": 16.67220645686726
+      },
+      "scope_note": "same error ceiling and output; timing diagnostic only; achieved errors may differ",
+      "reference_uncertainty_empirical_or_external": 1e-12
+    },
+    "chirp_grid": {
+      "candidates": {
+        "chart": {
+          "measured_run_count": 5,
+          "warmup_count": 1,
+          "solver_timing_seconds": {
+            "min": 0.00019673,
+            "median": 0.000204045,
+            "max": 0.000348687,
+            "n": 5
+          },
+          "controller_wall_seconds": {
+            "min": 0.004746266873553395,
+            "median": 0.005566692212596536,
+            "max": 0.007617081981152296,
+            "n": 5
+          },
+          "max_observed_physical_error": 9.03527208606647e-09,
+          "statuses": [
+            "True"
+          ],
+          "all_five_pass": true,
+          "rhs_calls_per_run": {
+            "min": 1033.0,
+            "median": 1033.0,
+            "max": 1033.0,
+            "n": 5
+          },
+          "attempts_per_run": {
+            "min": 172.0,
+            "median": 172.0,
+            "max": 172.0,
+            "n": 5
+          },
+          "physical_error_cap": 0.0001,
+          "reference_uncertainty_bound": 3.0830094033262867e-10
+        },
+        "physical": {
+          "measured_run_count": 5,
+          "warmup_count": 1,
+          "solver_timing_seconds": {
+            "min": 0.061353519,
+            "median": 0.06342831700000001,
+            "max": 0.071372313,
+            "n": 5
+          },
+          "controller_wall_seconds": {
+            "min": 0.06765460385940969,
+            "median": 0.06986597809009254,
+            "max": 0.07721912302076817,
+            "n": 5
+          },
+          "max_observed_physical_error": 5.830243797433354e-05,
+          "statuses": [
+            "True"
+          ],
+          "all_five_pass": true,
+          "rhs_calls_per_run": {
+            "min": 1327699.0,
+            "median": 1327699.0,
+            "max": 1327699.0,
+            "n": 5
+          },
+          "attempts_per_run": {
+            "min": 221283.0,
+            "median": 221283.0,
+            "max": 221283.0,
+            "n": 5
+          },
+          "physical_error_cap": 0.0001,
+          "reference_uncertainty_bound": 3.0830094033262867e-10
+        }
+      },
+      "paired_selected_over_best_tested_diagnostic": {
+        "blocks": 5,
+        "min": 1.0,
+        "median": 1.0,
+        "max": 1.0
+      },
+      "scope_note": "same error ceiling and output; timing diagnostic only; achieved errors may differ",
+      "reference_uncertainty_empirical_or_external": 3.0830094033262867e-10
+    },
+    "gyro_endpoint": {
+      "candidates": {
+        "direct_dopri": {
+          "measured_run_count": 5,
+          "warmup_count": 1,
+          "solver_timing_seconds": {
+            "min": 0.002566983,
+            "median": 0.002706506,
+            "max": 0.004789658,
+            "n": 5
+          },
+          "controller_wall_seconds": {
+            "min": 0.00835041212849319,
+            "median": 0.010285736992955208,
+            "max": 0.011826246976852417,
+            "n": 5
+          },
+          "max_observed_physical_error": 3.899609760221745e-05,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "all_five_pass": true,
+          "rhs_calls_per_run": {
+            "min": 24403.0,
+            "median": 24403.0,
+            "max": 24403.0,
+            "n": 5
+          },
+          "attempts_per_run": {
+            "min": 4067.0,
+            "median": 4067.0,
+            "max": 4067.0,
+            "n": 5
+          },
+          "physical_error_cap": 0.0001,
+          "reference_uncertainty_bound": 1e-13
+        },
+        "selected_switch": {
+          "measured_run_count": 5,
+          "warmup_count": 1,
+          "solver_timing_seconds": {
+            "min": 0.007941412,
+            "median": 0.009146041,
+            "max": 0.014057168,
+            "n": 5
+          },
+          "controller_wall_seconds": {
+            "min": 0.02454880205914378,
+            "median": 0.03074184199795127,
+            "max": 0.036604722030460835,
+            "n": 5
+          },
+          "max_observed_physical_error": 3.88503939134921e-05,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "all_five_pass": true,
+          "rhs_calls_per_run": {
+            "min": 26018.0,
+            "median": 26018.0,
+            "max": 26018.0,
+            "n": 5
+          },
+          "attempts_per_run": {
+            "min": 4271.0,
+            "median": 4271.0,
+            "max": 4271.0,
+            "n": 5
+          },
+          "physical_error_cap": 0.0001,
+          "reference_uncertainty_bound": 1e-13
+        }
+      },
+      "paired_selected_over_best_tested_diagnostic": {
+        "blocks": 5,
+        "min": 2.9349001536226598,
+        "median": 3.093675337935623,
+        "max": 3.510720393063806
+      },
+      "scope_note": "same error ceiling and output; timing diagnostic only; achieved errors may differ",
+      "reference_uncertainty_empirical_or_external": 1e-13
+    },
+    "rotation_switch": {
+      "candidates": {
+        "direct_dopri": {
+          "measured_run_count": 5,
+          "warmup_count": 1,
+          "solver_timing_seconds": {
+            "min": 0.000242817,
+            "median": 0.000416334,
+            "max": 0.000470115,
+            "n": 5
+          },
+          "controller_wall_seconds": {
+            "min": 0.004315345082432032,
+            "median": 0.005734365899115801,
+            "max": 0.008763319812715054,
+            "n": 5
+          },
+          "max_observed_physical_error": 9.272037038154934e-07,
+          "statuses": [
+            "True"
+          ],
+          "all_five_pass": true,
+          "rhs_calls_per_run": {
+            "min": 5227.0,
+            "median": 5227.0,
+            "max": 5227.0,
+            "n": 5
+          },
+          "attempts_per_run": {
+            "min": 871.0,
+            "median": 871.0,
+            "max": 871.0,
+            "n": 5
+          },
+          "physical_error_cap": 1e-05,
+          "reference_uncertainty_bound": 1e-13
+        },
+        "selected_evidence": {
+          "measured_run_count": 5,
+          "warmup_count": 1,
+          "solver_timing_seconds": {
+            "min": 0.001941416,
+            "median": 0.002059387,
+            "max": 0.003772213,
+            "n": 5
+          },
+          "controller_wall_seconds": {
+            "min": 0.009903036057949066,
+            "median": 0.01214402518235147,
+            "max": 0.01299585890956223,
+            "n": 5
+          },
+          "max_observed_physical_error": 9.254595551011491e-07,
+          "statuses": [
+            "True"
+          ],
+          "all_five_pass": true,
+          "rhs_calls_per_run": {
+            "min": 6395.0,
+            "median": 6395.0,
+            "max": 6395.0,
+            "n": 5
+          },
+          "attempts_per_run": {
+            "min": 1020.0,
+            "median": 1020.0,
+            "max": 1020.0,
+            "n": 5
+          },
+          "physical_error_cap": 1e-05,
+          "reference_uncertainty_bound": 1e-13
+        }
+      },
+      "paired_selected_over_best_tested_diagnostic": {
+        "blocks": 5,
+        "min": 4.624323547507736,
+        "median": 8.010682210194492,
+        "max": 8.344939399616655
+      },
+      "scope_note": "same error ceiling and output; timing diagnostic only; achieved errors may differ",
+      "reference_uncertainty_empirical_or_external": 1e-13,
+      "persistence_control": {
+        "evidence": {
+          "warmup_count": 1,
+          "timed_count": 5,
+          "solver_seconds": {
+            "min": 0.001836068,
+            "median": 0.00186293,
+            "max": 0.002944602
+          },
+          "physical_error": 9.254595551011491e-07,
+          "rhs_calls": 6395,
+          "all_pass": true
+        },
+        "screened-reset": {
+          "warmup_count": 1,
+          "timed_count": 5,
+          "solver_seconds": {
+            "min": 0.001836159,
+            "median": 0.002777322,
+            "max": 0.002881541
+          },
+          "physical_error": 9.01954543719441e-07,
+          "rhs_calls": 6720,
+          "all_pass": true
+        }
+      }
+    },
+    "stiff_switch": {
+      "candidates": {
+        "direct_rodas": {
+          "measured_run_count": 5,
+          "warmup_count": 1,
+          "solver_timing_seconds": {
+            "min": 0.000134834,
+            "median": 0.000172274,
+            "max": 0.000245011,
+            "n": 5
+          },
+          "controller_wall_seconds": {
+            "min": 0.004594039870426059,
+            "median": 0.004909974988549948,
+            "max": 0.005931358085945249,
+            "n": 5
+          },
+          "max_observed_physical_error": 1.3635703677294941e-10,
+          "statuses": [
+            "True"
+          ],
+          "all_five_pass": true,
+          "rhs_calls_per_run": {
+            "min": 80.0,
+            "median": 80.0,
+            "max": 80.0,
+            "n": 5
+          },
+          "attempts_per_run": {
+            "min": 10.0,
+            "median": 10.0,
+            "max": 10.0,
+            "n": 5
+          },
+          "physical_error_cap": 1e-05,
+          "reference_uncertainty_bound": 1e-13
+        },
+        "selected_evidence": {
+          "measured_run_count": 5,
+          "warmup_count": 1,
+          "solver_timing_seconds": {
+            "min": 0.00024948,
+            "median": 0.000270389,
+            "max": 0.000494922,
+            "n": 5
+          },
+          "controller_wall_seconds": {
+            "min": 0.006241220980882645,
+            "median": 0.006715394090861082,
+            "max": 0.0075287960935384035,
+            "n": 5
+          },
+          "max_observed_physical_error": 3.2427505125554035e-11,
+          "statuses": [
+            "True"
+          ],
+          "all_five_pass": true,
+          "rhs_calls_per_run": {
+            "min": 706.0,
+            "median": 706.0,
+            "max": 706.0,
+            "n": 5
+          },
+          "attempts_per_run": {
+            "min": 100.0,
+            "median": 100.0,
+            "max": 100.0,
+            "n": 5
+          },
+          "physical_error_cap": 1e-05,
+          "reference_uncertainty_bound": 1e-13
+        }
+      },
+      "paired_selected_over_best_tested_diagnostic": {
+        "blocks": 5,
+        "min": 1.0754455922387158,
+        "median": 1.9642372035246176,
+        "max": 3.426227578902188
+      },
+      "scope_note": "same error ceiling and output; timing diagnostic only; achieved errors may differ",
+      "reference_uncertainty_empirical_or_external": 1e-13,
+      "persistence_control": {
+        "evidence": {
+          "warmup_count": 1,
+          "timed_count": 5,
+          "solver_seconds": {
+            "min": 0.000184013,
+            "median": 0.000196387,
+            "max": 0.00031316
+          },
+          "physical_error": 3.2427505125554035e-11,
+          "rhs_calls": 706,
+          "all_pass": true
+        },
+        "screened-reset": {
+          "warmup_count": 1,
+          "timed_count": 5,
+          "solver_seconds": {
+            "min": 0.000188711,
+            "median": 0.000246773,
+            "max": 0.000277011
+          },
+          "physical_error": 3.2427505125554035e-11,
+          "rhs_calls": 706,
+          "all_pass": true
+        }
+      }
+    }
+  },
+  "nodes": [
+    {
+      "id": "N01",
+      "status": "COMPLETE",
+      "basis": "create-only 7.7GB raw archive; 25122 regular files, 7628 directories, 38 symlinks; manifest check passed",
+      "evidence": "BACKUP_RECEIPT_N01.json"
+    },
+    {
+      "id": "N02",
+      "status": "PARTIAL_SCOPED",
+      "basis": "case5/KS 2000-attempt h/error/state traces and chirp/gyro full-grid errors; Robertson and nonstiff same-state attempt trace not newly run",
+      "evidence": "TRACE_SUMMARY.json; ANALYTIC_REFERENCE_CROSSCHECK.json"
+    },
+    {
+      "id": "N03",
+      "status": "PARTIAL_SCOPED",
+      "basis": "contiguous DOPRI PI/FSAL/workspace preserved; 36 switching/session focused tests and VG1 warmed accepted attempt pass; RODAS tenure still reconstructed",
+      "evidence": "tests/switch_budget_repair; tests/vg1_enabled"
+    },
+    {
+      "id": "N04",
+      "status": "SPECIALIZED_ONLY",
+      "basis": "declared equivariant cubic chirp chart passes full physical grid; generic nonlinear/time-varying chart provider and noncommuting controls not qualified",
+      "evidence": "SELECTION_ANALYSIS.json"
+    },
+    {
+      "id": "N05",
+      "status": "HOLD_OPTIMIZATION",
+      "basis": "same-cap direct alternatives are faster in four cohorts; repeated discarded implicit probes quantified; safe epoch/trend rescreening not implemented",
+      "evidence": "SELECTION_ANALYSIS.json"
+    },
+    {
+      "id": "N06",
+      "status": "BLOCKED_CONNECTION",
+      "basis": "published case20 warmed 1024-grid callback and Jacobian probe valid; no bound integrated large-grid solver benchmark/output parity; previous ensemble calibration reused",
+      "evidence": "REPORT_KO.md"
+    },
+    {
+      "id": "N07",
+      "status": "PARTIAL_SCOPED",
+      "basis": "25 comparable paired blocks, 10 warmups, 50 timed runs; selected plus one challenger with common state/output/cap; persistence follow-up 24 additional processes; unseen transition/large-grid holdout missing",
+      "evidence": "SELECTION_WINDOWS.json; SELECTION_ANALYSIS.json; RAW_MANIFEST_FINAL.json"
+    },
+    {
+      "id": "N08",
+      "status": "PACKET_PREPARED",
+      "basis": "source-locked scoped report and machine evidence prepared for follow-up branch publication; broad production remains HOLD",
+      "evidence": "REPORT_KO.md; DECISIONS.json"
+    }
+  ],
+  "claim_scope": {
+    "broad_production": "HOLD",
+    "declared_chirp_chart": "SPECIALIZED_ONLY",
+    "persistent_explicit_switching": "SCOPED_CONTRACT_PASS",
+    "automatic_selection": "HOLD_OPTIMIZATION",
+    "large_grid_integrated_execution": "BLOCKED_CONNECTION"
+  },
+  "historical_standard_reclassification": false,
+  "ncp_used": false,
+  "cost_component_policy": {
+    "endpoint_solve_seconds": "includes setup, pilot, discarded work and transition within one timed solver invocation",
+    "zero_separate_probe_or_transition": "INCLUDED_IN_SOLVE_NOT_SEPARATELY_MEASURED",
+    "chirp": "per-arm setup, solve and reconstruction separately timed; calibration/probe/transition absent for this declared route",
+    "authority": "diagnostic_only"
+  }
+}

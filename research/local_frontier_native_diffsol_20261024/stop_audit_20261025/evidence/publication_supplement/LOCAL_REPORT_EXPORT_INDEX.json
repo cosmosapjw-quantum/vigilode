@@ -1,0 +1,195 @@
+{
+  "cost_snapshot": {
+    "charged_seconds_at_snapshot": 3936.824270822988,
+    "hard_deadline_utc": "2026-10-27T08:07:00Z",
+    "note": "Snapshot predates completed case20 reference; use later cost event evidence for current total.",
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/COST_LEDGER_V12_CASE20_20261025T1128.json",
+    "sha256": "9583a966a80b1854210e358d1a86479afc4def30d44ca4bcaf6555a7b3b071d9"
+  },
+  "counts": {
+    "by_campaign_prefix": {
+      "accuracy": 288,
+      "conditional": 12,
+      "continuation_20261025T080718Z": 66,
+      "native_diffsol_followup": 464,
+      "profile": 81,
+      "smoke": 54,
+      "stage": 60,
+      "standard": 469,
+      "standard_continuation": 1071
+    },
+    "duplicate_raw_evidence_keys": 0,
+    "evidence_status": {
+      "EVIDENCE_ISSUES": 124,
+      "NONTERMINAL_OR_UNSUPPORTED_RECEIPT": 16,
+      "RAW_VERIFIED": 2417,
+      "READ_OR_FORMAT_ERROR": 8
+    },
+    "execution_status": {
+      "COMPLETED": 2315,
+      "MISSING": 24,
+      "PROCESS_FAILURE": 2,
+      "TIMEOUT": 224
+    },
+    "issue_tags": {
+      "COMPLETED_WITHOUT_RESULT": 122,
+      "INVALID_STDOUT_JSON_LINE_2": 2,
+      "INVALID_STDOUT_JSON_LINE_3": 2,
+      "INVALID_STDOUT_JSON_LINE_4": 2,
+      "INVALID_STDOUT_JSON_LINE_5": 2,
+      "MISSING_STDERR": 2,
+      "MISSING_STDOUT": 2,
+      "MULTIPLE_RESULTS": 6,
+      "UNBOUND_STDERR": 48,
+      "UNBOUND_STDOUT": 48,
+      "ValueError: file exceeds 64 MiB export read limit": 8
+    },
+    "original_scientific_status": {
+      "ACCURACY_FAILED": 221,
+      "ERROR_CAP_FAILURE": 80,
+      "None": 378,
+      "PASS_SCOPED": 771,
+      "PROCESS_FAILURE": 2,
+      "SOLVER_FAILED": 58,
+      "SOLVER_FAILURE": 6,
+      "UNVALIDATED_REFERENCE": 1049
+    },
+    "raw_evidence_unique_keys": 2565,
+    "receipt_rows": 2565,
+    "rows_with_result_work_counters": 2119,
+    "rows_with_scalar_actual_error": 952,
+    "task_index_matched": {
+      "EXACT_RECEIPT_BYTES_FOUND": 1539
+    }
+  },
+  "exporter_incomplete_annotation": {
+    "note": "Reference controller completion is not represented by exporter receipt schema. Fixture START files are test data, not active solver processes.",
+    "reference_controller_terminal": 4,
+    "synthetic_fixture": 27,
+    "total": 31,
+    "unclassified": 0
+  },
+  "host_at_preflight": {
+    "allowed_affinity": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "cpu_model": null,
+    "hostname": "cosmosapjw",
+    "logical_cpus_allowed": 24,
+    "physical_core_count": 12,
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39"
+  },
+  "interpretation_limits": [
+    "This index preserves original scientific statuses and is not a reference-based reclassification.",
+    "RAW_VERIFIED denotes receipt stream/hash checks, not accuracy admission.",
+    "Some Julia and conditional receipt formats have EVIDENCE_ISSUES because generic result parsing is unsupported; use their campaign summaries and independent reviews.",
+    "MISSING_AT_MEASUREMENT indicates absent per-receipt identity; current host observation must not be substituted.",
+    "Single-process wall time is diagnostic_only; instrumented and ordinary timing are not pooled."
+  ],
+  "measurement_identity_counts": {
+    "binary_sha256": {
+      "652128d92df0cd5414a85e4b818626ecbadba5060e203f6cea2455816ad5b575": 60,
+      "6d1e77a78b1523117023b4550f81e11ed6b7784bdebfc374e7882fbe5caec77d": 3,
+      "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404": 8,
+      "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2": 1963,
+      "9924a512b3f654237bc3415273726b87a94ea7d28b13a1471e88f7c68c18b9ca": 3,
+      "MISSING_AT_MEASUREMENT": 522,
+      "e079e613ed2efe60f398b7f7d8413740a4716ef82cd2301fed5ffc2e21c8a7c0": 3,
+      "f9aa7f1c9292c6747a3f26f9a117f005c25899833d0a2c1a5769878cb8c791fb": 3
+    },
+    "reference_sha256_directly_in_row": {
+      "MISSING_AT_MEASUREMENT": 2565
+    },
+    "source_commit": {
+      "MISSING_AT_MEASUREMENT": 530,
+      "aaf1f834d4c589e734ca7851a56c11bb44f7047a": 2035
+    },
+    "timing_scope": {
+      "MISSING_AT_MEASUREMENT": 382,
+      "whole solve incl problem/workspace creation, rejection and probes; model/pool/diagnostics/serialization excluded": 2183
+    }
+  },
+  "reference_controller_terminal_supplement": [
+    {
+      "campaign_wall_seconds": 27.620153591036797,
+      "case": 8,
+      "controller_gate": "PASS_PROCESS",
+      "controller_status": "COMPLETED_ALL_CHILDREN",
+      "finished_utc": "2026-10-25T10:42:22.565202+00:00",
+      "independent_scientific_status": "PASS_SCOPED_REFERENCE",
+      "note": "Controller terminal evidence supplements exporter START-only classification; no old measurements reclassified.",
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case08/ATTEMPT_002_20261025T1037/CAMPAIGN_SUMMARY.json",
+      "sha256": "dc61e1c3647c3720f42363988fcb425c7b9014bc3ade6dc9a6f51fd9015b7a8d"
+    },
+    {
+      "campaign_wall_seconds": 221.5712215588428,
+      "case": 9,
+      "controller_gate": "PASS_PROCESS",
+      "controller_status": "COMPLETED_ALL_CHILDREN",
+      "finished_utc": "2026-10-25T10:50:50.149870+00:00",
+      "independent_scientific_status": "PASS_SCOPED_REFERENCE",
+      "note": "Controller terminal evidence supplements exporter START-only classification; no old measurements reclassified.",
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case09/ATTEMPT_002_20261025T1046/CAMPAIGN_SUMMARY.json",
+      "sha256": "7593301728c9d5766e1d4917337085d20dbf53bef036223874e527e1b157f84a"
+    },
+    {
+      "campaign_wall_seconds": 100.24185724090785,
+      "case": 11,
+      "controller_gate": "FAILED_REQUIRED_OUTPUTS",
+      "controller_status": "STOPPED_ON_FIRST_FAILURE",
+      "finished_utc": "2026-10-25T10:54:19.395881+00:00",
+      "independent_scientific_status": "FAILED_REFERENCE",
+      "note": "Controller terminal evidence supplements exporter START-only classification; no old measurements reclassified.",
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case11/ATTEMPT_001_20261025T1051/CAMPAIGN_SUMMARY.json",
+      "sha256": "ac6473936fdea65f50040910576c56ef117b7720060e504edd0e5744b5e80f5a"
+    },
+    {
+      "campaign_wall_seconds": 45.44145290390588,
+      "case": 20,
+      "controller_gate": "PASS_PROCESS",
+      "controller_status": "COMPLETED_ALL_CHILDREN",
+      "finished_utc": "2026-10-25T11:35:11.125299+00:00",
+      "independent_scientific_status": "PASS_SCOPED_ADMITTED_REFERENCE",
+      "note": "Controller terminal evidence supplements exporter START-only classification; no old measurements reclassified.",
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case20/ATTEMPT_001_20261025T1129/CAMPAIGN_SUMMARY.json",
+      "sha256": "64b13336820fbbb97820d5bf64ac0b805acf817ead6b4764d57ca22da1277b1b"
+    }
+  ],
+  "report_commit": "abf9c5683d810a703d818f8f0c8abec54fbe8850",
+  "report_tree": "df44f97cffdeb9c707bdbea72524bbc8b0902e79",
+  "run_root": "/tmp/vigilode-local-run-20261024.geLVCp9Q",
+  "schema": "vigilode.local-benchmark-review-readonly-audit-index.v1",
+  "source_export_summary_sha256": "fb43b3e11e0a6ae900b5f47d459ce6a19c19aa9875040d7bd377f69782375bb9",
+  "source_identity": {
+    "build_profile": "measurement, codegen-units=1, debug=1; all campaign methods share this binary",
+    "cargo_lock_sha256": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351",
+    "original_binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+    "original_source_commit": "aaf1f834d4c589e734ca7851a56c11bb44f7047a",
+    "original_source_tree": "03b12c682c688155e0f8b08c52508e04738acb93",
+    "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)"
+  },
+  "source_measurements_sha256": "d4467ecdf53ca88fa9c668a2b3d51d34dd9bf5b8c26ae1323874e3d7c68b8d8d"
+}

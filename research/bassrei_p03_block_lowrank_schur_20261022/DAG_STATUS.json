@@ -1,0 +1,17 @@
+{
+ "schema": "bassrei-dag-status-v1",
+ "node": "P03",
+ "node_dir": "research/bassrei_p03_block_lowrank_schur_20261022",
+ "ledger_id": "L-0150",
+ "verdict": "PASS",
+ "gates": {"C1": true, "C2": true, "C3": true, "C4": true, "C5": true, "C6": true, "C7": true, "C8": true},
+ "failed_gates": [],
+ "library_steps": {"L2": "475e9abf (client-owned stage linear solver)"},
+ "downstream": {
+  "P04": "UNBLOCKED (independent of P03)",
+  "NCP_C1": "after P04 (client arm available)",
+  "P05": "after P04 and library step L3",
+  "P06": "after P05"
+ },
+ "production": "HOLD"
+}

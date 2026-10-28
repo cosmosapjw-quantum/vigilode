@@ -1,0 +1,669 @@
+{
+  "schema": "vigilode.adapter-integration-r2-interpretation.v1",
+  "binary_sha256": "a1bcf11a07f0518ee964966206b8e09d3648f0564c258e99c323630cb3d62efb",
+  "source_sha256": "d79350f8acc55abb91a09c9d1ea6f606f5afd06d3630c3a74ed2f41e68d73f5f",
+  "measurement_summary": {
+    "completed_cells": 26,
+    "failed_cells": 0,
+    "qualified_cells": 11,
+    "b_faster_qualified": 7,
+    "b_slower_qualified": 2,
+    "qualified_no_clear_difference": 2,
+    "timed_batches": 520
+  },
+  "audit": {
+    "ratios_independently_recomputed": 26,
+    "distinct_arm_records": 34,
+    "duplicate_full_records_identical": 18,
+    "errors": [],
+    "native_evidence_records_r1_r2": [
+      {
+        "case": "transition-79",
+        "complete_summary_identical": true
+      },
+      {
+        "case": "stiff-forced",
+        "complete_summary_identical": true
+      },
+      {
+        "case": "gyro-default",
+        "complete_summary_identical": true
+      },
+      {
+        "case": "case5",
+        "complete_summary_identical": true
+      },
+      {
+        "case": "decay",
+        "complete_summary_identical": true
+      },
+      {
+        "case": "gyro-tight",
+        "complete_summary_identical": true
+      },
+      {
+        "case": "relaxation",
+        "complete_summary_identical": true
+      },
+      {
+        "case": "transition-39",
+        "complete_summary_identical": true
+      },
+      {
+        "case": "rotation",
+        "complete_summary_identical": true
+      }
+    ],
+    "full_native_cross_commit_parity_asserted": false
+  },
+  "observed_feature_improvements": [
+    {
+      "case": "stiff-forced",
+      "a": "evidence",
+      "b": "adaptive",
+      "ratio_b_over_a": 0.8983987831750654,
+      "observed_paired_range": [
+        0.8601206058065815,
+        0.9361855945372296
+      ],
+      "qualified": true,
+      "rhs_a": 456,
+      "rhs_b": 394,
+      "attempts_a": 66,
+      "attempts_b": 58,
+      "endpoint_error_a": 7.326025341924947e-10,
+      "endpoint_error_b": 7.326026452147971e-10
+    },
+    {
+      "case": "stiff-forced",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "ratio_b_over_a": 0.8721116860460512,
+      "observed_paired_range": [
+        0.8503623370829413,
+        0.8973985016080807
+      ],
+      "qualified": true,
+      "rhs_a": 456,
+      "rhs_b": 394,
+      "attempts_a": 66,
+      "attempts_b": 58,
+      "endpoint_error_a": 7.326025341924947e-10,
+      "endpoint_error_b": 7.326026452147971e-10
+    },
+    {
+      "case": "case5",
+      "a": "adaptive-no-startup-retry",
+      "b": "adaptive",
+      "ratio_b_over_a": 0.7960281579641929,
+      "observed_paired_range": [
+        0.7718679895585056,
+        0.9087522854775799
+      ],
+      "qualified": true,
+      "rhs_a": 2032,
+      "rhs_b": 680,
+      "attempts_a": 331,
+      "attempts_b": 106,
+      "endpoint_error_a": 5.526364976748965e-08,
+      "endpoint_error_b": 5.4831391427256904e-08
+    }
+  ],
+  "case5_same_backend_control": {
+    "case": "case5",
+    "a": "adaptive",
+    "b": "rodas",
+    "ratio_b_over_a": 1.2447279607647286,
+    "observed_paired_range": [
+      1.2070594396484873,
+      1.2812125685678306
+    ],
+    "qualified": true,
+    "rhs_a": 680,
+    "rhs_b": 307,
+    "attempts_a": 106,
+    "attempts_b": 39,
+    "endpoint_error_a": 5.4831391427256904e-08,
+    "endpoint_error_b": 1.0381916881740949e-07
+  },
+  "counterevidence": [
+    {
+      "case": "relaxation",
+      "a": "evidence",
+      "b": "adaptive",
+      "ratio_b_over_a": 1.121686353529331,
+      "observed_paired_range": [
+        1.086637642026499,
+        1.159449425529999
+      ],
+      "qualified": true,
+      "rhs_a": 675,
+      "rhs_b": 722,
+      "attempts_a": 95,
+      "attempts_b": 101,
+      "endpoint_error_a": 4.809206144429368e-09,
+      "endpoint_error_b": 4.767275352257627e-09
+    },
+    {
+      "case": "case5",
+      "a": "adaptive",
+      "b": "rodas-dense",
+      "ratio_b_over_a": 0.09519492778645723,
+      "observed_paired_range": [
+        0.09167955520643206,
+        0.09784225667447408
+      ],
+      "qualified": true,
+      "rhs_a": 680,
+      "rhs_b": 307,
+      "attempts_a": 106,
+      "attempts_b": 39,
+      "endpoint_error_a": 5.4831391427256904e-08,
+      "endpoint_error_b": 1.0381910309220643e-07
+    },
+    {
+      "case": "stiff-forced",
+      "a": "adaptive",
+      "b": "rodas",
+      "ratio_b_over_a": 0.2691361476512315,
+      "observed_paired_range": [
+        0.25979514909388496,
+        0.30242355206007965
+      ],
+      "qualified": true,
+      "rhs_a": 394,
+      "rhs_b": 112,
+      "attempts_a": 58,
+      "attempts_b": 14,
+      "endpoint_error_a": 7.326026452147971e-10,
+      "endpoint_error_b": 8.148821617481872e-10
+    },
+    {
+      "case": "decay",
+      "a": "adaptive",
+      "b": "dopri",
+      "ratio_b_over_a": 0.5325477050612076,
+      "observed_paired_range": [
+        0.48241131216323874,
+        0.5547630334573083
+      ],
+      "qualified": true,
+      "rhs_a": 103,
+      "rhs_b": 97,
+      "attempts_a": 17,
+      "attempts_b": 16,
+      "endpoint_error_a": 3.3869719251455876e-09,
+      "endpoint_error_b": 8.038381682506923e-09
+    }
+  ],
+  "pruning": [
+    {
+      "candidate": "growth-only entry-pilot step reuse",
+      "decision": "retain conditional optimization",
+      "support": "qualified forced-cosine speed/work improvement; shrinking-seed case5 regression removed; no benefit asserted for every entering case"
+    },
+    {
+      "candidate": "one retry after unresolved zero-accepted-progress entry pilot",
+      "decision": "retain conditional optimization",
+      "support": "case5 isolated ablation improves paired runtime and eliminates 225 attempts; retry remains bounded once per explicit tenure"
+    },
+    {
+      "candidate": "adaptive evidence renewal after lifetime pilot exhaustion",
+      "decision": "retain for changing-regime cases",
+      "support": "Same-family holdouts retain 83.5% and 57.1% RHS reductions; timing is not qualified."
+    },
+    {
+      "candidate": "same-checkpoint implicit-to-explicit return confirmation",
+      "decision": "retain as stronger decision option with explicit cost",
+      "support": "Relaxation is measured 12.2% slower with 47 additional RHS calls; no correctness recovery was observed in this fixture."
+    },
+    {
+      "candidate": "competitive implicit probing on stable nonstiff/oscillatory paths",
+      "decision": "do not enable universally",
+      "support": "rotation/decay no work gain; gyro-tight work proxy slightly worse; direct decay significantly cheaper"
+    },
+    {
+      "candidate": "dense small-dimension implicit backend",
+      "decision": "recommend caller-authorized specialization",
+      "support": "At the same case5 cap, dense direct is faster than both matrix-free direct and the matrix-free selector; matrix permission and dimension remain explicit."
+    },
+    {
+      "candidate": "default-tolerance gyromotion speed claim",
+      "decision": "exclude",
+      "support": "Full-state endpoint error is about 0.0316 against a 1e-4 cap."
+    },
+    {
+      "candidate": "universal production-performance promotion",
+      "decision": "not supported",
+      "support": "observed gains are conditional; qualified regressions and endpointcap failure remain"
+    }
+  ],
+  "accuracy": {
+    "failed_distinct_arms": [
+      {
+        "case": "gyro-default",
+        "arm": "adaptive",
+        "max_error": 0.03159893935321256
+      },
+      {
+        "case": "gyro-default",
+        "arm": "evidence",
+        "max_error": 0.03159893935321256
+      },
+      {
+        "case": "gyro-default",
+        "arm": "dopri",
+        "max_error": 0.031681416255663064
+      }
+    ],
+    "passing_distinct_arms": 31,
+    "scope": "full-state endpoint caps only, with empirical case5 reference uncertainty; not global continuous-error certification"
+  },
+  "plot_qa": {
+    "status": "PASS",
+    "inspected": [
+      "policy_work_and_time.png",
+      "entry_seed_ablation.png",
+      "selection_overhead.png",
+      "work_dispositions.png",
+      "endpoint_accuracy.png"
+    ],
+    "notes": "All five PNGs visually inspected; readable labels, no clipping, unqualified values use crosses. Startup-retry ablation is in the numeric table rather than a dedicated plot."
+  },
+  "rows": [
+    {
+      "case": "rotation",
+      "a": "evidence",
+      "b": "adaptive",
+      "b_over_a_seconds": 0.980143019115488,
+      "paired_ratio_range": [
+        0.848484924979683,
+        1.2576150523711924
+      ],
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%",
+        "batch shorter than 80ms"
+      ]
+    },
+    {
+      "case": "rotation",
+      "a": "adaptive",
+      "b": "dopri",
+      "b_over_a_seconds": 0.5806808970295717,
+      "paired_ratio_range": [
+        0.4804976507524988,
+        0.6020601350431308
+      ],
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%"
+      ]
+    },
+    {
+      "case": "decay",
+      "a": "evidence",
+      "b": "adaptive",
+      "b_over_a_seconds": 1.0157069353041757,
+      "paired_ratio_range": [
+        0.9980122441191084,
+        1.445498407562394
+      ],
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ]
+    },
+    {
+      "case": "decay",
+      "a": "adaptive",
+      "b": "dopri",
+      "b_over_a_seconds": 0.5325477050612076,
+      "paired_ratio_range": [
+        0.48241131216323874,
+        0.5547630334573083
+      ],
+      "comparison_eligible": true,
+      "classification": "observed_paired_improvement",
+      "qualification_reasons": []
+    },
+    {
+      "case": "case5",
+      "a": "evidence",
+      "b": "adaptive",
+      "b_over_a_seconds": 0.8782787824405657,
+      "paired_ratio_range": [
+        0.7923045199070742,
+        1.2415724228424097
+      ],
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ]
+    },
+    {
+      "case": "case5",
+      "a": "adaptive",
+      "b": "rodas",
+      "b_over_a_seconds": 1.2447279607647286,
+      "paired_ratio_range": [
+        1.2070594396484873,
+        1.2812125685678306
+      ],
+      "comparison_eligible": true,
+      "classification": "observed_paired_regression",
+      "qualification_reasons": []
+    },
+    {
+      "case": "case5",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "b_over_a_seconds": 1.0381006987829131,
+      "paired_ratio_range": [
+        0.9396641396588546,
+        1.1359698586393459
+      ],
+      "comparison_eligible": true,
+      "classification": "no_clear_timing_advantage",
+      "qualification_reasons": []
+    },
+    {
+      "case": "case5",
+      "a": "adaptive",
+      "b": "rodas-dense",
+      "b_over_a_seconds": 0.09519492778645723,
+      "paired_ratio_range": [
+        0.09167955520643206,
+        0.09784225667447408
+      ],
+      "comparison_eligible": true,
+      "classification": "observed_paired_improvement",
+      "qualification_reasons": []
+    },
+    {
+      "case": "case5",
+      "a": "rodas",
+      "b": "rodas-dense",
+      "b_over_a_seconds": 0.07469675272706068,
+      "paired_ratio_range": [
+        0.07104724732654341,
+        0.08072090530225691
+      ],
+      "comparison_eligible": true,
+      "classification": "observed_paired_improvement",
+      "qualification_reasons": []
+    },
+    {
+      "case": "case5",
+      "a": "adaptive-no-startup-retry",
+      "b": "adaptive",
+      "b_over_a_seconds": 0.7960281579641929,
+      "paired_ratio_range": [
+        0.7718679895585056,
+        0.9087522854775799
+      ],
+      "comparison_eligible": true,
+      "classification": "observed_paired_improvement",
+      "qualification_reasons": []
+    },
+    {
+      "case": "stiff-forced",
+      "a": "evidence",
+      "b": "adaptive",
+      "b_over_a_seconds": 0.8983987831750654,
+      "paired_ratio_range": [
+        0.8601206058065815,
+        0.9361855945372296
+      ],
+      "comparison_eligible": true,
+      "classification": "observed_paired_improvement",
+      "qualification_reasons": []
+    },
+    {
+      "case": "stiff-forced",
+      "a": "adaptive",
+      "b": "rodas",
+      "b_over_a_seconds": 0.2691361476512315,
+      "paired_ratio_range": [
+        0.25979514909388496,
+        0.30242355206007965
+      ],
+      "comparison_eligible": true,
+      "classification": "observed_paired_improvement",
+      "qualification_reasons": []
+    },
+    {
+      "case": "stiff-forced",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "b_over_a_seconds": 0.8721116860460512,
+      "paired_ratio_range": [
+        0.8503623370829413,
+        0.8973985016080807
+      ],
+      "comparison_eligible": true,
+      "classification": "observed_paired_improvement",
+      "qualification_reasons": []
+    },
+    {
+      "case": "relaxation",
+      "a": "evidence",
+      "b": "adaptive",
+      "b_over_a_seconds": 1.121686353529331,
+      "paired_ratio_range": [
+        1.086637642026499,
+        1.159449425529999
+      ],
+      "comparison_eligible": true,
+      "classification": "observed_paired_regression",
+      "qualification_reasons": []
+    },
+    {
+      "case": "relaxation",
+      "a": "adaptive",
+      "b": "rodas",
+      "b_over_a_seconds": 0.5650995555544285,
+      "paired_ratio_range": [
+        0.49915507123093267,
+        0.6497726977811693
+      ],
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "batch shorter than 80ms"
+      ]
+    },
+    {
+      "case": "relaxation",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "b_over_a_seconds": 0.9911960317326864,
+      "paired_ratio_range": [
+        0.983543492579004,
+        1.0458885144559258
+      ],
+      "comparison_eligible": true,
+      "classification": "no_clear_timing_advantage",
+      "qualification_reasons": []
+    },
+    {
+      "case": "transition-39",
+      "a": "evidence",
+      "b": "adaptive",
+      "b_over_a_seconds": 0.467829247833766,
+      "paired_ratio_range": [
+        0.4511187561977914,
+        0.5380266519586281
+      ],
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ]
+    },
+    {
+      "case": "transition-39",
+      "a": "adaptive",
+      "b": "rodas",
+      "b_over_a_seconds": 1.7783146791269633,
+      "paired_ratio_range": [
+        1.6010353627694682,
+        3.051730863033101
+      ],
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "block range >30%"
+      ]
+    },
+    {
+      "case": "transition-39",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "b_over_a_seconds": 1.0475525491384914,
+      "paired_ratio_range": [
+        0.47426325054048074,
+        1.2984364211060053
+      ],
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ]
+    },
+    {
+      "case": "transition-79",
+      "a": "evidence",
+      "b": "adaptive",
+      "b_over_a_seconds": 0.6657810978772843,
+      "paired_ratio_range": [
+        0.5800467709982822,
+        0.9418813892740627
+      ],
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ]
+    },
+    {
+      "case": "transition-79",
+      "a": "adaptive",
+      "b": "rodas",
+      "b_over_a_seconds": 2.6684202657724416,
+      "paired_ratio_range": [
+        2.164434376148847,
+        3.1489161639992695
+      ],
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ]
+    },
+    {
+      "case": "transition-79",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "b_over_a_seconds": 1.0887361579593418,
+      "paired_ratio_range": [
+        0.5683269794067143,
+        1.1294418927990055
+      ],
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ]
+    },
+    {
+      "case": "gyro-tight",
+      "a": "evidence",
+      "b": "adaptive",
+      "b_over_a_seconds": 0.8876124878765594,
+      "paired_ratio_range": [
+        0.8479738323180763,
+        1.574264915836902
+      ],
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ]
+    },
+    {
+      "case": "gyro-tight",
+      "a": "adaptive",
+      "b": "dopri",
+      "b_over_a_seconds": 0.7067814215099489,
+      "paired_ratio_range": [
+        0.5008482351566805,
+        0.8966242595071662
+      ],
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ]
+    },
+    {
+      "case": "gyro-default",
+      "a": "evidence",
+      "b": "adaptive",
+      "b_over_a_seconds": 1.087651482526579,
+      "paired_ratio_range": [
+        0.8240016532353321,
+        2.1159056345487213
+      ],
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%",
+        "at least one endpoint cap failure",
+        "sampled timed solve cap failure",
+        "registered report-only tolerance cohort"
+      ]
+    },
+    {
+      "case": "gyro-default",
+      "a": "adaptive",
+      "b": "dopri",
+      "b_over_a_seconds": 0.6106275752197138,
+      "paired_ratio_range": [
+        0.48079434372333557,
+        0.7380265170122757
+      ],
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%",
+        "at least one endpoint cap failure",
+        "sampled timed solve cap failure",
+        "registered report-only tolerance cohort"
+      ]
+    }
+  ],
+  "interpretation_rules": [
+    "Ratios are medians of five within-block ratios, not ratios of marginal median times.",
+    "Ranges are observed five-block extrema, not confidence intervals.",
+    "Reported time reductions use 1 minus the paired ratio; a reversed comparison uses its reciprocal.",
+    "Different implicit backends and endpoint-versus-eight-window output obligations remain explicit.",
+    "R1 raw and analysis data preserved; R2 thresholds registered before execution."
+  ]
+}

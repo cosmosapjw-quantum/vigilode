@@ -1,0 +1,106 @@
+{
+  "case_id": 16,
+  "exact_final": [
+    0.9989484718922451,
+    0.009997324348060043
+  ],
+  "initial_state": [
+    1.0,
+    0.0
+  ],
+  "jvp_direction": [
+    0.29552020666133955,
+    0.963558185417193
+  ],
+  "jvp_initial": [
+    -0.874902123418791,
+    -0.24411592187238906
+  ],
+  "kind": "model_contract",
+  "model_contract": {
+    "autonomous": true,
+    "case": 16,
+    "dense_dimension_limit": 256,
+    "dimension": 2,
+    "dimension_smoke": 2,
+    "dimension_standard": 2,
+    "grid": [
+      0,
+      0
+    ],
+    "id": 16,
+    "initial_state": [
+      1.0,
+      0.0
+    ],
+    "jvp_provider": "forward-dual directional evaluation; explicit method never invokes it",
+    "name": "Inspiral chirp",
+    "observation_semantics": "whole-span solve, endpoint error only; switching retains its own intermediate window records",
+    "parallel_layers": [
+      "serial",
+      "data",
+      "ensemble"
+    ],
+    "parameters": {
+      "alpha": 0.1,
+      "collision_time": 2.5,
+      "coordinates": "two Cartesian first-order variables",
+      "omega0": 1.0,
+      "r0": 1.0
+    },
+    "reference_kind": "analytic-semidiscrete-endpoint",
+    "size": "smoke",
+    "supported_methods": [
+      "dopri5",
+      "rodas5p-mf",
+      "rodas5p-dense",
+      "switching"
+    ],
+    "t_span": [
+      0.0,
+      0.01
+    ],
+    "units": "dimensionless; normalized variables, not SI physical claims",
+    "variant": "two Cartesian first-order variables; stop before singularity"
+  },
+  "model_id": "vigilode.local-bottleneck.case16.v1",
+  "parameters": {
+    "alpha": 0.1,
+    "collision_time": 2.5,
+    "coordinates": "two Cartesian first-order variables",
+    "omega0": 1.0,
+    "r0": 1.0
+  },
+  "rhs_initial": [
+    -0.1,
+    1.0
+  ],
+  "rhs_probes": [
+    {
+      "rhs": [
+        -0.10084920009443193,
+        0.9996495445979403
+      ],
+      "state": [
+        1.0005,
+        0.001
+      ],
+      "t": 0.0011
+    },
+    {
+      "rhs": [
+        -0.10169680076089607,
+        0.9992981817795379
+      ],
+      "state": [
+        1.001,
+        0.002
+      ],
+      "t": 0.0073
+    }
+  ],
+  "schema_version": 1,
+  "size": "smoke",
+  "t_end": 0.01,
+  "t_start": 0.0
+}

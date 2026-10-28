@@ -1,25 +1,42 @@
 use std::{
-    fs,
+    collections::BTreeMap,
+    fs::{self, OpenOptions},
+    io::Write,
     path::{Path, PathBuf},
 };
 
 use anyhow::{Context, Result};
+
+mod r3_campaigns;
+mod r4_studies;
+mod stiff_benchmark;
+mod triage;
+mod triage_arms;
 use clap::{Parser, Subcommand, ValueEnum};
 use rodas5p_core::{load_rodas5p_coefficients, sha256_hex};
 use rodas5p_fair_ab::{
-    BenchmarkCell, BenchmarkPlan, FairSolveConfig, GlobalErrorParetoProfile, PreconditionerKind,
-    RecycleLifetime, SequenceConfig, SequenceKind, SolverKind, TraceDocument, generate_trace,
-    run_adaptive_global_error_screen, run_comparison, run_g1_adaptive_global_error_screen,
-    run_global_error_pareto_screen, summarize_comparison,
+    ArmIdentity, BenchmarkCell, BenchmarkPlan, FairSolveConfig, GlobalErrorParetoProfile,
+    PairedTimingDecision, PairedTimingEvidence, PairedTimingProtocol, PairedTimingReceipt,
+    PairedWorkload, PreconditionerKind, RecycleLifetime, ScientificValidityV2CaseArtifact,
+    SequenceConfig, SequenceKind, SessionRecord, SolverKind, TraceDocument,
+    freeze_scientific_validity_v2_calibration_artifacts, generate_trace,
+    load_numerical_reference_v2, measure_paired_session,
+    replay_scientific_validity_v2_oregonator_artifacts, run_adaptive_global_error_screen,
+    run_comparison, run_g1_adaptive_global_error_screen, run_global_error_pareto_screen,
+    run_scientific_validity_v2_case, run_trace, scientific_validity_v2_canonical_campaign_binding,
+    scientific_validity_v2_compiled_revision, summarize_comparison,
+    validate_scientific_validity_v2_case_artifact,
 };
 use rodas5p_integrators::{
     A1ScientificExecutionIdentity, CandidateCatalog, CandidateFamily, CandidateStatus,
-    G1TransactionalGateProfile, G2ExponentialGateProfile, G3FusedAdaptiveProfile,
-    G4PrefixKernelProfile, G4S5B0Family, G4S5B0PrefixProbePolicy, G4S5B0Profile,
-    G4S5B0V37ContinuationTransactionReport, G4S5B3Profile, HomotopyExperimentProfile,
-    HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile, NativeIntegratorGateReport,
-    PathControllerProfile, StageBatchFeasibilityProfile, UnifiedNonlinearScreen,
-    UnifiedScientificGateReport, UnifiedScreenProfile, run_a1_two_arm_receipt_cell,
+    ComparatorFidelity, G1TransactionalGateProfile, G2ExponentialGateProfile,
+    G3FusedAdaptiveProfile, G4PrefixKernelProfile, G4S5B0Family, G4S5B0PrefixProbePolicy,
+    G4S5B0Profile, G4S5B0V37ContinuationTransactionReport, G4S5B3Profile,
+    HomotopyExperimentProfile, HomotopyRhsTelemetryProfile, MatrixFreeCommonWProfile,
+    NativeIntegratorGateReport, PathControllerProfile, ScientificCaseSpec, ScientificCorpusV2,
+    ScientificFamily, StageBatchFeasibilityProfile, UnifiedNonlinearScreen,
+    UnifiedScientificGateReport, UnifiedScreenProfile, V2CalibrationFreezeEnvelope, V2GateProfile,
+    V2GateRow, freeze_v2_calibration, replay_v2_oregonator_holdout, run_a1_two_arm_receipt_cell,
     run_g1_transactional_gate, run_g2_exponential_gate, run_g3_fused_adaptive_gate,
     run_g4_prefix_kernel_gate, run_g4_s5b0_actual_level1_prefix_family,
     run_g4_s5b0_actual_level2_prefix_family, run_g4_s5b0_enforced_prefix_budget_family,
@@ -32,8 +49,9 @@ use rodas5p_integrators::{
     run_matrix_free_common_w_gate, run_native_integrator_gates,
     run_p1_00_tolerance_scaled_early_defect, run_path_controller_screen,
     run_stage_batch_feasibility, run_unified_nonlinear_screen, run_unified_scientific_gates,
+    verify_v2_calibration_freeze,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use serde_json::json;
 
 #[derive(Parser)]
@@ -51,6 +69,54 @@ struct Cli {
 enum Command {
     /// Validate the frozen coefficient and Rust numerical contracts.
     Validate {
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Freeze a complete scientific-validity-v2 calibration measurement set.
+    #[command(name = "scientific-validity-v2-freeze")]
+    ScientificValidityV2Freeze {
+        #[arg(long, value_enum)]
+        profile: CliV2GateProfile,
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Replay only the predeclared Oregonator holdout against an immutable v2 freeze.
+    #[command(name = "scientific-validity-v2-holdout-replay")]
+    ScientificValidityV2HoldoutReplay {
+        #[arg(long, value_enum)]
+        profile: CliV2GateProfile,
+        #[arg(long)]
+        freeze: PathBuf,
+        #[arg(long)]
+        input: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Execute all 54 canonical v2.1 calibration cases against a complete v2 reference manifest.
+    #[command(name = "scientific-validity-v2-run-calibration")]
+    ScientificValidityV2RunCalibration {
+        #[arg(long)]
+        reference_manifest: PathBuf,
+        #[arg(long)]
+        output: PathBuf,
+        /// Immutable calibration freeze emitted directly from the completed campaign.
+        #[arg(long)]
+        freeze_output: PathBuf,
+    },
+    /// After validating a frozen calibration, execute only the three Oregonator cases.
+    #[command(name = "scientific-validity-v2-run-oregonator")]
+    ScientificValidityV2RunOregonator {
+        #[arg(long, value_enum)]
+        profile: CliV2GateProfile,
+        #[arg(long)]
+        freeze: PathBuf,
+        /// Complete 54-case campaign emitted beside `--freeze` by run-calibration.
+        #[arg(long)]
+        calibration_campaign: PathBuf,
+        #[arg(long)]
+        reference_manifest: PathBuf,
         #[arg(long)]
         output: PathBuf,
     },
@@ -309,6 +375,254 @@ enum Command {
         threads: usize,
         #[arg(long)]
         full: bool,
+        /// JSON map from Tier-L candidate id to its paired timing evidence
+        /// (`paired-timing-campaign` output). Without it every wall
+        /// criterion is not evaluated.
+        #[arg(long)]
+        paired_timing_evidence: Option<PathBuf>,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Measure one paired-timing session of a Tier-L candidate against
+    /// GMRES/OFF in this process (run by `paired-timing-campaign`).
+    #[command(name = "paired-timing-session")]
+    PairedTimingSession {
+        #[arg(long)]
+        campaign_id: String,
+        #[arg(long)]
+        session: u32,
+        #[arg(long)]
+        candidate: String,
+        #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Smoke)]
+        profile: CliHomotopyProfile,
+        #[arg(long, default_value_t = 20_261_001)]
+        seed: u64,
+        /// Batch per case fixed by the first session (JSON map).
+        #[arg(long)]
+        batches: Option<PathBuf>,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Run a paired-timing campaign: each session in its own process, then
+    /// merge the raw session records into a receipt and assess it.
+    #[command(name = "paired-timing-campaign")]
+    PairedTimingCampaign {
+        #[arg(long)]
+        candidate: String,
+        #[arg(long, value_enum, default_value_t = CliHomotopyProfile::Smoke)]
+        profile: CliHomotopyProfile,
+        #[arg(long, default_value_t = 6)]
+        sessions: u32,
+        #[arg(long, default_value_t = 20_261_001)]
+        seed: u64,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Coverage study of the paired timing interval and decision under the
+    /// preregistered dependence and missingness models (re-audit R3,
+    /// STAT-DEV-04). Refuses to overwrite its output.
+    #[command(name = "paired-timing-coverage-study")]
+    PairedTimingCoverageStudy {
+        #[arg(long, default_value_t = rodas5p_fair_ab::COVERAGE_STUDY_REPLICATIONS)]
+        replications: usize,
+        #[arg(long, default_value_t = 20_261_001)]
+        seed: u64,
+        #[arg(long, default_value_t = 4)]
+        threads: usize,
+        /// Run only these scenario ids (default: the whole grid).
+        #[arg(long)]
+        scenario: Vec<String>,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Coverage and power of the exact session-median interval on its
+    /// preregistered grid (re-audit R4, R4-STAT-DEV-04). Refuses to
+    /// overwrite its output.
+    #[command(name = "session-median-coverage-study")]
+    SessionMedianCoverageStudy {
+        #[arg(long, default_value_t = 10_000)]
+        replications: usize,
+        #[arg(long, default_value_t = 20_261_013)]
+        seed: u64,
+        #[arg(long, default_value_t = 4)]
+        threads: usize,
+        /// Run only these scenario ids (default: the whole grid).
+        #[arg(long)]
+        scenario: Vec<String>,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// A deterministic R4 research study (`laguerre`, `polynomial-regimes`,
+    /// `homotopy-cost`); work counters, enclosures and accuracy decide, wall
+    /// seconds are diagnostics. Refuses to overwrite its output.
+    #[command(name = "r4-study")]
+    /// Work-precision benchmark of RODAS5P against the in-repository BDF
+    /// and Radau IIA integrators on four standard stiff problems. Refuses
+    /// to overwrite its output.
+    #[command(name = "stiff-benchmark")]
+    StiffBenchmark {
+        #[arg(long, default_value_t = 7)]
+        repetitions: usize,
+        #[arg(long, default_value_t = 1)]
+        warmups: usize,
+        /// Comma-separated problem ids (default: the four of the first run).
+        #[arg(long, value_delimiter = ',')]
+        problems: Option<Vec<String>>,
+        /// Comma-separated arms (default: all five).
+        #[arg(long, value_delimiter = ',')]
+        arms: Option<Vec<String>>,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Run one stiff-benchmark arm on one problem, `repetitions` times, and
+    /// print its work: the workload of the RODAS5P profiling node.
+    #[command(name = "stiff-profile-run")]
+    StiffProfileRun {
+        #[arg(long)]
+        problem: String,
+        #[arg(long, default_value = "rodas5p")]
+        arm: String,
+        #[arg(long)]
+        rtol: f64,
+        #[arg(long, default_value_t = 1)]
+        repetitions: usize,
+    },
+    /// An ensemble of van der Pol trajectories run back to back with one
+    /// fast arm (research node `research/thread_transfer_smalln_cost_20261002`).
+    #[command(name = "stiff-ensemble-run")]
+    StiffEnsembleRun {
+        #[arg(long)]
+        arm: String,
+        #[arg(long, default_value_t = 64)]
+        members: usize,
+        #[arg(long, default_value_t = 1.0e-6)]
+        rtol: f64,
+        /// The whole ensemble is run this many times (speed research node
+        /// SPD08's repetition protocol); the report is one repetition's.
+        #[arg(long, default_value_t = 1)]
+        repetitions: usize,
+        /// Writes the per-member results (SPD08 identity gate) as JSON.
+        #[arg(long)]
+        dump_members: Option<PathBuf>,
+    },
+    /// Component triage (research node `research/component_triage_20261019`,
+    /// `HARNESS_CONTRACT.md`): the arm and problem registry as JSON.
+    #[command(name = "triage-list")]
+    TriageList,
+    /// Component triage: run one cell `repetitions` times in-process and
+    /// print the row (`vigilode-triage-row-v1`) of the first run. Exit code
+    /// 0 whenever a row is printed; 2 for an unknown arm or problem, an
+    /// unwired arm or an inapplicable pair.
+    #[command(name = "triage-run")]
+    TriageRun {
+        #[command(flatten)]
+        cell: triage::CellArgs,
+        #[arg(long, default_value_t = 1)]
+        repetitions: usize,
+        #[arg(long)]
+        campaign: Option<String>,
+    },
+    /// Component triage: the callgrind workload of one cell (`repetitions`
+    /// may be 0); prints a compact summary only.
+    #[command(name = "triage-profile-run")]
+    TriageProfileRun {
+        #[command(flatten)]
+        cell: triage::CellArgs,
+        #[arg(long, default_value_t = 1)]
+        repetitions: usize,
+        /// Accepted for flag parity with `triage-run`; not printed.
+        #[arg(long)]
+        campaign: Option<String>,
+    },
+    /// Component triage: the exact solution of a problem at a grid, as
+    /// IEEE-754 hex (problems with `exact_solution: true` only).
+    #[command(name = "triage-exact")]
+    TriageExact {
+        #[arg(long)]
+        problem: String,
+        #[arg(long, value_enum)]
+        grid: triage::Grid,
+    },
+    /// Component triage: f(t, y), the analytic Jacobian and a JVP at
+    /// deterministic sample states, as IEEE-754 hex.
+    #[command(name = "triage-parity")]
+    TriageParity {
+        #[arg(long)]
+        problem: String,
+        /// Jacobians of larger dimension are printed as nonzero triplets.
+        #[arg(long, default_value_t = 1024)]
+        jacobian_max_dense: usize,
+    },
+    R4Study {
+        #[arg(long)]
+        study: String,
+        #[arg(long, default_value_t = 20)]
+        actions: usize,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// One paired-timing session of an R3 matched-accuracy arm (run by
+    /// `r3-campaign`).
+    #[command(name = "r3-campaign-session")]
+    R3CampaignSession {
+        #[arg(long, value_enum)]
+        study: r3_campaigns::Study,
+        #[arg(long)]
+        arm: String,
+        #[arg(long)]
+        campaign_id: String,
+        #[arg(long)]
+        session: u32,
+        #[arg(long, default_value_t = 20_261_001)]
+        seed: u64,
+        #[arg(long)]
+        batches: Option<PathBuf>,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// R3 matched-accuracy paired timing (HOM-06, POLY-03): every candidate
+    /// arm against the study's reference, one process per session.
+    /// Refuses to overwrite its output.
+    #[command(name = "r3-campaign")]
+    R3Campaign {
+        #[arg(long, value_enum)]
+        study: r3_campaigns::Study,
+        #[arg(long, default_value_t = 6)]
+        sessions: u32,
+        #[arg(long, default_value_t = 20_261_001)]
+        seed: u64,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Untimed accuracy, work and memory of one R3 arm (run by
+    /// `r3-campaign-verify`).
+    #[command(name = "r3-verify-arm")]
+    R3VerifyArm {
+        #[arg(long, value_enum)]
+        study: r3_campaigns::Study,
+        #[arg(long)]
+        arm: String,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// Untimed verification of every arm of an R3 study, one process per
+    /// arm. Refuses to overwrite its output.
+    #[command(name = "r3-campaign-verify")]
+    R3CampaignVerify {
+        #[arg(long, value_enum)]
+        study: r3_campaigns::Study,
+        #[arg(long)]
+        output: PathBuf,
+    },
+    /// The statistical authority of every arm of a published paired-timing
+    /// campaign (re-audit R4, R4-STAT-DEV-01): the verified diagnostic
+    /// decision, unchanged, beside the authority the compiled study registry
+    /// assigns to its design and the decision a consumer may act on.
+    /// Refuses to overwrite its output.
+    #[command(name = "timing-authority")]
+    TimingAuthority {
+        #[arg(long)]
+        campaign: PathBuf,
         #[arg(long)]
         output: PathBuf,
     },
@@ -358,6 +672,21 @@ enum Command {
         #[arg(long)]
         zero_guess: bool,
     },
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum CliV2GateProfile {
+    Smoke,
+    Canonical,
+}
+
+impl From<CliV2GateProfile> for V2GateProfile {
+    fn from(value: CliV2GateProfile) -> Self {
+        match value {
+            CliV2GateProfile::Smoke => Self::Smoke,
+            CliV2GateProfile::Canonical => Self::Canonical,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
@@ -433,14 +762,19 @@ impl From<CliPolicyRedesignFamily> for G4S5B0Family {
 
 #[derive(Clone, Copy, Debug, ValueEnum)]
 enum CliPolicyRedesignPrefixPolicy {
-    FrozenK1,
+    /// Replayed N=128 calibration decisions; refused on holdout profiles.
+    #[value(alias = "frozen-k1")]
+    ReplayedK1,
+    /// Causal k=1 comparator on the observed error-drop feature.
+    CausalK1,
     K3,
 }
 
 impl From<CliPolicyRedesignPrefixPolicy> for G4S5B0PrefixProbePolicy {
     fn from(value: CliPolicyRedesignPrefixPolicy) -> Self {
         match value {
-            CliPolicyRedesignPrefixPolicy::FrozenK1 => Self::FrozenK1Comparator,
+            CliPolicyRedesignPrefixPolicy::ReplayedK1 => Self::ReplayedK1Table,
+            CliPolicyRedesignPrefixPolicy::CausalK1 => Self::CausalK1,
             CliPolicyRedesignPrefixPolicy::K3 => Self::K3Development,
         }
     }
@@ -663,6 +997,9 @@ enum UnifiedJointVerdict {
     Promote,
     Hold,
     Deferred,
+    /// No relative-performance verdict is admissible: the reference is a
+    /// reference-implementation-only comparator (audit F-052/F-056).
+    NotEvaluated,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -677,8 +1014,11 @@ struct UnifiedLinearCandidateAssessment {
     median_operator_ratio_to_gmres_off: Option<f64>,
     median_wall_speedup: Option<f64>,
     required_wall_speedup: f64,
+    reference_fidelity: ComparatorFidelity,
     verdict: UnifiedJointVerdict,
     blockers: Vec<String>,
+    /// Criteria the gate refused to evaluate; never Promote/Hold evidence.
+    not_evaluated: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -694,8 +1034,10 @@ struct UnifiedNonlinearCandidateAssessment {
     median_batch_vector_ratio_to_direct: Option<f64>,
     median_wall_speedup: Option<f64>,
     required_wall_speedup: f64,
+    reference_fidelity: ComparatorFidelity,
     verdict: UnifiedJointVerdict,
     blockers: Vec<String>,
+    not_evaluated: Vec<String>,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -707,6 +1049,7 @@ struct UnifiedJointCandidateAssessment {
     tier_l_verdict: Option<UnifiedJointVerdict>,
     tier_n_verdict: Option<UnifiedJointVerdict>,
     blockers: Vec<String>,
+    not_evaluated: Vec<String>,
 }
 
 const TIER_L_REQUIRED_WALL_SPEEDUP: f64 = 1.15;
@@ -721,6 +1064,213 @@ fn write_json<T: Serialize>(path: &Path, value: &T) -> Result<()> {
     }
     let bytes = serde_json::to_vec_pretty(value)?;
     fs::write(path, bytes).with_context(|| format!("writing {}", path.display()))
+}
+
+fn read_json<T: serde::de::DeserializeOwned>(path: &Path) -> Result<T> {
+    serde_json::from_slice(&fs::read(path).with_context(|| format!("reading {}", path.display()))?)
+        .with_context(|| format!("parsing {}", path.display()))
+}
+
+fn write_json_create_new<T: Serialize>(path: &Path, value: &T) -> Result<()> {
+    if let Some(parent) = path.parent()
+        && !parent.as_os_str().is_empty()
+    {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("creating output directory {}", parent.display()))?;
+    }
+    let bytes = serde_json::to_vec_pretty(value)?;
+    if path.exists() {
+        anyhow::bail!("immutable output already exists: {}", path.display());
+    }
+    let file_name = path
+        .file_name()
+        .and_then(|name| name.to_str())
+        .context("immutable output has no UTF-8 file name")?;
+    let temporary = path.with_file_name(format!(".{file_name}.tmp.{}", std::process::id()));
+    let mut output = OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&temporary)
+        .with_context(|| format!("creating atomic temporary output {}", temporary.display()))?;
+    if let Err(error) = output.write_all(&bytes).and_then(|()| output.sync_all()) {
+        let _ = fs::remove_file(&temporary);
+        return Err(error).with_context(|| format!("writing {}", temporary.display()));
+    }
+    drop(output);
+    if let Err(error) = fs::hard_link(&temporary, path) {
+        let _ = fs::remove_file(&temporary);
+        return Err(error).with_context(|| format!("atomically publishing {}", path.display()));
+    }
+    fs::remove_file(&temporary)
+        .with_context(|| format!("removing atomic temporary output {}", temporary.display()))
+}
+
+fn preflight_create_new_outputs(paths: &[&Path]) -> Result<()> {
+    for (index, path) in paths.iter().enumerate() {
+        if path.exists() {
+            anyhow::bail!("immutable output already exists: {}", path.display());
+        }
+        if paths[..index].contains(path) {
+            anyhow::bail!(
+                "immutable outputs must use distinct paths: {}",
+                path.display()
+            );
+        }
+    }
+    Ok(())
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(tag = "status", rename_all = "kebab-case", deny_unknown_fields)]
+enum V2CampaignCaseRecord {
+    Complete {
+        artifact: Box<ScientificValidityV2CaseArtifact>,
+    },
+    Failed {
+        spec: Box<ScientificCaseSpec>,
+        phase: String,
+        error: String,
+    },
+}
+
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct V2CalibrationCampaignDocument {
+    schema: String,
+    status: String,
+    corpus_version: String,
+    code_revision: String,
+    expected_case_count: usize,
+    attempted_case_count: usize,
+    failure_count: usize,
+    freeze_eligible: bool,
+    freeze_checksum_sha256: Option<String>,
+    freeze_admission_error: Option<String>,
+    record_set_sha256: String,
+    records: Vec<V2CampaignCaseRecord>,
+    rows: Vec<V2GateRow>,
+}
+
+fn v2_record_set_sha256(records: &[V2CampaignCaseRecord]) -> String {
+    let checksum_ledger = records
+        .iter()
+        .map(|record| match record {
+            V2CampaignCaseRecord::Complete { artifact } => json!({
+                "case_id": artifact.spec.id,
+                "status": "complete",
+                "artifact_checksum_sha256": artifact.artifact_checksum_sha256,
+            }),
+            V2CampaignCaseRecord::Failed { spec, error, .. } => json!({
+                "case_id": spec.id,
+                "status": "failed",
+                "error": error,
+            }),
+        })
+        .collect::<Vec<_>>();
+    let mut checksum_bytes = b"vigilode-scientific-v2-campaign-record-set-v1\0".to_vec();
+    checksum_bytes.extend_from_slice(
+        &serde_json::to_vec(&checksum_ledger).expect("JSON value serialization cannot fail"),
+    );
+    sha256_hex(&checksum_bytes)
+}
+
+fn complete_v2_case_artifacts(
+    records: &[V2CampaignCaseRecord],
+) -> Vec<ScientificValidityV2CaseArtifact> {
+    records
+        .iter()
+        .filter_map(|record| match record {
+            V2CampaignCaseRecord::Complete { artifact } => Some((**artifact).clone()),
+            V2CampaignCaseRecord::Failed { .. } => None,
+        })
+        .collect()
+}
+
+fn validate_v2_calibration_campaign_document(
+    campaign: &V2CalibrationCampaignDocument,
+) -> Result<V2CalibrationFreezeEnvelope> {
+    let revision = scientific_validity_v2_compiled_revision()?;
+    if campaign.schema != "scientific-validity-v2-calibration-campaign-v1"
+        || campaign.status != "complete-pass"
+        || campaign.corpus_version != ScientificCorpusV2::VERSION
+        || campaign.code_revision != revision
+        || campaign.expected_case_count != 54
+        || campaign.attempted_case_count != 54
+        || campaign.failure_count != 0
+        || !campaign.freeze_eligible
+        || campaign.freeze_admission_error.is_some()
+        || campaign.records.len() != 54
+        || campaign.rows.len() != 54
+        || campaign.record_set_sha256 != v2_record_set_sha256(&campaign.records)
+    {
+        anyhow::bail!(
+            "canonical calibration campaign aggregate failed identity/cardinality checks"
+        );
+    }
+
+    let expected_ids = ScientificCorpusV2::calibration_specs()
+        .into_iter()
+        .map(|spec| spec.id)
+        .collect::<std::collections::BTreeSet<_>>();
+    let mut record_ids = std::collections::BTreeSet::new();
+    let mut artifact_rows = Vec::with_capacity(54);
+    for record in &campaign.records {
+        let V2CampaignCaseRecord::Complete { artifact } = record else {
+            anyhow::bail!("canonical calibration campaign contains a failed case record");
+        };
+        validate_scientific_validity_v2_case_artifact(artifact)?;
+        if !record_ids.insert(artifact.spec.id.clone()) {
+            anyhow::bail!("canonical calibration campaign contains a duplicate case artifact");
+        }
+        artifact_rows.push(artifact.row.clone());
+    }
+    if record_ids != expected_ids {
+        anyhow::bail!("canonical calibration campaign does not contain the exact 54-case set");
+    }
+    artifact_rows.sort_by(|left, right| left.case_id.cmp(&right.case_id));
+    let mut declared_rows = campaign.rows.clone();
+    declared_rows.sort_by(|left, right| left.case_id.cmp(&right.case_id));
+    if artifact_rows != declared_rows {
+        anyhow::bail!("canonical calibration rows differ from their validated case artifacts");
+    }
+    let artifacts = complete_v2_case_artifacts(&campaign.records);
+    let freeze = freeze_scientific_validity_v2_calibration_artifacts(&artifacts)?;
+    if campaign.freeze_checksum_sha256.as_deref() != Some(freeze.checksum_sha256.as_str()) {
+        anyhow::bail!("canonical calibration campaign freeze checksum mismatch");
+    }
+    Ok(freeze)
+}
+
+fn run_v2_case_records(
+    reference_manifest: &Path,
+    specs: Vec<ScientificCaseSpec>,
+) -> (Vec<V2CampaignCaseRecord>, Vec<V2GateRow>, usize, String) {
+    let mut records = Vec::with_capacity(specs.len());
+    let mut rows = Vec::with_capacity(specs.len());
+    let mut failures = 0_usize;
+    for spec in specs {
+        let result = load_numerical_reference_v2(reference_manifest, &spec)
+            .and_then(|reference| run_scientific_validity_v2_case(&spec, &reference));
+        match result {
+            Ok(artifact) => {
+                rows.push(artifact.row.clone());
+                records.push(V2CampaignCaseRecord::Complete {
+                    artifact: Box::new(artifact),
+                });
+            }
+            Err(error) => {
+                failures += 1;
+                let message = error.to_string();
+                records.push(V2CampaignCaseRecord::Failed {
+                    spec: Box::new(spec),
+                    phase: "reference-load-or-paired-integration".into(),
+                    error: message,
+                });
+            }
+        }
+    }
+    let record_set_sha256 = v2_record_set_sha256(&records);
+    (records, rows, failures, record_set_sha256)
 }
 
 fn write_v37_continuation_transaction_report(
@@ -775,8 +1325,348 @@ fn median(mut values: Vec<f64>) -> Option<f64> {
     })
 }
 
+/// Tier-L reference arm (GMRES/OFF) is a production RODAS5P linear solver.
+const TIER_L_REFERENCE_FIDELITY: ComparatorFidelity = ComparatorFidelity::Production;
+
+const REFERENCE_ONLY_NOT_EVALUATED: &str =
+    "relative performance not evaluated: reference is a reference-implementation-only comparator";
+
+const WALL_NOT_EVALUATED: &str = "wall-time criterion not evaluated: no authoritative paired timing assessment (A/A control, at least six independent sessions) was supplied; repeated medians are recorded only";
+
+const WALL_REJECTED: &str = "wall-time criterion not evaluated: the paired timing record is not a confirmatory, self-consistent assessment";
+const WALL_INCONCLUSIVE: &str = "wall-time criterion not evaluated: the paired timing interval is inconclusive or its A/A control is not authoritative";
+const WALL_AUTHORITY_HOLD: &str = "wall-time criterion not evaluated: the paired timing design has no admissible statistical authority (STATISTICAL_AUTHORITY_HOLD or NOT_EVALUATED); the diagnostic decision is recorded only";
+
+/// Wall time decides Promote/Hold only through a paired timing assessment
+/// (`rodas5p_fair_ab::assess_paired_timing`): its gate decision is Promote
+/// or Block only when the A/A control is authoritative and at least six
+/// independent sessions were measured. A median of a few repetitions, with
+/// or without warmups, carries no dispersion estimate and never decides
+/// (audit F-053; audit 2026-09-30, B-03).
+enum WallCriterion {
+    Passed,
+    Failed,
+    NotEvaluated(&'static str),
+}
+
+const WALL_WRONG_ARMS: &str = "wall-time criterion not evaluated: the paired timing evidence does not time this candidate against GMRES/OFF";
+
+/// The Tier-L reference arm of every paired timing.
+const TIER_L_TIMING_REFERENCE: &str = "sequential-gmres-off";
+
+const WALL_WRONG_IDENTITY: &str = "wall-time criterion not evaluated: the paired timing evidence was measured on another workload or executable";
+
+/// What paired timing evidence must have measured to count for this
+/// document: the workload profile and, when known, this executable.
+#[derive(Clone, Debug)]
+struct TimingExpectation {
+    workload_prefix: String,
+    executable_sha256: Option<String>,
+    /// A counterfactual study registry for unit tests of the post-authority
+    /// paths; absent from every non-test build, where the compiled registry
+    /// alone decides (re-audit R4, R4-STAT-DEV-01).
+    #[cfg(test)]
+    authorities: Option<Vec<rodas5p_fair_ab::TimingAuthority>>,
+}
+
+impl TimingExpectation {
+    fn for_profile(profile: CliHomotopyProfile) -> Result<Self> {
+        Ok(Self {
+            workload_prefix: format!("tier-l-{}-", cli_profile_name(profile)),
+            executable_sha256: Some(sha256_hex(&fs::read(std::env::current_exe()?)?)),
+            #[cfg(test)]
+            authorities: None,
+        })
+    }
+}
+
+fn cli_profile_name(profile: CliHomotopyProfile) -> &'static str {
+    match profile {
+        CliHomotopyProfile::Smoke => "smoke",
+        CliHomotopyProfile::Canonical => "canonical",
+    }
+}
+
+fn wall_criterion(
+    candidate_id: &str,
+    paired: Option<&PairedTimingEvidence>,
+    expected: &TimingExpectation,
+) -> WallCriterion {
+    let Some(evidence) = paired else {
+        return WallCriterion::NotEvaluated(WALL_NOT_EVALUATED);
+    };
+    let receipt = &evidence.receipt;
+    if receipt.candidate.arm_id != candidate_id
+        || receipt.reference.arm_id != TIER_L_TIMING_REFERENCE
+    {
+        return WallCriterion::NotEvaluated(WALL_WRONG_ARMS);
+    }
+    // Smoke-profile or other-binary evidence never gates this document
+    // (re-audit R3 review).
+    let identity_matches = [&receipt.candidate, &receipt.reference].iter().all(|arm| {
+        arm.workload_id.starts_with(&expected.workload_prefix)
+            && expected
+                .executable_sha256
+                .as_ref()
+                .is_none_or(|hash| &arm.executable_sha256 == hash)
+    });
+    if !identity_matches {
+        return WallCriterion::NotEvaluated(WALL_WRONG_IDENTITY);
+    }
+    // The gate is recomputed from the raw receipt: the assessment must
+    // equal its recomputation from the receipt's session records, the
+    // sessions must be distinct processes of one campaign, and a receipt
+    // with any failed case never gates (re-audit R3, STAT-DEV-02; R2,
+    // R2-STAT-03).
+    // Integrity first, then the statistical authority of the design: a
+    // verified Promote of a design whose coverage study failed is recorded,
+    // never acted on (re-audit R4, R4-STAT-DEV-01).
+    #[cfg(test)]
+    let decision = match &expected.authorities {
+        Some(registry) => evidence
+            .hypothetical_decision_in(registry)
+            .map(|decision| (decision.diagnostic, decision.would_admit)),
+        None => evidence
+            .admissible_decision()
+            .map(|decision| (decision.diagnostic(), decision.admissible())),
+    };
+    #[cfg(not(test))]
+    let decision = evidence
+        .admissible_decision()
+        .map(|decision| (decision.diagnostic(), decision.admissible()));
+    match decision {
+        Err(_) => WallCriterion::NotEvaluated(WALL_REJECTED),
+        Ok((diagnostic, admissible)) => match admissible {
+            None if diagnostic == PairedTimingDecision::Inconclusive => {
+                WallCriterion::NotEvaluated(WALL_INCONCLUSIVE)
+            }
+            None => WallCriterion::NotEvaluated(WALL_AUTHORITY_HOLD),
+            Some(PairedTimingDecision::Promote) => WallCriterion::Passed,
+            Some(PairedTimingDecision::Block) => WallCriterion::Failed,
+            Some(PairedTimingDecision::Inconclusive) => {
+                WallCriterion::NotEvaluated(WALL_INCONCLUSIVE)
+            }
+        },
+    }
+}
+
+/// Per arm of a campaign JSON (`{"evidence": {arm: PairedTimingEvidence}}`):
+/// the published numeric summary is read, never rewritten.
+fn timing_authority_report(campaign: &serde_json::Value) -> Result<serde_json::Value> {
+    let evidence = campaign["evidence"]
+        .as_object()
+        .context("campaign has no evidence object")?;
+    let mut arms = BTreeMap::new();
+    for (arm, value) in evidence {
+        let row = match serde_json::from_value::<PairedTimingEvidence>(value.clone()) {
+            Err(error) => json!({ "error": format!("not paired timing evidence: {error}") }),
+            Ok(evidence) => match evidence.admissible_decision() {
+                Err(error) => json!({ "error": format!("not verified: {error}") }),
+                Ok(decision) => json!({
+                    "diagnostic_decision": decision.diagnostic(),
+                    "design": decision.design(),
+                    "authority": decision.authority(),
+                    "studies": decision.studies(),
+                    "admissible_decision": decision.admissible(),
+                    "reason": decision.reason(),
+                    "speedup_point": evidence.assessment.corpus.point,
+                    "speedup_lower": evidence.assessment.corpus.lower,
+                    "speedup_upper": evidence.assessment.corpus.upper,
+                }),
+            },
+        };
+        arms.insert(arm.clone(), row);
+    }
+    Ok(json!({
+        "schema": "vigilode-timing-authority-report-v1",
+        "study": campaign["study"],
+        "arms": arms,
+    }))
+}
+
+/// Parse a Tier-L candidate id back to its strict cell.
+fn tier_l_cell(candidate_id: &str) -> Result<BenchmarkCell> {
+    strict_cells()
+        .into_iter()
+        .find(|cell| linear_candidate_id(cell.solver, cell.lifetime) == candidate_id)
+        .with_context(|| format!("unknown Tier-L candidate {candidate_id}"))
+}
+
+fn tier_l_solve_config(solver: SolverKind) -> FairSolveConfig {
+    FairSolveConfig {
+        solver,
+        rtol: 1e-9,
+        atol: 1e-12,
+        restart: 20,
+        recycle_dim: 6,
+        hard_operator_budget: 2_000,
+        preconditioner: PreconditionerKind::None,
+        use_previous_oracle_guess: true,
+    }
+}
+
+/// One session of the Tier-L paired timing: each unified linear trace is a
+/// case, the candidate cell against GMRES/OFF, with its A/A control. A
+/// trace with a failed solve is a session failure, not a fast sample.
+fn run_tier_l_paired_session(
+    campaign_id: &str,
+    session: u32,
+    candidate_id: &str,
+    profile: CliHomotopyProfile,
+    seed: u64,
+    batches: &BTreeMap<String, usize>,
+) -> Result<SessionRecord> {
+    let cell = tier_l_cell(candidate_id)?;
+    let reference = tier_l_cell(TIER_L_TIMING_REFERENCE)?;
+    let traces = unified_linear_configs(profile)
+        .iter()
+        .map(generate_trace)
+        .collect::<std::result::Result<Vec<_>, _>>()?;
+    let arm = |cell: BenchmarkCell, trace: &rodas5p_fair_ab::LinearSystemTrace| {
+        let config = tier_l_solve_config(cell.solver);
+        let trace = trace.clone();
+        move || -> rodas5p_fair_ab::FairResult<()> {
+            let run = run_trace(&trace, &config, cell.lifetime, 0)?;
+            if run.failures > 0 {
+                return Err(rodas5p_fair_ab::FairError::Invalid(format!(
+                    "{} failed solve(s) on {}",
+                    run.failures, trace.trace_id
+                )));
+            }
+            Ok(())
+        }
+    };
+    let mut workloads = traces
+        .iter()
+        .map(|trace| PairedWorkload {
+            case_id: trace.trace_id.clone(),
+            candidate: Box::new(arm(cell, trace)),
+            reference: Box::new(arm(reference, trace)),
+        })
+        .collect::<Vec<_>>();
+    Ok(measure_paired_session(
+        campaign_id,
+        session,
+        &PairedTimingProtocol::authoritative(seed),
+        &mut workloads,
+        batches,
+    )?)
+}
+
+/// Run each session in a fresh process of this executable, the first to
+/// calibrate the batch per case, merge the records into a receipt, and
+/// assess it.
+fn run_tier_l_paired_campaign(
+    candidate_id: &str,
+    profile: CliHomotopyProfile,
+    sessions: u32,
+    seed: u64,
+    output: &Path,
+) -> Result<PairedTimingEvidence> {
+    tier_l_cell(candidate_id)?;
+    let executable = std::env::current_exe()?;
+    let executable_sha256 = sha256_hex(&fs::read(&executable)?);
+    let campaign_id = format!(
+        "tier-l-{candidate_id}-{}-{}",
+        std::process::id(),
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)?
+            .as_nanos()
+    );
+    let directory = output.with_extension("sessions");
+    fs::create_dir_all(&directory)?;
+    let profile_arg = cli_profile_name(profile);
+    let mut records = Vec::new();
+    let mut failed_sessions = Vec::new();
+    let batches_path = directory.join("batches.json");
+    for session in 0..sessions {
+        let record_path = directory.join(format!("session-{session}.json"));
+        let mut command = std::process::Command::new(&executable);
+        command
+            .arg("paired-timing-session")
+            .args(["--campaign-id", &campaign_id])
+            .args(["--session", &session.to_string()])
+            .args(["--candidate", candidate_id])
+            .args(["--profile", profile_arg])
+            .args(["--seed", &seed.to_string()])
+            .arg("--output")
+            .arg(&record_path);
+        if session > 0 && batches_path.exists() {
+            command.arg("--batches").arg(&batches_path);
+        }
+        let status = command.status()?;
+        let record = if status.success() {
+            fs::read(&record_path)
+                .ok()
+                .and_then(|bytes| serde_json::from_slice::<SessionRecord>(&bytes).ok())
+        } else {
+            None
+        };
+        // A session that produced no record is retained as a failure; the
+        // receipt then never gates (re-audit R3 review).
+        let Some(record) = record else {
+            failed_sessions.push(rodas5p_fair_ab::SessionFailure {
+                session,
+                case_id: "*".into(),
+                message: format!("session process exited with {status} and no readable record"),
+            });
+            continue;
+        };
+        if session == 0 {
+            let batches = rodas5p_fair_ab::session_batches(&record);
+            write_json(&batches_path, &batches)?;
+        }
+        records.push(record);
+    }
+    let workload_id = format!("tier-l-{profile_arg}-seed-{seed}");
+    let receipt = PairedTimingReceipt::from_sessions_with_failures(
+        &campaign_id,
+        ArmIdentity {
+            arm_id: candidate_id.to_owned(),
+            executable_sha256: executable_sha256.clone(),
+            workload_id: workload_id.clone(),
+        },
+        ArmIdentity {
+            arm_id: TIER_L_TIMING_REFERENCE.to_owned(),
+            executable_sha256,
+            workload_id,
+        },
+        PairedTimingProtocol::authoritative(seed),
+        records,
+        failed_sessions,
+    )?;
+    Ok(PairedTimingEvidence::from_receipt(receipt)?)
+}
+
+/// The Tier-N nonlinear screen times each case with a single `Instant`
+/// sample, so its wall ratios are never admissible gate evidence.
+const TIER_N_WALL_TIMING_ADMISSIBLE: bool = false;
+
+/// Tier-L candidates without paired timing evidence: every wall criterion
+/// is NotEvaluated.
+#[cfg(test)]
 fn assess_linear_candidates(
     suites: &[UnifiedLinearSuite],
+) -> Vec<UnifiedLinearCandidateAssessment> {
+    assess_linear_candidates_against(
+        suites,
+        TIER_L_REFERENCE_FIDELITY,
+        &BTreeMap::new(),
+        &TimingExpectation {
+            workload_prefix: "test".into(),
+            executable_sha256: None,
+            authorities: None,
+        },
+    )
+}
+
+/// `paired_timing` maps a candidate id to its paired assessment against
+/// GMRES/OFF.
+fn assess_linear_candidates_against(
+    suites: &[UnifiedLinearSuite],
+    reference_fidelity: ComparatorFidelity,
+    paired_timing: &BTreeMap<String, PairedTimingEvidence>,
+    expected: &TimingExpectation,
 ) -> Vec<UnifiedLinearCandidateAssessment> {
     strict_cells()
         .into_iter()
@@ -826,26 +1716,31 @@ fn assess_linear_candidates(
             if !maximum_relative_solution_error.is_finite() {
                 blockers.push("nonfinite Tier-L solution error".into());
             }
-            if !is_reference
-                && !wall_speedup.is_some_and(|speedup| speedup >= TIER_L_REQUIRED_WALL_SPEEDUP)
-            {
-                blockers.push(format!(
-                    "median Tier-L wall speedup below {:.2}x",
-                    TIER_L_REQUIRED_WALL_SPEEDUP
-                ));
+            let relative_admissible = reference_fidelity.admits_relative_performance_reading();
+            let candidate_id = linear_candidate_id(cell.solver, cell.lifetime);
+            let mut not_evaluated = Vec::new();
+            if !is_reference && !relative_admissible {
+                not_evaluated.push(REFERENCE_ONLY_NOT_EVALUATED.to_string());
             }
-            if !is_reference && operator_ratio.is_some_and(|ratio| ratio > 1.0) {
+            if !is_reference && relative_admissible {
+                match wall_criterion(&candidate_id, paired_timing.get(&candidate_id), expected) {
+                    WallCriterion::Passed => {}
+                    WallCriterion::Failed => blockers.push(format!(
+                        "paired Tier-L wall-speedup interval lies below {:.2}x",
+                        TIER_L_REQUIRED_WALL_SPEEDUP
+                    )),
+                    WallCriterion::NotEvaluated(reason) => not_evaluated.push(reason.to_string()),
+                }
+            }
+            if !is_reference
+                && relative_admissible
+                && operator_ratio.is_some_and(|ratio| ratio > 1.0)
+            {
                 blockers.push("median Tier-L operator work exceeds GMRES/OFF".into());
             }
-            let verdict = if is_reference {
-                UnifiedJointVerdict::Reference
-            } else if blockers.is_empty() {
-                UnifiedJointVerdict::Promote
-            } else {
-                UnifiedJointVerdict::Hold
-            };
+            let verdict = tier_verdict(is_reference, &blockers, &not_evaluated);
             UnifiedLinearCandidateAssessment {
-                candidate_id: linear_candidate_id(cell.solver, cell.lifetime),
+                candidate_id,
                 solver: cell.solver,
                 lifetime: cell.lifetime,
                 suites: represented_suites,
@@ -855,16 +1750,38 @@ fn assess_linear_candidates(
                 median_operator_ratio_to_gmres_off: operator_ratio,
                 median_wall_speedup: wall_speedup,
                 required_wall_speedup: TIER_L_REQUIRED_WALL_SPEEDUP,
+                reference_fidelity,
                 verdict,
                 blockers,
+                not_evaluated,
             }
         })
         .collect()
 }
 
+/// Tier verdict: intrinsic blockers hold, refused criteria are NotEvaluated,
+/// and only a fully evaluated, blocker-free candidate is promoted.
+fn tier_verdict(
+    is_reference: bool,
+    blockers: &[String],
+    not_evaluated: &[String],
+) -> UnifiedJointVerdict {
+    if is_reference {
+        UnifiedJointVerdict::Reference
+    } else if !blockers.is_empty() {
+        UnifiedJointVerdict::Hold
+    } else if !not_evaluated.is_empty() {
+        UnifiedJointVerdict::NotEvaluated
+    } else {
+        UnifiedJointVerdict::Promote
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 fn nonlinear_performance_verdict(
     is_reference: bool,
+    reference_fidelity: ComparatorFidelity,
+    wall_timing_admissible: bool,
     represented_cases: usize,
     expected_cases: usize,
     failures: usize,
@@ -872,9 +1789,9 @@ fn nonlinear_performance_verdict(
     rhs_ratio: Option<f64>,
     jvp_ratio: Option<f64>,
     _batch_depth_ratio: Option<f64>,
-) -> (UnifiedJointVerdict, Vec<String>) {
+) -> (UnifiedJointVerdict, Vec<String>, Vec<String>) {
     if is_reference {
-        return (UnifiedJointVerdict::Reference, Vec::new());
+        return (UnifiedJointVerdict::Reference, Vec::new(), Vec::new());
     }
     let mut blockers = Vec::new();
     if represented_cases != expected_cases {
@@ -884,6 +1801,19 @@ fn nonlinear_performance_verdict(
         blockers.push(format!(
             "{failures} Tier-N execution/certification failures"
         ));
+    }
+    if !reference_fidelity.admits_relative_performance_reading() {
+        let not_evaluated = vec![REFERENCE_ONLY_NOT_EVALUATED.to_string()];
+        let verdict = tier_verdict(false, &blockers, &not_evaluated);
+        return (verdict, blockers, not_evaluated);
+    }
+    if !wall_timing_admissible {
+        // The RHS/JVP work blockers apply only when wall speedup fails, so
+        // without admissible wall evidence none of the relative criteria
+        // can decide.
+        let not_evaluated = vec![WALL_NOT_EVALUATED.to_string()];
+        let verdict = tier_verdict(false, &blockers, &not_evaluated);
+        return (verdict, blockers, not_evaluated);
     }
     let wall_speedup = compute_ratio
         .filter(|ratio| *ratio > 0.0)
@@ -902,12 +1832,8 @@ fn nonlinear_performance_verdict(
             blockers.push("median nonlinear JVP work exceeds sequential/direct".into());
         }
     }
-    let verdict = if blockers.is_empty() {
-        UnifiedJointVerdict::Promote
-    } else {
-        UnifiedJointVerdict::Hold
-    };
-    (verdict, blockers)
+    let verdict = tier_verdict(false, &blockers, &[]);
+    (verdict, blockers, Vec::new())
 }
 
 fn ratio_if_positive(numerator: u64, denominator: u64) -> Option<f64> {
@@ -924,6 +1850,14 @@ fn assess_nonlinear_candidates(
         .filter(|row| row.candidate_id == "sequential-direct-off")
         .map(|row| (row.case_id.as_str(), row))
         .collect();
+    let reference_fidelity = catalog
+        .entries()
+        .iter()
+        .find(|candidate| candidate.id() == "sequential-direct-off")
+        .map_or(
+            ComparatorFidelity::ReferenceImplementationOnly,
+            |candidate| candidate.comparator_fidelity(),
+        );
     catalog
         .entries()
         .iter()
@@ -985,8 +1919,10 @@ fn assess_nonlinear_candidates(
             let wall_speedup = compute_ratio
                 .filter(|ratio| *ratio > 0.0)
                 .map(|ratio| 1.0 / ratio);
-            let (verdict, blockers) = nonlinear_performance_verdict(
+            let (verdict, blockers, not_evaluated) = nonlinear_performance_verdict(
                 candidate.id() == "sequential-direct-off",
+                reference_fidelity,
+                TIER_N_WALL_TIMING_ADMISSIBLE,
                 rows.len(),
                 nonlinear.cases.len(),
                 failures,
@@ -1007,8 +1943,10 @@ fn assess_nonlinear_candidates(
                 median_batch_vector_ratio_to_direct: batch_vector_ratio,
                 median_wall_speedup: wall_speedup,
                 required_wall_speedup: TIER_N_REQUIRED_WALL_SPEEDUP,
+                reference_fidelity,
                 verdict,
                 blockers,
+                not_evaluated,
             }
         })
         .collect()
@@ -1034,6 +1972,7 @@ fn build_joint_assessments(
                     tier_l_verdict: None,
                     tier_n_verdict: None,
                     blockers: vec!["Rust implementation is deferred".into()],
+                    not_evaluated: Vec::new(),
                 };
             }
             if candidate.is_native_complete_integrator() {
@@ -1080,6 +2019,7 @@ fn build_joint_assessments(
                     tier_l_verdict: None,
                     tier_n_verdict: None,
                     blockers,
+                    not_evaluated: Vec::new(),
                 };
             }
             let gate = gates
@@ -1104,24 +2044,34 @@ fn build_joint_assessments(
                 .iter()
                 .find(|row| row.candidate_id == candidate.id());
             let tier_n_verdict = tier_n.map(|row| row.verdict);
+            let mut not_evaluated = Vec::new();
             if candidate.family() == CandidateFamily::Sequential
                 && candidate.id() != "sequential-direct-off"
             {
                 blockers.retain(|blocker| blocker != "Tier-L performance assessment required");
                 if let Some(linear) = tier_l {
                     blockers.extend(linear.blockers.clone());
+                    not_evaluated.extend(linear.not_evaluated.clone());
                 } else {
                     blockers.push("Tier-L assessment missing".into());
                 }
             } else if candidate.id() != "sequential-direct-off" {
                 if let Some(nonlinear) = tier_n {
                     blockers.extend(nonlinear.blockers.clone());
+                    not_evaluated.extend(nonlinear.not_evaluated.clone());
                 } else {
                     blockers.push("Tier-N performance assessment missing".into());
                 }
             }
             blockers.sort();
             blockers.dedup();
+            not_evaluated.sort();
+            not_evaluated.dedup();
+            let tier_verdict_for_family = if candidate.family() == CandidateFamily::Sequential {
+                tier_l_verdict
+            } else {
+                tier_n_verdict
+            };
             let verdict = if candidate.id() == "sequential-direct-off"
                 || tier_l_verdict == Some(UnifiedJointVerdict::Reference)
             {
@@ -1134,6 +2084,11 @@ fn build_joint_assessments(
                 && blockers.is_empty()
             {
                 UnifiedJointVerdict::Promote
+            } else if scientific_eligible
+                && blockers.is_empty()
+                && tier_verdict_for_family == Some(UnifiedJointVerdict::NotEvaluated)
+            {
+                UnifiedJointVerdict::NotEvaluated
             } else {
                 UnifiedJointVerdict::Hold
             };
@@ -1145,6 +2100,7 @@ fn build_joint_assessments(
                 tier_l_verdict,
                 tier_n_verdict,
                 blockers,
+                not_evaluated,
             }
         })
         .collect()
@@ -1209,6 +2165,7 @@ fn run_unified_candidate_document(
     profile: CliHomotopyProfile,
     threads: usize,
     full: bool,
+    paired_timing: &BTreeMap<String, PairedTimingEvidence>,
 ) -> Result<UnifiedCandidateDocument> {
     let repetitions = if matches!(profile, CliHomotopyProfile::Smoke) {
         1
@@ -1249,7 +2206,12 @@ fn run_unified_candidate_document(
     let mut nonlinear = run_unified_nonlinear_screen(profile.into(), threads)?;
     let scientific_gates = run_unified_scientific_gates(profile.into(), threads, &nonlinear)?;
     let native_integrator_gates = run_native_integrator_gates()?;
-    let linear_assessments = assess_linear_candidates(&linear_suites);
+    let linear_assessments = assess_linear_candidates_against(
+        &linear_suites,
+        TIER_L_REFERENCE_FIDELITY,
+        paired_timing,
+        &TimingExpectation::for_profile(profile)?,
+    );
     let catalog = CandidateCatalog::research_default()?;
     let nonlinear_assessments = assess_nonlinear_candidates(&catalog, &nonlinear);
     let joint_assessments = build_joint_assessments(
@@ -1339,6 +2301,378 @@ fn main() -> Result<()> {
                 "gamma": coefficients.gamma,
             });
             write_json(&output, &result)?;
+        }
+        Command::ScientificValidityV2Freeze {
+            profile,
+            input,
+            output,
+        } => {
+            let profile = V2GateProfile::from(profile);
+            if profile == V2GateProfile::Canonical {
+                anyhow::bail!(
+                    "canonical raw-row freeze is disabled; use scientific-validity-v2-run-calibration so the freeze is emitted by the source-bound 54-case producer"
+                );
+            }
+            let rows: Vec<V2GateRow> = read_json(&input)?;
+            match freeze_v2_calibration(profile, rows.clone()) {
+                Ok(freeze) => write_json_create_new(&output, &freeze)?,
+                Err(error) => {
+                    write_json_create_new(
+                        &output,
+                        &json!({
+                            "schema": "scientific-validity-v2-calibration-freeze-failure-v1",
+                            "status": "fail",
+                            "profile": profile,
+                            "campaign_label": profile.campaign_label(),
+                            "error": error.to_string(),
+                            "rows": rows,
+                        }),
+                    )?;
+                    return Err(error.into());
+                }
+            }
+        }
+        Command::ScientificValidityV2HoldoutReplay {
+            profile,
+            freeze,
+            input,
+            output,
+        } => {
+            let profile = V2GateProfile::from(profile);
+            if profile == V2GateProfile::Canonical {
+                anyhow::bail!(
+                    "canonical raw-row holdout replay is disabled; use scientific-validity-v2-run-oregonator so the three rows are emitted by the source-bound producer"
+                );
+            }
+            let calibration_freeze: V2CalibrationFreezeEnvelope = read_json(&freeze)?;
+            if let Err(error) = verify_v2_calibration_freeze(&calibration_freeze) {
+                write_json_create_new(
+                    &output,
+                    &json!({
+                        "schema": "scientific-validity-v2-oregonator-holdout-replay-failure-v1",
+                        "status": "fail",
+                        "profile": profile,
+                        "campaign_label": profile.campaign_label(),
+                        "error": error.to_string(),
+                        "calibration_checksum_sha256": calibration_freeze.checksum_sha256,
+                        "rows": [],
+                        "holdout_input_accessed": false,
+                    }),
+                )?;
+                return Err(error.into());
+            }
+            if calibration_freeze.payload.profile != profile {
+                let error = "v2 replay CLI profile does not match calibration freeze profile";
+                write_json_create_new(
+                    &output,
+                    &json!({
+                        "schema": "scientific-validity-v2-oregonator-holdout-replay-failure-v1",
+                        "status": "fail",
+                        "profile": profile,
+                        "campaign_label": profile.campaign_label(),
+                        "error": error,
+                        "calibration_checksum_sha256": calibration_freeze.checksum_sha256,
+                        "rows": [],
+                        "holdout_input_accessed": false,
+                    }),
+                )?;
+                anyhow::bail!(error);
+            }
+            // The holdout path is deliberately opened only after the immutable
+            // calibration authority and requested profile have both verified.
+            let rows: Vec<V2GateRow> = read_json(&input)?;
+            match replay_v2_oregonator_holdout(&calibration_freeze, rows.clone()) {
+                Ok(replay) => {
+                    let overall_pass = replay.payload.overall_pass;
+                    write_json_create_new(&output, &replay)?;
+                    if !overall_pass {
+                        anyhow::bail!(
+                            "v2 Oregonator holdout replay preserved a non-passing result"
+                        );
+                    }
+                }
+                Err(error) => {
+                    write_json_create_new(
+                        &output,
+                        &json!({
+                            "schema": "scientific-validity-v2-oregonator-holdout-replay-failure-v1",
+                            "status": "fail",
+                            "profile": profile,
+                            "campaign_label": profile.campaign_label(),
+                            "error": error.to_string(),
+                            "calibration_checksum_sha256": calibration_freeze.checksum_sha256,
+                            "rows": rows,
+                        }),
+                    )?;
+                    return Err(error.into());
+                }
+            }
+        }
+        Command::ScientificValidityV2RunCalibration {
+            reference_manifest,
+            output,
+            freeze_output,
+        } => {
+            preflight_create_new_outputs(&[&output, &freeze_output])?;
+            let code_revision = match scientific_validity_v2_compiled_revision() {
+                Ok(revision) => revision,
+                Err(error) => {
+                    write_json_create_new(
+                        &output,
+                        &json!({
+                            "schema": "scientific-validity-v2-calibration-campaign-failure-v1",
+                            "status": "failed-preflight",
+                            "corpus_version": ScientificCorpusV2::VERSION,
+                            "reference_manifest_accessed": false,
+                            "records": [],
+                            "error": error.to_string(),
+                        }),
+                    )?;
+                    return Err(error.into());
+                }
+            };
+            let specs = ScientificCorpusV2::calibration_specs();
+            if specs.len() != 54 {
+                anyhow::bail!("ScientificCorpusV2.1 calibration cardinality is not 54");
+            }
+            let (records, rows, failures, record_set_sha256) =
+                run_v2_case_records(&reference_manifest, specs);
+            let freeze_admission = if failures == 0 && records.len() == 54 && rows.len() == 54 {
+                let artifacts = complete_v2_case_artifacts(&records);
+                freeze_scientific_validity_v2_calibration_artifacts(&artifacts)
+                    .map_err(|error| error.to_string())
+            } else {
+                Err("campaign lacks 54 complete bound rows".to_owned())
+            };
+            let freeze_eligible = freeze_admission.is_ok();
+            let freeze_checksum_sha256 = freeze_admission
+                .as_ref()
+                .ok()
+                .map(|freeze| freeze.checksum_sha256.clone());
+            let freeze_admission_error = freeze_admission.as_ref().err().cloned();
+            let campaign = V2CalibrationCampaignDocument {
+                schema: "scientific-validity-v2-calibration-campaign-v1".into(),
+                status: if freeze_eligible {
+                    "complete-pass".into()
+                } else {
+                    "complete-nonpassing".into()
+                },
+                corpus_version: ScientificCorpusV2::VERSION.into(),
+                code_revision: code_revision.into(),
+                expected_case_count: 54,
+                attempted_case_count: records.len(),
+                failure_count: failures,
+                freeze_eligible,
+                freeze_checksum_sha256,
+                freeze_admission_error,
+                record_set_sha256,
+                records,
+                rows,
+            };
+            write_json_create_new(&output, &campaign)?;
+            if !freeze_eligible {
+                anyhow::bail!(
+                    "v2 calibration preserved a non-freeze-eligible 54-case campaign ({failures} execution failures)"
+                );
+            }
+            let freeze = freeze_admission.expect("freeze eligibility checked");
+            // The full campaign is published first. A later filesystem race can
+            // therefore never leave a freeze without its complete 54-case record.
+            write_json_create_new(&freeze_output, &freeze)?;
+        }
+        Command::ScientificValidityV2RunOregonator {
+            profile,
+            freeze,
+            calibration_campaign,
+            reference_manifest,
+            output,
+        } => {
+            // Neither holdout specifications nor the reference path are opened
+            // before this immutable calibration authority passes completely.
+            let profile = V2GateProfile::from(profile);
+            if profile != V2GateProfile::Canonical {
+                let error = "the Oregonator producer accepts only the canonical 3-row profile";
+                write_json_create_new(
+                    &output,
+                    &json!({
+                        "schema": "scientific-validity-v2-oregonator-campaign-failure-v1",
+                        "status": "failed-profile-preflight",
+                        "freeze_accessed": false,
+                        "calibration_campaign_accessed": false,
+                        "holdout_spec_accessed": false,
+                        "reference_manifest_accessed": false,
+                        "records": [],
+                        "error": error,
+                    }),
+                )?;
+                anyhow::bail!(error);
+            }
+            let calibration_freeze: V2CalibrationFreezeEnvelope = read_json(&freeze)?;
+            if let Err(error) = verify_v2_calibration_freeze(&calibration_freeze) {
+                write_json_create_new(
+                    &output,
+                    &json!({
+                        "schema": "scientific-validity-v2-oregonator-campaign-failure-v1",
+                        "status": "failed-freeze-preflight",
+                        "calibration_campaign_accessed": false,
+                        "holdout_spec_accessed": false,
+                        "reference_manifest_accessed": false,
+                        "records": [],
+                        "error": error.to_string(),
+                    }),
+                )?;
+                return Err(error.into());
+            }
+            if calibration_freeze.payload.profile != profile {
+                let error = "Oregonator campaign profile differs from the verified freeze";
+                write_json_create_new(
+                    &output,
+                    &json!({
+                        "schema": "scientific-validity-v2-oregonator-campaign-failure-v1",
+                        "status": "failed-profile-preflight",
+                        "calibration_campaign_accessed": false,
+                        "holdout_spec_accessed": false,
+                        "reference_manifest_accessed": false,
+                        "records": [],
+                        "error": error,
+                    }),
+                )?;
+                anyhow::bail!(error);
+            }
+            let code_revision = match scientific_validity_v2_compiled_revision() {
+                Ok(revision) => revision,
+                Err(error) => {
+                    write_json_create_new(
+                        &output,
+                        &json!({
+                        "schema": "scientific-validity-v2-oregonator-campaign-failure-v1",
+                        "status": "failed-source-preflight",
+                        "calibration_campaign_accessed": false,
+                        "holdout_spec_accessed": false,
+                            "reference_manifest_accessed": false,
+                            "records": [],
+                            "error": error.to_string(),
+                        }),
+                    )?;
+                    return Err(error.into());
+                }
+            };
+            let current_binding = scientific_validity_v2_canonical_campaign_binding()?;
+            if calibration_freeze.payload.campaign_binding != current_binding {
+                let error =
+                    "verified freeze campaign binding differs from the current canonical runner";
+                write_json_create_new(
+                    &output,
+                    &json!({
+                        "schema": "scientific-validity-v2-oregonator-campaign-failure-v1",
+                        "status": "failed-runner-binding-preflight",
+                        "calibration_campaign_accessed": false,
+                        "holdout_spec_accessed": false,
+                        "reference_manifest_accessed": false,
+                        "records": [],
+                        "error": error,
+                    }),
+                )?;
+                anyhow::bail!(error);
+            }
+            let campaign: V2CalibrationCampaignDocument = match read_json(&calibration_campaign) {
+                Ok(campaign) => campaign,
+                Err(error) => {
+                    write_json_create_new(
+                        &output,
+                        &json!({
+                            "schema": "scientific-validity-v2-oregonator-campaign-failure-v1",
+                            "status": "failed-calibration-campaign-preflight",
+                            "calibration_campaign_accessed": true,
+                            "holdout_spec_accessed": false,
+                            "reference_manifest_accessed": false,
+                            "records": [],
+                            "error": error.to_string(),
+                        }),
+                    )?;
+                    return Err(error);
+                }
+            };
+            let derived_freeze = match validate_v2_calibration_campaign_document(&campaign) {
+                Ok(freeze) => freeze,
+                Err(error) => {
+                    write_json_create_new(
+                        &output,
+                        &json!({
+                            "schema": "scientific-validity-v2-oregonator-campaign-failure-v1",
+                            "status": "failed-calibration-campaign-preflight",
+                            "calibration_campaign_accessed": true,
+                            "holdout_spec_accessed": false,
+                            "reference_manifest_accessed": false,
+                            "records": [],
+                            "error": error.to_string(),
+                        }),
+                    )?;
+                    return Err(error);
+                }
+            };
+            if derived_freeze != calibration_freeze {
+                let error = "calibration freeze differs from the validated complete campaign";
+                write_json_create_new(
+                    &output,
+                    &json!({
+                        "schema": "scientific-validity-v2-oregonator-campaign-failure-v1",
+                        "status": "failed-calibration-freeze-link-preflight",
+                        "calibration_campaign_accessed": true,
+                        "holdout_spec_accessed": false,
+                        "reference_manifest_accessed": false,
+                        "records": [],
+                        "error": error,
+                    }),
+                )?;
+                anyhow::bail!(error);
+            }
+            let specs = ScientificCorpusV2::holdout_specs()
+                .into_iter()
+                .filter(|spec| spec.family == ScientificFamily::Oregonator)
+                .collect::<Vec<_>>();
+            if specs.len() != 3 {
+                anyhow::bail!("ScientificCorpusV2.1 Oregonator cardinality is not 3");
+            }
+            let (records, rows, failures, record_set_sha256) =
+                run_v2_case_records(&reference_manifest, specs);
+            let replay_result = if failures == 0 && rows.len() == 3 {
+                let artifacts = complete_v2_case_artifacts(&records);
+                replay_scientific_validity_v2_oregonator_artifacts(&calibration_freeze, &artifacts)
+                    .map(Some)
+                    .map_err(|error| error.to_string())
+            } else {
+                Ok(None)
+            };
+            let (replay, replay_error) = match replay_result {
+                Ok(replay) => (replay, None),
+                Err(error) => (None, Some(error)),
+            };
+            let replay_pass = replay
+                .as_ref()
+                .is_some_and(|value| value.payload.overall_pass);
+            write_json_create_new(
+                &output,
+                &json!({
+                    "schema": "scientific-validity-v2-oregonator-campaign-v1",
+                    "status": if failures == 0 && replay_pass { "complete-pass" } else { "complete-nonpassing" },
+                    "corpus_version": ScientificCorpusV2::VERSION,
+                    "code_revision": code_revision,
+                    "calibration_checksum_sha256": calibration_freeze.checksum_sha256,
+                    "expected_case_count": 3,
+                    "attempted_case_count": records.len(),
+                    "failure_count": failures,
+                    "replay_eligible": failures == 0 && rows.len() == 3,
+                    "record_set_sha256": record_set_sha256,
+                    "records": records,
+                    "rows": rows,
+                    "replay": replay,
+                    "replay_error": replay_error,
+                }),
+            )?;
+            if failures != 0 || !replay_pass {
+                anyhow::bail!("v2 Oregonator campaign preserved a non-passing result");
+            }
         }
         Command::HomotopyDesignCheck { output } => {
             write_json(&output, &run_homotopy_design_check()?)?;
@@ -1577,12 +2911,313 @@ fn main() -> Result<()> {
             profile,
             threads,
             full,
+            paired_timing_evidence,
             output,
         } => {
+            let evidence = match paired_timing_evidence {
+                Some(path) => serde_json::from_slice::<BTreeMap<String, PairedTimingEvidence>>(
+                    &fs::read(&path).with_context(|| format!("reading {}", path.display()))?,
+                )
+                .with_context(|| format!("parsing {}", path.display()))?,
+                None => BTreeMap::new(),
+            };
             write_json(
                 &output,
-                &run_unified_candidate_document(profile, threads, full)?,
+                &run_unified_candidate_document(profile, threads, full, &evidence)?,
             )?;
+        }
+        Command::PairedTimingSession {
+            campaign_id,
+            session,
+            candidate,
+            profile,
+            seed,
+            batches,
+            output,
+        } => {
+            let batches = match batches {
+                Some(path) => serde_json::from_slice(&fs::read(&path)?)?,
+                None => BTreeMap::new(),
+            };
+            let record = run_tier_l_paired_session(
+                &campaign_id,
+                session,
+                &candidate,
+                profile,
+                seed,
+                &batches,
+            )?;
+            write_json(&output, &record)?;
+        }
+        Command::PairedTimingCampaign {
+            candidate,
+            profile,
+            sessions,
+            seed,
+            output,
+        } => {
+            let evidence =
+                run_tier_l_paired_campaign(&candidate, profile, sessions, seed, &output)?;
+            let mut map = BTreeMap::new();
+            map.insert(candidate, evidence);
+            write_json(&output, &map)?;
+        }
+        Command::R3CampaignSession {
+            study,
+            arm,
+            campaign_id,
+            session,
+            seed,
+            batches,
+            output,
+        } => {
+            let batches = match batches {
+                Some(path) => serde_json::from_slice(&fs::read(&path)?)?,
+                None => BTreeMap::new(),
+            };
+            let record =
+                r3_campaigns::run_session(study, &arm, &campaign_id, session, seed, &batches)?;
+            write_json(&output, &record)?;
+        }
+        Command::R3Campaign {
+            study,
+            sessions,
+            seed,
+            output,
+        } => {
+            if output.exists() {
+                anyhow::bail!("immutable output already exists: {}", output.display());
+            }
+            let mut evidence = BTreeMap::new();
+            let mut summary = BTreeMap::new();
+            for arm in study.arms() {
+                // An arm whose campaign cannot be assessed is recorded, not
+                // allowed to discard the other arms (re-audit R3 review).
+                let arm_evidence =
+                    match r3_campaigns::run_campaign(study, arm, sessions, seed, &output) {
+                        Ok(arm_evidence) => arm_evidence,
+                        Err(error) => {
+                            println!("{} {arm}: campaign failed: {error}", study.name());
+                            summary.insert(arm.to_string(), json!({ "error": error.to_string() }));
+                            continue;
+                        }
+                    };
+                let verified = arm_evidence.verified_decision().map_or_else(
+                    |error| format!("not verified: {error}"),
+                    |d| format!("{d:?}"),
+                );
+                let authority = arm_evidence
+                    .admissible_decision()
+                    .map(|decision| json!({ "authority": decision.authority(), "admissible_decision": decision.admissible(), "reason": decision.reason() }))
+                    .unwrap_or_else(|error| json!({ "error": error.to_string() }));
+                summary.insert(
+                    arm.to_string(),
+                    json!({
+                        "verified_decision": verified,
+                        "statistical_authority": authority,
+                        "assessment_decision": arm_evidence.assessment.decision,
+                        "gate_decision": arm_evidence.assessment.gate_decision,
+                        "speedup_point": arm_evidence.assessment.corpus.point,
+                        "speedup_lower": arm_evidence.assessment.corpus.lower,
+                        "speedup_upper": arm_evidence.assessment.corpus.upper,
+                        "independent_sessions": arm_evidence.assessment.corpus.independent_blocks,
+                        "failed_sessions": arm_evidence.receipt.failed_sessions.len(),
+                        "receipt_failures": arm_evidence.receipt.failures.len(),
+                    }),
+                );
+                println!("{} {arm}: verified decision {verified}", study.name());
+                evidence.insert(arm.to_string(), arm_evidence);
+            }
+            write_json_create_new(
+                &output,
+                &json!({
+                    "study": study.name(),
+                    "reference": study.reference(),
+                    "seed": seed,
+                    "sessions": sessions,
+                    "summary": summary,
+                    "evidence": evidence,
+                }),
+            )?;
+        }
+        Command::R3VerifyArm { study, arm, output } => {
+            r3_campaigns::verify_arm(study, &arm, &output)?;
+        }
+        Command::TimingAuthority { campaign, output } => {
+            if output.exists() {
+                anyhow::bail!("immutable output already exists: {}", output.display());
+            }
+            let report = timing_authority_report(&serde_json::from_slice(&fs::read(&campaign)?)?)?;
+            write_json_create_new(&output, &report)?;
+        }
+        Command::R3CampaignVerify { study, output } => {
+            if output.exists() {
+                anyhow::bail!("immutable output already exists: {}", output.display());
+            }
+            let executable = std::env::current_exe()?;
+            let directory = output.with_extension("arms");
+            fs::create_dir_all(&directory)?;
+            let mut arms = BTreeMap::new();
+            for arm in std::iter::once(study.reference()).chain(study.arms().iter().copied()) {
+                let path = directory.join(format!("{arm}.json"));
+                let status = std::process::Command::new(&executable)
+                    .arg("r3-verify-arm")
+                    .args(["--study", study.name()])
+                    .args(["--arm", arm])
+                    .arg("--output")
+                    .arg(&path)
+                    .status()?;
+                let value = if status.success() {
+                    serde_json::from_slice::<serde_json::Value>(&fs::read(&path)?)?
+                } else {
+                    json!({ "arm": arm, "failed": format!("verification process exited with {status}") })
+                };
+                arms.insert(arm.to_string(), value);
+            }
+            write_json_create_new(&output, &json!({ "study": study.name(), "arms": arms }))?;
+        }
+        Command::StiffBenchmark {
+            repetitions,
+            warmups,
+            problems,
+            arms,
+            output,
+        } => {
+            let problems = problems.unwrap_or_else(|| {
+                stiff_benchmark::DEFAULT_PROBLEMS
+                    .iter()
+                    .map(|id| id.to_string())
+                    .collect()
+            });
+            let arms = arms.unwrap_or_else(|| {
+                stiff_benchmark::ARMS
+                    .iter()
+                    .map(|id| id.to_string())
+                    .collect()
+            });
+            if output.exists() {
+                anyhow::bail!("immutable output already exists: {}", output.display());
+            }
+            write_json(
+                &output,
+                &stiff_benchmark::stiff_benchmark(repetitions, warmups, &problems, &arms)?,
+            )?;
+        }
+        Command::StiffProfileRun {
+            problem,
+            arm,
+            rtol,
+            repetitions,
+        } => {
+            println!(
+                "{}",
+                stiff_benchmark::profile_run(&problem, &arm, rtol, repetitions)?
+            );
+        }
+        Command::StiffEnsembleRun {
+            arm,
+            members,
+            rtol,
+            repetitions,
+            dump_members,
+        } => {
+            println!(
+                "{}",
+                stiff_benchmark::ensemble_run(
+                    &arm,
+                    members,
+                    rtol,
+                    repetitions,
+                    dump_members.as_deref()
+                )?
+            );
+        }
+        Command::TriageList => triage::print_or_exit(triage::list_json())?,
+        Command::TriageRun {
+            cell,
+            repetitions,
+            campaign,
+        } => triage::print_or_exit(triage::run_row(&cell, repetitions, campaign.as_deref()))?,
+        Command::TriageProfileRun {
+            cell,
+            repetitions,
+            campaign: _,
+        } => triage::print_line_or_exit(triage::profile_run(&cell, repetitions))?,
+        Command::TriageExact { problem, grid } => {
+            triage::print_or_exit(triage::exact_json(&problem, grid))?
+        }
+        Command::TriageParity {
+            problem,
+            jacobian_max_dense,
+        } => triage::print_or_exit(triage::parity_json(&problem, jacobian_max_dense))?,
+        Command::R4Study {
+            study,
+            actions,
+            output,
+        } => {
+            if output.exists() {
+                anyhow::bail!("immutable output already exists: {}", output.display());
+            }
+            let report = match study.as_str() {
+                "laguerre" => r4_studies::laguerre_study()?,
+                "polynomial-regimes" => r4_studies::polynomial_regimes_study(actions)?,
+                "homotopy-cost" => r4_studies::homotopy_cost_study()?,
+                other => anyhow::bail!("unknown R4 study {other:?}"),
+            };
+            write_json_create_new(&output, &report)?;
+            println!("r4 study {study}: written to {}", output.display());
+        }
+        Command::SessionMedianCoverageStudy {
+            replications,
+            seed,
+            threads,
+            scenario,
+            output,
+        } => {
+            if output.exists() {
+                anyhow::bail!("immutable output already exists: {}", output.display());
+            }
+            let grid = rodas5p_fair_ab::session_median_study_grid()
+                .into_iter()
+                .filter(|entry| scenario.is_empty() || scenario.contains(&entry.id))
+                .collect::<Vec<_>>();
+            if grid.is_empty() {
+                anyhow::bail!("no session-median scenario matches {scenario:?}");
+            }
+            let report = rodas5p_fair_ab::session_median_study(&grid, replications, seed, threads)?;
+            write_json_create_new(&output, &report)?;
+            println!(
+                "session-median study: {} scenarios, verdict {} (in-domain failures {}, out-of-domain failures {})",
+                report.scenarios.len(),
+                report.verdict,
+                report.in_domain_failures,
+                report.out_of_domain_failures
+            );
+        }
+        Command::PairedTimingCoverageStudy {
+            replications,
+            seed,
+            threads,
+            scenario,
+            output,
+        } => {
+            let protocol = rodas5p_fair_ab::PairedTimingProtocol::authoritative(seed);
+            let grid = rodas5p_fair_ab::preregistered_coverage_grid(&protocol)
+                .into_iter()
+                .filter(|entry| scenario.is_empty() || scenario.contains(&entry.id))
+                .collect::<Vec<_>>();
+            if grid.is_empty() {
+                anyhow::bail!("no coverage scenario matches {scenario:?}");
+            }
+            let report =
+                rodas5p_fair_ab::coverage_study(&grid, replications, seed, threads, &protocol)?;
+            write_json_create_new(&output, &report)?;
+            println!(
+                "coverage study: {} scenarios, verdict {} (sensitivity pass: {})",
+                report.scenarios.len(),
+                report.verdict,
+                report.sensitivity_pass
+            );
         }
         Command::Trace {
             kind,
@@ -1659,6 +3294,42 @@ fn main() -> Result<()> {
 }
 
 #[cfg(test)]
+mod scientific_validity_v2_producer_tests {
+    use super::*;
+
+    #[test]
+    fn calibration_record_loop_attempts_all_fifty_four_cases_after_individual_failures() {
+        let missing = std::env::temp_dir().join(format!(
+            "vigilode-missing-v2-reference-manifest-{}.json",
+            std::process::id()
+        ));
+        let _ = fs::remove_file(&missing);
+        let (records, rows, failures, digest) =
+            run_v2_case_records(&missing, ScientificCorpusV2::calibration_specs());
+        assert_eq!(records.len(), 54);
+        assert_eq!(failures, 54);
+        assert!(rows.is_empty());
+        assert_eq!(digest.len(), 64);
+        assert!(
+            records
+                .iter()
+                .all(|record| matches!(record, V2CampaignCaseRecord::Failed { .. }))
+        );
+        assert_eq!(
+            records
+                .iter()
+                .filter_map(|record| match record {
+                    V2CampaignCaseRecord::Failed { spec, .. } => Some(spec.id.as_str()),
+                    V2CampaignCaseRecord::Complete { .. } => None,
+                })
+                .collect::<std::collections::BTreeSet<_>>()
+                .len(),
+            54
+        );
+    }
+}
+
+#[cfg(test)]
 mod unified_assessment_tests {
     use super::*;
 
@@ -1682,14 +3353,18 @@ mod unified_assessment_tests {
     }
 
     fn suite(gcrodr_wall: f64) -> UnifiedLinearSuite {
+        suite_with_plan(gcrodr_wall, 3, 1)
+    }
+
+    fn suite_with_plan(gcrodr_wall: f64, repetitions: usize, warmups: usize) -> UnifiedLinearSuite {
         UnifiedLinearSuite {
             kind: SequenceKind::Fixed,
             trace_id: "trace".into(),
             failures: 0,
             plan: BenchmarkPlan {
                 cells: strict_cells(),
-                repetitions: 3,
-                warmups: 1,
+                repetitions,
+                warmups,
                 seed: 1,
             },
             summary: vec![
@@ -1716,27 +3391,225 @@ mod unified_assessment_tests {
         assert!(ids.contains(&"sequential-gcrodr-persistent".to_string()));
     }
 
-    #[test]
-    fn tier_l_promotion_requires_the_locked_fifteen_percent_wall_speedup() {
-        let promoted = assess_linear_candidates(&[suite(0.8)]);
-        let row = promoted
-            .iter()
-            .find(|row| row.candidate_id == "sequential-gcrodr-persistent")
-            .unwrap();
-        assert_eq!(row.verdict, UnifiedJointVerdict::Promote);
+    /// Paired timing evidence of GCRO-DR/persistent against GMRES/OFF from
+    /// deterministic samples: six session records (distinct processes) of
+    /// four cases with 2% noise, merged into a receipt.
+    fn paired_evidence(speedup: f64, with_aa: bool) -> PairedTimingEvidence {
+        use rodas5p_fair_ab::{
+            PAIRED_TIMING_MONOTONIC_CLOCK, PairedTimingCase, SessionProvenance,
+            detect_timing_host_metadata,
+        };
+        let protocol = PairedTimingProtocol::authoritative(7);
+        let mut state = 1_u64;
+        let mut noise = move || {
+            state = state
+                .wrapping_mul(6_364_136_223_846_793_005)
+                .wrapping_add(1_442_695_040_888_963_407);
+            1.0 + 0.02 * (2.0 * ((state >> 11) as f64 / (1_u64 << 53) as f64) - 1.0)
+        };
+        let mut cases = |ratio: f64, suffix: &str, session: u32| {
+            (0..4)
+                .map(|case| {
+                    let base = 1.0e-3 * (1.0 + case as f64);
+                    let candidate = (0..protocol.pairs)
+                        .map(|_| base * noise())
+                        .collect::<Vec<_>>();
+                    let reference = (0..protocol.pairs)
+                        .map(|_| base * ratio * noise())
+                        .collect::<Vec<_>>();
+                    PairedTimingCase::from_samples(
+                        format!("case-{case}{suffix}"),
+                        &protocol,
+                        vec![5.0e-3, 1.0e-3],
+                        candidate,
+                        reference,
+                    )
+                    .unwrap()
+                    .with_process_blocks(vec![session; protocol.pairs])
+                })
+                .collect::<Vec<_>>()
+        };
+        let records = (0..6)
+            .map(|session| SessionRecord {
+                campaign_id: "test-campaign".into(),
+                provenance: SessionProvenance {
+                    session,
+                    process_id: 1_000 + session,
+                    started_unix_seconds: 0.0,
+                    finished_unix_seconds: 1.0,
+                    clock: PAIRED_TIMING_MONOTONIC_CLOCK.into(),
+                    host: detect_timing_host_metadata(1),
+                },
+                cases: cases(speedup, "", session),
+                aa_cases: if with_aa {
+                    cases(1.0, "#aa", session)
+                } else {
+                    Vec::new()
+                },
+                failures: Vec::new(),
+            })
+            .collect();
+        let arm = |id: &str| ArmIdentity {
+            arm_id: id.into(),
+            executable_sha256: "0".repeat(64),
+            workload_id: "test".into(),
+        };
+        let receipt = PairedTimingReceipt::from_sessions(
+            "test-campaign",
+            arm("sequential-gcrodr-persistent"),
+            arm(TIER_L_TIMING_REFERENCE),
+            protocol,
+            records,
+        )
+        .unwrap();
+        PairedTimingEvidence::from_receipt(receipt).unwrap()
+    }
 
-        let held = assess_linear_candidates(&[suite(0.9)]);
-        let row = held
-            .iter()
-            .find(|row| row.candidate_id == "sequential-gcrodr-persistent")
-            .unwrap();
-        assert_eq!(row.verdict, UnifiedJointVerdict::Hold);
+    #[test]
+    fn the_published_poly03_campaign_keeps_its_numbers_under_an_authority_hold() {
+        // Re-audit R4, R4-STAT-DEV-01: the R3 POLY-03 PASS (ledger L-0009)
+        // stays a verified diagnostic Promote; its design's authority is the
+        // failed coverage studies' hold, so no consumer may act on it.
+        let path = concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../research/r3_matched_accuracy_poly03_20261001/CAMPAIGN.json"
+        );
+        let campaign: serde_json::Value = serde_json::from_slice(&fs::read(path).unwrap()).unwrap();
+        let report = timing_authority_report(&campaign).unwrap();
+        let arms = report["arms"].as_object().unwrap();
+        assert_eq!(arms.len(), 4);
+        for (arm, row) in arms {
+            assert_eq!(row["authority"], "hold", "{arm}: {row}");
+            assert!(row["admissible_decision"].is_null(), "{arm}");
+            assert!(row["reason"].as_str().unwrap().contains("L-0010"), "{arm}");
+            let published = &campaign["summary"][arm];
+            assert_eq!(row["speedup_point"], published["speedup_point"], "{arm}");
+            assert_eq!(
+                row["diagnostic_decision"].as_str().unwrap(),
+                published["verified_decision"]
+                    .as_str()
+                    .unwrap()
+                    .to_lowercase(),
+                "{arm}"
+            );
+        }
+    }
+
+    #[test]
+    fn tier_l_wall_decisions_come_only_from_a_paired_assessment() {
+        // Audit 2026-09-30, B-03: three repetitions after one warmup with a
+        // median wall ratio of 0.8 used to promote. Without paired timing
+        // evidence the wall criterion is not evaluated.
+        let gcrodr = |rows: Vec<UnifiedLinearCandidateAssessment>| {
+            rows.into_iter()
+                .find(|row| row.candidate_id == "sequential-gcrodr-persistent")
+                .unwrap()
+        };
+        let row = gcrodr(assess_linear_candidates(&[suite(0.8)]));
+        assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated);
+        assert_eq!(row.not_evaluated, vec![WALL_NOT_EVALUATED]);
+
+        // A registry in which the pooled design passed its study: the
+        // integrity path alone decides (as before R4).
+        let admissible = rodas5p_fair_ab::timing_authority_registry()
+            .into_iter()
+            .map(|mut study| {
+                study.status = rodas5p_fair_ab::TimingAuthorityStatus::Admissible;
+                study
+            })
+            .collect::<Vec<_>>();
+        let with_registry =
+            |evidence: PairedTimingEvidence,
+             authorities: Option<Vec<rodas5p_fair_ab::TimingAuthority>>| {
+                let map = BTreeMap::from([("sequential-gcrodr-persistent".to_string(), evidence)]);
+                gcrodr(assess_linear_candidates_against(
+                    &[suite(0.8)],
+                    TIER_L_REFERENCE_FIDELITY,
+                    &map,
+                    &TimingExpectation {
+                        workload_prefix: "test".into(),
+                        executable_sha256: Some("0".repeat(64)),
+                        authorities,
+                    },
+                ))
+            };
+        let with =
+            |evidence: PairedTimingEvidence| with_registry(evidence, Some(admissible.clone()));
+        // Receipt-backed paired evidence above 1.15x promotes.
+        let row = with(paired_evidence(1.30, true));
+        assert_eq!(row.verdict, UnifiedJointVerdict::Promote, "{row:?}");
+        // One below 1.15x holds.
+        let row = with(paired_evidence(0.90, true));
+        assert_eq!(row.verdict, UnifiedJointVerdict::Hold, "{row:?}");
+        assert!(row.blockers[0].contains("paired Tier-L wall-speedup interval"));
+        // Re-audit R4, R4-STAT-DEV-01: under the compiled registry (both
+        // coverage studies failed) neither decision is acted on; the
+        // diagnostic Promote is still what the evidence verifies to.
+        for speedup in [1.30, 0.90] {
+            let evidence = paired_evidence(speedup, true);
+            let decision = evidence.admissible_decision().unwrap();
+            assert_eq!(
+                decision.authority(),
+                rodas5p_fair_ab::TimingAuthorityStatus::Hold
+            );
+            assert!(decision.admissible().is_none());
+            let row = with_registry(evidence, None);
+            assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated, "{row:?}");
+            assert_eq!(row.not_evaluated, vec![WALL_AUTHORITY_HOLD]);
+        }
+        assert_eq!(
+            paired_evidence(1.30, true).verified_decision().unwrap(),
+            PairedTimingDecision::Promote
+        );
+        // Without an A/A control the timing is not authoritative.
+        let row = with(paired_evidence(1.30, false));
+        assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated);
+        assert_eq!(row.not_evaluated, vec![WALL_INCONCLUSIVE]);
+        // Re-audit R3, STAT-DEV-02: an assessment whose raw receipt was
+        // corrupted, a receipt with a failed case, or evidence for another
+        // arm never gates.
+        let mut corrupted = paired_evidence(1.30, true);
+        corrupted.receipt.session_records[2].cases[0].candidate_seconds[0] *= 0.5;
+        assert_eq!(with(corrupted).not_evaluated, vec![WALL_REJECTED]);
+        let mut failed = paired_evidence(1.30, true);
+        let failure = rodas5p_fair_ab::SessionFailure {
+            session: 3,
+            case_id: "case-9".into(),
+            message: "failed solve".into(),
+        };
+        failed.receipt.session_records[3]
+            .failures
+            .push(failure.clone());
+        failed.receipt.failures.push(failure);
+        assert_eq!(with(failed).not_evaluated, vec![WALL_INCONCLUSIVE]);
+        let mut other = paired_evidence(1.30, true);
+        other.receipt.candidate.arm_id = "sequential-lgmres-off".into();
+        assert_eq!(with(other).not_evaluated, vec![WALL_WRONG_ARMS]);
+        // Evidence from another executable or workload never gates.
+        let mut binary = paired_evidence(1.30, true);
+        binary.receipt.reference.executable_sha256 = "1".repeat(64);
+        assert_eq!(with(binary).not_evaluated, vec![WALL_WRONG_IDENTITY]);
+        let mut smoke = paired_evidence(1.30, true);
+        smoke.receipt.candidate.workload_id = "tier-l-smoke-seed-1".into();
+        assert_eq!(with(smoke).not_evaluated, vec![WALL_WRONG_IDENTITY]);
+        // Failures dropped from the top-level list are detected.
+        let mut hidden = paired_evidence(1.30, true);
+        hidden.receipt.session_records[1]
+            .failures
+            .push(rodas5p_fair_ab::SessionFailure {
+                session: 1,
+                case_id: "case-9".into(),
+                message: "failed solve".into(),
+            });
+        assert_eq!(with(hidden).not_evaluated, vec![WALL_REJECTED]);
     }
 
     #[test]
     fn nonlinear_batch_depth_advantage_does_not_replace_wall_speedup() {
-        let (verdict, blockers) = nonlinear_performance_verdict(
+        let (verdict, blockers, not_evaluated) = nonlinear_performance_verdict(
             false,
+            ComparatorFidelity::Production,
+            true,
             6,
             6,
             0,
@@ -1751,6 +3624,101 @@ mod unified_assessment_tests {
                 blocker.contains("median nonlinear candidate wall speedup below")
             })
         );
+        assert!(not_evaluated.is_empty());
+    }
+
+    #[test]
+    fn smoke_and_single_sample_wall_blockers_are_not_evaluated() {
+        // Audit F-053: the Smoke profile (repetitions=1, warmups=0) and
+        // single-sample timings never decide Promote/Hold on wall time, in
+        // either direction.
+        for gcrodr_wall in [0.5, 0.9, 2.0] {
+            for (repetitions, warmups) in [(1, 0), (1, 1), (3, 0)] {
+                let rows =
+                    assess_linear_candidates(&[suite_with_plan(gcrodr_wall, repetitions, warmups)]);
+                let row = rows
+                    .iter()
+                    .find(|row| row.candidate_id == "sequential-gcrodr-persistent")
+                    .unwrap();
+                assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated);
+                assert!(row.blockers.is_empty(), "{:?}", row.blockers);
+                assert_eq!(row.not_evaluated, vec![WALL_NOT_EVALUATED]);
+            }
+        }
+        for compute_ratio in [0.5, 2.0] {
+            let (verdict, blockers, not_evaluated) = nonlinear_performance_verdict(
+                false,
+                ComparatorFidelity::Production,
+                TIER_N_WALL_TIMING_ADMISSIBLE,
+                6,
+                6,
+                0,
+                Some(compute_ratio),
+                Some(3.0),
+                Some(5.0),
+                None,
+            );
+            assert_eq!(verdict, UnifiedJointVerdict::NotEvaluated);
+            assert!(blockers.is_empty());
+            assert_eq!(not_evaluated, vec![WALL_NOT_EVALUATED]);
+        }
+        // Intrinsic failures still hold without any wall evidence.
+        let (verdict, blockers, _) = nonlinear_performance_verdict(
+            false,
+            ComparatorFidelity::Production,
+            false,
+            5,
+            6,
+            1,
+            Some(0.5),
+            None,
+            None,
+            None,
+        );
+        assert_eq!(verdict, UnifiedJointVerdict::Hold);
+        assert_eq!(blockers.len(), 2);
+    }
+
+    #[test]
+    fn relative_gates_against_a_reference_only_comparator_are_not_evaluated() {
+        // Audit F-052/F-056 Tier B: neither a clear win nor a clear loss may
+        // be emitted when the reference arm is reference-implementation-only.
+        for gcrodr_wall in [0.5, 2.0] {
+            let rows = assess_linear_candidates_against(
+                &[suite(gcrodr_wall)],
+                ComparatorFidelity::ReferenceImplementationOnly,
+                &BTreeMap::new(),
+                &TimingExpectation {
+                    workload_prefix: "test".into(),
+                    executable_sha256: None,
+                    authorities: None,
+                },
+            );
+            let row = rows
+                .iter()
+                .find(|row| row.candidate_id == "sequential-gcrodr-persistent")
+                .unwrap();
+            assert_eq!(row.verdict, UnifiedJointVerdict::NotEvaluated);
+            assert!(row.blockers.is_empty());
+            assert_eq!(row.not_evaluated, vec![REFERENCE_ONLY_NOT_EVALUATED]);
+        }
+        for compute_ratio in [0.5, 2.0] {
+            let (verdict, blockers, not_evaluated) = nonlinear_performance_verdict(
+                false,
+                ComparatorFidelity::ReferenceImplementationOnly,
+                true,
+                6,
+                6,
+                0,
+                Some(compute_ratio),
+                Some(3.0),
+                Some(5.0),
+                None,
+            );
+            assert_eq!(verdict, UnifiedJointVerdict::NotEvaluated);
+            assert!(blockers.is_empty());
+            assert_eq!(not_evaluated, vec![REFERENCE_ONLY_NOT_EVALUATED]);
+        }
     }
 
     #[test]

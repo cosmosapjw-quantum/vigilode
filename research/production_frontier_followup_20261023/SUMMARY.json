@@ -1,0 +1,72 @@
+{
+  "schema": "vigilode.production-frontier-followup-summary.v1",
+  "observed_utc": "2026-10-23T10:25:25.443564+00:00",
+  "public_base_tip": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+  "base_tree": "2eb2691d0eab29fde84b6c5e88c0422ebf14c38e",
+  "required_ancestors_verified": [
+    "df5c6c56da0eb93b58147d6630a0f094cf4af212",
+    "37817308c12384f33ecb9b8ff64509f971eb3b2b"
+  ],
+  "implementation_commit": "49696c982446dfe5d274f5361819b218122b7449",
+  "implementation_tree": "39a3a7484cfa5257c93116b438de47e04efe1a4e",
+  "supplemental_harness_commit": "dbcaeee2256edbfd45a1c9177c23c567c92c592a",
+  "supplemental_harness_tree": "ec9f2ad4f79c6ef44bb9f8d9f5ed94e9bcbcaac5",
+  "binary_sha256": "eb438eef4e1f97486f9015879db5f060f88903b630e6f5c3e1da7b4867171b6f",
+  "original_checkout_preserved": true,
+  "offline_metadata_status": "PASS_125_PACKAGES",
+  "focused_validation": {
+    "FA01": "PASS_SCOPED fatal callback and accepted-prefix fixtures",
+    "SW02": "PASS_SCOPED stage1 native sessions 10/10 plus1 transaction unit",
+    "GE01": "PASS_SCOPED ledger12/12 and doc14/14; driver hookup pending",
+    "QA01": "PASS_SCOPED provider8/8 and legacy8/8",
+    "LP01": "PASS_SCOPED sampled linear cohort; 36/36 supplemental tight-tolerance rows"
+  },
+  "lp01": {
+    "pilot_rows": 90,
+    "pilot_status_counts": {
+      "FAILED_ACCURACY": 3,
+      "NOT_RUN_FAILED_WARMUP": 15,
+      "PASS_SAMPLED": 72
+    },
+    "pilot_child_attempts": 81,
+    "pilot_elapsed_observed_seconds": 38.57540401420556,
+    "pilot_elapsed_charged_seconds": 38.66,
+    "supplemental_rows": 36,
+    "supplemental_status_counts": {
+      "PASS_SAMPLED": 36
+    },
+    "supplemental_child_attempts": 43,
+    "supplemental_solver_attempts": 36,
+    "supplemental_elapsed_seconds": 67.25599775998853,
+    "cumulative_lp_child_attempts": 124,
+    "cumulative_lp_seconds": 105.91599775998853,
+    "phase_cap_radians": 0.001,
+    "relative_amplitude_cap": 1e-05,
+    "common_state_error_cap": 1e-05,
+    "reference_uncertainty_ceiling_fraction": 0.1,
+    "timing_authority": "diagnostic_only",
+    "timing_decision": "INCONCLUSIVE_TIMING; tiny solve times have high max/min dispersion and process medians show no material end-to-end gain"
+  },
+  "task_status_file": "TASK_STATUS.json",
+  "task_count": 19,
+  "status_counts": {
+    "PASS_SCOPED": 4,
+    "IN_PROGRESS": 2,
+    "BLOCKED": 13
+  },
+  "external_comparisons": {
+    "VODE/DVODE": "NOT_RUN",
+    "diffsol": "NOT_RUN",
+    "Julia": "NOT_RUN"
+  },
+  "production_decision": "HOLD",
+  "not_run": [
+    "online terminal event",
+    "persistent facade/switching integration",
+    "real native physical-budget driver",
+    "long-phase nonlinear/noncommuting",
+    "real BASS/rei client",
+    "PDE refinement",
+    "18-problem PB01 comparison subset"
+  ]
+}

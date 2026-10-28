@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "date_utc": "2026-10-27",
+  "review_role": "independent_bounded_delta_review",
+  "reviewer": "current_toolchain",
+  "scope": [
+    "one expedited zero-progress retry per explicit tenure",
+    "growth-only entry-pilot seed",
+    "conditional callback-unit cost and ideal startup-count implications"
+  ],
+  "status": "PASS_AFTER_TARGETED_DOCUMENTATION_CORRECTIONS",
+  "execution": {
+    "cargo": "NOT_RUN",
+    "tests": "NOT_RERUN",
+    "benchmarks": "NOT_RERUN",
+    "method": "source inspection and direct state-transition reasoning"
+  },
+  "prior_review": "THEORY_REVIEW.json (preserved unchanged)",
+  "findings": [
+    {
+      "id": "R2TR-01",
+      "severity": "low",
+      "kind": "trigger_mapping",
+      "status": "CLOSED_BY_AUTHOR_CORRECTION_AND_TARGETED_READBACK",
+      "observed": "The prose/JSON says first eligible pilot; code instead arms once on the first qualifying incomplete nonfatal zero-accepted pilot, which may follow earlier completed uneconomical pilots.",
+      "correction": "State first qualifying zero-progress pilot within the tenure, not necessarily first comparison.",
+      "source": "EntryProbeMemory::retry_zero_progress_once; run result branch guarded by retry_unresolved_entry_once, !enter, !fatal, !success, accepted_steps==0"
+    },
+    {
+      "id": "R2TR-02",
+      "severity": "low",
+      "kind": "state_transition_mapping",
+      "status": "CLOSED_BY_AUTHOR_CORRECTION_AND_TARGETED_READBACK",
+      "observed": "The code consumes future arming permission when setting used=true and pending=true. pending clears in compared() after successful run return, not before starting the special call.",
+      "correction": "Use the implemented serial proof: arming irrevocably sets used; completed run clears pending; error terminates; no later qualifying result can rearm until tenure ends.",
+      "impact": "The one-shot bound remains valid; the described implementation order was inaccurate."
+    },
+    {
+      "id": "R2TR-03",
+      "severity": "low",
+      "kind": "seed_pipeline_mapping",
+      "status": "CLOSED_BY_AUTHOR_CORRECTION_AND_TARGETED_READBACK",
+      "observed": "The facade already maps the pre-clamp seed to max(min(seed,batch_remaining),min_step) before native endpoint clipping.",
+      "correction": "Restrict h_seed>=user_h0 to the seed before the common cap/floor; show the common monotone map and native final landing.",
+      "impact": "Growth-only relative-to-disabled comparison remains valid; actual native input may be below user h0 because of the shared span cap."
+    }
+  ],
+  "assessments": [
+    {
+      "claim": "At most one expedited retry per explicit tenure",
+      "result": "VALID_FOR_CURRENT_SERIAL_CONTROL_FLOW",
+      "reason": "Once a qualifying pilot sets used=true,pending=true, further ordinary execution cannot rearm; pending has first reason priority and is cleared after the next returned comparison; a run error exits. A successful entry ends the explicit tenure. Fresh permission arises only when the memory is reset at tenure change."
+    },
+    {
+      "claim": "Special callback cost at most B+U+V",
+      "result": "VALID_UNDER_REUSED_CEILING_ASSUMPTIONS",
+      "reason": "One special invocation plus previously reviewed serial callback-unit ceiling, maximum checked unit, and applicable verification allowance. Not a wall-time or total-pilot-difference guarantee."
+    },
+    {
+      "claim": "Entry seed does not lower the baseline initial proposal",
+      "result": "VALID_AT_MATCHED_CHECKPOINT",
+      "reason": "entry_pilot_growth_seed returns a mean only for success, positive accepted count, finite mean and mean>opts.h0; caller additionally requires economical entry and nonfatal result. The common facade clamp is monotone and identical when the option is disabled."
+    },
+    {
+      "claim": "Larger seed does not increase ideal startup attempt count",
+      "result": "VALID_ONLY_FOR_STATED_GEOMETRIC_ZERO_ERROR_MODEL",
+      "reason": "Each positive geometric partial sum is monotone in initial h. Rejections and changing physical dynamics are explicitly outside this conclusion."
+    }
+  ],
+  "production_certificate": false,
+  "source_identity": "working_tree_bytes_at_review",
+  "sources": [
+    {
+      "path": "research/adapter_integration_20261027/theory/REVISION2_STARTUP_RETRY_KO.md",
+      "sha256": "8b0c9fd2e78082c8243c75b90e1ef211cbe86cecae603b254d3874fe596e496b"
+    },
+    {
+      "path": "research/adapter_integration_20261027/theory/THEORY_CONTRACTS.json",
+      "sha256": "2bec977b621c1c7773e2df9279bc80c995d8b0bcdf0da9c32e124ff0833bc62a"
+    },
+    {
+      "path": "crates/vigilode/src/switching.rs",
+      "sha256": "3990de517383c1eb1b3a794104e8b54114adfc65e286391343f28ca8a121fcac"
+    }
+  ],
+  "unresolved_findings": 0,
+  "review_assumptions": [
+    "Serial, non-reentrant switching control flow",
+    "Adaptive entry memory enabled; retry option enabled; actual pilot has a positive configured attempt budget",
+    "Validated finite positive user initial step",
+    "Reused callback-unit cap assumptions apply; concurrent callback work requires the stated in-flight allowance"
+  ],
+  "closeout": "Author corrected the prose and machine-readable contracts to the unchanged tested implementation. No code edits, Cargo runs, test reruns, or timing were performed by this review. Prior THEORY_REVIEW files were not edited.",
+  "cost_unit_readback": "Final clarification verified: B+U+V refers to the ceiling callback-unit accounting, not the broader work proxy including linear solves or elapsed time."
+}

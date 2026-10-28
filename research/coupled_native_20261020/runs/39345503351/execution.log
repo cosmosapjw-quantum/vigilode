@@ -1,0 +1,80 @@
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `EndpointAdmission` is never constructed
+    --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+   Compiling vigilode-coupled v0.1.0 (/home/runner/work/vigilode/vigilode/crates/vigilode-coupled)
+warning: `rodas5p-integrators` (lib) generated 4 warnings
+    Finished `test` profile [unoptimized] target(s) in 58.05s
+     Running tests/contracts.rs (crates/vigilode-coupled/target/debug/deps/contracts-faa959297d38928a)
+
+running 5 tests
+test builds_three_mode_candidate_from_real_jvp_only ... FAILED
+test equilibrium_is_complete_not_zero_basis_failure ... FAILED
+test invalid_time_is_rejected ... ok
+test partial_basis_cannot_pass_only_projected_residual ... ok
+test thread_count_changes_no_output_bits ... FAILED
+
+failures:
+
+---- builds_three_mode_candidate_from_real_jvp_only stdout ----
+
+thread 'builds_three_mode_candidate_from_real_jvp_only' (4509) panicked at tests/contracts.rs:19:29:
+coupled candidate missing
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- equilibrium_is_complete_not_zero_basis_failure stdout ----
+
+thread 'equilibrium_is_complete_not_zero_basis_failure' (4510) panicked at tests/contracts.rs:30:25:
+called `Option::unwrap()` on a `None` value
+
+---- thread_count_changes_no_output_bits stdout ----
+
+thread 'thread_count_changes_no_output_bits' (4513) panicked at tests/contracts.rs:24:85:
+called `Option::unwrap()` on a `None` value
+
+
+failures:
+    builds_three_mode_candidate_from_real_jvp_only
+    equilibrium_is_complete_not_zero_basis_failure
+    thread_count_changes_no_output_bits
+
+test result: FAILED. 2 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test contracts`

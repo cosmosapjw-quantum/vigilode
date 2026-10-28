@@ -1,0 +1,308 @@
+{
+ "nums": {
+  "checked_count": 96,
+  "problems": [
+   {
+    "doc": "README_KO.md (Key measurements table, line 27); ISSUES_KO.md R02 (line 75); ISSUES.json C3 v2_recheck_or_critique_note",
+    "quote": "| decay adaptive / DOPRI | 1.59 | 1.84 | 78 / 16 |  …  \"decay 3.1×\"는 실제 Ir 1.59×, 시간 최소값 1.84×였다  …  light bench min 7.9 vs 4.3 us (1.84x)",
+    "evidence": "data_v2/LIGHT_BENCH_v2.json: decay adaptive ns_per_solve_min 7935.06, decay dopri ns_per_solve_min 4269.85, so the ratio is 1.858. The 1.84 comes from dividing the rounded values (7.9/4.3 = 1.837). The median ratio is 1.78. Every other time ratio in the table matches when computed from the unrounded values.",
+    "severity": "ERROR",
+    "correction": "README table: '| decay adaptive / DOPRI | 1.59 | 1.86 | 78 / 16 |'. ISSUES_KO R02: '시간 최소값 1.86×'. ISSUES.json C3: 'light bench min 7.94 vs 4.27 us (1.86x)'."
+   },
+   {
+    "doc": "ISSUES_KO.md (resolved section, line 76)",
+    "quote": "반박된 하위 주장 28건은 ISSUES.json `refuted_sub_claims`에 있다(예: quota-stop 제외안, perf 포함비율 69%/55% → callgrind 85%/80%, 세션 경로 +7–11% 시간 이득).",
+    "evidence": "None of the 28 entries in ISSUES.json refuted_sub_claims (or in workflow synthesis.refuted) contains the 69%/55% → 85%/80% correction. Item 2 refutes something else: 'callgrind shares 88%/83% include the one-time coefficient parse; steady state is 87%/82%'. The 69%→85% correction comes from workflow critique C1. The 80% gyro-tight figure comes from the packet's own v2 recheck (B1 note); it is not a refuted claim.",
+    "severity": "ERROR",
+    "correction": "'…(예: quota-stop 제외안, callgrind 몫 88%/83% → 정상상태 87%/82%, 세션 경로 +7–11% 시간 이득). perf 포함비율 69%/55%는 비평 C1과 v2 재측정으로 callgrind 85%/80%로 대체되었다.'"
+   },
+   {
+    "doc": "ISSUES_KO.md B5 row (line 22)",
+    "quote": "ns/WU: DOPRI 40–112, dense 45–55, MF 181–298",
+    "evidence": "These are v1 numbers (workflow CE-06: LIGHT_BENCH v1 DOPRI 43.3/40.2/70.3/97.1/98.7, dense 45.0/49.4/49.7/54.5, MF 188.0/181.4/211.0/297.6). The 112 comes from v1 perf, not from the light bench. Recomputed from v2 mins and the same deterministic WU: DOPRI 40.1 (rotation), 44.0 (decay), 70.6 (stale-return), 99.3 (gyro-tight), 99.9 (gyro-default). Dense: 43.4 (stiff-forced 10939.8/252), 49.7 (relaxation), 51.0 (stale-return), 81.2 (case5 58512.6/721). MF: 184.1 (case5 342175.5/1859), 180.0 (transition-39 9785099.9/54369), 204.4 (transition-79), 292.3 (gyro-tight 154637758/529106). ISSUES.json B5 itself says dense '45-59', not '45-55'.",
+    "severity": "MISLEADING",
+    "correction": "'ns/WU (v2 light bench 최소값): DOPRI 40–100, dense 43–81 (case5 dense 81, spread 5.4%), MF 180–292'. Alternatively, label the existing figures as v1 workflow values."
+   },
+   {
+    "doc": "README_KO.md method step 4 (line 21)",
+    "quote": "ISSUES의 수치는 v2 자료로 재확인한 값이고, 비평의 정정과 재순위를 반영했다.",
+    "evidence": "Many ISSUES_KO figures are v1 workflow numbers that were not recomputed on v2. Examples: B5 ns/WU (above); C3's '약 33.6k' (from the v1 116.4k solver Ir, while v2 decay adaptive is 123.7k); C7's +2.4%/+1.2% (v1 callgrind 12,898,065 vs 12,594,271); B9's 584k. A2's '3.0회 + 73' comes from critique C10's v1 bench_bin repeat-rodas sweep, which is not archived in the packet. ISSUES.json impact/evidence fields still quote v1 times, e.g. B2 '349.5 -> 39.3 us (8.9x)'.",
+    "severity": "MISLEADING",
+    "correction": "'ISSUES 요약표의 Ir·할당·WU 비율 일부(A4, B1, B2, B6, B7, C3 비율, D1, D3)는 v2로 재확인했고, 나머지 수치(B5 ns/WU, C3·C5·C7·B9 구성요소 Ir, A2 K-sweep)는 v1 workflow 값이다.'"
+   },
+   {
+    "doc": "README_KO.md method step 2 (line 19)",
+    "quote": "`data_v2/CALLGRIND_PER_SOLVE.json`은 1회성 계수표 parse(약 0.51M Ir)를 뺀 solve당 Ir이다.",
+    "evidence": "CALLGRIND_PER_SOLVE.json has coef_parse = 0 for transition-39__adaptive, transition-39__rodas, gyro-tight__rodas and gyro-tight__rodas-fd. Their steady_Ir_per_solve equals the full main::{{closure}} inclusive (e.g. 80,942,243 and 123,313,381). Yet `callgrind_annotate --threshold=100` on the archived .out files shows parse_rodas5p_coefficients at about 510–512k in each of them. In those cells the parse was therefore not removed. Corrected transition-39 adaptive/rodas Ir = (80,942,243−510,862)/(123,313,381−511,618) = 0.655, which rounds to 0.65 (README shows 0.66).",
+    "severity": "MISLEADING",
+    "correction": "'…parse를 뺀 solve당 Ir이다. 단 n=1 cell 중 transition-39 두 arm과 gyro-tight rodas/rodas-fd는 parse가 callgrind_annotate 출력 임계값 아래로 잘려 빼지 않았다(약 0.51M 포함).' Also change the transition-39 Ir ratio to 0.65."
+   },
+   {
+    "doc": "README_KO.md method step 2 (line 19)",
+    "quote": "29개 cell에 perf(frame-pointer call graph, self/inclusive), callgrind(Ir), heaptrack(n=1과 n=21 차분으로 정상상태 할당)을 적용했다.",
+    "evidence": "tools/profile_v2.sh runs heaptrack on only 9 cells (rotation/decay/stiff-forced/case5/transition-39 adaptive, stiff-forced rodas, case5 rodas/rodas-fd/rodas-dense). data_v2/heaptrack/STEADY_ALLOCATIONS.txt has 9 rows. perf and callgrind cover 29.",
+    "severity": "MISLEADING",
+    "correction": "'29개 cell에 perf와 callgrind(Ir)를, 그중 9개 cell에 heaptrack(n=1과 n=21 차분)을 적용했다.'"
+   },
+   {
+    "doc": "README_KO.md provider comparison (line 36)",
+    "quote": "작은 n의 provider 비교(같은 RHS, 같은 시도·오차): case5 MF 4.60M, dense 0.67M, FD-dense 0.74M Ir/solve. gyro-tight MF 2,160M, FD-dense 333M Ir/solve.",
+    "evidence": "LIGHT_BENCH_v2.json: the FD-dense rows do not have the same RHS counts or, for gyro-tight, the same attempts. case5 rhs: rodas 307, rodas-dense 307, rodas-fd 409. gyro-tight rhs: rodas 75,314, rodas-fd 139,252. gyro-tight attempts: rodas 9,454, rodas-fd 9,452. The Ir values themselves (4,604,759; 670,723; 742,310; 2,160,078,314; 332,871,609) match.",
+    "severity": "MISLEADING",
+    "correction": "'(같은 RHS 함수·같은 오차; MF·dense는 시도·RHS 호출 동일, FD-dense는 Jacobian 차분으로 RHS 호출이 더 많음(case5 409 vs 307, gyro-tight 139,252 vs 75,314)이고 gyro-tight 시도 9,452 vs 9,454)'"
+   },
+   {
+    "doc": "ISSUES_KO.md A2 row (line 12)",
+    "quote": "시도당 3.0회 + 고정 73회; case5 해당 RODAS 189 vs dense 63",
+    "evidence": "The 3.0/attempt + 73 slope comes from critique C10's `bench_bin repeat-rodas case5 sparse K 2` sweep (K=5..30) on the superseded v1 bench_bin. No packet file contains that sweep. It holds only for case5. v2 warm allocations with the 73 fixed cost give transition-39 (3315−73)/1111 = 2.92 and gyro-tight (18368−73)/9454 = 1.94 per attempt.",
+    "severity": "MISLEADING",
+    "correction": "'case5 시도당 3.0회 + 고정 73회(C10, v1 bench_bin K-sweep, 미보관); v2 warm: transition-39 2.9회, gyro-tight 1.9회/시도; case5 RODAS 189 vs dense 63'"
+   },
+   {
+    "doc": "ISSUES.json A2 impact / evidence",
+    "quote": "case5: 126 per solve (3.2 per attempt) … LIGHT_BENCH allocations minus the dense fixed 327, per attempt: (3579-327)/1111 = 2.93; (453-327)/39 = 3.2; (18632-326)/9454 = 1.94",
+    "evidence": "Critique C10 (workflow/WORKFLOW_RESULT.json) says: 'Replace \"(453−327)/39 = 3.2\" with 3.0, and recompute transition-39 and gyro-tight with the MF fixed cost of 73, not 327'. The JSON keeps the v1 cold-allocation numbers (3579/453/18632, now superseded). Its v2 note again says 3.2/attempt (126/39), which contradicts the 3.0 + 73 written next to it.",
+    "severity": "MISLEADING",
+    "correction": "Impact: 'transition-39 (3315−73)/1111 = 2.92/attempt; case5 (189−73)/39 = 3.0; gyro-tight (18368−73)/9454 = 1.94 (v2 warm, MF fixed 73)'."
+   },
+   {
+    "doc": "ISSUES_KO.md A3 row (line 13); ISSUES.json A3 note",
+    "quote": "구성당 4.0회(case5 82→122→198), gyro-tight 시도당 3.9회  /  warm allocations 82/122/198 at 10/20/39 attempts = 4.0 per Jacobian build; gyro-tight rodas-fd 36,605/9,454 attempts = 3.9",
+    "evidence": "Only the 198 (case5 rodas-fd, 39 attempts) is in data_v2 (LIGHT_BENCH_v2 allocations_warm 198; STEADY_ALLOCATIONS 198). The 82 and 122 values at 10 and 20 attempts appear in no packet file, in workflow/WORKFLOW_RESULT.json, or in the archive logs. From packet data, (198−63)/39 = 3.46 extra allocations per attempt over dense. The gyro-tight rodas-fd row has 9,452 attempts, not 9,454 (36,605/9,452 = 3.87).",
+    "severity": "MISLEADING",
+    "correction": "'case5 rodas-fd 198 vs dense 63 warm (39 시도, 시도당 +3.5); gyro-tight rodas-fd 36,605/9,452 시도 = 3.9'. Alternatively, archive the K-sweep that produced 82/122."
+   },
+   {
+    "doc": "ISSUES.json A3 title / impact",
+    "quote": "Facade dense route with finite-difference Jacobian appears to allocate on every Jacobian build (unmeasured VG-1 risk) … The adapter fixtures do not exercise this path, so the impact is unmeasured.",
+    "evidence": "The same entry has final_status CONFIRMED, and its note says 'Promoted from HYPOTHESIS by measurement'. ISSUES_KO lists A3 as 확인 with '(새로 확인)'. LIGHT_BENCH_v2 measures the path (case5 rodas-fd 198, gyro-tight rodas-fd 36,605 warm allocations).",
+    "severity": "MISLEADING",
+    "correction": "Title: 'Default FD Jacobian route allocates on every Jacobian build (VG-1)'. Impact: 'Measured: case5 rodas-fd 198 vs dense 63 warm allocations/solve; gyro-tight rodas-fd 36,605 (3.9/attempt).'"
+   },
+   {
+    "doc": "ISSUES.json A1 / ISSUES_KO.md A1 row",
+    "quote": "| A1 | 차단 | 확인 | 이식된 packet 노드의 거버넌스 gate가 red |  (ISSUES.json final_status: CONFIRMED)",
+    "evidence": "workflow/WORKFLOW_RESULT.json synthesis issue R01 has status PARTIAL. Neither ISSUES.json nor ISSUES_KO records or explains raising it to CONFIRMED; the A1 note only mentions folding in critique C5. Every other final_status matches its synthesis status, except A3, whose change is documented.",
+    "severity": "MISLEADING",
+    "correction": "Either keep 'A1 | 차단 | 부분' (PARTIAL), or add to the note: 'Status raised from PARTIAL (synthesis R01) to CONFIRMED because …'."
+   },
+   {
+    "doc": "ISSUES.json B1 impact",
+    "quote": "Rotation: pilots take 28.53% x 394.3us = 112.5us, which is 69% of the 162.8us selector/direct gap … On a steady-state callgrind basis, pilots are 87% (rotation) and 82% (gyro)",
+    "evidence": "The B1 note in the same entry, and ISSUES_KO B1, give v2 callgrind shares of 85% (1,285,274/1,506,044), 80% (3,935,272/4,898,053) and 88% (2,355,268/2,691,427). Those recompute correctly from CALLGRIND_PER_SOLVE.json. The impact text still carries the superseded v1 perf 69%/55% and v1 callgrind 87%/82%.",
+    "severity": "MISLEADING",
+    "correction": "Impact: 'v2 callgrind: pilots (switching::run minus parse) are 85% of the rotation selector−direct Ir gap, 80% gyro-tight, 88% gyro-default; 568/896/538 WU.'"
+   },
+   {
+    "doc": "ISSUES.json B2 title/impact and B5 impact",
+    "quote": "Small-n matrix-free RODAS costs 8.5-8.9x a same-callback dense route … case5: 349.5 -> 39.3 us (8.9x) …  case5: MF/dense WU ratio is 2.6x but the wall-time ratio is 8.9x",
+    "evidence": "These are v1 times. In v2 LIGHT_BENCH: case5 rodas 342,175.5 ns vs rodas-dense 58,512.6 ns = 5.85x (rodas-dense spread 5.4%, spread_ok false); gyro-tight 154,637,758 vs 18,989,582 = 8.14x. By Ir the ratios are 6.9x (case5) and, against FD-dense, 6.5x (gyro-tight).",
+    "severity": "MISLEADING",
+    "correction": "B2 title: 'Small-n MF RODAS costs 6.9x (Ir, case5) a same-callback dense route; v2 time 5.9–8.1x (diagnostic)'. B5: 'case5 … wall-time ratio 5.9x (v2)'."
+   },
+   {
+    "doc": "ISSUES_KO.md C4 row (line 30)",
+    "quote": "패배 pilot마다 16–20% 초과(transition-39 약 240 WU)",
+    "evidence": "From the v2 by_kind of probe-rodas-discarded, the uncharged linear solves are 105/568 WU = 18.5% (rotation), 257/1613 = 15.9% (transition-39) and 125/896 = 14.0% (gyro-tight). Relative to the charged callback units they are 22.7%, 19.0% and 16.2%. Neither basis gives 16–20% for all three cells.",
+    "severity": "OK-NOTE",
+    "correction": "'패배 pilot WU의 14–19%가 ceiling 밖 linear solve(rotation 105/568, transition-39 약 240 WU, gyro-tight 125/896)'"
+   },
+   {
+    "doc": "ISSUES_KO.md B6 row (line 24)",
+    "quote": "GMRES 최소제곱의 소형 column-pivot QR | transition-39 RODAS Ir의 39% (48.5M/123.3M)",
+    "evidence": "data_v2/callgrind/transition-39__rodas.inclusive.txt: the 48,455,462 Ir figure is least_squares_correction inclusive. qr_in_place, the column-pivot QR factor, is 22,320,107 (18.0%), and solve_into is 44,384,459. ISSUES.json B6 impact puts the replaceable share at about 33% at most.",
+    "severity": "MISLEADING",
+    "correction": "'transition-39 RODAS: 최소제곱 보정 전체 39%(48.5M/123.3M), 그중 column-pivot QR factor 18%(22.3M); Givens 대체 절감 상한 약 33%(추정)'"
+   },
+   {
+    "doc": "ISSUES_KO.md B2 text (line 56)",
+    "quote": "`AllowFiniteDifference` 권한이 있으면 FD-dense도 MF보다 6–8× 싸다.",
+    "evidence": "By Ir (CALLGRIND_PER_SOLVE) FD-dense is 6.2x cheaper on case5 (4,604,759/742,310) and 6.5x on gyro-tight. By v2 time min it is 7.7x and 7.9x. The range mixes Ir and wall time without saying so.",
+    "severity": "OK-NOTE",
+    "correction": "'FD-dense도 MF보다 Ir 6.2–6.5× (진단 시간 7.7–7.9×) 싸다.'"
+   },
+   {
+    "doc": "ISSUES_KO.md C3 row (line 29)",
+    "quote": "decay adaptive 123.7k vs DOPRI 77.6k Ir(1.59×) 중 약 33.6k",
+    "evidence": "123.7k and 77.6k are v2 steady Ir. The 33.6k comes from the v1 workflow ('29% of 116.4k solver Ir', ISSUES.json C3 impact), a different denominator that excludes the 5.0k teardown. The sentence combines v1 and v2 numbers without saying so.",
+    "severity": "OK-NOTE",
+    "correction": "'decay adaptive 123.7k vs DOPRI 77.6k Ir(1.59×, v2); 기록 비용 약 33.6k(v1 116.4k 기준 분해)'"
+   },
+   {
+    "doc": "ISSUES_KO.md table risk-class column vs ISSUES.json risk_class",
+    "quote": "A5 … | api | S |  …  C4 … | counter-changing·api | M |",
+    "evidence": "ISSUES.json gives A5 risk_class 'api/governance' and C4 'counter-changing'. Critique C14 suggests adding api/governance to C4, but the JSON does not include it. Elsewhere the KO table writes 'api/governance' as 'governance' (A1, A4, B2, B5, C6, D1, D3, D6), so the mapping is inconsistent.",
+    "severity": "OK-NOTE",
+    "correction": "A5: 'api/governance'. C4: 'counter-changing' (or update ISSUES.json C4 risk_class to 'counter-changing, api/governance'). Use 'api/governance' consistently."
+   },
+   {
+    "doc": "README_KO.md method step 3 (line 20)",
+    "quote": "완전성 비평 agent가 누락·과장 16건(C1–C16)을 지적했다.",
+    "evidence": "workflow critique: 'Nine findings below are missing from the list or overstated in it (C1–C9), followed by seven numeric or ranking corrections (C10–C16)'.",
+    "severity": "OK-NOTE",
+    "correction": "'완전성 비평 agent가 누락·과장 9건(C1–C9)과 수치·순위 정정 7건(C10–C16)을 지적했다.'"
+   }
+  ],
+  "summary": "Numbers lens. I recomputed every figure in the README_KO key-measurements table and provider line, and in the ISSUES_KO summary table and sections, against data_v2 (LIGHT_BENCH_v2, CALLGRIND_PER_SOLVE, STEADY_ALLOCATIONS, perf/callgrind tables), the archived callgrind .out files and WORKFLOW_RESULT.json. I also checked that ISSUES.json agrees with ISSUES_KO. The following match the data: every warm/steady allocation count (heaptrack (n21−n1)/20 equals the bench warm count in all 9 cells), all 8 Ir ratios, 7 of 8 time ratios, B1's 85/80/88% pilot shares, B2's 4.60M/0.67M/0.74M/2,160M/333M, B6's 48.5M/123.3M, B7's 3.33x, D1's 9-of-34 cells over 5% spread, D3's row counts, D5's 1.074, the 31 issues with matching ids, tiers and effort, and the 28 refuted sub-claims. One number is wrong: decay time-min ratio 1.84 should be 1.86 (it was computed from rounded inputs). It appears in the README, ISSUES_KO R02 and the ISSUES.json C3 note. One attribution is wrong: ISSUES_KO says the 69%/55%→85%/80% correction is among the 28 refuted sub-claims, but it comes from critique C1 and the v2 recheck. The main misleading pattern is v1 and v2 numbers mixed without labels. B5 ns/WU is all v1; in v2 dense case5 is 81 ns/WU, not 45–55. ISSUES.json B1, B2 and B5 impacts still quote v1 69%/55%, 87%/82% and 8.5–8.9x times; v2 time ratios are 5.9x and 8.1x. A2 generalizes case5's 3.0/attempt (from a v1 sweep the packet does not archive) although v2 gives 2.9 and 1.9 for the other cells, and ISSUES.json A2 keeps the 327-based figures that C10 said to replace. A3's 82/122 have no source file, and the A3 JSON title and impact still say 'unmeasured' under CONFIRMED status. A1 was raised from synthesis PARTIAL to CONFIRMED without any note. On method: CALLGRIND_PER_SOLVE did not subtract the coefficient parse in 4 n=1 cells (so transition-39 is 0.655, not 0.66), heaptrack covered 9 cells, not 29, and the FD-dense comparison does not use the same attempts and RHS counts as MF. There are also minor wording issues: C4's 16–20%, the B6 QR share, mixed Ir/time in '6–8×', risk-class mapping, and the C1–C16 description."
+ },
+ "claims": {
+  "checked_count": 46,
+  "problems": [
+   {
+    "doc": "ISSUES_KO.md",
+    "quote": "A3 FD Jacobian 할당(새로 확인). `Problem::new` 기본값이 FD이고 `fd.rs:250-254`가 구성마다 f0·shifted·f1·n×n을 할당한다.",
+    "evidence": "The code claim is correct: problem.rs:144 defaults to Jacobian::FiniteDifference, and fd.rs:250-254 allocates f0, shifted, f1 and the matrix on every build. It is not newly found, though. docs/plan/sdd/WAVE3/task-3-report.md:139 (open question 2) says \"FD dense Jacobian. It still uses the allocating JacobianFn (dense_fd_jacobian)\", and docs/plan/sdd/WAVE3/task-3-review.md:15 says \"The FD dense Jacobian still allocates per build\" (commit 1d13a7cf, 2026-10-21). What this packet adds is the measurement (rodas-fd arm), not the discovery.",
+    "severity": "ERROR",
+    "correction": "A3 FD Jacobian 할당(기지 미해결 항목, 이번에 처음 계측). 2026-10-21 WAVE3 task-3 보고서(open question 2)가 이미 기록한 `dense_fd_jacobian` 구성당 할당을 rodas-fd arm으로 처음 계측했다(구성당 4.0회)."
+   },
+   {
+    "doc": "ISSUES.json",
+    "quote": "A3 title \"... appears to allocate on every Jacobian build (unmeasured VG-1 risk)\"; impact \"If confirmed, this breaks the zero-allocation promise at rodas5p_fast.rs:19-20 ... so the impact is unmeasured.\"",
+    "evidence": "final_status is CONFIRMED, and v2_recheck_or_critique_note says it was \"Promoted from HYPOTHESIS by measurement\" (82/122/198 warm allocations). The title and impact still read as an unmeasured hypothesis. Also, rodas5p_fast.rs:19-20 promises zero allocation only \"with an in-place Jacobian ([`OdeProblem::with_jacobian_into`])\". The FD provider supplies no jacobian_into (solve.rs:847-858), so the FD path is outside that documented promise rather than breaking it. It is still a VG-1 gap.",
+    "severity": "ERROR",
+    "correction": "Title: \"Facade dense route with the default finite-difference Jacobian allocates 4 times per Jacobian build (measured, VG-1 gap)\". Impact: \"The fast driver's zero-allocation statement (rodas5p_fast.rs:19-20) is conditional on an in-place Jacobian, which the FD provider does not supply; every default-FD RODAS solve therefore allocates about 4 times per Jacobian build (case5 82/122/198 at 10/20/39 attempts).\""
+   },
+   {
+    "doc": "ISSUES_KO.md",
+    "quote": "기존 `eval_partial_t_into`로 첫째는 bitwise-safe하게 제거되고",
+    "evidence": "The doc comment of problem.rs:697-699 (eval_partial_t_into) says: \"The finite-difference fallback (no callback) still allocates its two RHS evaluations.\" At problem.rs:719-721 it calls partial_t_finite_difference, which allocates fp, fm and a collected Vec (problem.rs:737-744). The fix removes the :2657 allocation only when a time_derivative callback is supplied. The case5 fixture supplies one (heaptrack site problem.rs:686 is the callback branch). A non-autonomous Problem::new + Jacobian::jvp with no time_derivative is accepted by Rodas5p::solve (problem.rs:131-135 docs), and it still allocates about 3 times per linearization after this fix.",
+    "severity": "MISLEADING",
+    "correction": "`eval_partial_t_into`는 시간 도함수 callback이 있거나 autonomous인 문제에서만 첫째 할당을 bitwise-safe하게 없앤다. time_derivative 없는 비자율 문제(Problem::new 기본)는 FD 분기(`partial_t_finite_difference`)가 여전히 linearization당 RHS 2회분 Vec과 결과 Vec을 할당하므로 별도의 in-place FD f_t가 필요하다."
+   },
+   {
+    "doc": "ISSUES_KO.md",
+    "quote": "| A2 | 차단 | 확인 | matrix-free 재선형화마다 heap 할당(VG-1) | 시도당 3.0회 + 고정 73회; ... | bitwise-safe | S |",
+    "evidence": "research/adapter_checkpoint_followup_20261027/PREREGISTRATION.md:147 records gate G2 as passed with exactly this residual (\"transition-39 90.55 → 2.55, case5 90.95 → 2.95\"). Line :171 already lists \"The residual ~3 events per matrix-free attempt (linearize_matrix_free, eval_partial_t)\" as open. ISSUES.json impact says \"Already listed as known open\", but the Korean table and body do not say so, while B4 is marked 기지. The second site (:2660) also needs more than an S, bitwise-safe change. ISSUES.json proposed_fix (2)-(3) calls for a new concrete JVP operator type and \"a public token-advance API in rodas5p-core\". ClosureOperator draws a fresh token per construction (operator.rs:258-265), and recycle identity depends on it. That is an API change with recycle-semantics risk.",
+    "severity": "MISLEADING",
+    "correction": "A2 | 차단 | 확인(기지 미해결, L-0172 G2는 이 잔여를 허용하고 통과) | ... | 첫째 사이트 bitwise-safe·S, 둘째 사이트 api(rodas5p-core 공개 token API 신설)·M"
+   },
+   {
+    "doc": "ISSUES.json",
+    "quote": "B2 title: \"Small-n matrix-free RODAS costs 8.5-8.9x a same-callback dense route for identical steps\"; impact \"case5: 349.5 -> 39.3 us (8.9x)\"; B5 impact \"case5: MF/dense WU ratio is 2.6x but the wall-time ratio is 8.9x\"",
+    "evidence": "These are superseded v1 wall times (data_v1_superseded/LIGHT_BENCH.json case5 rodas 349113 ns, rodas-dense 39192 ns). In v2 (data_v2/LIGHT_BENCH_v2.json) case5 rodas min 342.18 us vs rodas-dense 58.51 us is 5.85x, and the rodas-dense cell has spread 5.4% (spread_ok false). Gyro-tight is 154.64 ms vs 18.99 ms, 8.14x. The v2 Ir ratio used in ISSUES_KO is 6.9x (CALLGRIND_PER_SOLVE 4.605M / 0.671M). data_v1_superseded/NOTE.md says \"Do not cite v1 ratios.\"",
+    "severity": "ERROR",
+    "correction": "B2 title: \"Small-n matrix-free RODAS costs 6.9x (case5) and 6.5x (gyro-tight vs FD-dense) the Ir of a same-callback assembled route for identical steps (v2 callgrind; v2 wall-time minima 5.9x / 8.1x, diagnostic only)\"."
+   },
+   {
+    "doc": "ISSUES_KO.md",
+    "quote": "| B5 | ... | ns/WU: DOPRI 40–112, dense 45–55, MF 181–298 | governance | M |",
+    "evidence": "The ns/WU figures come from v1 data (data_v1_superseded/LIGHT_BENCH.json: case5 rodas-dense 54.4, stiff-forced 44.8, relaxation 49.3, stale-return 49.6). v2 (LIGHT_BENCH_v2 ns_per_solve_min / work_units) gives dense case5 58.51us/721 = 81.2, gyro-tight rodas-dense 18.99ms/205762 = 92.3, stiff-forced 43.4, relaxation 49.6, stale-return 50.8. So v2 dense is 43–92, not 45–55. README_KO step 4 claims \"ISSUES의 수치는 v2 자료로 재확인한 값이고\", which does not hold for this row.",
+    "severity": "ERROR",
+    "correction": "ns/WU(v2 batch 최소값, 진단용): DOPRI 40–99, dense 43–92(case5 dense·gyro dense 포함, case5 dense는 spread 5.4%), MF 180–292. README의 'v2로 재확인' 문구에 B5 시간 기반 수치는 예외라고 명시."
+   },
+   {
+    "doc": "ISSUES.json",
+    "quote": "B1 impact: \"Rotation: pilots take 28.53% x 394.3us = 112.5us, which is 69% of the 162.8us selector/direct gap ... Gyro-tight: ... (55% of the gap) ... On a steady-state callgrind basis, pilots are 87% (rotation) and 82% (gyro)\"",
+    "evidence": "The same entry's v2_recheck_or_critique_note says these are superseded: \"switching::run (pilots) is 1.285M of the 1.506M Ir rotation gap (85%), 3.94M of 4.90M gyro-tight (80%) ... Supersedes the perf-inclusive 69%/55%\". refuted_sub_claims also lists 69%/55% as refuted. The v2 CALLGRIND_PER_SOLVE.json values (rotation adaptive 5.706M, dopri 4.200M, run 1.285M) confirm 85%. The machine-readable impact field still carries the refuted 69%/55% and v1 87%/82% figures.",
+    "severity": "ERROR",
+    "correction": "B1 impact: \"Pilots are 85% (rotation, 1.285M of 1.506M Ir/solve), 80% (gyro-tight) and 88% (gyro-default) of the selector-minus-direct Ir difference (v2 callgrind, parse removed).\" Delete the perf-inclusive 69%/55% and the v1 87%/82%."
+   },
+   {
+    "doc": "README_KO.md",
+    "quote": "5개 영역(...)을 각 분석 agent가 분석하고, 영역마다 독립 적대적 검증 agent가 수치·코드 위치·수정 가능성을 재확인했다.",
+    "evidence": "The same README says \"분석·검증·종합·비평은 이 세션의 Claude subagent가 수행했다. codex(...)는 ... 쓰지 않았다.\" AGENTS.md section 4 requires the adversarial reviewer to be a separate, heterogeneous high-capability model (agy Claude Opus 5.5 or codex) that is kept apart from the implementer. Analysts and verifiers here were same-session subagents of one model. No cross-model review of this packet exists.",
+    "severity": "MISLEADING",
+    "correction": "영역마다 같은 세션의 별도 Claude subagent가 적대적 검증을 맡았다. 분석자와 같은 모델·세션이므로 AGENTS.md §4의 이종 모델 독립 감사에 해당하지 않으며, 이 packet 자체에 대한 cross-model 감사는 아직 없다."
+   },
+   {
+    "doc": "README_KO.md",
+    "quote": "| decay adaptive / DOPRI | 1.59 | 1.84 | 78 / 16 | ... (선택기 / 직접 비교 전반)",
+    "evidence": "Every selector arm is an opt-in preset, not the library default. adapter_checkpoint_trace.rs:733-736 uses SwitchingConfig::adaptive_evidence(DerivativeFallback::ProvidedOnly) or evidence_driven(ProvidedOnly). SwitchingConfig::default() (switching.rs:180-206) has fallback: Forbidden (DOPRI-only), implicit_pilot_attempt_budget: 0 and entry_probe_adaptation: None, so the default selector runs no MF entry pilots, no EntryProbeMemory backoff and no rechecks. B1, B3, B7, B8, C4 and C9 apply only to these presets. The README and ISSUES_KO never name the preset.",
+    "severity": "MISLEADING",
+    "correction": "주의 사항에 추가: '선택기' arm은 모두 `SwitchingConfig::adaptive_evidence(DerivativeFallback::ProvidedOnly)`(evidence arm은 `evidence_driven`)이다. 기본 `SwitchingConfig::default()`는 fallback Forbidden(DOPRI 전용)이고 pilot·backoff가 꺼져 있으므로 B1·B3·B7·B8·C4·C9는 이 opt-in preset에만 해당한다."
+   },
+   {
+    "doc": "README_KO.md",
+    "quote": "| 바이너리 | `bench_bin` sha256 `593fd146…`(measurement profile) ...",
+    "evidence": "Cargo.toml:47-50 sets [profile.measurement] to lto = false and codegen-units = 16. [profile.release] (Cargo.toml:35-39) uses lto = \"fat\" and codegen-units = 1. Findings about call and inlining overhead were measured without LTO: C5 (wrapper chain), C7 (dyn session hop), C8 (out-of-line landing helpers) and C2 (Result-returning dot/axpy calls). Only ISSUES.json C8 mentions this. The README warns about n≤6 but not about the profile.",
+    "severity": "MISLEADING",
+    "correction": "주의 사항에 추가: 모든 Ir·시간은 lto=false, codegen-units=16 measurement profile 기준이다. release profile(fat LTO, cgu=1)에서는 호출·inline 관련 고정비(C2, C5, C7, C8)가 줄거나 사라질 수 있으므로, 이 항목들의 순위는 release build에서 재확인이 필요하다."
+   },
+   {
+    "doc": "ISSUES_KO.md",
+    "quote": "| A1 | 차단 | 확인 | ... | `check-research-node --base e8572eac` FAIL 4건, authority-ref FAIL 18건(joint_controller, 복구 불가 commit `040b6764`) |",
+    "evidence": "Re-run: check-research-node exits 1 with exactly 4 node FAIL lines, and check-authority-refs gives 328 FAIL lines, 18 of them under joint_controller citing 040b6764. That much is confirmed. The table omits that check-authority-refs is red repo-wide: 310 other FAILs across 11 nodes (local_frontier 133, adaptive_causal 57, ...). So the completion criterion \"joint_controller 인용 FAIL 0\" will not make that check pass. ISSUES.json states this; the Korean text does not. \"복구 불가\" is also stronger than the evidence. The object is absent from 23 local clones checked. check-authority-refs uses `git branch -r --contains`, which reads local remote-tracking refs and cannot rule out the commit existing on GitHub without a fetch. RUN_CONTEXT.json:19 labels it base_local_commit.",
+    "severity": "MISLEADING",
+    "correction": "authority-ref FAIL 18건(joint_controller, 로컬 clone·원격 추적 ref 어디에도 없는 local base commit `040b6764`; 복구 가능성 낮음). 저장소 전체 check-authority-refs는 다른 11개 노드의 기존 FAIL 310건 때문에 이 항목 해소 후에도 red로 남는다."
+   },
+   {
+    "doc": "ISSUES_KO.md",
+    "quote": "| B6 | 큰 비용 | 확인 | GMRES 최소제곱의 소형 column-pivot QR | ... | counter-changing | M |",
+    "evidence": "The proposed fix replaces faer column-pivoting QR (small.rs:186-330, col_pivoting::factor::qr_in_place) with Givens rotations. That changes the least-squares solution at roundoff level, and with it the stage solutions, step sequence and trajectory bits. The packet's own acceptance test admits this (\"accepted step sequences equal, or within a registered tolerance\"). Elsewhere in the packet 'counter-changing' means bitwise-identical states with different counters (e.g. B8, C1). B6 is a solution-changing numerical change that needs a VG-2/VG-3 equivalence gate.",
+    "severity": "MISLEADING",
+    "correction": "위험 분류: solution-changing(비 bitwise; 해·step 순서가 반올림 수준에서 바뀜, 사전등록된 동일 품질 비교 필요)."
+   },
+   {
+    "doc": "ISSUES_KO.md",
+    "quote": "A3 ... `fd.rs:250-254`가 구성마다 f0·shifted·f1·n×n을 할당한다. 사용자가 Jacobian을 주지 않은 모든 RODAS 풀이에 해당한다.",
+    "evidence": "The claim covers every no-Jacobian RODAS solve, but the location and fix cover only the dense FD closure. banded_fd_fill (fd.rs:~279-295) also allocates f0, shifted, f1 and deltas on every build. It is reached through Plan::Banded, called at rodas5p_fast.rs:1128-1130 (band.fill). ISSUES.json proposed_fix mentions only \"the FD and band-on-dense routes\".",
+    "severity": "OK-NOTE",
+    "correction": "위치에 `fd.rs` banded_fd_fill(f0·shifted·f1·deltas 할당)을 추가하고, 수정안에 banded FD fill의 workspace 버퍼화도 포함한다."
+   },
+   {
+    "doc": "ISSUES_KO.md",
+    "quote": "A5 증거 기록 왜곡. ... ceiling에서 멈춘 pilot이 0.98 같은 비율을 게시한다. (표: 하한 비교·미완료 pilot 기록이 완료 비교처럼 보임)",
+    "evidence": "The return lower-bound part is confirmed: switching.rs:1305-1306 sets ExplicitCheaperOnSameWindow even when the replay was incomplete, which contradicts that variant's doc (switching.rs:283-285), and return_sentinel_contracts.rs:267-270 pins it. For pilots, though, switching.rs:~1480 already sets evidence = SwitchingEvidence::ImplicitPilotIncomplete when !pilot.record.success. Pilot records do not look like completed comparisons; only the comparator_work_ratio field is misleading. Also, Opus review NOTE (OPUS_REVIEW.log, line 1195 finding) says the lower bound is sound only under the determinism and prefix assumption and does not bound the run that actually follows a discard. \"결정 산술은 옳지만\" leaves out that condition.",
+    "severity": "OK-NOTE",
+    "correction": "lower-bound 복귀 승리가 ExplicitCheaperOnSameWindow로 기록된다(문서와 모순). 미완료 pilot은 evidence가 ImplicitPilotIncomplete로 표시되지만, comparator_work_ratio가 완료 비교처럼 0.98 등을 게시한다. 결정 산술은 결정론적 callback과 prefix 가정 아래에서만 하한으로 유효하다."
+   },
+   {
+    "doc": "ISSUES_KO.md",
+    "quote": "D2 ... (ISSUES.json locations: `crates/vigilode/examples/adapter_checkpoint_trace.rs:455-462`; D4: `adapter_checkpoint_trace.rs:383-396`)",
+    "evidence": "The packet's stated base is 46939bbe, which added 153 lines to adapter_checkpoint_trace.rs. At 46939bbe, landing_clipped (`trial = stage_max - t_before`, threshold 1e-12) sits at lines 474-478, and local_error/true_local_error_ratio_rms at 398-413. Lines 459/462 and 395 match the earlier commit 381a9cc2. The cited lines are stale relative to the declared base commit.",
+    "severity": "ERROR",
+    "correction": "D2: `adapter_checkpoint_trace.rs:474-478` (46939bbe 기준; 381a9cc2에서는 459-462). D4: `adapter_checkpoint_trace.rs:398-413`."
+   },
+   {
+    "doc": "ISSUES_KO.md",
+    "quote": "| C7 | 중소 | 부분 | 지속 DOPRI session이 직접 경로보다 명령어 1–2% 많음 | rotation +2.4%, gyro-tight +1.2% Ir; 시간 효과 미증명 |",
+    "evidence": "The cited callgrind counts are 12,898,065 / 12,594,271 = 1.0241 (+2.4%) for rotation and 44,842,544 / 44,327,321 = 1.0116 for gyro. The title's \"1–2%\" excludes the rotation figure in the same row. These counts come from v1 profiling, not data_v2.",
+    "severity": "OK-NOTE",
+    "correction": "지속 DOPRI session이 직접 경로보다 명령어 약 1–2.5% 많음(v1 callgrind: rotation +2.4%, gyro-tight +1.2%)"
+   },
+   {
+    "doc": "ISSUES_KO.md",
+    "quote": "| C6 | 중소 | 부분 | dense 드라이버가 검증된 bitwise 가속(SPD01/SPD06) 미사용 |",
+    "evidence": "SPD01 (L-0081 PASS) did verify prevalidated_controller bitwise on dense and small drivers (PREREGISTRATION.md:161-166). SPD06 (L-0085 PASS) was validated only for the const-N small driver (`static_stages` 'default false; the small driver only', spd06 PREREGISTRATION.md:21). The facade dense route calls the dynamic-n driver with Rodas5pFastOptions::default() (rodas5p_fast.rs:1778-1797). For that driver SPD06 is unvalidated; the row's own '(가설)' label admits this, but the title calls it '검증된'.",
+    "severity": "OK-NOTE",
+    "correction": "dense 드라이버가 SPD01 검증 가속(사전검증 제어기)을 쓰지 않음. SPD06 고정 stage표는 small 드라이버에서만 검증되었고 dynamic-n 이식은 미검증 가설."
+   },
+   {
+    "doc": "ISSUES_KO.md",
+    "quote": "B8 도달 불가 pilot. ... 남은 ceiling 안에 prefix 도달이 불가능해지면 중단한다. 결정은 바뀌지 않는다.",
+    "evidence": "The status is CONFIRMED, but the screen does not exist yet and no test was run. 'Decisions unchanged' is an argument from max_factor 5.0 (adaptive.rs:168) and a lower bound c_min on per-attempt WU. It also relies on retry_unresolved_entry_once (switching.rs:1473-1479) not firing, which the proposal handles with an 'only after ≥1 accepted step' rule. This is a design claim to be verified, not an observed result.",
+    "severity": "OK-NOTE",
+    "correction": "결정은 바뀌지 않을 것으로 예상된다(성장률 상한 5와 c_min 하한에 근거한 논증; 등록 cell 전체 결정 동일성 시험으로 확인 필요)."
+   },
+   {
+    "doc": "ISSUES_KO.md",
+    "quote": "| A7 | ... | 오차 3.16e-2 vs 상한 1e-4, 상대 위상 오차 ≈ 92×rtol, tol^0.97 비례 |",
+    "evidence": "ISSUES.json A7 impact derives the exponent from just two runs: \"default/tight error ratio 811 for a 1000x tolerance ratio\" (gyro-default vs gyro-tight). A two-point slope does not establish a proportionality law. The rtol 1e-6–1e-10 ladder that would test it is only proposed.",
+    "severity": "OK-NOTE",
+    "correction": "... 기본/엄격 두 점 비교에서 오차비 811(허용오차비 1000, 기울기 ≈0.97)"
+   },
+   {
+    "doc": "README_KO.md",
+    "quote": "작은 n의 provider 비교(같은 RHS, 같은 시도·오차): case5 MF 4.60M, dense 0.67M, FD-dense 0.74M Ir/solve. gyro-tight MF 2,160M, FD-dense 333M Ir/solve.",
+    "evidence": "data_v2/LIGHT_BENCH_v2.json: gyro-tight rodas attempts 9454 and rhs 75314; rodas-fd attempts 9452, rhs 139252, error 1.17741e-05 vs 1.1774e-05. The FD-dense comparison is not same-attempt, and the FD Jacobian changes the trajectory slightly. The case5 FD row has the same 39 attempts.",
+    "severity": "OK-NOTE",
+    "correction": "(같은 RHS; dense는 시도·오차 동일, FD-dense는 case5 동일·gyro-tight 9452 vs 9454 시도로 근사 동일)"
+   },
+   {
+    "doc": "README_KO.md",
+    "quote": "| 기준 소스 | `46939bbe...` ..., 측정 시 작업 트리 변경 0 (`data_v2/SOURCE.txt`) |",
+    "evidence": "data_v2/SOURCE.txt reads \"dirty=[0]\". At measurement time the untracked packet directory (data_v1_superseded, workflow, tools output) already existed (critique C5 notes the untracked external_reports dir), so the count covers tracked files only. The packet itself (README_KO.md, ISSUES*.json/md, data_v2/, workflow/) is still untracked at 46939bbe (`git status`: `?? external_reports/...`). It is not committed or remote-reachable and so cannot serve as authority under AGENTS.md §2.7.",
+    "severity": "OK-NOTE",
+    "correction": "측정 시 추적 파일 변경 0(`data_v2/SOURCE.txt`; untracked packet 디렉터리 제외). 이 packet 문서·자료 자체는 아직 커밋되지 않았다."
+   },
+   {
+    "doc": "ISSUES_KO.md",
+    "quote": "`AllowFiniteDifference` 권한이 있으면 FD-dense도 MF보다 6–8× 싸다.",
+    "evidence": "switching.rs:21-30 and :2107-2121 show that AllowFiniteDifference only permits a problem that already declares Jacobian::FiniteDifference. A Jacobian::jvp problem keeps the MF route under any fallback setting. The rodas-fd numbers come from a direct Rodas5p::solve on a separate fd_problem (adapter_checkpoint_trace.rs:578-581), not from the selector with that permission.",
+    "severity": "OK-NOTE",
+    "correction": "사용자가 provider를 FiniteDifference로 선언하면(선택기에서는 AllowFiniteDifference 필요) 직접 RODAS FD-dense가 같은 fixture에서 MF보다 6–8×(Ir) 싸다. 권한만으로 JVP provider가 치환되지는 않는다."
+   }
+  ],
+  "summary": "I checked the packet's claims and code locations against the repository at 46939bbe and re-ran both governance checks.\n\n**Confirmed:**\n- **Governance gates:** check-research-node --base e8572eac exits 1 with exactly 4 FAILs, from the two packet nodes. check-authority-refs gives 328 FAILs; 18 are under joint_controller, all citing 040b6764, and the other 310 are spread over 11 older nodes.\n- **Code claims:**\n  - FD is the default Jacobian of Problem::new, and fd.rs:250-254 allocates 4 buffers per build.\n  - The MF allocation sites rodas5p_matrix_free_fast.rs:2657 (eval_partial_t vec at problem.rs:686) and :2660 (y.to_vec and Arc at problem.rs:884-886) are where the packet says.\n  - The only switching allocation contract (switching_economy_contracts.rs:444-479) runs with pressure and pilots effectively off and allows 6 allocations per batch plus 32.\n  - Quota-stop counts as pressure (switching.rs:1376-1378), and backoff ignores how badly a pilot lost.\n  - The GMRES least-squares path uses faer column-pivot QR; gmres_givens has no production caller.\n  - RecomputeFinal is the accounting default and is passed at :3154.\n  - SPD01 (L-0081) and SPD06 (L-0085) both PASSed as opt-in options.\n  - ExplicitCheaperOnSameWindow is used for lower-bound wins, and the contract test pins it.\n\n**Problems found:**\n- **Wrong:**\n  - A3 is called 새로 확인, but WAVE3 task-3 (2026-10-21) already recorded the FD per-build allocation as an open question.\n  - ISSUES.json A3 still reads as an unmeasured hypothesis, and wrongly says it breaks a promise that is conditional on an in-place Jacobian.\n  - ISSUES.json B2 and B5 cite superseded v1 wall times (8.5–8.9x). v2 gives 5.85x for case5 and 8.14x for gyro-tight.\n  - The KO B5 ns/WU dense range (45–55) is v1 data; v2 dense is 43–92. This contradicts the README's claim that every number was re-checked with v2.\n  - ISSUES.json B1 impact still carries the refuted 69%/55% figures.\n  - The D2 and D4 line citations match 381a9cc2, not the declared base 46939bbe.\n- **Misleading:**\n  - The A2 fix through eval_partial_t_into leaves the FD f_t fallback allocating. A2 also omits that it is a known open item already accepted by L-0172 gate G2, and labels as S/bitwise-safe a fix that needs a new public token API in rodas5p-core.\n  - The README calls the verification \"독립\", but analysts and verifiers were same-session Claude subagents, not the cross-model review AGENTS.md requires.\n  - There is no caveat that every selector arm is the opt-in adaptive_evidence or evidence_driven preset; the default SwitchingConfig is DOPRI-only with no pilots.\n  - There is no caveat that the measurement profile has no LTO, unlike fat-LTO release, which matters for the inlining items (C2, C5, C7, C8).\n  - B6 is labelled counter-changing, but it changes the solution.\n  - A1 omits that the authority-refs check stays red repo-wide, and overstates \"복구 불가\".\n- **Minor:** omission of banded FD from A3; the A5 pilot records already carry ImplicitPilotIncomplete; C7 title says 1–2% but its own row shows +2.4%; \"검증된\" for SPD06 on the dense driver; B8's \"decision unchanged\" is asserted without a test; A7's tol^0.97 rests on two runs; gyro FD attempts are 9452 vs 9454; dirty=[0] counts tracked files only, and the packet itself is uncommitted."
+ }
+}

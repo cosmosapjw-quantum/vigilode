@@ -1,0 +1,43 @@
+=== stdout ===
+
+running 10 tests
+test c10_invalid_declarations_and_shapes_are_typed_refusals ... ok
+test c2_dense_columns_are_unit_rhs_and_the_band_is_exact ... ok
+test c3_rhs_conserves_the_number_ledger ... ok
+test c8_callbacks_allocate_nothing ... ok
+test c8_drivers_allocate_independently_of_the_step_count ... ok
+test c9_runs_are_deterministic_and_uniform_vector_atol_is_scalar ... ok
+test sanity_absorber_cell_average_matches_quadrature ... ok
+test sanity_jvp_callback_and_autonomy_flags ... ok
+test sanity_partial_t_is_right_sided_at_an_exact_threshold_tie ... ok
+test sanity_partial_t_matches_central_differences_away_from_kinks ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.30s
+
+
+running 4 tests
+test a_non_autonomous_fast_step_with_analytic_ft_allocates_nothing ... ok
+test fast_runs_match_the_pre_change_golden_digests ... ok
+test into_form_equals_allocating_form_bitwise_with_equal_counters ... ok
+test into_form_refuses_shapes_and_non_finite_output ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.20s
+
+
+=== stderr ===
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 23.90s
+     Running tests/lrs_photon_fv_contracts.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/lrs_photon_fv_contracts-2d094542b9fbc303)
+     Running tests/partial_t_into_contracts.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/partial_t_into_contracts-0f36645569e94f1a)

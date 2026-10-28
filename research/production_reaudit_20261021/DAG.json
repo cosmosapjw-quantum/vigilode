@@ -1,0 +1,80 @@
+{
+  "schema": "vigilode.production_reaudit.dag.v1",
+  "coverage_authority": "research_dag.json",
+  "namespaces": {
+    "original_audit": {
+      "ids": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A07",
+        "A08",
+        "A09",
+        "A10",
+        "A11",
+        "A12"
+      ],
+      "count": 12
+    },
+    "production_plan": {
+      "ids": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "B1",
+        "B2",
+        "B3",
+        "C1",
+        "C2",
+        "C3",
+        "C4",
+        "D1",
+        "D2",
+        "E1",
+        "E2"
+      ],
+      "count": 15
+    },
+    "wave4": {
+      "ids": [
+        "T0",
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T7"
+      ],
+      "count": 8
+    },
+    "implemented_followup": {
+      "ids": [
+        "N01",
+        "N02",
+        "N03",
+        "N04",
+        "N05",
+        "N06",
+        "N07",
+        "N08"
+      ],
+      "count": 8,
+      "authority": "NEXT_STEPS.json delivered_scope"
+    }
+  },
+  "parallel_workstreams": [
+    "facade_audit",
+    "integrator_audit",
+    "dense_transaction_audit",
+    "benchmark_audit",
+    "research_dag_audit",
+    "runtime_restore"
+  ],
+  "final_gate": "root independent integration review + source-bound execution + verified remote tree",
+  "next_tasks": "NEXT_STEPS.json"
+}

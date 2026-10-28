@@ -1,0 +1,30 @@
+{
+  "schema": "vigilode.frontier-development-failures.v1",
+  "events": [
+    {
+      "id": "affine-oracle-first-native-run",
+      "command": "cargo test -p rodas5p-integrators --test frontier_affine_contracts --locked --offline",
+      "exit_code": 101,
+      "test_count_at_run": 5,
+      "passed": 4,
+      "failed": 1,
+      "failed_test": "decimal_oracles_cover_singular_small_period_extreme_and_signed_blocks",
+      "observed_assertion": "[0.0, 1.0] != [5e-120, 1.0]",
+      "classification": "oracle_rounding",
+      "root_cause": "Decimal unary negative rounded a long exact binary64 decimal expansion in a 120-digit context before a symmetric cancellation",
+      "change": "Oracle context expanded to1600digits; expected symmetric component becomes exactly0; solver tolerance unchanged",
+      "subsequent_execution": "root sequential receipt is authoritative"
+    },
+    {
+      "id": "harmonic-subnormal-coefficient-review",
+      "mode": "independent_static_counterexample",
+      "classification": "implementation",
+      "input": "A=0, nu=1e-308, h=1e308, y0=0, cosine=[min_subnormal,0], sine=0",
+      "old_code_reasoning_result": "0.5*min_subnormal rounds tozero before integral amplification",
+      "expected_magnitude": "approximately4.16e-16",
+      "change": "Scaled exponent-separated coefficient halves; zero-frequency shortcut",
+      "regression_test": "harmonic_subnormal_forcing_is_not_halved_before_amplification",
+      "native_pre_fix_failure_claimed": false
+    }
+  ]
+}

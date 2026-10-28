@@ -1,0 +1,132 @@
+[
+  {
+    "id": "core_contracts",
+    "argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "rodas5p-core",
+      "--test",
+      "leja_enclosed_contract",
+      "--test",
+      "guarded_polynomial_router",
+      "--",
+      "--test-threads=1"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 3.7024836959317327,
+    "log": "core_contracts.log",
+    "log_sha256": "7f4221f834a4f32693e0f4ba7ef9734f9cfd7548dd74520092545d6aab0c24c1"
+  },
+  {
+    "id": "integrator_contracts",
+    "argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "rodas5p-integrators",
+      "--test",
+      "all_dag_a01_packet",
+      "--test",
+      "production_audit_packet_adaptive",
+      "--test",
+      "production_audit_packet_verified",
+      "--test",
+      "production_audit_damped_packet",
+      "--test",
+      "all_dag_a05_verified",
+      "--test",
+      "all_dag_a06_direct",
+      "--test",
+      "collective_rodas5p_allocation_contract",
+      "--test",
+      "nonlinear_homotopy_contracts",
+      "--test",
+      "actual_k_homotopy_contracts",
+      "--test",
+      "all_dag_a10_bernstein",
+      "--test",
+      "all_dag_a11_verified",
+      "--",
+      "--nocapture",
+      "--test-threads=1"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 71.90253681200556,
+    "log": "integrator_contracts.log",
+    "log_sha256": "41ddece9c7ba157b88026a0d4b5e46ff2041c80ad0d084470f1a388c3dd7bbd1"
+  },
+  {
+    "id": "homotopy_unit",
+    "argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "rodas5p-integrators",
+      "--lib",
+      "nonlinear_homotopy::tests"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 0.75014464603737,
+    "log": "homotopy_unit.log",
+    "log_sha256": "bc316dee6405a4c95daa58080fa2bc3a394c05e6bd86605b17d32dc0fc007268"
+  },
+  {
+    "id": "leja_token_doc",
+    "argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "rodas5p-core",
+      "--doc",
+      "AdmittedLejaFused"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 3.5881273599807173,
+    "log": "leja_token_doc.log",
+    "log_sha256": "9ad31dd1032e81619bc4afeccce0dbeba8ea69698434a266e62e6c8ba664147c"
+  },
+  {
+    "id": "polynomial_token_doc",
+    "argv": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "rodas5p-core",
+      "--doc",
+      "GuardedPolynomialAction"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 1.2965577900176868,
+    "log": "polynomial_token_doc.log",
+    "log_sha256": "9e057a4fd118fa3bfb76315c10ffa343f8754c8accfde513f08591d981e46dfe"
+  },
+  {
+    "id": "tool_contracts",
+    "argv": [
+      "/usr/bin/python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tools/tests",
+      "-p",
+      "test_all_dag_*.py",
+      "-v"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 0.365104369004257,
+    "log": "tool_contracts.log",
+    "log_sha256": "793937b5324be9d4aa9f26a49e4a0898f0088cef1274c2324d3c737587a65c6b"
+  }
+]

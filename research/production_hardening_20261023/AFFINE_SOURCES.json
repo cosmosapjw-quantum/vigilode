@@ -1,0 +1,110 @@
+{
+  "schema_version": "vigilode.affine_norm.sources.v1",
+  "retrieved": "2026-10-23",
+  "requested_services_used": [
+    "SciSpace",
+    "Exa",
+    "Wolfram"
+  ],
+  "record_policy": "Queries, bibliographic identities and paraphrased relevance are preserved. Full third-party abstracts and fetched pages are not republished. Wolfram code and generated output are retained separately in AFFINE_SYMBOLIC_CHECK.json.",
+  "queries": [
+    {
+      "tool": "SciSpace",
+      "query": "How should adaptive Runge-Kutta local error estimates be weighted in the original physical variables when an ODE is integrated in reduced affine coordinates or after eliminating conservation laws?",
+      "result": "10 papers returned; useful discovery entries listed below."
+    },
+    {
+      "tool": "Exa search",
+      "query": "Primary numerical analysis paper on affine equivariance of Runge Kutta methods preservation affine related vector fields and error control under affine coordinate transformations",
+      "result": "Primary affine-equivariance paper and Verdier author material returned."
+    },
+    {
+      "tool": "Exa search",
+      "query": "SUNDIALS CVODE official mathematics weighted root mean square norm error weights rtol atol component local error",
+      "result": "Official mathematics and tolerance guidance returned."
+    },
+    {
+      "tool": "Exa fetch",
+      "urls": [
+        "https://arxiv.org/html/1605.07344v1",
+        "https://sundials.readthedocs.io/en/latest/FAQ_link.html"
+      ],
+      "result": "Primary page/abstract and official FAQ extracted."
+    },
+    {
+      "tool": "Wolfram context",
+      "result": "Relevant official norm and embedded-RK documentation returned; broad automatically generated examples were not used as evidence."
+    }
+  ],
+  "sources": [
+    {
+      "id": "S1",
+      "title": "Full affine equivariance and weak natural transformations in numerical analysis—the case of B-Series",
+      "author": "Olivier Verdier",
+      "year": 2016,
+      "url": "https://arxiv.org/html/1605.07344v1",
+      "pdf": "https://arxiv.org/pdf/1605.07344",
+      "read_scope": "Abstract and Exa indexed sections, especially Example2.6 on affine-related fields",
+      "use": "Primary context for affine-related Runge-Kutta trajectories; the specific explicit-stage induction is supplied in this report."
+    },
+    {
+      "id": "S2",
+      "title": "B-series methods are exactly the affine equivariant methods",
+      "authors": [
+        "Robert I. McLachlan",
+        "Klas Modin",
+        "Hans Munthe-Kaas",
+        "Olivier Verdier"
+      ],
+      "doi": "10.1007/s00211-015-0753-2",
+      "url": "https://doi.org/10.1007/s00211-015-0753-2",
+      "read_scope": "Exa bibliographic record and abstract only",
+      "use": "Background; not used to import an unexamined theorem proof."
+    },
+    {
+      "id": "S3",
+      "title": "SUNDIALS CVODE mathematical considerations",
+      "url": "https://sundials.readthedocs.io/en/latest/cvode/Mathematics_link.html",
+      "read_scope": "Official WRMS and local-error sections retrieved through Exa",
+      "use": "Component tolerances and local-error semantics; not a claim that CVODE uses the exact two-endpoint denominator implemented here."
+    },
+    {
+      "id": "S4",
+      "title": "SUNDIALS Frequently Asked Questions, tolerance selection",
+      "url": "https://sundials.readthedocs.io/en/latest/FAQ_link.html",
+      "read_scope": "Official tolerance guidance through search and fetch",
+      "use": "Per-step tolerances do not equal global error limits; componentwise absolute tolerances depend on physical scales."
+    },
+    {
+      "id": "S5",
+      "title": "Conservation laws and the numerical solution of ODEs, II",
+      "author": "Lawrence F. Shampine",
+      "year": 1999,
+      "doi": "10.1016/S0898-1221(99)00183-2",
+      "scispace_id": "2murwdgxx7",
+      "read_scope": "SciSpace discovery abstract only",
+      "use": "Context only; its projection convergence theorem is not cited as a checked implementation theorem."
+    },
+    {
+      "id": "S6",
+      "title": "Global error estimation with adaptive explicit Runge-Kutta methods",
+      "authors": [
+        "Manuel Calvo",
+        "Desmond J. Higham",
+        "J. M. Montijano"
+      ],
+      "year": 1996,
+      "doi": "10.1093/imanum/16.1.47",
+      "scispace_id": "4sclbeqpjb",
+      "read_scope": "SciSpace discovery abstract only",
+      "use": "Motivates separate global-error estimator work; no claim that this new local norm implements that estimator."
+    },
+    {
+      "id": "S7",
+      "title": "Wolfram NDSolve vector norms",
+      "url": "https://reference.wolfram.com/language/tutorial/NDSolveVectorNorm",
+      "read_scope": "Wolfram context tool documentation snippet",
+      "use": "Independent official context for scaled p-norm local error control."
+    }
+  ]
+}

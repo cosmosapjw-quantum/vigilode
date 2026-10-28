@@ -1,0 +1,221 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+warning: unused imports: `BoundLinearStageModel`, `LinearStageAssessmentWork`, `LinearStageAssessment`, `LinearStageTargetPlan`, and `StageBoundCalculus`
+   --> crates/rodas5p-integrators/src/rodas5p_lagged.rs:120:5
+    |
+120 |     BoundLinearStageModel, LinearStageAssessment, LinearStageAssessmentWork,
+    |     ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^
+121 |     LinearStageTargetPlan, StageBoundCalculus,
+    |     ^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `rodas5p_diagonal_staleness_bound` is never used
+   --> crates/rodas5p-integrators/src/rodas5p_lagged.rs:353:8
+    |
+353 | pub fn rodas5p_diagonal_staleness_bound(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: constant `STAGES` is never used
+  --> crates/rodas5p-integrators/src/stage_target_policy.rs:15:7
+   |
+15 | const STAGES: usize = 8;
+   |       ^^^^^^
+
+warning: constant `ZERO` is never used
+  --> crates/rodas5p-integrators/src/stage_target_policy.rs:16:7
+   |
+16 | const ZERO: Interval = Interval { lo: 0.0, hi: 0.0 };
+   |       ^^^^
+
+warning: type alias `Polynomial` is never used
+  --> crates/rodas5p-integrators/src/stage_target_policy.rs:17:6
+   |
+17 | type Polynomial = Vec<Interval>;
+   |      ^^^^^^^^^^
+
+warning: enum `StageBoundCalculus` is never used
+  --> crates/rodas5p-integrators/src/stage_target_policy.rs:21:10
+   |
+21 | pub enum StageBoundCalculus {
+   |          ^^^^^^^^^^^^^^^^^^
+
+warning: struct `BoundLinearStageModel` is never constructed
+  --> crates/rodas5p-integrators/src/stage_target_policy.rs:34:12
+   |
+34 | pub struct BoundLinearStageModel {
+   |            ^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `LinearStageTargetPlan` is never constructed
+  --> crates/rodas5p-integrators/src/stage_target_policy.rs:46:12
+   |
+46 | pub struct LinearStageTargetPlan {
+   |            ^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `LinearStageAssessment` is never constructed
+  --> crates/rodas5p-integrators/src/stage_target_policy.rs:60:12
+   |
+60 | pub struct LinearStageAssessment {
+   |            ^^^^^^^^^^^^^^^^^^^^^
+
+warning: struct `LinearStageAssessmentWork` is never constructed
+  --> crates/rodas5p-integrators/src/stage_target_policy.rs:75:12
+   |
+75 | pub struct LinearStageAssessmentWork {
+   |            ^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: function `invalid` is never used
+  --> crates/rodas5p-integrators/src/stage_target_policy.rs:86:4
+   |
+86 | fn invalid(message: &str) -> CoreError {
+   |    ^^^^^^^
+
+warning: function `point` is never used
+  --> crates/rodas5p-integrators/src/stage_target_policy.rs:89:4
+   |
+89 | fn point(value: f64) -> CoreResult<Interval> { Interval::point(value) }
+   |    ^^^^^
+
+warning: associated items `new`, `calculus`, `dimension`, `output_amplification_bounds`, `estimator_amplification_bounds`, and `plan` are never used
+   --> crates/rodas5p-integrators/src/stage_target_policy.rs:92:12
+    |
+ 91 | impl BoundLinearStageModel {
+    | -------------------------- associated items in this implementation
+ 92 |     pub fn new(matrix: DenseMatrix, scales: Vec<f64>) -> CoreResult<Self> {
+    |            ^^^
+...
+141 |     pub fn calculus(&self) -> StageBoundCalculus { self.calculus }
+    |            ^^^^^^^^
+142 |     pub fn dimension(&self) -> usize { self.scales.len() }
+    |            ^^^^^^^^^
+143 |     pub fn output_amplification_bounds(&self) -> &[f64; STAGES] { &self.output_bounds }
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+144 |     pub fn estimator_amplification_bounds(&self) -> &[f64; STAGES] { &self.estimator_bounds }
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+150 |     pub fn plan(&self, initial: &[f64], step: f64, atol: f64, rtol: f64, budget: f64)
+    |            ^^^^
+
+warning: methods `normalized_residual_targets`, `calculus`, and `assess` are never used
+   --> crates/rodas5p-integrators/src/stage_target_policy.rs:184:12
+    |
+183 | impl LinearStageTargetPlan {
+    | -------------------------- methods in this implementation
+184 |     pub fn normalized_residual_targets(&self) -> &[f64; STAGES] { &self.targets }
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+185 |     pub fn calculus(&self) -> StageBoundCalculus { self.model.calculus }
+    |            ^^^^^^^^
+...
+193 |     pub fn assess(&self, stages: &[f64], returned: &[f64]) -> CoreResult<LinearStageAssessment> {
+    |            ^^^^^^
+
+warning: multiple methods are never used
+   --> crates/rodas5p-integrators/src/stage_target_policy.rs:268:12
+    |
+267 | impl LinearStageAssessment {
+    | -------------------------- methods in this implementation
+268 |     pub fn residual_norm_upper(&self) -> &[f64; STAGES] { &self.residual_norm_upper }
+    |            ^^^^^^^^^^^^^^^^^^^
+269 |     pub fn output_error_upper(&self) -> f64 { self.output_error_upper }
+    |            ^^^^^^^^^^^^^^^^^^
+270 |     pub fn estimator_error_upper(&self) -> f64 { self.estimator_error_upper }
+    |            ^^^^^^^^^^^^^^^^^^^^^
+271 |     pub fn stage_budget_used_upper(&self) -> f64 { self.stage_budget_used_upper }
+    |            ^^^^^^^^^^^^^^^^^^^^^^^
+272 |     pub fn combined_controller_metric_upper(&self) -> f64 { self.combined_controller_metric_upper }
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+273 |     pub fn targets_satisfied(&self) -> bool { self.targets_satisfied }
+    |            ^^^^^^^^^^^^^^^^^
+274 |     pub fn within_stage_budget(&self) -> bool { self.within_stage_budget }
+    |            ^^^^^^^^^^^^^^^^^^^
+275 |     pub fn within_controller_budget(&self) -> bool { self.within_controller_budget }
+    |            ^^^^^^^^^^^^^^^^^^^^^^^^
+276 |     pub fn work(&self) -> LinearStageAssessmentWork { self.work }
+    |            ^^^^
+
+warning: function `checked_coefficients` is never used
+   --> crates/rodas5p-integrators/src/stage_target_policy.rs:279:4
+    |
+279 | fn checked_coefficients() -> CoreResult<&'static Rodas5pCoefficients> {
+    |    ^^^^^^^^^^^^^^^^^^^^
+
+warning: function `norm_upper` is never used
+   --> crates/rodas5p-integrators/src/stage_target_policy.rs:295:4
+    |
+295 | fn norm_upper(values: &[Interval], scales: &[f64]) -> CoreResult<f64> {
+    |    ^^^^^^^^^^
+
+warning: function `transfer_bounds` is never used
+   --> crates/rodas5p-integrators/src/stage_target_policy.rs:306:4
+    |
+306 | fn transfer_bounds(c: &Rodas5pCoefficients, output: &[f64], calculus: StageBoundCalculus)
+    |    ^^^^^^^^^^^^^^^
+
+warning: function `multiply_linear` is never used
+   --> crates/rodas5p-integrators/src/stage_target_policy.rs:336:4
+    |
+336 | fn multiply_linear(p: &[Interval], constant: Interval, linear: Interval) -> CoreResult<Polynomial> {
+    |    ^^^^^^^^^^^^^^^
+
+warning: function `binomial` is never used
+   --> crates/rodas5p-integrators/src/stage_target_policy.rs:344:4
+    |
+344 | fn binomial(n: usize, k: usize) -> f64 {
+    |    ^^^^^^^^
+
+warning: function `bernstein_bound` is never used
+   --> crates/rodas5p-integrators/src/stage_target_policy.rs:349:4
+    |
+349 | fn bernstein_bound(power: &[Interval], subdivisions: usize) -> CoreResult<f64> {
+    |    ^^^^^^^^^^^^^^^
+
+warning: function `subdivided_bernstein_bound` is never used
+   --> crates/rodas5p-integrators/src/stage_target_policy.rs:360:4
+    |
+360 | fn subdivided_bernstein_bound(coefficients: &[Interval], depth: usize) -> CoreResult<f64> {
+    |    ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: fields `model_identity`, `run_identity`, `model_name`, `source_span`, `source_initial_center`, and `source_initial_radius` are never read
+   --> crates/rodas5p-integrators/src/generic_verified.rs:250:16
+    |
+247 | pub struct VerifiedResidualRun {
+    |            ------------------- fields in this struct
+...
+250 |     pub(crate) model_identity: Arc<()>,
+    |                ^^^^^^^^^^^^^^
+251 |     pub(crate) run_identity: Arc<()>,
+    |                ^^^^^^^^^^^^
+252 |     pub(crate) model_name: String,
+    |                ^^^^^^^^^^
+253 |     pub(crate) source_span: (f64, f64),
+    |                ^^^^^^^^^^^
+254 |     pub(crate) source_initial_center: Vec<f64>,
+    |                ^^^^^^^^^^^^^^^^^^^^^
+255 |     pub(crate) source_initial_radius: f64,
+    |                ^^^^^^^^^^^^^^^^^^^^^
+    |
+    = note: `VerifiedResidualRun` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: `rodas5p-integrators` (lib) generated 24 warnings (run `cargo fix --lib -p rodas5p-integrators` to apply 1 suggestion)
+    Finished `test` profile [unoptimized] target(s) in 29.06s
+     Running tests/reaudit_comparison_contract.rs (/workspace/scratch/0dc1e721cf82/runtime/final-target/debug/deps/reaudit_comparison_contract-1709f66a025944a7)
+
+running 4 tests
+test frozen_grid_and_cli_refuse_unknown_or_rebudgeted_inputs ... ok
+test nonlinear_and_stage_scopes_and_inputs_cannot_be_conflated ... ok
+test protected_and_krylov_share_original_ode_endpoint_certificate ... ok
+test guarded_polynomial_trajectory_keeps_budget_and_all_requested_endpoints ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.73s
+

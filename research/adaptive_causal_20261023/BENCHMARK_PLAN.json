@@ -1,0 +1,128 @@
+{
+  "schema": "vigilode.local-broad-benchmark.v1",
+  "status": "NOT_RUN_PLANNED",
+  "ncp": false,
+  "goal": "General-purpose stiff/rapidly oscillating solver on small hardware",
+  "source_policy": "pin actual commit and executable; preserve older cohorts",
+  "hardware": [
+    {
+      "threads": 1,
+      "required": true,
+      "affinity": "one allowed CPU",
+      "build_jobs": 2
+    },
+    {
+      "threads": 2,
+      "required": false
+    },
+    {
+      "threads": 4,
+      "required": false
+    }
+  ],
+  "budgets": {
+    "first_native_smoke_wall_seconds": 900,
+    "expanded_campaign_wall_seconds": 3600,
+    "per_case_seconds": 60,
+    "max_rss_bytes": 2147483648,
+    "permission_to_create_cloud_resources": false
+  },
+  "comparators": [
+    "VODE/DVODE",
+    "diffsol",
+    "Julia OrdinaryDiffEq appropriate stiff/nonstiff solvers"
+  ],
+  "missing_comparator_policy": "NOT_RUN with actual dependency/version error; do not substitute synthetic timing",
+  "native_paths": [
+    "retained DOPRI",
+    "protected RODAS FD",
+    "protected RODAS provided JVP",
+    "switch RHS-only",
+    "switch authorized FD/JVP",
+    "declared Lawson",
+    "causal Forward",
+    "causal BatchedPicard",
+    "legacy residual-first"
+  ],
+  "classes": [
+    "nonstiff decay/logistic",
+    "stiff Prothero/Robertson",
+    "rapid linear rotation",
+    "equivariant nonlinear oscillation",
+    "noncommuting residual",
+    "stiff forcing",
+    "damped oscillation",
+    "nonnormal transient",
+    "smooth nonstiff-stiff-nonstiff transition",
+    "long-time phase accumulation",
+    "observation dense-output versus landing",
+    "events/restarts and epoch changes",
+    "callback fatal/recoverable/NaN",
+    "fixed spherical collision/transport client"
+  ],
+  "dimensions": [
+    1,
+    2,
+    3,
+    6,
+    16,
+    96,
+    128,
+    256,
+    1024
+  ],
+  "tolerances": [
+    0.0001,
+    1e-06,
+    1e-08,
+    1e-10
+  ],
+  "warmups": 1,
+  "timed_repeats": 7,
+  "registration": "Use valid subsets for each physical model; include incompatible-path refusals as correctness records, not speed comparisons",
+  "references": [
+    "analytic where available",
+    "independent tighter reference with refinement",
+    "full-space raw-U oracle for stage roots only"
+  ],
+  "accuracy_metrics": [
+    "absolute error",
+    "componentwise normalized error",
+    "phase error radians",
+    "amplitude error",
+    "mass/energy/positivity",
+    "physical observable error"
+  ],
+  "required_work": [
+    "all RHS including FD/probes",
+    "JVP vectors",
+    "AD invocations if any",
+    "time derivatives",
+    "factorizations",
+    "actual block backsolves",
+    "rejections",
+    "basis dimension",
+    "workspace/RSS",
+    "accepted physical time"
+  ],
+  "selection": "Fastest measured tolerance meeting same achieved error and output contract; report unmatched points, median/min/max, bootstrap intervals where useful; no pooling across builds",
+  "negative_controls": [
+    "rapid JVP misroute",
+    "stiff-forcing Lawson loss",
+    "cheap RHS scheduling overhead",
+    "Picard single-thread loss",
+    "Prothero explicit budget failure"
+  ],
+  "outputs": [
+    "PLAN.json",
+    "RAW_RUNS.jsonl.gz",
+    "RECEIPTS.json",
+    "REFERENCE.json",
+    "WORK_PRECISION.json",
+    "SUMMARY.json",
+    "DECISIONS.json",
+    "figures",
+    "REPRODUCE.md"
+  ],
+  "production_decision": "Separate contract correctness, accuracy scope, speed distribution and known failures; no universal promotion from test count alone"
+}

@@ -1,0 +1,121 @@
+{
+  "status": "PASS_SCOPED",
+  "cases": [
+    {
+      "case": "zero",
+      "status": 0,
+      "value": 0.0,
+      "decimal_oracle": 0.0,
+      "pass_case": true
+    },
+    {
+      "case": "full33_denominator",
+      "status": 0,
+      "value": 0.834847109936722,
+      "decimal_oracle": 0.8348471099367218,
+      "pass_case": true
+    },
+    {
+      "case": "correlated_lithium_error",
+      "status": 0,
+      "value": 0.6030226891555273,
+      "decimal_oracle": 0.6030226891555273,
+      "pass_case": true
+    },
+    {
+      "case": "extreme_exact_cancellation",
+      "status": 0,
+      "value": 0.24618298195866548,
+      "decimal_oracle": 0.24618298195866548,
+      "pass_case": true
+    },
+    {
+      "case": "large_safe_norm",
+      "status": 0,
+      "value": 1.1547005383792515,
+      "decimal_oracle": 1.1547005383792515,
+      "pass_case": true
+    },
+    {
+      "case": "tiny_safe_norm",
+      "status": 0,
+      "value": 1.1547005383792515,
+      "decimal_oracle": 1.1547005383792515,
+      "pass_case": true
+    },
+    {
+      "case": "dynamic_full33_scales",
+      "status": 0,
+      "value": 0.011976814557901371,
+      "decimal_oracle": 0.011976814557901371,
+      "pass_case": true
+    }
+  ],
+  "controls": [
+    {
+      "case": "nan",
+      "status": 1,
+      "output_preserved": true,
+      "pass_case": true
+    },
+    {
+      "case": "zero_scale",
+      "status": 1,
+      "output_preserved": true,
+      "pass_case": true
+    },
+    {
+      "case": "negative_scale",
+      "status": 1,
+      "output_preserved": true,
+      "pass_case": true
+    },
+    {
+      "case": "norm_overflow",
+      "status": 2,
+      "output_preserved": true,
+      "pass_case": true
+    },
+    {
+      "case": "null_pointers",
+      "status": 1,
+      "pass_case": true
+    }
+  ],
+  "representation_counterexample": {
+    "lifted_norm": 0.6030226891555273,
+    "naive_diagonal30_norm": 0.31622776601683794,
+    "ratio": 1.9069251784911847,
+    "pass_case": true
+  },
+  "compile": {
+    "command": [
+      "cc",
+      "-std=c99",
+      "-O2",
+      "-Wall",
+      "-Wextra",
+      "-Werror",
+      "-pedantic",
+      "-fPIC",
+      "-shared",
+      "/workspace/scratch/37bc4acea758/orchestration_20261022/lanes/vigilode/research/lifted_error_norm_20261022/code/lifted_error_norm.c",
+      "-lm",
+      "-o",
+      "<temporary-library>"
+    ],
+    "exit_code": 0,
+    "stderr": ""
+  },
+  "compiler": "cc (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+  "python": "3.12.14",
+  "elapsed_seconds": 0.6511869810019562,
+  "source_sha256": {
+    "lifted_error_norm.h": "0165fbffc98bc60f3b9bd895e5dd86595e4798312d584721c32abd6a00714a08",
+    "verify_norm.py": "7625ebc8a54c6dedfe97146a4d966b9e5608d8563d79ba81e2cb4136a0e59e96",
+    "lifted_error_norm.c": "612c3e7ab627a9ab73c74146293d06d202a1a67baffd86fbb3551a0921a3f952"
+  },
+  "native_vigilode_solver_runs": 0,
+  "ncp_jobs": 0,
+  "core_or_default_changes": false
+}

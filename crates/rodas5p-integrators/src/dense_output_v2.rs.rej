@@ -1,0 +1,12 @@
+diff a/crates/rodas5p-integrators/src/dense_output_v2.rs b/crates/rodas5p-integrators/src/dense_output_v2.rs	(rejected hunks)
+@@ -1079,6 +1203,10 @@ pub enum DenseErrorControl {
+     /// As `Report`, and reject such a step when its estimate exceeds one
+     /// tolerance unit.
+     Enforce,
++    /// Full continuous residual acceptance requires an immutable model owner.
++    /// Use `integrate_verified_residual` with `VerifiedContinuousProblem`.
++    /// The arbitrary `OdeProblem` entry point returns a typed unsupported error.
++    VerifiedResidual,
+     /// Record the W-filtered estimate (M - h gamma J0)^{-1} (h/2) d(1/2) of
+     /// every accepted step that contains an output time, with J0 the
+     /// Jacobian of the step itself; never change the step sequence. By

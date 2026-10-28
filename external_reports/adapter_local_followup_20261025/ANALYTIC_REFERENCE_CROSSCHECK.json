@@ -1,0 +1,28 @@
+{
+  "schema": "vigilode.adapter-reference-crosscheck.v1",
+  "method": "independent Python mpmath 80 decimal digit analytic-formula evaluation against emitted binary64 analytic state; empirical crosscheck, not certified enclosure",
+  "mpmath_version": "1.3.0",
+  "observed_utc": "2026-10-25T13:56:35.187556+00:00",
+  "sources": {
+    "chirp_default.stdout": "7f256cf68b0009cf453348f2589210c40dca6c70234f5caece05cccdc0398c44",
+    "gyro_default.stdout": "c5489a8d7c6c7fb89327c24e357fc8410f82a834446da8c4be41b7f644adc76d"
+  },
+  "results": {
+    "chirp": {
+      "grid_points": 129,
+      "max_formula_binary64_difference": 1.5415047016631434e-10,
+      "at_t": 7.75,
+      "scale": "max component absolute full physical state",
+      "reference_uncertainty_proposal": 3.0830094033262867e-10,
+      "certification": "empirical"
+    },
+    "gyro": {
+      "grid_points": 65,
+      "max_formula_binary64_difference": 4.8933079810353775e-14,
+      "at_t": 0.8125,
+      "scale": "max component absolute full 6D state",
+      "reference_uncertainty_proposal": 1e-13,
+      "certification": "empirical"
+    }
+  }
+}

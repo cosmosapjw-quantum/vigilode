@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "scope": "Future work; none silently represented as executed here.",
+  "ncp_allowed": false,
+  "items": [
+    {
+      "id": "N1",
+      "priority": 1,
+      "target": "conditioned algebraic chart",
+      "file": "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+      "implementation": "Add shifted-Horner/normalized chart avoiding huge expanded coefficients and preserve Jordan multiplicity.",
+      "acceptance": "Near-coalescent/nonnormal/pole cases; original residual, roundoff allowance, degree change and operator epoch; beat direct formula or reusable LU in an admitted scope.",
+      "status": "NOT_RUN_NEXT_DEVELOPMENT"
+    },
+    {
+      "id": "N2",
+      "priority": 1,
+      "target": "structural witness provider",
+      "file": "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+      "implementation": "Bind general immutable operator, scale, norm and full-space relation witness to identity; keep sampled fitting separate.",
+      "acceptance": "Stale operator/coefficient/scale refusal before work, exact/direct oracle, provider setup cost charged, bounded failures.",
+      "status": "NOT_RUN_NEXT_DEVELOPMENT"
+    },
+    {
+      "id": "N3",
+      "priority": 1,
+      "target": "causal cost and regime evidence",
+      "file": "crates/vigilode-coupled/src/switching.rs",
+      "implementation": "Calibrate callback/projection cost and h/state transfer of references; use measured caller weights or bounded pilots.",
+      "acceptance": "Retain current eight cases plus nonlinear changing-rank holdouts; full cost; improvements over both legacy and fixed causal with strongest protected comparator reported.",
+      "status": "NOT_RUN_NEXT_DEVELOPMENT"
+    },
+    {
+      "id": "N4",
+      "priority": 2,
+      "target": "fixed-P nonlinear continuation",
+      "file": "crates/rodas5p-integrators/src/nonlinear_homotopy.rs",
+      "implementation": "Implement an opt-in provider for patch domain, inverse approximation, contraction and branch identity; final F(x,1) residual mandatory.",
+      "acceptance": "Basin/branch changes, failed patch transitions, noncontractive refusal, endpoint target identity, derivative-free callback counts; compare direct root and existing corrector.",
+      "status": "NOT_RUN_NEXT_DEVELOPMENT"
+    },
+    {
+      "id": "N5",
+      "priority": 2,
+      "target": "genuine expensive callback parallelism",
+      "file": "crates/vigilode-coupled/examples/reconsideration_bench.rs",
+      "implementation": "Replace synthetic burn with costly mathematically meaningful callback; separate pool startup, latency and throughput.",
+      "acceptance": "One/two workers, same reference error and work; compare fixed forward, Picard, residual-first, dense, supplied-JVP; no homotopy-specific attribution without actual subdivisions.",
+      "status": "NOT_RUN_NEXT_DEVELOPMENT"
+    },
+    {
+      "id": "N6",
+      "priority": 2,
+      "target": "invariant reduction and common-shift reuse",
+      "file": "crates/rodas5p-core/src/shared_shift_jet.rs",
+      "implementation": "Use finite jets/projectors only with verified invariant module and norm amplification; count distinct actual shifts.",
+      "acceptance": "Degenerate roots, rank changes, nonnormal projector growth, setup amortization and original-space residual; no fabricated multi-shift advantage for already shared RODAS diagonal.",
+      "status": "NOT_RUN_NEXT_DEVELOPMENT"
+    },
+    {
+      "id": "N7",
+      "priority": 2,
+      "target": "accuracy and external comparisons",
+      "file": "research/candidate_reconsideration_20261024/REPRODUCE.md",
+      "implementation": "Run current-source work-precision comparisons against VODE/DVODE,diffsol,Julia on local CPU; extend long phase, nonlinear stiff and nonsmooth controls.",
+      "acceptance": "Same output semantics/actual error, failed rows retained, single-thread first, independent references and repeated processes. No NCP.",
+      "status": "NOT_RUN_NEXT_DEVELOPMENT"
+    },
+    {
+      "id": "N8",
+      "priority": 2,
+      "target": "complete remaining candidate discriminations",
+      "file": "research/candidate_reconsideration_20261024/analysis/CANDIDATE_REASSESSMENT.json",
+      "implementation": "Execute each listed next_discriminating_experiment only when its declared structural/provider prerequisites exist.",
+      "acceptance": "Apply each recorded accuracy/robustness/cost acceptance contract; preserve genuine negative cases and reuse unchanged evidence.",
+      "status": "NOT_RUN_NEXT_DEVELOPMENT"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "schema": "spherical-information.paper-ii-code-review.v1",
+  "reviewer": "spherical_paper_ii",
+  "method": "Independent source inspection plus existing result inspection; no duplicate campaign",
+  "code_sha256": "9cb5c05c7c3721992110f76f0203fedf8041ba268553279c3c70c81fce9ce742",
+  "result_sha256": "810802ee1a89dcdba37cd9f5798482bdb406443374796ed924a888eb1b2f590d",
+  "result_status": "PASS_SCOPED",
+  "case_count": 13,
+  "accepted_scope": "Finite-grid Fisher block whitening and susceptibility-ratio eigenvalue enclosure, CG versus PCG at actual natural-coordinate residual",
+  "checks": {
+    "score_order_consistent": true,
+    "centered_variance_formula": true,
+    "finite_grid_quadrature_orthogonality": true,
+    "same_target_and_residual": true,
+    "BE_domain_margin": true,
+    "known_normalization_conversion": true
+  },
+  "limitations": [
+    "Timings use dense assembled H matrix-vector products; matrix-free asymptotic cost theorem is not a benchmark result.",
+    "Code uses dOmega/Y while derivation uses domega/Z; both normalized bases give identical angular Gram identities.",
+    "No ODE/PDE trajectory performance claim.",
+    "Equal Euclidean natural-coordinate residual is a declared common stopping criterion, not automatically equal H-energy solution error; both diagnostics are recorded and theory supplies a block-computable energy error bound."
+  ],
+  "previous_review": {
+    "code_sha256": "e51803199a9cc2b9514e5a75e29757c1acf904aaf7170b174d34597302a7d846",
+    "result_sha256": "cd52b70e2a986dbd14261638dfccf1b1cb1e4a16401739a383a0eeb9ba724f84",
+    "disposition": "Superseded after finite natural-family displacement, batched timing and diagnostic metadata were frozen; final relevant source re-inspected."
+  },
+  "execution_receipt": "results/fisher_execution.json"
+}

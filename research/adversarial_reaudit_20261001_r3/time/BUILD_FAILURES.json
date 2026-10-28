@@ -1,0 +1,45 @@
+{
+  "schema": "vigilode.r3.time.build_failures.v1",
+  "attempts": [
+    {
+      "attempt": 1,
+      "exit_code": 101,
+      "class": "AUDIT_PROBE_PATH_ERROR",
+      "evidence": "first_path_failure.log",
+      "correction": "Dependency relative prefix corrected from ../../../../ to ../../../; production untouched."
+    },
+    {
+      "attempt": 2,
+      "exit_code": 101,
+      "class": "UNRESOLVED_BUILD_EXIT_WITHOUT_DIAGNOSTIC",
+      "evidence": "native_build_attempt2.log",
+      "raw_stdout_bytes": 0,
+      "cgroup_oom": 0,
+      "cgroup_oom_kill": 0,
+      "next": "One retry after statistics lane completes shared dependency build; preserve first log."
+    },
+    {
+      "attempt": 3,
+      "exit_code": 101,
+      "class": "RUNTIME_BUILD_ARTIFACT_ZERO_LENGTH",
+      "evidence": "native_build_attempt3.log",
+      "error": "krylov archive cannot map zero-length generated object",
+      "correction": "Runtime owner removed failed generated artifacts and disabled Cargo incremental compilation; see ../evidence/runtime/targeted_cache_recovery.json"
+    },
+    {
+      "attempt": 4,
+      "exit_code": 101,
+      "class": "RUNTIME_BUILD_ARTIFACT_ZERO_LENGTH",
+      "evidence": "native_build_attempt4.log",
+      "error": "audit2-research integrators variant archive cannot map zero-length generated object despite CARGO_INCREMENTAL=0",
+      "correction": "Remove unused audit2-research feature from standalone probe and reuse independently recovered default-feature library; no production edits"
+    },
+    {
+      "attempt": 5,
+      "exit_code": 0,
+      "class": "EXECUTED",
+      "evidence": "native_build.log",
+      "configuration": "default production features; CARGO_INCREMENTAL=0; locked offline single-job Cargo"
+    }
+  ]
+}

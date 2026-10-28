@@ -1,0 +1,192 @@
+{
+  "schema": "vigilode.general-ode.branch-source-audit.v1",
+  "reviewer": "independent_subagent_runtime_1024",
+  "review_date_kst": "2026-10-24",
+  "base_commit": "057fecf0698fa262d881f101625e6b0bb93791cf",
+  "base_tree": "f3d85a4a08c0868c8e96ba15e832638a697221ec",
+  "scope": [
+    "local Git ancestry and limited source review",
+    "general identity-mass ODE selection and persistent explicit session contracts"
+  ],
+  "excluded": [
+    "BASS and rei application development",
+    "PDE application code",
+    "new native compilation",
+    "test execution",
+    "benchmark execution",
+    "NCP"
+  ],
+  "branches": [
+    {
+      "name": "native_followup",
+      "commit": "1cdf2c3071498888f2d8ff3ddc0629cb3cf443ef",
+      "merge_base": "1cdf2c3071498888f2d8ff3ddc0629cb3cf443ef",
+      "base_only_commits": 2,
+      "branch_only_commits": 0,
+      "branch_only_changes": [],
+      "decision": "already_in_base"
+    },
+    {
+      "name": "standalone_general_development",
+      "commit": "c03ca90f19a9e64ba7751c069325a48b54b39c2e",
+      "merge_base": "c03ca90f19a9e64ba7751c069325a48b54b39c2e",
+      "base_only_commits": 250,
+      "branch_only_commits": 0,
+      "branch_only_changes": [],
+      "decision": "already_in_base"
+    },
+    {
+      "name": "readiness_research",
+      "commit": "9e6856703a7a9be58f8a397bebcd9f516d76c1ec",
+      "merge_base": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+      "base_only_commits": 5,
+      "branch_only_commits": 2,
+      "branch_only_changes": [
+        "A\tresearch/v1_readiness_20261023/BACKUP_ACK.json",
+        "A\tresearch/v1_readiness_20261023/BUDGET.json",
+        "A\tresearch/v1_readiness_20261023/LOOP_DISPOSITION.json",
+        "A\tresearch/v1_readiness_20261023/PUBLICATION_CHECK.json",
+        "A\tresearch/v1_readiness_20261023/README_KO.md",
+        "A\tresearch/v1_readiness_20261023/RESULT_SUMMARY.json",
+        "A\tresearch/v1_readiness_20261023/STATE.json",
+        "A\tresearch/v1_readiness_20261023/compare_c.py",
+        "A\tresearch/v1_readiness_20261023/evidence/REUSED_PUBLISH_MAP.json",
+        "A\tresearch/v1_readiness_20261023/evidence/REUSED_native_integrator_tests_final.log",
+        "A\tresearch/v1_readiness_20261023/evidence/lifted_error_norm.c",
+        "A\tresearch/v1_readiness_20261023/evidence/lifted_error_norm.h",
+        "A\tresearch/v1_readiness_20261023/readiness.py",
+        "A\tresearch/v1_readiness_20261023/review_contract.py",
+        "A\tresearch/v1_readiness_20261023/test_readiness.py"
+      ],
+      "decision": "do_not_merge_application_specific_preparation"
+    }
+  ],
+  "base_delta_from_native_followup": [
+    "research/v1_portable_norm_20261024/S0_CONTRACT.json",
+    "research/v1_portable_norm_20261024/S1_CHECKPOINT.json",
+    "research/v1_portable_norm_20261024/THEORY.md"
+  ],
+  "reuse_decisions": [
+    {
+      "item": "native DOPRI5/RODAS5P session implementations and published followup evidence",
+      "action": "reuse current native implementation and existing receipts",
+      "reason": "native followup is an ancestor; current base differs only by three portable-norm research documents"
+    },
+    {
+      "item": "standalone general-development fixes and benchmark triage tools",
+      "action": "already present in ancestry; no duplicate merge",
+      "reason": "250 commits on current-base side and zero on the standalone-branch side; nonfinite-shift fix 604a91e7 and triage amendments are historical inputs, not new validation"
+    },
+    {
+      "item": "readiness research branch",
+      "action": "reference as historical preparation only; do not cherry-pick",
+      "reason": "15 additions under one research directory; zero production Rust changes; fixed application lift and application receipt rules are outside current scope"
+    },
+    {
+      "item": "generic lesson from affine-norm preparation",
+      "action": "retain mathematical distinction only",
+      "reason": "embedded-error norm evaluation is not a global solution-error certificate; no fixed compact30/full33 map is adopted in selected general solver"
+    }
+  ],
+  "source_review": {
+    "status": "NO_NEW_BLOCKING_DEFECT_FOUND_IN_REVIEWED_SNAPSHOT",
+    "is_execution_verification": false,
+    "reviewed_files": {
+      "crates/vigilode/src/selection.rs": {
+        "sha256": "196ec4ddd487ce43b9aed86f5e9bf5d781a45c251c3a794c7017aafee5f298cf",
+        "bytes": 9933
+      },
+      "crates/vigilode/src/session.rs": {
+        "sha256": "3c931ca9d1bd8b4c8d051922177218df6c7d9d3ab855741c7f887b643e885947",
+        "bytes": 12718
+      },
+      "crates/vigilode/src/capabilities.rs": {
+        "sha256": "415a6a0ec2893431fba147697ed7c0c4ccb021fd3c9ed2a0cc351e5f034d7dd5",
+        "bytes": 5963
+      },
+      "crates/vigilode/src/explicit.rs": {
+        "sha256": "48dc412241dff01cb3bc7aac881242320e095c91c6848072278f86f9bf3484d1",
+        "bytes": 19451
+      },
+      "crates/rodas5p-integrators/src/dopri5.rs": {
+        "sha256": "6226a1dc8be88c28de3c63eb3190ca2e19a448a77288f90f637ff02bc4a2cbb2",
+        "bytes": 37893
+      },
+      "crates/vigilode/tests/production_selection_contracts.rs": {
+        "sha256": "942557e575091ae0581c4c51d7d84c2e321b0356426ec7fa513543fb8bfb68e8",
+        "bytes": 6320
+      },
+      "crates/vigilode/tests/production_session_contracts.rs": {
+        "sha256": "638a8414e89d1460cf5a989145bcb77ae188bb123a8bb0014be6be8c8fcaab9d",
+        "bytes": 14682
+      }
+    },
+    "confirmed_contracts": [
+      "Selection does not evaluate callbacks or allocate numerical workspaces; dimensions/tolerances are validated by solve separately.",
+      "Unknown/Nonstiff selects DOPRI5 without derivative callbacks. Stiff requires explicit derivative authorization.",
+      "ProvidedOnly rejects the default finite-difference Jacobian and a missing nonautonomous partial time derivative.",
+      "Dense callbacks with declared bands still count against max_dense_dimension; JVP/GMRES requires explicit permission and inherits unsupported-vector-atol refusal.",
+      "The explicit scoped session keeps one native workspace, controller, FSAL cache, fixed landing schedule and cumulative attempt budget across pauses.",
+      "Native RHS stage buffers are poisoned; successful callbacks with unwritten/nonfinite output are fatal, while recoverable callback failures are charged and may retry.",
+      "Only accepted state is exposed by checkpoint; sticky terminal state prevents later callbacks.",
+      "Early return from the driver retains the last accepted physical state and returns success=false rather than claiming completed integration.",
+      "The refreshed native session lookup uses binary search on OutputSchedule finite strictly-increasing times; partial_cmp retains signed-zero equality and does not change membership semantics."
+    ],
+    "nonblocking_limits": [
+      {
+        "id": "SELECT-DECLARATION",
+        "severity": "scope",
+        "detail": "The new selection surface does not detect stiffness or switch within a solve. Unknown means a budgeted explicit attempt, not automatic stiff capability.",
+        "required_reporting": "Describe explicit regime selection; keep adaptive switching as a separate opt-in API."
+      },
+      {
+        "id": "RESOURCE-BAND",
+        "severity": "future_improvement",
+        "detail": "max_dense_dimension excludes compact band storage; a wide band can still consume quadratic storage and large factorization work.",
+        "next_step": "Consider a separately specified byte/work ceiling based on dimension and bandwidth, with checked integer arithmetic; do not advertise the current dense cap as a total memory budget."
+      },
+      {
+        "id": "SESSION-IDENTITY",
+        "severity": "scope",
+        "detail": "Epoch checks catch declared model/provider/norm/tolerance changes only; interior mutation hidden by the caller cannot be detected.",
+        "required_reporting": "Require stable callbacks and a reconstructed session after a declared change."
+      },
+      {
+        "id": "SESSION-SCHEDULE",
+        "severity": "scope",
+        "detail": "Forward spans and a fixed predeclared landing schedule are supported. Pauses cannot introduce arbitrary observation targets; dense output, events, mass matrices and affine physical norms are outside this API.",
+        "required_reporting": "Do not equate bounded pause/resume with VODE-equivalent event or backward-integration support."
+      },
+      {
+        "id": "ERROR-RECEIPT",
+        "severity": "observability",
+        "detail": "ensure_success preserves the method-specific partial trajectory but returns an error without the GeneralSelection wrapper. The caller can copy selection before consuming the result.",
+        "next_step": "Optionally add a result-carrying error variant in a later API revision if complete policy receipts must survive this conversion."
+      }
+    ],
+    "targeted_refresh": "Reviewed session documentation clarification and native contains-to-binary-search edit after concurrent source changes; no new blocking defect found.",
+    "final_snapshot_refresh": {
+      "previous_hashes_for_changed_files": {
+        "crates/vigilode/src/selection.rs": "7be769a1c03f35b4fcd276713518242c994dd9d7c0321fcd573cc2c06fae84aa",
+        "crates/vigilode/tests/production_selection_contracts.rs": "747c9c75e61c6458807c125b017da3a7b4af1186da942cdc788a6e63da682886"
+      },
+      "review": "Reread final selector/session and native binary-search plus explicit stop-reason documentation diffs. Selector formatting preserves decisions. Session scalar-atol telemetry expands to the physical dimension; callback, lifetime, accepted-state and terminal semantics unchanged. Current contract-test execution logs inspected without rerun.",
+      "new_compile_or_solver_runs_by_reviewer": 0,
+      "all_reviewed_hashes_match_current": true
+    }
+  },
+  "verification_accounting": {
+    "native_compile_runs": 0,
+    "native_test_runs": 0,
+    "benchmark_runs": 0,
+    "historical_scientific_runs_replayed": 0,
+    "readiness_reported_tests_are_reused_not_reexecuted": true
+  },
+  "limitations": [
+    "This is not an exhaustive semantic audit of every ancestral change.",
+    "Ancestry proves commit inclusion, not immutability of all historical behaviors.",
+    "Source hashes identify the reviewed working snapshot; subsequent code edits require a targeted refresh.",
+    "Historical test counts and timings are not new observations.",
+    "No broad production qualification follows from this read-only audit."
+  ]
+}

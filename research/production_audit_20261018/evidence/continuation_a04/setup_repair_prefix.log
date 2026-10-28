@@ -1,0 +1,24 @@
+   Compiling rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 7.48s
+     Running unittests src/lib.rs (target/debug/deps/rodas5p_core-0d792e112be9ec0a)
+
+running 1 test
+test leja_action::tests::counted_node_prefix_includes_interval_domain_construction ... FAILED
+
+failures:
+
+---- leja_action::tests::counted_node_prefix_includes_interval_domain_construction stdout ----
+
+thread 'leja_action::tests::counted_node_prefix_includes_interval_domain_construction' (4110422) panicked at crates/rodas5p-core/src/leja_action.rs:2557:9:
+assertion `left == right` failed
+  left: 768
+ right: 896
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    leja_action::tests::counted_node_prefix_includes_interval_domain_construction
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 25 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-core --lib`

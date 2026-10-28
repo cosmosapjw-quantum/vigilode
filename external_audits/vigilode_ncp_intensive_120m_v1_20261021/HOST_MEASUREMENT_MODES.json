@@ -1,0 +1,62 @@
+{
+  "initial_screening": {
+    "affinity": "unpinned",
+    "source": "HOST.json",
+    "interpretation": "accuracy and coverage only; exclude latency ranking"
+  },
+  "confirmation_and_tolerance": {
+    "affinity": "CPU 8 for serial blocks",
+    "solver_threads": 1
+  },
+  "main_throughput": {
+    "workers": 28,
+    "cpus": [
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      21,
+      22,
+      23,
+      24,
+      25,
+      26,
+      27,
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+      37,
+      38,
+      39
+    ],
+    "threads_per_worker": 1,
+    "elapsed_seconds": 18.408552775043063
+  },
+  "corrected_rotation_throughput": {
+    "workers": 3,
+    "cpus": [
+      12,
+      13,
+      14
+    ],
+    "threads_per_worker": 1,
+    "separate_block": true
+  },
+  "internal_solver_scaling": {
+    "status": "NOT_RUN",
+    "reason": "no tested internal-parallel backend route verified"
+  },
+  "host_telemetry": "HOST_TELEMETRY_SUMMARY.json",
+  "host_exclusivity": "not established"
+}

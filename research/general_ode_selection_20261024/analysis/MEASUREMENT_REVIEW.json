@@ -1,0 +1,593 @@
+{
+  "schema": "vigilode.independent-measurement-review.v1",
+  "observed_utc": "2026-10-23T20:15:11.988698+00:00",
+  "review_activity": "read-only source/receipt/data inspection; wrote this analysis only; no build or solver rerun",
+  "verdict": "PASS_SCOPED_CORRECTNESS_AND_OBSERVED_RESTART_AVOIDANCE_UTILITY",
+  "production_qualification": "BROAD_PRODUCTION_NOT_ESTABLISHED; endpoint correctness and explicit-session utility only",
+  "evidence": [
+    {
+      "path": "research/general_ode_selection_20261024/evidence/runs/core-survey.stdout",
+      "sha256": "83a32f517ee8c42f32c6c6dac137ae9667c7bfe9d6307b93f2f128275cb2b72b"
+    },
+    {
+      "path": "research/general_ode_selection_20261024/evidence/runs/core-survey.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research/general_ode_selection_20261024/evidence/runs/core-survey.receipt.json",
+      "sha256": "10e78155fec2102297d2da51c24fa5953b22f54d4c7fa83ccd2d067431acffae"
+    },
+    {
+      "path": "research/general_ode_selection_20261024/evidence/runs/session-65.stdout",
+      "sha256": "5f476dafca3b3c05cb9e6fbd792d2c69ded6ae18466eaae1521eacc1dc305e43"
+    },
+    {
+      "path": "research/general_ode_selection_20261024/evidence/runs/session-65.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research/general_ode_selection_20261024/evidence/runs/session-65.receipt.json",
+      "sha256": "f3f00b15d3b9ce22b05a56aa262a7a8062de1ed53a12cc4f6c9a28c21a54346d"
+    },
+    {
+      "path": "research/general_ode_selection_20261024/evidence/runs/session-1025.stdout",
+      "sha256": "be266415870d29cf4fb44b7843c40471333c747b3aaf9729533d126e377db05d"
+    },
+    {
+      "path": "research/general_ode_selection_20261024/evidence/runs/session-1025.stderr",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research/general_ode_selection_20261024/evidence/runs/session-1025.receipt.json",
+      "sha256": "77fc599025fe20f71fc3a9712e4ad8354fa72b5828b83db1d71db09d364a1339"
+    },
+    {
+      "path": "research/general_ode_selection_20261024/SOURCE_IDENTITY.json",
+      "sha256": "c2a1db028c2cdc15146e92d2821f0f67897700151254974e71295489690b02a7"
+    },
+    {
+      "path": "crates/vigilode/examples/production_core_survey.rs",
+      "sha256": "d6297c16925683491e2c12a1f46e0212fdaa6e041ac191e9a0093d50b4e2a460"
+    },
+    {
+      "path": "crates/vigilode/examples/production_session_bench.rs",
+      "sha256": "3f6e7ce9281436b5593e603fcaa1a14aa77e12e99adba669af3333e73268a256"
+    },
+    {
+      "path": "crates/vigilode/tests/production_session_contracts.rs",
+      "sha256": "638a8414e89d1460cf5a989145bcb77ae188bb123a8bb0014be6be8c8fcaab9d"
+    },
+    {
+      "path": "research/general_ode_selection_20261024/evidence/tests/session-rerun.stdout.log",
+      "sha256": "6a54cdc1a891180f5d6eb827e2ce2b63dc4ba539ebba8ff2e932f297ed9c826b"
+    },
+    {
+      "path": "research/general_ode_selection_20261024/evidence/tests/session-rerun.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa"
+    },
+    {
+      "path": "research/general_ode_selection_20261024/evidence/tests/session-initial.stdout.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "research/general_ode_selection_20261024/evidence/tests/session-initial.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c"
+    }
+  ],
+  "receipt_checks": [
+    {
+      "run": "core-survey",
+      "exit_code": 0,
+      "stdout_hash_matches_receipt": true,
+      "stderr_hash_matches_receipt": true,
+      "binary_available_and_hash_matches": true,
+      "source_identity_matches": true,
+      "cpu_affinity": [
+        0
+      ],
+      "numeric_threads": 1
+    },
+    {
+      "run": "session-65",
+      "exit_code": 0,
+      "stdout_hash_matches_receipt": true,
+      "stderr_hash_matches_receipt": true,
+      "binary_available_and_hash_matches": true,
+      "source_identity_matches": true,
+      "cpu_affinity": [
+        0
+      ],
+      "numeric_threads": 1
+    },
+    {
+      "run": "session-1025",
+      "exit_code": 0,
+      "stdout_hash_matches_receipt": true,
+      "stderr_hash_matches_receipt": true,
+      "binary_available_and_hash_matches": true,
+      "source_identity_matches": true,
+      "cpu_affinity": [
+        0
+      ],
+      "numeric_threads": 1
+    }
+  ],
+  "core_survey": {
+    "rows": 24,
+    "cases": 8,
+    "tolerances": [
+      0.0001,
+      1e-06,
+      1e-08
+    ],
+    "passes": 24,
+    "independently_recomputed_endpoint_errors_and_caps_match": true,
+    "issues": [],
+    "all_tolerance_trends_decline": true,
+    "max_error_over_predeclared_cap": 0.056390884473902836,
+    "largest_error_at_rtol_1e8": 5.974048755685857e-09,
+    "scope": "8 dimension1/2 smooth analytic/manufactured systems,24 endpoint solves; exact dense-J/dfdt when implicit and RHS-only when explicit; no tested JVP/banded route in this survey",
+    "limits": [
+      "Only final-state error at t=2, not whole-trajectory accuracy or phase certification.",
+      "Manufactured nonlinear tracking starts exactly on its known trajectory; large nonlinear excursions are not represented.",
+      "Declared Stiff selects an implicit method, not an empirical stiffness diagnosis.",
+      "Reference values are ordinary binary64 functions, not rigorously enclosed references.",
+      "Cap100*(atol+rtol*reference endpoint norm) is preregistered survey criterion, not solver global-error contract.",
+      "No failures occurred; failure-output preservation is a harness capability and separate test evidence, not observed from these24 successes."
+    ]
+  },
+  "session_measurements": {
+    "comparisons": [
+      {
+        "observations": 65,
+        "case": "scalar-decay",
+        "restart_over_persistent_median_ratio": 2.523564806059565,
+        "persistent_over_facade_one_shot_median_ratio": 1.100625232099427,
+        "persistent_over_native_one_shot_median_ratio": 1.1989506838044557,
+        "observed_extrema_ratio_envelope_restart_over_persistent": [
+          1.3112710113777593,
+          3.2071492977766263
+        ],
+        "envelope_is_not_confidence_interval": true,
+        "persistent_max_over_min": 2.0221996773995796,
+        "persistent_rhs": 781,
+        "restart_rhs": 1600,
+        "persistent_attempts": 130,
+        "restart_attempts": 256,
+        "persistent_and_one_shot_preflight_same_output_and_work": true,
+        "restart_preflight_same_output_and_work": false,
+        "all_modes_satisfy_common_error_cap": true
+      },
+      {
+        "observations": 65,
+        "case": "diagonal-decay-32",
+        "restart_over_persistent_median_ratio": 2.305097808652668,
+        "persistent_over_facade_one_shot_median_ratio": 1.0103280315937453,
+        "persistent_over_native_one_shot_median_ratio": 1.1427709387068548,
+        "observed_extrema_ratio_envelope_restart_over_persistent": [
+          1.8978123345800393,
+          2.718229103599965
+        ],
+        "envelope_is_not_confidence_interval": true,
+        "persistent_max_over_min": 1.1946768524400904,
+        "persistent_rhs": 781,
+        "restart_rhs": 1600,
+        "persistent_attempts": 130,
+        "restart_attempts": 256,
+        "persistent_and_one_shot_preflight_same_output_and_work": true,
+        "restart_preflight_same_output_and_work": false,
+        "all_modes_satisfy_common_error_cap": true
+      },
+      {
+        "observations": 65,
+        "case": "rotation-frequency-3",
+        "restart_over_persistent_median_ratio": 1.5843539080428537,
+        "persistent_over_facade_one_shot_median_ratio": 1.065132633679103,
+        "persistent_over_native_one_shot_median_ratio": 1.1602736279378218,
+        "observed_extrema_ratio_envelope_restart_over_persistent": [
+          1.373091303944864,
+          1.7766028977013286
+        ],
+        "envelope_is_not_confidence_interval": true,
+        "persistent_max_over_min": 1.1399360232702078,
+        "persistent_rhs": 1759,
+        "restart_rhs": 2338,
+        "persistent_attempts": 293,
+        "restart_attempts": 379,
+        "persistent_and_one_shot_preflight_same_output_and_work": true,
+        "restart_preflight_same_output_and_work": false,
+        "all_modes_satisfy_common_error_cap": true
+      },
+      {
+        "observations": 1025,
+        "case": "scalar-decay",
+        "restart_over_persistent_median_ratio": 3.072560821775241,
+        "persistent_over_facade_one_shot_median_ratio": 1.1575006031932527,
+        "persistent_over_native_one_shot_median_ratio": 1.275181203391784,
+        "observed_extrema_ratio_envelope_restart_over_persistent": [
+          1.9255028553423381,
+          3.9924015492253875
+        ],
+        "envelope_is_not_confidence_interval": true,
+        "persistent_max_over_min": 1.626363276694986,
+        "persistent_rhs": 6151,
+        "restart_rhs": 13312,
+        "persistent_attempts": 1025,
+        "restart_attempts": 2048,
+        "persistent_and_one_shot_preflight_same_output_and_work": true,
+        "restart_preflight_same_output_and_work": false,
+        "all_modes_satisfy_common_error_cap": true
+      },
+      {
+        "observations": 1025,
+        "case": "diagonal-decay-32",
+        "restart_over_persistent_median_ratio": 2.751306154574455,
+        "persistent_over_facade_one_shot_median_ratio": 1.044414654807664,
+        "persistent_over_native_one_shot_median_ratio": 1.1666845731580096,
+        "observed_extrema_ratio_envelope_restart_over_persistent": [
+          2.3724113769952666,
+          3.176387531752679
+        ],
+        "envelope_is_not_confidence_interval": true,
+        "persistent_max_over_min": 1.1381642212364675,
+        "persistent_rhs": 6151,
+        "restart_rhs": 13312,
+        "persistent_attempts": 1025,
+        "restart_attempts": 2048,
+        "persistent_and_one_shot_preflight_same_output_and_work": true,
+        "restart_preflight_same_output_and_work": false,
+        "all_modes_satisfy_common_error_cap": true
+      },
+      {
+        "observations": 1025,
+        "case": "rotation-frequency-3",
+        "restart_over_persistent_median_ratio": 3.082892880845031,
+        "persistent_over_facade_one_shot_median_ratio": 1.1672005811100408,
+        "persistent_over_native_one_shot_median_ratio": 1.272842323342601,
+        "observed_extrema_ratio_envelope_restart_over_persistent": [
+          2.5819503609445604,
+          3.726895695871887
+        ],
+        "envelope_is_not_confidence_interval": true,
+        "persistent_max_over_min": 1.2033565961382615,
+        "persistent_rhs": 6151,
+        "restart_rhs": 13312,
+        "persistent_attempts": 1025,
+        "restart_attempts": 2048,
+        "persistent_and_one_shot_preflight_same_output_and_work": true,
+        "restart_preflight_same_output_and_work": false,
+        "all_modes_satisfy_common_error_cap": true
+      }
+    ],
+    "raw_sample_checks": [
+      {
+        "observations": 65,
+        "case": "scalar-decay",
+        "method": "native-one-shot",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 141,
+        "max_over_min": 1.4859542762441182,
+        "max_absolute_observation_error": 7.176309546608195e-11,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 65,
+        "case": "scalar-decay",
+        "method": "facade-one-shot",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 135,
+        "max_over_min": 2.0703438376209484,
+        "max_absolute_observation_error": 7.176309546608195e-11,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 65,
+        "case": "scalar-decay",
+        "method": "facade-persistent-observation-delivery",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 108,
+        "max_over_min": 2.0221996773995796,
+        "max_absolute_observation_error": 7.176309546608195e-11,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 65,
+        "case": "scalar-decay",
+        "method": "facade-restart-per-observation",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 46,
+        "max_over_min": 1.2094911097275742,
+        "max_absolute_observation_error": 2.1023738305814277e-12,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": false
+      },
+      {
+        "observations": 65,
+        "case": "diagonal-decay-32",
+        "method": "native-one-shot",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 50,
+        "max_over_min": 1.2165804335700503,
+        "max_absolute_observation_error": 1.1942319355640052e-10,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 65,
+        "case": "diagonal-decay-32",
+        "method": "facade-one-shot",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 45,
+        "max_over_min": 1.152115147134877,
+        "max_absolute_observation_error": 1.1942319355640052e-10,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 65,
+        "case": "diagonal-decay-32",
+        "method": "facade-persistent-observation-delivery",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 42,
+        "max_over_min": 1.1946768524400904,
+        "max_absolute_observation_error": 1.1942319355640052e-10,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 65,
+        "case": "diagonal-decay-32",
+        "method": "facade-restart-per-observation",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 18,
+        "max_over_min": 1.198898299117231,
+        "max_absolute_observation_error": 6.530281870809063e-11,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": false
+      },
+      {
+        "observations": 65,
+        "case": "rotation-frequency-3",
+        "method": "native-one-shot",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 63,
+        "max_over_min": 1.1430137491134413,
+        "max_absolute_observation_error": 1.2136608384949454e-09,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 65,
+        "case": "rotation-frequency-3",
+        "method": "facade-one-shot",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 61,
+        "max_over_min": 1.110136305406616,
+        "max_absolute_observation_error": 1.2136608384949454e-09,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 65,
+        "case": "rotation-frequency-3",
+        "method": "facade-persistent-observation-delivery",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 57,
+        "max_over_min": 1.1399360232702078,
+        "max_absolute_observation_error": 1.2136608384949454e-09,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 65,
+        "case": "rotation-frequency-3",
+        "method": "facade-restart-per-observation",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 37,
+        "max_over_min": 1.135038182487845,
+        "max_absolute_observation_error": 1.0649184867261852e-09,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": false
+      },
+      {
+        "observations": 1025,
+        "case": "scalar-decay",
+        "method": "native-one-shot",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 17,
+        "max_over_min": 1.579172993480678,
+        "max_absolute_observation_error": 5.551115123125783e-16,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 1025,
+        "case": "scalar-decay",
+        "method": "facade-one-shot",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 17,
+        "max_over_min": 1.9038754120147623,
+        "max_absolute_observation_error": 5.551115123125783e-16,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 1025,
+        "case": "scalar-decay",
+        "method": "facade-persistent-observation-delivery",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 14,
+        "max_over_min": 1.626363276694986,
+        "max_absolute_observation_error": 5.551115123125783e-16,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 1025,
+        "case": "scalar-decay",
+        "method": "facade-restart-per-observation",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 5,
+        "max_over_min": 1.2748893380015398,
+        "max_absolute_observation_error": 1.6653345369377348e-15,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": false
+      },
+      {
+        "observations": 1025,
+        "case": "diagonal-decay-32",
+        "method": "native-one-shot",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 6,
+        "max_over_min": 1.170378027351825,
+        "max_absolute_observation_error": 3.0531133177191805e-15,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 1025,
+        "case": "diagonal-decay-32",
+        "method": "facade-one-shot",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 6,
+        "max_over_min": 1.1538668605013522,
+        "max_absolute_observation_error": 3.0531133177191805e-15,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 1025,
+        "case": "diagonal-decay-32",
+        "method": "facade-persistent-observation-delivery",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 5,
+        "max_over_min": 1.1381642212364675,
+        "max_absolute_observation_error": 3.0531133177191805e-15,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 1025,
+        "case": "diagonal-decay-32",
+        "method": "facade-restart-per-observation",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 2,
+        "max_over_min": 1.176355413336397,
+        "max_absolute_observation_error": 2.4424906541753444e-15,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": false
+      },
+      {
+        "observations": 1025,
+        "case": "rotation-frequency-3",
+        "method": "native-one-shot",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 16,
+        "max_over_min": 1.2038245924282507,
+        "max_absolute_observation_error": 6.815659148173836e-13,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 1025,
+        "case": "rotation-frequency-3",
+        "method": "facade-one-shot",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 15,
+        "max_over_min": 1.1729933038132172,
+        "max_absolute_observation_error": 6.815659148173836e-13,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 1025,
+        "case": "rotation-frequency-3",
+        "method": "facade-persistent-observation-delivery",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 13,
+        "max_over_min": 1.2033565961382615,
+        "max_absolute_observation_error": 6.815659148173836e-13,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": true
+      },
+      {
+        "observations": 1025,
+        "case": "rotation-frequency-3",
+        "method": "facade-restart-per-observation",
+        "sample_normalization_and_median_verified": true,
+        "sample_count": 31,
+        "solves_per_sample": 5,
+        "max_over_min": 1.1995131322773802,
+        "max_absolute_observation_error": 1.0902390101819037e-13,
+        "error_cap_pass": true,
+        "preflight_output_and_work_identity": false
+      }
+    ],
+    "matching_contract": "All modes land on the same65 or1025 times in[0,4], same scalar tolerances1e-9/1e-12 and h0=.001. Native/facade/persistent preflight states and selected work counts are asserted exactly equal. Restart has different work/roundoff but every mode passes the common sampled maxabs1e-7 cap.",
+    "accuracy_authority": "Measured source checks exact sampled error and path/work parity in preflight. Timed execute calls check completion/output times; full timed trajectories are not archived and analytic error/parity is not recalculated for every timed replicate.",
+    "statistics": "31 within-process cyclically ordered samples per mode, each normalized from independently calibrated approximately5ms groups. One process per observation count. These are not31 independent process/host replications; no confidence interval or statistical significance test was computed.",
+    "noise_caution": "65-observation scalar persistent max/min=2.022200; scalar facade one-shot max/min=2.070344. Retain all samples; median ratios are descriptive and host-specific.",
+    "failure_policy_limitation": "Session microbenchmark uses unwrap/assert and prints its results after all groups. A future run failure would abort before the complete structured row set is emitted; this benchmark does not itself preserve partial-failure rows. Current receipts show exit0 and empty stderr. Use separate session contract tests for fatal/recoverable/budget/partial behavior.",
+    "interpretation": "Observed1.584-3.083x median improvement over reconstruction/restart-per-observation supports an explicit persistent-session feature when the application requires repeated observation delivery. It does not beat one-shot integration: persistent is about1.0-16.7percent slower than facade-one-shot here. One-shot remains preferred when all observations can be delivered in one call.",
+    "work_explanation": "Session preserves controller/step/FSAL history. Restart comparator resets h0/controller/FSAL and reconstructs each interval, so savings combine fewer RHS attempts and avoided construction; not a faster numerical method or faster RHS kernel.",
+    "scope_limits": [
+      "DOPRI5 only; no stiff RODAS session timing.",
+      "Cheap1D/2D/32D linear smooth autonomous fixtures; oscillator frequency3 over t4 is12radians, not a long rapidly oscillating campaign.",
+      "No external comparator, no broad work-precision tournament, no independent multi-host replication.",
+      "Different per-mode batch sizes can interact with cache and scheduling; cyclic order reduces but does not eliminate bias.",
+      "The two observation-count runs must not be pooled as independent replications of an identical workload."
+    ]
+  },
+  "partial_failure_evidence": {
+    "source": "crates/vigilode/tests/production_session_contracts.rs",
+    "logs": [
+      "evidence/tests/session-initial.stdout.log",
+      "evidence/tests/session-rerun.stdout.log"
+    ],
+    "reported_tests": "9session contract tests and6selection contract tests passed in existing logs; reviewed without rerun",
+    "covered_contracts": [
+      "global attempt budget survives repeated advances",
+      "fatal callback stops once and cannot be retried",
+      "malformed callback after accepted checkpoint is fatal",
+      "recoverable errors and rejected work survive pause",
+      "early return preserves last unscheduled accepted checkpoint",
+      "invalid target/epoch leaves state/work unchanged",
+      "selection ensure_success retains partial failed result"
+    ],
+    "qualification": "scoped deterministic correctness tests; not failure incidence in the timing data"
+  },
+  "recommendation": {
+    "keep_public_explicit_session": true,
+    "enable_automatic_algorithm_switching": false,
+    "replace_one_shot_default": false,
+    "publish_restart_speed_ratios": "Only as descriptive ratios for repeated equal-observation delivery, with raw sample spread and all baseline labels.",
+    "require_statistical_speed_claim": "Additional independent interleaved process/host repetitions and predefined inference before confidence/superiority claims. No need to repeat unchanged correctness proofs.",
+    "broad_solver_status": "Remain restricted/conditional until promised domain robustness and same-error external comparisons are completed; events,DAE/PDE/global certificates are optional when clearly excluded."
+  }
+}

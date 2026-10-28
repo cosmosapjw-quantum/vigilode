@@ -1,0 +1,157 @@
+{
+  "schema": "vigilode.general-ode-next-steps.v1",
+  "ncp_allowed": false,
+  "scope": "general ODE only",
+  "items": [
+    {
+      "id": "G1",
+      "priority": 0,
+      "status": "READY_FOR_REGISTERED_VALIDATION",
+      "required_for": "broad advertised robustness/performance claims",
+      "task": "Current-source matched-accuracy corpus and external comparison",
+      "depends_on": [
+        "selected-source-freeze"
+      ],
+      "methods": [
+        "DOPRI5",
+        "RODAS5P dense",
+        "RODAS5P compact-band",
+        "supplied-JVP when authorized"
+      ],
+      "comparators": [
+        "VODE/DVODE",
+        "diffsol",
+        "Julia OrdinaryDiffEq"
+      ],
+      "acceptance": [
+        "Preserve every failure/timeout and setup cost",
+        "Reference uncertainty <=10% of error allowance",
+        "Use common physical observation times and units",
+        "Check state error plus phase/amplitude for oscillatory cases",
+        "Publish per-family work-precision curves with process-level timing dispersion",
+        "Stream structured rows and receipts before each next case; current session microbenchmark only emits complete results on success"
+      ],
+      "stop_rule": "Hold any failing domain; no pooled speed claim across different sources/error contracts",
+      "implementation_locations": [
+        "crates/vigilode/examples/production_core_survey.rs",
+        "BENCHMARK_PLAN.json"
+      ]
+    },
+    {
+      "id": "G2",
+      "priority": 1,
+      "status": "OPTIMIZATION_POSSIBLE",
+      "required_for": "resumable implicit facade and future low-overhead switching, optional endpoint feature",
+      "task": "Expose native RODAS session through guarded facade",
+      "depends_on": [
+        "G1 callback/partial-result regressions"
+      ],
+      "implementation_locations": [
+        "crates/vigilode/src/session.rs",
+        "crates/vigilode/src/solve.rs",
+        "crates/rodas5p-integrators/src/rodas5p_fast.rs"
+      ],
+      "acceptance": [
+        "Preserve route/Jacobian/FD guard and counters over every advance",
+        "Match uninterrupted state and work at fixed schedule",
+        "Stale provider/tolerance/norm epochs rejected before work",
+        "Sticky fatal errors and global budget across pauses",
+        "Include all startup/provider costs in measured reuse gain"
+      ],
+      "stop_rule": "Do not substitute explicit integration for a requested stiff session"
+    },
+    {
+      "id": "G3",
+      "priority": 2,
+      "status": "RESEARCH_ONLY_DEFAULT_OFF",
+      "task": "Accepted-state switching with measured amortization",
+      "depends_on": [
+        "G2"
+      ],
+      "mathematical_condition": "If per-window costs E>I are stable and setup/probe cost P>=0, K>P/(E-I) suffices for net cost reduction. It does not forecast future stiffness.",
+      "acceptance": [
+        "State-continuous switch only after acceptance",
+        "Invalidate method-specific caches",
+        "Derivative authorization unchanged by diagnostics",
+        "Charge discarded probes and failed startups",
+        "Predeclare entry/exit hysteresis and unchanged control set",
+        "Proposed engineering admission: median ratio>=1.2 in declared target domain, no supported control slowdown>2; evaluate uncertainty separately"
+      ],
+      "stop_rule": "No observed benefit => keep default off; no advantage after bounded optimization => remove from main optimization priority"
+    },
+    {
+      "id": "G4",
+      "priority": 2,
+      "status": "SPECIALIZED_RESEARCH",
+      "task": "Declared-frequency step cap from proved oscillatory bound",
+      "depends_on": [
+        "G1"
+      ],
+      "assumptions": [
+        "Constant-frequency scalar rotation or normal skew-Hermitian linear operator",
+        "Certified or user-supplied spectral frequency bound",
+        "Roundoff/reference budget separate"
+      ],
+      "acceptance": [
+        "Enforce omega_max*h<=0.9",
+        "Choose hmax from stated global bound",
+        "Test variable schedules and multiple frequencies",
+        "Compare overhead and actual error to unmodified DOPRI5/RODAS5P"
+      ],
+      "stop_rule": "Do not infer certified spectral bounds from a few RHS samples; nonnormal/nonlinear requires additional analysis"
+    },
+    {
+      "id": "G5",
+      "priority": 2,
+      "status": "PROFILE_FIRST",
+      "task": "Reduce vector-memory traffic and structured solve cost",
+      "depends_on": [
+        "G1"
+      ],
+      "implementation_locations": [
+        "crates/rodas5p-integrators/src/dopri5.rs",
+        "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+        "crates/vigilode/src/fd.rs"
+      ],
+      "acceptance": [
+        "Profile allocations and bytes traversed per accepted trajectory",
+        "Retain finite-output and accepted-state checks",
+        "Measure compact bandwidth rather than dimension-only complexity",
+        "Separate single-trajectory latency from ensemble throughput"
+      ],
+      "stop_rule": "No hotspot or matched-accuracy benefit => no speculative rewrite"
+    },
+    {
+      "id": "G6",
+      "priority": 3,
+      "status": "SPECIALIZED_ONLY_OR_RESEARCH",
+      "task": "Reconsider affine/causal/polynomial/homotopy only under a concrete winning condition",
+      "depends_on": [
+        "G1"
+      ],
+      "acceptance": [
+        "Declare structure and original residual checks",
+        "Use strongest applicable direct/structured baseline",
+        "Measure end-to-end error/cost including provider and failed guesses",
+        "Reuse existing negative results unless dependency or hypothesis changes"
+      ],
+      "stop_rule": "No advantage => retain reproducibility API only, exclude automatic selection and active core optimization"
+    },
+    {
+      "id": "G7",
+      "priority": 3,
+      "status": "OPTIONAL_FEATURE",
+      "task": "In-loop terminal events with validated interpolation",
+      "depends_on": [
+        "G2"
+      ],
+      "acceptance": [
+        "No RHS calls past accepted termination policy",
+        "Explicit sign/tangent/multiple-root semantics",
+        "Typed interpolation failures and partial state",
+        "Do not describe legacy postprocessing as early termination"
+      ],
+      "stop_rule": "Absent feature is refused and does not block endpoint-only use"
+    }
+  ]
+}

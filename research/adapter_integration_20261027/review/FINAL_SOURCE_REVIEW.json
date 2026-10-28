@@ -1,0 +1,125 @@
+{
+  "schema": "vigilode.final_switching_delta_review.v1",
+  "date": "2026-10-27",
+  "reviewer": "current_evidence_audit subagent, independent of implementation",
+  "review_mode": "Read-only source delta review; no Cargo, solver execution, or source edits",
+  "prior_review": {
+    "path": "research/adapter_integration_20261027/review/INDEPENDENT_SWITCHING_REVIEW.json",
+    "sha256": "3fc0d3e2b4fbbb7ce32d779cd1b305b2c2b7ad573d8797c90c6de452a6d9a0b0",
+    "preserved_unchanged": true
+  },
+  "source_sha256": "f60158f20e2d526c7587fed9850e6059a3a19d9debd093378f45c57336aae177",
+  "reviewed_files": [
+    {
+      "path": "crates/vigilode/src/switching.rs",
+      "previous_review_sha256": "77dca39a7b1d2af6266ee73a051e7fa7e3219a05c42b45090deb84fca207f5cc",
+      "final_review_sha256": "f60158f20e2d526c7587fed9850e6059a3a19d9debd093378f45c57336aae177",
+      "changed": true
+    },
+    {
+      "path": "crates/vigilode/src/selection_evidence.rs",
+      "previous_review_sha256": "4f4fdc05f24a34fd1b3e300a098841c191021d412a1680f83d1030296474421f",
+      "final_review_sha256": "4f4fdc05f24a34fd1b3e300a098841c191021d412a1680f83d1030296474421f",
+      "changed": false
+    },
+    {
+      "path": "crates/vigilode/tests/switching_integration_contracts.rs",
+      "previous_review_sha256": "240f6874431c5098e0c1e10a5158b6b95d6ad2d43d65f15f29c4ff955d8889bd",
+      "final_review_sha256": "bbbb79d8fcc441215f856e88cf5bfa9924db4416d99072995eefb0d8e88f708c",
+      "changed": true
+    },
+    {
+      "path": "crates/vigilode/tests/adaptive_entry_contracts.rs",
+      "previous_review_sha256": "6764bf0dda1fd372a4282bb276545fb734179024b4c2b04960bb41173f226ec4",
+      "final_review_sha256": "6764bf0dda1fd372a4282bb276545fb734179024b4c2b04960bb41173f226ec4",
+      "changed": false
+    },
+    {
+      "path": "crates/vigilode/tests/switching_economy_contracts.rs",
+      "previous_review_sha256": "005c4880bd9fadb20711838b68f9c31f7f5e5df224beaf7cc49f8c41b74aa353",
+      "final_review_sha256": "005c4880bd9fadb20711838b68f9c31f7f5e5df224beaf7cc49f8c41b74aa353",
+      "changed": false
+    },
+    {
+      "path": "crates/vigilode/tests/switching_contracts.rs",
+      "previous_review_sha256": "a931e36030fcb66b1bd02860ce926c257e60b9b0b51c07c35f478a1f11ec5301",
+      "final_review_sha256": "a931e36030fcb66b1bd02860ce926c257e60b9b0b51c07c35f478a1f11ec5301",
+      "changed": false
+    },
+    {
+      "path": "crates/vigilode/tests/switching_persistent_explicit.rs",
+      "previous_review_sha256": "aaace3967ef470750d13af251af530f1f8abab9474ffca37f3002ffd39d9094e",
+      "final_review_sha256": "aaace3967ef470750d13af251af530f1f8abab9474ffca37f3002ffd39d9094e",
+      "changed": false
+    }
+  ],
+  "decision": "NO_NEW_BLOCKING_SOURCE_DEFECT_FOUND",
+  "runtime_validation": "Parent execution receipts are authoritative; not performed by this reviewer",
+  "checks": [
+    {
+      "id": "D01",
+      "subject": "Winning entry pilot step reuse",
+      "status": "SOURCE_REVIEW_PASS",
+      "detail": "reuse_entry_pilot_step defaults false and evidence_driven inherits false; adaptive_evidence enables it. entry_seed is initialized None for each eligible pressure batch and is populated only for an economical completed, nonfatal pilot with positive accepted_steps. Only finite positive (reached-start)/accepted_steps is transferred."
+    },
+    {
+      "id": "D02",
+      "subject": "Physical checkpoint and controller qualification",
+      "status": "SOURCE_REVIEW_PASS",
+      "detail": "The winning pilot remains uncommitted. The explicit accepted state is committed as before. The next implicit run starts at that accepted endpoint and merely uses the pilot mean as h0; native acceptance/error/callback checks remain unchanged. No pilot state, Jacobian, FSAL data or controller history is transplanted."
+    },
+    {
+      "id": "D03",
+      "subject": "Seed lifecycle and legacy isolation",
+      "status": "SOURCE_REVIEW_PASS",
+      "detail": "implicit_seed becomes entry_seed only when enter is true. Failed/uneconomical/fatal pilots do not supply a seed. Reused seed propagates across the explicit-session exit via DriveState and is superseded by the next productive implicit mean. The false default preserves the old entry seed behavior."
+    },
+    {
+      "id": "D04",
+      "subject": "Seed-specific regression coverage",
+      "status": "SOURCE_REVIEW_PASS",
+      "detail": "completed_winning_entry_pilot_can_seed_only_the_next_implicit_proposal compares enabled/disabled behavior, checks the pilot is not committed, the explicit endpoint is retained, next.initial_step matches the clipped mean, first-pilot work is unchanged, both final errors satisfy the fixture bound, and all aggregate work fields reconcile. rejected_entry_pilots_never_supply_a_seed checks no-switch rotation stats and state are equal."
+    },
+    {
+      "id": "D05",
+      "subject": "Tiny explicit and implicit endpoint proposals",
+      "status": "SOURCE_REVIEW_PASS",
+      "detail": "Main batches and both replay paths use proposal.min(span).max(native_min_step), keeping their configuration valid while native endpoint clipping handles a shorter representable tail. Top-level validation remains before this derived proposal adjustment. New private implicit tiny-tail fixture checks endpoint, finite error, accounting_complete, successful committed implicit segment. Explicit tiny-tail fixture remains."
+    },
+    {
+      "id": "D06",
+      "subject": "Fatal and budget paths unchanged by seed reuse",
+      "status": "SOURCE_REVIEW_PASS",
+      "detail": "All pilot work is charged before seed derivation. Fatal path checks remain before later method progression; no seed is used after a fatal callback. Attempt limits and remaining calculations are unchanged."
+    },
+    {
+      "id": "D07",
+      "subject": "Return ceiling overflow helper",
+      "status": "SOURCE_REVIEW_PASS",
+      "detail": "Saturating float-to-u64 conversion followed by saturating_add(1) handles nonfinite or overflowing historical work rates without integer overflow. The helper and unit fixture were already present at the prior reviewed snapshot; their appearance in the unstaged diff is not a new discovery."
+    }
+  ],
+  "prior_finding_dispositions": [
+    {
+      "id": "F01",
+      "status": "DOCUMENTATION_RESOLVED_DESIGN_LIMITATION_RETAINED",
+      "detail": "Public solve rustdoc now explicitly says the historical return ceiling can postpone useful returns after regime changes and does not establish current-window optimality. Historical prefilter false negatives remain an acknowledged future-research item."
+    },
+    {
+      "id": "F02",
+      "status": "REQUESTED_COUNTER_ASSERTIONS_ADDED",
+      "detail": "Productive same-window comparator fixture now checks attempts, accepted/rejected steps, RHS, Jacobian, JVP, dfdt and linear solves against segment sums. New seed fixture repeats complete aggregate work reconciliation for its distinct behavior. This source review does not claim those tests were executed."
+    },
+    {
+      "id": "F03",
+      "status": "RETAINED_REPORT_REQUIREMENT",
+      "detail": "is_probe=true with committed=true still denotes productive comparator work. Analyzer/report classification must use disposition/evidence. Final source delta does not require changing this intentional telemetry."
+    }
+  ],
+  "remaining_limits": [
+    "The mean accepted pilot step is a local heuristic; it can increase rejection after a rapid future regime change. Native error checks are retained, but source inspection does not establish speedup or global accuracy.",
+    "The historical return screening can miss beneficial explicit returns; documentation is corrected, not the scheduling limitation.",
+    "Source-level review is not production certification or a substitute for parent runtime/benchmark validation."
+  ],
+  "new_blocking_findings": []
+}

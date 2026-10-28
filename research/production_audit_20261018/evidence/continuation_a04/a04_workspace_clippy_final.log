@@ -1,0 +1,63 @@
+   Compiling rodas5p-fair-ab v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-fair-ab)
+    Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+error: float has excessive precision
+   --> crates/rodas5p-integrators/tests/production_audit_packet.rs:281:14
+    |
+281 |             (0.19899001674991639, 0.10199496670849986),
+    |              ^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#excessive_precision
+    = note: `-D clippy::excessive-precision` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::excessive_precision)]`
+help: consider changing the type or truncating it to
+    |
+281 -             (0.19899001674991639, 0.10199496670849986),
+281 +             (0.198_990_016_749_916_4, 0.10199496670849986),
+    |
+
+error: the loop variable `mode` is used to index `reference`
+   --> crates/rodas5p-integrators/tests/production_audit_packet.rs:294:21
+    |
+294 |         for mode in 0..2 {
+    |                     ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+    |
+294 -         for mode in 0..2 {
+294 +         for (mode, <item>) in reference.iter().enumerate().take(2) {
+    |
+
+error: could not compile `rodas5p-integrators` (test "production_audit_packet") due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: the loop variable `j` is only used to index `a`
+  --> crates/rodas5p-integrators/tests/production_audit_collective_direct.rs:30:18
+   |
+30 |         for j in k..n {
+   |                  ^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+   = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator
+   |
+30 -         for j in k..n {
+30 +         for <item> in a.iter_mut().take(n).skip(k) {
+   |
+
+error: the loop variable `j` is only used to index `a`
+  --> crates/rodas5p-integrators/tests/production_audit_collective_direct.rs:37:26
+   |
+37 |                 for j in k..n {
+   |                          ^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator
+   |
+37 -                 for j in k..n {
+37 +                 for <item> in a.iter_mut().take(n).skip(k) {
+   |
+
+error: could not compile `rodas5p-integrators` (test "production_audit_collective_direct") due to 2 previous errors

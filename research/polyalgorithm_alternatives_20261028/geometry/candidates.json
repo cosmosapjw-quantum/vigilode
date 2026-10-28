@@ -1,0 +1,508 @@
+{
+  "schema": "vigilode.polyalgorithm.geometry_candidates.v1",
+  "date_utc": "2026-10-28",
+  "source_commit": "7eb2dd0ffda39afb2871d76700a720986ff09fe0",
+  "scope": {
+    "skill": "physmath-research-loop",
+    "skill_version": "1.3.0",
+    "stages": [
+      "R2",
+      "R4"
+    ],
+    "supporting_derivations": true,
+    "full_research_cycle_claimed": false,
+    "native_solver_execution": false,
+    "runtime_source_modified": false,
+    "performance_improvement_claimed": false,
+    "production_closure_claimed": false,
+    "check_execution": "parent_only_after_preregistration_commit"
+  },
+  "skill_context_used": [
+    "SKILL.md supplied 1.3.0 context",
+    "STAGE_GUIDE_KO.md supplied context",
+    "POLICY_INTEGRATION.md supplied context",
+    "SUBAGENT_MODE.md supplied context",
+    "R2/R4 stage-local scope; no recursive delegation"
+  ],
+  "primary_sources": [
+    {
+      "id": "KunkelMehrmann2022",
+      "url": "https://arxiv.org/pdf/2205.08105",
+      "locations": [
+        "Hypothesis 2.1",
+        "Sections 3 and 4",
+        "Theorems 4.2 and 4.4",
+        "Experiment 5.2",
+        "Conclusions"
+      ],
+      "used_scope": "Regular inherent-ODE reduction and linear time-varying DAE symmetry; not a generic derivative-free nonlinear DAE theorem"
+    },
+    {
+      "id": "AmmariETHLecture5",
+      "url": "https://people.math.ethz.ch/~grsam/FS18/NAII/files/slides/ODE-Lecture5.pdf",
+      "locations": [
+        "Composition and splitting sections",
+        "Leapfrog section",
+        "Runge-Kutta quadratic invariant and symplecticity derivation"
+      ],
+      "used_scope": "Declared Hamiltonian subflows and exact RK coefficient identities"
+    }
+  ],
+  "reused_sources": [
+    {
+      "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "symbols": [
+        "MeanFieldPlan::algebraic_residual_budget",
+        "MeanFieldEnclosurePlan::step",
+        "endpoint"
+      ],
+      "result": "Fixed-step scalar adjoint residual transport and represented-stage enclosure; physical/variable-step closure remains separate"
+    },
+    {
+      "path": "research/production_solver_closure_20261027/structural/THEORY.md",
+      "result": "Full represented-stage error decomposition and sharp projector-block infinity norm"
+    },
+    {
+      "path": "research/derivative_free_causal_homotopy_20261027/theory/THEORY.md",
+      "sections": [
+        "Theorem B",
+        "Theorem C",
+        "Theorem D"
+      ],
+      "result": "Finite propagation, no-contraction majorant, exact cache work example and mean-field quotient"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/causal.rs",
+      "symbols": [
+        "forward",
+        "picard",
+        "picard_reuse"
+      ],
+      "result": "Shared projected diagonal factor, causal solves, exact input/prefix reuse and charged failure handling"
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/quotient_flow.rs",
+      "symbols": [
+        "DampedRotationFlow",
+        "LawsonDopri5Workspace"
+      ],
+      "result": "Declared finite-algebra flow and forward-semigroup RHS-only Lawson implementation"
+    },
+    {
+      "path": "research/production_audit_20261018/WOODBURY_THEORY.md",
+      "result": "Finite-rank algebraic structure precedents"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "G-TRANSPORT",
+      "priority": 1,
+      "pr_tasks": [
+        "PR-N03"
+      ],
+      "status": "derived_extension_unimplemented",
+      "purpose": "Extend existing sharp two-channel stage residual transport to accepted variable-step grids.",
+      "reuse": "Existing fixed-step scalar adjoint weights and exact block norm.",
+      "incremental_addition": "G1-G6 replace scalar powers by variable-step channel products and identify endpoint, clock and temporal defects.",
+      "exact_constants": [
+        "L_k(r) diagonal 1+h_k*gamma*r and lower entries h_k*gamma*r*a_ij-gamma*c_ij",
+        "w_k,r = transpose(L_k(r))^(-1)*b_code",
+        "nu_n(t,c)=abs(t+(c-t)/n)+(n-1)*abs((c-t)/n)",
+        "stage coefficients use the actual stored b_code values"
+      ],
+      "prerequisites": [
+        "Fixed declared mean-field projector over the accepted trajectory",
+        "Full original-space residual enclosures",
+        "Each accepted represented h and time label recorded",
+        "Outward scalar recurrence arithmetic"
+      ],
+      "derivative_contract": "No derivative oracle for the declared immutable affine family.",
+      "expected_work": "Two scalar triangular adjoints per distinct step size; scalar product recurrence plus required vector endpoint work.",
+      "acceptance": [
+        "Enclose variable-step full-block reference including n=1 and d=kappa",
+        "Retain endpoint, temporal and time-label terms before any physical-accuracy claim",
+        "Invalidate on model/projector epoch change",
+        "Charge rejected attempts and failed enclosure construction"
+      ],
+      "risks": [
+        "An accepted-grid a posteriori bound is not a forecast certificate for unknown future steps",
+        "Ordinary f64 evaluation is not outward certification"
+      ],
+      "theorem_ids": [
+        "G1",
+        "G2",
+        "G3",
+        "G4",
+        "G5",
+        "G6"
+      ],
+      "correction_budget_owners": [
+        "PR-N03"
+      ]
+    },
+    {
+      "id": "G-EXACT-FLOW",
+      "priority": 1,
+      "pr_tasks": [
+        "PR-N03"
+      ],
+      "status": "candidate_derived_unimplemented",
+      "purpose": "Route declared immutable affine mean-field models to exact flow and certify total physical defects.",
+      "reuse": "DampedRotationFlow and forward-semigroup quotient architecture.",
+      "incremental_addition": "G7 mean-field exponential/phi flow, G8-G9 observable local physical defect transport.",
+      "exact_constants": [
+        "phi1(0)=1",
+        "infinity semigroup norm=exp(-(d-kappa)*t)",
+        "E_next=exp(-(d-kappa)*Delta)*E+local_defect"
+      ],
+      "prerequisites": [
+        "Constant declared rates, forcing and projector",
+        "Certified scalar exponential and phi enclosures",
+        "Clock difference Delta=t_next-t represented consistently"
+      ],
+      "derivative_contract": "Analytic means and vector combinations only; no Jacobian, JVP or Newton.",
+      "expected_work": "O(n) exact flow and defect evaluation; compare full setup and certification cost with eight-stage structural route.",
+      "acceptance": [
+        "Match an independent high-precision affine flow on nonuniform states and forcing",
+        "Cover tiny/subnormal arguments, large decay, zero collective rate and n=1",
+        "Retain cancellation/mean/lift/transcendental enclosure error",
+        "Compare total physical error and charged work"
+      ],
+      "risks": [
+        "A final next-up operation cannot certify an arbitrary libm transcendental result",
+        "Without scalar enclosures this is a physical estimate, not a certificate"
+      ],
+      "theorem_ids": [
+        "G7",
+        "G8",
+        "G9"
+      ],
+      "correction_budget_owners": [
+        "PR-N03"
+      ]
+    },
+    {
+      "id": "G-CAUSAL-BUDGET",
+      "priority": 1,
+      "pr_tasks": [
+        "PR-N05"
+      ],
+      "status": "reused_principle_with_derived_contract",
+      "purpose": "Allocate raw-U full-residual error through exact finite causal amplification to the endpoint.",
+      "reuse": "Existing finite propagation and nilpotent majorant; no need to rediscover uniqueness or impose global contraction.",
+      "incremental_addition": "G11 direct raw-U coefficients, G13 carrier-aware remainder majorant, explicit order and domain requirements.",
+      "exact_constants": [
+        "B_ij=omega*(h*gamma*L_i*abs(a_ij)+abs(gamma*c_ij))",
+        "e <= omega*sum_{k=0}^{s-1}B^k*rho",
+        "carrier majorant=sum_{k=0}^{s-1}(D*N)^k*D",
+        "mean-field omega=1/(1+h*gamma*(d-kappa))"
+      ],
+      "prerequisites": [
+        "Original-space residual bound",
+        "Valid inverse/operator and nonlinear remainder bounds",
+        "Stage-domain enclosure",
+        "Fixed provider, basis and epoch identity",
+        "Separate temporal order proof for a changed frozen operator"
+      ],
+      "derivative_contract": "Model-supplied analytic bounds can be derivative-free; sampled JVP slopes do not certify whole-domain bounds.",
+      "expected_work": "Small triangular endpoint-weight recurrence; full baseline includes projection, lifting, factors, certification and failures.",
+      "acceptance": [
+        "Compare endpoint bounds with independent high-precision nonlinear causal roots",
+        "Include a valid unweighted majorant norm exceeding one",
+        "Check domain exits and basis/epoch changes",
+        "Use forward substitution as the strong work/span baseline",
+        "Preserve order only after endpoint defects meet a proved h^(p+1) budget"
+      ],
+      "risks": [
+        "Projected residual is insufficient",
+        "Finite propagation is not uniform stiff temporal order",
+        "Existing worst-case cache example 28 RHS versus forward seven does not establish speedup"
+      ],
+      "theorem_ids": [
+        "G10",
+        "G11",
+        "G12",
+        "G13",
+        "G14"
+      ],
+      "correction_budget_owners": [
+        "PR-N05"
+      ]
+    },
+    {
+      "id": "G-INVARIANT-SPLIT",
+      "priority": 2,
+      "pr_tasks": [
+        "PR-N03",
+        "PR-N05"
+      ],
+      "status": "candidate_derived_unimplemented",
+      "purpose": "Integrate a declared small invariant block exactly and use a polynomial action on the complementary dissipative block.",
+      "reuse": "Existing quotient algebra and finite-rank reduction work.",
+      "incremental_addition": "G23 exact invariant split; G24 explicit approximate-invariance leakage budget.",
+      "exact_constants": [
+        "For orthogonal P, delta=norm(A-A0)=norm([A,P]), A0=PAP+QAQ",
+        "flow leakage <= t*delta*exp(omega*t)"
+      ],
+      "prerequisites": [
+        "Declared orthogonal projector and exact action or certified commutator bound",
+        "Common semigroup growth bound",
+        "Complementary spectral certificate",
+        "Full complement retained"
+      ],
+      "derivative_contract": "No AD if actions/projector are provided analytically; generic polynomial-of-J construction still needs valid operator actions.",
+      "expected_work": "Low-rank projections plus exact small block and reduced-degree complement polynomial; projection cost must be charged.",
+      "acceptance": [
+        "Verify commutator/leakage and projector arithmetic",
+        "Compare reduced polynomial degree and total cost",
+        "Track invariant and physical error independently"
+      ],
+      "risks": [
+        "A sampled commutator is not an operator norm certificate",
+        "Dropping the complement changes the model"
+      ],
+      "theorem_ids": [
+        "G23",
+        "G24"
+      ],
+      "correction_budget_owners": [
+        "PR-N01",
+        "PR-N05"
+      ]
+    },
+    {
+      "id": "G-GEOMETRIC-RK",
+      "priority": 2,
+      "pr_tasks": [
+        "PR-N05"
+      ],
+      "status": "optional_extension_derived",
+      "purpose": "Provide structure-specific force-only splitting or invariant-budgeted derivative-free implicit RK.",
+      "reuse": "Primary geometric composition and RK coefficient results; existing homotopy map-only solver architecture.",
+      "incremental_addition": "G20-G22 translate actual inexact stage/RHS/endpoint defects into invariant drift; exact step-schedule counterexamples.",
+      "exact_constants": [
+        "Verlet fixed oscillator bound 0<h*omega<2",
+        "triple composition a=1/(2-2^(1/3)), b=-2^(1/3)/(2-2^(1/3))",
+        "invariant drift term -2*h*sum b_i*delta_i^T*C*F_i plus RHS and endpoint terms",
+        "inexact linear midpoint drift=2*m^T*C*q"
+      ],
+      "prerequisites": [
+        "Declared Hamiltonian split or exact RK coefficient identities",
+        "Invariant and force/action providers",
+        "Explicit fixed-step or separately proved geometric adaptivity contract",
+        "Original stage-state residual units"
+      ],
+      "derivative_contract": "Separable Verlet uses force/kinetic RHS only; derivative-free homotopy may solve implicit stages when its own assumptions hold.",
+      "expected_work": "Two force actions per nominal Verlet step, with possible endpoint reuse; implicit route cost governed by certified root solve.",
+      "acceptance": [
+        "Long-time phase and invariant error",
+        "Include represented-tableau coefficient defects",
+        "Verify inexact stage, RHS and endpoint drift separately",
+        "Test alternating h=1 and h=19/10 oscillator schedule",
+        "Do not equate bounded invariant drift with exact symplecticity"
+      ],
+      "risks": [
+        "State-dependent h can destroy symplecticity",
+        "Individually stable step maps can yield an unstable product",
+        "Negative composition substeps can be inadmissible for irreversible semigroups"
+      ],
+      "theorem_ids": [
+        "G16",
+        "G17",
+        "G18",
+        "G19",
+        "G20",
+        "G21",
+        "G22"
+      ],
+      "correction_budget_owners": [
+        "PR-N05"
+      ]
+    },
+    {
+      "id": "G-AFFINE-SCAN",
+      "priority": 3,
+      "pr_tasks": [
+        "PR-N05"
+      ],
+      "status": "optional_parallel_candidate",
+      "purpose": "Reduce dependency depth for predetermined affine steps in the declared finite algebra.",
+      "reuse": "Existing affine and quotient actions.",
+      "incremental_addition": "G15 associative affine pair scan with precise accepted-grid prerequisite.",
+      "exact_constants": [
+        "(S2,v2) o (S1,v1)=(S2*S1,S2*v1+v2)",
+        "O(N) pair compositions and O(log N) tree depth"
+      ],
+      "prerequisites": [
+        "Step sequence and affine coefficients known independently of state",
+        "Fixed algebra",
+        "Explicit output/storage budget"
+      ],
+      "derivative_contract": "No derivative oracle when affine structure is supplied.",
+      "expected_work": "O(Nn) vector shift and output work; only algebra composition has small scalar cost.",
+      "acceptance": [
+        "Compare total work, storage and output bandwidth with sequential forward flow",
+        "Charge discarded speculative intervals if used"
+      ],
+      "risks": [
+        "Ordinary adaptive acceptance is sequentially state dependent",
+        "Span improvement alone is not speedup"
+      ],
+      "theorem_ids": [
+        "G15"
+      ],
+      "correction_budget_owners": [
+        "PR-N05"
+      ]
+    },
+    {
+      "id": "G-DAE-PROVIDER",
+      "priority": 3,
+      "pr_tasks": [
+        "PR-N03",
+        "PR-N05"
+      ],
+      "status": "optional_scope_extension",
+      "purpose": "Reuse ODE engines through a declared smooth, equivalent constrained reduction.",
+      "reuse": "Kunkel-Mehrmann inherent ODE viewpoint under its actual regularity hypotheses.",
+      "incremental_addition": "G25 provider-level substitution contract and explicit constraint-defect budget.",
+      "exact_constants": [
+        "Reduced RHS includes -E*(dot(V)*z+dot(w))",
+        "Constraint defect=(C*V)*z+(C*w-g)+C*xi"
+      ],
+      "prerequisites": [
+        "Declared smooth lift V,w and all required derivatives",
+        "Invertible reduced E action",
+        "Original-DAE equivalence or valid full-residual theorem",
+        "Constraint identities and geometry pullback",
+        "Rank and model epoch validity"
+      ],
+      "derivative_contract": "Core can remain RHS-only if analytic reduced actions are supplied; automatic generic reduction requires additional derivatives/linear algebra.",
+      "expected_work": "Provider-dependent; measure reduction/setup and reconstruction before selecting route.",
+      "acceptance": [
+        "Original DAE residual and constraint drift",
+        "Moving-basis connection terms",
+        "Rank/epoch invalidation",
+        "Correct pulled-back symplectic or orthogonal form"
+      ],
+      "risks": [
+        "Linear symmetry theorems do not apply to arbitrary nonlinear DAEs",
+        "Projected invertibility alone does not prove equivalence"
+      ],
+      "theorem_ids": [
+        "G25"
+      ],
+      "correction_budget_owners": [
+        "PR-N05"
+      ]
+    }
+  ],
+  "planned_checks": {
+    "script": "research/polyalgorithm_alternatives_20261028/geometry/CHECK.py",
+    "status": "prepared_not_executed_by_lane",
+    "command": "python3 research/polyalgorithm_alternatives_20261028/geometry/CHECK.py --preregistration-sha <FULL_COMMITTED_SHA>",
+    "arithmetic": "Python standard-library fractions.Fraction",
+    "checks": [
+      {
+        "id": "G1-G6",
+        "purpose": "Variable-step scalar adjoint versus independently assembled rational full blocks and sharp accumulated norm"
+      },
+      {
+        "id": "G13",
+        "purpose": "Nonlinear carrier majorant with norm above one and valid analytic box bounds"
+      },
+      {
+        "id": "G20-G22",
+        "purpose": "Inexact midpoint invariant drift with stage/RHS/endpoint defects"
+      },
+      {
+        "id": "G17-G18",
+        "purpose": "Verlet determinant, exact alternating-step instability, and state-dependent exact-flow determinant"
+      }
+    ],
+    "limitations": [
+      "Finite supporting checks, not a proof for all inputs",
+      "No Rust/native runtime execution",
+      "No benchmark or profile",
+      "No production floating-point enclosure claim"
+    ]
+  },
+  "development_dag": [
+    {
+      "task": "N03-provider-and-enclosure-contract",
+      "depends_on": [],
+      "purpose": "Bind exact structural identity, epoch, norm and scalar enclosure capabilities"
+    },
+    {
+      "task": "N03-variable-step-transport",
+      "depends_on": [
+        "N03-provider-and-enclosure-contract"
+      ],
+      "purpose": "Port G1-G6 with endpoint and clock units"
+    },
+    {
+      "task": "N03-physical-affine-flow",
+      "depends_on": [
+        "N03-provider-and-enclosure-contract"
+      ],
+      "purpose": "Port G7-G9 with certified scalar functions"
+    },
+    {
+      "task": "N03-charged-adaptive-consumer",
+      "depends_on": [
+        "N03-variable-step-transport",
+        "N03-physical-affine-flow"
+      ],
+      "purpose": "Consume real physical error/work receipts"
+    },
+    {
+      "task": "N05-domain-and-residual-contract",
+      "depends_on": [],
+      "purpose": "Supply full-space inverse/remainder bounds and exact target identity"
+    },
+    {
+      "task": "N05-causal-endpoint-budget",
+      "depends_on": [
+        "N05-domain-and-residual-contract"
+      ],
+      "purpose": "Port G11/G13 and prove temporal-order scope"
+    },
+    {
+      "task": "N05-total-work-span-study",
+      "depends_on": [
+        "N05-causal-endpoint-budget"
+      ],
+      "purpose": "Compare strong forward baseline and matched-accuracy parallel alternatives"
+    },
+    {
+      "task": "OPTIONAL-invariant-split",
+      "depends_on": [
+        "N03-provider-and-enclosure-contract",
+        "N05-domain-and-residual-contract"
+      ],
+      "purpose": "Separate oscillatory/invariant blocks from dissipative polynomial complement"
+    },
+    {
+      "task": "OPTIONAL-geometric-route",
+      "depends_on": [
+        "N05-causal-endpoint-budget"
+      ],
+      "purpose": "Use declared split or invariant-budgeted implicit RK"
+    },
+    {
+      "task": "OPTIONAL-affine-scan",
+      "depends_on": [
+        "N03-physical-affine-flow"
+      ],
+      "purpose": "Evaluate predetermined-grid parallel composition"
+    },
+    {
+      "task": "OPTIONAL-DAE-provider",
+      "depends_on": [
+        "N03-provider-and-enclosure-contract"
+      ],
+      "purpose": "Only with declared regular reduction and reconstruction"
+    }
+  ],
+  "correction_budget_rule": "All candidates share the remaining budget of their parent PR-N task; alternative names do not reset or multiply it. The global LOCAL_DEVELOPMENT_PLAN.json is authoritative."
+}

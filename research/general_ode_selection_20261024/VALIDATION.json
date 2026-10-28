@@ -1,0 +1,59 @@
+{
+  "schema": "vigilode.general-ode-validation.v1",
+  "source_identity": "SOURCE_IDENTITY.json",
+  "native_checks": [
+    {
+      "receipt_prefix": "evidence/tests/vigilode-final-clean",
+      "exit_code": 0,
+      "passed": 154,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "receipt_prefix": "evidence/tests/native-final",
+      "exit_code": 0,
+      "passed": 44,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "receipt_prefix": "evidence/tests/norm-unit",
+      "exit_code": 0,
+      "passed": 1,
+      "failed": 0,
+      "ignored": 0
+    },
+    {
+      "receipt_prefix": "evidence/tests/doc-final",
+      "exit_code": 0,
+      "passed": 2,
+      "failed": 0,
+      "ignored": 0
+    }
+  ],
+  "unique_test_total": 201,
+  "core_survey": "PASS_SCOPED_ENDPOINT_SURVEY",
+  "core_survey_rows": 24,
+  "session_scopes": 6,
+  "session_mode_rows": 24,
+  "benchmark_build_exit": 0,
+  "early_failures_preserved": [
+    {
+      "receipt": "evidence/tests/session-initial",
+      "kind": "implementation compile failure corrected"
+    },
+    {
+      "receipt": "evidence/tests/vigilode-final",
+      "kind": "E0463 build artifact mismatch after native recompilation; not a numerical test failure"
+    },
+    {
+      "receipt": "evidence/tests/events-diagnostic",
+      "kind": "same build-cache failure reproduced; task-local vigilode artifacts cleaned and rebuilt with one job and incremental off"
+    }
+  ],
+  "cache_recovery": "Only task-local cargo clean -p vigilode; no source/lock/dependency changes. Final154facade checks pass.",
+  "external_comparisons": "NOT_RUN",
+  "ncp_used": false,
+  "full_workspace_test": "NOT_RUN; selected changed facade and native paths tested",
+  "source_hashes_still_match": true
+}

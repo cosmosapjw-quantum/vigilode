@@ -1,0 +1,90 @@
+[
+  {
+    "label": "python_wheels",
+    "source_argv": [
+      "tar",
+      "-czf",
+      "-",
+      "-C",
+      "/tmp",
+      "vigilode-component-wheels-20261018"
+    ],
+    "destination_argv": [
+      "ssh",
+      "-i",
+      "/home/cosmosapjw/.ssh/ncp_key",
+      "-o",
+      "BatchMode=yes",
+      "-o",
+      "ConnectTimeout=10",
+      "root@49.50.142.2",
+      "tar -xzf - -C /root/VIGILODE_COMPONENT_20261018T134235Z/assets"
+    ],
+    "exit_codes": [
+      0,
+      0
+    ],
+    "compressed_bytes": 51359042,
+    "archive_sha256": "bf1e71bba592a6ac32db366db3b0c347220b6c1152ecad4a0f97b5bf9fb4db80",
+    "elapsed_seconds": 24.410443558939733
+  },
+  {
+    "label": "julia_runtime",
+    "source_argv": [
+      "tar",
+      "-czf",
+      "-",
+      "-C",
+      "/home/cosmosapjw/.julia/juliaup",
+      "julia-1.12.7+0.x64.linux.gnu"
+    ],
+    "destination_argv": [
+      "ssh",
+      "-i",
+      "/home/cosmosapjw/.ssh/ncp_key",
+      "-o",
+      "BatchMode=yes",
+      "-o",
+      "ConnectTimeout=10",
+      "root@49.50.142.2",
+      "tar -xzf - -C /root/VIGILODE_COMPONENT_20261018T134235Z/env"
+    ],
+    "exit_codes": [
+      0,
+      0
+    ],
+    "compressed_bytes": 289986040,
+    "archive_sha256": "460468cd17cfd01a60b3ff5364fb3eb536405b2ba3b52f1ee4f66f569f6a377a",
+    "elapsed_seconds": 139.05513885896653
+  },
+  {
+    "label": "julia_environment",
+    "source_argv": [
+      "tar",
+      "-czf",
+      "-",
+      "-C",
+      "/tmp",
+      "vigilode-component-julia-env-20261018",
+      "vigilode-component-julia-depot-20261018"
+    ],
+    "destination_argv": [
+      "ssh",
+      "-i",
+      "/home/cosmosapjw/.ssh/ncp_key",
+      "-o",
+      "BatchMode=yes",
+      "-o",
+      "ConnectTimeout=10",
+      "root@49.50.142.2",
+      "tar -xzf - -C /root/VIGILODE_COMPONENT_20261018T134235Z/env"
+    ],
+    "exit_codes": [
+      1,
+      0
+    ],
+    "compressed_bytes": 417347176,
+    "archive_sha256": "3f877ad56ee5117fd0329b5cb34685d033eb440bf66a79c16228219e516d05ea",
+    "elapsed_seconds": 205.74069269490428
+  }
+]

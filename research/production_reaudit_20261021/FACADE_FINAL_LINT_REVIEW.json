@@ -1,0 +1,34 @@
+{
+  "schema": "vigilode.facade-final-lint-review.v1",
+  "date": "2026-10-21",
+  "reviewer": "/root/facade_audit",
+  "implementer": "/root/runtime_restore",
+  "status": "PASS_SOURCE_EQUIVALENCE_REVIEW",
+  "scope": "Jacobian::Banded validation single_match -> if let only",
+  "file": "crates/vigilode/src/solve.rs",
+  "line_at_review": 686,
+  "source_before_sha256": "d05233df298e206bb096b7e763c280a9248e1ecb8da8cd0c8748b66af2d9f53d",
+  "source_after_sha256": "e1ad9ea19c0cd948b33fc67e67876b111262a3252ad807cc62af119e2e2331f8",
+  "n01_historical_sha256": "d05233df298e206bb096b7e763c280a9248e1ecb8da8cd0c8748b66af2d9f53d",
+  "before_matches_n01_receipt": true,
+  "diff_sha256": "f27ac0b207961c52b1dddeeeb128ef8aa7ac47915988cdd483e87715a4021ac8",
+  "checks": [
+    "Same &problem.jacobian place is immutably borrowed and evaluated once.",
+    "Same Banded pattern and match ergonomics bind lower and upper as shared references; callback payload remains ignored and unmoved.",
+    "Exactly Banded enters the block; all other variants execute no action, matching prior wildcard-unit arm.",
+    "Same band_ok predicate, declared-band equality, early-return order and formatted error strings.",
+    "Primary unsupported and declared structure checks stay before this block; final JVP-band unsupported check stays after it.",
+    "No user callback invocation, arithmetic, allocation path or return value added/removed; shared-reference scope introduces no owned destructor difference."
+  ],
+  "verification": {
+    "independent_review": "read-only diff and surrounding validate control flow",
+    "cargo_or_tests_run_by_reviewer": false,
+    "native_revalidation": "root final04 matrix owns final-source tests/clippy; outcome not asserted here"
+  },
+  "n01_addendum": {
+    "historical_receipts_modified": false,
+    "meaning": "N01 native receipts remain bound to the pre-lint solve.rs hash; this review binds the minimal equivalent rewrite. Final integrated execution must use source_after_sha256."
+  },
+  "promotion_changed": false,
+  "broad_production": "HOLD"
+}

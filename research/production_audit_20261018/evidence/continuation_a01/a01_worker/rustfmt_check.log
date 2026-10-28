@@ -1,0 +1,23 @@
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:584:
+     // Kernel tail bound tau = (width * h)^{p+1} / (p+1)!
+     let width = packet.model.width();
+     let p = packet.order;
+-    let tau = (width * spectral_radius * h).powi((p + 1) as i32)
+-        / factorial(p + 1)
+-        * weight_sum;
++    let tau = (width * spectral_radius * h).powi((p + 1) as i32) / factorial(p + 1) * weight_sum;
+ 
+     // Initial amplitude upper bound sum w_j |z_j|
+     let mut a0 = 0.0;
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:1:
+ //! New adversarial regressions for the 2026-10-18 packet audit.
+ use rodas5p_integrators::{
+-    CausalWeights, CollectiveModel, PacketWorkCounters, TrajectoryConfig, compile_packet,
+-    compute_certificate, evaluate_mode_at, generate_candidate, reconstruct_modes,
+-    run_packet_trajectory,
++    compile_packet, compute_certificate, evaluate_mode_at, generate_candidate, reconstruct_modes,
++    run_packet_trajectory, CausalWeights, CollectiveModel, PacketWorkCounters, TrajectoryConfig,
+ };
+ 
+ fn one_mode(width: f64, chi: f64, kappa: f64) -> CollectiveModel {
+exit=1

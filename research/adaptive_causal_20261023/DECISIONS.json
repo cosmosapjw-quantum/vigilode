@@ -1,0 +1,200 @@
+{
+  "schema": "vigilode.adaptive-causal-decisions.v1",
+  "date": "2026-10-23",
+  "baseline_commit": "14c74978b93339a79d7228a324fa77552dae548e",
+  "first_native_commit": "548526add83a38a996875b3bd2f3cd3357465ed6",
+  "final_native_commit": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+  "broad_production": {
+    "status": "HOLD",
+    "scope": "General-purpose automatic stiff/nonstiff/rapidly oscillating solver comparable in breadth to VODE",
+    "reasons": [
+      "Authorized work-pressure routing misclassifies rapid oscillation and has about32.5x JVP slowdown",
+      "Declared Lawson loses about12.16x on stiff forcing control",
+      "Causal root timings are not accepted full-trajectory speed comparisons",
+      "Long-time phase, events/restarts and broad independent external work-precision campaign remain"
+    ],
+    "default_changed_to_universal_auto": false
+  },
+  "routes": [
+    {
+      "id": "rhs-persistent",
+      "status": "PROMOTE_SCOPED",
+      "scope": "RHS-only facade preserving native observed DOPRI semantics; no new stiff coverage",
+      "derivative_policy": "Forbidden",
+      "evidence": [
+        "results/rhs_persistent_campaign/RHS_PARITY.json",
+        "results/persistent_final_facade.stdout.log"
+      ],
+      "facts": {
+        "exact_matched_pairs": 108,
+        "derivative_calls": 0,
+        "linear_solves": 0
+      },
+      "limitations": [
+        "No guaranteed stiff completion",
+        "No fixed elapsed-time speedup claim"
+      ]
+    },
+    {
+      "id": "generic-fd-jvp-switch",
+      "status": "HOLD",
+      "scope": "Opt-in experimental provider-authorized DOPRI/RODAS switching",
+      "evidence": [
+        "results/switching_campaign/SUMMARY.json"
+      ],
+      "next": [
+        "SW02",
+        "SW03",
+        "DV01"
+      ],
+      "limitations": [
+        "Provider permission does not establish selective performance superiority",
+        "Authorized drivers still restart by window"
+      ]
+    },
+    {
+      "id": "declared-quotient-lawson",
+      "status": "SPECIALIZED_FOR_SPECIFIC_CASES_ONLY",
+      "scope": "Declared constant damping/rotation split; smooth residual; invariant conditions for frequency-independent error behavior",
+      "derivative_policy": "No Jacobian/JVP/AD/Newton",
+      "evidence": [
+        "results/quotient_summary.json",
+        "analysis/OSCILLATORY_KO.md"
+      ],
+      "next": [
+        "QF01",
+        "QA01"
+      ],
+      "negative_controls": [
+        "slow-control",
+        "noncommuting-residual",
+        "stiff-forcing-control"
+      ]
+    },
+    {
+      "id": "causal-forward",
+      "status": "PROMOTE_SCOPED",
+      "scope": "Exact projected raw-U stage elimination under existing autonomous identity-mass supplied-JVP contract",
+      "derivative_policy": "Current-stage JVP0; frozen basis/validation JVP retained",
+      "evidence": [
+        "results/causal_benchmark_summary.json",
+        "results/causal_regression.log"
+      ],
+      "limitations": [
+        "Only6of36 fixed-step candidates pass embedded physical acceptance",
+        "No whole-trajectory speedup claim"
+      ],
+      "next": [
+        "CF01"
+      ]
+    },
+    {
+      "id": "causal-batched-picard",
+      "status": "OPTIMIZATION_POSSIBLE",
+      "scope": "Independent residual stages, finite causal propagation; optional parallel scheduling",
+      "evidence": [
+        "results/causal_benchmark_summary.json"
+      ],
+      "limitations": [
+        "One-thread losses occur",
+        "Finite iteration bound is not wall-time parallel speedup"
+      ],
+      "next": [
+        "CP01"
+      ]
+    },
+    {
+      "id": "quadratic-regular-branch",
+      "status": "PROMOTE_SCOPED",
+      "scope": "Exact scalar quadratic regular homotopy branch with scaled residual screening",
+      "evidence": [
+        "analysis/QUADRATIC_IMPLEMENTATION_KO.md",
+        "results/quadratic_final_tests.log"
+      ],
+      "limitations": [
+        "Floating indicator not interval enclosure",
+        "Backward-Euler example remains first-order",
+        "Generic nonlinear approximation not permitted"
+      ]
+    },
+    {
+      "id": "always-implicit-or-always-parallel-default",
+      "status": "PRUNE",
+      "scope": "Unconditional routing policy, not removal of solver APIs",
+      "reason": "Measured cheap-RHS and oscillatory losses require problem-specific choice"
+    },
+    {
+      "id": "spherical-information-transfer",
+      "status": "OPTIMIZATION_POSSIBLE",
+      "scope": "Previously validated study imported; physical-client native integration remains",
+      "evidence": [
+        "../spherical_information_20261023/evidence/REPOSITORY_IMPORT.json"
+      ],
+      "next": [
+        "SG01"
+      ]
+    }
+  ],
+  "tests": {
+    "distinct_final_native_passes": 205,
+    "facade": 122,
+    "kernel": 17,
+    "coupled": 66,
+    "whole_workspace_test_claim": false
+  },
+  "campaigns": [
+    {
+      "id": "generic-switching",
+      "source_commit": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "records": 864,
+      "valid_replays": 864,
+      "solver_successes": 828,
+      "failures": 36,
+      "path": "results/switching_campaign",
+      "error_metric": "max sampled componentwise |y-ref|/max(1,|y0|,|ref|)"
+    },
+    {
+      "id": "rhs-persistent",
+      "source_commit": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "records": 324,
+      "valid_replays": 324,
+      "solver_successes": 288,
+      "failures": 36,
+      "path": "results/rhs_persistent_campaign",
+      "exact_pairs": 108
+    },
+    {
+      "id": "quotient",
+      "source_commit": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "records": 112,
+      "solver_successes": 112,
+      "path": "results/quotient_benchmark.json",
+      "error_metric": "max sampled absolute error"
+    },
+    {
+      "id": "causal-stage",
+      "source_commit": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "rows": 36,
+      "root_successes": 36,
+      "physical_embedded_acceptances": 6,
+      "path": "results/causal_benchmark.json",
+      "timing_scope": "fixed-step stage-root, not full trajectory"
+    }
+  ],
+  "evidence_limits": {
+    "shared_host": true,
+    "three_repeats_for_trajectory_campaigns": true,
+    "sampled_error_is_global_certificate": false,
+    "independent_review_is_formal_machine_proof": false,
+    "ncp_used": false,
+    "unavailable_new_local_receipts_used": false,
+    "external_speed_comparison_newly_run": false
+  },
+  "status_semantics": {
+    "PROMOTE_SCOPED": "Opt-in implementation supported for stated contract; not broad production certification",
+    "HOLD": "Known unresolved condition blocks proposed general use",
+    "SPECIALIZED_FOR_SPECIFIC_CASES_ONLY": "Benefit depends on declared structure and controls",
+    "OPTIMIZATION_POSSIBLE": "Constructive next change has explicit verification obligations",
+    "PRUNE": "Reject stated unconditional policy; preserve useful conditional algorithms"
+  }
+}

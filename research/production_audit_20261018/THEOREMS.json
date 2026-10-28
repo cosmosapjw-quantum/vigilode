@@ -1,0 +1,91 @@
+{
+  "schema_version": 1,
+  "proof_authority": "evidence/independent_review.json",
+  "conditional_theory_claims": [
+    {
+      "id": "T1",
+      "name": "Weighted energy tube and sharp full-space logarithmic norm",
+      "proof_status": "DERIVED",
+      "implementation_status": "CONTRACT_ONLY",
+      "statement": "mu_w(Df)=-kappa+S*abs(chi)*abs(mean)^2; validated residual gives exponential-integrating-factor global error",
+      "preconditions": [
+        "positive weights with exact sum S retained",
+        "real frequencies and chi; kappa>=0",
+        "initial uncertainty product ball enclosed",
+        "actual reconstructed-curve residual enclosed continuously",
+        "candidate mean upper bound enclosed",
+        "Y(0) equals the admitted center initial state, otherwise independently enclose initial discrepancy"
+      ],
+      "accuracy_gain": "flow perturbation exponent factor 3 -> 1 against norm-Lipschitz cubic bound",
+      "work": "O(n) initial tube, O(1) scalar gain per window excluding residual construction",
+      "followup": "interval reconstruction residual and inherited-state implementation"
+    },
+    {
+      "id": "T2",
+      "name": "Bernstein continuous polynomial bound",
+      "proof_status": "DERIVED",
+      "implementation_status": "CONTRACT_ONLY",
+      "statement": "sup norm <= max Bernstein coefficient norm <= monomial coefficient norm sum; subdivision excess <= cell_width*derivative_control_bound",
+      "preconditions": [
+        "polynomial curve on real normalized interval",
+        "outward coefficient transformation for native enclosure"
+      ],
+      "accuracy_example": {
+        "polynomial": "(1-tau)^12",
+        "old_bound": 4096,
+        "new_bound": 1
+      },
+      "work": "O(d^2) transformation and each subdivision, O(d) streaming memory",
+      "followup": "refine only rejected or near-threshold domain/residual checks"
+    },
+    {
+      "id": "T3",
+      "name": "Input-complete damped moment enclosure and beta-prefix work reduction",
+      "proof_status": "DERIVED",
+      "implementation_status": "IMPLEMENTED_AWAITING_REVIEW",
+      "statement": "successful finite interval evaluations enclose exact binary64 input integral; small-z beta sequence costs O(k+N)",
+      "preconditions": [
+        "j,k<=64",
+        "finite kappa>=0, horizon>0",
+        "existing directed interval and exp_interval contracts",
+        "intermediate overflow errors propagated"
+      ],
+      "work_example": {
+        "N": 28,
+        "k": 64,
+        "old_beta_interval_divisions": 1920,
+        "new_beta_interval_divisions": 93,
+        "old_beta_interval_multiplications": 1920,
+        "new_beta_interval_multiplications": 92,
+        "old_beta_ordinary_divisions": 30,
+        "old_beta_total_divisions": 1950
+      },
+      "remaining": "large-z width and runtime promotion, connection to damped packet"
+    }
+  ],
+  "additional_claims": [
+    {
+      "id": "S-T1",
+      "decision": "ADOPT_COMPONENT_BOUND",
+      "proof": "../../docs/reviews/20261018_production_audit/SOLVER_AUDIT_KO.md",
+      "work": "per-column tail updates m(m+1)(m+2)/6 to m(m+1)/2; plus128m² coldsetup andm²storage",
+      "native_total_certificate": "HOLD_UNDERFLOW"
+    },
+    {
+      "id": "WB1",
+      "decision": "PROMOTE_CONDITIONAL",
+      "proof": "WOODBURY_THEORY.md",
+      "claim": "O(N)setup and O(N)per RHS for supplied blockdiagonal+rank2 Jacobian with invertible Schur",
+      "implementation": "exact Fraction prototype; native port pending"
+    },
+    {
+      "id": "WB2",
+      "decision": "PROMOTE_CONDITIONAL",
+      "proof": "WOODBURY_THEORY.md",
+      "claim": "q*=s*3|chi||m|²/(1+s*kappa)<1 gives weighted inverse bound; sufficient not necessary",
+      "native_interval_inverse": "pending"
+    }
+  ],
+  "strong_no_go_submissions": 0,
+  "novelty_claim": "none; source-specific mathematical connections"
+}

@@ -1,0 +1,76 @@
+warning: fields `prepared_centers`, `prepared_radii`, `prepared_times`, `prepared_count`, `radii`, and `prepared_valid` are never read
+   --> crates/rodas5p-integrators/src/output.rs:706:5
+    |
+698 | pub(crate) struct OutputCollector {
+    |                   --------------- fields in this struct
+...
+706 |     prepared_centers: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^^^
+707 |     prepared_radii: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^
+708 |     prepared_times: Vec<f64>,
+    |     ^^^^^^^^^^^^^^
+709 |     prepared_count: usize,
+    |     ^^^^^^^^^^^^^^
+710 |     radii: Vec<Vec<f64>>,
+    |     ^^^^^
+711 |     prepared_valid: bool,
+    |     ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: `rodas5p-integrators` (lib) generated 4 warnings
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.92s
+     Running tests/sequential_estimate_failure_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime/target/debug/deps/sequential_estimate_failure_contracts-ad0ddfb029d7aeb3)
+
+running 1 test
+PIN pr Enforce: bits=[4606365442643703262] attempts=26 samples=26 rejected=14
+PIN pr WFilteredEnforce: bits=[4606365442650370772] attempts=15 samples=15 rejected=0
+PIN robertson Enforce: bits=[4604622811793021475, 4531539797996114594, 4598790668460325250] attempts=32 samples=30 rejected=2
+PIN robertson WFilteredEnforce: bits=[4604622814148447066, 4531539802224500844, 4598790663749345026] attempts=33 samples=31 rejected=2
+test runs_without_estimate_errors_are_unchanged ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 3 filtered out; finished in 0.04s
+

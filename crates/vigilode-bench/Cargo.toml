@@ -1,0 +1,25 @@
+[package]
+name = "vigilode-bench"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.94.1"
+license = "MIT"
+build = "build.rs"
+description = "E1-bench: matched-accuracy work-precision harness with external production comparators."
+publish = false
+
+[dependencies]
+vigilode = { path = "../vigilode" }
+rodas5p-core = { path = "../rodas5p-core" }
+rodas5p-integrators = { path = "../rodas5p-integrators" }
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = { version = "=1.0.151", features = ["float_roundtrip"] }
+diffsol = { version = "=0.16.1", default-features = false, features = ["faer"] }
+
+[profile.measurement]
+inherits = "release"
+opt-level = 3
+lto = false
+codegen-units = 1
+
+[workspace]

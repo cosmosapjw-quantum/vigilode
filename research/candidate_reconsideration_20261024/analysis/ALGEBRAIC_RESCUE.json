@@ -1,0 +1,143 @@
+{
+  "schema_version": 1,
+  "unit": "algebraic_approximate_quotient_rescue",
+  "scope": "declared immutable linear operator actions; opt-in solve kernel and fixed-step implicit Euler validation client",
+  "candidate_reopened": [
+    "LOW_DEGREE_RESOLVENT",
+    "NEUMANN_PRECONDITIONED",
+    "NEAR_NILPOTENT",
+    "QUOTIENT_ALGEBRA"
+  ],
+  "old_limitation": "One polynomial candidate rejected at tight tolerance despite a valid approximate full-space annihilation relation.",
+  "constructive_change": "Bounded correction x <- x + p(B)(b-(I-B)x), true-residual acceptance and conditional protected fallback.",
+  "claims": [
+    {
+      "id": "AR1",
+      "statement": "MP=PM=I-D with P=(q(1)-q(B))/(q(1)(I-B)), polynomially defined; D=q(B)/q(1).",
+      "basis": [
+        "derived",
+        "independently-reviewed"
+      ],
+      "location": "ALGEBRAIC_RESCUE.md A1"
+    },
+    {
+      "id": "AR2",
+      "statement": "Full-space eta=||D||inf<1 gives inverse bound ||P||inf/(1-eta) and residual contraction eta per correction in exact arithmetic.",
+      "basis": [
+        "derived",
+        "independently-reviewed"
+      ],
+      "location": "ALGEBRAIC_RESCUE.md A2-A3"
+    },
+    {
+      "id": "AR3",
+      "statement": "After k corrections, exactly (k+1)d polynomial/residual operator actions, four N-vector buffers, no allocations by the kernel hot loop itself; callback/fallback allocations are external.",
+      "basis": [
+        "source-reviewed"
+      ],
+      "location": "crates/rodas5p-integrators/src/polynomial_resolvent.rs"
+    },
+    {
+      "id": "AR4",
+      "statement": "Computed residual and update perturbations produce additive forcing in the defect recurrence; runtime estimates remain conditional on witnesses and arithmetic allowance.",
+      "basis": [
+        "derived",
+        "independently-reviewed"
+      ],
+      "location": "ALGEBRAIC_RESCUE.md A4"
+    },
+    {
+      "id": "AR5",
+      "statement": "For B=-alpha I+E with ||E||/(1+alpha)<=eta_*<1 independent of dimension, fixed relative residual requires dimension-independent action count: O(n^2 log(1/epsilon)) dense-action work versus cubic fresh dense factorization. Reused factor solves remain quadratic.",
+      "basis": [
+        "derived"
+      ],
+      "location": "ALGEBRAIC_RESCUE.md dense near-scalar corollary"
+    }
+  ],
+  "novelty": "New concrete guarded implementation and tests in this branch; polynomial/near-nilpotent correction mathematics already occurs in prior project work and wider literature.",
+  "prior_sources": [
+    "docs/reviews/20261011_promotion_theory/POLYNOMIAL_KO.md",
+    "docs/reviews/20261011_promotion_theory/CERTIFICATE_ATLAS_KO.md",
+    "research/production_frontier_20261023/analysis/POLYNOMIAL_CANDIDATES.json"
+  ],
+  "new_proof_checks": [
+    "analysis/THEORY_EXACT_CHECKS.json",
+    "evidence/external/wolfram_quotient_checks.json"
+  ],
+  "adaptive_policy": {
+    "relation_bound": "eta <= maximum_relation_ratio (default 0.5)",
+    "operator_budget": "Reserve d actions before each candidate/correction; default64 total polynomial-attempt actions",
+    "correction_budget": 8,
+    "stagnation": "Stop if measured residual_new >= 0.95 residual_old unless already accepted",
+    "fallback": "Same original residual tolerance; fallback verifier +1 operator action outside polynomial budget; internal fallback work separately accounted",
+    "fatal_errors": "Input/operator/nonfinite errors propagate, not hidden by fallback",
+    "output": "transactional; unchanged unless requested residual accepted"
+  },
+  "revision_loops": [
+    {
+      "round": 1,
+      "change": "Initial bounded refinement and transactional fallback; nine new tests.",
+      "validation": "25 tests pass including8legacy+8provider+9new",
+      "evidence": "evidence/runs/algebraic-round1-tests.receipt.json"
+    },
+    {
+      "round": 2,
+      "change": "Independent reviewer requested clarify fallback action budget and cover partial/failing degree2 Horner/fallback callbacks; added10th test. Benchmark JSON array-index syntax corrected during compile validation; failed build retained.",
+      "status": "tests_passed",
+      "failure_evidence": "evidence/runs/benchmark-final-build.stderr",
+      "validation": "26 tests pass (8 legacy +8 typed-provider +10 refinement); kernel source unchanged in loop3.",
+      "evidence": "evidence/runs/algebraic-round2-tests.receipt.json"
+    },
+    {
+      "round": 3,
+      "change": "Correct benchmark-only legacy one-shot action accounting and retain refused residual; clarify polynomial-counter scope. Kernel unchanged.",
+      "reason": "Initial benchmark reported zero legacy polynomial actions although one original-residual operator evaluation occurred.",
+      "failure_evidence": "evidence/runs/algebraic-benchmark.stdout",
+      "status": "completed",
+      "validation": "Corrected benchmark exit0; 24 parsed rows, 19 accepted, five expected legacy refusals; counters now include legacy failed attempts.",
+      "evidence": "evidence/runs/algebraic-benchmark-corrected.receipt.json",
+      "restored_source": "evidence/round2_source/crates/rodas5p-integrators/examples/algebraic_refinement_bench.rs",
+      "restored_source_sha256": "e099bccf82fe2a9d95efd15f3cfc31bc8214f071e9d5bb3c4247add477ed2104"
+    }
+  ],
+  "production_decision": "Opt-in specialized kernel; general selector unchanged pending full RODAS integration and full-trajectory cost evidence.",
+  "files": [
+    "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+    "crates/rodas5p-integrators/tests/polynomial_refinement_contracts.rs",
+    "crates/rodas5p-integrators/examples/algebraic_refinement_bench.rs"
+  ],
+  "measurements": {
+    "status": "completed",
+    "evidence": "analysis/ALGEBRAIC_BENCHMARK.json",
+    "raw": "evidence/runs/algebraic-benchmark-corrected.stdout",
+    "receipt": "evidence/runs/algebraic-benchmark-corrected.receipt.json",
+    "row_count": 24,
+    "accepted_rows": 19,
+    "expected_legacy_refusals": 5,
+    "fresh_lu_over_fresh_refined_ratio_range": [
+      1.4472811964751886,
+      5.246489573974342
+    ],
+    "strongest_reusable_baseline_over_reused_refined_ratio_range": [
+      0.5009829258347144,
+      0.8246972147503154
+    ],
+    "trajectory": {
+      "same_method_error": 6.076805725285794e-13,
+      "continuous_error_refined": 2.6088027593740293e-07,
+      "continuous_error_direct": 2.608807213588804e-07,
+      "refined_steps": 50,
+      "refined_polynomial_operator_actions": 150,
+      "refined_max_residual": 9.918466048475238e-11,
+      "reused_lu_over_refined_median": 0.7292729653544221,
+      "timing_scope": "11 serial samples per method; illustrative only, not pooled with 21 cyclic kernel groups"
+    },
+    "superseded_raw": "evidence/runs/algebraic-benchmark.stdout"
+  },
+  "next_steps": [
+    "Typed immutable generic provider with epoch/full-space witness binding.",
+    "Shifted polynomial chart for repeated roots to avoid expanded coefficient cancellation.",
+    "Integrate into actual Rosenbrock stage client and compare protected dense/band/JVP alternatives with factor-reuse count charged."
+  ]
+}

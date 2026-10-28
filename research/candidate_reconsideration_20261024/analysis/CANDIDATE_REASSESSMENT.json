@@ -1,0 +1,1395 @@
+{
+  "schema": "vigilode.candidate-reconsideration.v1",
+  "date": "2026-10-24",
+  "baseline_local_commit": "3079c62713aefa62ad2cf7fbf6d2daf60cc0a0d8",
+  "baseline_published_commit": "14171ed0c4f7dc453f47870cf6c1399f41afc4f2",
+  "scope": "Mechanism-first re-examination of all25previous portfoliofamilies,16October8subcandidates,and16algebraic/structural mechanisms recovered from repositoryandGitHubPRs. GeneralODEonly; applicationcode not imported.",
+  "evidence_reuse": "Historical results are retained with their scope; no old campaign rerun and no historical speed ratio relabelled as newmeasurement.",
+  "inventory_execution_count": 0,
+  "new_strong_no_go_claims": 0,
+  "coverage": {
+    "portfolio_families_expected": 25,
+    "portfolio_families_reconsidered": 25,
+    "historical_subcandidates_expected": 16,
+    "historical_subcandidates_reconsidered": 16,
+    "additional_mechanisms": 16,
+    "github_pr_metadata_count": 81,
+    "github_targeted_searches": 11,
+    "github_detail_reads": [
+      50,
+      60,
+      62,
+      65,
+      68,
+      69,
+      70,
+      74,
+      75,
+      77,
+      79,
+      81
+    ],
+    "github_latest_observed_pr": 81,
+    "github_latest_observed_head": "cc49cfd1017fc0639bf9ef6cc08535ff5a06ff7e",
+    "claim": "Complete coverage of these explicitly enumerated inventories; not exhaustive line-by-line validation of every historical file or all possible future algorithm.",
+    "current_ledger_metadata_rows": 166,
+    "ledger_review_scope": "Metadata and claim-summary scan, with full targetedread of L-0106,L-0109..0117,L-0141 to correct stale predecessor conclusions; not all166scientificpayloadsreaudited."
+  },
+  "sources": [
+    {
+      "id": "PORTFOLIO_1024",
+      "path": "research/general_ode_selection_20261024/analysis/PORTFOLIO.json",
+      "sha256": "19f86507f6ad15009955226fadcabf1502567c9c485845ecb27c085508b1568a"
+    },
+    {
+      "id": "POLY_THEORY",
+      "path": "docs/reviews/20261011_promotion_theory/POLYNOMIAL_KO.md",
+      "sha256": "ffd2650a60c006734c87088d3518474f339a72624e1b6bfefc58efefd3a139a1"
+    },
+    {
+      "id": "HOM_THEORY",
+      "path": "docs/reviews/20261011_promotion_theory/HOMOTOPY_KO.md",
+      "sha256": "6ea6ffee160fa7989d07565f430dfb87ab02e03f7d5dbc149d24efdc4a66a687"
+    },
+    {
+      "id": "GLOBAL_THEORY",
+      "path": "docs/reviews/20261011_promotion_theory/GLOBAL_ACCURACY_KO.md",
+      "sha256": "036af4f517aa0a91f345bceeede77fe3dedbb698f4a999982ff0dba8e2919d2f"
+    },
+    {
+      "id": "ATLAS_THEORY",
+      "path": "docs/reviews/20261011_promotion_theory/CERTIFICATE_ATLAS_KO.md",
+      "sha256": "aae1c59b50201aa4c2003c5e1c280f8513ea80cc59d0fdcc021a68f63a922d20"
+    },
+    {
+      "id": "LOOP11",
+      "path": "research/rvj_integration_20261004/inputs/loop11_RESEARCH_NOTE_KO.md",
+      "sha256": "a572a2923ec8ae026d1bd2537cebae18fb7a13a41f5c0a2e93df6b69a85815a6"
+    },
+    {
+      "id": "RHS_ONLY",
+      "path": "research/cumulative_20261020/original_sources/derivative_free/vigilode_rhs_only_research/REPORT_KO.md",
+      "sha256": "541069b81ddebd98e0dae93c20a3eac1cc355ec297360c737e22320f89665640"
+    },
+    {
+      "id": "CHART_SOURCE",
+      "path": "crates/rodas5p-integrators/src/chart_transport.rs",
+      "sha256": "645bd6438f29e3ae4fcf318b046f1d87bb43a0925db4d12979b17b25dc21a765"
+    },
+    {
+      "id": "SHIFT_SOURCE",
+      "path": "crates/rodas5p-core/src/shared_shift_jet.rs",
+      "sha256": "d96b00329a6bff5db8fe767cad5838045f4b3933a1577aec09cf512227b19773"
+    },
+    {
+      "id": "PREFIX_SOURCE",
+      "path": "crates/rodas5p-integrators/src/affine_transport.rs",
+      "sha256": "4d8687c8c536850d7f5616192a864c839c63ab8e0ddc778678ffd6eba1a9e178"
+    },
+    {
+      "id": "POLY_SOURCE",
+      "path": "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+      "sha256": "6c479a18abe4725e3658398519442248f0a25cb5838fcc73504c46f56214851e"
+    },
+    {
+      "id": "QUADRATIC_SOURCE",
+      "path": "crates/rodas5p-integrators/src/quadratic_branch.rs",
+      "sha256": "4df1ead8e5c2539b266f40a0e2dafa9ead5320fc124ce672037f98647f208e1e"
+    },
+    {
+      "id": "PR81",
+      "path": "research/candidate_reconsideration_20261024/evidence/pr_details.json",
+      "sha256": "314c9c3371c6b4ad985d3263a6e10417111f752ad48970ca98c0bb0469c783c9"
+    },
+    {
+      "id": "HISTORICAL_CANDIDATES",
+      "path": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/merged_candidates.json",
+      "sha256": "76d93887a1ca0df93674898632075afa20f9558ac72ddefcbed5d78f7ffe7213"
+    },
+    {
+      "id": "HISTORICAL_REVIEW",
+      "path": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json",
+      "sha256": "cab4db235b392a54f18753aba3b67df3460409644ee48af54078f9e272231bc5"
+    },
+    {
+      "id": "CURRENT_POLYNOMIAL_ROUTER",
+      "path": "crates/rodas5p-core/src/polynomial_router.rs",
+      "sha256": "d2591d77f58b6c295e5e880ad78b2f3d72cbfab7985bb71d19606bd6cce4e4ec"
+    },
+    {
+      "id": "CURRENT_LEDGER",
+      "path": "research/LEDGER.jsonl",
+      "sha256": "7a4cbc0b1a71625796f4b2307d97262396079e18309beccacbd5070d24d8b5b9"
+    }
+  ],
+  "portfolio_families": [
+    {
+      "id": "EXPLICIT",
+      "name": "DOPRI5 embedded 5(4)",
+      "previous_disposition": "SELECT_SCOPED_CORE",
+      "previous_reason": "RHS-only path avoids all Jacobian, matrix and Newton work; selected nonstiff smooth forward identity-mass scope has actual-error evidence.",
+      "previous_evidence_summary": "90 configurations / 360 runs; local native RODAS comparison 2.73–8.93x at sampled cap 1e-6; stiff negative control requires 186085 RHS calls and is about277x slower than RODAS.",
+      "reconsidered_disposition": "KEEP_REFERENCE_AND_SMOOTH_ROUTE",
+      "constructive_reinterpretation": "RHS-only explicit integration is the genuine fully derivative-free general smooth branch. It also supplies a cheap control against speculative structure.",
+      "admissibility": "Smooth nonstiff RHS; identity mass; observed acceptance/effort, not a stiffness label inferred from a single secant.",
+      "mechanism_or_formula": "No Jacobian/JVP/Newton; FSAL gives 6 fresh RHS after the first accepted derivative.",
+      "adaptive_selection_contract": "Use existing persistent session, reset FSAL only on state/model changes; rising rejection/work triggers a bounded optional implicit pilot.",
+      "next_discriminating_experiment": "Use slow, fast oscillatory, stiff-decay and discontinuous-regime controls; record total calls and final/retained-grid error.",
+      "existing_api": [
+        "vigilode::Dopri5",
+        "Dopri5Session"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "RODAS_DENSE",
+      "name": "Protected RODAS5P dense; sequential compatibility API",
+      "previous_disposition": "SELECT_SCOPED_CORE",
+      "previous_reason": "Existing protected fallback has the widest implicit capability surface. Finite-difference Jacobians are derivative approximations and form matrices; they are not derivative-free.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "KEEP_PROTECTED_FALLBACK",
+      "constructive_reinterpretation": "Dense protected solves remain valuable for small dimensions and difficult nonnormality. A special candidate can increase robustness even if this fallback remains the fastest broad route.",
+      "admissibility": "Finite validated Jacobian/time derivatives, allowed dense resource footprint.",
+      "mechanism_or_formula": "One common W=I-hγJ factor per attempt; exact same-target residual permits alternative root engines.",
+      "adaptive_selection_contract": "Use as charged fallback when a structural certificate, residual, projected closure or finite check fails. Fatal callback errors stay fatal.",
+      "next_discriminating_experiment": "Compare every specialization to protected dense in its feasible n range; include setup and failed speculation.",
+      "existing_api": [
+        "vigilode::Rodas5p",
+        "integrate_rodas5p_fast_observed_*",
+        "integrate_adaptive_observed_with_config"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "RODAS_BANDED",
+      "name": "RODAS5P declared-band direct solve",
+      "previous_disposition": "SELECT_SCOPED_CORE",
+      "previous_reason": "Band declarations can reduce factorization work; the declaration must be correct and no O(N) claim is valid unless bandwidth is bounded.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "REOPEN_GENERATED_STRUCTURE_ADMISSION",
+      "constructive_reinterpretation": "A band declaration can be supplied by a verified local expression graph instead of repeatedly checking a dense reference.",
+      "admissibility": "Each f_i depends only on row-local support of width b; generator and RHS share exact semantics.",
+      "mechanism_or_formula": "Support induction proves off-band derivatives vanish identically; graph length O(nb), band factor O(nb²).",
+      "adaptive_selection_contract": "Epoch-bound support proof selects band mode; unknown callback structure keeps prior probing/fallback.",
+      "next_discriminating_experiment": "Adversarial hidden off-band coupling, changing mesh/model epoch, and band-width scaling; compare existing band direct, not only dense.",
+      "existing_api": [
+        "Problem::banded",
+        "integrate_rodas5p_fast_banded_observed_*"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "RODAS_MATRIX_FREE",
+      "name": "RODAS5P supplied-JVP GMRES/LGMRES/GCRODR",
+      "previous_disposition": "SELECT_SCOPED_CORE",
+      "previous_reason": "Avoids forming the full Jacobian, but still uses derivative actions and Krylov basis storage. These are not matrix-free in the sense of having no auxiliary matrices.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "REOPEN_COST_AND_ROBUSTNESS_OPTIMIZATION",
+      "constructive_reinterpretation": "Krylov is useful fallback where a low-degree structural action does not fit. Bounded shared spaces and polynomial preconditioners can lower failure cost.",
+      "admissibility": "Provided JVP or explicitly permitted approximation; finite action error contracts; true residual.",
+      "mechanism_or_formula": "Charge JVP plus O(nm²) orthogonalization and memory, not JVP count alone.",
+      "adaptive_selection_contract": "Use measured action cost, successful true residual and bounded restart budget; terminate speculative preconditioner on deterioration.",
+      "next_discriminating_experiment": "Broad spectra, nonnormal plateaus, expensive-JVP synthetic cost controls, compare cold/refresh/structured direct at matched error.",
+      "existing_api": [
+        "Jacobian::jvp",
+        "integrate_rodas5p_mf_fast_observed_*",
+        "integrate_sequential_matrix_free_adaptive_dense_observed"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "RODAS_SMALL",
+      "name": "Compile-time small-N RODAS5P",
+      "previous_disposition": "SPECIALIZED_OPT_IN",
+      "previous_reason": "Useful specialized layout without evidence of a universal size threshold or current winner for every callback.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "RETAIN_SPECIALIZED_LAYOUT",
+      "constructive_reinterpretation": "Compile-time arrays can improve allocation and latency without changing mathematical method. Reconsider size crossover as hardware dependent.",
+      "admissibility": "Dimension fixed at compile time and within declared stack budget.",
+      "mechanism_or_formula": "Same stage equations and error controller; storage/layout work reduction only.",
+      "adaptive_selection_contract": "Caller-declared dimension selects specialization after a measured crossover; resource cap independent of speed evidence.",
+      "next_discriminating_experiment": "n=1,2,4,8,16 with cheap and expensive RHS; include full setup and negative small-dimensional ill-conditioning controls.",
+      "existing_api": [
+        "SmallProblem",
+        "integrate_rodas5p_fast_small_*"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "SWITCHING",
+      "name": "Pressure / bounded-pilot explicit-implicit switching",
+      "previous_disposition": "OPTIMIZATION_POSSIBLE",
+      "previous_reason": "Pilot fixes one regime while penalizing others; persistent native sessions now exist but are not fully connected to switching.",
+      "previous_evidence_summary": "Rapid JVP about9.46x better than old pilot-free switch, rapid FD about2.03x slower and transition FD about3.05x slower; 105/120 rows pass common cap1e-5.",
+      "reconsidered_disposition": "REOPEN_TRANSACTIONAL_ADAPTIVE_SELECTION",
+      "constructive_reinterpretation": "Specialization should be admitted by eligibility and measured charged progress, with bounded probing and cooldown after failure. Stability and completion are first-class benefits.",
+      "admissibility": "No hidden reference solution; common target/norm; accepted state immutable during probes; finite budgets.",
+      "mechanism_or_formula": "For baseline cost C_b and speculative cost C_s with success p, expected cost C_s+(1-p)C_b<C_b iff C_s<p C_b; this is a model condition, not a probability estimator.",
+      "adaptive_selection_contract": "Combine declared structure, operational residual, current workload counters, hysteresis and maximum speculation debt. Re-evaluate only after model/scale/regime changes.",
+      "next_discriminating_experiment": "Regime transitions, denied derivative permission, repeated candidate failure and stale epochs; compare always-baseline and always-candidate trajectories.",
+      "existing_api": [
+        "vigilode::switching"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "LAWSON_GENERIC",
+      "name": "Lawson DOPRI5 generic residual",
+      "previous_disposition": "RESEARCH_ONLY",
+      "previous_reason": "Splitting algebra alone does not pay for extra transforms; generic forcing and slow cases can lose badly. Latest long-cycle timing is explicitly inconclusive.",
+      "previous_evidence_summary": "Latest cyclic36/36 pass sampled caps but timing_authority=diagnostic_only; no speed promotion.",
+      "reconsidered_disposition": "REOPEN_RESIDUAL_COST_REGIME",
+      "constructive_reinterpretation": "Generic Lawson should be judged by residual smoothness after factoring a known fast flow, not solely by oscillation of the full RHS.",
+      "admissibility": "Declared constant flow A and smooth N(t,y), trustworthy split identity f=Ay+N.",
+      "mechanism_or_formula": "Forward semigroup form avoids forming exp(-tA); transformed derivatives still control nonlinear order constants.",
+      "adaptive_selection_contract": "Use flow declaration plus short charged trials and same physical error norm; fall back when residual variation or phase error rises.",
+      "next_discriminating_experiment": "Noncommuting residual, near-resonance forcing, large damping, slow/zero controls; count transform/setup costs.",
+      "existing_api": [
+        "LawsonDopri5::solve_observed",
+        "integrate_lawson_dopri5_observed"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "LAWSON_AFFINE",
+      "name": "Affine quotient Lawson / exact harmonic endpoint",
+      "previous_disposition": "SPECIALIZED_OPT_IN",
+      "previous_reason": "Constant affine and harmonic structure admits cheap entire-function actions; that structure is user evidence, not inferred from arbitrary RHS samples.",
+      "previous_evidence_summary": "Prior affine/full-RHS ratios4.36x,22.71x,1.58x on selected stiff/rapid/shared128 cases; losses4.25x zero,5.09x slow and44.58x generic forcing prohibit automatic adoption. Latest LP01 timings remain inconclusive.",
+      "reconsidered_disposition": "RETAIN_AND_REOPEN_BROADER_QUOTIENTS",
+      "constructive_reinterpretation": "Exact affine/harmonic actions are a central algebraic specialization, not merely a generic RK wrapper. Extend stable confluent functions before broadening inferred structure.",
+      "admissibility": "Declared affine forcing, damped rotation/low-degree annihilator, fixed coefficients over window.",
+      "mechanism_or_formula": "For (A+dI)²=-ω²I, exp(hA)=exp(-dh)[cos(ωh)I+sinc(ωh)h(A+dI)]; affine forcing adds entire phi functions.",
+      "adaptive_selection_contract": "Admission by exact model contract, frequency/damping and forecasted effort; slow/zero cases can route to simpler exact or explicit branch.",
+      "next_discriminating_experiment": "Near ω=0 and resonance, shared blocks, long phase, huge damping/input; compare strongest closed-form reference.",
+      "existing_api": [
+        "DampedRotationFlow::affine_into",
+        "DampedRotationFlow::harmonic_into",
+        "LawsonDopri5::solve_affine_observed"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "COUPLED_FORWARD",
+      "name": "Projected augmented causal forward RODAS",
+      "previous_disposition": "SPECIALIZED_OPT_IN",
+      "previous_reason": "Causality permits common-factor triangular elimination with no current-stage Newton/JVP; supplied base JVP, projection and original residual fallback remain.",
+      "previous_evidence_summary": "6/7 groups1.17–2.79x versus residual-first; broad group0.99856x with33/35fallbacks. Earlier coupled-vs-economy few-mode ratio0.422 shows why baseline identity matters.",
+      "reconsidered_disposition": "REOPEN_ADAPTIVE_PROJECTED_CORE",
+      "constructive_reinterpretation": "Causal elimination is a viable custom root engine. Its failure on broad spectra motivates bounded dimension and early exit, not discarding causality.",
+      "admissibility": "Autonomous identity-mass target, strict-lower tableau, invertible projected W, supplied base JVP.",
+      "mechanism_or_formula": "W_m z_i depends only on earlier stages; one m×m factor plus s backsolves eliminates current-stage Newton/JVP.",
+      "adaptive_selection_contract": "Initial low-dimensional attempt; full original residual; bounded expansion then cooldown/fallback. Reuse only with epoch-bound valid operator images.",
+      "next_discriminating_experiment": "Few-mode versus broad-spectrum, nonlinear leakage, singular projected W, expensive RHS; compare residual-first and protected same-target solve.",
+      "existing_api": [
+        "vigilode-coupled causal-forward"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "COUPLED_PICARD",
+      "name": "Parallel causal Picard / residual-first schedules",
+      "previous_disposition": "PRUNE_AUTOMATIC_RETAIN_RESEARCH",
+      "previous_reason": "Serial forward is faster on all seven eligible groups. Two threads show no material1.2x gain on the tested cheap RHS workload.",
+      "previous_evidence_summary": "84 bitwise pairs,42 same-configuration thread settings; no general threading speed gain.",
+      "reconsidered_disposition": "REOPEN_SPAN_NICHE",
+      "constructive_reinterpretation": "Cheap-RHS losses do not settle expensive independent stage callbacks or accelerator batching. Restrict the question to measured span crossover.",
+      "admissibility": "Same frozen iterate for parallel stage RHS; causal lower dependency and bounded residual convergence.",
+      "mechanism_or_formula": "Stage i is exact after at most i+1 propagation rounds in exact arithmetic; seed stage0 reduces further updates to s−1.",
+      "adaptive_selection_contract": "Require explicit workers and cost model predicting q·wave_cost+barriers<serial_cost; cap q and fall back to forward.",
+      "next_discriminating_experiment": "Artificial delay is a scheduler calibration only; use actual expensive RHS and no-delay negative control; charge extra RHS and pool setup.",
+      "existing_api": [
+        "vigilode-coupled causal-picard",
+        "vigilode-coupled residual-first"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "SABR",
+      "name": "SABR block-GMRES / forward / nilpotent",
+      "previous_disposition": "RESEARCH_ONLY",
+      "previous_reason": "Standalone alternative block formulation is exported; current selection evidence does not establish complete-trajectory benefit over protected drivers.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "REOPEN_AS_PRECONDITIONING_COMPONENT",
+      "constructive_reinterpretation": "The block formulation may contribute a preconditioner or finite causal action even when its complete driver loses.",
+      "admissibility": "Target equivalence and represented coefficient leakage identified; original residual retained.",
+      "mechanism_or_formula": "Strict lower block L gives (I−L)^−1=Σ_{k=0}^{s−1}L^k; actual leakage is treated as a remainder.",
+      "adaptive_selection_contract": "Use triangular or block solve when estimated stage coupling is weak; generic block GMRES only when batched actions amortize its enlarged vector size.",
+      "next_discriminating_experiment": "Same target/frozen state, full-vector norm and all orthogonalization costs; no s-fold undercount of block vectors.",
+      "existing_api": [
+        "IntegrationMethod::Sabr",
+        "SabrConfig"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "HOMOTOPY",
+      "name": "Homotopy and nonlinear / actual-K root clients",
+      "previous_disposition": "RESEARCH_ONLY",
+      "previous_reason": "Root/client validation is not end-to-end ODE efficiency evidence; continuation work and certification overhead must be charged.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "REOPEN_ROOT_CLIENTS_BY_ALGEBRA",
+      "constructive_reinterpretation": "Use homotopy to organise difficult root charts; directly eliminate causal/low-degree roots where continuation is unnecessary.",
+      "admissibility": "Regular branch or certified tube, invertible common factor, denominator/discriminant margins.",
+      "mechanism_or_formula": "Strict-causal Jacobian determinant det(W)^s implies a graph branch; quadratic algebraic chart u=2b/(a+sqrt(a²+4λcb)) avoids Newton.",
+      "adaptive_selection_contract": "Try bounded derivative-free algebraic chart first when declared; original residual; chart change or permitted corrector only on failure.",
+      "next_discriminating_experiment": "Near folds, coefficient degree drops, noncausal leakage, nonlinear physical branch and endpoint/time-error separation.",
+      "existing_api": [
+        "integrate_homotopy_adaptive_observed",
+        "nonlinear_homotopy",
+        "actual_k_homotopy",
+        "quadratic_branch"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "TRANSACTIONAL",
+      "name": "Transactional Q1/Q2, lagged and candidate corrections",
+      "previous_disposition": "RESEARCH_ONLY",
+      "previous_reason": "Rollback contracts are useful infrastructure but do not themselves establish a faster selected solver.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "RETAIN_AS_RESCUE_INFRASTRUCTURE",
+      "constructive_reinterpretation": "Rollback/counter preservation is the enabling mechanism for safe adaptive rescue and robustness, even without standalone speedup.",
+      "admissibility": "Trial state, controller history and caches committed only after all checks.",
+      "mechanism_or_formula": "Causal decision depends on computed current residual and error estimate, never an external reference.",
+      "adaptive_selection_contract": "Bound trial work, preserve failure counters, blacklist/cooldown rejected route; do not mask fatal malformed callback.",
+      "next_discriminating_experiment": "Reference-answer perturbation must not change routing; failed trial leaves state/time unchanged and charges all work.",
+      "existing_api": [
+        "integrate_transactional_q1_q2_adaptive_observed",
+        "rodas5p_lagged",
+        "CandidateCatalog"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "EXPONENTIAL_KRYLOV",
+      "name": "Pexprb/exprb exponential Krylov and fused phi",
+      "previous_disposition": "RESEARCH_ONLY",
+      "previous_reason": "Semilinear capabilities exist, but open rival/accuracy assumptions and basis/action costs prevent general adoption.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "REOPEN_DECLARED_SEMILINEAR_REGIME",
+      "constructive_reinterpretation": "Large known linear dynamics and inexpensive nonlinear residual can favour phi actions. Algebraic quotient actions can replace Krylov where relation is known.",
+      "admissibility": "Smooth semilinear split; reliable phi truncation estimate/bound; truthful action and transform error.",
+      "mechanism_or_formula": "Shared phi combinations reduce repeated bases; quotient algebra can reduce all analytic functions to degree<d.",
+      "adaptive_selection_contract": "Compare predicted total basis/transform cost to protected solve; no free reuse unless same operator, RHS span and unfused/form-specific assumptions hold.",
+      "next_discriminating_experiment": "Nonnormal, oscillatory, nonlinear and strong forcing controls; current strongest Krylov/structured baseline and common actual error.",
+      "existing_api": [
+        "integrate_pexprb54s4_fused_adaptive_observed",
+        "exprb2_step",
+        "exprb43_step",
+        "krylov_phi_action"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "LAGUERRE",
+      "name": "Laguerre polynomial action and adjoint",
+      "previous_disposition": "RESEARCH_COMPONENT_ONLY",
+      "previous_reason": "Component opt-in validation was published; no actual ODE speed benefit follows from a lower polynomial degree alone.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "REOPEN_BASIS_INDEPENDENT_QUOTIENT_COMPILATION",
+      "constructive_reinterpretation": "Preserve Laguerre coefficients and signed-adjoint analysis; move recurrence into a small quotient algebra so its long vector recurrence disappears.",
+      "admissibility": "Verified low-degree q(A)=0 or bounded relation defect; scaled coefficient generation; valid whole-space domain.",
+      "mechanism_or_formula": "P_m=qt+r yields P_m(A)=r(A)+q(A)t(A); exact relation gives m→d−1 actions after O(md) scalar recurrence.",
+      "adaptive_selection_contract": "Cost/denominator/defect admission selects compressed action; otherwise strongest already-supported action.",
+      "next_discriminating_experiment": "Repeated RHS amortization, projector/nilpotent and near-annihilator perturbations, coefficient cancellation; compare Chebyshev and direct structural formula.",
+      "existing_api": [
+        "rodas5p-core::polynomial_action Laguerre exports"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "LEJA",
+      "name": "Leja action",
+      "previous_disposition": "PRUNE_AUTOMATIC_RETAIN_RESEARCH",
+      "previous_reason": "Prior measured cost was worse than Chebyshev in the tested h*rho>=40 niche; total floating certificate remains EstimateOnly.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "REOPEN_GEOMETRY_AND_REUSE_NICHE",
+      "constructive_reinterpretation": "Distinguish legacy EstimateOnly Leja from the existing EnclosedLeja private-admission path. The old real-interval cost loss does not settle new operator geometry or quotient compression; reuse current enclosed arithmetic.",
+      "admissibility": "Use the supported enclosed operator domain and original private admission; extending to complex/nonnormal enclosures requires a new valid bound, not an eigenvalue-only substitution.",
+      "mechanism_or_formula": "Newton interpolation recurrence can also be reduced moduloq; nonreal geometry may alter degree but not guarantee it.",
+      "adaptive_selection_contract": "Reuse current guarded A08 route on its supported symmetric domain. Proposed complex/geometry route remains research until its operator and arithmetic error enclosure is implemented.",
+      "next_discriminating_experiment": "Complex strips/ellipses and dissipative nonnormal operators, repeated shifts/RHS; preserve old real-interval loss as control.",
+      "existing_api": [
+        "rodas5p-core::leja_action"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024",
+        "CURRENT_POLYNOMIAL_ROUTER",
+        "CURRENT_LEDGER"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "POLYNOMIAL_ROUTER",
+      "name": "Chebyshev/Taylor/Laguerre polynomial action router",
+      "previous_disposition": "RESEARCH_COMPONENT_ONLY",
+      "previous_reason": "Prior router winning niche was empty; first-order Chebyshev stability on selfadjoint negative operators is not equal-accuracy ODE speed evidence.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "REUSE_CURRENT_SINGLE_BACKEND_ROUTER_EXTEND_STRUCTURE",
+      "constructive_reinterpretation": "PY03 already executes one planned recurrence and A08 already supports first-admitted routing. Reuse both; add quotient-aware cost/defect forecasting and repeated-RHS setup amortization instead of rebuilding a solved dispatcher.",
+      "admissibility": "Declared operator enclosure/structure and conservative degree estimates; calibrated fixed overhead.",
+      "mechanism_or_formula": "Existing first-admitted action skips later backends. New structural branch can select degree d−1 quotient action where its setup plus residual cost is lower; unsuccessful preflights remain charged.",
+      "adaptive_selection_contract": "Bind current operator/step/input budget; use existing FirstAdmitted contract. Prospective cost-based reordering needs measured setup/action costs and a bounded misprediction budget.",
+      "next_discriminating_experiment": "Existing fixed-priority FirstAdmitted versus quotient-aware forecast on repeated RHS and changed operator epochs; all actual errors within the same frozen budget; charge failed preflights. Preserve old Laguerre-empty niche as control.",
+      "existing_api": [
+        "rodas5p-core::polynomial_action::RoutePolicy"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024",
+        "CURRENT_POLYNOMIAL_ROUTER",
+        "CURRENT_LEDGER"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "LOW_DEGREE_RESOLVENT",
+      "name": "Low-degree quotient resolvent",
+      "previous_disposition": "SPECIALIZED_COMPONENT_ONLY",
+      "previous_reason": "Polynomial division reduces work when a valid low-degree annihilation identity holds; current provider is a two-state homogeneous collision client and is not a generic matrix solver.",
+      "previous_evidence_summary": "Four published actions use1,1,2,2 operator actions; compared Neumann20success/65failure cases are kernel tests, not trajectory timing.",
+      "reconsidered_disposition": "REOPEN_DEFECT_CORRECTION_AND_PROVIDERS",
+      "constructive_reinterpretation": "The existing one-shot quotient can become a convergent correction engine when the approximate annihilator is small even if ||B|| is large.",
+      "admissibility": "q(1) separated, η=||q(B)||/|q(1)|<1, same current B and truthful full-space bounds.",
+      "mechanism_or_formula": "With P=r(B)/q(1), (I−B)P=I−D, D=q(B)/q(1); x←x+Pr gives r_new=Dr and geometric residual reduction.",
+      "adaptive_selection_contract": "Choose bounded correction count from η and tolerance; true residual each check; reject stale witness/failed estimate; bounded fallback.",
+      "next_discriminating_experiment": "Projector, nilpotent Jordan chain, clustered spectrum, approximate relation, η≈1, q(1)≈0, wrong witness, expensive action; compare direct structured solve.",
+      "existing_api": [
+        "polynomial_resolvent",
+        "two-state collision witness provider"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "NEUMANN",
+      "name": "Unconditional Neumann inverse iteration",
+      "previous_disposition": "PRUNE_NONCONTRACTIVE_DOMAIN",
+      "previous_reason": "Three tested noncontractive cases fail; a convergent-series proof requires an actual contraction bound.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "REOPEN_PRECONDITIONED_OR_FINITE_SERIES",
+      "constructive_reinterpretation": "Noncontractive B rules out only that infinite-series argument. A nilpotent or polynomial-preconditioned defect can be small or terminate.",
+      "admissibility": "Either B^d=0 or preconditioned residual operator D has ||D||<1; otherwise keep as bounded diagnostic.",
+      "mechanism_or_formula": "Finite nilpotent inverse needs no ||B||<1; repeated quotient correction contracts by ||D|| rather than ||B||.",
+      "adaptive_selection_contract": "Check declared finite degree/defect before choosing recurrence; enforce work cap and true residual.",
+      "next_discriminating_experiment": "Large-norm nilpotent, near-nilpotent leakage and noncontractive generic control; measure all actions and arithmetic range.",
+      "existing_api": [
+        "polynomial_resolvent Neumann baseline",
+        "nilpotent / fixed-point action candidates"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "PACKET_COLLECTIVE",
+      "name": "Collective low-rank / packet trajectory solvers",
+      "previous_disposition": "SPECIALIZED_COMPONENT_ONLY",
+      "previous_reason": "Low-rank direct action is a necessary strong comparator. Earlier packet module promotion does not establish general speed or complete floating certificates.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "REOPEN_GENERAL_LOW_RANK_STRUCTURE",
+      "constructive_reinterpretation": "Separate generic invariant/low-rank algebra from the application-specific sealed model. Exact low-rank structure can accelerate arbitrary relevant ODE clients.",
+      "admissibility": "Explicit f(y_ref+Uz)=Ug(z) or A=D+UVᵀ and rank proof; preserved transverse initial data.",
+      "mechanism_or_formula": "Woodbury or affine reduction turns n-dimensional factor into r-dimensional factor plus O(nr) actions.",
+      "adaptive_selection_contract": "Declared structural identity and physical-lift error norm; reject closure leakage or rank change, retain full-space fallback.",
+      "next_discriminating_experiment": "Rank1..8, nonzero transverse data, rank-changing parameter and ill-conditioned Schur; compare direct Woodbury and protected band.",
+      "existing_api": [
+        "collective_direct",
+        "collective_rodas5p",
+        "packet_trajectory",
+        "damped_packet",
+        "BoundCollectiveProblem"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "REFERENCE_BDF_RADAU",
+      "name": "Native BDF1/BDF2 / Radau1/Radau3 references",
+      "previous_disposition": "REFERENCE_ONLY",
+      "previous_reason": "Low-order in-repo reference methods are not replacements for mature external VODE/DVODE, diffsol or Julia comparison.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "RETAIN_ROBUSTNESS_CONTROLS",
+      "constructive_reinterpretation": "Low-order implicit methods are useful stiff-start or nonsmooth-segment fallbacks even without matching order-five efficiency.",
+      "admissibility": "Explicitly chosen low order, restart semantics, local error law and nonlinear solve failure handling.",
+      "mechanism_or_formula": "Backward Euler stability can damp unresolved transients, but high-order global accuracy needs bounded startup error or refined steps.",
+      "adaptive_selection_contract": "Use only a declared startup/discontinuity rescue with an allocated error budget and return to high order after regularity recovery.",
+      "next_discriminating_experiment": "Nonsmooth forcing/stiff transients and smooth negative controls; compare mature external methods only when actual adapters are run.",
+      "existing_api": [
+        "integrate_bdf_adaptive_observed",
+        "integrate_radau_adaptive_observed"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "INDEPENDENT_ENSEMBLE",
+      "name": "Independent trajectory batching",
+      "previous_disposition": "SPECIALIZED_OPT_IN",
+      "previous_reason": "Independent trajectories can run concurrently without reducing one trajectory temporal dependency; batch throughput differs from single-thread latency.",
+      "previous_evidence_summary": "Nonstiff four-configuration/sixteen-run local ensemble evidence exists; 1/2worker ratios2.10–2.39 are not a universal scaling theorem.",
+      "reconsidered_disposition": "REOPEN_SMALL_HOST_VECTOR_BATCHING",
+      "constructive_reinterpretation": "Even one worker can benefit from structure-of-arrays vectorization of independent trajectories; threads are not required.",
+      "admissibility": "Independent IVPs or mode packets with independent state ownership; adaptive divergence accounted.",
+      "mechanism_or_formula": "Same equations; vectorized operation sharing and grouped coefficient setup reduce overhead, not temporal dependency.",
+      "adaptive_selection_contract": "Batch only compatible dimensions/parameter groups; split divergent histories; worker budget explicit.",
+      "next_discriminating_experiment": "Single-thread SIMD versus scalar and small parallel budget; throughput and latency separately, setup included.",
+      "existing_api": [
+        "Dopri5Ensemble",
+        "rodas5p_fast_small_batch",
+        "stage_batch"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "PARALLEL_STAGE_THEORY",
+      "name": "Fixed-point RK sweep and stage parallelization",
+      "previous_disposition": "RESEARCH_ONLY",
+      "previous_reason": "A sixteen-stage/four-sweep RK construction increases RHS work15 versus6 and only reduces span5 versus6; speed needs expensive parallel callbacks.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "REOPEN_WAVEFRONT_WITH_COST_MODEL",
+      "constructive_reinterpretation": "Parallelism can target stage blocks, spatial causal scans or independent algebraic factors separately. Use the axis with genuine parallel work.",
+      "admissibility": "Valid stage dependency, current wave data, deterministic summation where promised.",
+      "mechanism_or_formula": "Causal path length bounds rounds; a scan reduces associative recurrence span to logarithmic at O(n) work.",
+      "adaptive_selection_contract": "Select parallel route only if measured callback/scan sizes amortize barriers; serial route remains default on tiny systems.",
+      "next_discriminating_experiment": "Cheap/expensive RHS and varying batch sizes; compare total work and critical path, not CPU count alone.",
+      "existing_api": [
+        "parallel",
+        "stage_batch",
+        "causal Picard schedules"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "VERIFIED_ERROR",
+      "name": "Continuous residual / global budget / affine norm support",
+      "previous_disposition": "SUPPORT_ONLY",
+      "previous_reason": "Optional certified-error infrastructure has additional enclosure/growth assumptions; local tolerance is not a whole-trajectory guarantee. New physical budget has no general facade hook.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "REOPEN_ACCURACY_AND_ROBUSTNESS_SERVICE",
+      "constructive_reinterpretation": "Tighter dissipative/metric error transport can allow larger steps or safe inexact solves at the same physical accuracy target.",
+      "admissibility": "Whole-path defect/growth bounds or precisely labelled operational estimates; exact reconstruction/norm weights.",
+      "mechanism_or_formula": "For e′≤μe+δ, e(t)≤e^{∫μ}e0+∫e^{∫μ}δ. Dissipative μ≤0 avoids exp(h||J||) overgrowth.",
+      "adaptive_selection_contract": "Use optional validated provider; ambiguous numerical norm returns indeterminate/retry rather than accepted zero.",
+      "next_discriminating_experiment": "Mixed exponents, cancellation, invariants, nonnormal growth; compare certificate overhead versus removed over-resolution.",
+      "existing_api": [
+        "ContinuousResidualProvider",
+        "physical_error_budget",
+        "generic_verified",
+        "AffineErrorNorm"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    },
+    {
+      "id": "GRAPH_SUBFLOW",
+      "name": "RKL / Markov-Poisson / geometry subflows",
+      "previous_disposition": "OUT_OF_SELECTED_SCOPE",
+      "previous_reason": "These are problem-specific semigroup/spatial operators, not a general ODE algorithm selected by this review. Domain research is excluded from the present release denominator.",
+      "previous_evidence_summary": "not newly measured",
+      "reconsidered_disposition": "REOPEN_GENERIC_MOL_COMPONENT",
+      "constructive_reinterpretation": "Graph diffusion/Markov semigroups are ordinary structured ODE operators and need not remain excluded merely because prior client was PDE-specific.",
+      "admissibility": "Declared conservative/positive generator, boundary and metric; no application-specific physics assumptions imported.",
+      "mechanism_or_formula": "For L=-M^-1 BKBᵀ, eᵀML e=-(Bᵀe)ᵀK(Bᵀe)≤0; uniformization or stabilized polynomial may exploit this.",
+      "adaptive_selection_contract": "Admit on verified generator/contractivity; nonsymmetric advection or wrong boundary returns to general route.",
+      "next_discriminating_experiment": "2D/3D/spherical graph prototypes as ODEs, positivity/conservation and error; existing sparse/band direct comparator where feasible.",
+      "existing_api": [
+        "graph / PDE research helpers",
+        "conservative_remap",
+        "gray_scott"
+      ],
+      "new_execution_in_this_inventory": false,
+      "basis": [
+        "source-inspected",
+        "derived-or-reused-identity",
+        "experiment-proposed"
+      ],
+      "source_refs": [
+        "PORTFOLIO_1024"
+      ],
+      "measurable_acceptance_contract": {
+        "accuracy": "Freeze physical error norm, reference uncertainty allowance E_ref and cap E before execution; require max retained-output error plus E_ref <= E. Both candidate and timing comparator must pass the same cap.",
+        "robustness": "Record success/refusal/numerical-failure/fatal-input separately. A rescue is useful if it completes a predeclared case where the comparator fails, without increasing error beyond E; no universal stability conclusion follows.",
+        "speed": "Report paired median baseline/candidate with all setup, speculation, residual checks and fallback charged. A proposed engineering promotion threshold is ratio >=1.2 in the admitted scope; it is not a theorem or a threshold retrofitted to results.",
+        "switch_safety": "Selection uses declared structure, current/past telemetry and epochs only; failed speculation must preserve accepted state/time and remain inside a preregistered work cap.",
+        "revision_budget": "At most3 diagnosed implementation/retest loops for this new task; unchanged historical evidence reused."
+      }
+    }
+  ],
+  "additional_mechanisms": [
+    {
+      "id": "ALG-PRIMARY-JETS",
+      "name": "Primary decomposition and confluent finite jets",
+      "source_ref": "POLY_THEORY",
+      "formula": "For q=∏(x−λ_i)^m_i, coprime CRT gives K[x]/q ≅ ∏K[ε]/ε^m_i. Preserve each derivative jet through root coalescence.",
+      "constructive_benefit": "Scalar coefficient work may be shared; it does not delete independent amplitudes. Compute stable entire/divided-difference limits instead of subtracting close modal values.",
+      "adaptive_contract": "Switch from separated CRT to cluster/confluent evaluation when coefficient conditioning is poor; recompute original operator residual; preserve multiplicities.",
+      "discriminating_case": "Distinct/near-coincident/exactly-coincident roots with Jordan blocks; compare stable sinhc/expm1 formulas.",
+      "status": "historical theorem reused; new general compiler not implemented by inventory"
+    },
+    {
+      "id": "ALG-INVOLUTION",
+      "name": "Involution-even/odd computation sharing",
+      "source_ref": "LOOP11",
+      "formula": "If S²=I and SAS=−A, even powers commute withS and odd powers anticommute; Π±=(I±S)/2 retain both sectors.",
+      "constructive_benefit": "Evaluate common even coefficient functions once and recover odd signs; symmetry reduces duplicate transcendental work rather than deleting odd state.",
+      "adaptive_contract": "Require declared symmetry identity and parameter compatibility; model changes invalidate grouping.",
+      "discriminating_case": "Matched ±frequency blocks with arbitrary amplitudes, broken-symmetry negative control.",
+      "status": "historical theorem reused; generic grouping extension proposed"
+    },
+    {
+      "id": "ALG-AFFINE-MANIFOLD",
+      "name": "Exact invariant affine manifold reduction",
+      "source_ref": "HOM_THEORY",
+      "formula": "f(y_ref+Uz)=Ug(z), JU=UJ_r imply full causal stages K_i=Uk_i^r by induction with common invertible W.",
+      "constructive_benefit": "Replace n-factorization by r-factorization while original target equality holds; lift and physical norm still cost O(nr).",
+      "adaptive_contract": "Bound closure and reconstruction defects; keep nonzero transverse initial data in a separate proved evolution or refuse reduction.",
+      "discriminating_case": "Invariant and nearly-invariant families, ill-conditioned U, rank drift and physical error norm.",
+      "status": "historical derived theorem, scoped native pieces exist"
+    },
+    {
+      "id": "ALG-LOCAL-IDEAL",
+      "name": "Local reaction ideals and rationalized roots",
+      "source_ref": "RHS_ONLY",
+      "formula": "Eliminate u from u+x=Q and x−x0−a u(1−x)=0; physical root x=2(x0+aQ)/(1+a(Q+1)+sqrt(D)), D≥1 under u0≥0,0≤x0≤1,a≥0.",
+      "constructive_benefit": "Nonlinear local resolvent without runtime derivative or Newton; use as predictor/preconditioner in high-order target.",
+      "adaptive_contract": "Check denominator/domain/physical interval and original balance; fall back near failed conditions; never inherit order5 from backward Euler.",
+      "discriminating_case": "Large a, depleted species, cancellation and overflow controls; full target accuracy after correction.",
+      "status": "historical formula and24probes reused; wider generic source generation proposed"
+    },
+    {
+      "id": "ALG-REGULAR-CHART",
+      "name": "Rational jets, chart/cofactor transport and fast initial impulse",
+      "source_ref": "CHART_SOURCE",
+      "formula": "For y=x²(w+1/κ), reconstruction error is bounded by (2|x|r_x+r_x²)|w+1/κ|+(|x|+r_x)²r_w plus represented-center error.",
+      "constructive_benefit": "Resolve stiff transverse dynamics analytically in a regular chart and retain nonzero fast data; physical defect certifies useful accuracy.",
+      "adaptive_contract": "Whole error tube must remain away from chart denominator zero; chart change or original-coordinate fallback before boundary.",
+      "discriminating_case": "Approach x=0, nonzero fast impulse, εforcing, signed branches and reconstruction cancellation.",
+      "status": "existing one-model provider; generic chart compiler remains open"
+    },
+    {
+      "id": "ALG-PARAMETER-CELL",
+      "name": "Semialgebraic inverse-witness reuse",
+      "source_ref": "ATLAS_THEORY",
+      "formula": "E(θ)=I−PW(θ)=Σβ_α(θ)E_α with Bernstein β≥0,Σβ=1; max||E_α||≤q<1 gives ||W^-1 r||≤||Pr||/(1−q).",
+      "constructive_benefit": "A proof over a cell replaces repeated full inverse verification by membership and identity checks; total work reduced when N(C_full−C_member)>C_compile+C_extra.",
+      "adaptive_contract": "Bind model/metric/preconditioner/epoch and interval parameter containment; outside cell choose another validated cell or fallback.",
+      "discriminating_case": "Cell edges, crossed boundary, coefficient corruption and changing metric; compile/replay/membership cost separated.",
+      "status": "existing derived theorem; no current arbitrary-RHS cell compiler"
+    },
+    {
+      "id": "ALG-SUPPORT-GRAPH",
+      "name": "Generated row-local support proofs",
+      "source_ref": "ATLAS_THEORY",
+      "formula": "Variable-support union along a differentiable expression graph proves ∂f_i/∂y_j=0 for absent variables.",
+      "constructive_benefit": "For bounded local width and graph length, whole-domain structural setup O(nb) replaces dense O(n²) verification.",
+      "adaptive_contract": "Only a sealed/generated RHS shares certificate; arbitrary callback hash or finite probes do not certify identity.",
+      "discriminating_case": "Hidden nonlocal term, rational denominator, mesh epoch, shared-graph traversal complexity.",
+      "status": "source-generation opportunity, not invented universal linear-time AD"
+    },
+    {
+      "id": "ALG-SCHUR-NILPOTENT",
+      "name": "Band-border Schur elimination as finite algebra",
+      "source_ref": "RHS_ONLY",
+      "formula": "W=[[A,B],[C,D]], S=D−CA^-1B, P=[[A,0],[C,S]] imply P^-1W=[[I,A^-1B],[0,I]], (P^-1W−I)²=0.",
+      "constructive_benefit": "Exact preconditioning closes GMRES in at most2iterations; direct block elimination is the equally strong comparator.",
+      "adaptive_contract": "Use exact/controlled block solves; inexact A/S changes nilpotence and needs actual residual/defect test, not a promised3–5iterations.",
+      "discriminating_case": "Border rank scaling, approximate Schur, nonnormal block, setup/reuse and strongest direct solver.",
+      "status": "historical identity and scoped tests reused"
+    },
+    {
+      "id": "ALG-SHARED-SHIFT",
+      "name": "Shared normalised real/complex shifted jets and RHS rank",
+      "source_ref": "SHIFT_SOURCE",
+      "formula": "R0=(I−γ0hJ)^-1,T=R0−I,z=(γ−γ0)/γ0; (I−γhJ)^-1B=(I−zT)^-1R0B. For dissipative J,||T||≤1 and tail≤ρ^d||R0B||/(1−ρ).",
+      "constructive_benefit": "One centerfactor, d·r RHSsolves for many genuinely distinct shifts; bound RHS compression defect separately.",
+      "adaptive_contract": "Require actual multi-shift workload,ρ<1,current residual, resource cap; gamma shared by standardRODAS yields no new factor saving.",
+      "discriminating_case": "Clustered/wide shifts, rank1/fullrank RHS, complex nearimaginary shifts; compare Schur/multishift methods.",
+      "status": "native kernels present; generic trajectory client open"
+    },
+    {
+      "id": "ALG-INFLUENCE",
+      "name": "Whole-stage influence and optimal residual allocation",
+      "source_ref": "GLOBAL_THEORY",
+      "formula": "With causal transfer L, w=(I−L)^−T|b|. For residual model R_i q_i^k and cost c_i, continuous optimum ρ_i=min(R_i,p_i/(λa_i)),p_i=c_i/(−log q_i).",
+      "constructive_benefit": "Spend correction work on influential stages; conserve the same final output budget; rounding integercounts up preserves feasibility.",
+      "adaptive_contract": "Need valid current influence/contractivity/tube bounds and actual costmodel; tentative estimates remain estimates.",
+      "discriminating_case": "Anisotropic stage sensitivity, nonnormal transport, equality of final errorbudget and all allocator overhead.",
+      "status": "historical constructive theorem; new backend integration candidate"
+    },
+    {
+      "id": "ALG-CAUSAL-PREFIX",
+      "name": "Parallel affine error/transport scan",
+      "source_ref": "PREFIX_SOURCE",
+      "formula": "Maps(g,d):e↦ge+d compose as(g2g1,d2+g2d1); exact associative structure permits prefix tree.",
+      "constructive_benefit": "O(N)work/O(log N)idealspan for prefix transport; outward composition encloses its own rounding.",
+      "adaptive_contract": "Use for independently known local maps, never claim unknown future nonlinear IVP states become independent.",
+      "discriminating_case": "Long chain, huge/small gains, serialscan comparator and parallel setup threshold.",
+      "status": "already native supportkernel"
+    },
+    {
+      "id": "ALG-ONE-SIDED",
+      "name": "Dissipative geometry and weighted metrics",
+      "source_ref": "RHS_ONLY",
+      "formula": "For incidenceB andK≥0,L=−M^-1BKBᵀ, eᵀML e≤0; two-point monotonicity similarly treats monotone nonlinear flux.",
+      "constructive_benefit": "Avoid stiff negative eigenvalues becoming spurious exponential errorgrowth; stronger robustness/accuracy can reduce over-resolution.",
+      "adaptive_contract": "Metric positive and bound valid on fulltube; eigenvalue sign alone cannot replace numerical-range condition.",
+      "discriminating_case": "Nonnormal coordinate changes, graphweights, near-singular metric and mixedexponent norms.",
+      "status": "generic positive construction reusable from application sources"
+    },
+    {
+      "id": "ALG-FOURIER-VOLTERRA",
+      "name": "Fourier carriers and noncyclic nonlinear product",
+      "source_ref": "LOOP11",
+      "formula": "Known carrier e^{iωt} can be integrated analytically while full polynomial/Fourier convolution retains coupled amplitudes.",
+      "constructive_benefit": "FFT candidate prediction and exact/validated original-target residual separate cheapgeneration from acceptance; no aliasing as closure.",
+      "adaptive_contract": "Use declared bandwidth/closure/tube and phase budget; enlarge representation on residualfailure.",
+      "discriminating_case": "Rapidoscillation, resonant nonlinear modecoupling and aliasingnegativecontrol; direct moments as strongbaseline.",
+      "status": "historical Fourierclient; not generic unknownfrequency inference"
+    },
+    {
+      "id": "ALG-RANK-STRATA",
+      "name": "Rank/degree changes as switching boundaries",
+      "source_ref": "LOOP11",
+      "formula": "A monic degree-d quotient retains dimensiond when roots coalesce; parameter vanishing can cause a genuine degree drop only after identity verification.",
+      "constructive_benefit": "Stable exact exceptional formulas at known degree-drop strata can avoid numerical underflow/folds; arbitrary threshold rankdiscard is unsafe.",
+      "adaptive_contract": "Distinguish exactzero coefficient branches from nearzero perturbative branches with residualbudget; hysteresis applies only to performance choice.",
+      "discriminating_case": "Zero/nearzero frequency, vanishedquadraticcoefficient, nearlydependent modes, trace preservation.",
+      "status": "constructive synthesis of existing finitealgebra and quadraticbranch code"
+    },
+    {
+      "id": "ALG-NEAR-ANNIHILATOR",
+      "name": "Approximate annihilator correction rather than one-shot rejection",
+      "source_ref": "POLY_SOURCE",
+      "formula": "P from q(1)−q(z)=(1−z)r(z) gives residualoperatorD=q(B)/q(1); correction produces r_k=D^k r0 in exactarithmetic.",
+      "constructive_benefit": "Repeatedshortpolynomial action can succeed when one-shot tolerancefails, even with large||B||; fixedη<1 predicts a boundedbudget.",
+      "adaptive_contract": "True current residual check, no statecommit onfailure, finiteworkcap and denominator margin; finiteprecision floor handled separately.",
+      "discriminating_case": "Nonnormalnilpotentplusleakage,η→1,largeactions and stale provider; compare iterative/direct protectedbaseline.",
+      "status": "new implementation direction for sibling work; identity is consequence of priorquotienttheorem"
+    },
+    {
+      "id": "ALG-PHYSICAL-NORM",
+      "name": "Affine physical norm and exact accumulation",
+      "source_ref": "PR81",
+      "formula": "For y=yref+Uz, measure e in original physical scale ||D U e|| rather than compact Euclidean coordinates; outwardlower/upper bounds can represent cancellation safely.",
+      "constructive_benefit": "Robust decisions near toleranceboundary, avoid overflow/underflow in mixedexponents without full liftedvector allocation.",
+      "adaptive_contract": "Fixed model/lift/scale and denominator; ambiguous enclosure is Indeterminate rather than falseaccept.",
+      "discriminating_case": "Mixedsigncancellation,subnormal products,normboundary,platform portability; no BASS-specific code merged into generalcore.",
+      "status": "newly observedPR81 is client-specific22files; generic lesson only"
+    }
+  ],
+  "historical_subcandidates": [
+    {
+      "id": "KRY-PROJ-STOP",
+      "title": "In-cycle projected-residual exit for restarted GMRES, confirmed by one true residual per stage solve, at the unchanged stage target",
+      "historical_disposition": "PROMOTE_TO_PROBE",
+      "historical_evidence_locator": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json#KRY-PROJ-STOP",
+      "mapped_to": "RODAS_MATRIX_FREE",
+      "fresh_reconsideration": "Recheck only changed stopping/norm dependencies; pair early exit with outer-tolerance consistent targets and true residual. Historical useful mechanism retained, not relaunched as novelty.",
+      "execution_status": "not_newly_executed_by_inventory",
+      "previous_failure_preserved": true
+    },
+    {
+      "id": "INO-FORCE-ABS",
+      "title": "Tolerance-consistent absolute WRMS stage targets for the U-form matrix-free driver, with single-pass order-consistent (err/e_ref)^{6/5} scaling and an absolute U8 fidelity floor",
+      "historical_disposition": "PROMOTE_TO_PROBE",
+      "historical_evidence_locator": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json#INO-FORCE-ABS",
+      "mapped_to": "ALG-INFLUENCE",
+      "fresh_reconsideration": "Replace uniform forcing with influence-aware budgets where verified bounds exist; preserve tight-tolerance stage/output fidelity and no loose fallback target.",
+      "execution_status": "not_newly_executed_by_inventory",
+      "previous_failure_preserved": true
+    },
+    {
+      "id": "CERT-OSA-STALL",
+      "title": "Online first-order certified one-sided acceptance err_c +- B_e(h*mu_hat) from the stage true residuals, extended to accept stalled Krylov stages",
+      "historical_disposition": "PROMOTE_TO_PROBE",
+      "historical_evidence_locator": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json#CERT-OSA-STALL",
+      "mapped_to": "VERIFIED_ERROR",
+      "fresh_reconsideration": "Use validated current residual-to-output bound as safe inexactness service; add nonlinear remainder before claiming full root error. Compare stall acceptance to simply adequate Krylov budgets.",
+      "execution_status": "not_newly_executed_by_inventory",
+      "previous_failure_preserved": true
+    },
+    {
+      "id": "KRY-SHARED-SPACE",
+      "title": "One exact-image Krylov space per Jacobian, shared by all 8 stages (flexible GCRO) and carried exactly into rejection retries by image rescaling",
+      "historical_disposition": "CLOSE",
+      "historical_evidence_locator": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json#KRY-SHARED-SPACE",
+      "mapped_to": "COUPLED_FORWARD",
+      "fresh_reconsideration": "Bound rank independently of n and admit only expensive-action or few-mode cases; charge orthogonalization and refresh. Old near-fullrank cheap-JVP failure does not exclude bounded lowrank.",
+      "execution_status": "not_newly_executed_by_inventory",
+      "previous_failure_preserved": true
+    },
+    {
+      "id": "PC-SECANT-WOODBURY",
+      "title": "Structure-free lagged-W right preconditioner built from exact secant pairs (z, Jz) of previous steps, retargeted to any h by a k x k Woodbury solve and gated by coverage",
+      "historical_disposition": "CLOSE",
+      "historical_evidence_locator": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json#PC-SECANT-WOODBURY",
+      "mapped_to": "ALG-PARAMETER-CELL",
+      "fresh_reconsideration": "Reopen expensive-JVP, small fixed memory and singleoperator epoch case; true-residual admission, no fullrank SVD. Derivative-free structure provider can be cheaper than learned secants.",
+      "execution_status": "not_newly_executed_by_inventory",
+      "previous_failure_preserved": true
+    },
+    {
+      "id": "PC-LAGGED-HWINDOW",
+      "title": "Declared-structure lagged factorization as a right preconditioner of the exact stage operator, reused across steps under the exact h-window identity W(h)P^-1 = rho I + (1 - rho)P^-1",
+      "historical_disposition": "HOLD_NEEDS_RESOLUTION",
+      "historical_evidence_locator": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json#PC-LAGGED-HWINDOW",
+      "mapped_to": "ALG-SCHUR-NILPOTENT",
+      "fresh_reconsideration": "Reopen 2D/3Dfill-dominated or expensive factorization regimes using exact current target and lagged preconditioner only; strongest sparse/band comparator mandatory.",
+      "execution_status": "not_newly_executed_by_inventory",
+      "previous_failure_preserved": true
+    },
+    {
+      "id": "KRY-BUDGET-PREDICT",
+      "title": "Contraction-predicted Krylov budget with stagnation abort, minimal-residual monotonicity as a recycle-corruption certificate, and an Arnoldi-projected retry step, replacing fixed maxit = 200 and the blind 0.2 cut",
+      "historical_disposition": "PROMOTE_TO_PROBE",
+      "historical_evidence_locator": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json#KRY-BUDGET-PREDICT",
+      "mapped_to": "SWITCHING",
+      "fresh_reconsideration": "Separate baseline budget correction from predictor benefit; plateau alone is not convergence impossibility. Use hardworkcaps and recoverable coldrestart.",
+      "execution_status": "not_newly_executed_by_inventory",
+      "previous_failure_preserved": true
+    },
+    {
+      "id": "SOLVE-LIMITED-SWITCH",
+      "title": "Read 'repeated linear-solve failures with tiny accepted errors' as a solve-limited regime and change method family instead of cutting h by 0.2",
+      "historical_disposition": "CLOSE",
+      "historical_evidence_locator": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json#SOLVE-LIMITED-SWITCH",
+      "mapped_to": "SWITCHING",
+      "fresh_reconsideration": "Route on measured progress/cost plus eligibility, not old maxit-induced failurecount or Ritzangle alone; distinguish malformedcallback from numerical difficulty.",
+      "execution_status": "not_newly_executed_by_inventory",
+      "previous_failure_preserved": true
+    },
+    {
+      "id": "CTRL-PRED-CAP",
+      "title": "Gustafsson-predictive step control with no growth after a rejection, adopted through a matched-accuracy regression frontier",
+      "historical_disposition": "PROMOTE_TO_PROBE",
+      "historical_evidence_locator": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json#CTRL-PRED-CAP",
+      "mapped_to": "SWITCHING",
+      "fresh_reconsideration": "Reuse current predictive control evidence; isolate any new cap effect against unchanged predictor and simple safetyfactor controls.",
+      "execution_status": "not_newly_executed_by_inventory",
+      "previous_failure_preserved": true
+    },
+    {
+      "id": "CTRL-EXPANSIVE-GATE",
+      "title": "Rejections concentrate in locally expansive phases; a free resolvent-gain indicator lowers the controller set-point there",
+      "historical_disposition": "HOLD_NEEDS_RESOLUTION",
+      "historical_evidence_locator": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json#CTRL-EXPANSIVE-GATE",
+      "mapped_to": "ALG-ONE-SIDED",
+      "fresh_reconsideration": "Use verified/logged physical amplification as diagnostic or conservative safeguard; no claim expansionphase selective when thresholdfires broadly.",
+      "execution_status": "not_newly_executed_by_inventory",
+      "previous_failure_preserved": true
+    },
+    {
+      "id": "CTRL-NULLS",
+      "title": "Closure record: the remaining controller-side and early-abort levers each change counted work by under 5% at matched accuracy (with a catastrophe-only abort kept as a D5 guard)",
+      "historical_disposition": "PROMOTE_TO_PROBE",
+      "historical_evidence_locator": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json#CTRL-NULLS",
+      "mapped_to": "SWITCHING",
+      "fresh_reconsideration": "Reopen only a changed failure mechanism; catastropheabort can save bounded discarded work with unchanged acceptance, while controllerchanges require fresh matchedaccuracy.",
+      "execution_status": "not_newly_executed_by_inventory",
+      "previous_failure_preserved": true
+    },
+    {
+      "id": "DENSE-OWNW",
+      "title": "Interior (dense-output) error control through the step's own W: matched two-term or conservative single-solve filter, fed to the controller and used to license interpolation instead of landing on output grids",
+      "historical_disposition": "PROMOTE_TO_PROBE",
+      "historical_evidence_locator": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json#DENSE-OWNW",
+      "mapped_to": "VERIFIED_ERROR",
+      "fresh_reconsideration": "Use step-factor reuse to reduce setup for denseerror estimator; validate nonnormal underestimation and total retained-griderror before permitting wideroutputsteps.",
+      "execution_status": "not_newly_executed_by_inventory",
+      "previous_failure_preserved": true
+    },
+    {
+      "id": "GE-AMP-DETECT",
+      "title": "Linearized global-error transport with the attempt's own factorization as a scale-invariant error-amplification detector for the F-033 class",
+      "historical_disposition": "PROMOTE_TO_PROBE",
+      "historical_evidence_locator": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json#GE-AMP-DETECT",
+      "mapped_to": "VERIFIED_ERROR",
+      "fresh_reconsideration": "Replace biased res5transport by method-consistent or validated affineprefixbound; stablecounterexample controls required. Detection neednot claim certification.",
+      "execution_status": "not_newly_executed_by_inventory",
+      "previous_failure_preserved": true
+    },
+    {
+      "id": "REG-EXPLICIT-TRIAGE",
+      "title": "Free Ritz-geometry plus shadow-cost triage that hands Krylov-dominated regimes from RODAS5P to explicit methods: ROCK4 on real-dissipative spectra, classical RK at its stability limit on excited imaginary-axis spectra",
+      "historical_disposition": "HOLD_NEEDS_RESOLUTION",
+      "historical_evidence_locator": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json#REG-EXPLICIT-TRIAGE",
+      "mapped_to": "GRAPH_SUBFLOW",
+      "fresh_reconsideration": "Use declared dissipative generator or conservative stability region plus charged pilot; a Ritz cloud is insufficient for nonnormal stability. Compare banddirect.",
+      "execution_status": "not_newly_executed_by_inventory",
+      "previous_failure_preserved": true
+    },
+    {
+      "id": "EXPRB-OWN-H",
+      "title": "PEXPRB54S4 at its own step on semilinear-dissipative regimes, with level-1 phi actions taken free from RODAS5P's stage-1 Arnoldi basis and a Jawecki defect-integral certificate where mu_2(J) <= 0 is structural",
+      "historical_disposition": "HOLD_NEEDS_RESOLUTION",
+      "historical_evidence_locator": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json#EXPRB-OWN-H",
+      "mapped_to": "EXPONENTIAL_KRYLOV",
+      "fresh_reconsideration": "Reopen declared linearpart/structuredquotient phi where actual actioncost is low; avoid invalid reuse across preconditioning/fusion changes.",
+      "execution_status": "not_newly_executed_by_inventory",
+      "previous_failure_preserved": true
+    },
+    {
+      "id": "KLEGAL-ROK4-GATED",
+      "title": "K-legal ROK4a under a Krylov-projected stage operator, gated by one exact-JVP true residual per stage, because the same projection silently breaks RODAS5P",
+      "historical_disposition": "CLOSE",
+      "historical_evidence_locator": "docs/reviews/20261008_algorithmic_directions/pilot/phase2_candidates/adversarial_verification.json#KLEGAL-ROK4-GATED",
+      "mapped_to": "COUPLED_FORWARD",
+      "fresh_reconsideration": "Preserve separate ROKorderconditions and exact targetresidual. Reopen only corrected method/tableau/space construction; do not reuse the failed claim that Klegality alone protects accuracy.",
+      "execution_status": "not_newly_executed_by_inventory",
+      "previous_failure_preserved": true
+    }
+  ],
+  "priority_order": [
+    {
+      "rank": 1,
+      "ids": [
+        "LOW_DEGREE_RESOLVENT",
+        "NEUMANN",
+        "ALG-NEAR-ANNIHILATOR"
+      ],
+      "reason": "Concrete existingkernel plus inexpensive algebraic correction and identity-bound provider can rescue one-shot refusals; test positivity/conditioning and actualwork."
+    },
+    {
+      "rank": 2,
+      "ids": [
+        "COUPLED_FORWARD",
+        "SWITCHING",
+        "TRANSACTIONAL"
+      ],
+      "reason": "Operational bounded adaptive specialization can retain few-mode wins while charging broad-spectrum refusal."
+    },
+    {
+      "rank": 3,
+      "ids": [
+        "LAWSON_AFFINE",
+        "ALG-PRIMARY-JETS",
+        "ALG-RANK-STRATA"
+      ],
+      "reason": "Stable exact structural flow and regular degeneracy handling provide derivative-free oscillatory specialization."
+    },
+    {
+      "rank": 4,
+      "ids": [
+        "ALG-PARAMETER-CELL",
+        "ALG-INFLUENCE",
+        "ALG-ONE-SIDED"
+      ],
+      "reason": "Accuracy/robustness benefit can precede rawspeed; requires providerbound implementation."
+    },
+    {
+      "rank": 5,
+      "ids": [
+        "COUPLED_PICARD",
+        "PARALLEL_STAGE_THEORY",
+        "ALG-SHARED-SHIFT"
+      ],
+      "reason": "Parallel or multishift rescue needs real expensiveclient and corresponding span/costcrossover."
+    }
+  ],
+  "blind_review_protocol": {
+    "candidate_labels": "Treat previousPRdecision as a hypothesis about a specified input/algorithm, not immutable exclusion.",
+    "admission_order": [
+      "original equation and physical norm",
+      "structure/domain proof or labelled assumption",
+      "operational original residual",
+      "accuracy/stability/robustness outcome",
+      "all charged work and timing"
+    ],
+    "selection_inputs": [
+      "declared structure",
+      "past/currentattempt telemetry",
+      "budgets",
+      "currentepochs"
+    ],
+    "forbidden_selection_inputs": [
+      "referenceanswer",
+      "future acceptedsolution",
+      "posthocbestmethod",
+      "unreported failedattempt cost"
+    ],
+    "revision_limit": 3
+  },
+  "remaining_coverage_gaps": [
+    "No current native benchmark for all25families; siblingimplementation/validation report identifies the executed subset.",
+    "All81PRmetadata were retrieved;12algorithmically relevantPRdetails were fetched. Entire81diffs and comments were not exhaustively audited.",
+    "Oldapplication-specific proofs are mined only for generic numerical contracts; BASS/rei model assumptions are not transferred to arbitraryODE.",
+    "Primary literature novelty must be assessed by the separate theory/references report; this inventory claims no novel theorem discovery.",
+    "NewPR81 is a standalone client norm kernel, not evidence that generalnativeaffine routing has already changed."
+  ],
+  "source_corrections": [
+    {
+      "id": "HIST-CORR-1",
+      "old_source": "docs/reviews/20261011_promotion_theory/SOURCES_SYNTHESIS_KO.md polynomial-router nextstep",
+      "correction": "PY03 single-backend planning was subsequently implemented. L-0110 items1–4 pass; only winning Laguerre niche failed. Current A08 also has FirstAdmitted and CompareAll. New work must add a mechanism beyond those existing paths."
+    },
+    {
+      "id": "HIST-CORR-2",
+      "old_source": "Older generic Leja EstimateOnly summary",
+      "correction": "Current core/polynomial_router.rs calls leja_phi_action_enclosed_with_workspace and consumes a private fused admission token. Retain scope distinction between legacy estimated action, enclosed component action and general ODE accuracy."
+    },
+    {
+      "id": "HIST-CORR-3",
+      "old_source": "Oct11historical synthesis SP04 unrun",
+      "correction": "L-0106 records later zero-start/recycling experiment: one E-normal1e-8 niche improved countedC, while broadnotwin and nonnormalfailures remain. Reopen current operator-valid boundedrank/cost scope, not assume allrecycling untested."
+    },
+    {
+      "id": "HIST-CORR-4",
+      "old_source": "Historical homotopy absenceofexpensiveclient",
+      "correction": "L-0113 found no declaredexpensiveclient and L-0114didnotrunparallelpilot. Those rows are lackofapplicableclient, not a mathematical rejection of parallelhomotopy."
+    },
+    {
+      "id": "HIST-CORR-5",
+      "old_source": "PC-LAGGED general closure",
+      "correction": "L-0117 native sparse/right-preconditioner groundwork exists but referencebudgetblocked stage1; L-0141laterstaleness failedHIRES factorizationthreshold yet passedBrusselator100. Reopening must target certifiednewreusemechanism and fill-dominatedregime."
+    }
+  ]
+}

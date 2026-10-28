@@ -1,0 +1,53 @@
+{
+  "schema": "vigilode.selection-tree.v1",
+  "search_type": "finite evidence-guided branch-and-prune",
+  "not_claimed": "stochastic MCTS or global optimum",
+  "tree": {
+    "kind": "bounded_three_policy_branch_and_prune",
+    "not_claimed": "statistical Monte Carlo tree search or exhaustive global optimization",
+    "objective": [
+      "correct declared capability",
+      "error contract",
+      "robust finite-budget termination",
+      "single-thread full-solve cost",
+      "code complexity"
+    ],
+    "candidates": [
+      {
+        "id": "P0",
+        "policy": "automatic broad switching by stiffness pressure",
+        "decision": "PRUNE_CURRENT_DEFAULT",
+        "basis": [
+          "S"
+        ],
+        "reason": "same evidence includes severe FD/transition regressions; no future-horizon guarantee"
+      },
+      {
+        "id": "P1",
+        "policy": "capability-first explicit DOPRI5 or protected RODAS5P from declared problem and derivative policy",
+        "decision": "SELECT_SCOPED",
+        "basis": [
+          "N",
+          "I",
+          "U"
+        ],
+        "reason": "smallest core with demonstrated complementary stiff/nonstiff roles; fail instead of inventing capability"
+      },
+      {
+        "id": "P2",
+        "policy": "enable causal, quotient, polynomial or homotopy whenever approximate structure detected",
+        "decision": "RESTRICT_EXPLICIT_OPT_IN",
+        "basis": [
+          "A",
+          "C",
+          "L",
+          "I",
+          "P"
+        ],
+        "reason": "structure and cost are unproved for arbitrary callbacks; current benefits have narrow domains"
+      }
+    ]
+  },
+  "family_decisions": "analysis/PORTFOLIO.json",
+  "executed_selector": "crates/vigilode/src/selection.rs"
+}

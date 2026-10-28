@@ -1,0 +1,1465 @@
+{
+  "cohorts": {
+    "smoke": {
+      "assessment_scope": "endpoint only; no continuous trajectory or broad production claim",
+      "binary_sha256": {
+        "diffsol": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+        "native": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+        "vigilode": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2"
+      },
+      "cap": 0.0001,
+      "descriptor_sha256": "e2a38964bbed89db41572abe75836eb19ae9764af2eee9b6c49e421ae054e6ff",
+      "identity_sha256": "fbbdeb864ceb1234f5aef78200fa5b88a31d8c3efb5912328f0d60fa7000f458",
+      "max_wp35_vs_wp50_difference": 3.627779126515658e-20,
+      "measured_followup_source": {
+        "commit": "9b31da59b6d30a092af52357d3bc257b13ce043f",
+        "status": "",
+        "tree": "38d350b73ab2d809c1b6a0deb6abb7173810b45b"
+      },
+      "methods": {
+        "diffsol-bdf": {
+          "max_actual_error": 3.379222541301545e-11,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.000135436,
+            "median": 0.000132159,
+            "min": 0.000116069
+          }
+        },
+        "dopri5": {
+          "max_actual_error": 1.131045899645277e-09,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 8.2456e-05,
+            "median": 6.2177e-05,
+            "min": 5.9512e-05
+          }
+        },
+        "native-dvode-adams": {
+          "max_actual_error": 1.4512397268065177e-10,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 3.5958e-05,
+            "median": 3.0768e-05,
+            "min": 2.7843e-05
+          }
+        },
+        "native-dvode-bdf": {
+          "max_actual_error": 1.642640783052103e-10,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 4.5816e-05,
+            "median": 3.4515e-05,
+            "min": 3.0257e-05
+          }
+        },
+        "rodas5p-mf": {
+          "max_actual_error": 7.537312855560203e-13,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.000760458,
+            "median": 0.000359489,
+            "min": 0.000336496
+          }
+        },
+        "switching": {
+          "max_actual_error": 2.2670754162845697e-13,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.000348619,
+            "median": 0.000324914,
+            "min": 0.00030689
+          }
+        }
+      },
+      "norm": "max component absolute endpoint error",
+      "original_reference_receipt_sha256": "7ede8167d90c65ae4ace39f9d7ee83b0221d74bff84f1484b14edbd36c165b18",
+      "published_t40_spread": null,
+      "raw": [
+        {
+          "actual_endpoint_error_max_component": 3.379222541301545e-11,
+          "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826885642,
+            3.645044508621701e-05,
+            0.0003628668663501724
+          ],
+          "method": "diffsol-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_-1_diffsol-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "a4763fc93038267656cd1c92d2a4a81bd9b533d683685fa5d5c6a2ec67fccf62",
+          "repeat": -1,
+          "solve_seconds": 0.000152218,
+          "status": "PASS_SCOPED",
+          "warmup": true
+        },
+        {
+          "actual_endpoint_error_max_component": 1.131045899645277e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826903602,
+            3.644934783254278e-05,
+            0.0003628679618068552
+          ],
+          "method": "dopri5",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_-1_dopri5/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "6e51aab97fc6ff76d1cb02564d4c70b6930788c55d0ecbe2b0cdca86a6b99cdb",
+          "repeat": -1,
+          "solve_seconds": 6.364e-05,
+          "status": "PASS_SCOPED",
+          "warmup": true
+        },
+        {
+          "actual_endpoint_error_max_component": 1.4512397268065177e-10,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826890417,
+            3.645062325436348e-05,
+            0.0003628666877043839
+          ],
+          "method": "native-dvode-adams",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_-1_native-dvode-adams/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "1c23a4248167c740928b04747837ff2e2fde268bd9eb66e4904dddf1328d05bb",
+          "repeat": -1,
+          "solve_seconds": 3.673e-05,
+          "status": "PASS_SCOPED",
+          "warmup": true
+        },
+        {
+          "actual_endpoint_error_max_component": 1.642640783052103e-10,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826834337,
+            3.645031947387606e-05,
+            0.00036286699709243487
+          ],
+          "method": "native-dvode-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_-1_native-dvode-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "f01d55513a5d74b76141aff2e03072ff32862c8854d560b5d5f2f37aeece70e6",
+          "repeat": -1,
+          "solve_seconds": 3.1901e-05,
+          "status": "PASS_SCOPED",
+          "warmup": true
+        },
+        {
+          "actual_endpoint_error_max_component": 7.537312855560203e-13,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.999600682687671,
+            3.645047963217371e-05,
+            0.000362866832697365
+          ],
+          "method": "rodas5p-mf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_-1_rodas5p-mf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "1fb9b562006a2e2a924dd8498a22588d5940684424f2f2a31926925861c61a5e",
+          "repeat": -1,
+          "solve_seconds": 0.0003811,
+          "status": "PASS_SCOPED",
+          "warmup": true
+        },
+        {
+          "actual_endpoint_error_max_component": 2.2670754162845697e-13,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826885199,
+            3.645047887806846e-05,
+            0.0003628668326017449
+          ],
+          "method": "switching",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_-1_switching/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "6a1f06c384093901ac0b1fb9ed0ce4d710ca0b58b8fa60c8e44b563d5b9628f8",
+          "repeat": -1,
+          "solve_seconds": 0.000312941,
+          "status": "PASS_SCOPED",
+          "warmup": true
+        },
+        {
+          "actual_endpoint_error_max_component": 3.379222541301545e-11,
+          "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826885642,
+            3.645044508621701e-05,
+            0.0003628668663501724
+          ],
+          "method": "diffsol-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_0_diffsol-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "038cce68c6965f37c05de85c9f13bc9e0853a2b12a66d8e20e58a769fd9e14a8",
+          "repeat": 0,
+          "solve_seconds": 0.000132159,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.131045899645277e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826903602,
+            3.644934783254278e-05,
+            0.0003628679618068552
+          ],
+          "method": "dopri5",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_0_dopri5/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "17170b0c8755829e7e73ce92d10f8d07d13b3900681ff9222efd8a171ba73594",
+          "repeat": 0,
+          "solve_seconds": 8.2456e-05,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.4512397268065177e-10,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826890417,
+            3.645062325436348e-05,
+            0.0003628666877043839
+          ],
+          "method": "native-dvode-adams",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_0_native-dvode-adams/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "e5af551dde040a47e1de85c6c74c7cc9026dc740549d05f6f7a611cc14d67c31",
+          "repeat": 0,
+          "solve_seconds": 3.0077e-05,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.642640783052103e-10,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826834337,
+            3.645031947387606e-05,
+            0.00036286699709243487
+          ],
+          "method": "native-dvode-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_0_native-dvode-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "6b10874e81ce2e712427b7f78d96ce3cdbfcae53bedaef6f41935b184098d9e4",
+          "repeat": 0,
+          "solve_seconds": 4.5816e-05,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 7.537312855560203e-13,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.999600682687671,
+            3.645047963217371e-05,
+            0.000362866832697365
+          ],
+          "method": "rodas5p-mf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_0_rodas5p-mf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "9d33553c4d5f22991d4ea85d57578b6b4ad3cd302ecc04e80d256cb6fb74675a",
+          "repeat": 0,
+          "solve_seconds": 0.000760458,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 2.2670754162845697e-13,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826885199,
+            3.645047887806846e-05,
+            0.0003628668326017449
+          ],
+          "method": "switching",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_0_switching/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "645cf3c0afd48ba45fa288617be46e793df33726823773e10e4e726b8f6a56ed",
+          "repeat": 0,
+          "solve_seconds": 0.000334342,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 3.379222541301545e-11,
+          "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826885642,
+            3.645044508621701e-05,
+            0.0003628668663501724
+          ],
+          "method": "diffsol-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_1_diffsol-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "08f6b5739e403edb0ffc21d0cd37ca98f3bb9b1154a29ba93ac28f23b219cbb1",
+          "repeat": 1,
+          "solve_seconds": 0.000133963,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.131045899645277e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826903602,
+            3.644934783254278e-05,
+            0.0003628679618068552
+          ],
+          "method": "dopri5",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_1_dopri5/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "c82b78cefb8499b783ac968d48f31b342c6ab51da69b12b02f7d66759f25c457",
+          "repeat": 1,
+          "solve_seconds": 5.9512e-05,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.4512397268065177e-10,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826890417,
+            3.645062325436348e-05,
+            0.0003628666877043839
+          ],
+          "method": "native-dvode-adams",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_1_native-dvode-adams/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "9a6cf42b89a116f29d14377dd15188d117911a9ff466659db362d6652e22588a",
+          "repeat": 1,
+          "solve_seconds": 3.5958e-05,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.642640783052103e-10,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826834337,
+            3.645031947387606e-05,
+            0.00036286699709243487
+          ],
+          "method": "native-dvode-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_1_native-dvode-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "f5878687c588c413dc9a06c9803e09a1438c30f5b23695f622fcf998e7e0b9e6",
+          "repeat": 1,
+          "solve_seconds": 3.4645e-05,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 7.537312855560203e-13,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.999600682687671,
+            3.645047963217371e-05,
+            0.000362866832697365
+          ],
+          "method": "rodas5p-mf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_1_rodas5p-mf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "70ca4d020b50d8381a6ae3cc1f90970cbe01b3966d6578c86e9c9aaaa810970c",
+          "repeat": 1,
+          "solve_seconds": 0.000360491,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 2.2670754162845697e-13,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826885199,
+            3.645047887806846e-05,
+            0.0003628668326017449
+          ],
+          "method": "switching",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_1_switching/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "457a5db948b83b357f8f84efa86857df804a69593f0b03ef14c68e32e16f19ce",
+          "repeat": 1,
+          "solve_seconds": 0.000348619,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 3.379222541301545e-11,
+          "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826885642,
+            3.645044508621701e-05,
+            0.0003628668663501724
+          ],
+          "method": "diffsol-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_2_diffsol-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "6df51b63cc0da4fdcafb002639534ae3fd066f79e168a3e2a238423ed4b2d1c3",
+          "repeat": 2,
+          "solve_seconds": 0.000116069,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.131045899645277e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826903602,
+            3.644934783254278e-05,
+            0.0003628679618068552
+          ],
+          "method": "dopri5",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_2_dopri5/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "72094f3436c6f7af193cdde46e1c9a494360419b601a611f9132b7faada9da76",
+          "repeat": 2,
+          "solve_seconds": 6.4201e-05,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.4512397268065177e-10,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826890417,
+            3.645062325436348e-05,
+            0.0003628666877043839
+          ],
+          "method": "native-dvode-adams",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_2_native-dvode-adams/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "ee12bb9ef3e36bd99fa1da4a7500e8fba4748451030481101c3dd3db73b404f7",
+          "repeat": 2,
+          "solve_seconds": 2.7843e-05,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.642640783052103e-10,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826834337,
+            3.645031947387606e-05,
+            0.00036286699709243487
+          ],
+          "method": "native-dvode-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_2_native-dvode-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "ebf1d476b83b4216a989a7fa53a6f434b3992c828f956bf14902a6920a908e45",
+          "repeat": 2,
+          "solve_seconds": 3.0257e-05,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 7.537312855560203e-13,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.999600682687671,
+            3.645047963217371e-05,
+            0.000362866832697365
+          ],
+          "method": "rodas5p-mf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_2_rodas5p-mf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "54677f63345578941f1eada749807ca93dc14f96178929d09503720d9d583b92",
+          "repeat": 2,
+          "solve_seconds": 0.000336496,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 2.2670754162845697e-13,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826885199,
+            3.645047887806846e-05,
+            0.0003628668326017449
+          ],
+          "method": "switching",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_2_switching/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "55e3f8b65a3848436b9fe8cf217fd74a20f1538755447fc6e24d8cae0519771a",
+          "repeat": 2,
+          "solve_seconds": 0.000324914,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 3.379222541301545e-11,
+          "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826885642,
+            3.645044508621701e-05,
+            0.0003628668663501724
+          ],
+          "method": "diffsol-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_3_diffsol-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "4c9923c1d11629db2deefbda901ac6a1019c785bec5c5f6a6746ed7ef785683a",
+          "repeat": 3,
+          "solve_seconds": 0.000135436,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.131045899645277e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826903602,
+            3.644934783254278e-05,
+            0.0003628679618068552
+          ],
+          "method": "dopri5",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_3_dopri5/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "d41cd692a002c89b6b2231e3581c030e956b0063abe82cca8f9a0cfc23336758",
+          "repeat": 3,
+          "solve_seconds": 6.0104e-05,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.4512397268065177e-10,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826890417,
+            3.645062325436348e-05,
+            0.0003628666877043839
+          ],
+          "method": "native-dvode-adams",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_3_native-dvode-adams/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "969b9d55bffd4aea88e078d22d1bb9b68946e9e8aa27873ff4e9e71063c9e6f6",
+          "repeat": 3,
+          "solve_seconds": 3.1289e-05,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.642640783052103e-10,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826834337,
+            3.645031947387606e-05,
+            0.00036286699709243487
+          ],
+          "method": "native-dvode-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_3_native-dvode-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "30c40113b30cba27a849677b6660336c0222b5db0bfd3f747c92943373826346",
+          "repeat": 3,
+          "solve_seconds": 3.3162e-05,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 7.537312855560203e-13,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.999600682687671,
+            3.645047963217371e-05,
+            0.000362866832697365
+          ],
+          "method": "rodas5p-mf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_3_rodas5p-mf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "c5e103ad9e8e830c45b8cce23319ed2dcc2f93960f02f9d78296bc2027862c3c",
+          "repeat": 3,
+          "solve_seconds": 0.000359489,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 2.2670754162845697e-13,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826885199,
+            3.645047887806846e-05,
+            0.0003628668326017449
+          ],
+          "method": "switching",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_3_switching/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "e8698440b8ac42573043f9d0eb82415c7ff16b4166c49a39210ebe86890ecdb0",
+          "repeat": 3,
+          "solve_seconds": 0.000308162,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 3.379222541301545e-11,
+          "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826885642,
+            3.645044508621701e-05,
+            0.0003628668663501724
+          ],
+          "method": "diffsol-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_4_diffsol-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "056fbed6d6070dee573950fac882fd3c4c5a6f818ec13ab7aa009af07166c74f",
+          "repeat": 4,
+          "solve_seconds": 0.000129575,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.131045899645277e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826903602,
+            3.644934783254278e-05,
+            0.0003628679618068552
+          ],
+          "method": "dopri5",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_4_dopri5/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "c7c1571ec159f995bbe5deeaf1e2a79c2f0f992490036e6342a69a0da282d0d2",
+          "repeat": 4,
+          "solve_seconds": 6.2177e-05,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.4512397268065177e-10,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826890417,
+            3.645062325436348e-05,
+            0.0003628666877043839
+          ],
+          "method": "native-dvode-adams",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_4_native-dvode-adams/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "90cbb416d60774c1756c89b1f9a36772c5418c928dea5e6f2bf3a08b71814c78",
+          "repeat": 4,
+          "solve_seconds": 3.0768e-05,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.642640783052103e-10,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826834337,
+            3.645031947387606e-05,
+            0.00036286699709243487
+          ],
+          "method": "native-dvode-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_4_native-dvode-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "514f8cc6dd3607fd5f1227f593f762f89da576fcd5890d8e4ca400efd54f7b4c",
+          "repeat": 4,
+          "solve_seconds": 3.4515e-05,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 7.537312855560203e-13,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.999600682687671,
+            3.645047963217371e-05,
+            0.000362866832697365
+          ],
+          "method": "rodas5p-mf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_4_rodas5p-mf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "3f24563804dc019f24af992793f9057273bb5e8dc3e4973456ea7d765af38f41",
+          "repeat": 4,
+          "solve_seconds": 0.000347887,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 2.2670754162845697e-13,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.9996006826885199,
+            3.645047887806846e-05,
+            0.0003628668326017449
+          ],
+          "method": "switching",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_smoke/runs/1_smoke_4_switching/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "9ee2db477339c2acd712bedaf48944315d8ff46e8db82535dcd5ae05fb462864",
+          "repeat": 4,
+          "solve_seconds": 0.00030689,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        }
+      ],
+      "reference_state": [
+        0.9996006826882932,
+        3.6450478878442426e-05,
+        0.00036286683282835656
+      ],
+      "t_end": 0.01
+    },
+    "standard": {
+      "assessment_scope": "endpoint only; no continuous trajectory or broad production claim",
+      "binary_sha256": {
+        "diffsol": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+        "native": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+        "vigilode": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2"
+      },
+      "cap": 0.0001,
+      "descriptor_sha256": "7a5233503d4d1440400216a76240a09e4e2ea13c4d0b1a237f85f6d2359dc80e",
+      "identity_sha256": "d63f73f37bdba65fac9aa8323d90cd8e168a631b05fd003adde4341e10a4a5f1",
+      "max_wp35_vs_wp50_difference": 1.1964937852086744e-17,
+      "measured_followup_source": {
+        "commit": "9b31da59b6d30a092af52357d3bc257b13ce043f",
+        "status": "",
+        "tree": "38d350b73ab2d809c1b6a0deb6abb7173810b45b"
+      },
+      "methods": {
+        "diffsol-bdf": {
+          "max_actual_error": 2.946990079744083e-08,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.000293084,
+            "median": 0.000211389,
+            "min": 0.000170703
+          }
+        },
+        "dopri5": {
+          "max_actual_error": 5.424384275087846e-09,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.024629863,
+            "median": 0.01681717,
+            "min": 0.013925445
+          }
+        },
+        "native-dvode-adams": {
+          "max_actual_error": 1.2304320904932275e-06,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.027767262,
+            "median": 0.021946212,
+            "min": 0.02057987
+          }
+        },
+        "native-dvode-bdf": {
+          "max_actual_error": 8.957898744998971e-07,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.000157217,
+            "median": 0.000139534,
+            "min": 8.468e-05
+          }
+        },
+        "rodas5p-mf": {
+          "max_actual_error": 4.5498489575912515e-07,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.001046578,
+            "median": 0.000622867,
+            "min": 0.000615073
+          }
+        },
+        "switching": {
+          "max_actual_error": 4.992795288316643e-09,
+          "samples": 6,
+          "statuses": [
+            "PASS_SCOPED"
+          ],
+          "timed_samples": 5,
+          "timed_solve_seconds": {
+            "max": 0.049331051,
+            "median": 0.040000129,
+            "min": 0.03780444
+          }
+        }
+      },
+      "norm": "max component absolute endpoint error",
+      "original_reference_receipt_sha256": "7ede8167d90c65ae4ace39f9d7ee83b0221d74bff84f1484b14edbd36c165b18",
+      "published_t40_spread": 1.0380585280245214e-14,
+      "raw": [
+        {
+          "actual_endpoint_error_max_component": 2.946990079744083e-08,
+          "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270392571028,
+            9.18552716974699e-06,
+            0.28416377521573116
+          ],
+          "method": "diffsol-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_-1_diffsol-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "64695699aae71e256ef2cea6185c2dac6609a1980e2a171037ad4b6fd2ad8bdb",
+          "repeat": -1,
+          "solve_seconds": 0.000182726,
+          "status": "PASS_SCOPED",
+          "warmup": true
+        },
+        {
+          "actual_endpoint_error_max_component": 5.424384275087846e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270741437893,
+            9.185317365301867e-06,
+            0.2841637405388743
+          ],
+          "method": "dopri5",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_-1_dopri5/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "19a804e254827f7344a9cc1c2ed79621649d459f23e338eedab7d39485d00726",
+          "repeat": -1,
+          "solve_seconds": 0.014183192,
+          "status": "PASS_SCOPED",
+          "warmup": true
+        },
+        {
+          "actual_endpoint_error_max_component": 1.2304320904932275e-06,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158282990551659,
+            9.185631127160308e-06,
+            0.28416251531373987
+          ],
+          "method": "native-dvode-adams",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_-1_native-dvode-adams/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "1170edb093b98730205589f6bd755960e66ff00bc772a47ab82c174dd64a06a1",
+          "repeat": -1,
+          "solve_seconds": 0.029049525,
+          "status": "PASS_SCOPED",
+          "warmup": true
+        },
+        {
+          "actual_endpoint_error_max_component": 8.957898744998971e-07,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158261729295305,
+            9.185556841947192e-06,
+            0.2841646415136184
+          ],
+          "method": "native-dvode-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_-1_native-dvode-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "9d01f6e92d021fafe9125b3883c7e47eaee1e98c9b320b652aacf75508f9d1d6",
+          "repeat": -1,
+          "solve_seconds": 0.000123313,
+          "status": "PASS_SCOPED",
+          "warmup": true
+        },
+        {
+          "actual_endpoint_error_max_component": 4.5498489575912515e-07,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158266137511768,
+            9.185518098250497e-06,
+            0.2841642007307261
+          ],
+          "method": "rodas5p-mf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_-1_rodas5p-mf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "4b84fbc9166ede712bbc3309d0a915b25565e995b5e6e7f87083114cb7905bd2",
+          "repeat": -1,
+          "solve_seconds": 0.000718017,
+          "status": "PASS_SCOPED",
+          "warmup": true
+        },
+        {
+          "actual_endpoint_error_max_component": 4.992795288316643e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270737122003,
+            9.185276143913865e-06,
+            0.2841637410116524
+          ],
+          "method": "switching",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_-1_switching/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "97ab03d27a0fbc766f5b327d9f5ddf8c92d56b48d1001a0349489f72d323a237",
+          "repeat": -1,
+          "solve_seconds": 0.034601086,
+          "status": "PASS_SCOPED",
+          "warmup": true
+        },
+        {
+          "actual_endpoint_error_max_component": 2.946990079744083e-08,
+          "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270392571028,
+            9.18552716974699e-06,
+            0.28416377521573116
+          ],
+          "method": "diffsol-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_0_diffsol-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "b55028725ed80416d50b1a5487c362781f6fddd5c2c07a476759e1b625b769fc",
+          "repeat": 0,
+          "solve_seconds": 0.000293084,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 5.424384275087846e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270741437893,
+            9.185317365301867e-06,
+            0.2841637405388743
+          ],
+          "method": "dopri5",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_0_dopri5/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "908d4c3855d80ab0eead657a90a5851cb1453fd1d9ab138503d5ccaeaefd6f12",
+          "repeat": 0,
+          "solve_seconds": 0.020752826,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.2304320904932275e-06,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158282990551659,
+            9.185631127160308e-06,
+            0.28416251531373987
+          ],
+          "method": "native-dvode-adams",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_0_native-dvode-adams/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "0b68a62e4703a27915a2df5cfebc6a91d5f0ebf61b5249cbf2706f809e2d3b08",
+          "repeat": 0,
+          "solve_seconds": 0.027767262,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 8.957898744998971e-07,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158261729295305,
+            9.185556841947192e-06,
+            0.2841646415136184
+          ],
+          "method": "native-dvode-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_0_native-dvode-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "edd7c9659b5b401626bc6f2ad6b68d0186dc599d662605f44ca55338d1fc19ff",
+          "repeat": 0,
+          "solve_seconds": 0.000152398,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 4.5498489575912515e-07,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158266137511768,
+            9.185518098250497e-06,
+            0.2841642007307261
+          ],
+          "method": "rodas5p-mf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_0_rodas5p-mf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "53eb1dd472a4b67c3a36cb858ee9571bc0c4fcbb214d3c8db05ff2a6d497ec41",
+          "repeat": 0,
+          "solve_seconds": 0.001046578,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 4.992795288316643e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270737122003,
+            9.185276143913865e-06,
+            0.2841637410116524
+          ],
+          "method": "switching",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_0_switching/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "d6f916a48a78ed173ba43a6cc4cbe3ffeafc7fcc0373b766c3c92d0223735b0d",
+          "repeat": 0,
+          "solve_seconds": 0.040000129,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 2.946990079744083e-08,
+          "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270392571028,
+            9.18552716974699e-06,
+            0.28416377521573116
+          ],
+          "method": "diffsol-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_1_diffsol-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "c0e375af21cf656f1ce28a8471b2dcd29c6bb8215bebacb36919779bdacdec11",
+          "repeat": 1,
+          "solve_seconds": 0.000247648,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 5.424384275087846e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270741437893,
+            9.185317365301867e-06,
+            0.2841637405388743
+          ],
+          "method": "dopri5",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_1_dopri5/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "902e02918bce2f154fc3cd40c44726fb89368e7da6ca10c8d245173cb0bc9649",
+          "repeat": 1,
+          "solve_seconds": 0.014897932,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.2304320904932275e-06,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158282990551659,
+            9.185631127160308e-06,
+            0.28416251531373987
+          ],
+          "method": "native-dvode-adams",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_1_native-dvode-adams/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "4a3623081df3877a696541ce6c64015e546c1400f01b6967a88bb1b0140ae0f3",
+          "repeat": 1,
+          "solve_seconds": 0.026084272,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 8.957898744998971e-07,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158261729295305,
+            9.185556841947192e-06,
+            0.2841646415136184
+          ],
+          "method": "native-dvode-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_1_native-dvode-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "f357393f67dc950e2fe4278ff701bd4af4ee097c3e8882e71b1f905e41f32cc7",
+          "repeat": 1,
+          "solve_seconds": 0.000139534,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 4.5498489575912515e-07,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158266137511768,
+            9.185518098250497e-06,
+            0.2841642007307261
+          ],
+          "method": "rodas5p-mf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_1_rodas5p-mf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "44e2eb18c258e7f8020cbc7d84e5f587e323836e8f3dc4fe9dfa1998a7cfd2e9",
+          "repeat": 1,
+          "solve_seconds": 0.000621084,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 4.992795288316643e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270737122003,
+            9.185276143913865e-06,
+            0.2841637410116524
+          ],
+          "method": "switching",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_1_switching/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "778a03960101d4018d36cd2a961282a9b7758cb7a518cdfe30b3034c0b2c832a",
+          "repeat": 1,
+          "solve_seconds": 0.047475785,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 2.946990079744083e-08,
+          "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270392571028,
+            9.18552716974699e-06,
+            0.28416377521573116
+          ],
+          "method": "diffsol-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_2_diffsol-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "8b13572e988f94078552e85b8a2b20d16cbe9b827a60b9db6c1f39c0218cc69e",
+          "repeat": 2,
+          "solve_seconds": 0.000211389,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 5.424384275087846e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270741437893,
+            9.185317365301867e-06,
+            0.2841637405388743
+          ],
+          "method": "dopri5",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_2_dopri5/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "0fa65e2d5b5bdd2ef983f9fb0c5d338b35ac5251e062b9bdfcc613c6283b2b2c",
+          "repeat": 2,
+          "solve_seconds": 0.013925445,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.2304320904932275e-06,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158282990551659,
+            9.185631127160308e-06,
+            0.28416251531373987
+          ],
+          "method": "native-dvode-adams",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_2_native-dvode-adams/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "fb4bc376c4e0579c3262763c9f8f25a144d6d91573ff8ede4d18ae3a4f4686e2",
+          "repeat": 2,
+          "solve_seconds": 0.021155889,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 8.957898744998971e-07,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158261729295305,
+            9.185556841947192e-06,
+            0.2841646415136184
+          ],
+          "method": "native-dvode-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_2_native-dvode-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "042fac5475cc4145dc7dc2e3ff65c11ab83618ecb2e2746baf6bf241d09b56f8",
+          "repeat": 2,
+          "solve_seconds": 0.000138211,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 4.5498489575912515e-07,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158266137511768,
+            9.185518098250497e-06,
+            0.2841642007307261
+          ],
+          "method": "rodas5p-mf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_2_rodas5p-mf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "ae08e71bd7958524483ccfa34d6b8488c8cef5fbe35ed809cca2786b0844a1d8",
+          "repeat": 2,
+          "solve_seconds": 0.000615073,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 4.992795288316643e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270737122003,
+            9.185276143913865e-06,
+            0.2841637410116524
+          ],
+          "method": "switching",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_2_switching/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "ecfbcfe13a66fa0ea1b2dbfe864cb55b7cef7eaa0c1276cfe3a3657d6eaf4f4e",
+          "repeat": 2,
+          "solve_seconds": 0.03780444,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 2.946990079744083e-08,
+          "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270392571028,
+            9.18552716974699e-06,
+            0.28416377521573116
+          ],
+          "method": "diffsol-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_3_diffsol-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "6e93915a993bf92e9cd95f83c050a63b6792e02054bd1fbd7e728b1a20379b3b",
+          "repeat": 3,
+          "solve_seconds": 0.000189949,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 5.424384275087846e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270741437893,
+            9.185317365301867e-06,
+            0.2841637405388743
+          ],
+          "method": "dopri5",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_3_dopri5/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "c5c6496aaef518e4971a4681e41b4704ca9c70076af9243b289ca4fecb21d943",
+          "repeat": 3,
+          "solve_seconds": 0.024629863,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.2304320904932275e-06,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158282990551659,
+            9.185631127160308e-06,
+            0.28416251531373987
+          ],
+          "method": "native-dvode-adams",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_3_native-dvode-adams/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "0bd24592d22ac00d593a953df660f7d2202ef32117190f222ee48931caf9f05a",
+          "repeat": 3,
+          "solve_seconds": 0.021946212,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 8.957898744998971e-07,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158261729295305,
+            9.185556841947192e-06,
+            0.2841646415136184
+          ],
+          "method": "native-dvode-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_3_native-dvode-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "fdb4902d53c8944b4b7a809a898c12be71559ca9673e401da14a6588c41f6a90",
+          "repeat": 3,
+          "solve_seconds": 0.000157217,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 4.5498489575912515e-07,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158266137511768,
+            9.185518098250497e-06,
+            0.2841642007307261
+          ],
+          "method": "rodas5p-mf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_3_rodas5p-mf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "6c3e255955cd3b20d9e78f7ce2711c3cedc80ade6064444c4bd518cf3adc8c3d",
+          "repeat": 3,
+          "solve_seconds": 0.000622867,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 4.992795288316643e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270737122003,
+            9.185276143913865e-06,
+            0.2841637410116524
+          ],
+          "method": "switching",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_3_switching/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "34e61e8a45f25c86d0314390711cfd9343734a6cc6cdcd542e742fc46958a5a2",
+          "repeat": 3,
+          "solve_seconds": 0.049331051,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 2.946990079744083e-08,
+          "binary_sha256": "cd065b01d74818f03afc18b45367d59f286520bbb0e8695fe757882dd03eb870",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270392571028,
+            9.18552716974699e-06,
+            0.28416377521573116
+          ],
+          "method": "diffsol-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_4_diffsol-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "3004c8cefd0731c57d23cba2312883a3ee54b7ee80e01f90689ae31e0404d489",
+          "repeat": 4,
+          "solve_seconds": 0.000170703,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 5.424384275087846e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270741437893,
+            9.185317365301867e-06,
+            0.2841637405388743
+          ],
+          "method": "dopri5",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_4_dopri5/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "202af0110d12acf9e2ee9dbf2b7825efa5d4a3a2b9fef6d3467776b061de47a2",
+          "repeat": 4,
+          "solve_seconds": 0.01681717,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 1.2304320904932275e-06,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158282990551659,
+            9.185631127160308e-06,
+            0.28416251531373987
+          ],
+          "method": "native-dvode-adams",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_4_native-dvode-adams/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "97bdede8fd8c7ab4c7c3040b1ba1e4952710337dc698ff8a892f1814d75b9144",
+          "repeat": 4,
+          "solve_seconds": 0.02057987,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 8.957898744998971e-07,
+          "binary_sha256": "83a67c46514970e393355e30797eacbc5d1ce29eb02819f1e78c9cf209921404",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158261729295305,
+            9.185556841947192e-06,
+            0.2841646415136184
+          ],
+          "method": "native-dvode-bdf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_4_native-dvode-bdf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "03e3dd4274a71d56cc10f30d367c2ffeaa567b5c91aa427208426b29b2859fa6",
+          "repeat": 4,
+          "solve_seconds": 8.468e-05,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 4.5498489575912515e-07,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158266137511768,
+            9.185518098250497e-06,
+            0.2841642007307261
+          ],
+          "method": "rodas5p-mf",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_4_rodas5p-mf/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "a3c76a6474a84ea76c98536fc6287cc1dd6cb006c47a3f83023db1d6f9336303",
+          "repeat": 4,
+          "solve_seconds": 0.000633276,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        },
+        {
+          "actual_endpoint_error_max_component": 4.992795288316643e-09,
+          "binary_sha256": "979ffe205b861184231b94b9d30217ad5ccf924878886ae4c19cbeafbd7a80f2",
+          "execution_status": "COMPLETED",
+          "final_state": [
+            0.7158270737122003,
+            9.185276143913865e-06,
+            0.2841637410116524
+          ],
+          "method": "switching",
+          "raw_receipt_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup/comparison_standard/runs/1_standard_4_switching/COMPARISON_RECEIPT.json",
+          "raw_receipt_sha256": "8ddb78d93d82758c10b30653cc7d76a2ae84dbf898434635a80623fa33195dd2",
+          "repeat": 4,
+          "solve_seconds": 0.039878228,
+          "status": "PASS_SCOPED",
+          "warmup": false
+        }
+      ],
+      "reference_state": [
+        0.715827068719405,
+        9.185534764557764e-06,
+        0.28416374574583037
+      ],
+      "t_end": 40.0
+    }
+  },
+  "discarded_attempt": {
+    "method": "Wolfram StiffnessSwitching on [0,40], WP35 and WP50, default MaxSteps 10000",
+    "reason": "mxst at t=8.991926802415100... and 9.288596670164189...; t=40 values were extrapolations outside solution domains and were discarded"
+  },
+  "reference_method": "Wolfram NDSolveValue BDF, exact rational coefficients, WP35/goal20 and WP50/goal28; independently checked by StiffnessSwitching at t=0.01 and published t=40 endpoint",
+  "reference_uncertainty": {
+    "cap_fraction": 9.999999999999999e-09,
+    "estimate": 1e-12,
+    "kind": "conservative numerical estimate from precision refinement and independent method/literature agreement; not a certified bound"
+  },
+  "reference_urls": [
+    "https://www.unige.ch/~hairer/testset/stiff/rober/equation.f",
+    "https://link.springer.com/article/10.1007/s10910-022-01427-7"
+  ],
+  "schema": "vigilode.robertson.reference_reassessment.v2",
+  "source_identity": {
+    "current_followup_commit": "ea91d14ccb4b0a025e68273944edc7c7c3392a38",
+    "current_followup_tree": "1fca5a7622506bab704f739757e577d8318550a8",
+    "frozen_commit": "aaf1f834d4c589e734ca7851a56c11bb44f7047a",
+    "frozen_tree": "03b12c682c688155e0f8b08c52508e04738acb93"
+  }
+}

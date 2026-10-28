@@ -1,0 +1,143 @@
+{
+ "group": "G4_exponential_phi",
+ "fixes": [
+  {
+   "id": "G4-FIX-1",
+   "finding_ids": [
+    "F-040"
+   ],
+   "title": "Normalize the augmentation column / Krylov seed before the augmented Pade-13 exponential",
+   "summary": "dense_phi_action embeds the raw vector v as the augmentation column (crates/rodas5p-core/src/matrix_functions.rs:158) and matrix_exp_pade13 picks squarings from the 1-norm of that augmented matrix (crates/rodas5p-core/src/matrix_functions.rs:80-84), so ||v||=1e8 adds ~24 squarings and ~1e-8 relative error (E-06: 18/54 failures, all at ||v||=1e8). Fix at the oracle: scale the column by 1/||v||_inf (or 1/||v||_2), exponentiate, and multiply the extracted column by ||v||; phi_k is linear in v so this is exact in exact arithmetic and makes the squaring count depend only on ||scale*A||. Independently, projected_action (crates/rodas5p-integrators/src/exponential.rs:820-822) and projected_exponential_action_with_residual_estimate (crates/rodas5p-integrators/src/exponential.rs:989-1005) should seed the reduced input with e1 (not beta*e1) and multiply the reduced result (and the residual term) by beta, so the projected oracle never sees the physical scale even if a caller bypasses the core normalization.",
+   "files": [
+    "crates/rodas5p-core/src/matrix_functions.rs",
+    "crates/rodas5p-integrators/src/exponential.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-core/src/matrix_functions.rs:80-86",
+    "crates/rodas5p-core/src/matrix_functions.rs:144-166",
+    "crates/rodas5p-integrators/src/exponential.rs:805-829",
+    "crates/rodas5p-integrators/src/exponential.rs:858",
+    "crates/rodas5p-integrators/src/exponential.rs:989-1010",
+    "crates/rodas5p-integrators/src/exponential.rs:1053"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "verification": "Re-run the E-06 harness (RUN/harness/src/bin/e06_phi_action.rs on exp/E-06/cases.json) against the patched crate: all 54 cases must satisfy relerr_k <= 2.2e-13 for k=0..4 (currently worst 1.58e-8 at ||v||=1e8) and the Rust-only proportionality probe phi(A,1e8 v) vs 1e8*phi(A,v) must agree to <1e-14 (currently ~1e-8). Add a rodas5p-core unit test `dense_phi_action_is_scale_invariant` looping s in {1e-8,1,1e8} over k=1..4 on an 8x8 nonnormal matrix and asserting relative deviation <= 1e3*eps; add an integrators test that krylov_phi_action on 1e8*f and f differ by <=1e-13 relative. Existing exponential_contracts / fused_exponential_contracts binaries must stay green with no tolerance edits.",
+   "code_sketch": "// matrix_functions.rs dense_phi_action, k >= 1\nlet vnorm = vector.iter().fold(0.0_f64, |m, x| m.max(x.abs()));\nif vnorm == 0.0 { return Ok(vec![0.0; n]); }\nfor i in 0..n {\n    for j in 0..n { augmented[(i, j)] = scale * matrix[(i, j)]; }\n    augmented[(i, n)] = vector[i] / vnorm;   // unit-scaled column\n}\n// ... chain entries, exponential as before ...\nlet out: Vec<f64> = (0..n).map(|i| vnorm * exponential[(i, target_column)]).collect();\n\n// exponential.rs projected_action: seed with e1, rescale by beta\nlet mut reduced_input = vec![0.0; dimension];\nreduced_input[0] = 1.0;\nlet reduced = dense_phi_action(&h, scale, phi_index, &reduced_input)?;\nfor (coefficient, vector) in reduced.iter().zip(&basis[..dimension]) {\n    axpy(beta * *coefficient, vector, &mut out);\n}\n// residual estimator (989-1009): beta * scale.abs() * h_next * reduced_phi1[dimension-1].abs()"
+  },
+  {
+   "id": "G4-FIX-2",
+   "finding_ids": [
+    "F-011"
+   ],
+   "title": "Report a true KIOPS/Sidje residual at happy breakdown instead of error_estimate = 0",
+   "summary": "All three Arnoldi loops declare happy breakdown when h_{m+1,m} <= 64*sqrt(eps)*max(1,|h_im|) (crates/rodas5p-integrators/src/exponential.rs:881,905-911; 1078,1094-1099; 1563-1564) and then certify converged=true with error_estimate 0 (crates/rodas5p-integrators/src/exponential.rs:1136-1150 zeroes the already computed residual; 940-951 returns 0 when the nested difference is not finite; the legacy path has no residual estimator at all). Fix: (a) never overwrite the residual: the Sidje/KIOPS first-term estimate |delta * h_{m+1,m} * beta * e_m^T phi_1(delta H_m) e_1| is already computed at 1005-1009 and is exactly the quantity that is small-but-nonzero at a near-breakdown (5.7e-7 in the F-011 case), so report it and decide convergence by `residual <= threshold`; (b) make breakdown a basis-extension stop, not a certificate: converged = residual <= threshold || h_next == 0.0 || full_space; if a happy breakdown leaves residual > threshold the substep loop at 1264-1325 already doubles substeps (delta halves, residual shrinks), which is the correct recovery; (c) legacy krylov_phi_action: replace the nested-difference-only estimator with the generalized first term |delta * h_{m+1,m} * beta * e_m^T phi_{k+1}(delta H_m) e_1| obtained from one extra dense_phi_action(h, scale, k+1, e1) row, so the first checkpoint and breakdown checkpoints carry a finite estimate; (d) tighten the breakdown constant to O(1e3*eps) relative to column_scale, since the residual now governs convergence and the loose 64*sqrt(eps) was only ever justified as a certificate.",
+   "files": [
+    "crates/rodas5p-integrators/src/exponential.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/exponential.rs:858-870",
+    "crates/rodas5p-integrators/src/exponential.rs:878-951",
+    "crates/rodas5p-integrators/src/exponential.rs:985-1010",
+    "crates/rodas5p-integrators/src/exponential.rs:1075-1152",
+    "crates/rodas5p-integrators/src/exponential.rs:1560-1597"
+   ],
+   "effort": "M",
+   "risk": "medium",
+   "verification": "Port exp/D4/happy_breakdown.py into a Rust test: A=diag(-1,-3), v=e1+4.5e-7*e2, scale=1, rtol=1e-10: expect either converged=false (fused path then substeps) or error_estimate >= 3.9e-7 (true error) -- currently converged=true, estimate 0. Second case delta=1e-7, scale=3 (true rel err 1.0e-7). Assert adaptive_exponential phi_error_proxy is > 0 for that step. Run all prebuilt exponential test binaries from RUN/bin/MANIFEST.json; the prefix-parity tests (rtol 1e-12) must pass without tolerance changes; record any step-count changes in the exponential-lane receipts as a failure-preserving diff, not a tolerance edit.",
+   "code_sketch": "// krylov_exponential_once, after the checkpoint (replaces 1136-1150)\nlet exact_breakdown = hessenberg[krylov_dimension][krylov_dimension - 1] == 0.0;\nlet threshold = config.absolute_tolerance\n    + config.relative_tolerance * safe_l2(&current[..physical]).max(beta_physical);\nlet converged = exact_breakdown || full_space_exact || residual_error_estimate <= threshold;\nif happy_breakdown || full_space_exact || converged {\n    return Ok((current, FusedPhiSubstepReport {\n        substep_index: 0,\n        krylov_dimension,\n        converged,                       // false => outer loop doubles substeps\n        happy_breakdown,\n        error_estimate: residual_error_estimate, // never zeroed\n        nested_difference_estimate,\n    }));\n}\n// legacy krylov_phi_action estimator (phi_k action):\n// r_m = |scale| * h_{m+1,m} * beta * |e_m^T phi_{k+1}(scale H_m) e_1|\nlet phi_next = dense_phi_action(&h, scale, phi_index + 1, &e1)?;\nlatest_error = scale.abs() * h_next * beta * phi_next[dimension - 1].abs();"
+  },
+  {
+   "id": "G4-FIX-3",
+   "finding_ids": [
+    "F-042"
+   ],
+   "title": "Scale-aware fused combination: balance the augmented block and choose Pade squarings from ||A^k||^{1/k}",
+   "summary": "fused_phi_linear_combination divides each term by scale^k (crates/rodas5p-integrators/src/exponential.rs:1357-1361), so for the pexprb54s4 endpoint terms (phi_3/phi_4 of O(h^2) remainders) the augmented operator (crates/rodas5p-integrators/src/exponential.rs:1174-1222) has a B block of norm O(c/h) that dominates the projected Hessenberg's 1-norm; matrix_exp_pade13 then over-squares (8 -> 17 squarings as h goes 0.1 -> 1e-4, rel err 7.5e-15 -> 9e-12, D4/pade_overscaling.out) because it uses only ||.||_1 (crates/rodas5p-core/src/matrix_functions.rs:80-84). Two complementary changes: (a) in matrix_exp_pade13 compute a2,a4,a6 from the unscaled matrix first, derive d4=||A^4||_1^{1/4}, d6=||A^6||_1^{1/6} and set squarings from alpha=max(d4,d6) instead of ||A||_1 (Al-Mohy-Higham 2009 style; for the nilpotent augmented chain alpha << ||A||_1), then rescale a2,a4,a6 by 4^-s,16^-s,64^-s -- zero extra matmuls; (b) apply the KIOPS/phipm diagonal balancing similarity D=diag(I_n, eta, ..., eta^p) with eta=2^-ceil(log2 max_k ||b_k||_2) to the augmented operator (B columns scaled by eta^{c+1}, chain entries by eta, start-vector tail by D^-1) so the B block has norm O(1) before Arnoldi; the physical components of the result are unchanged by the similarity. Together with FIX-1 the projected oracle then sees an operator whose norm is set by ||scale*A|| and not by 1/h^k.",
+   "files": [
+    "crates/rodas5p-core/src/matrix_functions.rs",
+    "crates/rodas5p-integrators/src/exponential.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-core/src/matrix_functions.rs:80-120",
+    "crates/rodas5p-integrators/src/exponential.rs:1174-1222",
+    "crates/rodas5p-integrators/src/exponential.rs:1340-1363",
+    "crates/rodas5p-integrators/src/exponential.rs:985-1010"
+   ],
+   "effort": "M",
+   "risk": "medium",
+   "verification": "Port exp/D4/pade_overscaling.py's augmented matrices (nilpotent-chain augmented H with ||M||_1 = 4.06e5 at h=1e-4) into a rodas5p-core test and assert rel err vs a high-precision reference <= 1e-14 for h in {1e-1,1e-2,1e-3,1e-4} (currently 9e-12 at 1e-4); assert the chosen squaring count is <= the value for h=0.1. E-06 must stay all-pass after (a). For (b) add an integrators test that pexprb54s4_fused_step on a 2-D stiff problem at h in {1e-2,1e-3,1e-4} matches the exact-phi dense oracle to <= 1e-13 relative at every h (currently degrades with h). Check the prefix-parity tests at rtol 1e-12 remain green.",
+   "code_sketch": "// matrix_exp_pade13: overscaling guard (Al-Mohy & Higham 2009, cheap variant)\nlet a2 = a.matmul(a)?;\nlet a4 = a2.matmul(&a2)?;\nlet a6 = a4.matmul(&a2)?;\nlet d4 = matrix_one_norm(&a4).powf(0.25);\nlet d6 = matrix_one_norm(&a6).powf(1.0 / 6.0);\nlet alpha = d4.max(d6).min(matrix_one_norm(a));\nlet squarings = if alpha <= PADE_13_THETA { 0 } else { (alpha / PADE_13_THETA).log2().ceil() as u32 };\nlet s = 2.0_f64.powi(-(squarings as i32));\nlet scaled = a.scale(s);\nlet a2 = a2.scale(s * s);\nlet a4 = a4.scale(s.powi(4));\nlet a6 = a6.scale(s.powi(6));\n// ... Pade evaluation unchanged ...\n\n// augmented_fused_operator: KIOPS balancing\nlet bmax = vectors[1..].iter().map(|v| safe_l2(v)).fold(0.0, f64::max);\nlet eta = if bmax > 1.0 { 2.0_f64.powi(-(bmax.log2().ceil() as i32)) } else { 1.0 };\n// column c (c = 0..p) of the B block holds owned[p - c] * eta^(c+1); chain entries = eta;\n// start[augmented_dimension - 1] = eta.powi(-(p as i32)); physical output is unchanged."
+  },
+  {
+   "id": "G4-FIX-4",
+   "finding_ids": [
+    "F-043"
+   ],
+   "title": "Physical-norm (WRMS-aware) Krylov threshold and a phi error proxy in the same units as the time error",
+   "summary": "The fused Krylov threshold is atol + rtol*max(||current||_2, beta) (crates/rodas5p-integrators/src/exponential.rs:1134-1135, 1595-1596) where beta is the norm of the augmented start [b0;0;..;1] (crates/rodas5p-integrators/src/exponential.rs:1216-1218, 1053) so it is floored at rtol*1 regardless of ||f0||, and adaptive_exponential converts the summed L2 residual into h*sum/||scale||_2 (crates/rodas5p-integrators/src/adaptive_exponential.rs:83-94) before max-ing with a WRMS time error (crates/rodas5p-integrators/src/adaptive_exponential.rs:262-265). Fix: (a) compute the threshold from the physical part only: rtol*||current[..n]||_2 with beta replaced by ||b0||_2 (the augmented tail is a bookkeeping unit, not a physical magnitude); (b) let the caller pass the integrator's error_scale vector into FusedPhiKrylovConfig (optional `weights`); the residual vector is r_m = coeff * v_{m+1} with v_{m+1} = work/next_norm already in hand, so residual_wrms = |coeff| * wrms(v_{m+1}[..n], weights) costs no JVPs; converge when residual_wrms <= krylov_fraction (e.g. 0.1) and report it; (c) phi_error_proxy becomes h*sum(residual_wrms over substeps), directly comparable with the WRMS time error. Governance note: this changes accept/reject decisions, so receipts must be regenerated and any step-count change recorded as a failure-preserving diff, never a tolerance widening.",
+   "files": [
+    "crates/rodas5p-integrators/src/exponential.rs",
+    "crates/rodas5p-integrators/src/adaptive_exponential.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/exponential.rs:1053",
+    "crates/rodas5p-integrators/src/exponential.rs:1131-1138",
+    "crates/rodas5p-integrators/src/exponential.rs:1216-1218",
+    "crates/rodas5p-integrators/src/exponential.rs:1593-1597",
+    "crates/rodas5p-integrators/src/adaptive_exponential.rs:83-94",
+    "crates/rodas5p-integrators/src/adaptive_exponential.rs:258-265"
+   ],
+   "effort": "M",
+   "risk": "medium",
+   "verification": "Add a scale-invariance test: take one stiff 2-D problem and its rescaled copy y -> c*y (f -> c*f, atol -> c*atol) for c in {1e-3, 1e3}; the adaptive pexprb54s4 driver must produce identical accepted step sequences and Krylov dimensions (to rounding) -- currently the threshold floor rtol*1 makes the c=1e-3 run over-converge and the c=1e3 run under-converge. Add a unit test that phi_error_proxy equals wrms(residual_vector, scale)*h for a hand-built substep report. Compare exponential-lane scientific-validity receipts before/after and file the diff in the ledger.",
+   "code_sketch": "// krylov_exponential_once, at a checkpoint\nlet coeff = scale.abs() * h_next * beta_phys * reduced_phi1[krylov_dimension - 1].abs();\nlet residual_wrms = match &config.weights {\n    Some(w) => coeff * wrms(&next_basis[..physical], w)?,   // next_basis = work / next_norm\n    None => coeff / safe_l2(&current[..physical]).max(beta_phys) / config.relative_tolerance,\n};\nlet converged = residual_wrms <= config.krylov_fraction || exact_breakdown || full_space_exact;\n\n// adaptive_exponential.rs\nfn phi_error_proxy(reports: &[FusedPhiActionReport], h: f64) -> f64 {\n    h.abs() * reports.iter().map(|r| r.error_estimate_wrms).filter(|e| e.is_finite()).sum::<f64>()\n}"
+  },
+  {
+   "id": "G4-FIX-5",
+   "finding_ids": [
+    "F-039"
+   ],
+   "title": "Retain the work of failed exponential trials (accounted API everywhere)",
+   "summary": "The level-1 prefix creates a local WorkCounters (crates/rodas5p-integrators/src/exponential.rs:2402) and every failure path drops it: require_fused converts converged=false into Err(LinearSolve) (crates/rodas5p-integrators/src/exponential.rs:2131-2140) and `?` propagates NonFinite, while the adaptive loop's Err arm (crates/rodas5p-integrators/src/adaptive_exponential.rs:225-253) only bumps rejected_steps and pushes trial_work: None; work is accumulated only on Ok (crates/rodas5p-integrators/src/adaptive_exponential.rs:258). Fix: adopt the existing `_accounted` pattern (crates/rodas5p-integrators/src/exponential.rs:3032-3060) for the whole step: kernels return Result<Report, AccountedFailure { error: CoreError, work: WorkCounters }> (or take `&mut WorkCounters` from the caller, as fused_phi_action already does), the substep-cap exhaustion at 1309-1322 keeps its counters attached, and the adaptive Err arm does counters.accumulate(failure.work), sets trial_work: Some(failure.work) and adds the work to diagnostics. Publish only the accounted entry points from the fair-AB harness so the exponential lane cannot undercount.",
+   "files": [
+    "crates/rodas5p-integrators/src/exponential.rs",
+    "crates/rodas5p-integrators/src/adaptive_exponential.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/src/exponential.rs:1309-1322",
+    "crates/rodas5p-integrators/src/exponential.rs:2131-2140",
+    "crates/rodas5p-integrators/src/exponential.rs:2402-2404",
+    "crates/rodas5p-integrators/src/exponential.rs:3032-3060",
+    "crates/rodas5p-integrators/src/adaptive_exponential.rs:225-258"
+   ],
+   "effort": "M",
+   "risk": "low",
+   "verification": "Test: stiff problem with FusedPhiKrylovConfig{maximum_dimension: 2, maximum_substeps: 1} so require_fused fails; assert the adaptive driver's counters.jvp_calls and rhs_evaluations after one rejected trial equal the kernel-local counters captured in the failure (currently 0 for that trial) and that AdaptiveEarlyFlowDefectAttempt.trial_work is Some. Property: total work reported must be monotone non-decreasing in the number of trials. Re-run the rodas5p-fair-ab exponential-lane comparison from RUN/bin/MANIFEST.json before/after; the exponential lane's work totals may only increase; record the delta in the ledger.",
+   "code_sketch": "pub struct AccountedFailure { pub error: CoreError, pub work: WorkCounters }\n\nfn require_fused(report: FusedPhiActionReport, work: &WorkCounters) -> Result<FusedPhiActionReport, AccountedFailure> {\n    if report.converged { Ok(report) } else {\n        Err(AccountedFailure { error: CoreError::LinearSolve(format!(\n            \"fused phi action failed after {} substeps at dimension {} (estimate {})\",\n            report.substeps, report.maximum_krylov_dimension, report.error_estimate)),\n            work: work.clone() })\n    }\n}\n// adaptive_exponential.rs Err arm\nErr(AccountedFailure { error, work: failed_work }) if is_retryable(&error) => {\n    counters.accumulate(failed_work.clone());\n    // ... telemetry push with trial_work: Some(failed_work) ...\n    counters.rejected_steps += 1;\n    h = trial_h * adaptive.min_factor;\n    continue;\n}"
+  },
+  {
+   "id": "G4-FIX-6",
+   "finding_ids": [
+    "F-041"
+   ],
+   "title": "Stiff, nonscalar, non-commuting order test for pexprb54s4 (and exprb43)",
+   "summary": "declared_orders_are_observed_on_nonlinear_problem (crates/rodas5p-integrators/tests/exponential_contracts.rs:131-135) only uses square_problem (dimension 1, crates/rodas5p-integrators/tests/exponential_contracts.rs:9-28), where the Krylov space is exact and all phi functions commute, so the >=4.7 assertion cannot see Krylov truncation or stiff order reduction; the audit's exact-phi replica measured local order ~5.8 nonstiff but global order ~4.1 on a stiff 2-D problem with lambda=-1e4 (exp/D4/pexprb54s4_order.out). Add two tests: (a) a 2-D stiff nonlinear problem (y1' = lambda*(y1 - g(t)) + g'(t) + y2^2, y2' = -y2 + y1*y2, lambda=-1e4, non-commuting J and N) integrated with the fused kernel at tight Krylov tolerance over h where |lambda|h spans 1..100, asserting the observed global order in that regime and recording it as the documented stiff order (expected ~4.0-4.2; assert >= 3.8 as a failure-preserving floor, not 4.7) plus nonstiff local order >= 4.7 on the same problem with lambda=-1; (b) a 64-D diffusion-reaction problem run with maximum_dimension=4 (forcing Krylov truncation) whose reported phi error must be > 0 and whose order must still be measured, so truncation cannot silently pass. Update the ledger/receipt label from 'order 5' to 'order 5 (nonstiff), observed stiff order ~4' with the test as evidence.",
+   "files": [
+    "crates/rodas5p-integrators/tests/exponential_contracts.rs",
+    "crates/rodas5p-integrators/tests/fused_exponential_contracts.rs"
+   ],
+   "anchors": [
+    "crates/rodas5p-integrators/tests/exponential_contracts.rs:9-28",
+    "crates/rodas5p-integrators/tests/exponential_contracts.rs:31-40",
+    "crates/rodas5p-integrators/tests/exponential_contracts.rs:131-135",
+    "crates/rodas5p-integrators/tests/fused_exponential_contracts.rs:33-45",
+    "crates/rodas5p-integrators/src/exponential.rs:774-793"
+   ],
+   "effort": "S",
+   "risk": "low",
+   "verification": "Run exp/D4/pexprb54s4_order.py to fix the expected slopes (nonstiff local 5.7-5.9 main / 4.8-5.0 embedded; stiff lambda=-1e4 global 4.08-4.15), then run the new test binary; it must reproduce those slopes within 0.2 with exact-phi config. The test fails if a future tableau or phi-path change drops the stiff order below 3.8 or the nonstiff order below 4.7; thresholds are frozen in the test with a comment citing the D4 run and may not be lowered (governance: no post-hoc widening).",
+   "code_sketch": "fn stiff_coupled_problem(lambda: f64) -> OdeProblem {\n    // y1' = lambda*(y1 - cos t) - sin t + y2^2 ; y2' = -y2 + y1*y2 ; J and N do not commute\n    OdeProblem::new(\"stiff-coupled\", 2,\n        Arc::new(move |t, y: &[f64], out: &mut [f64]| {\n            out[0] = lambda * (y[0] - t.cos()) - t.sin() + y[1] * y[1];\n            out[1] = -y[1] + y[0] * y[1];\n            Ok(())\n        }), None, None,\n        Some(Arc::new(move |_, y: &[f64], v: &[f64], out: &mut [f64]| {\n            out[0] = lambda * v[0] + 2.0 * y[1] * v[1];\n            out[1] = y[1] * v[0] + (y[0] - 1.0) * v[1];\n            Ok(())\n        })), None, true, None, None).expect(\"stiff coupled problem\")\n}\n#[test]\nfn pexprb54s4_stiff_order_is_measured_on_nonscalar_problem() {\n    let stiff = observed_global_order_on(&stiff_coupled_problem(-1.0e4), \"pexprb54s4\", &[1e-2, 5e-3, 2.5e-3, 1.25e-3]);\n    let nonstiff = observed_local_order_on(&stiff_coupled_problem(-1.0), \"pexprb54s4\", &[4e-2, 2e-2, 1e-2, 5e-3]);\n    assert!(nonstiff >= 4.7, \"nonstiff local order {nonstiff}\");\n    assert!(stiff >= 3.8, \"stiff global order {stiff} (D4 run: 4.08-4.15)\");\n}"
+  }
+ ]
+}

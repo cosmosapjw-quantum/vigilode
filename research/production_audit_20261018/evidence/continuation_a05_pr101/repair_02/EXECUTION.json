@@ -1,0 +1,97 @@
+{
+  "node": "A05",
+  "repair_episode": "cumulative second bounded repair",
+  "base_head": "d087dab9a8dacff0b195566c4a649273acdb476c",
+  "branch": "audit/production-readiness-20261018",
+  "scope": "PR101 sealed local provider work accounting only",
+  "frozen": {
+    "model_formula": "unchanged",
+    "arithmetic_evaluation_order": "unchanged",
+    "tolerance": "unchanged: rtol=1e-8, atol=1e-11",
+    "public_api": "unchanged",
+    "fraction_oracle": "unchanged",
+    "historical_ledger": "unchanged"
+  },
+  "counter_contract": {
+    "provider_operations": "one per attempted fallible Interval API or outward arithmetic call, incremented immediately before that call; each mag projection counts one; scalar abs/max projections are excluded",
+    "construction_items": "one per attempted Interval API call in scalar_quartic_coefficients",
+    "identity_and_validation": "retained in dedicated counters"
+  },
+  "commands": [
+    {
+      "argv": "cargo test --locked --offline -p rodas5p-integrators dense_segment_tests::scalar_quartic_accessor_counts_exact_attempted_interval_calls --lib -- --nocapture",
+      "exit_code": 0,
+      "log": "unit_accessor.log"
+    },
+    {
+      "argv": "cargo test --locked --offline -p rodas5p-integrators bound_pr101::tests --lib -- --nocapture",
+      "exit_code": 0,
+      "log": "unit_provider.log"
+    },
+    {
+      "argv": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_pr101_provider -- --nocapture",
+      "exit_code": 0,
+      "log": "targeted_test.log",
+      "tests": "9 passed",
+      "positive_control_allocations": [
+        3,
+        3
+      ],
+      "success_rhs_provider_delta": 707,
+      "quadratic_overflow_provider_delta": 704,
+      "output_buffer_preserved_on_overflow": true,
+      "existing_certificate_and_output_preserved_after_rejection": true
+    },
+    {
+      "argv": "python3 crates/rodas5p-integrators/tests/pr101_fraction_oracle.py research/production_audit_20261018/evidence/continuation_a05_pr101/repair_02/targeted_test.log",
+      "exit_code": 0,
+      "log": "fraction_oracle.log",
+      "result": "PASS fraction_coefficients=49 rhs_and_output_enclosures=PASS residual_upper=1.12549537181082414e+02 cancellation_control=PASS"
+    },
+    {
+      "argv": "cargo check --locked --offline -p rodas5p-integrators --all-targets",
+      "exit_code": 0,
+      "log": "crate_check.log"
+    },
+    {
+      "argv": "cargo test --locked --offline -p rodas5p-integrators --doc",
+      "exit_code": 0,
+      "log": "doctest.log",
+      "result": "6 passed"
+    },
+    {
+      "argv": "rustfmt --edition 2024 crates/rodas5p-integrators/src/bound_pr101.rs crates/rodas5p-integrators/src/dense_output_v2.rs crates/rodas5p-integrators/tests/production_audit_pr101_provider.rs; git diff --check",
+      "exit_code": 0
+    }
+  ],
+  "first_failure": {
+    "attempt": "post-repair targeted-test compile with certificate/output preservation assertions",
+    "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_pr101_provider -- --nocapture",
+    "observed_exit_code": 101,
+    "classification": "implementation/test-plumbing failure, not numerical evidence",
+    "failure": "E0425: certificate_snapshot and output_before_rejection were inserted into a different test scope than their declarations",
+    "raw_log_status": "NOT_PRESERVED: the targeted_test.log path was subsequently overwritten by a successful rerun; first_test.log is a distinct successful run (exit 0)",
+    "evidence_note": "The compiler diagnostics were observed in the runner output, but no raw file remains. Do not treat the successful first_test.log as this failure.",
+    "repair": "moved those assertions and snapshots into pr101_certificate_mismatch_and_rejected_tube_preserve_work; no solver/model/tolerance changes"
+  },
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/bound_pr101.rs": "3fbeef9caba3c62dfbf940309effd22c7378a115a7660610bc045890fb3f3206",
+    "crates/rodas5p-integrators/src/dense_output_v2.rs": "bd48c41a8aa20f2511a70bba78c4f63bc670aa511a492eb097f74dab3ec7b09f",
+    "crates/rodas5p-integrators/src/lib.rs": "9e736f1e23270d534891f6d7c45998677416b821ffb183ff68fdfffd8f6fc18c",
+    "crates/rodas5p-integrators/tests/production_audit_pr101_provider.rs": "6eba07e5e51cbee86a2a192c9e85f883664a18f3727857ede4dd66deed23803a",
+    "crates/rodas5p-integrators/tests/pr101_fraction_oracle.py": "6085e648fd9cd0c898fe000e1c6aff017f0999577a8a8ffa99a67e6369b18d50"
+  },
+  "environment": {
+    "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+    "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+    "offline": true,
+    "locked": true
+  },
+  "claim_ceiling": "A05 remains HOLD. Successful tests do not resolve the reviewer-identified counter mismatch. No generic global output, multi-segment trajectory, or speed authority.",
+  "independent_review": {
+    "status": "HOLD",
+    "summary": "two provider guard charges are not interval/arithmetic calls (reported 707/704 exceed arithmetic-call basis by 4); first compile failure raw log was overwritten and is explicitly marked not preserved",
+    "repair_02_final_promotion": "not authorized",
+    "review_file": "INDEPENDENT_REVIEW_KO.md"
+  }
+}

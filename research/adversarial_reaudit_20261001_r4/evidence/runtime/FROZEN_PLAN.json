@@ -1,0 +1,61 @@
+{
+  "schema": "vigilode.r4.runtime_plan.v1",
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "build_argv": [
+    "cargo",
+    "test",
+    "--workspace",
+    "--all-targets",
+    "--all-features",
+    "--locked",
+    "--offline",
+    "--no-run",
+    "--message-format=json",
+    "--jobs",
+    "1"
+  ],
+  "changed_priority_targets": [
+    "paired_timing_campaign_cli_contracts",
+    "r3_polynomial_action_contracts",
+    "transform_bound_contracts",
+    "paired_timing_contracts",
+    "r2_timing_authority_contracts",
+    "r3_aa_batch_contracts",
+    "r3_monte_carlo_gate_contracts",
+    "r3_raw_protocol_admission_contracts",
+    "r3_timing_design_contracts",
+    "coefficient_structural_contracts",
+    "outward_certificate_contracts",
+    "q2_diagnostic_replacement_contracts",
+    "r3_certified_budget_contracts",
+    "r3_phi_transform_authority_contracts",
+    "r3_represented_clock_contracts"
+  ],
+  "additional_priority_targets": [
+    "rodas5p_core",
+    "r2_output_time_identity_contracts",
+    "r2_output_budget_contracts",
+    "r2_phi_range_contracts",
+    "r2_work_coverage_consumer_contracts",
+    "work_unit_contracts"
+  ],
+  "build_budget_seconds": 600,
+  "native_total_budget_seconds": 300,
+  "ordinary_harness_budget_seconds": 30,
+  "historical_slow_harness_budget_seconds": 60,
+  "cargo_incremental": false,
+  "codegen_units": 1,
+  "build_jobs": 1,
+  "test_threads": 1,
+  "doctests": "NOT_RUN",
+  "scientific_execution_permission": "WAITING_PREREG_COMMITTED",
+  "guards": [
+    "Nonempty artifact inventory",
+    "Cargo build-finished success record",
+    "Native --list inventory",
+    "Native summary must match per-test outcomes",
+    "Missing output is unresolved, never PASS",
+    "First failure stdout and stderr retained",
+    "All Cargo builds serialized with runtime_r4/cargo-build.lock"
+  ]
+}

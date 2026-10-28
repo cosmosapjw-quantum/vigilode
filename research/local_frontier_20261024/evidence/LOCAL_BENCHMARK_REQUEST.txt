@@ -1,0 +1,584 @@
+소차원 ODE(카테고리 1~6, 8)에서 `1 / 2 / 4 / 8 / 12` 스레드 스케일링을 의미 있게 측정하려면 **(A) 결합 진동자 체인($N$차원 확장)** 또는 (B) 매개변수/초기조건 앙상블 배치 실행(보고서 5.6절의 독립 문제 공유 경로 검증)으로 차원을 키워 측정하는 것이 좋습니다. 12개 카테고리별 24개 추천 시스템과 지배 방정식, 핵심 진단 포인트는 다음과 같습니다.
+
+---
+
+### 한눈에 보는 24개 벤치마크 시스템 매트릭스 (× 5 Thread Levels = 120 Runs)
+
+| 카테고리 | 문제 번호 및 이름 | 권장 차원 $N$ | 핵심 검증 타깃 |
+| --- | --- | --- | --- |
+| **1. 대표 Stiff** | **#1.** Robertson (ROBER) 격자 결합<br>
+
+<br>**#2.** POLLU (20종 대기 광화학망) | $3 \times K$ (또는 3)<br>
+
+<br>$20 \times K$ (또는 20) | $10^9$ 스케일 격차, 질량 보존 및 비음성 유지<br>
+
+<br>다종 화학 반응 야코비안의 LU 안정성 |
+| **2. 대표 Nonstiff** | **#3.** Pleiades (7체 중력 조우)<br>
+
+<br>**#4.** 비선형 Kuramoto–Sakaguchi 결합망 | $28 \times K$<br>
+
+<br>$N = 4,096$ | 7회 근접 조우 시 명시적 RK 적응 스텝 정밀도<br>
+
+<br>순수 비강성 우변 평가의 1~12스레드 병렬 효율 |
+| **3. Stiff $\to$ Nonstiff** | **#5.** 특이 섭동 초기 경계층 (Adiabatic Flash)<br>
+
+<br>**#6.** 팽창 플라즈마 산란 동결 (Freeze-Out) | $2 \times K$<br>
+
+<br>$N = 1,024$ | 초기 $\epsilon^{-1}=10^6$ 감쇠 후 `Tsit5`로의 안전한 하향 전환<br>
+
+<br>$\Gamma(t) \propto t^{-3}$ 감소 시 스위칭 히스테리시스 검증 |
+| **4. Nonstiff $\to$ Stiff** | **#7.** Semenov–Kapila 열폭주 점화 (Ignition)<br>
+
+<br>**#8.** Oregonator / 광원 Turn-On 이온화 전선 | $2 \times K$<br>
+
+<br>$N = 512$ | 긴 유도기 후 아레니우스 폭발 직전 `RODAS5P` 상향 전환<br>
+
+<br>급격한 문턱 통과 시 스텝 거절 복구 및 채터링 방지
+
+ |
+| **5. 고진동 (High-Freq)** | **#9.** FPUT 다중 스케일 비선형 사슬<br>
+
+<br>**#10.** 상대론적 강자기장 Gyromotion | $N = 512$<br>
+
+<br>$6 \times K$ | 빠른 조화 진동($\omega=10^3$)의 장기 위상/진폭 보존
+
+<br>
+
+<br>로렌츠 힘 회전 행렬에서 수치 감쇠(Damping) 감사 |
+| **6. Chaotic / 민감** | **#11.** Lorenz-96 다중 스케일 대기 모형<br>
+
+<br>**#12.** Kuramoto–Sivashinsky (KS) 혼돈 PDE | $N = 396$<br>
+
+<br>$N = 1,024$ | 양의 리아푸노프 지수 및 멀티스레드 비트 재현성
+
+<br>
+
+<br>음의 점성($+u_{xx}$) 생성과 초점성($+u_{xxxx}$) 소산의 충돌 |
+| **7. 대규모 IMEX형** | **#13.** 1D 저마하수 압축성 오일러 + 강성 중력파<br>
+
+<br>**#14.** 이류 결합 Cahn–Hilliard ($-\epsilon^2 \Delta^2 u$) | $N = 3,072$<br>
+
+<br>$N = 4,096$ | 느린 비선형 이류 + 빠른 음파($c_s \gg \vert{}u\vert{}$) 혼합 강성<br>
+
+<br>$\lambda \propto \Delta x^{-4}$ 쌍조화 강성과 비국소 이류 결합 |
+| **8. 지수 Chirp 감쇠** | **#15.** 해석적 지수 처프 감쇠 진동자<br>
+
+<br>**#16.** 복사 반작용 궤도 붕괴 (Inspiral Chirp) | $2 \times K$<br>
+
+<br>$4 \times K$ | $\omega(t) = \omega_0 e^{\beta t}$ 폭증 및 $e^{-\gamma t}$ 감쇠 시 위상 추적<br>
+
+<br>병합(Plunge) 직전 비선형 주파수 폭발과 `atol` 스케일링 |
+| **9. `BASS` 구면 격자** | **#17.** $S^2$ 기울어진 강체 회전 + 사중극자 전단<br>
+
+<br>**#18.** $S^2$ 비등방 확산 + 각도 의존 불투명도 | $N_\mu N_\phi = 2,048$<br>
+
+<br>$N_\mu N_\phi = 4,096$ | 극점 CFL 병목, 보존성($\sum N_{ij}$) 및 혼합 방향 이류
+
+<br>
+
+<br>$\frac{1}{1-\mu^2}\partial_\phi^2$ 극점 강성에 대한 구면 전처리 성능 |
+| **10. 구면조화 진동+강성** | **#19.** 구면 천수 방정식(SWE) + 초점성 감쇠<br>
+
+<br>**#20.** Tight-Coupling 볼츠만 다중극($Y_{\ell m}$) 계층 | $3 N_\Omega \approx 3,072$<br>
+
+<br>$(\ell_{\max}+1)^2 = 1,024$ | 로스비-하우어비츠 파동 진동 + $-\nu(-\Delta_{S^2})^2$ 강성 결합<br>
+
+<br>$\ell \leftrightarrow \ell \pm 1$ 자유 스트리밍 진동과 $-\Gamma$ 산란 감쇠 |
+| **11. 일반 2D 격자** | **#21.** 2D Brusselator 반응-확산-이류 (`BRUSS2D`)<br>
+
+<br>**#22.** 2D 자화 플라즈마 이방성 열전도 (9점 스텐실) | $2 \times 64^2 = 8,192$<br>
+
+<br>$64^2 = 4,096$ | 2D 대역폭 증가($b \sim N_x$) 대비 반복/대역 해법 교차점
+
+<br>
+
+<br>$\kappa_\parallel/\kappa_\perp = 10^6$ 교차 미분($\partial_x\partial_y$) 비대각 강성 |
+| **12. 일반 3D 격자** | **#23.** 3D Schnakenberg / FitzHugh–Nagumo 나선파<br>
+
+<br>**#24.** 3D 이류-확산 + 불투명 그림자 장벽(Obstacle) | $2 \times 24^3 = 27,648$<br>
+
+<br>$32^3 = 32,768$ | 3D 7점 스텐실에서 Matrix-free GMRES + 다항식 전처리
+
+<br>
+
+<br>공간적 강성 불연속($\sigma(\bm{x}) \in [0, 10^6]$) 및 메모리 대역폭 한계 |
+
+---
+
+### 카테고리별 상세 방정식 및 선정 이유
+
+#### 1. 대표적인 Stiff System (2선)
+
+* **#1. Robertson 자가촉매 반응망 (ROBER, 1D 확산 결합 확장 가능):**
+
+$$\dot{y}_1 = -0.04 y_1 + 10^4 y_2 y_3, \quad \dot{y}_2 = 0.04 y_1 - 10^4 y_2 y_3 - 3\times 10^7 y_2^2, \quad \dot{y}_3 = 3\times 10^7 y_2^2$$
+
+
+* **진단 포인트:** 반응 속도 상수가 $10^9$배 차이나며, $t \in [0, 10^{11}]$의 로그 스케일 적분 동안 $y_2 \sim 10^{-5}$가 음수로 뚫리면 해가 즉시 발산합니다[cite: 52]. 보존량 $y_1+y_2+y_3=1$을 이용해 중성 성분을 소거할 경우 보고서 7절의 아핀 복원 오차 노름($\mathcal{N}(e)$)을 테스트하기에도 완벽합니다.
+
+
+
+
+* **#2. POLLU (유럽 대기오염 20종 광화학 반응망) 또는 HIRES (8종 광형태형성):**
+* **진단 포인트:** 20개의 화학종과 25개의 반응식이 얽힌 고전적 강성 벤치마크로, 영(0)에 가까운 미량 라디칼 성분의 스케일링($s_i = \text{atol}_i + \text{rtol}\vert{}y_i\vert{}$)과 비대칭 야코비안의 LU 분해 정밀도를 검증합니다.
+
+
+
+
+
+#### 2. 대표적인 Nonstiff System (2선)
+
+* **#3. Pleiades (7체 평면 천체역학 문제, 28차원 1차 ODE):**
+
+$$\ddot{x}_i = \sum_{j \neq i} m_j \frac{x_j - x_i}{r_{ij}^3}, \quad \ddot{y}_i = \sum_{j \neq i} m_j \frac{y_j - y_i}{r_{ij}^3}, \quad r_{ij} = \sqrt{(x_i-x_j)^2 + (y_i-y_j)^2}$$
+
+
+* **진단 포인트:** $t \in [0, 3]$ 구간에서 7번의 아슬아슬한 근접 조우(Quasi-collision)가 발생합니다. 강성은 전혀 없지만 곡률이 급변하므로 명시적 솔버(`Tsit5`)의 스텝 크기 제어기와 내장 오차 추정기의 순수 성능을 평가합니다.
+
+
+* **#4. 대규모 비선형 Kuramoto–Sakaguchi 위상 결합망 ($N = 4,096$, 희소/국소 결합):**
+
+$$\dot{\theta}_i = \omega_i + \frac{K}{2R} \sum_{j=i-R}^{i+R} \sin(\theta_j - \theta_i - \alpha)$$
+
+
+* **진단 포인트:** 스펙트럼 반경이 작아 순수 비강성이며, 삼각함수 연산이 지배적이어서 `1 / 2 / 4 / 8 / 12` 스레드로 우변 평가를 병렬화했을 때 이상적인 코어 확장성(Strong scaling) 상한선을 제공합니다.
+
+
+
+#### 3. Stiff $\to$ Nonstiff 전환 시스템 (2선)
+
+* **#5. 특이 섭동 초기 경계층 + 완만한 감쇠 모델 (Adiabatic Flash Relaxation):**
+
+$$\dot{y}_1 = -\frac{1}{\epsilon}\bigl(y_1 - \cos y_2\bigr) - \sin(y_2)\dot{y}_2, \quad \dot{y}_2 = -\frac{y_2}{1+t} + 0.2 y_1, \quad \epsilon = 10^{-6}$$
+
+
+* **진단 포인트:** $y_1(0) \neq \cos y_2(0)$에서 출발하면 $t \lesssim 10^{-5}$ 동안 고유치 $\lambda \approx -10^6$의 극강성 경계층이 작동하다가, 둔화 매니폴드 $y_1 \approx \cos y_2$에 안착한 뒤에는 매끄러운 비강성 궤적으로 바뀝니다. 초기에 `RODAS5P`로 출발해 경계층 통과 후 `Tsit5`로 하향 전환(Switch-down)이 제때 일어나는지 검증합니다.
+
+
+
+
+* **#6. 우주론적 팽창에 의한 산란 동결 모델 (Expanding Freeze-Out Transport):**
+
+$$\dot{f}_j = -v_j \frac{f_j - f_{j-1}}{\Delta x} + \Gamma(t)\left(\bar{f} - f_j\right), \quad \Gamma(t) = \frac{\Gamma_0}{(1 + t/\tau_0)^4}, \quad \Gamma_0 = 10^5$$
+
+
+* **진단 포인트:** 초기에는 강한 산란($\Gamma = 10^5$)이 모든 모드를 묶어 강성이지만, 팽창으로 $\Gamma(t) < 1$이 되면 자유 스트리밍 이류만 남습니다. 보고서의 `S2`($\Gamma=10^4$)에서 `S1`($\Gamma=0.5$)로 연속적으로 이어지는 물리적 전환 테스트입니다.
+
+
+
+
+
+#### 4. Nonstiff $\to$ Stiff 전환 시스템 (2선)
+
+* **#7. Semenov–Kapila 지연 열폭주 점화 (Delayed Thermal Ignition):**
+
+$$\dot{T} = (1 - T)\exp\left(\frac{T - 1}{\epsilon T}\right), \quad T(0) = 0.1, \quad \epsilon = 0.02$$
+
+
+* **진단 포인트:** $t \in [0, t_{\text{ign}})$ 동안은 완만한 비강성 예열을 거치다가 $T \to 1$에 접근하는 순간 지수항이 폭발하며 $\partial_T f \sim -e^{1/\epsilon} \ll -10^6$의 초강성 평형($T=1$)으로 꽂힙니다. `Tsit5`로 유도기를 빠르게 건너뛴 뒤 점화 직전 강성 모니터가 작동해 스텝 폭발 없이 `RODAS5P`로 상향 전환(Switch-up)하는지 봅니다.
+
+
+
+
+* **#8. Oregonator 화학 진동 도입부 (또는 광원 Turn-On 재전리 전선):**
+
+$$\dot{y}_1 = s(y_2 - y_1 y_2 + y_1 - q y_1^2), \quad \dot{y}_2 = \frac{1}{s}(-y_2 - y_1 y_2 + y_3), \quad \dot{y}_3 = w(y_1 - y_3)$$
+
+
+* **진단 포인트:** $s = 77.27, w = 0.161, q = 8.375 \times 10^{-6}$에서 긴 비강성 준정상 구간을 지나 자가촉매 폭증 구간으로 진입합니다. 전환 경계에서 히스테리시스가 제대로 작동해 채터링(반복 재전환)을 막는지 확인합니다.
+
+
+
+
+
+#### 5. 높은 진동수를 가지는 시스템 (2선)
+
+* **#9. 다중 스케일 Fermi–Pasta–Ulam–Tsingou (FPUT) 교대 사슬:**
+
+$$\ddot{x}_i = k_{\text{stiff}}(x_{i+1} - 2x_i + x_{i-1}) + \alpha\bigl[(x_{i+1}-x_i)^3 - (x_i-x_{i-1})^3\bigr], \quad \omega_{\text{fast}} = 10^3$$
+
+
+* **진단 포인트:** 보고서 9.4절에서 지적된 "낮은 내부 허용오차가 장기 위상 정확도를 자동으로 보장하지 않는다"는 문제를 직접 겨냥합니다. 음적 L-안정 방법(`RODAS5P`)이 고주파 진동 에너지를 인위적으로 소산(Numerical damping)시키는 정도와 명시적 방법의 위상 오차를 정량 비교합니다.
+
+
+
+
+* **#10. 불균일 전자기장 내 상대론적 자이로 운동 (Relativistic Boris/Gyromotion Benchmark):**
+
+$$\dot{\bm{x}} = \frac{\bm{p}}{\gamma}, \quad \dot{\bm{p}} = \bm{E}(\bm{x}) + \frac{\omega_c}{\gamma}\bm{p} \times \bm{B}(\bm{x}), \quad \gamma = \sqrt{1 + \vert{}\bm{p}\vert{}^2}, \quad \omega_c = 500$$
+
+
+* **진단 포인트:** 순수 허수 고유치($\pm i \omega_c / \gamma$)를 갖는 반대칭 회전 결합에서 스텝 제어기와 에너지/자기모멘트 단열 불변량 보존을 시험합니다.
+
+
+
+#### 6. Chaotic하거나 수치적 불안정성에 민감한 시스템 (2선)
+
+* **#11. Lorenz-96 다중 스케일 혼돈 대기 모형 (36개 느린 변수 $X_k$ + 360개 빠른 변수 $Y_{j,k}$, 총 396차원):**
+
+$$\dot{X}_k = (X_{k+1} - X_{k-2})X_{k-1} - X_k + F - \frac{hc}{b}\sum_{j=1}^{10} Y_{j,k}$$
+
+
+$$\dot{Y}_{j,k} = cb(Y_{j+1,k} - Y_{j-2,k})Y_{j-1,k} - cY_{j,k} + \frac{hc}{b}X_k \quad (F=10, c=10, b=10, h=1)$$
+
+
+* **진단 포인트:** 카오스 특성상 `1 / 2 / 4 / 8 / 12` 스레드 간 부동소수점 덧셈 순서가 조금만 달라져도 $t > 5$ 이후 궤적이 완전히 갈라집니다. 솔버의 **결정론적 리덕션(Deterministic reduction)과 비트 단위 재현성**을 검증하는 최고의 리트머스 시험지입니다.
+
+
+
+
+* **#12. 1D Kuramoto–Sivashinsky (KS) 시공간 카오스 방정식 ($N = 1,024$):**
+
+$$u_t + u u_x + u_{xx} + \nu u_{xxxx} = 0$$
+
+
+* **진단 포인트:** 장파장에서는 반확산항($+u_{xx}$)이 에너지를 주입해 불안정성을 키우고, 단파장에서는 4차 초점성($+\nu u_{xxxx}$)이 강한 강성($\lambda \propto k^4$)으로 에너지를 소산시킵니다. 선형해법의 잔차가 조금만 커져도 비물리적 파수 모드가 폭발합니다.
+
+
+
+
+
+#### 7. IMEX 같은 특화 솔버를 요구하는 대규모 ODE 시스템 (2선)
+
+* **#13. 1D 저마하수 압축성 오일러 방정식 + 강성 음파/복사 냉각 ($N = 3,072$):**
+
+$$\partial_t \bm{U} + \partial_x \bm{F}_{\text{adv}}(\bm{U}) + \frac{1}{\text{Ma}} \partial_x \bm{F}_{\text{ac}}(\bm{U}) = \bm{S}_{\text{cool}}(\bm{U}), \quad \text{Ma} = 10^{-3}$$
+
+
+* **진단 포인트:** 보통 비선형 이류($\bm{F}_{\text{adv}}$)는 명시적으로, 빠른 음파($\text{Ma}^{-1}\bm{F}_{\text{ac}}$)와 냉각항은 음적으로 쪼개는 IMEX-RK의 단골 문제입니다. `VigilODE`가 대역/구조 선형해법만으로 전체 결합 시스템을 풀 때 IMEX 대조군 대비 경쟁력이 있는지 평가합니다.
+
+
+
+
+* **#14. 비선형 이류가 결합된 1D/2D Cahn–Hilliard 상분리 방정식 ($N = 4,096$):**
+
+$$\partial_t u + \bm{v}\cdot\nabla u = \Delta\bigl(u^3 - u - \epsilon^2 \Delta u\bigr)$$
+
+
+* **진단 포인트:** 비선형 3차 화학퍼텐셜 확산과 4차 쌍조화 연산자($-\epsilon^2 \Delta^2 u$, 조건수 $\mathcal{O}(\Delta x^{-4})$)가 결합되어 있어, 전처리된 GMRES나 5대각/대역 LU의 극한 강성 돌파력을 측정합니다.
+
+
+
+
+
+#### 8. 느리게 진동하다 지수적으로 진동수가 급증하며 감쇠하는 진동자 (2선)
+
+* **#15. 해석해를 갖는 지수 처프 감쇠 진동자 (Exponentially Chirped Damped Oscillator):**
+
+$$\ddot{x} + (2\gamma - \beta)\dot{x} + \left(\omega_0^2 e^{2\beta t} + \gamma^2 - \gamma\beta\right) x = 0, \quad x(0)=1, \quad \dot{x}(0)=-\gamma$$
+
+
+* **정확한 해석해:**
+
+$$x_{\text{exact}}(t) = e^{-\gamma t} \cos\left(\frac{\omega_0}{\beta}\bigl(e^{\beta t} - 1\bigr)\right)$$
+
+
+* **진단 포인트 ($\omega_0 = 1, \beta = 1.2, \gamma = 0.8, t \in [0, 8]$):** 초기에는 $\omega = 1$로 천천히 흔들리지만 $t=8$ 근처에서는 진동수가 $\omega(8) \approx 1.48 \times 10^4$로 지수 폭발하고 진폭은 $e^{-6.4} \approx 1.6 \times 10^{-3}$으로 감쇠합니다. 진폭이 줄어든다고 스텝 제어기가 $h$를 키우면 급증하는 위상을 통째로 건너뛰는(Aliasing) 치명적 함정이 있어, `rtol`/`atol` 상호작용과 위상 추적 능력을 칼같이 잡아냅니다.
+
+
+
+
+* **#16. 복사 반작용에 의한 비선형 케플러/상대론적 처프 (Nonlinear Inspiral Chirp with Damping):**
+
+$$\dot{r} = -\frac{\alpha}{r^3}, \quad \dot{\phi} = \frac{\Omega_0}{r^{3/2}}, \quad u_1 = r\cos\phi, \quad u_2 = r\sin\phi$$
+
+
+* **진단 포인트:** 직교 좌표 $(u_1, u_2, \dot{u}_1, \dot{u}_2)$로 적분할 때 반경 $r(t) = (r_0^4 - 4\alpha t)^{1/4}$가 감쇠하면서 각진동수 $\dot{\phi}(t) \propto (t_c - t)^{-3/8}$가 병합 시각 $t_c = r_0^4/(4\alpha)$ 직전 급증하는 비선형 처프 시스템입니다.
+
+
+
+#### 9. `BASS` 이식 진단용 일반적인 구면 위의 격자 문제 (2선)
+
+* **#17. 구면 $(\mu, \phi)$ 격자 위의 기울어진 강체 회전 + 비등방 사중극자 전단 이류:**
+
+$$\partial_t U + \partial_\mu(v_\mu U) + \partial_\phi(v_\phi U) = 0, \quad \nabla_{S^2}\cdot \bm{v}_\Omega = 3S(\mu,\phi)$$
+
+
+* **진단 포인트:** 보고서 4.2~4.3절의 `sphere_photon_fv_support` 격자에서 대칭축을 $\alpha = \pi/4$만큼 기울여 회전이 양극($\mu = \pm 1$)을 정면으로 가로지르게 만듭니다. 극점 근처 좁은 $\Delta\phi$ 셀이 유발하는 방향성 강성과 혼합 부호 이류, 그리고 총량 보존($\sum_{j,k} N_{jk}$)을 직접 감사합니다.
+
+
+
+
+* **#18. 구면 위의 비등방 텐서 확산 및 각도 의존 흡수 경계층:**
+
+$$\partial_t U = \frac{\partial}{\partial\mu}\left[(1-\mu^2)D_{\mu\mu}(\mu,\phi)\frac{\partial U}{\partial\mu}\right] + \frac{1}{1-\mu^2}\frac{\partial}{\partial\phi}\left(D_{\phi\phi}(\mu,\phi)\frac{\partial U}{\partial\phi}\right) - \sigma(\mu,\phi)U$$
+
+
+* **진단 포인트:** 구면 극점 근처에서 $(1-\mu^2)^{-1} \partial_\phi^2$ 항이 만드는 강한 방위각 결합을 블록 삼중대각/주기적 Thomas 전처리기가 몇 회의 GMRES 반복으로 잡아내는지(보고서 정리 4의 $q$ 상계) 측정합니다.
+
+
+
+
+
+#### 10. 구면 위의 진동과 Stiffness가 섞인 Spherical Harmonics 계열 시스템 (2선)
+
+* **#19. 초점성 감쇠가 결합된 구면 천수 방정식 (Viscous Spherical Shallow-Water / Rossby–Haurwitz Wave):**
+
+$$\partial_t \bm{v} + (\bm{v}\cdot\nabla_{S^2})\bm{v} + 2\Omega\mu (\hat{\bm{r}}\times\bm{v}) + g\nabla_{S^2} h = -\nu (-\Delta_{S^2})^2 \bm{v}, \quad \partial_t h + \nabla_{S^2}\cdot(h\bm{v}) = 0$$
+
+
+* **진단 포인트:** 구면조화함수 $Y_{\ell m}$ 기저에서 중력파/로스비파의 순수 진동($\pm i \omega_{\ell m}$)과 초점성 확산($-\nu \ell^2(\ell+1)^2$)이 정면으로 섞여 있습니다. 고차 $\ell$ 모드의 극강성을 잡으면서 저차 $\ell$ 파동의 위상을 보존하는지 검증합니다.
+
+
+
+
+* **#20. Tight-Coupling 광자-바리온 구면조화 다중극 계층 방정식 (Boltzmann $Y_{\ell m}$ Hierarchy):**
+
+$$\dot{\Theta}_{\ell m} = k\left[\frac{\kappa_{\ell m}}{2\ell-1}\Theta_{\ell-1,m} - \frac{\kappa_{\ell+1,m}}{2\ell+3}\Theta_{\ell+1,m}\right] - \Gamma(t)\left(\Theta_{\ell m} - \delta_{\ell 0}\Theta_{00} - \delta_{\ell 1}v_{b,m} - \frac{1}{10}\delta_{\ell 2}\Theta_{2m}\right)$$
+
+
+* **진단 포인트:** `BASS`와 우주론 볼츠만 코드의 심장부입니다. $\ell \leftrightarrow \ell \pm 1$ 결합은 반대칭 행렬로 구면 위상 진동을 만들고, $-\Gamma(t)$는 $\ell \ge 1$ 모드를 강하게 감쇠시키는 대각/저랭크 강성항입니다. 실공간 $S^2$ FVM(#17~18)과 다중극 계층(#20)의 효율을 직접 대조할 수 있습니다.
+
+
+
+
+
+#### 11. 일반적인 2D 격자 문제 (2선)
+
+* **#21. 2D Brusselator 반응-확산-이류 표준 벤치마크 (`BRUSS2D`, $2 \times 64^2 = 8,192$차원):**
+
+$$\partial_t u = 1 + u^2 v - 4.4 u + \alpha \Delta_{2\text{D}} u + \bm{c}\cdot\nabla u, \quad \partial_t v = 3.4 u - u^2 v + \alpha \Delta_{2\text{D}} v + \bm{c}\cdot\nabla v$$
+
+
+* **진단 포인트:** 보고서 5.3절이 언급한 다차원 격자의 대역폭 증가($b = 2N_x$)가 대역 LU 비용 $\mathcal{O}(N b^2)$을 어떻게 키우는지 실측하고, 행렬 없는(Matrix-free) GMRES/다항식 전처리와의 교차점을 찾습니다.
+
+
+
+
+* **#22. 2D 자화 플라즈마의 강한 이방성 열전도 (Anisotropic Braginskii Conduction, 9점 스텐실):**
+
+$$\partial_t T = \nabla\cdot\bigl[\kappa_\parallel (\bm{b}\cdot\nabla T)\bm{b} + \kappa_\perp (\nabla T - (\bm{b}\cdot\nabla T)\bm{b})\bigr], \quad \frac{\kappa_\parallel}{\kappa_\perp} = 10^6$$
+
+
+* **진단 포인트:** 자기장 $\bm{b}(x,y)$가 격자 축과 비스듬할 때 생기는 강한 교차 미분($\partial_x \partial_y T$) 때문에 5점 스텐실 가정이 깨지는 악명 높은 2D 강성 문제입니다.
+
+
+
+#### 12. 일반적인 3D 격자 문제 (2선)
+
+* **#23. 3D FitzHugh–Nagumo / Gray–Scott 3차원 나선파 반응-확산 ($2 \times 24^3 = 27,648$차원):**
+
+$$\partial_t u = D_u \Delta_{3\text{D}} u + \frac{1}{\epsilon}u(1-u)\left(u - \frac{v+b}{a}\right), \quad \partial_t v = D_v \Delta_{3\text{D}} v + u - v$$
+
+
+* **진단 포인트:** 3D 격자에서는 대역폭이 $b \sim N_x N_y = 576$으로 커져 직접 대역 분해가 사실상 불가능해집니다. 오직 JVP(Jacobian-Vector Product) 기반 Krylov/Neumann 다항식 해법과 `1 / 2 / 4 / 8 / 12` 스레드 도메인 병렬화만으로 돌파해야 하는 3D 표준 시험대입니다.
+
+
+
+
+* **#24. 3D 이류-확산-강성 그림자 장벽 문제 (3D Advection-Diffusion with Stiff Absorbing Obstacle, $32^3 = 32,768$차원):**
+
+$$\partial_t U + \bm{v}\cdot\nabla_{3\text{D}} U = D\Delta_{3\text{D}} U - \sigma_{\text{cloud}}(\bm{x}) U + S_{\text{src}}(\bm{x}), \quad \sigma_{\text{cloud}}(\bm{x}) \in [0, 10^6]$$
+
+
+* **진단 포인트:** 3차원 영역 중앙에 불투명 구름($\sigma = 10^6$)이 놓여 있어 공간적으로 강성이 극단적으로 편중된 문제입니다. 스레드별로 담당하는 서브도메인의 강성이 다를 때 부하 불균형(Load imbalance)과 전처리 수렴 속도를 동시에 진단합니다.
+
+---
+
+### 💡 120개 실행(5 Threads × 24 Systems) 구성을 위한 팁
+
+* **스레드 변수 통제:** 보고서 8.1절에서는 단일 코어 성능을 보기 위해 스레드 1개로 묶어 프로세스 배치를 돌렸지만, 이번 120개 매트릭스에서는 **단일 문제 내부의 Rayon/OpenMP 스레드 풀 크기를 `1, 2, 4, 8, 12`로 고정**하고 코어 피닝(`taskset` / `numactl`)을 걸어 주어야 캐시 경합과 메모리 대역폭 포화 지점(특히 8코어 $\to$ 12코어 구간)이 정확히 드러납니다.
+
+
+* **소차원 문제(#1, #3, #5, #7, #10, #15, #16)의 스레드 측정:** 차원이 2~28인 순수 ODE는 스레드 12개를 붙이면 동기화 오버헤드만 측정되므로, **$K = 256 \sim 1,024$개의 약간 다른 초기조건/매개변수 궤적을 묶은 배럴(Ensemble/Lattice) 시스템**으로 확장해 돌리시면 소차원 정확도와 멀티스레드 처리량을 한 번에 건질 수 있습니다.
+
+
+
+설계 문서 준비되시는 대로 가져오시면, 이 24개 문제 세트를 그 설계 구조에 어떻게 매핑할지 바로 이어서 맞춰보겠습니다!
+
+---
+
+### 1. 설계 문서(`DESIGN.pdf`)에서 확인한 3가지 핵심 아키텍처 포인트
+
+1. **기본 양해법은 `Tsit5`가 아니라 FSAL `DOPRI5` (`dopri5.rs`):**
+* 비강성 기본 엔진으로 7단계 Dormand–Prince 5(4) (`DOPRI5`)와 Shampine의 4차 연속 확장 다항식(`dopri5_dense.rs`)이 이미 엄밀하게 구현되어 있습니다.
+
+
+* 특히 명제 2(5.3절)를 통해 수락된 스텝의 마지막 도함수 $k_7$을 다음 스텝의 $k_1$으로 재사용(FSAL)하여 연속 수락 시 스텝당 6회의 우변 평가($6C_f$)만 수행하며, 명제 3(5.4절)에서 선형 진동($\vert{}\omega\vert{}h_j \le 0.9$)에 대한 위상·진폭 오차 상한까지 증명되어 있습니다.
+
+
+
+
+2. **이미 존재하는 '내부 대수 스위칭'과 새로 이식할 '외부 레짐 스위칭'의 조화:**
+* 현재 `GeneralOde::solve`(`3.1절`, 그림 4)는 실행 전에 선언된 `ProblemRegime`(`Unknown`/`Nonstiff` $\to$ `DOPRI5`, `Stiff` $\to$ `RODAS5P`)에 따라 적분기를 정적으로 고정합니다. 또한 `4.7절`에서 *"현재의 공통 진입점은 임의의 강성 문제에 먼저 완전 무미분 방법을 시도한 뒤 측정 결과에 따라 JVP를 허용하는 전역 정책을 구현하지 않는다"*고 명시해 두었습니다.
+
+
+* 반면 `crates/vigilode-coupled/src/switching.rs`(`4.6.1절`)에는 `RODAS5P` 내부에서 보호된 풀이(Protected path)와 **특수화 후보(순차 인과적 풀이, 동시 Picard, 잔차 우선 보정)** 사이를 전환하는 비용 기반 적응 선택기(`integrate_switching_causal_observed`)가 이미 구현되어 있습니다.
+
+
+* 따라서 지금 만드시는 **`DOPRI5` $\leftrightarrow$ `RODAS5P` 레짐 스위칭 드라이버**는 `GeneralOde`의 정적 선택 한계를 깨고, `9.2절`의 명시적 적분 세션(`Dopri5::with_session`)과 `4.6.1절`의 대기 길이 공식(식 C19)을 결합해 상위 레벨에서 두 적분기를 오가는 완벽한 상위 계층이 됩니다.
+
+
+
+
+3. **왜 스레드 `1 / 2 / 4 / 8 / 12` 테스트가 결정적인가? (4.3절 식 C5의 비밀):**
+* `4.3절`의 명제 C2(인과적 유한 전파)는 `RODAS5P`의 8단계 중 첫 단계를 정확히 만족하는 선형 시작값에서 출발하면, 전역 수축 가정($\Vert{}T'\Vert{} < 1$) 없이도 최대 7번의 동시 갱신($z^{(k+1)} = L^{-1}\{g + h\gamma N(z^{(k)})\}$) 안에 정확한 단계 해에 도달함을 증명합니다.
+
+
+* 이때 각 동시 갱신 묶음에서 병렬로 평가할 수 있는 새 우변의 개수는 정확히 7개($i=1,\dots,7$)이며, $p$개 스레드에 배분할 때의 비용 교차 조건(식 C5)은 다음과 같습니다:
+
+
+
+$$b \left\lceil \frac{7}{p} \right\rceil C_f + b C_{\text{sync}} + C_{\text{small}} < 7 C_f + C_{\text{forward}}$$
+
+
+* 여기서 스레드 수 $p = 1, 2, 4, 8, 12$를 대입하면 $\lceil 7/p \rceil$ 값은 각각 $7 \to 4 \to 2 \to 1 \to 1$이 됩니다!
+
+
+* 즉, 단계 병렬화(Stage-level Picard parallelism)만 쓰면 $p=8$에서 천장($\lceil 7/8 \rceil = 1$)을 찍고 $p=12$에서는 이론적 이득이 더 이상 없지만, 공간 격자/앙상블 병렬화(Data-level parallelism)에서는 $p=8 \to 12$에서도 계속 가속됩니다. 스레드 `1 / 2 / 4 / 8 / 12` 구성은 이 두 가지 병렬화 층위의 교차점과 동기화 오버헤드($C_{\text{sync}}$)를 발가벗기는 신의 한 수입니다.
+
+
+
+
+
+---
+
+### 2. `DESIGN.pdf`의 5대 수학 엔진과 24개 벤치마크 문제 매핑
+
+설계 문서 4~6장에 탑재된 특수 모듈들이 앞서 선정한 12개 카테고리(24개 시스템) 각각에서 어떤 위력을 발휘하고 무엇을 검증하게 되는지 표로 정리했습니다.
+
+| `DESIGN.pdf` 핵심 모듈 및 수학적 정리 | 대응 소스 파일 | 집중 검증할 벤치마크 카테고리 (24개 문제 중) | 핵심 관전 포인트 |
+| --- | --- | --- | --- |
+| **① 공유 기저 인과적 제거**<br>
+
+<br>(4.2절 명제 C1, 식 C1–C2)<br>
+
+<br>$\mathcal{O}(m^3 + 8m^2)$ 무-Newton 풀이
+
+ | `vigilode-coupled/`<br>
+
+<br>`src/algebra.rs`,<br>
+
+<br>`src/causal.rs`
+
+ | • **Cat 1.** 대표 Stiff (#1 ROBER, #2 POLLU)<br>
+
+<br>• **Cat 6.** Chaotic/민감 (#11 Lorenz-96, #12 KS) | $n > 64$ 차원 한계(`max_dense_dimension`) 너머에서 작은 투영 차원 $m \ll n$만으로 스펙트럼 누출 없이 단계 잔차(식 C18)를 통과하는지 확인
+
+ |
+| **② 유한 전파 동시 Picard 병렬화**<br>
+
+<br>(4.3절 명제 C2, 식 C4–C5)<br>
+
+<br>7개 단계 우변 동시 평가
+
+ | `vigilode-coupled/`<br>
+
+<br>`src/causal.rs`<br>
+
+<br>(Picard 경로)
+
+ | • **Cat 2.** Nonstiff (#3 Pleiades, #4 Kuramoto)<br>
+
+<br>• **Cat 7.** 대규모 IMEX형 (#13 Euler, #14 C-H)<br>
+
+<br>• **전 카테고리 `1/2/4/8/12` 스레드 비교** | 우변 비용 $C_f$가 클 때 순차 7회 평가 대비 $p=2,4,8$ 단계 병렬화가 이기는 손익분기점 실측 ($p=8$ vs $12$ 비교 포함)
+
+ |
+| **③ 몫 다항식 Resolvent & 잔차 수축**<br>
+
+<br>(4.5절 명제 C4–C5, 식 C8–C12)<br>
+
+<br>$(I-B)^{-1} = p(B)$, $\Vert{}r_k\Vert{} \le \eta^k \Vert{}r_0\Vert{}$
+
+ | `rodas5p-integrators/`<br>
+
+<br>`src/polynomial_resolvent.rs`
+
+ | • **Cat 9.** 구면 격자 (#17 회전+전단, #18 확산)<br>
+
+<br>• **Cat 11–12.** 2D/3D 격자 (#21~#24) | 전처리기가 없는 기본 JVP-GMRES(`6.3절`, 재시작 40, 상한 200)가 고전하는 다차원 격자에서 몫 다항식 보정(`apply_refined_checked`)의 수렴 가속 효과 검증
+
+ |
+| **④ 선언된 회전·감쇠 흐름 & 모멘트 축약**<br>
+
+<br>(4.5.2~4.5.3절 식 C13, C17)<br>
+
+<br>$e^{tA} = e^{-dt}(\cos\omega t I + \sin\omega t R)$
+
+ | `rodas5p-integrators/`<br>
+
+<br>`src/quotient_flow.rs`
+
+ | • **Cat 5.** 고진동 (#9 FPUT, #10 Gyromotion)<br>
+
+<br>• **Cat 8.** 지수 Chirp 감쇠 (#15, #16)<br>
+
+<br>• **Cat 10.** 구면조화 진동+강성 (#19 SWE, #20 $Y_{\ell m}$) | 일반 `DOPRI5`(명제 3, $\Vert{}\omega\Vert{}h \le 0.9$ 제한) 및 `RODAS5P`(위상 감쇠) 대비 Lawson형 회전·감쇠 정확 흐름의 위상 보존력 비교; 식 (C17)의 $rd$ 모멘트 닫힘과 `BASS` 산란 결합의 직결성 확인
+
+ |
+| **⑤ 세션 체크포인팅 & 비용 기반 대기열**<br>
+
+<br>(4.6.1절 식 C19, 9.2절 명제 7)<br>
+
+<br>`Dopri5::with_session` + Cooldown
+
+ | `vigilode/src/session.rs`,<br>
+
+<br>`vigilode-coupled/`<br>
+
+<br>`src/switching.rs`
+
+ | • **Cat 3.** Stiff $\to$ Nonstiff (#5 경계층, #6 동결)<br>
+
+<br>• **Cat 4.** Nonstiff $\to$ Stiff (#7 열폭주, #8 전선) | 양해법(`DOPRI5`)과 음해법(`RODAS5P`) 전환 시 수락 상태 보존(명제 7) 및 실패 비용 비례 대기 $L = \min(L_{\max}, \max(1, \lceil C/(\epsilon P) \rceil - 1))$ 작동 검증
+
+ |
+
+---
+
+### 3. `DESIGN.pdf` 규격에 맞춘 `DOPRI5` $\leftrightarrow$ `RODAS5P` 스위칭 드라이버 설계 보정
+
+앞서 제가 `Tsit5` 기준으로 초안을 잡았었는데, `DESIGN.pdf`의 실제 구현 계약을 반영하면 훨씬 더 정교하고 기존 코드베이스와 100% 호환되는 스위칭 드라이버가 나옵니다. 이식하실 때 아래 4가지 설계 규칙을 그대로 적용하시면 됩니다.
+
+1. **`Dopri5::with_session` (9.2절 명제 7) 활용:**
+* `DOPRI5`는 이미 `with_session`과 `advance_to`를 통해 수락 상태에서 첫 우변($k_1 = k_7$), 제어기 정보, 시도 예산을 보존한 채 일시 중지하고 체크포인트를 조회할 수 있습니다.
+
+
+* 따라서 별도의 명시적 스테이지 루프를 밑바닥부터 새로 짤 필요 없이, `Dopri5::with_session` 클로저 내부에서 매 수락 스텝(또는 거절 발생 시)마다 강성 지표를 점검해 세션을 안전하게 종료하고 같은 수락 상태 $(t_n, y_n)$에서 `RODAS5P`를 호출하면 **명제 7의 수락 상태 보존 계약**을 완벽히 지킬 수 있습니다.
+
+
+
+
+2. **간격 제어기 지수 $1/5$ 및 클리핑 규격 통일 (7.2절 식 24):**
+* 설계 문서 5.1절과 7.2절에서 `DOPRI5`와 `RODAS5P` 모두 내장 오차 추정 차수가 5차($\mathcal{O}(h^5)$)이므로 동일한 스텝 제어 공식
+
+$$q = \mathrm{clip}\!\left(0.9 E_n^{-1/5},\, q_{\min},\, q_{\max}\right), \quad q_{\min} = 0.2, \quad q_{\max} = 5.0 \text{ (거절 시 } 0.9\text{)}$$
+
+
+
+을 사용하도록 통일되어 있습니다. 두 방법의 오차 척도 $s_i = \text{atol}*i + \text{rtol}\max(\vert{}y*{n,i}\vert{}, \vert{}y_{n+1,i}\vert{})$와 가중 RMS 노름 $E_n$(식 23)도 완전히 동일합니다.
+
+
+
+
+3. **4.6.1절의 비용 기반 대기(Cooldown) 공식(식 C19) 공유:**
+* 강성 구간에서 `DOPRI5`로의 복귀 탐색을 시도했다가 안정성 제한 때문에 실패(또는 비용 초과)했을 때, 무조건 고정된 스텝 수만큼 기다리는 대신 `4.6.1절`의 식 (C19)를 그대로 채택합니다:
+
+
+
+$$L = \min\!\left(L_{\max},\, \max\!\left(1,\, \left\lceil \frac{C}{\epsilon P} \right\rceil - 1\right)\right), \quad \epsilon = 0.25, \quad L_{\max} = 64$$
+
+
+* 여기서 $C$는 실패한 `DOPRI5` 탐색이 소모한 비용, $P$는 보호된 `RODAS5P` 수락 스텝의 비용입니다. 이렇게 하면 **평균 추가 탐색 오버헤드가 항상 $\epsilon = 25\%$ 이하로 수학적으로 보장**되며, 설계 문서의 철학과 완벽한 일관성을 갖춥니다.
+
+
+
+
+4. **연속 출력 내부 결함 검사(`8.2절` 식 29)와의 연동:**
+* `RODAS5P`에서 `DOPRI5`로 넘어갈 때 단순 끝점 오차 $E_n$뿐만 아니라, `8.2절` 식 (29)의 중점 결함 검사량 $\eta_{1/2} = (I - h\gamma J_n)^{-1} \frac{h}{2} d(t_n + h/2)$에서 역연산자 $(I - h\gamma J_n)^{-1}$을 빼고 순수 결함 $\frac{h}{2}\Vert{}d(t_n + h/2)\Vert{}$를 평가해도 여전히 작다면($\le 1$), 선형 연산자의 강성 감쇠 없이도 다항식 궤적이 매끄럽다는 뜻이므로 가장 확실한 비강성 복귀 신호(Switch-down indicator)로 쓸 수 있습니다.
+
+
+
+
+
+---
+
+### 💡 120개 벤치마크 실행 시 에이전트에게 줄 주의사항 1가지
+
+`3.1절`과 `6.3절`을 보면 기본 조밀 행렬 차원 한계가 `max_dense_dimension = 64`로 걸려 있고, `allow_matrix_free = false`가 기본값입니다. 따라서 차원이 $N > 64$인 벤치마크 문제들(카테고리 2, 6, 7, 9, 10, 11, 12)을 돌릴 때는 에이전트가 설정에서:
+
+* 대역 구조가 있는 1D/구면 문제에는 **압축 대역 콜백/차분**을 선언하고,
+
+
+* 다차원 격자(2D/3D)나 전역 결합 문제에는 `allow_matrix_free = true` + 4.2절 공유 기저 인과적 풀이(`causal.rs`) 또는 4.5절 몫 다항식 보정(`polynomial_resolvent.rs`)을 명시적으로 열어주도록 하네스 옵션을 매핑해야 사전 거부(Pre-run rejection) 없이 120개 케이스가 전부 끝까지 돌아갑니다!

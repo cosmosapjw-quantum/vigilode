@@ -1,0 +1,68 @@
+{
+  "any_change_and_failure": {
+    "counters_after_failure": {
+      "ft_calls": 1,
+      "jvp_calls": 94,
+      "recycle_cross_operator_refreshes": 1,
+      "recycle_refresh_matvecs": 2,
+      "recycle_same_operator_uses": 7,
+      "rhs_evaluations": 8
+    },
+    "holds": true,
+    "refresh_failed": true,
+    "refreshed_after_failure": true,
+    "smaller_epoch_invalidates": true
+  },
+  "epoch_change_invalidates": {
+    "bitwise_equal_to_fresh": true,
+    "counters": {
+      "ft_calls": 1,
+      "jvp_calls": 94,
+      "recycle_cross_operator_refreshes": 1,
+      "recycle_refresh_matvecs": 2,
+      "recycle_same_operator_uses": 7,
+      "rhs_evaluations": 8
+    },
+    "first_attempt": {
+      "ft_calls": 1,
+      "jvp_calls": 88,
+      "recycle_cross_operator_refreshes": 0,
+      "recycle_refresh_matvecs": 0,
+      "recycle_same_operator_uses": 7,
+      "rhs_evaluations": 8
+    },
+    "holds": true,
+    "recycle_rank_before": 2
+  },
+  "gate_items_1_to_4": {
+    "1": true,
+    "2": true,
+    "3": true,
+    "4": true
+  },
+  "no_epoch_manual_contract": {
+    "fresh_true_gives_changed_model": true,
+    "gcrodr": {
+      "error": "linear solve failed: least-squares solve produced NaN/Inf for 5x4 system"
+    },
+    "gcrodr_change_undetected": true,
+    "gmres_completes_and_differs_from_both_models": true,
+    "holds": true
+  },
+  "node": "research/rnext07_model_epoch_20261003",
+  "note": "item 5 (existing MF workspace contract tests) is recorded from their own test runs",
+  "same_epoch_reuses": {
+    "counters": {
+      "ft_calls": 0,
+      "jvp_calls": 93,
+      "recycle_cross_operator_refreshes": 0,
+      "recycle_refresh_matvecs": 0,
+      "recycle_same_operator_uses": 8,
+      "rhs_evaluations": 7
+    },
+    "equal_to_no_epoch": true,
+    "holds": true,
+    "reused": true
+  },
+  "schema": "vigilode-rnext07-model-epoch-v1"
+}

@@ -1,0 +1,90 @@
+{
+  "status": "CONFIRMED_WITHIN_SCOPE",
+  "independent_native_time_exact_oracle": [
+    {
+      "method": "fixed_rodas",
+      "origin": 1000000000000.0,
+      "exact_final": "1",
+      "actual": 0.8192000000000021,
+      "error": 0.18079999999999785
+    },
+    {
+      "method": "fixed_rodas",
+      "origin": -1000000000000.0,
+      "exact_final": "1",
+      "actual": 0.8192000000000021,
+      "error": 0.18079999999999785
+    },
+    {
+      "method": "adaptive_rodas",
+      "origin": 1000000000000.0,
+      "exact_final": "1",
+      "actual": 0.8192000000000021,
+      "error": 0.18079999999999785
+    },
+    {
+      "method": "fixed_radau",
+      "origin": 1000000000000.0,
+      "exact_final": "1",
+      "actual": 0.8192000000000002,
+      "error": 0.18079999999999985
+    },
+    {
+      "method": "fixed_bdf",
+      "origin": 1000000000000.0,
+      "exact_final": "1",
+      "actual": 0.8192000000000029,
+      "error": 0.18079999999999707
+    },
+    {
+      "method": "adaptive_fused_exp",
+      "origin": 1000000000000.0,
+      "exact_final": "1",
+      "actual": 0.8192000000000002,
+      "error": 0.18079999999999985
+    },
+    {
+      "method": "fixed_dense_rodas",
+      "origin": 1000000000000.0,
+      "exact_final": "1",
+      "actual": 0.8192000000000021,
+      "error": 0.18079999999999785
+    }
+  ],
+  "independent_native_phi_exact_oracle": [
+    {
+      "id": "nilpotent_partial_underflow",
+      "exact_rounded_component0": 1.6666666666666616e-27,
+      "actual_component0": 9.999999999999999e-301,
+      "relative_error": 1.0,
+      "reported_converged": true,
+      "reported_error": 0
+    },
+    {
+      "id": "nilpotent_negative_h",
+      "exact_rounded_component0": -1.6666666666666616e-27,
+      "actual_component0": 9.999999999999999e-301,
+      "relative_error": 1.0,
+      "reported_converged": true,
+      "reported_error": 0
+    }
+  ],
+  "independent_coefficient_structure_exact_oracle": [
+    {
+      "matrix": "alpha",
+      "native_eighth_power_nonzero": true,
+      "maximum_abs_eighth_power": 1.974514526344302e-19,
+      "projected_eighth_power_zero": true
+    },
+    {
+      "matrix": "l",
+      "native_eighth_power_nonzero": true,
+      "maximum_abs_eighth_power": 3.9042416155563606e-20,
+      "projected_eighth_power_zero": true
+    }
+  ],
+  "claims_excluded": [
+    "Native full-block macroscopic solver defect from coefficient leakage",
+    "General ODE failure from extreme phi fixture"
+  ]
+}

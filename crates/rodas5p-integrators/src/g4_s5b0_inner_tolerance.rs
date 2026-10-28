@@ -9,6 +9,111 @@ const INNER_RELATIVE_FLOOR: f64 = 1.0e-12;
 const INNER_ABSOLUTE_FLOOR: f64 = 1.0e-14;
 const LEGACY_LINEAR_RTOL: f64 = 1.0e-10;
 const LEGACY_LINEAR_ATOL: f64 = 1.0e-12;
+/// Dimensionless allocation used to set per-stage WRMS *residual* targets.
+///
+/// This is not an endpoint-error budget. Translating a certified residual
+/// `r_i` into a stage error requires a problem-dependent bound on
+/// `W^{-1} r_i`, and no such resolvent bound is available in the generic
+/// matrix-free interface.
+pub const RODAS5P_INNER_RESIDUAL_HEURISTIC_FRACTION: f64 = 0.1;
+pub const RODAS5P_INNER_FORCING_FLOOR: f64 = 64.0 * f64::EPSILON;
+pub const RODAS5P_INNER_FORCING_ETA_MAX: f64 = 0.5;
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum Rodas5pInnerForcingClaimScope {
+    StageResidualHeuristicRequiresResolventBound,
+}
+
+pub const RODAS5P_INNER_FORCING_CLAIM_SCOPE: Rodas5pInnerForcingClaimScope =
+    Rodas5pInnerForcingClaimScope::StageResidualHeuristicRequiresResolventBound;
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct Rodas5pInnerForcingTarget {
+    pub eta: f64,
+    pub tau: f64,
+    /// The roundoff floor, not the heuristic allocation, set this target.
+    pub floor_active: bool,
+}
+
+/// Exponent `(p + 1) / (q + 1)` of the step-error forcing term for RODAS5P
+/// (order `p = 5`, embedded order `q = 4`).
+///
+/// A stage residual budget proportional to `err^{6/5}`, where `err` is the
+/// step's own embedded estimate, scales like `h^6` at a fixed tolerance, so
+/// the stage contamination stays below the local error of a fifth-order step
+/// and fixed-step convergence survives down to the roundoff floor.
+pub const RODAS5P_INNER_FORCING_ERROR_EXPONENT: f64 = 6.0 / 5.0;
+
+/// Largest stage-residual budget, in outer-WRMS units, allowed for a step whose
+/// embedded error estimate is `error_norm` (audit F-008, F-005).
+///
+/// The heuristic allocation `0.1 / ||b||_1` is independent of `h` and of the
+/// outer tolerance. Multiplying it by `min(1, error_norm)^{6/5}` makes the
+/// budget shrink with the truncation error; `error_norm >= 1` keeps it.
+pub fn rodas5p_inner_forcing_error_limit(
+    error_norm: f64,
+    output_weight_l1: f64,
+) -> CoreResult<f64> {
+    if !output_weight_l1.is_finite() || output_weight_l1 <= 0.0 {
+        return Err(CoreError::InvalidInput(
+            "RODAS5P inner-forcing output-weight norm must be finite and positive".into(),
+        ));
+    }
+    if error_norm.is_nan() || error_norm < 0.0 {
+        return Err(CoreError::InvalidInput(
+            "RODAS5P inner-forcing error estimate must be nonnegative".into(),
+        ));
+    }
+    let allocation = RODAS5P_INNER_RESIDUAL_HEURISTIC_FRACTION / output_weight_l1;
+    Ok(allocation
+        * error_norm
+            .min(1.0)
+            .powf(RODAS5P_INNER_FORCING_ERROR_EXPONENT))
+}
+
+pub fn rodas5p_inner_forcing_target(
+    flow_wrms: f64,
+    rhs_wrms: f64,
+    output_weight_l1: f64,
+) -> CoreResult<Rodas5pInnerForcingTarget> {
+    if !flow_wrms.is_finite() || flow_wrms < 0.0 {
+        return Err(CoreError::InvalidInput(
+            "RODAS5P inner-forcing flow norm must be finite and nonnegative".into(),
+        ));
+    }
+    if !rhs_wrms.is_finite() || rhs_wrms < 0.0 {
+        return Err(CoreError::InvalidInput(
+            "RODAS5P inner-forcing RHS norm must be finite and nonnegative".into(),
+        ));
+    }
+    if !output_weight_l1.is_finite() || output_weight_l1 <= 0.0 {
+        return Err(CoreError::InvalidInput(
+            "RODAS5P inner-forcing output-weight norm must be finite and positive".into(),
+        ));
+    }
+
+    let forcing_scale = flow_wrms.max(rhs_wrms);
+    let unclamped_eta = if forcing_scale == 0.0 {
+        RODAS5P_INNER_FORCING_ETA_MAX
+    } else {
+        RODAS5P_INNER_RESIDUAL_HEURISTIC_FRACTION / (output_weight_l1 * forcing_scale)
+    };
+    let eta = unclamped_eta.clamp(RODAS5P_INNER_FORCING_FLOOR, RODAS5P_INNER_FORCING_ETA_MAX);
+    let relative_target = eta * rhs_wrms;
+    let tau = relative_target.max(RODAS5P_INNER_FORCING_FLOOR);
+    // When the stage is so stiff that `64 eps * rhs_wrms` exceeds the
+    // allocation, the floor is the backward-error level an LU solve attains.
+    // It used to abort the step before any Krylov iteration (audit F-009);
+    // it is now reported and the embedded error estimate judges the step.
+    let floor_active = unclamped_eta < RODAS5P_INNER_FORCING_FLOOR
+        || relative_target < RODAS5P_INNER_FORCING_FLOOR;
+    Ok(Rodas5pInnerForcingTarget {
+        eta,
+        tau,
+        floor_active,
+    })
+}
 
 /// Explicit GMRES tolerance arm used by the G4/S5B0 authority replay.
 ///

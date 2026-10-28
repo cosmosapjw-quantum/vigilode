@@ -1,0 +1,176 @@
+   Compiling version_check v0.9.5
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling autocfg v1.5.1
+   Compiling unicode-ident v1.0.24
+   Compiling num-traits v0.2.19
+   Compiling bytemuck v1.25.2
+   Compiling nano-gemm-codegen v0.2.1
+   Compiling num-complex v0.4.6
+   Compiling paste v1.0.15
+   Compiling bitflags v2.13.1
+   Compiling libm v0.2.16
+   Compiling raw-cpuid v11.6.0
+   Compiling pulp v0.22.3
+   Compiling cfg-if v1.0.4
+   Compiling pulp-wasm-simd-flag v0.1.1
+   Compiling reborrow v0.5.5
+   Compiling dyn-stack-macros v0.1.3
+   Compiling dyn-stack v0.13.2
+   Compiling syn v1.0.109
+   Compiling seq-macro v0.3.6
+   Compiling once_cell v1.21.4
+   Compiling generic-array v0.14.7
+   Compiling nano-gemm-core v0.2.1
+   Compiling gemm-common v0.19.0
+   Compiling libc v0.2.189
+   Compiling typenum v1.20.1
+   Compiling interpol v0.2.1
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling syn v2.0.119
+   Compiling syn v3.0.3
+   Compiling defer v0.2.1
+   Compiling serde_core v1.0.229
+   Compiling crossbeam-utils v0.8.22
+   Compiling private-gemm-x86 v0.1.20
+   Compiling equator-macro v0.2.1
+   Compiling zmij v1.0.23
+   Compiling crossbeam-epoch v0.9.20
+   Compiling num_cpus v1.17.0
+   Compiling equator v0.2.2
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling gemm-f64 v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling qd v0.8.0
+   Compiling equator-macro v0.6.0
+   Compiling serde v1.0.229
+   Compiling generativity v1.2.1
+   Compiling thiserror v2.0.19
+   Compiling crossbeam-deque v0.8.7
+   Compiling serde_json v1.0.151
+   Compiling faer-traits v0.24.0
+   Compiling equator v0.6.0
+   Compiling gemm v0.19.0
+   Compiling digest v0.10.7
+   Compiling nano-gemm v0.2.2
+   Compiling thiserror-impl v2.0.19
+   Compiling serde_derive v1.0.229
+   Compiling cpufeatures v0.2.17
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.3
+   Compiling rayon-core v1.13.0
+   Compiling sha2 v0.10.9
+   Compiling faer v0.24.4
+   Compiling hex v0.4.3
+   Compiling either v1.17.0
+   Compiling rodas5p-integrators v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-integrators)
+   Compiling rayon v1.12.0
+   Compiling rodas5p-core v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-krylov)
+warning: fields `prepared_centers`, `prepared_radii`, `prepared_times`, `prepared_count`, `radii`, and `prepared_valid` are never read
+   --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/src/output.rs:706:5
+    |
+698 | pub(crate) struct OutputCollector {
+    |                   --------------- fields in this struct
+...
+706 |     prepared_centers: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^^^
+707 |     prepared_radii: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^
+708 |     prepared_times: Vec<f64>,
+    |     ^^^^^^^^^^^^^^
+709 |     prepared_count: usize,
+    |     ^^^^^^^^^^^^^^
+710 |     radii: Vec<Vec<f64>>,
+    |     ^^^^^
+711 |     prepared_valid: bool,
+    |     ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `EndpointAdmission` is never constructed
+    --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+   Compiling vigilode-coupled v0.1.0 (/home/runner/work/vigilode/vigilode/crates/vigilode-coupled)
+warning: `rodas5p-integrators` (lib) generated 4 warnings
+    Finished `test` profile [unoptimized] target(s) in 58.05s
+     Running tests/contracts.rs (crates/vigilode-coupled/target/debug/deps/contracts-faa959297d38928a)
+
+running 5 tests
+test builds_three_mode_candidate_from_real_jvp_only ... FAILED
+test equilibrium_is_complete_not_zero_basis_failure ... FAILED
+test invalid_time_is_rejected ... ok
+test partial_basis_cannot_pass_only_projected_residual ... ok
+test thread_count_changes_no_output_bits ... FAILED
+
+failures:
+
+---- builds_three_mode_candidate_from_real_jvp_only stdout ----
+
+thread 'builds_three_mode_candidate_from_real_jvp_only' (4509) panicked at tests/contracts.rs:19:29:
+coupled candidate missing
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- equilibrium_is_complete_not_zero_basis_failure stdout ----
+
+thread 'equilibrium_is_complete_not_zero_basis_failure' (4510) panicked at tests/contracts.rs:30:25:
+called `Option::unwrap()` on a `None` value
+
+---- thread_count_changes_no_output_bits stdout ----
+
+thread 'thread_count_changes_no_output_bits' (4513) panicked at tests/contracts.rs:24:85:
+called `Option::unwrap()` on a `None` value
+
+
+failures:
+    builds_three_mode_candidate_from_real_jvp_only
+    equilibrium_is_complete_not_zero_basis_failure
+    thread_count_changes_no_output_bits
+
+test result: FAILED. 2 passed; 3 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--test contracts`

@@ -1,0 +1,34 @@
+{
+  "evidence": "numerically checked exact finite empirical bootstrap distribution; coverage Monte Carlo, not a theorem for all populations",
+  "seed": 20260930,
+  "coverage": [
+    {
+      "family": "uniform",
+      "independent_sessions": 6,
+      "trials": 20000,
+      "exact_bootstrap_replicates": 46656,
+      "nominal_coverage": 0.95,
+      "coverage": 0.93845,
+      "outer_binomial_standard_error": 0.001699435163517573,
+      "false_lower_excludes_truth": 0.02975,
+      "false_upper_excludes_truth": 0.0318
+    },
+    {
+      "family": "gaussian",
+      "independent_sessions": 6,
+      "trials": 20000,
+      "exact_bootstrap_replicates": 46656,
+      "nominal_coverage": 0.95,
+      "coverage": 0.93575,
+      "outer_binomial_standard_error": 0.0017338099304710424,
+      "false_lower_excludes_truth": 0.03265,
+      "false_upper_excludes_truth": 0.0316
+    }
+  ],
+  "native_fixture_exact_bootstrap": {
+    "point": 1.0488088481701516,
+    "lower": 0.848528137423857,
+    "upper": 1.449137674618944
+  },
+  "method": "enumerate all 6^6 ordered session bootstrap samples, no pseudo-random inner bootstrap"
+}

@@ -1,0 +1,156 @@
+{
+  "schema": "vigilode.independent-adapter-review.v1",
+  "date": "2026-10-25",
+  "base_commit": "d79326648a7273c0decd641eaf94d94f5bea7c63",
+  "verdict": "ALL_FOUR_FINDINGS_CLOSED; no open blocking finding in scoped exploratory pilot review",
+  "skill_context_used": {
+    "name": "physmath-research-loop",
+    "version": "1.3.0",
+    "package": "c38/physmath-research-loop",
+    "selected_stages": [
+      "R6",
+      "C9"
+    ],
+    "read": [
+      "SKILL.md",
+      "references/POLICY_INTEGRATION.md",
+      "references/THEORY_LOOP.md",
+      "references/CODING_LOOP.md",
+      "references/SUBAGENT_MODE.md"
+    ],
+    "policy_application": "One independent native delegated pass; concrete defects and smallest repairs; selective regression; no recursive reviewer; no widened tolerance or new strong no-go claim."
+  },
+  "independence": "Fresh delegated review context, shared repository and host; independently derived edge cases, read-only source review; not a separate implementation or hardware benchmark.",
+  "scope": [
+    "crates/vigilode/src/automatic.rs",
+    "crates/vigilode/src/cofactor_chart.rs",
+    "crates/vigilode/src/oscillatory_chart.rs",
+    "crates/vigilode/src/execution_policy.rs",
+    "crates/vigilode/src/switching.rs",
+    "crates/rodas5p-integrators/src/adaptive_exponential.rs",
+    "crates/vigilode/tests/automatic_adapter_contracts.rs",
+    "crates/vigilode/tests/cofactor_chart_contracts.rs",
+    "crates/vigilode/tests/oscillatory_chart_contracts.rs",
+    "crates/vigilode/tests/evidence_switch_contracts.rs",
+    "crates/vigilode/tests/execution_policy_contracts.rs",
+    "crates/rodas5p-integrators/tests/exponential_controller_repair.rs",
+    "associated four pilot examples"
+  ],
+  "findings": [
+    {
+      "id": "IR-01",
+      "object": "ExponentialCofactor::exponent / primitive",
+      "severity": "high within admitted extreme finite inputs",
+      "initial_relevance": "BLOCK_NOW",
+      "status": "CLOSED",
+      "reproductions": [
+        {
+          "input": "new(-1e308,1,1e-308,1e-308); value(1e308), primitive(1e308)",
+          "before": "0 and ~1",
+          "expected": "exp(-2) and 1-exp(-2)"
+        },
+        {
+          "input": "new(0,1,1e-300,1e8); primitive(1e-100)",
+          "before": "0",
+          "expected": "~1e-92"
+        }
+      ],
+      "mechanism": "Intermediate time-difference overflow and rate*duration underflow were mistaken for complete decay or zero integrated forcing.",
+      "repair": "Scale finite opposite-sign endpoints before subtraction when duration overflows; evaluate the tiny-exponent primitive using the summed logarithmic product.",
+      "verification": "Independent reproduced counterexamples now pass; see INDEPENDENT_REPRO_FINAL.log."
+    },
+    {
+      "id": "IR-02",
+      "object": "ExponentialChirpChart::phase",
+      "severity": "high within admitted near-zero-beta inputs",
+      "initial_relevance": "BLOCK_NOW",
+      "status": "CLOSED",
+      "reproductions": [
+        {
+          "input": "new(1e300,1e-300,0,(0,1e-100)); phase(1e-100)",
+          "before": "0",
+          "expected": "~1e200"
+        },
+        {
+          "input": "new(1,f64::from_bits(1),0,(0,0.1)); phase(0.1)",
+          "expected": "0.1"
+        }
+      ],
+      "mechanism": "beta*duration underflows before expm1, so division by nonzero beta leaves an incorrect zero phase instead of the constant-frequency limit.",
+      "repair": "Use the w*duration limit when the scaled exponent is zero and exprel near zero; use endpoint frequency for large growth and refuse nonrepresentable duration.",
+      "verification": "All 10 current chirp contracts and independent subnormal-beta probe pass."
+    },
+    {
+      "id": "IR-03",
+      "object": "SwitchingSegment::proposed_next_step documentation / terminal DOPRI session carry",
+      "severity": "low; reporting and step-proposal interpretation",
+      "present_relevance": "CLOSED",
+      "status": "CLOSED",
+      "reproduction": "For y'=1, h0=.1, advance_to(.1) exports h=.1 with session tf=.1 but h=.5 with session tf=1 and .1 as a registered intermediate checkpoint; both use one attempt and reach identical t/state.",
+      "mechanism": "Dopri5Session breaks on t==tf before updating its controller proposal. run() makes each batch target the session tf. Completed batches therefore carry the terminal snapshot request; budget-stopped batches carry an updated proposal.",
+      "impact": "No error test is bypassed and equal-window clipping limits impact. Do not describe all completed-batch exports as newly computed post-final-error proposals.",
+      "smallest_repair": "Clarify terminal-snapshot semantics in field/factory docs. A future full-span session could update the proposal at actual intermediate checkpoints.",
+      "evidence": "Source inspection plus existing compiled vigilode rlib probe; output retained in TERMINAL_PROPOSAL_PROBE.log.",
+      "repair": "Carry-mode sessions now use the full solve endpoint and pause at the batch target; completed nonterminal targets therefore update the controller proposal. Full-solve terminal exports are None. Reaching a target exactly on the final batch attempt counts as batch success, while the global solve budget remains unchanged.",
+      "verification": "Independent 17-test selection harness passed, including original terminal-proposal counterexample, exact-target-on-last-attempt regression, existing switching and execution contracts."
+    },
+    {
+      "id": "IR-04",
+      "object": "oscillatory_chart_pilot physical_local_atol label and common-budget wording",
+      "severity": "low; representation",
+      "present_relevance": "CLOSED",
+      "status": "CLOSED",
+      "reproduction": "With two components, physical WRMS(atol=a, rtol=0)<=1 implies Linf embedded estimate<=sqrt(2)*a. Chart WRMS(atol=a/(sqrt(2)*maximum_lift))<=1 implies the transported physical Linf embedded estimate<=a.",
+      "impact": "The chart uses the stricter majorant, so this does not hide tolerance relaxation. The local Linf majorants are nonetheless not identical; endpoint accuracy-qualified comparisons remain valid in their stated scope.",
+      "smallest_repair": "Describe a as the nominal control parameter and state both majorants, or expose the actual physical local-estimator majorant in each row. No numerical rerun is required for a label-only correction.",
+      "repair": "Pilot header now explicitly distinguishes physical WRMS atol from the stricter chart physical-Linf sufficient local budget and keeps endpoint errors/cap separate.",
+      "verification": "Read corrected example header; no numerical rerun required for this description-only correction."
+    }
+  ],
+  "verification": {
+    "independent_contract_command": "rustc --edition=2024 --test research/adapter_research_20261025/reviews/INDEPENDENT_REPRO.rs -o /workspace/scratch/0dc1e721cf82/adapter_review_contracts; /workspace/scratch/0dc1e721cf82/adapter_review_contracts --nocapture",
+    "rustc": "/workspace/scratch/0dc1e721cf82/rust/bin/rustc",
+    "exit_code": 0,
+    "passed": 13,
+    "failed": 0,
+    "initial_repair_probe": "12 passed, 1 failed before final cofactor tiny-exponent repair",
+    "full_cargo_suites": "NOT_RUN by independent reviewer to avoid concurrent Cargo work; constructor/parent logs read, not relabeled as independent executions.",
+    "selection_command": "rustc --edition=2024 --test research/adapter_research_20261025/reviews/INDEPENDENT_SELECTION_REPRO.rs --extern vigilode=/workspace/scratch/0dc1e721cf82/vigilode-adapters/target/debug/deps/libvigilode-e24f7099870537ce.rlib -L dependency=/workspace/scratch/0dc1e721cf82/vigilode-adapters/target/debug/deps -o /workspace/scratch/0dc1e721cf82/independent_selection_repro; /workspace/scratch/0dc1e721cf82/independent_selection_repro --nocapture",
+    "selection_exit_code": 0,
+    "selection_passed": 17,
+    "selection_failed": 0,
+    "unique_final_contracts_passed": 30,
+    "selection_rlib_sha256": "b77b7330868efb27d28d6a0acc40cb1257e07f1a8eb5b4d20dd9935199d17821",
+    "execution_source_only_check": "Current execution_policy.rs also independently compiled with existing dependencies and passed its 9 contracts; these are repeated within the 17-test harness and not counted twice.",
+    "final_source_binding": "Parent-frozen formatted source and target/debug rlib; exact same 17-test selection harness rechecked after formatting, exit 0."
+  },
+  "positive_checks": [
+    "Chirp chain rule gives w'=-gamma*w+R(phi)*(rx,(rv+gamma*rx)/omega); opposite sectors retain independent amplitudes.",
+    "Physical infinity error <= max(1,gamma+omega)*rotating_l2_error; sqrt(2) WRMS conversion is correctly applied in conservative_local_atol.",
+    "Cofactor substitution C'=coupling*z removes the direct fast forcing without changing the physical equations.",
+    "AutomaticOde checks derivative/dense/matrix-free permissions and explicit replay contract before solve callbacks.",
+    "Switching charges executed explicit and implicit pilots against remaining attempts; discarded pilots are not committed; implicit advancement clears explicit carry.",
+    "Shared exponential step helper now receives prior accepted history and pre-output-clipping request; failure path records rejection for represented-clock shrinking.",
+    "Normal map_ordered executes once per input; explicit paired calibration is separate; nested wrapper execution is forced serial and order is preserved."
+  ],
+  "claim_limits": [
+    "Only declared structural families are transformed; no black-box chart discovery or physical stiffness certification is demonstrated.",
+    "Physical chart tolerance statement is an exact-arithmetic embedded local-estimator bound, excluding roundoff, phase, and global accumulation.",
+    "Work-score selection is heuristic, and the explicit return comparison uses the previous implicit window rather than a matched checkpoint.",
+    "Initial parallel evidence remains preserved. The repaired shared-host run chooses serial for batch 1 and parallel for batches 64/256, matching held-out faster-arm labels in that run; startup/calibration remain included in total-cost reporting. This is not a general timing guarantee.",
+    "Step-proposal carry does not preserve full FSAL, PI, implicit workspace, or cache history."
+  ],
+  "source_snapshot_sha256": {
+    "crates/vigilode/src/automatic.rs": "d98dfaa8eccef36228c90fac663d0789ea122f5552532be60c763b00407eb453",
+    "crates/vigilode/src/cofactor_chart.rs": "701811d7be152fb4c5db335291af77107df00e652d32272cce410cb4a6c97aa4",
+    "crates/vigilode/src/oscillatory_chart.rs": "45d4873f851b77f6da905bcf3c434ae08588e0a7a16fc96fc8a55bd02a0126d8",
+    "crates/vigilode/src/execution_policy.rs": "b3bcff4b77c8a0b5741eb8de682812820f229b35dc3132fd12f86c5155a0dffc",
+    "crates/vigilode/src/switching.rs": "4ed9d5616b3cc2c72417f36c1df23f70a255994b8f4dee0166548b09ed1ade4d",
+    "crates/rodas5p-integrators/src/adaptive_exponential.rs": "c6e40ba8097a5593c52f1721e587df15ee2865c62b87f5cbf7fb2bd95c409d91"
+  },
+  "repair_episode_followup": {
+    "scope": "Parent requested selective review of terminal checkpoint and already-incurred calibration-cost corrections; no further feature or benchmark expansion.",
+    "parallel": "After calibration, the selector compares future per-call costs. Recovery horizon remains visible as a diagnostic. Pool creation is lazy; a single job/worker skips calibration and replay. Warmup and three raw pair costs are retained. Nine relevant contracts pass.",
+    "boundary": "Independent source check found native AttemptBudget at an exactly reached intermediate target; correction separates successful target arrival from exhausted budget before target. One-attempt and global-budget regressions pass."
+  }
+}

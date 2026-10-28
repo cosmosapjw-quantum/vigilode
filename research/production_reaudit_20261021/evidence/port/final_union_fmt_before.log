@@ -1,0 +1,212 @@
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/examples/component_benchmark_native.rs:2:
+ #[path = "component_benchmark_support/mod.rs"]
+ mod support;
+ use rodas5p_integrators::{
+-    AdaptiveStepConfig, BandedJacobian, BdfConfig, BdfOrder, BlockMethod, ControllerKind, ExponentialKrylovConfig,
+-    FusedPhiKrylovConfig, OutputSamplingPlan, OutputSchedule, ParallelExecution, PredictorKind,
+-    FastLuPolicy, RadauConfig, RadauIiaStages, Rodas5pFastOptions, SabrConfig, SmallProblem, StageHistory, StructureDeclaration,
+-    exprb2_step, exprb43_step, integrate_bdf_fixed_dense_observed,
+-    integrate_pexprb54s4_fused_adaptive_observed, integrate_radau_fixed_dense_observed,
+-    integrate_rodas5p_fast_banded_observed, integrate_rodas5p_fast_observed_with_options,
+-    integrate_rodas5p_fast_small_observed, integrate_rodas5p_mf_fast_observed,
+-    integrate_rodas5p_mf_fast_observed_gmres_into,
++    AdaptiveStepConfig, BandedJacobian, BdfConfig, BdfOrder, BlockMethod, ControllerKind,
++    ExponentialKrylovConfig, FastLuPolicy, FusedPhiKrylovConfig, OutputSamplingPlan,
++    OutputSchedule, ParallelExecution, PredictorKind, RadauConfig, RadauIiaStages,
++    Rodas5pFastOptions, SabrConfig, SmallProblem, StageHistory, StructureDeclaration, exprb2_step,
++    exprb43_step, integrate_bdf_fixed_dense_observed, integrate_pexprb54s4_fused_adaptive_observed,
++    integrate_radau_fixed_dense_observed, integrate_rodas5p_fast_banded_observed,
++    integrate_rodas5p_fast_observed_with_options, integrate_rodas5p_fast_small_observed,
++    integrate_rodas5p_mf_fast_observed, integrate_rodas5p_mf_fast_observed_gmres_into,
+     integrate_rodas5p_mf_fast_observed_gmres_into_ls_workspace, integrate_rodas5p_routed_observed,
+     integrate_sequential_matrix_free_adaptive_dense_observed, sabr_step,
+ };
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/examples/component_benchmark_native.rs:170:
+ 
+ fn solve(case: &Case, solver: &str, config: &Value, h_divisor: usize) -> Result<Value, String> {
+     if let Some(fields) = config.as_object() {
+-        if let Some(key) = fields.keys().find(|key| !matches!(key.as_str(), "controller" | "lu_policy" | "threads" | "h_divisor")) {
+-            return Ok(result("ENVIRONMENT_FAILURE", &format!("unknown solver_config field: {key}")));
++        if let Some(key) = fields.keys().find(|key| {
++            !matches!(
++                key.as_str(),
++                "controller" | "lu_policy" | "threads" | "h_divisor"
++            )
++        }) {
++            return Ok(result(
++                "ENVIRONMENT_FAILURE",
++                &format!("unknown solver_config field: {key}"),
++            ));
+         }
+     } else if !config.is_null() {
+-        return Ok(result("ENVIRONMENT_FAILURE", "solver_config must be an object"));
++        return Ok(result(
++            "ENVIRONMENT_FAILURE",
++            "solver_config must be an object",
++        ));
+     }
+-    if config.get("h_divisor").is_some() && !matches!(solver, "native-bdf1" | "native-bdf2" | "native-radau1" | "native-radau3" | "native-exprb2" | "native-exprb43") {
+-        return Ok(result("UNSUPPORTED_CAPABILITY", "fixed-step h_divisor does not apply to this driver"));
++    if config.get("h_divisor").is_some()
++        && !matches!(
++            solver,
++            "native-bdf1"
++                | "native-bdf2"
++                | "native-radau1"
++                | "native-radau3"
++                | "native-exprb2"
++                | "native-exprb43"
++        )
++    {
++        return Ok(result(
++            "UNSUPPORTED_CAPABILITY",
++            "fixed-step h_divisor does not apply to this driver",
++        ));
+     }
+-    if config.get("controller").is_some() && !matches!(solver, "native-rodas5p-small" | "native-rodas5p-routed-dense" | "native-rodas5p-routed-matrix-free" | "native-rodas5p-fast" | "rodas5p-fast" | "native-rodas5p-dense" | "native-rodas5p-banded" | "native-rodas5p-matrix-free" | "native-rodas5p-mf-fast" | "native-rodas5p-mf-gmres-into" | "native-rodas5p-mf-ls-workspace" | "native-pexprb54s4") {
+-        return Ok(result("UNSUPPORTED_CAPABILITY", "adaptive controller does not apply to this driver"));
++    if config.get("controller").is_some()
++        && !matches!(
++            solver,
++            "native-rodas5p-small"
++                | "native-rodas5p-routed-dense"
++                | "native-rodas5p-routed-matrix-free"
++                | "native-rodas5p-fast"
++                | "rodas5p-fast"
++                | "native-rodas5p-dense"
++                | "native-rodas5p-banded"
++                | "native-rodas5p-matrix-free"
++                | "native-rodas5p-mf-fast"
++                | "native-rodas5p-mf-gmres-into"
++                | "native-rodas5p-mf-ls-workspace"
++                | "native-pexprb54s4"
++        )
++    {
++        return Ok(result(
++            "UNSUPPORTED_CAPABILITY",
++            "adaptive controller does not apply to this driver",
++        ));
+     }
+     if case.mass_matrix.is_some() {
+         return Ok(result(
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/examples/component_benchmark_native.rs:209:
+     }
+     let output = OutputSchedule::new(case.output_times.clone()).map_err(|e| e.to_string())?;
+     let span = (case.t_span[0], case.t_span[1]);
+-    let controller = match config.get("controller").and_then(Value::as_str).unwrap_or("integral") {
++    let controller = match config
++        .get("controller")
++        .and_then(Value::as_str)
++        .unwrap_or("integral")
++    {
+         "integral" => ControllerKind::Integral,
+         "pi" => ControllerKind::Pi,
+         "predictive" => ControllerKind::Predictive,
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/examples/component_benchmark_native.rs:217:
+         "predictive-capped2" => ControllerKind::PredictiveCapped2,
+         _ => return Ok(result("ENVIRONMENT_FAILURE", "invalid controller kind")),
+     };
+-    let lu_policy = match config.get("lu_policy").and_then(Value::as_str).unwrap_or("legacy") {
++    let lu_policy = match config
++        .get("lu_policy")
++        .and_then(Value::as_str)
++        .unwrap_or("legacy")
++    {
+         "legacy" => FastLuPolicy::Legacy,
+         "column-extents" => FastLuPolicy::ColumnExtents,
+         "column-extents-above64" => FastLuPolicy::ColumnExtentsAbove64,
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/examples/component_benchmark_native.rs:224:
+         _ => return Ok(result("ENVIRONMENT_FAILURE", "invalid fast LU policy")),
+     };
+-    let fast_options = Rodas5pFastOptions { lu_policy, ..Default::default() };
++    let fast_options = Rodas5pFastOptions {
++        lu_policy,
++        ..Default::default()
++    };
+     let adaptive = AdaptiveStepConfig {
+         rtol: case.rtol,
+         atol: case.atol[0],
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/examples/component_benchmark_native.rs:233:
+         max_attempts: 100_000,
+         ..Default::default()
+     };
+-    if lu_policy != FastLuPolicy::Legacy && !matches!(solver, "native-rodas5p-fast" | "rodas5p-fast" | "native-rodas5p-dense") {
+-        return Ok(result("UNSUPPORTED_CAPABILITY", "fast LU policy is available only on the dense fast driver"));
++    if lu_policy != FastLuPolicy::Legacy
++        && !matches!(
++            solver,
++            "native-rodas5p-fast" | "rodas5p-fast" | "native-rodas5p-dense"
++        )
++    {
++        return Ok(result(
++            "UNSUPPORTED_CAPABILITY",
++            "fast LU policy is available only on the dense fast driver",
++        ));
+     }
+     if config.get("threads").is_some() && solver != "native-pexprb54s4" {
+-        return Ok(result("UNSUPPORTED_CAPABILITY", "parallel execution context is available only on PEXPRB54S4 in this adapter"));
++        return Ok(result(
++            "UNSUPPORTED_CAPABILITY",
++            "parallel execution context is available only on PEXPRB54S4 in this adapter",
++        ));
+     }
+     if solver == "native-rodas5p-small" {
+         if !case.autonomous() {
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/examples/component_benchmark_native.rs:271:
+             let jvp_only = problem.jvp_only_clone().map_err(|e| e.to_string())?;
+             let r = integrate_rodas5p_routed_observed(&jvp_only, span, y, &adaptive, &output)
+                 .map_err(|e| e.to_string())?;
+-            (r.run.observed().clone(), json!({"driver":"structure-router","routing":r.routing,"attempts":r.run.attempts(),"accepted_steps":r.run.accepted_steps(),"rejected_steps":r.run.rejected_steps()}))
++            (
++                r.run.observed().clone(),
++                json!({"driver":"structure-router","routing":r.routing,"attempts":r.run.attempts(),"accepted_steps":r.run.accepted_steps(),"rejected_steps":r.run.rejected_steps()}),
++            )
+         }
+         "native-rodas5p-routed-dense" => {
+             let declared = problem
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/examples/component_benchmark_native.rs:286:
+             )
+         }
+         "native-rodas5p-fast" | "rodas5p-fast" | "native-rodas5p-dense" => {
+-            let r = integrate_rodas5p_fast_observed_with_options(&problem, span, y, &adaptive, &output, fast_options)
+-                .map_err(|e| e.to_string())?;
++            let r = integrate_rodas5p_fast_observed_with_options(
++                &problem,
++                span,
++                y,
++                &adaptive,
++                &output,
++                fast_options,
++            )
++            .map_err(|e| e.to_string())?;
+             (
+                 r.observed,
+                 json!({"driver":r.driver,"attempts":r.attempts,"accepted_steps":r.accepted_steps,"rejected_steps":r.rejected_steps,"jacobian_reuses":r.jacobian_reuses,"actual_lu":r.lu}),
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/examples/component_benchmark_native.rs:424:
+             }
+             let threads = match config.get("threads").and_then(Value::as_u64).unwrap_or(1) {
+                 n @ (1 | 2 | 4 | 8) => n as usize,
+-                _ => return Ok(result("ENVIRONMENT_FAILURE", "invalid parallel thread count")),
++                _ => {
++                    return Ok(result(
++                        "ENVIRONMENT_FAILURE",
++                        "invalid parallel thread count",
++                    ));
++                }
+             };
+             let execution = ParallelExecution::rayon(threads).map_err(|e| e.to_string())?;
+             let r = integrate_pexprb54s4_fused_adaptive_observed(
+Diff in /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/examples/component_benchmark_native.rs:630:
+     };
+     let invoke = || {
+         let before = request.case.derivative_rhs_calls();
+-        let mut value = match solve(&request.case, &request.solver_id, &request.solver_config, h_divisor) {
++        let mut value = match solve(
++            &request.case,
++            &request.solver_id,
++            &request.solver_config,
++            h_divisor,
++        ) {
+             Ok(v) => v,
+             Err(e) => result("NUMERICAL_FAILURE", &e),
+         };

@@ -1,0 +1,140 @@
+{
+  "schema": "vigilode.r3.reproduction.v1",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "source_binding": "recorded captured coefficients; no checkout requested",
+  "mode": "research",
+  "execution": "COMPLETED",
+  "production_modified": false,
+  "original_evidence_overwritten": false,
+  "commands": [
+    {
+      "label": "polynomial",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/polynomial/joint_polynomial_probe.py",
+        "--out",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/polynomial"
+      ],
+      "execution": "COMPLETED",
+      "exit_code": 0,
+      "elapsed_seconds": 0.44685237500380026
+    },
+    {
+      "label": "homotopy_structure",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/homotopy/coefficient_structure.py",
+        "--coefficients",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/homotopy/native_tableau_bits.json",
+        "--out",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/homotopy/coefficient_structure.json"
+      ],
+      "execution": "COMPLETED",
+      "exit_code": 0,
+      "elapsed_seconds": 0.09031192099791951
+    },
+    {
+      "label": "homotopy",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/homotopy/certified_majorant.py",
+        "--coefficients",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/homotopy/native_tableau_bits.json",
+        "--target",
+        "strict-lower-projection",
+        "--out",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/homotopy/results.json"
+      ],
+      "execution": "COMPLETED",
+      "exit_code": 0,
+      "elapsed_seconds": 0.6472460109944222
+    },
+    {
+      "label": "statistics_mc",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/statistics/bootstrap_mc_candidate.py"
+      ],
+      "execution": "COMPLETED",
+      "exit_code": 0,
+      "elapsed_seconds": 0.09358778699970571
+    },
+    {
+      "label": "independent_math",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/decision/independent_math_checks.py"
+      ],
+      "execution": "COMPLETED",
+      "exit_code": 0,
+      "elapsed_seconds": 0.27573552400281187
+    },
+    {
+      "label": "independent_polynomial",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/decision/polynomial_independent_check.py"
+      ],
+      "execution": "COMPLETED",
+      "exit_code": 0,
+      "elapsed_seconds": 0.24606228299671784
+    }
+  ],
+  "planned_commands": [
+    {
+      "label": "polynomial",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/polynomial/joint_polynomial_probe.py",
+        "--out",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/polynomial"
+      ]
+    },
+    {
+      "label": "homotopy_structure",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/homotopy/coefficient_structure.py",
+        "--coefficients",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/homotopy/native_tableau_bits.json",
+        "--out",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/homotopy/coefficient_structure.json"
+      ]
+    },
+    {
+      "label": "homotopy",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/homotopy/certified_majorant.py",
+        "--coefficients",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/homotopy/native_tableau_bits.json",
+        "--target",
+        "strict-lower-projection",
+        "--out",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/homotopy/results.json"
+      ]
+    },
+    {
+      "label": "statistics_mc",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/statistics/bootstrap_mc_candidate.py"
+      ]
+    },
+    {
+      "label": "independent_math",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/decision/independent_math_checks.py"
+      ]
+    },
+    {
+      "label": "independent_polynomial",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+        "/workspace/scratch/0dc1e721cf82/r3_portable_research_check/decision/polynomial_independent_check.py"
+      ]
+    }
+  ],
+  "captured_coefficients_sha256": "c9e971d237593bdd011346cbeedceee11e19246e346d7d82a0e07c72ec23bc71"
+}

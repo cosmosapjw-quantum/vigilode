@@ -1,0 +1,79 @@
+{
+  "schema_version": 1,
+  "baseline_commit": "555e71e03fe31e6c9b21961c8e2d263b1794eb6f",
+  "implementation": "original_dimension_low_rank_bordered_inverse",
+  "state": "implemented_targeted_validation_pass",
+  "source_sha256": {
+    "crates/rodas5p-core/src/low_rank_bordered.rs": "2380a98919a08536694d38b451c109f65bf492717d74586e1aa5ac196888b76f",
+    "crates/rodas5p-core/tests/low_rank_bordered_contracts.rs": "462973a13ae17156427557e3f0c6f210217e6e6f0ed83b82cd1508016642a569",
+    "crates/rodas5p-core/tests/low_rank_bordered_allocation.rs": "9aed1a70179cd9983dea3b582538ff185a7ab5e2d5cce353f234581c31752bed",
+    "crates/rodas5p-krylov/tests/low_rank_bordered_preconditioner.rs": "88ea6629310f085d83f8da723553d1e44a51e65e7d5fcaa24689dc98fba694c7"
+  },
+  "matrix": "[[A+U V^T,B],[C,D]]",
+  "augmented_matrix": "[[A,B,U],[C,D,0],[-V^T,0,I]]",
+  "external_dimension": "n+m",
+  "internal_schur_dimension": "m+r",
+  "restriction": "A is strictly row diagonally dominant; finite input; nonsingular finite factors",
+  "allocation_contract": "zero heap allocations for successful refactor and apply after construction; error messages may allocate",
+  "apply_failure_contract": "output unchanged; factors remain valid",
+  "refactor_failure_contract": "old factors invalidated",
+  "parallel_contract": "trait adapter serializes scratch; separate caller-owned workspaces can share factors without locking",
+  "setup_complexity": "O(n*b^2+n*b*(m+r)+n*(m+r)^2+(m+r)^3)",
+  "apply_complexity": "O(n*b+n*(m+r)+(m+r)^2)",
+  "production_driver_integrated": false,
+  "measured_speedup": null,
+  "review": {
+    "reviewer": "/root/latest_code_audit_1022",
+    "functional_defects": 0,
+    "doc_defect": "incorrect zero-allocation-on-failure wording",
+    "doc_defect_fixed": true
+  },
+  "environment_repair": {
+    "initial_attempts": "interrupted while waiting on shared target lock",
+    "exit_codes": [
+      130,
+      130
+    ],
+    "cause": "shared dependency build resource pressure",
+    "next_settings": {
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_PROFILE_DEV_DEBUG": "0",
+      "CARGO_PROFILE_TEST_DEBUG": "0"
+    }
+  },
+  "validation": {
+    "tests_passed": 8,
+    "tests_failed": 0,
+    "core_contracts": 6,
+    "allocation_contracts": 1,
+    "krylov_integration": 1,
+    "profile": "test unoptimized, debug info disabled",
+    "environment": {
+      "CARGO_BUILD_JOBS": "2",
+      "CARGO_PROFILE_DEV_DEBUG": "0",
+      "CARGO_PROFILE_TEST_DEBUG": "0",
+      "CARGO_HOME": "/workspace/scratch/0dc1e721cf82/task_runtime/cargo",
+      "CARGO_TARGET_DIR": "/workspace/scratch/0dc1e721cf82/task_runtime/target"
+    },
+    "commands": [
+      "cargo test -p rodas5p-core --locked --offline --test low_rank_bordered_contracts --test low_rank_bordered_allocation",
+      "cargo test -p rodas5p-krylov --locked --offline --test low_rank_bordered_preconditioner"
+    ],
+    "exit_codes": [
+      0,
+      0
+    ],
+    "rustfmt_check": "PASS",
+    "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)\nbinary: rustc\ncommit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1\ncommit-date: 2026-03-25\nhost: x86_64-unknown-linux-gnu\nrelease: 1.94.1\nLLVM version: 21.1.8\n",
+    "logs": {
+      "low_rank/krylov_tests_interrupted.log": "b0ae086a7b26ebf259a931e28b9986307cb21c53692449ada5e2a7e019d7f786",
+      "low_rank/krylov_tests.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "low_rank/core_tests_interrupted.exit": "f5bde7eb9f6c71611dc5726e8aca3eb4eba3e386da49e0a4ed5c295a90a73a0d",
+      "low_rank/core_tests.exit": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "low_rank/core_tests.log": "4b94a0928bc466cca2ffae7e11fb1ac6b5864222b1ec8f7855cc8c54e14d6587",
+      "low_rank/core_tests_interrupted.log": "ebc1e7581e47fbd926ef3212fc2577208f609d42531e2119048673b76c775b46",
+      "low_rank/krylov_tests_interrupted.exit": "f5bde7eb9f6c71611dc5726e8aca3eb4eba3e386da49e0a4ed5c295a90a73a0d",
+      "low_rank/krylov_tests.log": "f42109f2c8342461dd7fb1b38bed70f72970828d3b4c85db2f3db89decec6e9b"
+    }
+  }
+}

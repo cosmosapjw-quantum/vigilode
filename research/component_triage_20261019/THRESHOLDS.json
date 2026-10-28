@@ -1,0 +1,92 @@
+{
+  "schema": "vigilode-triage-thresholds-v1",
+  "frozen_with": "PREREGISTRATION.md",
+  "accuracy": {
+    "achieved_error_metric": "max over output times of the WRMS of (y - ref) with weights 1/(atol_scale_P + |ref|), atol_scale_P from CORPUS.json; E_up adds the same norm of the reference radius rho",
+    "requested_error_metric": "max over output times of the WRMS of (y - ref) with weights 1/(atol_row + rtol_row*|ref|); C2 ratio = this value plus the same norm of rho",
+    "targets": [
+      0.01,
+      0.001,
+      0.0001,
+      1e-05,
+      1e-06,
+      1e-07,
+      1e-08,
+      1e-09
+    ],
+    "reference_limited_factor": 0.1,
+    "h0_scales_required": [
+      0.5,
+      1.0,
+      2.0
+    ]
+  },
+  "reliability_c2": {
+    "cell_fraction": 0.95,
+    "ratio": 10.0,
+    "ratio_max": 100.0
+  },
+  "frontier": {
+    "gain_max": 0.98,
+    "neutral_max": 1.02,
+    "promote_cell_fraction": 0.9,
+    "promote_max_ratio": 1.1,
+    "primary_cost": "ir_warm",
+    "secondary_costs": [
+      "ir_cold",
+      "allocations_warm",
+      "allocated_bytes_warm",
+      "rhs_evaluations",
+      "jvp_vectors",
+      "direct_factorizations",
+      "linear_iterations"
+    ]
+  },
+  "allocation": {
+    "warm_window_allocations_max": 0,
+    "allow_documented_constant_independent_of_n": true,
+    "per_attempt_max": 0,
+    "min_distinct_attempts": 2
+  },
+  "specialize": {
+    "min_positives": 5,
+    "threshold_rank_shift": 1,
+    "features": [
+      "dimension",
+      "structure",
+      "jacobian",
+      "mass",
+      "oscillatory",
+      "exact_solution",
+      "grid",
+      "rtol"
+    ]
+  },
+  "optimize": {
+    "headroom_ratio_max": 1.02,
+    "external_counted_work_gap": 1.5
+  },
+  "timing": {
+    "authority": "diagnostic_unless_timing_authority_registry_admissible",
+    "conflict_threshold": 0.15
+  },
+  "parity": {
+    "max_relative_error": 1e-13
+  },
+  "applicability": {
+    "coverage_min": 0.5
+  },
+  "external": {
+    "peers_field": "external_peers",
+    "admissibility": "single row per (arm, problem, grid, rtol); the h0 rule applies only to internal arms",
+    "counted_work": [
+      "rhs_evaluations",
+      "jacobian_evaluations",
+      "lu_factorizations"
+    ]
+  },
+  "profile": {
+    "ir_determinism_relative_tolerance": 1e-06,
+    "note": "smoke amendment: Ir(1) and Ir(1b) of mf/oregonator/1e-8 differed by 4 of 8.5e8 instructions; a relative gap at or below this tolerance counts as deterministic (three orders below the 2 % LOSS margin)"
+  }
+}

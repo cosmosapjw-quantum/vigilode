@@ -1,0 +1,51 @@
+{
+  "schema": "vigilode.frontier-summary.v1",
+  "broad_production": "HOLD",
+  "native_targeted_tests": 59,
+  "native_pde_tests": 9,
+  "python_pde_tests": 10,
+  "python_pole_split_tests": 3,
+  "switching": {
+    "timed_rows": 120,
+    "completed": 114,
+    "failed": 6,
+    "same_error_cap_passes": 105,
+    "same_error_cap_failures_among_completed": 9,
+    "not_eligible_for_same_error_cap_comparison": 15,
+    "raw_processes_including_warmups": 160,
+    "same_error_cap": 1e-05
+  },
+  "causal": {
+    "timed_rows_threads1": 126,
+    "timed_rows_threads2": 84,
+    "completed": 210,
+    "same_error_cap_passes": 195,
+    "same_error_cap_failures": 15,
+    "bitwise_thread_pairs": 84
+  },
+  "affine": {
+    "rows": 192,
+    "success": 192,
+    "failure": 0,
+    "warmup_excluded": 48,
+    "timed_rows": 144,
+    "cases": 6,
+    "methods": 4,
+    "nominal_tolerances": 2,
+    "labeled_configurations": 48,
+    "distinct_algorithm_configurations_excluding_direct_tolerance_duplicates": 42,
+    "adaptive_timing_samples_per_tolerance": 3,
+    "direct_timing_samples_pooled": 6
+  },
+  "pde": {
+    "final_native_rows": 135,
+    "final_native_passes": 135,
+    "previous_native_rows_preserved": 135,
+    "python_accuracy_rows": 166,
+    "spatial_rows": 9,
+    "pole_split_rows": 42
+  },
+  "external_comparators": "NOT_RUN",
+  "ncp": false,
+  "timing": "Separate cohorts; no timing pooled across builds, threads, sources or historical reports."
+}

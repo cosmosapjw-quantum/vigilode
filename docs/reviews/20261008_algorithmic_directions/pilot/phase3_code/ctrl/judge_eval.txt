@@ -1,0 +1,55 @@
+######## CTRL-PRED-CAP judge lines, arm = PRED (dense attempts=LU; MF Bruss JVP and flops10)
+  (i) vdP <= 0.90 at >=3 of 5 E: R 5/5 [0.675, 0.716, 0.759, 0.813, 0.857] (1e-7 extrapolated=True); C 3/5 [0.747, 0.671, 0.738, 0.941, None] -> PASS
+  (ii) vdp                  worst R 0.836 @E=3e-07  worst C 0.941 @E=1e-06  gm R 0.750 gm C 0.767
+  (ii) hires                worst R 0.986 @E=1e-10  worst C 1.025 @E=1e-07  gm R 0.932 gm C 0.944
+  (ii) bruss50              worst R 0.946 @E=3e-05  worst C 0.992 @E=3e-07  gm R 0.931 gm C 0.932
+  (ii) robertson            worst R 1.033 @E=3e-10  worst C 1.05 @E=3e-08  gm R 1.014 gm C 1.004
+  (ii) rotnn96              worst R 1.048 @E=1e-09  worst C 1.097 @E=1e-08  gm R 0.982 gm C 0.972
+  (ii) bruss50-MF-jvp       worst R 0.953 @E=3e-07  worst C 0.983 @E=3e-07  gm R 0.913 gm C 0.918
+  (ii) bruss50-MF-flops10   worst R 0.977 @E=3e-07  worst C 0.978 @E=3e-05  gm R 0.904 gm C 0.978
+  (ii) bruss50-MF-flops100  worst R 0.967 @E=3e-07  worst C 0.98 @E=3e-07  gm R 0.908 gm C 0.937
+  (ii) bruss160-MF-jvp      worst R 0.940 @E=3e-07  worst C 0.983 @E=3e-07  gm R 0.934 gm C 0.921
+  (ii) bruss160-MF-flops10  worst R 0.940 @E=3e-07  worst C 0.982 @E=3e-07  gm R 0.933 gm C 0.923
+  (ii) bruss160-MF-flops100 worst R 0.940 @E=3e-07  worst C 0.983 @E=3e-07  gm R 0.933 gm C 0.922
+  (ii) no problem > 1.06 (R): PASS; > 1.10 (C): PASS
+  (iii) PRED vs I725 gm (R, C): {'hires': (0.8850931867700825, 0.8732600539466051), 'bruss50': (0.9936445877857597, 1.0136745889988772), 'bruss50-MF-jvp': (1.021675485259324, 1.0303600807387385), 'bruss160-MF-jvp': (1.0236125881610023, 1.0375040357768375)} -> PASS (needs <=0.97 on HIRES or Bruss)
+  KILL lines: vdP >= 0.95 at every E: False; any problem > 1.08 (R): False
+######## CTRL-PRED-CAP judge lines, arm = PRED+cap (dense attempts=LU; MF Bruss JVP and flops10)
+  (i) vdP <= 0.90 at >=3 of 5 E: R 5/5 [0.673, 0.716, 0.764, 0.818, 0.865] (1e-7 extrapolated=True); C 3/5 [0.738, 0.693, 0.738, 0.941, None] -> PASS
+  (ii) vdp                  worst R 0.842 @E=3e-07  worst C 0.941 @E=1e-06  gm R 0.753 gm C 0.774
+  (ii) hires                worst R 0.987 @E=1e-10  worst C 1.025 @E=1e-07  gm R 0.935 gm C 0.941
+  (ii) bruss50              worst R 0.940 @E=3e-05  worst C 0.992 @E=3e-07  gm R 0.930 gm C 0.934
+  (ii) robertson            worst R 1.038 @E=3e-10  worst C 1.067 @E=1e-07  gm R 1.012 gm C 1.009
+  (ii) rotnn96              worst R 1.050 @E=1e-09  worst C 1.097 @E=1e-08  gm R 0.982 gm C 0.976
+  (ii) bruss50-MF-jvp       worst R 0.957 @E=3e-07  worst C 0.983 @E=3e-07  gm R 0.913 gm C 0.919
+  (ii) bruss50-MF-flops10   worst R 0.980 @E=3e-07  worst C 0.978 @E=3e-05  gm R 0.904 gm C 0.978
+  (ii) bruss50-MF-flops100  worst R 0.970 @E=3e-07  worst C 0.98 @E=3e-07  gm R 0.908 gm C 0.937
+  (ii) bruss160-MF-jvp      worst R 0.957 @E=3e-07  worst C 0.983 @E=3e-07  gm R 0.908 gm C 0.909
+  (ii) bruss160-MF-flops10  worst R 0.959 @E=3e-07  worst C 0.982 @E=3e-07  gm R 0.905 gm C 0.912
+  (ii) bruss160-MF-flops100 worst R 0.958 @E=3e-07  worst C 0.983 @E=3e-07  gm R 0.906 gm C 0.910
+  (ii) no problem > 1.06 (R): PASS; > 1.10 (C): PASS
+  (iii) PRED+cap vs I725 gm (R, C): {'hires': (0.8883566551098674, 0.8690642414153924), 'bruss50': (0.9927774398258598, 1.0159385223489796), 'bruss50-MF-jvp': (1.0205723929337864, 1.0318352542528948), 'bruss160-MF-jvp': (1.004499026434602, 1.0374859815371293)} -> PASS (needs <=0.97 on HIRES or Bruss)
+  KILL lines: vdP >= 0.95 at every E: False; any problem > 1.08 (R): False
+
+######## CTRL-EXPANSIVE-GATE closure lines (base = PRED+cap)
+  (1) vdP gate vs PRED+cap gm (R, C) = 0.958, 0.938 -> need <= 0.92: FAIL
+      uniform PRED+cap85  vs PRED+cap gm (R, C) = 1.018, 1.022
+      uniform PRED+cap80  vs PRED+cap gm (R, C) = 0.962, 0.954
+      uniform PRED+cap75  vs PRED+cap gm (R, C) = 1.001, 1.006
+      uniform PRED725     vs PRED+cap gm (R, C) = 1.038, 1.000
+      uniform PRED65      vs PRED+cap gm (R, C) = 0.991, 0.975
+  (2) gate vs best uniform (PRED+cap80) gm (R, C) = 1.004, 0.981 -> need <= 0.97: FAIL
+  (3) hires     gate vs PRED+cap gm R 0.994 (range 0.979..1.006) gm C 0.996 -> within +-4%: yes
+  (3) bruss50   gate vs PRED+cap gm R 0.967 (range 0.964..0.969) gm C 0.955 -> within +-4%: yes
+  (3) robertson gate vs PRED+cap gm R 1.054 (range 1.025..1.086) gm C 1.039 -> within +-4%: NO
+  (3) rotnn96   gate vs PRED+cap gm R 1.085 (range 1.065..1.120) gm C 1.079 -> within +-4%: NO
+  (4) rotating-nonnormal firing rate 41.2% of accepted steps -> need <= 30%: FAIL
+
+######## CTRL-NULLS refutation rule: lever gives >= 10% fewer attempts at matched E on a problem without exceeding 1.05 on others
+  I+kobs     vs I    : best-E R [('vdp', 0.965), ('hires', 0.996), ('bruss50', 1.0), ('robertson', 1.0)]; worst-E R [('vdp', 1.013), ('hires', 1.003), ('bruss50', 1.0), ('robertson', 1.004)]; gm [('vdp', 0.989), ('hires', 1.0), ('bruss50', 1.0), ('robertson', 1.003)] -> null confirmed
+  PRED+kobs  vs PRED : best-E R [('vdp', 0.986), ('hires', 0.998), ('bruss50', 1.0), ('robertson', 0.998)]; worst-E R [('vdp', 0.992), ('hires', 1.002), ('bruss50', 1.0), ('robertson', 1.005)]; gm [('vdp', 0.989), ('hires', 1.0), ('bruss50', 1.0), ('robertson', 1.003)] -> null confirmed
+  H211b+cap  vs I    : best-E R [('vdp', 0.897), ('hires', 1.039), ('bruss50', 1.036), ('robertson', 1.021)]; worst-E R [('vdp', 1.156), ('hires', 1.126), ('bruss50', 1.082), ('robertson', 1.056)]; gm [('vdp', 1.017), ('hires', 1.082), ('bruss50', 1.057), ('robertson', 1.038)] -> null confirmed
+  PI34+cap   vs I    : best-E R [('vdp', 0.865), ('hires', 1.032), ('bruss50', 1.058), ('robertson', 1.029)]; worst-E R [('vdp', 0.953), ('hires', 1.161), ('bruss50', 1.1), ('robertson', 1.083)]; gm [('vdp', 0.908), ('hires', 1.097), ('bruss50', 1.079), ('robertson', 1.054)] -> null confirmed
+  H211b+cap  vs PRED : best-E R [('vdp', 1.237), ('hires', 1.054), ('bruss50', 1.125), ('robertson', 0.987)]; worst-E R [('vdp', 1.397), ('hires', 1.277), ('bruss50', 1.145), ('robertson', 1.055)]; gm [('vdp', 1.312), ('hires', 1.159), ('bruss50', 1.135), ('robertson', 1.021)] -> null confirmed
+  PI34+cap   vs PRED : best-E R [('vdp', 1.142), ('hires', 1.039), ('bruss50', 1.149), ('robertson', 1.027)]; worst-E R [('vdp', 1.203), ('hires', 1.316), ('bruss50', 1.175), ('robertson', 1.043)]; gm [('vdp', 1.173), ('hires', 1.171), ('bruss50', 1.161), ('robertson', 1.038)] -> null confirmed
+  PIc        vs I    : best-E R [('vdp', 0.826), ('hires', 1.121), ('bruss50', 1.037), ('robertson', 0.967)]; worst-E R [('vdp', 0.972), ('hires', 1.229), ('bruss50', 1.173), ('robertson', 1.176)]; gm [('vdp', 0.895), ('hires', 1.176), ('bruss50', 1.103), ('robertson', 1.066)] -> null confirmed

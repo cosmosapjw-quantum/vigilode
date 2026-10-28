@@ -1,0 +1,2443 @@
+{
+  "schema": "vigilode.adapter-integration-analysis.v1",
+  "rows": [
+    {
+      "case": "rotation",
+      "a": "evidence",
+      "b": "adaptive",
+      "blocks": 5,
+      "b_over_a_seconds": 0.996065443908119,
+      "paired_ratios": [
+        1.0600641370049504,
+        0.996065443908119,
+        0.7850618615267313,
+        0.8944926130981309,
+        1.0566783701013525
+      ],
+      "paired_ratio_range": [
+        0.7850618615267313,
+        1.0600641370049504
+      ],
+      "median_seconds": {
+        "evidence": 0.0005926434921875,
+        "adaptive": 0.0005802558203125
+      },
+      "early_late_drift": {
+        "evidence": 1.0429784785793002,
+        "adaptive": 1.0101331360034216
+      },
+      "block_spread": {
+        "evidence": 1.2406576362302628,
+        "adaptive": 1.1640857010182686
+      },
+      "min_batch_seconds": 0.032427865,
+      "time_measurement_qualified": true,
+      "comparison_eligible": true,
+      "classification": "no_clear_timing_advantage",
+      "qualification_reasons": [],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 1e-05,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 892,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 877,
+              "rhs": 5263,
+              "segments": 32,
+              "work_units": 5263.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 15,
+              "rhs": 108,
+              "segments": 3,
+              "work_units": 568.0
+            }
+          },
+          "max_component_absolute_error": 9.257890573044492e-07,
+          "reached_time": 1.0,
+          "rhs": 5371,
+          "state": [
+            0.8623179464986266,
+            -0.5063647394869715
+          ],
+          "success": true
+        },
+        "evidence": {
+          "accuracy_pass": true,
+          "attempts": 892,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 877,
+              "rhs": 5263,
+              "segments": 32,
+              "work_units": 5263.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 15,
+              "rhs": 108,
+              "segments": 3,
+              "work_units": 568.0
+            }
+          },
+          "max_component_absolute_error": 9.257890573044492e-07,
+          "reached_time": 1.0,
+          "rhs": 5371,
+          "state": [
+            0.8623179464986266,
+            -0.5063647394869715
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "rotation",
+      "a": "adaptive",
+      "b": "dopri",
+      "blocks": 5,
+      "b_over_a_seconds": 0.5418803452191103,
+      "paired_ratios": [
+        0.5012258653620951,
+        0.5974013070822185,
+        0.5031823990380634,
+        0.5460821317010309,
+        0.5418803452191103
+      ],
+      "paired_ratio_range": [
+        0.5012258653620951,
+        0.5974013070822185
+      ],
+      "median_seconds": {
+        "adaptive": 0.0005661634687499999,
+        "dopri": 0.00030031080078125004
+      },
+      "early_late_drift": {
+        "adaptive": 1.01070532713307,
+        "dopri": 1.0151721976669348
+      },
+      "block_spread": {
+        "adaptive": 1.1284209383288906,
+        "dopri": 1.0604792301776513
+      },
+      "min_batch_seconds": 0.01665573,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "batch shorter than 20ms"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 1e-05,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 892,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 877,
+              "rhs": 5263,
+              "segments": 32,
+              "work_units": 5263.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 15,
+              "rhs": 108,
+              "segments": 3,
+              "work_units": 568.0
+            }
+          },
+          "max_component_absolute_error": 9.257890573044492e-07,
+          "reached_time": 1.0,
+          "rhs": 5371,
+          "state": [
+            0.8623179464986266,
+            -0.5063647394869715
+          ],
+          "success": true
+        },
+        "dopri": {
+          "accuracy_pass": true,
+          "attempts": 875,
+          "dispositions": {},
+          "max_component_absolute_error": 9.277089911829961e-07,
+          "reached_time": 1.0,
+          "rhs": 5251,
+          "state": [
+            0.8623179445786927,
+            -0.5063647376939792
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "decay",
+      "a": "evidence",
+      "b": "adaptive",
+      "blocks": 5,
+      "b_over_a_seconds": 0.9824785818201878,
+      "paired_ratios": [
+        0.9921702009687676,
+        0.9824785818201878,
+        1.0529426624399119,
+        0.8638484553921273,
+        0.9568404520808975
+      ],
+      "paired_ratio_range": [
+        0.8638484553921273,
+        1.0529426624399119
+      ],
+      "median_seconds": {
+        "evidence": 1.1249262207031251e-05,
+        "adaptive": 1.10521591796875e-05
+      },
+      "early_late_drift": {
+        "evidence": 1.0047178866068747,
+        "adaptive": 1.092919810060901
+      },
+      "block_spread": {
+        "evidence": 1.1480632286705283,
+        "adaptive": 1.141532628301036
+      },
+      "min_batch_seconds": 0.020563528,
+      "time_measurement_qualified": true,
+      "comparison_eligible": true,
+      "classification": "no_clear_timing_advantage",
+      "qualification_reasons": [],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 1e-05,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 17,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 17,
+              "rhs": 103,
+              "segments": 8,
+              "work_units": 103.0
+            }
+          },
+          "max_component_absolute_error": 3.3869719251455876e-09,
+          "reached_time": 1.0,
+          "rhs": 103,
+          "state": [
+            0.36787944455841426
+          ],
+          "success": true
+        },
+        "evidence": {
+          "accuracy_pass": true,
+          "attempts": 17,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 17,
+              "rhs": 103,
+              "segments": 8,
+              "work_units": 103.0
+            }
+          },
+          "max_component_absolute_error": 3.3869719251455876e-09,
+          "reached_time": 1.0,
+          "rhs": 103,
+          "state": [
+            0.36787944455841426
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "decay",
+      "a": "adaptive",
+      "b": "dopri",
+      "blocks": 5,
+      "b_over_a_seconds": 0.5001622176009812,
+      "paired_ratios": [
+        0.5595228345954016,
+        0.47658773038437924,
+        0.37589439377139044,
+        0.5248898573510897,
+        0.5001622176009812
+      ],
+      "paired_ratio_range": [
+        0.37589439377139044,
+        0.5595228345954016
+      ],
+      "median_seconds": {
+        "adaptive": 1.1779410034179687e-05,
+        "dopri": 6.073791320800781e-06
+      },
+      "early_late_drift": {
+        "adaptive": 1.5695181243083742,
+        "dopri": 1.536064662045024
+      },
+      "block_spread": {
+        "adaptive": 2.3317902577576275,
+        "dopri": 2.072441955169303
+      },
+      "min_batch_seconds": 0.043785439,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 1e-05,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 17,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 17,
+              "rhs": 103,
+              "segments": 8,
+              "work_units": 103.0
+            }
+          },
+          "max_component_absolute_error": 3.3869719251455876e-09,
+          "reached_time": 1.0,
+          "rhs": 103,
+          "state": [
+            0.36787944455841426
+          ],
+          "success": true
+        },
+        "dopri": {
+          "accuracy_pass": true,
+          "attempts": 16,
+          "dispositions": {},
+          "max_component_absolute_error": 8.038381682506923e-09,
+          "reached_time": 1.0,
+          "rhs": 97,
+          "state": [
+            0.367879449209824
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "case5",
+      "a": "evidence",
+      "b": "adaptive",
+      "blocks": 5,
+      "b_over_a_seconds": 0.9390240505063189,
+      "paired_ratios": [
+        1.010249116148459,
+        0.6834860030360034,
+        0.9390240505063189,
+        1.3620749818075004,
+        0.8600252707361764
+      ],
+      "paired_ratio_range": [
+        0.6834860030360034,
+        1.3620749818075004
+      ],
+      "median_seconds": {
+        "evidence": 0.0010679410390625,
+        "adaptive": 0.0011212242109375
+      },
+      "early_late_drift": {
+        "evidence": 1.3589375227849045,
+        "adaptive": 1.0249971026104616
+      },
+      "block_spread": {
+        "evidence": 2.5972476513125637,
+        "adaptive": 1.8148451904333283
+      },
+      "min_batch_seconds": 0.040654479,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 0.0001,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 332,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 309,
+              "rhs": 1897,
+              "segments": 12,
+              "work_units": 2758.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 5,
+              "rhs": 30,
+              "segments": 1,
+              "work_units": 188.0
+            },
+            "uncommitted_explicit_return": {
+              "attempts": 16,
+              "rhs": 97,
+              "segments": 1,
+              "work_units": 97.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 2,
+              "rhs": 16,
+              "segments": 1,
+              "work_units": 98.0
+            }
+          },
+          "max_component_absolute_error": 5.3732163163289215e-08,
+          "reached_time": 2.0,
+          "rhs": 2040,
+          "state": [
+            0.8535165376701085,
+            0.5480991381000497
+          ],
+          "success": true
+        },
+        "evidence": {
+          "accuracy_pass": true,
+          "attempts": 235,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 212,
+              "rhs": 1313,
+              "segments": 9,
+              "work_units": 2133.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 5,
+              "rhs": 30,
+              "segments": 1,
+              "work_units": 188.0
+            },
+            "uncommitted_explicit_return": {
+              "attempts": 16,
+              "rhs": 97,
+              "segments": 1,
+              "work_units": 97.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 2,
+              "rhs": 16,
+              "segments": 1,
+              "work_units": 98.0
+            }
+          },
+          "max_component_absolute_error": 5.4823083184274424e-08,
+          "reached_time": 2.0,
+          "rhs": 1456,
+          "state": [
+            0.8535165382385496,
+            0.5480991370091297
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "case5",
+      "a": "adaptive",
+      "b": "rodas",
+      "blocks": 5,
+      "b_over_a_seconds": 0.9686122475983583,
+      "paired_ratios": [
+        0.975988973449487,
+        0.9021637106218576,
+        0.9686122475983583,
+        1.1047648151328744,
+        0.9071909667225916
+      ],
+      "paired_ratio_range": [
+        0.9021637106218576,
+        1.1047648151328744
+      ],
+      "median_seconds": {
+        "adaptive": 0.0007491674609375,
+        "rodas": 0.000717788921875
+      },
+      "early_late_drift": {
+        "adaptive": 1.037114353333579,
+        "rodas": 1.0316956256981704
+      },
+      "block_spread": {
+        "adaptive": 1.1424048217229705,
+        "rodas": 1.1320968477955025
+      },
+      "min_batch_seconds": 0.042422517,
+      "time_measurement_qualified": true,
+      "comparison_eligible": true,
+      "classification": "no_clear_timing_advantage",
+      "qualification_reasons": [],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 0.0001,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 332,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 309,
+              "rhs": 1897,
+              "segments": 12,
+              "work_units": 2758.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 5,
+              "rhs": 30,
+              "segments": 1,
+              "work_units": 188.0
+            },
+            "uncommitted_explicit_return": {
+              "attempts": 16,
+              "rhs": 97,
+              "segments": 1,
+              "work_units": 97.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 2,
+              "rhs": 16,
+              "segments": 1,
+              "work_units": 98.0
+            }
+          },
+          "max_component_absolute_error": 5.3732163163289215e-08,
+          "reached_time": 2.0,
+          "rhs": 2040,
+          "state": [
+            0.8535165376701085,
+            0.5480991381000497
+          ],
+          "success": true
+        },
+        "rodas": {
+          "accuracy_pass": true,
+          "attempts": 39,
+          "dispositions": {},
+          "max_component_absolute_error": 1.0381916881740949e-07,
+          "reached_time": 2.0,
+          "rhs": 307,
+          "state": [
+            0.8535165636608306,
+            0.5480990880130441
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "case5",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "blocks": 5,
+      "b_over_a_seconds": 1.029384768933274,
+      "paired_ratios": [
+        0.9856961156608037,
+        1.1780277989417818,
+        1.14184861045479,
+        0.9907192765650505,
+        1.029384768933274
+      ],
+      "paired_ratio_range": [
+        0.9856961156608037,
+        1.1780277989417818
+      ],
+      "median_seconds": {
+        "adaptive-unseeded": 0.00070946565625,
+        "adaptive": 0.0007303131406249999
+      },
+      "early_late_drift": {
+        "adaptive-unseeded": 1.1230994775793766,
+        "adaptive": 1.2163146837566736
+      },
+      "block_spread": {
+        "adaptive-unseeded": 1.377381588809981,
+        "adaptive": 1.5955843066240751
+      },
+      "min_batch_seconds": 0.041676816,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 0.0001,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 332,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 309,
+              "rhs": 1897,
+              "segments": 12,
+              "work_units": 2758.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 5,
+              "rhs": 30,
+              "segments": 1,
+              "work_units": 188.0
+            },
+            "uncommitted_explicit_return": {
+              "attempts": 16,
+              "rhs": 97,
+              "segments": 1,
+              "work_units": 97.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 2,
+              "rhs": 16,
+              "segments": 1,
+              "work_units": 98.0
+            }
+          },
+          "max_component_absolute_error": 5.3732163163289215e-08,
+          "reached_time": 2.0,
+          "rhs": 2040,
+          "state": [
+            0.8535165376701085,
+            0.5480991381000497
+          ],
+          "success": true
+        },
+        "adaptive-unseeded": {
+          "accuracy_pass": true,
+          "attempts": 331,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 308,
+              "rhs": 1889,
+              "segments": 12,
+              "work_units": 2709.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 5,
+              "rhs": 30,
+              "segments": 1,
+              "work_units": 188.0
+            },
+            "uncommitted_explicit_return": {
+              "attempts": 16,
+              "rhs": 97,
+              "segments": 1,
+              "work_units": 97.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 2,
+              "rhs": 16,
+              "segments": 1,
+              "work_units": 98.0
+            }
+          },
+          "max_component_absolute_error": 5.526364976748965e-08,
+          "reached_time": 2.0,
+          "rhs": 2032,
+          "state": [
+            0.8535165384681138,
+            0.5480991365685631
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "case5",
+      "a": "adaptive",
+      "b": "rodas-dense",
+      "blocks": 5,
+      "b_over_a_seconds": 0.08605667258377299,
+      "paired_ratios": [
+        0.061844223218259775,
+        0.10475526849171617,
+        0.08605667258377299,
+        0.08831785352650631,
+        0.06784327712077794
+      ],
+      "paired_ratio_range": [
+        0.061844223218259775,
+        0.10475526849171617
+      ],
+      "median_seconds": {
+        "adaptive": 0.0008129068671874999,
+        "rodas-dense": 6.75763359375e-05
+      },
+      "early_late_drift": {
+        "adaptive": 1.0788242226187064,
+        "rodas-dense": 1.1490164491899462
+      },
+      "block_spread": {
+        "adaptive": 2.316019428859706,
+        "rodas-dense": 2.9465591016034143
+      },
+      "min_batch_seconds": 0.024953786,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "block range >30%"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 0.0001,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 332,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 309,
+              "rhs": 1897,
+              "segments": 12,
+              "work_units": 2758.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 5,
+              "rhs": 30,
+              "segments": 1,
+              "work_units": 188.0
+            },
+            "uncommitted_explicit_return": {
+              "attempts": 16,
+              "rhs": 97,
+              "segments": 1,
+              "work_units": 97.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 2,
+              "rhs": 16,
+              "segments": 1,
+              "work_units": 98.0
+            }
+          },
+          "max_component_absolute_error": 5.3732163163289215e-08,
+          "reached_time": 2.0,
+          "rhs": 2040,
+          "state": [
+            0.8535165376701085,
+            0.5480991381000497
+          ],
+          "success": true
+        },
+        "rodas-dense": {
+          "accuracy_pass": true,
+          "attempts": 39,
+          "dispositions": {},
+          "max_component_absolute_error": 1.0381910309220643e-07,
+          "reached_time": 2.0,
+          "rhs": 307,
+          "state": [
+            0.853516563660798,
+            0.5480990880131098
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "case5",
+      "a": "rodas",
+      "b": "rodas-dense",
+      "blocks": 5,
+      "b_over_a_seconds": 0.07197390940318181,
+      "paired_ratios": [
+        0.06523883844343605,
+        0.0864179867122705,
+        0.07467499195638169,
+        0.07197390940318181,
+        0.07131565276059916
+      ],
+      "paired_ratio_range": [
+        0.06523883844343605,
+        0.0864179867122705
+      ],
+      "median_seconds": {
+        "rodas": 0.0007669100390625,
+        "rodas-dense": 5.5197513671874994e-05
+      },
+      "early_late_drift": {
+        "rodas": 1.6515193121875626,
+        "rodas-dense": 1.6857403782947464
+      },
+      "block_spread": {
+        "rodas": 2.2331769983077585,
+        "rodas-dense": 1.9509861279033818
+      },
+      "min_batch_seconds": 0.026166774,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 0.0001,
+      "records": {
+        "rodas": {
+          "accuracy_pass": true,
+          "attempts": 39,
+          "dispositions": {},
+          "max_component_absolute_error": 1.0381916881740949e-07,
+          "reached_time": 2.0,
+          "rhs": 307,
+          "state": [
+            0.8535165636608306,
+            0.5480990880130441
+          ],
+          "success": true
+        },
+        "rodas-dense": {
+          "accuracy_pass": true,
+          "attempts": 39,
+          "dispositions": {},
+          "max_component_absolute_error": 1.0381910309220643e-07,
+          "reached_time": 2.0,
+          "rhs": 307,
+          "state": [
+            0.853516563660798,
+            0.5480990880131098
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "stiff-forced",
+      "a": "evidence",
+      "b": "adaptive",
+      "blocks": 5,
+      "b_over_a_seconds": 0.8946590711568223,
+      "paired_ratios": [
+        0.8571562079131032,
+        0.8992212135668927,
+        0.8946590711568223,
+        1.146005724695057,
+        0.8546031882670987
+      ],
+      "paired_ratio_range": [
+        0.8546031882670987,
+        1.146005724695057
+      ],
+      "median_seconds": {
+        "evidence": 6.2911375e-05,
+        "adaptive": 5.58045166015625e-05
+      },
+      "early_late_drift": {
+        "evidence": 1.0374915403001623,
+        "adaptive": 1.0971492110580618
+      },
+      "block_spread": {
+        "evidence": 1.1979703366066887,
+        "adaptive": 1.3377723146973515
+      },
+      "min_batch_seconds": 0.026913597,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "block range >30%"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 1e-05,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 58,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 46,
+              "rhs": 305,
+              "segments": 4,
+              "work_units": 445.0
+            },
+            "uncommitted_explicit_return": {
+              "attempts": 4,
+              "rhs": 25,
+              "segments": 1,
+              "work_units": 25.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 8,
+              "rhs": 64,
+              "segments": 1,
+              "work_units": 144.0
+            }
+          },
+          "max_component_absolute_error": 7.326026452147971e-10,
+          "reached_time": 1.0,
+          "rhs": 394,
+          "state": [
+            0.5403023051355371
+          ],
+          "success": true
+        },
+        "evidence": {
+          "accuracy_pass": true,
+          "attempts": 66,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 53,
+              "rhs": 361,
+              "segments": 4,
+              "work_units": 571.0
+            },
+            "uncommitted_explicit_return": {
+              "attempts": 5,
+              "rhs": 31,
+              "segments": 1,
+              "work_units": 31.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 8,
+              "rhs": 64,
+              "segments": 1,
+              "work_units": 144.0
+            }
+          },
+          "max_component_absolute_error": 7.326025341924947e-10,
+          "reached_time": 1.0,
+          "rhs": 456,
+          "state": [
+            0.5403023051355372
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "stiff-forced",
+      "a": "adaptive",
+      "b": "rodas",
+      "blocks": 5,
+      "b_over_a_seconds": 0.2560731188966055,
+      "paired_ratios": [
+        0.31204175178829374,
+        0.24407319957972523,
+        0.26691172426159954,
+        0.24451881218965094,
+        0.2560731188966055
+      ],
+      "paired_ratio_range": [
+        0.24407319957972523,
+        0.31204175178829374
+      ],
+      "median_seconds": {
+        "adaptive": 5.9844918945312496e-05,
+        "rodas": 1.5012631347656251e-05
+      },
+      "early_late_drift": {
+        "adaptive": 1.6064192562182247,
+        "rodas": 1.7989468949362541
+      },
+      "block_spread": {
+        "adaptive": 1.7631160331654991,
+        "rodas": 2.1484715692361678
+      },
+      "min_batch_seconds": 0.02784651,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 1e-05,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 58,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 46,
+              "rhs": 305,
+              "segments": 4,
+              "work_units": 445.0
+            },
+            "uncommitted_explicit_return": {
+              "attempts": 4,
+              "rhs": 25,
+              "segments": 1,
+              "work_units": 25.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 8,
+              "rhs": 64,
+              "segments": 1,
+              "work_units": 144.0
+            }
+          },
+          "max_component_absolute_error": 7.326026452147971e-10,
+          "reached_time": 1.0,
+          "rhs": 394,
+          "state": [
+            0.5403023051355371
+          ],
+          "success": true
+        },
+        "rodas": {
+          "accuracy_pass": true,
+          "attempts": 14,
+          "dispositions": {},
+          "max_component_absolute_error": 8.148821617481872e-10,
+          "reached_time": 1.0,
+          "rhs": 112,
+          "state": [
+            0.5403023050532576
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "stiff-forced",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "blocks": 5,
+      "b_over_a_seconds": 0.900218713715481,
+      "paired_ratios": [
+        0.9156153820884873,
+        0.6596596415739209,
+        0.900218713715481,
+        0.8196851830219819,
+        0.9026261193699439
+      ],
+      "paired_ratio_range": [
+        0.6596596415739209,
+        0.9156153820884873
+      ],
+      "median_seconds": {
+        "adaptive-unseeded": 6.524383007812501e-05,
+        "adaptive": 5.802349609375e-05
+      },
+      "early_late_drift": {
+        "adaptive-unseeded": 1.1157241285768482,
+        "adaptive": 1.0015704323778893
+      },
+      "block_spread": {
+        "adaptive-unseeded": 1.323746672828075,
+        "adaptive": 1.0536929571465408
+      },
+      "min_batch_seconds": 0.027702097,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "block range >30%"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 1e-05,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 58,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 46,
+              "rhs": 305,
+              "segments": 4,
+              "work_units": 445.0
+            },
+            "uncommitted_explicit_return": {
+              "attempts": 4,
+              "rhs": 25,
+              "segments": 1,
+              "work_units": 25.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 8,
+              "rhs": 64,
+              "segments": 1,
+              "work_units": 144.0
+            }
+          },
+          "max_component_absolute_error": 7.326026452147971e-10,
+          "reached_time": 1.0,
+          "rhs": 394,
+          "state": [
+            0.5403023051355371
+          ],
+          "success": true
+        },
+        "adaptive-unseeded": {
+          "accuracy_pass": true,
+          "attempts": 66,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 53,
+              "rhs": 361,
+              "segments": 4,
+              "work_units": 571.0
+            },
+            "uncommitted_explicit_return": {
+              "attempts": 5,
+              "rhs": 31,
+              "segments": 1,
+              "work_units": 31.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 8,
+              "rhs": 64,
+              "segments": 1,
+              "work_units": 144.0
+            }
+          },
+          "max_component_absolute_error": 7.326025341924947e-10,
+          "reached_time": 1.0,
+          "rhs": 456,
+          "state": [
+            0.5403023051355372
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "relaxation",
+      "a": "evidence",
+      "b": "adaptive",
+      "blocks": 5,
+      "b_over_a_seconds": 1.1880090169925328,
+      "paired_ratios": [
+        1.0801769030049582,
+        1.1880090169925328,
+        1.409183477674108,
+        1.2998906281261626,
+        1.0905299222104443
+      ],
+      "paired_ratio_range": [
+        1.0801769030049582,
+        1.409183477674108
+      ],
+      "median_seconds": {
+        "evidence": 0.0001097638515625,
+        "adaptive": 0.000152748908203125
+      },
+      "early_late_drift": {
+        "evidence": 1.348916892234528,
+        "adaptive": 1.3866819130859753
+      },
+      "block_spread": {
+        "evidence": 2.5393538929113886,
+        "adaptive": 2.330993589856609
+      },
+      "min_batch_seconds": 0.025911054,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 1e-05,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 101,
+          "dispositions": {
+            "committed_explicit_return": {
+              "attempts": 6,
+              "rhs": 37,
+              "segments": 1,
+              "work_units": 37.0
+            },
+            "committed_integration": {
+              "attempts": 85,
+              "rhs": 605,
+              "segments": 6,
+              "work_units": 1091.0
+            },
+            "uncommitted_return_comparator": {
+              "attempts": 6,
+              "rhs": 48,
+              "segments": 1,
+              "work_units": 108.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 4,
+              "rhs": 32,
+              "segments": 1,
+              "work_units": 72.0
+            }
+          },
+          "max_component_absolute_error": 4.767275352257627e-09,
+          "reached_time": 1.0,
+          "rhs": 722,
+          "state": [
+            0.5403023106354151
+          ],
+          "success": true
+        },
+        "evidence": {
+          "accuracy_pass": true,
+          "attempts": 95,
+          "dispositions": {
+            "committed_explicit_return": {
+              "attempts": 6,
+              "rhs": 37,
+              "segments": 1,
+              "work_units": 37.0
+            },
+            "committed_integration": {
+              "attempts": 85,
+              "rhs": 606,
+              "segments": 6,
+              "work_units": 1094.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 4,
+              "rhs": 32,
+              "segments": 1,
+              "work_units": 72.0
+            }
+          },
+          "max_component_absolute_error": 4.809206144429368e-09,
+          "reached_time": 1.0,
+          "rhs": 675,
+          "state": [
+            0.5403023106773459
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "relaxation",
+      "a": "adaptive",
+      "b": "rodas",
+      "blocks": 5,
+      "b_over_a_seconds": 0.5795499320094958,
+      "paired_ratios": [
+        0.8494036550753853,
+        0.635933951924747,
+        0.5152161056338512,
+        0.5264062593252223,
+        0.5795499320094958
+      ],
+      "paired_ratio_range": [
+        0.5152161056338512,
+        0.8494036550753853
+      ],
+      "median_seconds": {
+        "adaptive": 0.0001619956328125,
+        "rodas": 9.1397775390625e-05
+      },
+      "early_late_drift": {
+        "adaptive": 1.365253542387978,
+        "rodas": 1.7922875218243757
+      },
+      "block_spread": {
+        "adaptive": 1.6268875725580554,
+        "rodas": 1.8770003457458673
+      },
+      "min_batch_seconds": 0.014344092,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%",
+        "batch shorter than 20ms"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 1e-05,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 101,
+          "dispositions": {
+            "committed_explicit_return": {
+              "attempts": 6,
+              "rhs": 37,
+              "segments": 1,
+              "work_units": 37.0
+            },
+            "committed_integration": {
+              "attempts": 85,
+              "rhs": 605,
+              "segments": 6,
+              "work_units": 1091.0
+            },
+            "uncommitted_return_comparator": {
+              "attempts": 6,
+              "rhs": 48,
+              "segments": 1,
+              "work_units": 108.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 4,
+              "rhs": 32,
+              "segments": 1,
+              "work_units": 72.0
+            }
+          },
+          "max_component_absolute_error": 4.767275352257627e-09,
+          "reached_time": 1.0,
+          "rhs": 722,
+          "state": [
+            0.5403023106354151
+          ],
+          "success": true
+        },
+        "rodas": {
+          "accuracy_pass": true,
+          "attempts": 59,
+          "dispositions": {},
+          "max_component_absolute_error": 9.17396314470409e-09,
+          "reached_time": 1.0,
+          "rhs": 462,
+          "state": [
+            0.5403023150421029
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "relaxation",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "blocks": 5,
+      "b_over_a_seconds": 0.9456135077714286,
+      "paired_ratios": [
+        1.025622698704601,
+        0.8743152554563153,
+        0.9456135077714286,
+        0.7677284791601612,
+        1.2475603711992693
+      ],
+      "paired_ratio_range": [
+        0.7677284791601612,
+        1.2475603711992693
+      ],
+      "median_seconds": {
+        "adaptive-unseeded": 0.000227746609375,
+        "adaptive": 0.0002774699296875
+      },
+      "early_late_drift": {
+        "adaptive-unseeded": 1.4449673020695883,
+        "adaptive": 1.321996497526668
+      },
+      "block_spread": {
+        "adaptive-unseeded": 1.754719412717901,
+        "adaptive": 1.9983340376572791
+      },
+      "min_batch_seconds": 0.008750527,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%",
+        "batch shorter than 20ms"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 1e-05,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 101,
+          "dispositions": {
+            "committed_explicit_return": {
+              "attempts": 6,
+              "rhs": 37,
+              "segments": 1,
+              "work_units": 37.0
+            },
+            "committed_integration": {
+              "attempts": 85,
+              "rhs": 605,
+              "segments": 6,
+              "work_units": 1091.0
+            },
+            "uncommitted_return_comparator": {
+              "attempts": 6,
+              "rhs": 48,
+              "segments": 1,
+              "work_units": 108.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 4,
+              "rhs": 32,
+              "segments": 1,
+              "work_units": 72.0
+            }
+          },
+          "max_component_absolute_error": 4.767275352257627e-09,
+          "reached_time": 1.0,
+          "rhs": 722,
+          "state": [
+            0.5403023106354151
+          ],
+          "success": true
+        },
+        "adaptive-unseeded": {
+          "accuracy_pass": true,
+          "attempts": 101,
+          "dispositions": {
+            "committed_explicit_return": {
+              "attempts": 6,
+              "rhs": 37,
+              "segments": 1,
+              "work_units": 37.0
+            },
+            "committed_integration": {
+              "attempts": 85,
+              "rhs": 606,
+              "segments": 6,
+              "work_units": 1094.0
+            },
+            "uncommitted_return_comparator": {
+              "attempts": 6,
+              "rhs": 48,
+              "segments": 1,
+              "work_units": 108.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 4,
+              "rhs": 32,
+              "segments": 1,
+              "work_units": 72.0
+            }
+          },
+          "max_component_absolute_error": 4.809206144429368e-09,
+          "reached_time": 1.0,
+          "rhs": 723,
+          "state": [
+            0.5403023106773459
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "transition-39",
+      "a": "evidence",
+      "b": "adaptive",
+      "blocks": 5,
+      "b_over_a_seconds": 0.541256739464464,
+      "paired_ratios": [
+        0.7694050633524889,
+        0.43182726088206413,
+        0.3351836358185421,
+        0.8430571065942472,
+        0.541256739464464
+      ],
+      "paired_ratio_range": [
+        0.3351836358185421,
+        0.8430571065942472
+      ],
+      "median_seconds": {
+        "evidence": 0.028124145,
+        "adaptive": 0.0121447725
+      },
+      "early_late_drift": {
+        "evidence": 1.1773929288139862,
+        "adaptive": 1.5014056230619062
+      },
+      "block_spread": {
+        "evidence": 1.8022677723304823,
+        "adaptive": 2.5479230224567884
+      },
+      "min_batch_seconds": 0.038018414,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 1e-05,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 4942,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 4891,
+              "rhs": 30153,
+              "segments": 145,
+              "work_units": 46676.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 32,
+              "rhs": 241,
+              "segments": 8,
+              "work_units": 1466.0
+            },
+            "uncommitted_explicit_return": {
+              "attempts": 16,
+              "rhs": 97,
+              "segments": 1,
+              "work_units": 97.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 3,
+              "rhs": 24,
+              "segments": 1,
+              "work_units": 147.0
+            }
+          },
+          "max_component_absolute_error": 2.1908541647519542e-10,
+          "reached_time": 1.0,
+          "rhs": 30515,
+          "state": [
+            0.8623188724514413,
+            -0.5063656413288442
+          ],
+          "success": true
+        },
+        "evidence": {
+          "accuracy_pass": true,
+          "attempts": 30779,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 30747,
+              "rhs": 184483,
+              "segments": 963,
+              "work_units": 184483.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 32,
+              "rhs": 241,
+              "segments": 8,
+              "work_units": 1466.0
+            }
+          },
+          "max_component_absolute_error": 1.7988249667588718e-08,
+          "reached_time": 1.0,
+          "rhs": 184724,
+          "state": [
+            0.8623188542994342,
+            -0.5063656303855191
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "transition-39",
+      "a": "adaptive",
+      "b": "rodas",
+      "blocks": 5,
+      "b_over_a_seconds": 1.6619039980367563,
+      "paired_ratios": [
+        1.938952779732684,
+        1.5056506632828153,
+        1.742087919240881,
+        1.6619039980367563,
+        1.2932536730352824
+      ],
+      "paired_ratio_range": [
+        1.2932536730352824,
+        1.938952779732684
+      ],
+      "median_seconds": {
+        "adaptive": 0.01193331325,
+        "rodas": 0.019832021
+      },
+      "early_late_drift": {
+        "adaptive": 1.1800083753798536,
+        "rodas": 1.0071092378137263
+      },
+      "block_spread": {
+        "adaptive": 1.4694512814727345,
+        "rodas": 1.0736700156801375
+      },
+      "min_batch_seconds": 0.037641707,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 1e-05,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 4942,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 4891,
+              "rhs": 30153,
+              "segments": 145,
+              "work_units": 46676.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 32,
+              "rhs": 241,
+              "segments": 8,
+              "work_units": 1466.0
+            },
+            "uncommitted_explicit_return": {
+              "attempts": 16,
+              "rhs": 97,
+              "segments": 1,
+              "work_units": 97.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 3,
+              "rhs": 24,
+              "segments": 1,
+              "work_units": 147.0
+            }
+          },
+          "max_component_absolute_error": 2.1908541647519542e-10,
+          "reached_time": 1.0,
+          "rhs": 30515,
+          "state": [
+            0.8623188724514413,
+            -0.5063656413288442
+          ],
+          "success": true
+        },
+        "rodas": {
+          "accuracy_pass": true,
+          "attempts": 1111,
+          "dispositions": {},
+          "max_component_absolute_error": 2.698808954093579e-10,
+          "reached_time": 1.0,
+          "rhs": 8853,
+          "state": [
+            0.8623188725575648,
+            -0.5063656412949225
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "transition-39",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "blocks": 5,
+      "b_over_a_seconds": 1.0119545783321804,
+      "paired_ratios": [
+        1.5376901652338493,
+        1.0119545783321804,
+        0.7133348310666419,
+        1.000472829424885,
+        1.1845081633209469
+      ],
+      "paired_ratio_range": [
+        0.7133348310666419,
+        1.5376901652338493
+      ],
+      "median_seconds": {
+        "adaptive-unseeded": 0.012125179,
+        "adaptive": 0.014244799374999999
+      },
+      "early_late_drift": {
+        "adaptive-unseeded": 1.3162355554909144,
+        "adaptive": 1.470625917588768
+      },
+      "block_spread": {
+        "adaptive-unseeded": 1.673651401168807,
+        "adaptive": 1.7983833398862528
+      },
+      "min_batch_seconds": 0.039861616,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 1e-05,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 4942,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 4891,
+              "rhs": 30153,
+              "segments": 145,
+              "work_units": 46676.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 32,
+              "rhs": 241,
+              "segments": 8,
+              "work_units": 1466.0
+            },
+            "uncommitted_explicit_return": {
+              "attempts": 16,
+              "rhs": 97,
+              "segments": 1,
+              "work_units": 97.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 3,
+              "rhs": 24,
+              "segments": 1,
+              "work_units": 147.0
+            }
+          },
+          "max_component_absolute_error": 2.1908541647519542e-10,
+          "reached_time": 1.0,
+          "rhs": 30515,
+          "state": [
+            0.8623188724514413,
+            -0.5063656413288442
+          ],
+          "success": true
+        },
+        "adaptive-unseeded": {
+          "accuracy_pass": true,
+          "attempts": 4942,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 4891,
+              "rhs": 30153,
+              "segments": 145,
+              "work_units": 46676.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 32,
+              "rhs": 241,
+              "segments": 8,
+              "work_units": 1466.0
+            },
+            "uncommitted_explicit_return": {
+              "attempts": 16,
+              "rhs": 97,
+              "segments": 1,
+              "work_units": 97.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 3,
+              "rhs": 24,
+              "segments": 1,
+              "work_units": 147.0
+            }
+          },
+          "max_component_absolute_error": 2.1909174474643578e-10,
+          "reached_time": 1.0,
+          "rhs": 30515,
+          "state": [
+            0.8623188724514401,
+            -0.5063656413288505
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "transition-79",
+      "a": "evidence",
+      "b": "adaptive",
+      "blocks": 5,
+      "b_over_a_seconds": 0.6469153325410705,
+      "paired_ratios": [
+        0.6469153325410705,
+        0.6791921910682176,
+        0.5991319999025744,
+        0.9040323366425983,
+        0.6210117395741975
+      ],
+      "paired_ratio_range": [
+        0.5991319999025744,
+        0.9040323366425983
+      ],
+      "median_seconds": {
+        "evidence": 0.009355860125,
+        "adaptive": 0.0062667528125
+      },
+      "early_late_drift": {
+        "evidence": 1.017695692110717,
+        "adaptive": 1.1160599973128453
+      },
+      "block_spread": {
+        "evidence": 1.3695968554791946,
+        "adaptive": 1.4151408159060281
+      },
+      "min_batch_seconds": 0.030591896,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "block range >30%"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 1e-05,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 4844,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 4809,
+              "rhs": 29063,
+              "segments": 151,
+              "work_units": 33327.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 32,
+              "rhs": 240,
+              "segments": 8,
+              "work_units": 1460.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 3,
+              "rhs": 24,
+              "segments": 1,
+              "work_units": 147.0
+            }
+          },
+          "max_component_absolute_error": 2.463961923382385e-09,
+          "reached_time": 1.0,
+          "rhs": 29327,
+          "state": [
+            0.862318869823722,
+            -0.5063656396042425
+          ],
+          "success": true
+        },
+        "evidence": {
+          "accuracy_pass": true,
+          "attempts": 11379,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 11347,
+              "rhs": 68083,
+              "segments": 358,
+              "work_units": 68083.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 32,
+              "rhs": 240,
+              "segments": 8,
+              "work_units": 1460.0
+            }
+          },
+          "max_component_absolute_error": 1.846641350944367e-08,
+          "reached_time": 1.0,
+          "rhs": 68323,
+          "state": [
+            0.8623188538212704,
+            -0.5063656301004166
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "transition-79",
+      "a": "adaptive",
+      "b": "rodas",
+      "blocks": 5,
+      "b_over_a_seconds": 3.097535385433296,
+      "paired_ratios": [
+        4.034446394433692,
+        2.4754617930720006,
+        2.878170487937744,
+        3.3763521618228007,
+        3.097535385433296
+      ],
+      "paired_ratio_range": [
+        2.4754617930720006,
+        4.034446394433692
+      ],
+      "median_seconds": {
+        "adaptive": 0.0067049025,
+        "rodas": 0.02240338425
+      },
+      "early_late_drift": {
+        "adaptive": 1.7297561968051303,
+        "rodas": 1.6756836520051428
+      },
+      "block_spread": {
+        "adaptive": 2.076698454236348,
+        "rodas": 2.02026303329475
+      },
+      "min_batch_seconds": 0.036884952,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 1e-05,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 4844,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 4809,
+              "rhs": 29063,
+              "segments": 151,
+              "work_units": 33327.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 32,
+              "rhs": 240,
+              "segments": 8,
+              "work_units": 1460.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 3,
+              "rhs": 24,
+              "segments": 1,
+              "work_units": 147.0
+            }
+          },
+          "max_component_absolute_error": 2.463961923382385e-09,
+          "reached_time": 1.0,
+          "rhs": 29327,
+          "state": [
+            0.862318869823722,
+            -0.5063656396042425
+          ],
+          "success": true
+        },
+        "rodas": {
+          "accuracy_pass": true,
+          "attempts": 1065,
+          "dispositions": {},
+          "max_component_absolute_error": 8.443580279404728e-10,
+          "reached_time": 1.0,
+          "rhs": 8446,
+          "state": [
+            0.8623188731320419,
+            -0.5063656417010581
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "transition-79",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "blocks": 5,
+      "b_over_a_seconds": 1.0295224677972858,
+      "paired_ratios": [
+        1.2039458733127735,
+        0.8881181514866124,
+        0.905056799794076,
+        1.0638712443378862,
+        1.0295224677972858
+      ],
+      "paired_ratio_range": [
+        0.8881181514866124,
+        1.2039458733127735
+      ],
+      "median_seconds": {
+        "adaptive-unseeded": 0.0061550419375,
+        "adaptive": 0.0065257521875
+      },
+      "early_late_drift": {
+        "adaptive-unseeded": 1.0951219774715837,
+        "adaptive": 1.0766086713386656
+      },
+      "block_spread": {
+        "adaptive-unseeded": 1.2377815225580489,
+        "adaptive": 1.196603666695691
+      },
+      "min_batch_seconds": 0.043841733,
+      "time_measurement_qualified": true,
+      "comparison_eligible": true,
+      "classification": "no_clear_timing_advantage",
+      "qualification_reasons": [],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 1e-05,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 4844,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 4809,
+              "rhs": 29063,
+              "segments": 151,
+              "work_units": 33327.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 32,
+              "rhs": 240,
+              "segments": 8,
+              "work_units": 1460.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 3,
+              "rhs": 24,
+              "segments": 1,
+              "work_units": 147.0
+            }
+          },
+          "max_component_absolute_error": 2.463961923382385e-09,
+          "reached_time": 1.0,
+          "rhs": 29327,
+          "state": [
+            0.862318869823722,
+            -0.5063656396042425
+          ],
+          "success": true
+        },
+        "adaptive-unseeded": {
+          "accuracy_pass": true,
+          "attempts": 4845,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 4810,
+              "rhs": 29071,
+              "segments": 151,
+              "work_units": 33376.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 32,
+              "rhs": 240,
+              "segments": 8,
+              "work_units": 1460.0
+            },
+            "winning_entry_pilot_uncommitted": {
+              "attempts": 3,
+              "rhs": 24,
+              "segments": 1,
+              "work_units": 147.0
+            }
+          },
+          "max_component_absolute_error": 4.045481727388278e-10,
+          "reached_time": 1.0,
+          "rhs": 29335,
+          "state": [
+            0.8623188718831357,
+            -0.5063656409658531
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "gyro-tight",
+      "a": "evidence",
+      "b": "adaptive",
+      "blocks": 5,
+      "b_over_a_seconds": 1.0641017066408165,
+      "paired_ratios": [
+        0.9507979685130452,
+        0.6060149725683089,
+        1.0641017066408165,
+        1.1527098856949287,
+        1.0655942867200476
+      ],
+      "paired_ratio_range": [
+        0.6060149725683089,
+        1.1527098856949287
+      ],
+      "median_seconds": {
+        "evidence": 0.0047895020625,
+        "adaptive": 0.0046636574375
+      },
+      "early_late_drift": {
+        "evidence": 1.413845286535232,
+        "adaptive": 1.0657972052710183
+      },
+      "block_spread": {
+        "evidence": 1.8529043382712855,
+        "adaptive": 1.212041366470289
+      },
+      "min_batch_seconds": 0.032483314,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 0.0001,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 4091,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 4071,
+              "rhs": 24427,
+              "segments": 128,
+              "work_units": 24427.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 20,
+              "rhs": 127,
+              "segments": 5,
+              "work_units": 896.0
+            }
+          },
+          "max_component_absolute_error": 3.896784764681471e-05,
+          "reached_time": 1.0,
+          "rhs": 24554,
+          "state": [
+            -0.0019528703802707099,
+            -0.002431617379117989,
+            0.14002802430109842,
+            -0.21580868955899044,
+            0.9764351901353574,
+            0.2
+          ],
+          "success": true
+        },
+        "evidence": {
+          "accuracy_pass": true,
+          "attempts": 4091,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 4071,
+              "rhs": 24427,
+              "segments": 128,
+              "work_units": 24427.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 20,
+              "rhs": 128,
+              "segments": 5,
+              "work_units": 886.0
+            }
+          },
+          "max_component_absolute_error": 3.896784764681471e-05,
+          "reached_time": 1.0,
+          "rhs": 24555,
+          "state": [
+            -0.0019528703802707099,
+            -0.002431617379117989,
+            0.14002802430109842,
+            -0.21580868955899044,
+            0.9764351901353574,
+            0.2
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "gyro-tight",
+      "a": "adaptive",
+      "b": "dopri",
+      "blocks": 5,
+      "b_over_a_seconds": 0.774714915689405,
+      "paired_ratios": [
+        0.7004635042958179,
+        0.7339754316080797,
+        0.774714915689405,
+        0.8574816517068183,
+        0.8700259560245841
+      ],
+      "paired_ratio_range": [
+        0.7004635042958179,
+        0.8700259560245841
+      ],
+      "median_seconds": {
+        "adaptive": 0.0041009414375,
+        "dopri": 0.0035404058125
+      },
+      "early_late_drift": {
+        "adaptive": 1.340088391875023,
+        "dopri": 1.11146127701932
+      },
+      "block_spread": {
+        "adaptive": 1.4127574651043855,
+        "dopri": 1.2675014766007762
+      },
+      "min_batch_seconds": 0.024482076,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%"
+      ],
+      "accuracy_pass": true,
+      "report_only": false,
+      "accuracy_cap": 0.0001,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": true,
+          "attempts": 4091,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 4071,
+              "rhs": 24427,
+              "segments": 128,
+              "work_units": 24427.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 20,
+              "rhs": 127,
+              "segments": 5,
+              "work_units": 896.0
+            }
+          },
+          "max_component_absolute_error": 3.896784764681471e-05,
+          "reached_time": 1.0,
+          "rhs": 24554,
+          "state": [
+            -0.0019528703802707099,
+            -0.002431617379117989,
+            0.14002802430109842,
+            -0.21580868955899044,
+            0.9764351901353574,
+            0.2
+          ],
+          "success": true
+        },
+        "dopri": {
+          "accuracy_pass": true,
+          "attempts": 4067,
+          "dispositions": {},
+          "max_component_absolute_error": 3.899609760221745e-05,
+          "reached_time": 1.0,
+          "rhs": 24403,
+          "state": [
+            -0.0019528703921278215,
+            -0.0024316173226180556,
+            0.14002802431262576,
+            -0.21580866130903503,
+            0.9764351960639255,
+            0.2
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "gyro-default",
+      "a": "evidence",
+      "b": "adaptive",
+      "blocks": 5,
+      "b_over_a_seconds": 0.9303907268387203,
+      "paired_ratios": [
+        1.1606482999762742,
+        1.2719510483693173,
+        0.7424841089234507,
+        0.9222016241699065,
+        0.9303907268387203
+      ],
+      "paired_ratio_range": [
+        0.7424841089234507,
+        1.2719510483693173
+      ],
+      "median_seconds": {
+        "evidence": 0.00196451153125,
+        "adaptive": 0.00186458928125
+      },
+      "early_late_drift": {
+        "evidence": 1.0134739235084915,
+        "adaptive": 1.3013958254335138
+      },
+      "block_spread": {
+        "evidence": 1.2253679147637495,
+        "adaptive": 1.8262691829887416
+      },
+      "min_batch_seconds": 0.022910269,
+      "time_measurement_qualified": false,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "early/late drift >15%",
+        "block range >30%",
+        "at least one endpoint cap failure",
+        "sampled timed solve cap failure",
+        "registered report-only tolerance cohort"
+      ],
+      "accuracy_pass": false,
+      "report_only": true,
+      "accuracy_cap": 0.0001,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": false,
+          "attempts": 1123,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 1111,
+              "rhs": 6667,
+              "segments": 40,
+              "work_units": 6667.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 12,
+              "rhs": 78,
+              "segments": 3,
+              "work_units": 538.0
+            }
+          },
+          "max_component_absolute_error": 0.03159893935321256,
+          "reached_time": 1.0,
+          "rhs": 6745,
+          "state": [
+            -0.001964999901786838,
+            -0.002368497436106848,
+            0.14004081152703046,
+            -0.1842487180534247,
+            0.9824999508934248,
+            0.2
+          ],
+          "success": true
+        },
+        "evidence": {
+          "accuracy_pass": false,
+          "attempts": 1127,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 1111,
+              "rhs": 6667,
+              "segments": 40,
+              "work_units": 6667.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 16,
+              "rhs": 102,
+              "segments": 4,
+              "work_units": 717.0
+            }
+          },
+          "max_component_absolute_error": 0.03159893935321256,
+          "reached_time": 1.0,
+          "rhs": 6769,
+          "state": [
+            -0.001964999901786838,
+            -0.002368497436106848,
+            0.14004081152703046,
+            -0.1842487180534247,
+            0.9824999508934248,
+            0.2
+          ],
+          "success": true
+        }
+      }
+    },
+    {
+      "case": "gyro-default",
+      "a": "adaptive",
+      "b": "dopri",
+      "blocks": 5,
+      "b_over_a_seconds": 0.6470376874229071,
+      "paired_ratios": [
+        0.6670574082026045,
+        0.6209267985057169,
+        0.6331110896664086,
+        0.717439625108004,
+        0.6470376874229071
+      ],
+      "paired_ratio_range": [
+        0.6209267985057169,
+        0.717439625108004
+      ],
+      "median_seconds": {
+        "adaptive": 0.001406848234375,
+        "dopri": 0.000910283828125
+      },
+      "early_late_drift": {
+        "adaptive": 1.05578298942578,
+        "dopri": 1.002513368319729
+      },
+      "block_spread": {
+        "adaptive": 1.089442266712155,
+        "dopri": 1.147856271483565
+      },
+      "min_batch_seconds": 0.027137213,
+      "time_measurement_qualified": true,
+      "comparison_eligible": false,
+      "classification": "timing_or_accuracy_not_qualified",
+      "qualification_reasons": [
+        "at least one endpoint cap failure",
+        "sampled timed solve cap failure",
+        "registered report-only tolerance cohort"
+      ],
+      "accuracy_pass": false,
+      "report_only": true,
+      "accuracy_cap": 0.0001,
+      "records": {
+        "adaptive": {
+          "accuracy_pass": false,
+          "attempts": 1123,
+          "dispositions": {
+            "committed_integration": {
+              "attempts": 1111,
+              "rhs": 6667,
+              "segments": 40,
+              "work_units": 6667.0
+            },
+            "losing_or_incomplete_entry_pilot": {
+              "attempts": 12,
+              "rhs": 78,
+              "segments": 3,
+              "work_units": 538.0
+            }
+          },
+          "max_component_absolute_error": 0.03159893935321256,
+          "reached_time": 1.0,
+          "rhs": 6745,
+          "state": [
+            -0.001964999901786838,
+            -0.002368497436106848,
+            0.14004081152703046,
+            -0.1842487180534247,
+            0.9824999508934248,
+            0.2
+          ],
+          "success": true
+        },
+        "dopri": {
+          "accuracy_pass": false,
+          "attempts": 1105,
+          "dispositions": {},
+          "max_component_absolute_error": 0.031681416255663064,
+          "reached_time": 1.0,
+          "rhs": 6631,
+          "state": [
+            -0.0019650296281158277,
+            -0.002368332482301965,
+            0.14004084495408958,
+            -0.18416624115097419,
+            0.9825148140579191,
+            0.2
+          ],
+          "success": true
+        }
+      }
+    }
+  ],
+  "failed_cells": [],
+  "runtime_pruning_rule": "require common endpoint cap, deterministic sampled state/work, qualified timing; do not drop a method for a noisy comparison",
+  "native_baseline_parity": "NOT_ASSERTED_BY_THIS_RUNNER; requires separate fixture/config/counter comparison",
+  "uncertainty": "five paired block ratios with empirical range, not a confidence interval"
+}

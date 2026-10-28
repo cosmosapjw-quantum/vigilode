@@ -1,0 +1,110 @@
+{
+  "schema": "rvj-loop11-verification-v1",
+  "generated_utc": "2026-10-04T06:54:53.983536+00:00",
+  "status": "SCOPED_DERIVED_AND_REFERENCE_VERIFIED__HOLD_INDEPENDENT_REVIEW",
+  "exploratory": true,
+  "new_unit_tests": {
+    "passed": 33,
+    "failed": 0,
+    "fresh_command": "bash REPLAY.sh",
+    "log": "evidence/FINAL_REPLAY.log",
+    "exit_code": 0
+  },
+  "exact_symbolic_checks": 24,
+  "connected_Wolfram_calls": 2,
+  "connected_Wolfram_warning_free": true,
+  "confluent_transcendental_f64_probes": 7,
+  "finite_jet_phase_probes": 4,
+  "exact_nonlinear_quotient_flow_probes": 4,
+  "exact_shift_parameter_cases": 4,
+  "shifts_per_case": 65,
+  "exact_inequality_checks": 520,
+  "float_shift_probe": {
+    "dimension": 48,
+    "rhs_rank": 2,
+    "targets": 65,
+    "certified_f64": false
+  },
+  "FFT_comparison": {
+    "physical_parameter_settings": 2,
+    "paired_predictor_runs": 4,
+    "accepted_steps": 16,
+    "interior_diagnostics": 48,
+    "raw_oracle_violations": 0,
+    "oracle": "same DOP853 method at two tolerances, not a formal validated oracle",
+    "unchanged_parent_original_target_certificate": true
+  },
+  "saved_path_recertification": {
+    "runs": 4,
+    "paths": 16,
+    "results": [
+      {
+        "file": "fft_case_exact_10000.json",
+        "paths_recertified": 4,
+        "exact_equal": true
+      },
+      {
+        "file": "fft_case_exact_40.json",
+        "paths_recertified": 4,
+        "exact_equal": true
+      },
+      {
+        "file": "fft_case_fft_10000.json",
+        "paths_recertified": 4,
+        "exact_equal": true
+      },
+      {
+        "file": "fft_case_fft_40.json",
+        "paths_recertified": 4,
+        "exact_equal": true
+      }
+    ],
+    "not_a_new_oracle_campaign": true,
+    "new_candidate_generation_replay": false
+  },
+  "parent_selected_files_byte_checked": 75,
+  "not_executed": [
+    "complete parent historical campaigns",
+    "original geometry full-replay suite",
+    "native Rust AD/Krylov parallel integration",
+    "independent reviewer",
+    "matched-error production benchmark"
+  ],
+  "claim_limits": {
+    "independent_state_dof_compressed": false,
+    "generic_stiff_or_oscillatory_order": false,
+    "all_modes_recovered_from_scalar": false,
+    "production_speedup": false,
+    "Vigilode_mutation": false
+  },
+  "failure_log": "evidence/FAILURE_REGISTRY.json",
+  "harness_archive_identity_checked": true,
+  "scope_clarification": "Two parameter settings times exact/FFT predictor = four trajectory runs; original exploratory contract retained unchanged.",
+  "fresh_command_record": [
+    {
+      "command": "bash REPLAY.sh",
+      "exit": 0,
+      "evidence": "evidence/FINAL_REPLAY.log"
+    },
+    {
+      "command": "python code/run_fft.py exact 40",
+      "exit": 0,
+      "evidence": "evidence/fft_exact40.log"
+    },
+    {
+      "command": "python code/run_fft.py fft 40",
+      "exit": 0,
+      "evidence": "evidence/fft_float40.log"
+    },
+    {
+      "command": "python code/run_fft.py exact 10000",
+      "exit": 0,
+      "evidence": "evidence/fft_exact10000.log"
+    },
+    {
+      "command": "python code/run_fft.py fft 10000",
+      "exit": 0,
+      "evidence": "evidence/fft_float10000.log"
+    }
+  ]
+}

@@ -1,0 +1,263 @@
+{
+  "schema_version": 1,
+  "unit": "A03-LOCAL-DAMPED-CONTRACT-01",
+  "track": "PHYS_MATH_RESEARCH_ONLY",
+  "date_utc": "2026-10-18T10:58:49.551238+00:00",
+  "requested_runtime": {
+    "model": "gpt-6.1-sol",
+    "reasoning_effort": "xhigh",
+    "authority": "explicit user request as supplied by parent task",
+    "observed_runtime_identity": "NOT_INDEPENDENTLY_OBSERVED"
+  },
+  "decision": "DERIVED_READY_FOR_INDEPENDENT_CONTRACT_REVIEW",
+  "independent_review": "NOT_RUN_IN_THIS_UNIT",
+  "scientific_admission": "HOLD",
+  "source_identity": {
+    "cwd": "/home/cosmosapjw/vigilode",
+    "branch": "audit/production-readiness-20261018",
+    "head": "7e2873887ed6038b47b667c976435810851c5dba",
+    "tree": "9275e35d3d5afe1ae4e40e1c0d9aca1034994ca6",
+    "source_sha256": {
+      "AGENTS.md": "de166fcc5af50745fdf44a4df9b163f3f6c91e33fd29602a44e064a1059b51be",
+      "Cargo.lock": "04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400",
+      "crates/rodas5p-core/src/damped_moments.rs": "3d78f6768af5513d9eeb12ad556b1a72d613b8e3521345561a691db1947a5950",
+      "crates/rodas5p-core/src/directed.rs": "2adadb6a5d77073e0a7d3d60aedfbf37e124d15a586a880d7d5a8c8d5307a814",
+      "crates/rodas5p-core/tests/damped_forcing_moment_consumer.rs": "bfc59ee8816f4046c6ff0a0f9b07ce617913e91f003f5832375339c72270ac98",
+      "crates/rodas5p-core/tests/damped_moment_enclosure_regressions.rs": "6fde1ad1320ccb3580e3659856c6c35bef67a591e2665d6419514eee069f77a6",
+      "crates/rodas5p-integrators/src/collective_model.rs": "1cbcd3bfb6f1251e3f8dfcf3559d9db373610da89bebd7dab0432265a51a3a56",
+      "crates/rodas5p-integrators/src/packet_window.rs": "0df3a08b7ed5a3afb9bd4bd863163434cf4addc114004c8d5209b435d80dde63",
+      "crates/rodas5p-integrators/src/packet_curve.rs": "f92fbcb318f8e8d5b6643a605c7c7a311a018fb67e72e3b63c48b68a80e53dc6",
+      "crates/rodas5p-integrators/src/packet_curve_output.rs": "f84db841371cb192e8c6105c4ca9b3e2ce32397dcb7ff426b00a5647ce472873",
+      "crates/rodas5p-integrators/src/packet_work.rs": "036f9291090d687a845fedde5af28f756ed16e6dd5ae3d4dbe97223d7a81efe1",
+      "research/production_audit_20261018/NEXT_STEPS.json": "597a25c1a062b1448f9b78f24f059a87506215b9d40eff50e24d7a0319635406",
+      "docs/reviews/20261011_loop12_upgrade/DAMPING_WINDOWS_KO.md": "aec53bf2b66b9ba6172bbc99c82f40f740d661e899a370fbe83db43b52484230",
+      "research/promotion_loop12_20261011/DECISION.json": "de9dc04859d24486fdbfa7a6018efd1793d9798d0572ce6bc235fcefec0e4e8c",
+      "research/promotion_loop12_20261011/evidence/EXTENSION_REVIEW.json": "33965eea9973b20cc32b0df3386eb82ebbb81bf0b5a3a9ab6a792ddd6a1d8d47",
+      "research/promotion_loop12_20261011/evidence/check_damping_exact.py": "f6deb13389869054f28860f29d688c8e6bb0ee62ccdaa992a1a6e03812c44128",
+      "research/promotion_loop12_20261011/evidence/DAMPING_EXACT_CHECKS.json": "bb715ec55ab065d7d7610eecbf9c270242d1548d0bd607a5f9b589195f18a0de",
+      "docs/reviews/20261018_production_audit/THEORY_KO.md": "f3d974fc48492e00ba625bb8232d62d84373cdb8aa81169b52a765173d5ca4ea",
+      "research/production_audit_20261018/evidence/continuation_a03/A03_INDEPENDENT_REVIEW.md": "13a24ae5a9c55c5df9512f3c80661c277f8bc9c5b33cf55573812634c9269e83",
+      "research/production_audit_20261018/evidence/continuation_a03/a03_forcing_moment_receipt.json": "64246367adb1d13cba2335cd042fdc5d3e29c1051107f74f19e8fbe40dcfa21c",
+      "research/production_audit_20261018/evidence/continuation_a01_lcert/INDEPENDENT_REVIEW_KO.md": "90c6e21f769e6c6aca66a96129d03ff3f553b43fd1319e31982de7508eae602c"
+    },
+    "changed_from_head": [],
+    "dirty_status_at_closeout": [
+      "## audit/production-readiness-20261018...origin/audit/production-readiness-20261018",
+      " M crates/rodas5p-integrators/src/dense_output_v2.rs",
+      " M crates/rodas5p-integrators/src/lib.rs",
+      " M research/production_audit_20261018/CONTINUATION_DAG.json",
+      "?? crates/rodas5p-core/tests/leja_fraction_oracle.py",
+      "?? crates/rodas5p-core/tests/production_audit_leja_arithmetic_oracle.rs",
+      "?? crates/rodas5p-integrators/src/bound_pr101.rs",
+      "?? crates/rodas5p-integrators/tests/pr101_fraction_oracle.py",
+      "?? crates/rodas5p-integrators/tests/production_audit_pr101_provider.rs",
+      "?? research/production_audit_20261018/A02_RESEARCH_DECISION.json",
+      "?? research/production_audit_20261018/A02_VERIFIED_TRAJECTORY_CONTRACT.md",
+      "?? research/production_audit_20261018/CONTINUATION_POLICY_KO.md",
+      "?? research/production_audit_20261018/evidence/continuation_a01_lcert/",
+      "?? research/production_audit_20261018/evidence/continuation_a01_unequal_reference/",
+      "?? research/production_audit_20261018/evidence/continuation_a01_unequal_reference_first_test.log",
+      "?? research/production_audit_20261018/evidence/continuation_a02_research/",
+      "?? research/production_audit_20261018/evidence/continuation_a03_research/",
+      "?? research/production_audit_20261018/evidence/continuation_a04/arithmetic_research_01/",
+      "?? research/production_audit_20261018/evidence/continuation_a04/arithmetic_research_review_01/",
+      "?? research/production_audit_20261018/evidence/continuation_a04/proof_oracle_01/",
+      "?? research/production_audit_20261018/evidence/continuation_a05_pr101/",
+      "?? research/production_audit_20261018/evidence/continuation_a06/INDEPENDENT_REVIEW_KO.md",
+      "?? research/production_audit_20261018/evidence/continuation_workspace_check_a01_a04_a05_final.log",
+      "?? research/production_audit_20261018/evidence/continuation_workspace_check_a04_a05_provider.log"
+    ],
+    "mutated_paths_scope": "Only DERIVATION_KO.md, PREREGISTRATION.md and this RESEARCH_DECISION.json under the assigned evidence directory.",
+    "head_at_final_readback": "7e2873887ed6038b47b667c976435810851c5dba"
+  },
+  "reused_evidence": [
+    {
+      "id": "DW-A..F",
+      "status": "REUSE_CONDITIONAL_THEORY",
+      "basis": "Published DECISION.json and EXTENSION_REVIEW.json read; DAMPING_WINDOWS_KO.md hash equals reviewed bytes. General-S extension is new derivation awaiting review. No historical campaign replay."
+    },
+    {
+      "id": "T1",
+      "status": "REUSE_WEIGHTED_LOG_NORM",
+      "basis": "Actual native rotating-frame equation has same real collective cubic Jacobian. New derivation explicitly distinguishes singular factor3 from symmetric eigenvalue factor1."
+    },
+    {
+      "id": "T3",
+      "status": "REUSE_KERNEL_INCLUSION_PROOF",
+      "basis": "Current exact-input damped integral code read; new scalar endpoint hull is an additional proof obligation, not a past executed feature."
+    },
+    {
+      "id": "A03_FORCING_MOMENT_CONSUMER_ONLY",
+      "status": "REUSE_PASS_SCOPED",
+      "basis": "Current damped_moments.rs hash3d78f676... and consumer test hashbfc59ee8... match the existing independent review and receipt. Q_{r,d}=I_{d,r} confirmed. Existing eight execution results not rerun."
+    },
+    {
+      "id": "A01-LCERT-01",
+      "status": "REUSE_IMMUTABLE_OWNER_AND_RETURNED_CENTER_CONTRACT",
+      "basis": "Read current independent review; kappa0 code cannot be relabeled kappa>0. Base weighted radius excludes returned-center displacement."
+    }
+  ],
+  "derived_claims": [
+    {
+      "id": "A3-D1",
+      "claim": "b=e^(kappa*t)a satisfies b_j′=i*omega_j*b_j+e^(-2*kappa*t)*g(sum w*b); E_b is constant and |u|^2<=S*E_plus for exact stored S.",
+      "state": "DERIVED_PENDING_INDEPENDENT_REVIEW"
+    },
+    {
+      "id": "A3-D2",
+      "claim": "Q_{r,d}(a,t)=I_{d,r}(a,t); exact rate2*kappa*(q+1) and t/h can be enclosed by outward endpoint monotone hulls.",
+      "state": "DERIVED_PENDING_INDEPENDENT_REVIEW"
+    },
+    {
+      "id": "A3-D3",
+      "claim": "Positive dyadic beta-cell mass and exp endpoint bounds give a cancellation-free scalar fallback with a finite width/work refusal.",
+      "state": "DERIVED_NOT_IMPLEMENTED_PENDING_REVIEW"
+    },
+    {
+      "id": "A3-D4",
+      "claim": "Actual curve Y=e^(-kappa*t)Q has full nonlinear residual with reconstructed M_Q=sum w Q, including linear basis defect, convolved defect, and g(U)-g(M_Q). Stored coefficient rounding is retained.",
+      "state": "DERIVED_PENDING_INDEPENDENT_REVIEW"
+    },
+    {
+      "id": "A3-D5",
+      "claim": "mu_w(Df)=-kappa+S*abs(chi)*abs(m)^2; factor3 occurs only in cubic singular/Lipschitz norm. Actual curve tube yields L1=S*abs(chi)*max(S*E_plus,(B+D)^2), not a 3S state-flow gain.",
+      "state": "DERIVED_T1_RECONCILIATION_PENDING_REVIEW"
+    },
+    {
+      "id": "A3-D6",
+      "claim": "With normalized residual upper r_scaled, ||a-Y||_w<=B_w:=exp(-kappa*t+L1*theta_kappa(t))*(e0_w+(t/h)*r_scaled); the returned base radius must outwardly upper-bound B_w, and returned-center mode/mean/weighted radii add actual evaluation displacement.",
+      "state": "DERIVED_PENDING_INDEPENDENT_REVIEW"
+    },
+    {
+      "id": "A3-D7",
+      "claim": "Rotating RHS excludes carrier metadata. Nonzero lab frame needs an explicit origin/convention and verified phase witness, otherwise typed refusal.",
+      "state": "SOURCE_CONFIRMED_AND_CONTRACT_PROPOSED"
+    }
+  ],
+  "findings": [
+    {
+      "id": "A03-F1",
+      "status": "OPEN",
+      "location": "damped_moments.rs compute_damped_forcing_moment(a:f64,...)",
+      "finding": "Current scalar enclosure is for the supplied exact binary64 rate, not silently rounded2*kappa*(q+1).",
+      "smallest_correction": "A03-SCALAR-RATE-01 outward exact-rate/time endpoint adapter."
+    },
+    {
+      "id": "A03-F2",
+      "status": "OPEN",
+      "location": "damped_moments.rs compute_large_z_backward",
+      "finding": "Each large-z call allocates e_table; existing table-lookup zero allocation cannot be transferred to arbitrary warmed forcing query.",
+      "smallest_correction": "Caller scratch for endpoint/fallback path, source-bound allocation positive control and attempted-work accounting."
+    },
+    {
+      "id": "A03-F3",
+      "status": "OPEN",
+      "location": "MAX_MOMENT_ORDER=64 versus DW p8,Q10",
+      "finding": "DW representative D258/forcing degree774 exceeds current per-index cap64.",
+      "smallest_correction": "Explicit order refusal now; separately reviewed high-order positive fallback if broader degree support is required."
+    },
+    {
+      "id": "A03-F4",
+      "status": "OPEN",
+      "location": "Native packet pipeline",
+      "finding": "No kappa>0 immutable confluent candidate/actual-curve residual/output implementation exists.",
+      "smallest_correction": "After scalar subnode, implement stable exact-function representation and actual reconstructed continuous residual using the frozen local contract."
+    },
+    {
+      "id": "A03-F5",
+      "status": "OPEN_FOR_LAB_SCOPE",
+      "location": "No verified carrier phase kernel in relevant current source",
+      "finding": "Carrier metadata is absent from actual RHS and cannot be added during reconstruction implicitly.",
+      "smallest_correction": "Keep rotating scope; nonzero lab request returns UnsupportedFrameCertificate until phase/origin contract and enclosure implemented."
+    },
+    {
+      "id": "A03-F6",
+      "status": "RESOLVED_IN_RESEARCH_DRAFT",
+      "location": "DW normalized-weight assumptions / gain wording",
+      "finding": "Original DW scalar Volterra factor3 cannot replace T1 weighted flow gain.",
+      "smallest_correction": "General-S and actual reconstructed mean derivations A3.13-A3.16 explicitly retain accepted T1 factor1; independent review pending."
+    }
+  ],
+  "dag_recommendation": {
+    "A03_overall": "HOLD",
+    "A03-SCALAR-RATE-01": {
+      "status": "READY_FOR_INDEPENDENT_CONTRACT_REVIEW",
+      "depends_on": [
+        "existing A03_FORCING_MOMENT_CONSUMER_ONLY scoped pass",
+        "this exact-rate/time/scratch contract independent review"
+      ],
+      "smallest_missing_prerequisite": "Independent review of equationsA3.6-A3.8 and frozen scalar fixture/cap/counting contract. No external scientific input is missing."
+    },
+    "A03-LOCAL-DAMPED-CERTIFICATE": {
+      "status": "NOT_IMPLEMENTED",
+      "depends_on": [
+        "A01-LCERT-01 identity/output principles",
+        "A03-SCALAR-RATE-01",
+        "stable confluent representation + actual residual contract review"
+      ],
+      "A02_dependency": "None for a single local window. Do not require completion of unrelated legacy A01 arithmetic to begin a separately scoped generated damped local owner."
+    },
+    "A03-DAMPED-TRAJECTORY": {
+      "status": "BLOCKED",
+      "depends_on": [
+        "A03-LOCAL-DAMPED-CERTIFICATE reviewed execution",
+        "A02 transaction/time/weighted-seed implementation",
+        "independent kappa>0 extension of A02 and native multiwindow inclusion"
+      ]
+    },
+    "A12.packet_damped": "HOLD; local proof/consumer pass alone is insufficient",
+    "next_action": "Parent dispatches one independent read-only contract review; upon scoped pass, a lower-tier worker implements the exact-rate/time/scratch scalar adapter only with the frozen controls, then continues to actual damped local curve/residual. No repeated old campaign."
+  },
+  "execution": {
+    "source_reads_and_metadata": "EXECUTED",
+    "tests": "NOT_RUN",
+    "builds": "NOT_RUN",
+    "numerical_oracles": "NOT_RUN",
+    "benchmarks": "NOT_RUN",
+    "historical_campaign_replays": 0,
+    "code_modified": false,
+    "tolerance_modified": false,
+    "dag_modified_by_this_agent": false,
+    "ledger_modified": false,
+    "commit_or_push": "NOT_RUN_PARENT_OWNS_PUBLICATION",
+    "commands_with_exit_code": [
+      {
+        "command": "pwd",
+        "exit_code": 0
+      },
+      {
+        "command": "git status --short --branch",
+        "exit_code": 0
+      },
+      {
+        "command": "git rev-parse HEAD HEAD^{tree}",
+        "exit_code": 0
+      },
+      {
+        "command": "source reads with cat/sed/rg and SHA256/fixture-bit metadata capture",
+        "exit_code": 0,
+        "scope": "Read-only input acquisition; no scientific execution."
+      },
+      {
+        "command": "cat research/promotion_loop12_20261011/DECISION.json research/promotion_loop12_20261011/evidence/independent_review.json",
+        "exit_code": 1,
+        "classification": "SOURCE_PATH_LOOKUP_FAILURE",
+        "resolution": "DECISION names actual evidence/EXTENSION_REVIEW.json; canonical file subsequently read successfully. No numerical failure."
+      }
+    ],
+    "document_readback": "Completed: parsed decision JSON, read final formulas A3.11b/A3.12/A3.13-A3.16 and frozen refusal/fixture/cap sections; verified all input source hashes remain unchanged. No mathematical or native test executed."
+  },
+  "claim_ceilings": {
+    "local_kappa_positive_inclusion": "HOLD_NOT_IMPLEMENTED",
+    "full_damped_trajectory": "HOLD",
+    "legacy_compute_certificate": "UNCHANGED_HOLD",
+    "new_lab_phase": "HOLD_UNIMPLEMENTED",
+    "zero_allocation": "NOT_MEASURED_THIS_UNIT",
+    "speed": "NOT_MEASURED_DIAGNOSTIC_ONLY_IF_LATER_RUN",
+    "production_promotion": "HOLD"
+  },
+  "artifacts_sha256": {
+    "DERIVATION_KO.md": "2fbde354008641a7b50df91bf6755d7648ac2c84ae0d2d21f135e1634a25e8fe",
+    "PREREGISTRATION.md": "8f6a8635f0d9b3366cc457411c0f2dc6b54892e387bfadb505961e462e548f51"
+  }
+}

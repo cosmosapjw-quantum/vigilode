@@ -1,0 +1,110 @@
+{
+  "repair_id": "A01-R2-degree-and-work-accounting",
+  "base_head": "895ed48969683a0d028b7a1c4d257d2a62874048",
+  "branch": "audit/production-readiness-20261018",
+  "scope": "one Astra-authorized repair: checked maximum-degree binary64 integer domain and charge omitted reciprocal/frequency/time-normalization/model-revalidation work",
+  "changes": [
+    {
+      "path": "crates/rodas5p-integrators/src/packet_curve.rs",
+      "sha256": "2f2e40752450a7d1f04bc5f96f95d69c4527b88397d6ee6ecd34ab7a016758da",
+      "details": [
+        "checked D=order+3*candidate_degree+1 before allocations and refuse D>2^53",
+        "allocation-free helper test covers D=2^53 acceptance, D=2^53+1 refusal, and usize overflow",
+        "precharge one interval reciprocal-h operation and one interval omega product per mode",
+        "precharge each center/interval physical-time normalization division",
+        "precharge three copied-source model payload comparisons during validate_source",
+        "before CollectiveModel::new in copy_identity, charge constructor payload 4N+4 and arithmetic 6N+2"
+      ]
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/packet_work.rs",
+      "sha256": "0adc23af905fa4051775faa156cbb9c9b31244031117fb91e660686efa14f26f",
+      "details": [
+        "add dedicated interval setup, time normalization, copied model revalidation, and model-constructor counters",
+        "include counters in initialization, total aggregation, and accumulation"
+      ]
+    },
+    {
+      "path": "crates/rodas5p-integrators/tests/production_audit_packet_curve.rs",
+      "sha256": "f7102989a8c40a24149c6843c7b6464ce23849cad7c18601c47e474f2d215828",
+      "details": [
+        "assert exact successful setup interval-operation count 1+N",
+        "assert three time-normalization calls per requested evaluation method/time and exact model payload comparison count",
+        "assert constructor payload/arithmetic deltas immediately after freeze, unchanged after source validation, and retained by accumulate/total"
+      ]
+    }
+  ],
+  "constructor_accounting_follow_up": {
+    "authorization": "Astra explicitly authorized one narrow follow-up within A01-R2 cumulative scope",
+    "contract": "charge 4N+4 constructor payload items and 6N+2 arithmetic operations immediately before CollectiveModel::new; keep validate_source comparisons separate at 3*(4N+5)",
+    "validation": [
+      {
+        "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet_curve -- --test-threads=1",
+        "exit_code": 0,
+        "result": "5 passed; includes exact constructor deltas at N=2 immediately after freeze, separate 3*(4N+5) comparison delta after validate_source, and counter accumulate/total parity",
+        "log": "research/production_audit_20261018/evidence/continuation_a01/a01_curve_repair_constructor_target.log",
+        "log_sha256": "a38ab3878855e000f9d939abb1ed12863e1063590121142cc35f488e2ea1897f"
+      },
+      {
+        "command": "rustfmt --edition 2021 --check crates/rodas5p-integrators/src/packet_curve.rs crates/rodas5p-integrators/src/packet_work.rs crates/rodas5p-integrators/tests/production_audit_packet_curve.rs",
+        "exit_code": 0,
+        "result": "passed",
+        "log": "research/production_audit_20261018/evidence/continuation_a01/a01_curve_repair_constructor_fmt.log",
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "command": "git diff --check",
+        "exit_code": 0,
+        "result": "passed",
+        "log": "research/production_audit_20261018/evidence/continuation_a01/a01_curve_repair_constructor_diff_check.log",
+        "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ]
+  },
+  "preserved_first_failure": {
+    "path": "research/production_audit_20261018/evidence/continuation_a01/a01_curve_repair_first_counter_failure.log",
+    "sha256": "ac5b9729d273c4e72f2211cf51847c1c1fea9cf582da7f37728b7a4a2b01d07f",
+    "exit_code": 101,
+    "reason": "the new test expected 9 time normalizations but this fixture calls center and mode interval evaluation at three times, giving 6; expectation corrected without changing implementation thresholds"
+  },
+  "validation": [
+    {
+      "command": "cargo test --locked --offline -p rodas5p-integrators --lib packet_window::packet_curve::degree_tests::maximum_degree_guard_checks_binary64_integer_domain_without_allocation -- --exact",
+      "exit_code": 0,
+      "result": "1 passed",
+      "log": "research/production_audit_20261018/evidence/continuation_a01/a01_curve_repair_degree_test.log",
+      "log_sha256": "337f5d9c611ca515347b2b4a1b317b234cc52a460b743308522a95a15a802ce4"
+    },
+    {
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet_curve -- --test-threads=1",
+      "exit_code": 0,
+      "result": "5 passed",
+      "log": "research/production_audit_20261018/evidence/continuation_a01/a01_curve_repair_target.log",
+      "log_sha256": "7c7e50a8b44233bae71b4fd59f656a5e1033f55ac356735565c3b17290caa937"
+    },
+    {
+      "command": "cargo clippy --locked --offline -p rodas5p-integrators --lib --test production_audit_packet_curve",
+      "exit_code": 0,
+      "result": "passed; existing dead-code warnings in output.rs remain",
+      "log": "research/production_audit_20261018/evidence/continuation_a01/a01_curve_repair_clippy.log",
+      "log_sha256": "b3d4958641d0fc90f7d1cd4d0e65fac15e004c2631b7c3c0bacba2517b55491c"
+    },
+    {
+      "command": "rustfmt --edition 2021 --check crates/rodas5p-integrators/src/packet_curve.rs crates/rodas5p-integrators/src/packet_work.rs crates/rodas5p-integrators/tests/production_audit_packet_curve.rs",
+      "exit_code": 0,
+      "result": "passed",
+      "log": "research/production_audit_20261018/evidence/continuation_a01/a01_curve_repair_fmt.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "command": "git diff --check",
+      "exit_code": 0,
+      "result": "passed",
+      "log": "research/production_audit_20261018/evidence/continuation_a01/a01_curve_repair_diff_check.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "claim_ceiling": "local represented curve and residual enclosure slice only; authority flags unchanged; full A01 and A02 remain HOLD pending independent review and end-to-end closure",
+  "commit_created": false,
+  "push_performed": false
+}

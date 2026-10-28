@@ -1,0 +1,15 @@
+{
+  "tool": "wolfram_wolframlanguageevaluator",
+  "scope": "Independent symbolic identity; not whole-theorem proof",
+  "code": "g = chi (x^2+y^2) {-y,x}; jac = Table[D[g[[i]],v],{i,2},{v,{x,y}}]; sym=(jac+Transpose[jac])/2; {jac, Factor[CharacteristicPolynomial[sym,lam]], FullSimplify[Det[sym]+chi^2 (x^2+y^2)^2], Integrate[Exp[-2 k s],{s,0,t},Assumptions->{k>0,t>0}]}",
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Out[1]= {{{-2*chi*x*y, -2*chi*y^2 - chi*(x^2 + y^2)}, {2*chi*x^2 + chi*(x^2 + y^2), 2*chi*x*y}}, (lam - chi*x^2 - chi*y^2)*(lam + chi*x^2 + chi*y^2), 0, -1/2*(-1 + E^(-2*k*t))/k}"
+      }
+    ],
+    "structuredContent": null,
+    "isError": false
+  }
+}

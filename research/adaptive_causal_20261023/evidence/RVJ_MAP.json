@@ -1,0 +1,52 @@
+{
+  "schema": "vigilode.rvj-source-transfer.v1",
+  "input": {
+    "filename": "RVJ_Report_20261023_KO.pdf",
+    "bytes": 53670706,
+    "sha256": "574784f7d3cb9ddb4329a36c083db9ac5c186dc20ea5a7c9a3379abf3d627deb"
+  },
+  "read_method": "pdftotext -layout; inspected substantive sections in extracted text",
+  "reused_sections": [
+    {
+      "pages": "7–9",
+      "section": "4–5",
+      "content": "preserved stiff order-reduction and approximate-W counterexamples; exact invariant chart versus equilibrium graph distinction",
+      "impact": "do not replace true Jacobian by approximate blocks inside an unchanged Rosenbrock formula; new adapter integrates the declared split equation explicitly"
+    },
+    {
+      "pages": "12–14",
+      "section": "7–8",
+      "content": "homogeneous exponential retention, phase/carrier handling, nonnormal and noncommuting cautions, resonance and sampling alias, exact carrier equivariance",
+      "impact": "constant block quotient is supplied; full nonlinear residual kept; no generic stiffness-uniform accuracy claim"
+    },
+    {
+      "pages": "15–17",
+      "section": "10–11",
+      "content": "local algebra and shared shifted resolvents; JVP-free causal moment packet with known structure",
+      "impact": "repeated block coefficients cached; shifted inverse exported for actual declared W blocks"
+    }
+  ],
+  "new_implementation": "crates/rodas5p-integrators/src/quotient_flow.rs",
+  "prior_commits_observed": [
+    "01535401",
+    "3e784982",
+    "4de1f88c"
+  ],
+  "primary_literature": [
+    {
+      "authors": "J. D. Lawson",
+      "year": 1967,
+      "title": "Generalized Runge-Kutta Processes for Stable Systems with Large Lipschitz Constants",
+      "doi": "10.1137/0704033",
+      "url": "https://epubs.siam.org/doi/10.1137/0704033",
+      "access": "publisher search metadata obtained; direct open timed out"
+    },
+    {
+      "authors": "M. Hochbruck, J. Leibold, A. Ostermann",
+      "year": 2019,
+      "title": "On the convergence of Lawson methods for semilinear stiff problems",
+      "url": "https://www.waves.kit.edu/downloads/CRC1173_Preprint_2019-20.pdf",
+      "access": "primary PDF inspected, Section2 equations4 and Section3 Assumption3.1; original order-reduction caveat retained"
+    }
+  ]
+}

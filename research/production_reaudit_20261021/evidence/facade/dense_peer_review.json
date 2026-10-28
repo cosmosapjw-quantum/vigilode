@@ -1,0 +1,29 @@
+{
+  "schema": "vigilode.independent-code-review.v1",
+  "reviewer": "facade_audit",
+  "author": "dense_transaction_audit",
+  "reviewed_scope": [
+    "O-01 enforcing interior estimate failure transition",
+    "C1 admission cumulative overflow prospective update"
+  ],
+  "verdict": "PASS_SCOPED",
+  "method": "direct source and diff inspection, facade end-to-end cross-check independently authored",
+  "evidence": [
+    "research/production_reaudit_20261021/evidence/facade/targeted_retry.log"
+  ],
+  "findings": [],
+  "observations": [
+    "On recoverable estimator failure, actual failure kind is retained, accepted=false and error=infinity precede normal outer rejection reconciliation.",
+    "Estimator attempted work is accumulated before continuing to retry; count reconciliation converts accepted stage outcome into one rejected attempt.",
+    "Rejected branch restores recycle/history snapshots; no output collector update or accepted dense segment occurs.",
+    "Unclassified estimator errors return Err without claiming usable output; existing interface supplies no partial result on this path.",
+    "Report-only estimate failures increment unavailable and leave acceptance, controller, output and run counters unchanged.",
+    "C1 prospective BinState copy rejects nonfinite cumulative sums before state mutation; caller must separately retain work from an attempt even if admission account refuses it.",
+    "Review covers changed transition/accounting logic only; newly ported interval dense polynomial kernels have a separate reviewer."
+  ],
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/dense_output_v2.rs": "57a1fc7f0a59120e689fdc66298f56985dee74e4286a2f2c57873c88606be89e",
+    "crates/rodas5p-integrators/tests/sequential_estimate_failure_contracts.rs": "b166a6a71b06db608b77bfb1c1d00a5667dfce654b0014281f6538e20d31b803",
+    "crates/rodas5p-integrators/src/transaction.rs": "eb4ade404b3e34d1a4c9e781eaa727b1b77736a22a5ec83b78518ec2b1827adf"
+  }
+}

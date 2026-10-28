@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-24",
+  "task": "candidate reconsideration and operational rescue",
+  "scope": "general-purpose ODE research and optional structural kernels",
+  "broad_production": "HOLD",
+  "default_dispatch_changed": false,
+  "coverage": {
+    "prior_families": 25,
+    "historical_subcandidates": 16,
+    "additional_structural_mechanisms": 16,
+    "overlapping_inventories": true,
+    "pr_metadata": 81,
+    "detailed_pr_reads": 12
+  },
+  "decisions": [
+    {
+      "id": "APPROXIMATE_QUOTIENT",
+      "status": "SPECIALIZED_OPT_IN",
+      "reason": "Rescues approximate relation cases rejected by one-shot polynomial. Cold factorization comparison improves; reusable direct methods remain stronger.",
+      "api": [
+        "DeclaredPolynomialResolvent::apply_refined_checked",
+        "DeclaredPolynomialResolvent::apply_refined_or_fallback"
+      ],
+      "evidence": [
+        "analysis/ALGEBRAIC_RESCUE.json",
+        "analysis/ALGEBRAIC_BENCHMARK.json"
+      ],
+      "permissions": "Same immutable declared linear operator and truthful full-space witnesses; no derivative or Jacobian inference."
+    },
+    {
+      "id": "CAUSAL_SWITCH",
+      "status": "SPECIALIZED_OPT_IN_OPTIMIZATION_POSSIBLE",
+      "reason": "Priced re-exploration reduces initial backoff losses in evolving regimes; no universal win over fixed causal or protected direct methods.",
+      "api": [
+        "integrate_switching_causal_observed",
+        "integrate_sequential_raw_observed"
+      ],
+      "evidence": [
+        "analysis/CAUSAL_BENCHMARK.json",
+        "analysis/CAUSAL_SWITCH.json"
+      ],
+      "routing": "Caller chooses one candidate; controller selects that candidate versus protected same-target raw-U. Forward/Picard retain supplied base JVP; ResidualFirst may use Newton and stage JVP."
+    },
+    {
+      "id": "PARALLEL_PICARD_RESIDUAL_FIRST",
+      "status": "SPECIALIZED_EXPENSIVE_RHS",
+      "reason": "Measured two-thread crossover for synthetic expensive RHS; cheap cases lose and serial dense remains faster.",
+      "evidence": [
+        "analysis/ROOT_VARIANTS.json"
+      ],
+      "not_established": "Nonlinear homotopy subdivision speedup or broad parallel ODE advantage."
+    },
+    {
+      "id": "ALGEBRAIC_EXTENSIONS",
+      "status": "DERIVED_WITH_EXPLICIT_IMPLEMENTATION_OBLIGATIONS",
+      "evidence": [
+        "analysis/THEORY_REASSESSMENT.json",
+        "analysis/CANDIDATE_REASSESSMENT.json"
+      ],
+      "scope": "Conditioned jets, invariant ideals, parameter-cell inverse reuse and fixed-P homotopy need declared providers before automatic use."
+    }
+  ],
+  "revision_units": [
+    {
+      "id": "algebraic",
+      "completed_rounds": 3,
+      "rounds": [
+        "initial residual-correction implementation and contracts",
+        "independent review; additional callback/fallback tests; benchmark syntax repair",
+        "measured legacy counter correction; exact old source retained; rerun"
+      ]
+    },
+    {
+      "id": "causal",
+      "completed_rounds": 3,
+      "rounds": [
+        "protected bypass and exponential cooldown",
+        "controller contract tests and independent review",
+        "priced failure cadence after observed slowdown; overflow receipts and focused tests; final rerun"
+      ]
+    }
+  ],
+  "environment_recovery_is_not_algorithm_revision": true,
+  "source": "SOURCE_FREEZE.json",
+  "all_inventory_decisions": "analysis/CANDIDATE_REASSESSMENT.json",
+  "limits": [
+    "No globally derivative-free stiff black-box default.",
+    "No all-family performance qualification from an inventory.",
+    "No continuous-time or broad production claim from sampled errors.",
+    "No new external solver ranking."
+  ]
+}

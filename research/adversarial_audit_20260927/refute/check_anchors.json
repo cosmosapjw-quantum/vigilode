@@ -1,0 +1,25 @@
+{
+  "checker": "anchors",
+  "path": "/home/cosmosapjw/vigilode/VIGILODE_ADVERSARIAL_AUDIT_20260927.md",
+  "checked": 18,
+  "sample_note": "Report contains 45 finding blocks. Sample = 4 P1 (F-007, F-009, F-010, F-011) + every non-P1 block with id divisible by 3. Only 14 such blocks exist (F-003, F-006, F-018, F-024, F-030, F-033, F-036, F-039, F-042, F-045, F-048, F-051, F-057, F-060), so the requested 26 could not be reached; 18 blocks checked in total. Only the first cited anchor of each block was verified. F-024's planning-branch anchor was readable via refs/remotes/github/planning/vigilode-research-coding-spiral-20260904 in the tree's git and matched.",
+  "verified_ok": ["F-007", "F-009", "F-010", "F-011", "F-003", "F-006", "F-018", "F-024", "F-030", "F-033", "F-036", "F-039", "F-042", "F-045", "F-048", "F-051"],
+  "discrepancies": [
+    {
+      "where": "F-057",
+      "report_says": "crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs:378-382",
+      "source_says": "The file does not exist at this path in the audited tree. It exists only at overlay/untracked/crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs (622 lines), where lines 378-382 do contain the restart/max_arnoldi/iteration_limit ordering check and line 413 contains the arnoldi_iterations > iteration_limit comparison, as claimed. Only the path prefix is wrong; the block's own caveat already says the file is overlay-only.",
+      "source": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/overlay/untracked/crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs",
+      "severity": "wrong",
+      "suggested_text": "overlay/untracked/crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs:378-382"
+    },
+    {
+      "where": "F-060",
+      "report_says": "crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs:258-268",
+      "source_says": "The file does not exist at this path in the audited tree. It exists only at overlay/untracked/crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs, where lines 258-268 do contain the dimension = rhs.len() checks (strict_lower, weights, stage_traces.len() != dimension) and line 300 contains let q = vec![q_upper; dimension], as claimed. Only the path prefix is wrong, and unlike F-057 this block carries no overlay-only caveat. The same unprefixed path is used in the location bullets of unsampled blocks at report lines 439 and 456.",
+      "source": "/home/cosmosapjw/.local/state/vigilode/adversarial-audit/20260927T121000Z/overlay/untracked/crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs",
+      "severity": "wrong",
+      "suggested_text": "overlay/untracked/crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs:258-268"
+    }
+  ]
+}

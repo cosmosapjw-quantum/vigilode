@@ -1,0 +1,250 @@
+{
+  "arms_sha256": "610ebe70e2f7f5f3b770b286a74b951d978b385e0cb3c90ff1b494932b14f266",
+  "comparison_rule": "R=baseline warmed cost/candidate warmed cost; simultaneous CI upper(R)<=0.8 confirms at least 25% candidate cost regression and blocks promotion across candidate frozen declared scope; missing pairs or gates HOLD",
+  "critical_scopes": {
+    "dense_driver": [
+      "C02",
+      "C16"
+    ],
+    "ls_workspace": [
+      "C04",
+      "C08",
+      "C14"
+    ],
+    "sequential_matrix_free_dense_output": [
+      "C06",
+      "C09",
+      "C11"
+    ]
+  },
+  "panel_sha256": "c47501e9b987db586d01a2e16ebdda5949443154bc3bc3f44f287dc3bd6409be",
+  "random_seed": 20261018,
+  "rows": [
+    {
+      "baseline": "native-rodas5p-fast",
+      "baseline_config_id": "default",
+      "candidate": "native-rodas5p-small",
+      "candidate_config_id": "default",
+      "case_id": "ode-logistic",
+      "comparison_scope": "matched_achieved",
+      "component_mapping": [
+        "rodas5p-integrators:src::rodas5p_fast_small#SmallFixedArray"
+      ],
+      "critical_flag": true,
+      "id": "C01",
+      "rationale": "Autonomous nonlinear one-state logistic fixture checks the fixed-array small route against dynamic dense RODAS."
+    },
+    {
+      "baseline": "julia-rodas5p",
+      "baseline_config_id": "default",
+      "candidate": "native-rodas5p-fast",
+      "candidate_config_id": "default",
+      "case_id": "ode-damping-critical",
+      "comparison_scope": "matched_achieved",
+      "component_mapping": [
+        "rodas5p-integrators:src::rodas5p_fast#FastDenseDriver"
+      ],
+      "critical_flag": true,
+      "id": "C02",
+      "rationale": "Critically damped oscillator supplies a matched Julia Rodas5P external comparison."
+    },
+    {
+      "baseline": "native-rodas5p-fast",
+      "baseline_config_id": "default",
+      "candidate": "native-rodas5p-banded",
+      "candidate_config_id": "default",
+      "case_id": "ode-diagonal-stiff",
+      "comparison_scope": "matched_achieved",
+      "component_mapping": [
+        "rodas5p-integrators:src::rodas5p_fast#FastBandedDriver",
+        "rodas5p-integrators:src::rodas5p_fast#BandedIndexed"
+      ],
+      "critical_flag": true,
+      "id": "C03",
+      "rationale": "Three-state diagonal stiff operator exercises the admitted narrow-band indexed implementation; no larger-band crossover claim."
+    },
+    {
+      "baseline": "native-rodas5p-fast",
+      "baseline_config_id": "default",
+      "candidate": "native-rodas5p-mf-ls-workspace",
+      "candidate_config_id": "default",
+      "case_id": "ode-nonnormal",
+      "comparison_scope": "matched_achieved",
+      "component_mapping": [
+        "rodas5p-integrators:src::rodas5p_matrix_free_fast#MatrixFreeLSWorkspace"
+      ],
+      "critical_flag": true,
+      "id": "C04",
+      "rationale": "Nonnormal two-state operator checks Krylov workspace behavior under transient coupling."
+    },
+    {
+      "baseline": "native-rodas5p-fast",
+      "baseline_config_id": "default",
+      "candidate": "native-rodas5p-routed-dense",
+      "candidate_config_id": "default",
+      "case_id": "ode-pr101",
+      "comparison_scope": "matched_achieved",
+      "component_mapping": [
+        "rodas5p-integrators:src::routing#RoutedDenseOrMatrixFree"
+      ],
+      "critical_flag": true,
+      "id": "C05",
+      "rationale": "Original PR101 tolerance and101 outputs check the declared-dense router against direct dense dispatch."
+    },
+    {
+      "baseline": "julia-cvode-bdf",
+      "baseline_config_id": "default",
+      "candidate": "native-rodas5p-matrix-free",
+      "candidate_config_id": "default",
+      "case_id": "ode-pr-linear-1e4@rtol1e-4",
+      "comparison_scope": "matched_achieved",
+      "component_mapping": [
+        "rodas5p-integrators:src::dense_output_v2"
+      ],
+      "critical_flag": true,
+      "id": "C06",
+      "rationale": "Strong linear PR at frozen loose tolerance compares sequential matrix-free dense-output integration with CVODE BDF."
+    },
+    {
+      "baseline": "native-rodas5p-fast",
+      "baseline_config_id": "default",
+      "candidate": "native-rodas5p-fast@predictive-capped2",
+      "candidate_config_id": "default",
+      "case_id": "ode-robertson",
+      "comparison_scope": "matched_achieved",
+      "component_mapping": [
+        "rodas5p-integrators:src::adaptive#PredictiveCapped2"
+      ],
+      "critical_flag": true,
+      "id": "C07",
+      "rationale": "Original Robertson anchor checks the capped predictive policy against the default controller."
+    },
+    {
+      "baseline": "native-rodas5p-fast",
+      "baseline_config_id": "default",
+      "candidate": "native-rodas5p-mf-ls-workspace",
+      "candidate_config_id": "default",
+      "case_id": "ode-hires",
+      "comparison_scope": "matched_achieved",
+      "component_mapping": [
+        "rodas5p-integrators:src::rodas5p_matrix_free_fast#MatrixFreeLSWorkspace"
+      ],
+      "critical_flag": true,
+      "id": "C08",
+      "rationale": "Eight-species HIRES supplies nonlinear stiff kinetics for the workspace route."
+    },
+    {
+      "baseline": "julia-rodas5p",
+      "baseline_config_id": "default",
+      "candidate": "native-rodas5p-matrix-free",
+      "candidate_config_id": "default",
+      "case_id": "ode-periodic-heat@rtol1e-4",
+      "comparison_scope": "matched_achieved",
+      "component_mapping": [
+        "rodas5p-integrators:src::dense_output_v2"
+      ],
+      "critical_flag": true,
+      "id": "C09",
+      "rationale": "Periodic heat64 at frozen loose tolerance compares sequential matrix-free dense output with Julia Rodas5P."
+    },
+    {
+      "baseline": "native-rodas5p-fast",
+      "baseline_config_id": "default",
+      "candidate": "native-rodas5p-mf-fast",
+      "candidate_config_id": "default",
+      "case_id": "ode-advection-diffusion",
+      "comparison_scope": "matched_achieved",
+      "component_mapping": [
+        "rodas5p-integrators:src::rodas5p_matrix_free_fast#MatrixFreeDefault"
+      ],
+      "critical_flag": true,
+      "id": "C10",
+      "rationale": "Periodic advection-diffusion256 checks dense versus fast matrix-free scaling in a nonsymmetric spatial operator."
+    },
+    {
+      "baseline": "diffsol-tsit45",
+      "baseline_config_id": "default",
+      "candidate": "native-rodas5p-matrix-free",
+      "candidate_config_id": "default",
+      "case_id": "ode-gray-scott-2d-4@rtol1e-6",
+      "comparison_scope": "matched_achieved",
+      "component_mapping": [
+        "rodas5p-integrators:src::dense_output_v2"
+      ],
+      "critical_flag": true,
+      "id": "C11",
+      "rationale": "Periodic Gray-Scott4x4 at frozen medium tolerance adds a Diffsol Tsit45 comparison; this is not the A11 continuous-certificate route."
+    },
+    {
+      "baseline": "hairer-rodas",
+      "baseline_config_id": "default",
+      "candidate": "native-sabr",
+      "candidate_config_id": "default",
+      "case_id": "ode-sabr-scalar-fixture",
+      "comparison_scope": "same_target",
+      "component_mapping": [
+        "rodas5p-integrators:src::sabr#SabrStep"
+      ],
+      "critical_flag": true,
+      "id": "C12",
+      "rationale": "Original single forced SABR scalar fixture versus Hairer RODAS; endpoint accuracy passes but achieved errors are unmatched, and stage-only/forced-step semantics remain explicit."
+    },
+    {
+      "baseline": "native-radau3",
+      "baseline_config_id": "h_divisor_8000",
+      "candidate": "native-pexprb54s4",
+      "candidate_config_id": "default",
+      "case_id": "ode-rotation-1",
+      "comparison_scope": "matched_achieved",
+      "component_mapping": [
+        "rodas5p-integrators:src::exponential#PEXPRB54S4"
+      ],
+      "critical_flag": true,
+      "id": "C13",
+      "rationale": "Rotation omega1 compares single-thread adaptive exponential integration with the frozen Radau3 h_divisor8000 arm."
+    },
+    {
+      "baseline": "native-rodas5p-mf-gmres-into",
+      "baseline_config_id": "default",
+      "candidate": "native-rodas5p-mf-ls-workspace",
+      "candidate_config_id": "default",
+      "case_id": "stress-periodic_heat-4096",
+      "comparison_scope": "matched_achieved",
+      "component_mapping": [
+        "rodas5p-integrators:src::rodas5p_matrix_free_fast#MatrixFreeLSWorkspace"
+      ],
+      "critical_flag": true,
+      "id": "C14",
+      "rationale": "Periodic heat4096 compares LS-workspace and GMRES-into paths on the largest admitted spatial stress case."
+    },
+    {
+      "baseline": "julia-ida",
+      "baseline_config_id": "default",
+      "candidate": "julia-dfbdf",
+      "candidate_config_id": "default",
+      "case_id": "dae-index1",
+      "comparison_scope": "same_target",
+      "component_mapping": [],
+      "critical_flag": true,
+      "id": "C15",
+      "rationale": "External IDA versus DFBDF capability/cost control on the original consistent index1 DAE; unmatched errors and no native DAE-solver claim."
+    },
+    {
+      "baseline": "scipy-radau",
+      "baseline_config_id": "default",
+      "candidate": "native-rodas5p-fast",
+      "candidate_config_id": "default",
+      "case_id": "ode-robertson",
+      "comparison_scope": "same_target",
+      "component_mapping": [
+        "rodas5p-integrators:src::rodas5p_fast#FastDenseDriver"
+      ],
+      "critical_flag": true,
+      "id": "C16",
+      "rationale": "Original Robertson anchor supplies a SciPy Radau external comparison with unmatched achieved errors; retain same-target cost only."
+    }
+  ],
+  "schema": "vigilode-component-p3-reviewer-selection-v1",
+  "screening_plan_sha256": "832001a474a26db0ed61db317e485fb1be5f1b0303012da03d1fda29609cacb5",
+  "source_binding_sha256": "53ae19c911a99a718024c56bd9a5ff711e1f637bc6660a31c836870d134945ce"
+}

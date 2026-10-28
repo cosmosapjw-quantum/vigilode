@@ -1,0 +1,84 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+warning: fields `prepared_centers`, `prepared_radii`, `prepared_times`, `prepared_count`, `radii`, and `prepared_valid` are never read
+   --> crates/rodas5p-integrators/src/output.rs:706:5
+    |
+698 | pub(crate) struct OutputCollector {
+    |                   --------------- fields in this struct
+...
+706 |     prepared_centers: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^^^
+707 |     prepared_radii: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^
+708 |     prepared_times: Vec<f64>,
+    |     ^^^^^^^^^^^^^^
+709 |     prepared_count: usize,
+    |     ^^^^^^^^^^^^^^
+710 |     radii: Vec<Vec<f64>>,
+    |     ^^^^^
+711 |     prepared_valid: bool,
+    |     ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: `rodas5p-integrators` (lib) generated 4 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 10.36s
+     Running tests/b1d_resolvent_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime/target/debug/deps/b1d_resolvent_contracts-3eb22608d0e57df8)
+
+running 5 tests
+test b1d_kill_gate_diagnostic ... ignored, diagnostic, gate fixed in docs/plan/IMPLEMENTATION_WAVE4.md; B1D_RESULTS_OUT writes evidence
+test nonnormal_closed_form_and_numeric_guards ... ok
+test zero_weight_refreshes_and_completes_on_both_rules ... ok
+test resolvent_bound_dominates_explicit_t_and_not_b1c ... ok
+test forced_refresh_matches_fast_and_all_solves_are_charged ... ok
+
+test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.17s
+
+     Running tests/reaudit_staleness_guards.rs (/workspace/scratch/0dc1e721cf82/runtime/target/debug/deps/reaudit_staleness_guards-138bc9a312b9fdda)
+
+running 2 tests
+test overflowed_weight_ratio_cannot_hide_a_nonzero_drift_row ... ok
+test empty_matrix_is_not_a_staleness_certificate ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,353 @@
+{
+  "schema_version": "1.0.0",
+  "node_id": "THEORY-HOM-20261011",
+  "source_commit": "8ce9bda0d72d308facd615ac42ec137560fd68c6",
+  "mode": "THEORY_ONLY",
+  "harness": "GPT-6 Astra research v4.0.0",
+  "actual_model_identity": "UNKNOWN",
+  "novelty": "NOT_ESTABLISHED",
+  "report": "HOMOTOPY.md",
+  "independent_decision_status": "PENDING",
+  "execution": {
+    "new_native_runs": 0,
+    "published_scientific_reruns": 0,
+    "new_exact_rational_diagnostics": "HOMOTOPY_EXACT_CHECK.json",
+    "diagnostic_source": "homotopy_exact_check.py",
+    "production_edits": false,
+    "wall_time_measurement": false,
+    "production_promotion": "NOT_REQUESTED_BY_THIS_NODE"
+  },
+  "reused_results": [
+    {
+      "id": "HOM-CAUSAL",
+      "source": "docs/reviews/20261010_accuracy_speed/MATHEMATICS_PORTING_KO.md#7",
+      "policy": "READ_ONCE_REUSE",
+      "claim": "original-target endpoint admission and common-W strictly causal stage model"
+    },
+    {
+      "id": "HOM-RADIUS",
+      "source": "docs/reviews/20261002_thread_transfer/REVIEW_KO.md#5",
+      "policy": "READ_ONCE_REUSE",
+      "claim": "finite nilpotent majorant and feasible-radius polynomial"
+    },
+    {
+      "id": "HOM-ACTION-FIRST",
+      "source": "docs/reviews/20261002_thread_transfer/REVIEW_KO.md#7",
+      "policy": "READ_ONCE_REUSE",
+      "claim": "action-first doubling was already derived, do not recreate"
+    },
+    {
+      "id": "HOM-BLOCKED",
+      "source": "crates/rodas5p-integrators/src/outward_certificate.rs",
+      "policy": "READ_ONCE_REUSE",
+      "claim": "diagonal component-blocked doubling already exists"
+    },
+    {
+      "id": "HOM-COST",
+      "source": "docs/reviews/20261004_rvj_integration/POLYNOMIAL_PARALLEL_KO.md",
+      "policy": "READ_ONCE_REUSE",
+      "claim": "all-in prepared-certificate cost and real client required; PP07 lacks real shift client"
+    },
+    {
+      "id": "HOM-COEFFICIENT-LEAKAGE",
+      "source": "research/adversarial_reaudit_20261001_r3/homotopy/coefficient_structure.json",
+      "policy": "READ_ONCE_REUSE_NO_RERUN",
+      "claim": "represented alpha and l have nonzero upper/diagonal entries and nonzero eighth power; current construction still generic"
+    }
+  ],
+  "theorems": [
+    {
+      "id": "H1",
+      "title": "Globally regular triangular stage graph",
+      "evidence_status": [
+        "derived"
+      ],
+      "premises": [
+        "H_i=W K_i-b0_i-eta sum_{j<i} C_ij K_j-lambda h N_i(K_<i)",
+        "W is the same frozen invertible linear operator for every stage; an arbitrary frozen finite-difference JVP is not automatically a linear matrix",
+        "N_i is C^k and reads only previous stages",
+        "recursively defined states remain inside declared callback domain",
+        "theta fixed for interpretation as one homotopy curve"
+      ],
+      "conclusions": [
+        "unique root K*(lambda) at every admitted lambda",
+        "det(D_K H)=det(W)^s, so no lambda-projection fold",
+        "independently certified windows identify the same root branch",
+        "globally polynomial N_i imply globally polynomial K_i*(lambda)"
+      ],
+      "proof": "HOMOTOPY.md#H1",
+      "positive_benefit": "Branch tracking, fold avoidance, and previous-window root dependency can be removed for this exact structural target.",
+      "exclusions": [
+        "singular W",
+        "diagonal implicit nonlinearity",
+        "general algebraic closure",
+        "callback domain exit",
+        "automatic floating overflow freedom",
+        "actual represented K coefficient leakage unless separately certified by H5"
+      ],
+      "verification": "exact polynomial lambda identity for one new rational instance; general proof by causal induction",
+      "target_scope": "EXACTLY_CAUSAL_REFERENCE_OR_DECLARED_TARGET_NOT_AUTOMATICALLY_CURRENT_REPRESENTED_K_TARGET"
+    },
+    {
+      "id": "H2",
+      "title": "Nilpotent causal error and finite parallel correction",
+      "evidence_status": [
+        "derived"
+      ],
+      "premises": [
+        "nonnegative strict-lower Lipschitz matrix B is valid on a fixed product tube",
+        "d bounds the preconditioned defect at candidate c",
+        "d+B r <= r closes the same tube",
+        "rounding/operator/model uncertainties are in d and round-error vectors rho_j",
+        "each correction round reads only the previous iterate"
+      ],
+      "conclusions": [
+        "e(c) <= sum_{j=0}^{s-1} B^j d without requiring norm(B)<1",
+        "e_m <= B^m e_0 + sum_{j=0}^{m-1} B^(m-1-j) rho_j",
+        "exact arithmetic reaches exact root after at most s rounds",
+        "output error <= abs(b)^T e_m + output assembly rounding"
+      ],
+      "proof": "HOMOTOPY.md#H2",
+      "positive_regime": {
+        "stages": 8,
+        "norm_B_upper": "1/4",
+        "initial_error_upper": "32 epsilon",
+        "round_error_floor_upper": "epsilon/2",
+        "sufficient_rounds": 3,
+        "status": "CONDITIONAL_MATHEMATICAL_REGIME_NOT_NATIVE_OBSERVATION",
+        "output_budget_condition": "norm_1(b) epsilon + output_roundoff <= tau, or sharper componentwise projection"
+      },
+      "exclusions": [
+        "automatic global ODE accuracy",
+        "unbounded finite-difference JVP noise",
+        "in-place asynchronous updates using the same round formula",
+        "actual represented K coefficient leakage unless separately certified by H5"
+      ],
+      "target_scope": "EXACTLY_CAUSAL_REFERENCE_OR_DECLARED_TARGET_NOT_AUTOMATICALLY_CURRENT_REPRESENTED_K_TARGET"
+    },
+    {
+      "id": "H3",
+      "title": "Certified common predictor atlas and strict latency benefit",
+      "evidence_status": [
+        "derived"
+      ],
+      "premises": [
+        "common setup certifies predictors and tubes independently of corrected preceding windows",
+        "all endpoints use original target and physical output budget",
+        "all setup, jet convolution, failures, fallback, dispatch, and certificate work are counted",
+        "worker schedule has a valid maximum-load bound L_p",
+        "strongest applicable comparator has independently established lower cost bound",
+        "actual noncausal K target requires H5 uniform common tube or certified root connectivity across windows; local unrelated unique roots do not establish same branch"
+      ],
+      "analytic_predictor": {
+        "map": "K=K0+lambda Psi(K), theta=0",
+        "premises": [
+          "Psi holomorphic on complex ball radius r",
+          "norm(Psi(K0))<=a",
+          "Lipschitz(Psi)<=b",
+          "R>1",
+          "R(a+b r)<=r",
+          "R b<1"
+        ],
+        "tail_at_one": "r R^(-p)/(R-1)",
+        "coefficient_recurrence": "K_m=D^-1(C K_(m-1)+h [lambda^(m-1)]N(sum_{j<m}K_j lambda^j))",
+        "cost_caveat": "degree orders remain sequential; within each order all common-W stage solves are independent"
+      },
+      "strict_latency_gate": "A + m L_p + C + F + R_f + D < T_seq_low",
+      "distinct_total_work": "W_A + sum_{round,stage}W_ri + W_C + W_F + W_Rf + W_D",
+      "positive_regime": {
+        "premises": [
+          "H2 eight-stage three-round regime",
+          "p>=8",
+          "L_p<=t",
+          "A+C+F+R_f+D<=2t",
+          "strongest applicable sequential comparator T_seq_low>=8t"
+        ],
+        "conclusion": "T_new<=5t<8t, ratio<=5/8 in declared counted-cost model",
+        "work_caveat": "24 stage tasks versus 8; this is latency reduction, not work reduction",
+        "status": "CONDITIONAL_MATHEMATICAL_REGIME_NOT_NATIVE_TIMING"
+      },
+      "proof": "HOMOTOPY.md#H3",
+      "exclusions": [
+        "manufactured unneeded lambda points",
+        "free sequentially generated predictor setup",
+        "automatic wall-clock speedup",
+        "unmeasured failure probability used as worst-case guarantee"
+      ]
+    },
+    {
+      "id": "H4",
+      "title": "Exact affine invariant quotient preserves stage target and reduces work",
+      "evidence_status": [
+        "derived"
+      ],
+      "premises": [
+        "full-column-rank U, r<n, fixed y_ref and y_n=y_ref+U z_n",
+        "f(t,y_ref+Uz)=U g(t,z) on the declared model tube",
+        "actual current J U=U J_r, M U=U M_r, f_t=U g_t",
+        "W and W_r invertible",
+        "direct reduced callbacks avoid computing full n-dimensional RHS/Jacobian internally",
+        "root uniqueness from H1 for exact causal target or H5 for actual target on same certified tube; intertwining alone gives root inclusion, not unique branch selection",
+        "when using H5 local uniqueness, the chosen reduced root lift must lie in the full certified tube"
+      ],
+      "conclusions": [
+        "K_full(lambda)=(I_s tensor U)K_reduced(lambda) for every admitted lambda",
+        "same exact discrete RODAS5P output and embedded vector under lift",
+        "physical_lift_gain=sqrt(r/n) norm_2(D_s U D_r^-1)",
+        "full work reduction whenever complete reduced cost upper bound is below strongest full comparator lower bound"
+      ],
+      "work_upper": "V + q(F_r+s S_r+s G_r+L_nr+C_r)",
+      "dense_positive_asymptotic": {
+        "conditions": "r,s fixed; dense generic full comparator factorization Theta(n^3); identity validation V=O(n^2 r); reduced callback/certificate O(nr+r^3)",
+        "one_step_reduced": "O(n^2)",
+        "online_after_amortized_structure_validation": "O(nr+r^3)",
+        "full_comparator": "Theta(n^3)",
+        "scope": "counted arithmetic; not an assertion against a preexisting sparse/banded/reduced optimal solver"
+      },
+      "positive_model": "f(z,w)=(g(z), L g(z)-A_perp(w-Lz)); U=(I;L), initial w=Lz",
+      "proof": "HOMOTOPY.md#H4",
+      "verification": "new exact Fraction 3D versus 1D nonlinear four-stage targets at lambda 0,1/2,1 and theta1/3; all36 component equalities exact",
+      "exclusions": [
+        "near-invariance treated as exact",
+        "off-manifold data projection",
+        "nonlinear coordinate-equivariance",
+        "stale J/basis/epoch",
+        "unbounded lift rounding"
+      ]
+    },
+    {
+      "id": "H5",
+      "title": "Near-causal leakage rescue for unchanged actual target",
+      "evidence_status": [
+        "derived"
+      ],
+      "premises": [
+        "actual map derivative majorant A=B+E>=0 on same convex product tube",
+        "B strictly lower; E includes all upper/diagonal leakage and nonlinear derivative influence",
+        "S=sum_{j=0}^{s-1}B^j",
+        "T=S E and 0<=norm(T)<=q<1",
+        "actual defect d bounds Phi_actual(c)-c",
+        "verified radius r encloses (I-T)^-1 S(d+delta*1), delta>0, and final d+A r<=r is checked",
+        "uniform common tube over lambda or certified shared root connectivity required for same-branch windows"
+      ],
+      "conclusions": [
+        "(I-A)^-1=(I-S E)^-1 S>=0",
+        "actual root exists and is unique in certified tube",
+        "candidate error <=(I-T)^-1 S d; norm <=norm(S d)/(1-q)",
+        "m-term leakage correction tail <=q^(m+1) norm(S d)/(1-q)",
+        "actual Jacobi errors use A^m, not nilpotent B^m; exact s-round termination is not claimed",
+        "v=(I-A)^-1 1>=1 gives weighted infinity contraction alpha=max_i(1-1/v_i)<1 and geometric actual-target convergence with roundoff floor"
+      ],
+      "proof": "HOMOTOPY.md#H5",
+      "native_binding": "ACTUAL_COEFFICIENTS_PRESERVED_BUT_ACTUAL_B_E_Q_NOT_COMPUTED",
+      "positive_benefit": "Reuse finite causal action and add geometrically convergent cheap leakage correction without changing original target.",
+      "exclusions": [
+        "silently zeroing coefficient leakage",
+        "treating tiny coefficient magnitude as tiny amplified error",
+        "disjoint local windows assumed same branch",
+        "native promotion without q/tube/rounding certificate"
+      ]
+    }
+  ],
+  "development_nodes": [
+    {
+      "id": "HD00",
+      "dependencies": [],
+      "status": "PROPOSED_NOT_EXECUTED",
+      "artifact": "Actual target leakage and reference mismatch contract",
+      "seams": [
+        "coefficients.rs",
+        "block.rs",
+        "causal_majorant.rs"
+      ],
+      "acceptance": "preserve all represented coefficients; bound B/E and actual d; verify q<1, same-tube closure; no numerical zeroing or unproved root equivalence"
+    },
+    {
+      "id": "HD01",
+      "dependencies": [
+        "HD00"
+      ],
+      "status": "PROPOSED_NOT_EXECUTED",
+      "artifact": "CausalStageContract",
+      "seams": [
+        "block.rs",
+        "homotopy.rs"
+      ],
+      "acceptance": "strict-lower common-W identity and current model/tube binding; diagonal nonlinear dependency rejected"
+    },
+    {
+      "id": "HD02",
+      "dependencies": [
+        "HD01"
+      ],
+      "status": "PROPOSED_NOT_EXECUTED",
+      "artifact": "source-bound B,d,r and wave/output error bounds",
+      "seams": [
+        "causal_majorant.rs",
+        "outward_certificate.rs",
+        "ParallelExecution",
+        "BatchRhsFn"
+      ],
+      "acceptance": "frozen-old-iterate semantics; nilpotent and noncontracting fixtures; all rounding/tube failures recorded"
+    },
+    {
+      "id": "HD03",
+      "dependencies": [
+        "HD02"
+      ],
+      "status": "PROPOSED_NOT_EXECUTED",
+      "artifact": "HomotopyAtlasPlan and optional directional lambda-jet provider",
+      "seams": [
+        "homotopy.rs",
+        "transactional_q1_q2.rs"
+      ],
+      "acceptance": "common setup charged; required independent windows only; original endpoint certified; positive total latency margin"
+    },
+    {
+      "id": "HD04",
+      "dependencies": [
+        "HD00"
+      ],
+      "status": "PROPOSED_NOT_EXECUTED",
+      "artifact": "AffineInvariantModel",
+      "seams": [
+        "problem.rs",
+        "declared structure router"
+      ],
+      "acceptance": "actual r<<n client; exact full/reduced J,M,ft and initial manifold contract; physical norm lift; complete work reduction against strongest applicable comparator"
+    },
+    {
+      "id": "HD05",
+      "dependencies": [
+        "HD03",
+        "HD04"
+      ],
+      "status": "PROPOSED_NOT_EXECUTED",
+      "artifact": "prospective real-client accuracy/cost campaign",
+      "seams": [
+        "work.rs",
+        "current driver telemetry"
+      ],
+      "acceptance": "new preregistration; all setup/failure/fallback/certificate costs; unchanged published campaigns not rerun; independent decision separates endpoint, global error, work, span, wall time"
+    }
+  ],
+  "claim_ceiling": {
+    "mathematical_guarantee": "CONDITIONAL_PROOFS_READY_FOR_INDEPENDENT_REVIEW",
+    "implementation_verified": false,
+    "production": "HOLD_PENDING_IMPLEMENTED_PREMISES_AND_NATIVE_GATE",
+    "global_accuracy": "HOLD_THIS_NODE_ONLY_CERTIFIES_STAGE_TARGET_CONTAMINATION",
+    "arithmetic_complexity": "CONDITIONAL_THEOREM_H4",
+    "parallel_span": "CONDITIONAL_THEOREM_H3",
+    "wall_time": "NOT_MEASURED",
+    "current_represented_K_source_binding": "HOLD_NEARCAUSAL_CERTIFICATE_NOT_YET_COMPUTED"
+  },
+  "source_binding": {
+    "status": "HOLD_ACTUAL_REPRESENTED_K_TARGET_NOT_EXACTLY_CAUSAL",
+    "published_evidence": "research/adversarial_reaudit_20261001_r3/homotopy/coefficient_structure.json",
+    "current_source": "coefficients.rs generic inverse -> alpha/beta/l; block.stage_mix reads all entries",
+    "correction": "Original blanket current-native no-fold assertion withdrawn. H1/H2 exact termination require exactly causal declared/reference target; actual all-entry target needs H5.",
+    "actual_B_E_q_computed": false,
+    "coefficient_zeroing_authorized": false,
+    "independent_review_correction_record": "HOMOTOPY_REVIEW_CORRECTION.json"
+  }
+}

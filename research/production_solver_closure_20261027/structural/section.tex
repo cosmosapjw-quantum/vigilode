@@ -1,0 +1,133 @@
+\section{Structural mean-field closure: charged failures and full-space residual enclosures}
+\label{sec:structural-production}
+
+For the immutable affine model
+\begin{equation}
+ f(y)=b-dy+\kappa\operatorname{mean}(y)\mathbf1,
+ \qquad d\ge\kappa\ge0,
+\end{equation}
+PR91 reduced the original eight-stage raw-$U$ target to two scalar transfer recurrences. The present change preserves every represented stage and endpoint in the successful comparison fixtures. It closes the failed-attempt work contract and replaces repeated full-state verification with a rounding-aware factorization. The model remains derivative-free: no state Jacobian, JVP, state matrix factorization, or Newton update is requested. The shared tableau loader retains its process-lifetime fixed $8\times8$ coefficient inversion; this metadata setup is outside step counters and warmed before paired timing.
+
+\subsection{Original target and exact residual decomposition}
+Let $P=\mathbf1\mathbf1^T/n$, $Q=I-P$, $J=-dQ-(d-\kappa)P$, and $a=h\gamma$, with $h>0$ and the fixed tableau's $\gamma>0$. The full original residual is
+\begin{equation}
+ \mathcal R_i(U)=(I-aJ)U_i-af(y)
+ -\sum_{j<i}(\gamma c_{ij}I+a a_{ij}J)U_j.
+\end{equation}
+All represented input and tableau coefficients are interpreted as exact reals; the enclosure includes the real product $h\gamma$ and real difference $d-\kappa$.
+
+\paragraph{Theorem S1 (represented-stage decomposition).}
+For arbitrary $x,\mu$ and transfers $t_i,v_i$, write
+\begin{equation}
+ U_i=t_i(x-\mu\mathbf1)+v_i\mu\mathbf1+\Delta_i,
+ \quad \varepsilon_f=x-f(y),\quad m=\operatorname{mean}(x).
+\end{equation}
+Define
+\begin{align}
+ \rho_i(r;z)&=(1+ar)z_i
+ -\sum_{j<i}(\gamma c_{ij}-ar a_{ij})z_j-a,\\
+ \rho_{ti}&=\rho_i(d;t),\quad
+ \rho_{ci}=\rho_i(d-\kappa;v),\quad
+ \ell_i=t_i+\sum_{j<i}a_{ij}t_j.
+\end{align}
+Then
+\begin{align}
+ \mathcal R_i(U)={}&\rho_{ti}(x-\mu\mathbf1)
+ +\rho_{ci}\mu\mathbf1
+ +a\kappa\ell_i(\mu-m)\mathbf1+a\varepsilon_f \nonumber\\
+ &+(I-aJ)\Delta_i
+ -\sum_{j<i}(\gamma c_{ij}I+a a_{ij}J)\Delta_j.
+\end{align}
+Substitution and $Jx=-dx+\kappa m\mathbf1$ prove the identity. In particular, the transverse factor is $x-\mu\mathbf1$ with the actually computed $\mu$; its discrepancy from the exact projector is explicitly retained. A Wolfram symbolic substitution independently returned a zero vector. The proof applies for arbitrary dimension and arbitrary full-dimensional $\Delta_i$.
+
+\paragraph{Theorem S2 (full original-space bound).}
+The exact induced infinity norm of $tQ+cP$ is
+\begin{equation}
+ \nu_n(t,c)=\left|t+\frac{c-t}{n}\right|
+ +(n-1)\left|\frac{c-t}{n}\right|.
+\end{equation}
+Set
+\begin{align}
+ w_{ii}&=\nu_n(1+ad,1+a(d-\kappa)),\\
+ w_{ij}&=\nu_n(ad a_{ij}-\gamma c_{ij},
+ a(d-\kappa)a_{ij}-\gamma c_{ij}),\quad j<i.
+\end{align}
+If $\|\Delta_j\|_\infty\le\delta_j$,
+$\|\varepsilon_f\|_\infty\le\epsilon$,
+$|\mu-m|\le\zeta$, and $\|x-\mu\mathbf1\|_\infty\le X$, then
+\begin{equation}
+ \|\mathcal R_i(U)\|_\infty\le
+ |\rho_{ti}|X+|\rho_{ci}|\,|\mu|
+ +|a\kappa\ell_i|\zeta+a\epsilon
+ +\sum_{j\le i}w_{ij}\delta_j.
+\end{equation}
+This follows directly from S1 and the induced norm inequality. Every scalar coefficient, block norm and nonnegative final accumulation is enclosed outward. The bound covers all $8n$ original residual components at cost $O(sn+s^2)$ instead of $O(s^2n)$. Only the individual block norm is asserted sharp; the combined rounding envelope is generally conservative.
+
+\subsection{Rounding constants and scalar specialization}
+\paragraph{Theorem S3 (operation-wise rounding enclosure).}
+The arithmetic assumptions are binary64 round-to-nearest, gradual underflow, finite intermediates, and no unsafe reassociation. Let $r(z)$ be half the binade spacing at a finite rounded result, rounded upward to the least positive subnormal when necessary. This is the round-to-nearest error radius; it is derived from the exponent, with no fitted factor.
+
+For the existing scaled Neumaier mean, put $s=\operatorname{fl}(1/n)$, $v_i=\operatorname{fl}(s x_i)$ and let $C_i$ be the accumulated compensation. FastTwoSum supplies exact local addition residuals~\cite{OgitaRumpOishi2005}. Upward sums
+\begin{equation}
+ A\ge\sum_i|v_i|,\quad E_p\ge\sum_i r(v_i),\quad
+ E_c\ge\sum_i r(C_i),\quad \theta\ge r(s)/s
+\end{equation}
+yield
+\begin{equation}
+ |\widehat m-\operatorname{mean}(x)|
+ \le E_p+\theta(A+E_p)+E_c+r(\widehat m).
+\end{equation}
+Telescoping the exact local corrections proves the accumulation part; the remaining two terms bound scaled-product and reciprocal error. The enclosure plan requires an exactly represented positive integer dimension at most $2^{53}$.
+
+For an actual stage lift
+$p=\operatorname{fl}(t_i\operatorname{fl}(x_k-\mu))$,
+$q=\operatorname{fl}(v_i\mu)$ and
+$U_{ik}=\operatorname{fl}(p+q)$, the sum of the four local error bounds gives
+\begin{equation}
+ \|\Delta_i\|_\infty\le\delta_i:=r(\max_k|U_{ik}|)+r(\max_k|p_k|)+r(q)
+ +|t_i|r(\max_k|\operatorname{fl}(x_k-\mu)|).
+\end{equation}
+The affine RHS is enclosed from its represented product, subtraction, shared mean term and final addition in the same way.
+
+\paragraph{Theorem S4 (exact scalar degeneration).}
+For $n=1$, $P=I$ and $\mu=x$ exactly. Consequently the real represented stage is one rounded product $U_i=\operatorname{fl}(v_i x)$, together with exact signed-zero operations retained for bit compatibility. With $u=2^{-53}$ and $\eta=2^{-1074}$,
+\begin{equation}
+ |\operatorname{fl}(z)-z|\le u|z|+\eta/2.
+\end{equation}
+The unrepresentable positive $\eta/2$ is enclosed upward by $\eta$. Therefore
+\begin{equation}
+ |\mathcal R_i(U)|\le
+ \left(|\rho_{ci}|+u\sum_{j\le i}w_{ij}|v_j|\right)|x|
+ +\eta\sum_{j\le i}w_{ij}+a\epsilon.
+\end{equation}
+The two sums are plan-only quantities and are precomputed outward, reducing per-step scalar verification to $O(s)$. The special case is the exact projector degeneration, not a measured dimension cutoff.
+
+\subsection{Failure accounting and comparison design}
+The new charged methods return \texttt{StructuralFailure\{error,work\}}. Scheduler closures return each stage result as data, all jobs are joined, their actual work is accumulated, and the first failure in stage order is returned. A failed job cannot cancel another scheduled job's accounting. Pre-attempt refusals retain zero work. Legacy method signatures remain available; adaptive clients use the charged variants.
+
+Two implementations were compared against the byte-identical PR91 source in the same executable. The fused direct screen removes two full-state temporary vectors while preserving the original arithmetic order. The factorized screen supplies an outward bound and refuses when that bound exceeds the original requested limit. Full 64-step trajectories retain the original physical cap $10^{-6}$, same-target cap $10^{-11}$ and residual cap $10^{-9}$. Every observed state was bit-identical to PR91.
+
+\begin{table}[tb]
+\caption{Final paired full-trajectory timings versus PR91. Values are medians of five ABBA/BAAB blocks with their observed ranges, not confidence intervals. Model allocation, plan construction, stages, screening, endpoint and return allocations are timed.}
+\begin{ruledtabular}
+\begin{tabular}{rrll}
+$n$ & workers & fused direct & factorized enclosure\\
+\hline
+1 & 1 & $1.011\ [0.737,1.231]$ & $1.190\ [1.154,1.323]$\\
+64 & 1 & $1.168\ [0.915,1.266]$ & $1.783\ [1.649,1.998]$\\
+2048 & 1 & $0.840\ [0.619,1.220]$ & $2.063\ [1.226,3.614]$\\
+2048 & 2 & $1.213\ [1.032,1.276]$ & $2.152\ [0.745,2.328]$\\
+\end{tabular}
+\end{ruledtabular}
+\label{tab:structural-closure}
+\end{table}
+
+At $n=2048$, complete-trajectory RHS evaluations fell from 576 to 64, physical linear actions from 512 to zero, and causal full-state accumulations from 7,340,032 to zero. All 1,048,576 stage residual components remain covered; 262,144 mean components and 1,048,576 lift components receive explicit rounding enclosures. The maximum grid error is unchanged at $2.398\times10^{-10}$.
+
+The initially unfavorable scalar result was retained: before the last correction, the enclosure gave $0.392\times$ and the charged fused implementation $0.694\times$ in five paired blocks. The exact $P=I$ specialization and algebraic aggregation of batch work address that diagnosed cost. The final scalar enclosure gives $1.190\times$. This is a post-diagnostic improvement; final large-case fused timing remains uncertain and its negative median is reported.
+
+Eleven distinct native contracts pass (five reused structural contracts and six new production contracts). Independent exact-rational evaluation of the full original equations confirms 168 stage bounds across 21 fixtures and 728 residual components, including large cancellation, nonrepresentable rate differences and subnormals. The 8,184 exponent-wide checks of round-to-nearest radii are reused after the scalar update. Three correction passes were used: crate-local control packaging, a portable integer dimension guard, and the diagnosed scalar/accounting optimization. No further solver tuning was performed.
+
+A final Callgrind 3.22.0 profile used two and six complete trajectories per arm at $n=2048$, one worker, and subtracted startup via $(I_r(6)-I_r(2))/4$. All six runs exited zero with unchanged source and binary. Instructions per trajectory were $347{,}516{,}244.75$ for PR91, $309{,}511{,}284.25$ for fused direct, and $130{,}256{,}982$ for the enclosure: reductions of $10.94\%$ and $62.52\%$, respectively. These guest instruction counts are reported separately from native wall time; the fused timing median remains negative in the final large single-worker sample. Protocol, commands, raw profiles and hashes are retained in \texttt{instruction\_profile/}.
+
+The certificate concerns original stage residuals. A complete outward physical trajectory certificate still requires outward propagation constants, temporal truncation and endpoint-rounding contributions. These are explicit local follow-up obligations; the current measured trajectory accuracy and stage certificate are separate evidence.

@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "unit": "A05 dense error enum integration refusal mapping",
+  "source_commit": "3e9b28b33469229e5b80e1914bf33a20f98e203f",
+  "source": {
+    "path": "crates/rodas5p-fair-ab/src/adaptive_global_error.rs",
+    "sha256": "d9b9fe0a59f8ffe64a47b1d3e841ee48d5209b5b48f0b676cf2858db556b0663"
+  },
+  "change": "DenseOutputError::UnsupportedUnboundModel and BoundModelMismatch now map explicitly to CoreError::InvalidInput while preserving the exact display message; existing reason-mapping test covers both.",
+  "first_failure": {
+    "path": "../continuation_workspace_check_a01_a05.log",
+    "sha256": "a36ebbe6023a84c2c8c4edcc9b3ca5cc38541ebca88c879db43b26b00ddacb70",
+    "exit_code": 101,
+    "classification": "IMPLEMENTATION_ENUM_INTEGRATION_E0004"
+  },
+  "validation": [
+    {
+      "command": "cargo test --locked --offline -p rodas5p-fair-ab dense_core_preserves_dense_error_reason_as_invalid_input",
+      "exit_code": 0,
+      "result": "1 passed",
+      "log": "dense_core_mapping_test_final.log",
+      "log_sha256": "d162dbc6e8b3f839b41268b91d29c7fec395928a2f9299ca08fbdad0280956e5"
+    },
+    {
+      "command": "cargo check --locked --offline --workspace --all-targets",
+      "exit_code": 0,
+      "result": "passed",
+      "log": "workspace_all_targets_check.log",
+      "log_sha256": "2bf131886a373450706c607620b108e98fde9650d6d868151fa87e01c192cb31"
+    }
+  ],
+  "independent_review": {
+    "verdict": "SCOPED_PASS",
+    "scope": "fail-closed enum integration only",
+    "authority_change": false,
+    "reviewer_runtime": "NOT_INDEPENDENTLY_OBSERVED"
+  },
+  "full_a05_status": "HOLD"
+}

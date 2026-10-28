@@ -1,0 +1,554 @@
+{
+  "schema": "vigilode.production-frontier-followup-task-status.v1",
+  "observed_utc": "2026-10-23T10:24:52.383200+00:00",
+  "fixed_tip": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+  "broad_production": "HOLD",
+  "task_count": 19,
+  "tasks": [
+    {
+      "task_id": "PR00",
+      "status": "PASS_SCOPED",
+      "dependencies": [],
+      "source_commit": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+      "source_tree": "2eb2691d0eab29fde84b6c5e88c0422ebf14c38e",
+      "changed_files": [],
+      "evidence_reused": [
+        "research/production_frontier_20261023/evidence/SOURCE_SURVEY.json",
+        "research/production_frontier_20261023/results/FINAL_EVIDENCE_AUDIT.json"
+      ],
+      "new_receipts": [
+        "IDENTITY.json",
+        "receipts/pr00/COMMANDS.json",
+        "REUSED_EVIDENCE.json",
+        "BUILD_ENV.json"
+      ],
+      "actual_error_scope": "NOT_APPLICABLE_IDENTITY_PREFLIGHT",
+      "total_work_including_failures": "NO_SOLVER_EXECUTION",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "PASS_SCOPED: required ancestors, package verifier 148 files and 488 archived raw files, Rust/Cargo 1.94.1, 125-package offline metadata; broad production HOLD",
+      "remaining_blockers": []
+    },
+    {
+      "task_id": "FA01",
+      "status": "PASS_SCOPED",
+      "dependencies": [
+        "PR00"
+      ],
+      "source_commit": "49696c982446dfe5d274f5361819b218122b7449",
+      "source_tree": "39a3a7484cfa5257c93116b438de47e04efe1a4e",
+      "changed_files": [
+        "crates/rodas5p-core/src/error.rs",
+        "crates/rodas5p-core/src/operator.rs",
+        "crates/rodas5p-integrators/src/dense_output_v2.rs",
+        "crates/rodas5p-integrators/src/rhs_telemetry.rs",
+        "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+        "crates/vigilode/src/fd.rs",
+        "crates/vigilode/src/records.rs",
+        "crates/vigilode/src/solution.rs",
+        "crates/vigilode/src/solve.rs",
+        "crates/vigilode/tests/frontier_fatal_session_contracts.rs"
+      ],
+      "evidence_reused": [
+        "research/production_frontier_20261023/analysis/ADVERSARIAL_FINDINGS.json",
+        "research/production_frontier_20261023/analysis/SWITCHING.md"
+      ],
+      "new_receipts": [
+        "receipts/build01/build.stdout",
+        "receipts/build01/build.stderr",
+        "receipts/build01/build.exit",
+        "receipts/build01/tests.stdout",
+        "receipts/build01/tests.stderr",
+        "receipts/build01/tests.exit",
+        "receipts/build01/tests2.stdout",
+        "receipts/build01/tests2.stderr",
+        "receipts/build01/tests2.exit",
+        "receipts/build02/core_tests.exit",
+        "receipts/build02/facade_tests.exit",
+        "receipts/build02/direct_tests.json",
+        "receipts/build03/fatal_tests.exit"
+      ],
+      "actual_error_scope": "fatal/recoverable behavioral contract, no new physical-error campaign",
+      "total_work_including_failures": "failed initial fixtures and corrected tests retained in build01/build02/build03; native attempted JVP charged, unexecuted mass not charged",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "PASS_SCOPED: independent review of protected scalar dense/banded/MF/JVP/FD/fast/mass/sequential and interior routes; fatal callback exactly once, no postfatal physical trial, accepted prefix and charged attempted work retained; first failed fixtures preserved",
+      "remaining_blockers": [
+        "row-batch and arbitrary custom LinearOperator partial failed work not established",
+        "FA-specific new zero-allocation measurement and full exact-base trajectory campaign NOT_RUN"
+      ]
+    },
+    {
+      "task_id": "SW02",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "FA01"
+      ],
+      "source_commit": "49696c982446dfe5d274f5361819b218122b7449",
+      "source_tree": "39a3a7484cfa5257c93116b438de47e04efe1a4e",
+      "changed_files": [
+        "crates/rodas5p-integrators/src/dopri5.rs",
+        "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+        "crates/rodas5p-integrators/src/lib.rs",
+        "crates/rodas5p-integrators/tests/frontier_session_contracts.rs"
+      ],
+      "evidence_reused": [
+        "research/adaptive_causal_20261023/results/rhs_persistent_campaign/RHS_PARITY.json",
+        "research/production_frontier_20261023/results/switching_campaign/SUMMARY.json"
+      ],
+      "new_receipts": [
+        "receipts/build04/build.receipt.json",
+        "receipts/build04/direct_tests.json",
+        "receipts/build05/build.receipt.json",
+        "receipts/build05/direct_tests.json"
+      ],
+      "actual_error_scope": "no new physical error campaign; exact same-schedule state/counter parity fixture only",
+      "total_work_including_failures": "all entered trial attempts and rejections in 10 integration + 1 unit gate; initial static defect and bounded repair retained in review trail; no new timed cohort",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "IN_PROGRESS; PASS_SCOPED subcomponent native stage1: independent review plus build05 SW10/10 and private terminal gate1/1; frozen registered landing DOPRI5 and dense-Jacobian identity-mass RODAS NoSink sessions preserve same-schedule bits/work/FSAL/controller and sticky failures. Full SW02 adoption remains HOLD.",
+      "remaining_blockers": [
+        "new facade/switching/events/dense/mass/banded/MF session adoption NOT_RUN",
+        "whole-solve zeroallocation and broad performance NOT_RUN"
+      ],
+      "verified_subscope": "PASS_SCOPED: native DOPRI endpoint/landing and RODAS-fast NoSink only"
+    },
+    {
+      "task_id": "EV01",
+      "status": "BLOCKED",
+      "dependencies": [
+        "SW02",
+        "FA01"
+      ],
+      "source_commit": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+      "source_tree": "2eb2691d0eab29fde84b6c5e88c0422ebf14c38e",
+      "changed_files": [],
+      "evidence_reused": [
+        "research/production_frontier_20261023/analysis/PRODUCTION_VALIDATION.md"
+      ],
+      "new_receipts": [],
+      "actual_error_scope": "NOT_MEASURED_NEW",
+      "total_work_including_failures": "NOT_MEASURED_NEW",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "BLOCKED by unfinished required capability; prior evidence REUSED and unrelated inspection may continue.",
+      "remaining_blockers": [
+        "dependency not yet complete for required support: SW02"
+      ]
+    },
+    {
+      "task_id": "SW03",
+      "status": "BLOCKED",
+      "dependencies": [
+        "SW02"
+      ],
+      "source_commit": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+      "source_tree": "2eb2691d0eab29fde84b6c5e88c0422ebf14c38e",
+      "changed_files": [],
+      "evidence_reused": [
+        "research/production_frontier_20261023/results/switching_campaign/SUMMARY.json",
+        "research/production_frontier_20261023/analysis/SWITCHING.json"
+      ],
+      "new_receipts": [],
+      "actual_error_scope": "NOT_MEASURED_NEW",
+      "total_work_including_failures": "NOT_MEASURED_NEW",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "BLOCKED by unfinished required capability; prior evidence REUSED and unrelated inspection may continue.",
+      "remaining_blockers": [
+        "dependency not yet complete for required support: SW02"
+      ]
+    },
+    {
+      "task_id": "DV01",
+      "status": "BLOCKED",
+      "dependencies": [
+        "SW03"
+      ],
+      "source_commit": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+      "source_tree": "2eb2691d0eab29fde84b6c5e88c0422ebf14c38e",
+      "changed_files": [],
+      "evidence_reused": [
+        "research/production_frontier_20261023/analysis/SWITCHING.md"
+      ],
+      "new_receipts": [],
+      "actual_error_scope": "NOT_MEASURED_NEW",
+      "total_work_including_failures": "NOT_MEASURED_NEW",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "BLOCKED by unfinished required capability; prior evidence REUSED and unrelated inspection may continue.",
+      "remaining_blockers": [
+        "dependency not yet complete for required support: SW03"
+      ]
+    },
+    {
+      "task_id": "GE01",
+      "status": "IN_PROGRESS",
+      "dependencies": [
+        "PR00"
+      ],
+      "source_commit": "49696c982446dfe5d274f5361819b218122b7449",
+      "source_tree": "39a3a7484cfa5257c93116b438de47e04efe1a4e",
+      "changed_files": [
+        "crates/rodas5p-integrators/src/physical_error_budget.rs",
+        "crates/rodas5p-integrators/tests/frontier_physical_budget.rs",
+        "crates/rodas5p-integrators/src/lib.rs"
+      ],
+      "evidence_reused": [
+        "research/production_frontier_20261023/results/production_validation_checks.json"
+      ],
+      "new_receipts": [
+        "receipts/build01/build.exit",
+        "receipts/build01/tests.stdout",
+        "receipts/build01/tests2.stdout",
+        "receipts/build04/build.receipt.json",
+        "receipts/build04/direct_tests.json",
+        "receipts/build05/build.receipt.json",
+        "receipts/build05/direct_tests.json",
+        "receipts/build05/doc_tests.receipt.json"
+      ],
+      "actual_error_scope": "exact dyadic 3 temporal refinements with zero analytic reference uncertainty; no general flow claim",
+      "total_work_including_failures": "provider attempts charged on refusal; fixed-capacity staged ledger and accepted state/time commit; 12 focused tests including three-level manufactured refinement, no timed cohort",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "IN_PROGRESS; PASS_SCOPED subcomponent reusable ledger and exclusive accepted-state/time transaction consumer: build05 GE12/12 plus rustdoc compile-fail14/14; independent code review confirms checkpoint binding. Full GE01 native driver hookup and certified physical-client error remain HOLD.",
+      "remaining_blockers": [
+        "real native accepted-candidate driver call site NOT_RUN; requires separate review",
+        "bounded evidence remains caller assertion; no automatic certified global error"
+      ],
+      "verified_subscope": "PASS_SCOPED: exclusive accepted-state/time budget consumer without native driver hookup"
+    },
+    {
+      "task_id": "QF01",
+      "status": "BLOCKED",
+      "dependencies": [
+        "GE01"
+      ],
+      "source_commit": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+      "source_tree": "2eb2691d0eab29fde84b6c5e88c0422ebf14c38e",
+      "changed_files": [],
+      "evidence_reused": [
+        "research/production_frontier_20261023/analysis/AFFINE_RESULTS_KO.md",
+        "research/production_frontier_20261023/analysis/AFFINE_QUOTIENT.json"
+      ],
+      "new_receipts": [],
+      "actual_error_scope": "NOT_MEASURED_NEW",
+      "total_work_including_failures": "NOT_MEASURED_NEW",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "BLOCKED by unfinished required capability; prior evidence REUSED and unrelated inspection may continue.",
+      "remaining_blockers": [
+        "dependency not yet complete for required support: GE01"
+      ]
+    },
+    {
+      "task_id": "QA01",
+      "status": "PASS_SCOPED",
+      "dependencies": [
+        "PR00"
+      ],
+      "source_commit": "49696c982446dfe5d274f5361819b218122b7449",
+      "source_tree": "39a3a7484cfa5257c93116b438de47e04efe1a4e",
+      "changed_files": [
+        "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+        "crates/rodas5p-integrators/tests/frontier_polynomial_provider.rs",
+        "crates/rodas5p-integrators/examples/frontier_polynomial_provider.rs"
+      ],
+      "evidence_reused": [
+        "research/production_frontier_20261023/analysis/POLYNOMIAL.md",
+        "research/production_frontier_20261023/analysis/POLYNOMIAL_CANDIDATES.json"
+      ],
+      "new_receipts": [
+        "receipts/build02/integrator_tests.exit",
+        "receipts/qa01/RECEIPT.json",
+        "receipts/qa01_retest/test.receipt.json",
+        "receipts/qa01_retest/example.receipt.json"
+      ],
+      "actual_error_scope": "two-state exchange implicit-Euler eight-step client; maximum endpoint error 0.018986588310576202, original stage residual 8.326672684688674e-17; no general causal/RODAS claim",
+      "total_work_including_failures": "degree-two witness stage 1 candidate plus 1 original residual action; direct 128 block formula evaluations plus residual block evaluations, Neumann 54 actions; failed direct attempt charged in test",
+      "performance_cohort": "NOT_RUN_TIMED; untimed action counts only",
+      "decision": "PASS_SCOPED: independent reviewer approved typed homogeneous two-state exchange provider and implicit-Euler client; 8/8 new tests, 8/8 legacy polynomial tests, minimal reporting fixes retested 8/8",
+      "remaining_blockers": [
+        "general causal/RODAS stage adoption NOT_RUN",
+        "no same-host timed speed claim"
+      ]
+    },
+    {
+      "task_id": "CF01",
+      "status": "BLOCKED",
+      "dependencies": [
+        "GE01",
+        "FA01"
+      ],
+      "source_commit": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+      "source_tree": "2eb2691d0eab29fde84b6c5e88c0422ebf14c38e",
+      "changed_files": [],
+      "evidence_reused": [
+        "research/production_frontier_20261023/analysis/CAUSAL_TRAJECTORY.md",
+        "research/production_frontier_20261023/analysis/CAUSAL_FINDINGS.json"
+      ],
+      "new_receipts": [],
+      "actual_error_scope": "NOT_MEASURED_NEW",
+      "total_work_including_failures": "NOT_MEASURED_NEW",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "BLOCKED by unfinished required capability; prior evidence REUSED and unrelated inspection may continue.",
+      "remaining_blockers": [
+        "dependency not yet complete for required support: GE01"
+      ]
+    },
+    {
+      "task_id": "CP01",
+      "status": "BLOCKED",
+      "dependencies": [
+        "CF01"
+      ],
+      "source_commit": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+      "source_tree": "2eb2691d0eab29fde84b6c5e88c0422ebf14c38e",
+      "changed_files": [],
+      "evidence_reused": [
+        "research/production_frontier_20261023/analysis/CAUSAL_FINDINGS.json",
+        "research/production_frontier_20261023/results/FINAL_EVIDENCE_AUDIT.json"
+      ],
+      "new_receipts": [],
+      "actual_error_scope": "NOT_MEASURED_NEW",
+      "total_work_including_failures": "NOT_MEASURED_NEW",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "BLOCKED by unfinished required capability; prior evidence REUSED and unrelated inspection may continue.",
+      "remaining_blockers": [
+        "dependency not yet complete for required support: CF01"
+      ],
+      "published_small_problem_decision": "PRUNED_IN_COHORT: existing42 settings have no >=1.2x two-thread benefit; retain serial forward; new expensive RHS crossing NOT_RUN"
+    },
+    {
+      "task_id": "SG01",
+      "status": "BLOCKED",
+      "dependencies": [
+        "SW02",
+        "GE01",
+        "FA01"
+      ],
+      "source_commit": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+      "source_tree": "2eb2691d0eab29fde84b6c5e88c0422ebf14c38e",
+      "changed_files": [],
+      "evidence_reused": [
+        "research/production_frontier_20261023/analysis/PDE_SCALABILITY.md",
+        "research/production_frontier_20261023/results/ADVERSARIAL_EXACT_CHECKS.json",
+        "research/production_frontier_20261023/analysis/PDE_CANDIDATES.json"
+      ],
+      "new_receipts": [],
+      "actual_error_scope": "NOT_MEASURED_NEW",
+      "total_work_including_failures": "NOT_MEASURED_NEW",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "BLOCKED by unfinished required capability; prior evidence REUSED and unrelated inspection may continue.",
+      "remaining_blockers": [
+        "dependency not yet complete for required support: SW02",
+        "dependency not yet complete for required support: GE01"
+      ],
+      "positivity_policy": "RKL2 published negative -5/512 control prohibits unconditional positivity selection; transactional positive policy/typed refusal pending"
+    },
+    {
+      "task_id": "PDE23",
+      "status": "BLOCKED",
+      "dependencies": [
+        "SG01",
+        "QF01",
+        "QA01"
+      ],
+      "source_commit": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+      "source_tree": "2eb2691d0eab29fde84b6c5e88c0422ebf14c38e",
+      "changed_files": [],
+      "evidence_reused": [
+        "research/production_frontier_20261023/analysis/PDE_SCALABILITY.md",
+        "research/production_frontier_20261023/analysis/PRODUCTION_VALIDATION.md",
+        "research/spherical_information_20261023/README.md"
+      ],
+      "new_receipts": [],
+      "actual_error_scope": "NOT_MEASURED_NEW",
+      "total_work_including_failures": "NOT_MEASURED_NEW",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "BLOCKED by unfinished required capability; prior evidence REUSED and unrelated inspection may continue.",
+      "remaining_blockers": [
+        "dependency not yet complete for required support: SG01",
+        "dependency not yet complete for required support: QF01",
+        "BASS/rei actual variable/boundary/photon-number/energy definitions and native client binding not supplied in this follow-up; physical application BLOCKED_CLIENT_DATA"
+      ],
+      "physical_client_status": "BLOCKED_CLIENT_DATA"
+    },
+    {
+      "task_id": "PDE-POLAR",
+      "status": "BLOCKED",
+      "dependencies": [
+        "SG01"
+      ],
+      "source_commit": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+      "source_tree": "2eb2691d0eab29fde84b6c5e88c0422ebf14c38e",
+      "changed_files": [],
+      "evidence_reused": [
+        "research/production_frontier_20261023/results/POLE_SPLIT.json",
+        "research/production_frontier_20261023/analysis/ADVERSARIAL_AUDIT.md"
+      ],
+      "new_receipts": [],
+      "actual_error_scope": "NOT_MEASURED_NEW",
+      "total_work_including_failures": "NOT_MEASURED_NEW",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "BLOCKED by unfinished required capability; prior evidence REUSED and unrelated inspection may continue.",
+      "remaining_blockers": [
+        "dependency not yet complete for required support: SG01"
+      ]
+    },
+    {
+      "task_id": "PDE-FLOAT",
+      "status": "BLOCKED",
+      "dependencies": [
+        "SG01"
+      ],
+      "source_commit": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+      "source_tree": "2eb2691d0eab29fde84b6c5e88c0422ebf14c38e",
+      "changed_files": [],
+      "evidence_reused": [
+        "research/production_frontier_20261023/analysis/PDE_CANDIDATES.json"
+      ],
+      "new_receipts": [],
+      "actual_error_scope": "NOT_MEASURED_NEW",
+      "total_work_including_failures": "NOT_MEASURED_NEW",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "BLOCKED by unfinished required capability; prior evidence REUSED and unrelated inspection may continue.",
+      "remaining_blockers": [
+        "dependency not yet complete for required support: SG01"
+      ]
+    },
+    {
+      "task_id": "AMR01",
+      "status": "BLOCKED",
+      "dependencies": [
+        "SG01",
+        "SW02",
+        "GE01"
+      ],
+      "source_commit": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+      "source_tree": "2eb2691d0eab29fde84b6c5e88c0422ebf14c38e",
+      "changed_files": [],
+      "evidence_reused": [
+        "research/production_frontier_20261023/results/production_validation_checks.json",
+        "research/spherical_information_20261023/README.md"
+      ],
+      "new_receipts": [],
+      "actual_error_scope": "NOT_MEASURED_NEW",
+      "total_work_including_failures": "NOT_MEASURED_NEW",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "BLOCKED by unfinished required capability; prior evidence REUSED and unrelated inspection may continue.",
+      "remaining_blockers": [
+        "dependency not yet complete for required support: SG01",
+        "dependency not yet complete for required support: SW02",
+        "dependency not yet complete for required support: GE01"
+      ]
+    },
+    {
+      "task_id": "LP01",
+      "status": "PASS_SCOPED",
+      "dependencies": [
+        "PR00"
+      ],
+      "source_commit": "49696c982446dfe5d274f5361819b218122b7449",
+      "source_tree": "39a3a7484cfa5257c93116b438de47e04efe1a4e",
+      "changed_files": [
+        "crates/rodas5p-integrators/examples/frontier_long_phase.rs",
+        "research/production_frontier_followup_20261023/src/long_phase_campaign.py"
+      ],
+      "evidence_reused": [
+        "research/production_frontier_20261023/analysis/CAUSAL_TRAJECTORY.md",
+        "research/production_frontier_20261023/analysis/PRODUCTION_VALIDATION.md"
+      ],
+      "new_receipts": [
+        "LP01_SCOPE.json",
+        "receipts/lp01/selftest_after_repair.receipt.json",
+        "results/lp01_linear_20261023_01/SUMMARY.json",
+        "results/lp01_eligible_cyclic_20261023_02/SUMMARY.json",
+        "LP01_ANALYSIS.json",
+        "LP01_CYCLIC_ANALYSIS.json",
+        "receipts/lp01_cyclic.exit"
+      ],
+      "actual_error_scope": "3 homogeneous 2D cases at4097 physical observations: t1 DOPRI/Lawson all36 supplemental rows PASS_SAMPLED; t0 DOPRI 3 warmups FAILED_ACCURACY; phase/amplitude/state caps1e-3/1e-5/1e-5, oracle uncertainty<=10%",
+      "total_work_including_failures": "first pilot81 child attempts/38.66s charge, three failed warmups and15 suppressed slots retained; supplemental43 child attempts/36 solvers/67.256s; cumulative LP124 children and105.916s; each successful solver work counters in raw rows",
+      "performance_cohort": "diagnostic_only; grouped first pilot and cyclic supplemental separate; cyclic solver-only medians unstable (max/min up to3.65), no robust end-to-end gain",
+      "decision": "PASS_SCOPED for sampled 100/1000-cycle linear2D phase/amplitude at tight input tolerance; speed INCONCLUSIVE_TIMING, no nonlinear/noncommuting or continuous phase certificate; broad production HOLD",
+      "remaining_blockers": [
+        "nonlinear amplitude/noncommuting long-phase clients NOT_RUN",
+        "sampling cannot exclude extra turns between observations",
+        "wall timing variation and setup/monitor dominate tiny solver times; no qualified speed claim"
+      ],
+      "verified_subscope": "three declared homogeneous linear 2D cases, 100/1000 cycles, 4097 sampled observations, tolerance index1; diagnostic-only timing",
+      "orchestration_commit": "dbcaeee2256edbfd45a1c9177c23c567c92c592a",
+      "orchestration_tree": "ec9f2ad4f79c6ef44bb9f8d9f5ed94e9bcbcaac5"
+    },
+    {
+      "task_id": "CAP01",
+      "status": "BLOCKED",
+      "dependencies": [
+        "SW02",
+        "EV01"
+      ],
+      "source_commit": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+      "source_tree": "2eb2691d0eab29fde84b6c5e88c0422ebf14c38e",
+      "changed_files": [],
+      "evidence_reused": [
+        "research/production_frontier_20261023/analysis/PRODUCTION_VALIDATION.md"
+      ],
+      "new_receipts": [],
+      "actual_error_scope": "NOT_MEASURED_NEW",
+      "total_work_including_failures": "NOT_MEASURED_NEW",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "BLOCKED by unfinished required capability; prior evidence REUSED and unrelated inspection may continue.",
+      "remaining_blockers": [
+        "dependency not yet complete for required support: SW02",
+        "dependency not yet complete for required support: EV01"
+      ]
+    },
+    {
+      "task_id": "PB01",
+      "status": "BLOCKED",
+      "dependencies": [
+        "FA01",
+        "SW02",
+        "EV01",
+        "SW03",
+        "DV01",
+        "GE01",
+        "QF01",
+        "QA01",
+        "CF01",
+        "CP01",
+        "SG01",
+        "PDE23",
+        "PDE-POLAR",
+        "PDE-FLOAT",
+        "AMR01",
+        "LP01",
+        "CAP01"
+      ],
+      "source_commit": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+      "source_tree": "2eb2691d0eab29fde84b6c5e88c0422ebf14c38e",
+      "changed_files": [],
+      "evidence_reused": [
+        "research/production_frontier_20261023/BENCHMARK_PLAN.json",
+        "research/production_frontier_20261023/results/FINAL_EVIDENCE_AUDIT.json"
+      ],
+      "new_receipts": [],
+      "actual_error_scope": "NOT_MEASURED_NEW",
+      "total_work_including_failures": "NOT_MEASURED_NEW",
+      "performance_cohort": "NOT_RUN_NEW",
+      "decision": "BLOCKED: exact linear LP01 sampled scope passes; other required dependencies remain incomplete, VODE/DVODE diffsol Julia comparisons NOT_RUN, broad production HOLD.",
+      "remaining_blockers": [
+        "dependency not yet complete for required support: SW02",
+        "dependency not yet complete for required support: EV01",
+        "dependency not yet complete for required support: SW03",
+        "dependency not yet complete for required support: DV01",
+        "dependency not yet complete for required support: GE01",
+        "dependency not yet complete for required support: QF01",
+        "dependency not yet complete for required support: CF01",
+        "dependency not yet complete for required support: CP01",
+        "dependency not yet complete for required support: SG01",
+        "dependency not yet complete for required support: PDE23",
+        "dependency not yet complete for required support: PDE-POLAR",
+        "dependency not yet complete for required support: PDE-FLOAT",
+        "dependency not yet complete for required support: AMR01",
+        "dependency not yet complete for required support: CAP01",
+        "LP01 general nonlinear/noncommuting and continuous-phase scope unqualified"
+      ]
+    }
+  ],
+  "note": "All19 tasks classified. Scoped components do not unlock SW02/GE01 descendants; LP01 sampled linear subset does not close general long-phase qualification. Broad production HOLD."
+}

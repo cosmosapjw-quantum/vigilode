@@ -60,6 +60,17 @@ pub fn solve_case(
         case.matrix.clone(),
         &case.operator_id,
     )?);
+    solve_case_with_operator(case, config, session, initial_guess, stable, total_start)
+}
+
+fn solve_case_with_operator(
+    case: &LinearSystemCase,
+    config: &FairSolveConfig,
+    session: Option<&mut SolverSession>,
+    initial_guess: Option<&[f64]>,
+    stable: Arc<dyn LinearOperator>,
+    total_start: Instant,
+) -> FairResult<FairSolveResult> {
     let operator = BudgetedOperator::new(stable, config.hard_operator_budget);
     let budget = Arc::clone(operator.budget());
 
@@ -215,7 +226,9 @@ pub fn solve_case(
     if status == SolveStatus::BudgetExhausted {
         ledger.budget_exhaustions = 1;
     }
-    debug_assert_eq!(ledger.operator_total(), budget.used());
+    // Solver categories count requested applications, including refusals before
+    // the inner callback. Admission includes callbacks that return an error.
+    debug_assert_eq!(ledger.operator_total(), budget.used() + budget.refused());
     timing.total_seconds = total_start.elapsed().as_secs_f64();
     let relative_error = if solution.iter().all(|value| value.is_finite()) {
         relative_solution_error(&solution, &case.oracle_solution)
@@ -242,4 +255,135 @@ pub fn solve_case(
         iterations,
         message,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use std::sync::atomic::{AtomicU64, Ordering};
+
+    use rodas5p_core::{CoreResult, DenseMatrix};
+
+    use super::*;
+
+    struct ObservedOperator {
+        matrix: DenseMatrix,
+        entered: AtomicU64,
+        completed: AtomicU64,
+        failed: AtomicU64,
+        fail_at: u64,
+    }
+
+    impl LinearOperator for ObservedOperator {
+        fn dimension(&self) -> usize {
+            self.matrix.nrows()
+        }
+
+        fn token(&self) -> u64 {
+            1
+        }
+
+        fn apply(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
+            let entry = self.entered.fetch_add(1, Ordering::Relaxed) + 1;
+            if entry == self.fail_at {
+                self.failed.fetch_add(1, Ordering::Relaxed);
+                return Err(CoreError::NonFinite("injected callback failure".into()));
+            }
+            self.matrix.matvec_into(x, y)?;
+            self.completed.fetch_add(1, Ordering::Relaxed);
+            Ok(())
+        }
+    }
+
+    fn run_observed(
+        budget: u64,
+        exact_guess: bool,
+        fail_at: u64,
+    ) -> (FairSolveResult, Arc<ObservedOperator>) {
+        let matrix = DenseMatrix::from_rows(&[&[4.0, 1.0], &[1.0, 3.0]]).unwrap();
+        let case = LinearSystemCase::from_matrix(matrix.clone(), vec![2.0, -5.0], 0, 0).unwrap();
+        let config = FairSolveConfig {
+            solver: SolverKind::Gmres,
+            rtol: 1.0e-9,
+            atol: 1.0e-12,
+            restart: 2,
+            recycle_dim: 1,
+            hard_operator_budget: budget,
+            preconditioner: PreconditionerKind::None,
+            use_previous_oracle_guess: false,
+        };
+        let observed = Arc::new(ObservedOperator {
+            matrix,
+            entered: AtomicU64::new(0),
+            completed: AtomicU64::new(0),
+            failed: AtomicU64::new(0),
+            fail_at,
+        });
+        let guess = [1.0, -2.0];
+        let result = solve_case_with_operator(
+            &case,
+            &config,
+            None,
+            exact_guess.then_some(guess.as_slice()),
+            observed.clone(),
+            Instant::now(),
+        )
+        .unwrap();
+        (result, observed)
+    }
+
+    fn check_entry_accounting(
+        result: &FairSolveResult,
+        observed: &ObservedOperator,
+        budget: u64,
+        refused: u64,
+    ) {
+        let entered = observed.entered.load(Ordering::Relaxed);
+        assert_eq!(
+            result.ledger.operator_total(),
+            entered + refused,
+            "A = E + R"
+        );
+        assert!(entered <= budget, "E <= B");
+        assert_eq!(
+            entered,
+            observed.completed.load(Ordering::Relaxed) + observed.failed.load(Ordering::Relaxed),
+            "E = C + F"
+        );
+    }
+
+    #[test]
+    fn solver_refusal_counts_the_attempt_without_entering_the_callback() {
+        let (result, observed) = run_observed(1, false, 0);
+        assert_eq!(result.status, SolveStatus::BudgetExhausted);
+        assert!(!result.certificate.passed);
+        assert_eq!(result.ledger.operator_krylov, 2);
+        assert_eq!(result.ledger.operator_diagnostic, 0);
+        assert_eq!(result.ledger.budget_exhaustions, 1);
+        check_entry_accounting(&result, &observed, 1, 1);
+    }
+
+    #[test]
+    fn external_diagnostic_refusal_counts_the_attempt_without_false_certification() {
+        let (result, observed) = run_observed(2, true, 0);
+        assert_eq!(result.status, SolveStatus::BudgetExhausted);
+        assert!(!result.certificate.passed);
+        assert_eq!(result.solution, [1.0, -2.0]);
+        assert_eq!(result.ledger.operator_krylov, 1);
+        assert_eq!(result.ledger.operator_diagnostic, 2);
+        assert_eq!(result.ledger.budget_exhaustions, 1);
+        check_entry_accounting(&result, &observed, 2, 1);
+    }
+
+    #[test]
+    fn admitted_solver_and_diagnostic_failures_remain_charged_and_preserve_the_error() {
+        for (exact_guess, fail_at) in [(false, 1), (true, 3)] {
+            let (result, observed) = run_observed(5, exact_guess, fail_at);
+            assert_eq!(result.status, SolveStatus::NumericalFailure);
+            assert!(!result.certificate.passed);
+            assert!(result.message.contains("injected callback failure"));
+            assert_eq!(result.ledger.budget_exhaustions, 0);
+            assert_eq!(observed.failed.load(Ordering::Relaxed), 1);
+            check_entry_accounting(&result, &observed, 5, 0);
+        }
+    }
 }

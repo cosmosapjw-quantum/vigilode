@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "node": "A04",
+  "status": "IMPLEMENTED_SCOPED_VALIDATION_AND_INDEPENDENT_REVIEW_PASSED",
+  "basis": [
+    "derived"
+  ],
+  "baseline_commit": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+  "scope": "immutable budget admission for represented dense symmetric fused Leja action",
+  "changed_files": [
+    "crates/rodas5p-core/src/leja_action.rs",
+    "crates/rodas5p-core/tests/leja_enclosed_contract.rs"
+  ],
+  "source_sha256": {
+    "crates/rodas5p-core/src/leja_action.rs": "8e980e402a7e80a226d066166dfe15102dbb879ec9d03dffc88b2fdbd37f6736",
+    "crates/rodas5p-core/tests/leja_enclosed_contract.rs": "ff93fec6203e5e32c9f3ab35ed961543e2d8ed10563bdb0db78e504b81b3496d"
+  },
+  "reused_evidence": [
+    "research/cloud_completion_20261018/LEJA.md",
+    "research/cloud_completion_20261018/REVIEW.md",
+    "research/cloud_completion_20261018/evidence/local_codex_rerun_20261018/LOCAL_RERUN_20261018.json"
+  ],
+  "kernel_reuse": {
+    "comparison": "exact source text of leja_phi_action_certified_with_cache_and_workspace_inner",
+    "identical": true,
+    "sha256": "bde963e44576c1e916069e72752baa4439e115b07ee0b3e5ebb74fd8bb419840"
+  },
+  "api": {
+    "admit_original": "CertifiedLejaReport::admit_requested_budget",
+    "admit_separate_budget": "CertifiedLejaReport::admit_enclosed_fused",
+    "token": "AdmittedLejaFused",
+    "failures": [
+      "InvalidBudget",
+      "Uncertified",
+      "BoundExceedsBudget"
+    ],
+    "cost": "O(1) time and auxiliary space; borrowed output, no allocation operations"
+  },
+  "new_tests": {
+    "native_contracts": 5,
+    "compile_fail_doctests": 1,
+    "status": "PASS"
+  },
+  "executions": [
+    {
+      "command": "cargo test --locked --offline -p rodas5p-core --test leja_enclosed_contract",
+      "exit_code": 0,
+      "tests_passed": 7,
+      "receipt": "root tool session 56891; merged evidence log will be captured by final scoped check"
+    },
+    {
+      "command": "cargo test --locked --offline -p rodas5p-core --doc AdmittedLejaFused",
+      "exit_code": 0,
+      "tests_passed": 1,
+      "log": "research/all_dag_completion_20261018/nodes/A04/evidence/admission_doc.log"
+    }
+  ],
+  "new_no_go_claims": [],
+  "remaining": [
+    "Independent diff review",
+    "Full-cost timing belongs to A07; do not infer elapsed speed from admission cost"
+  ],
+  "author_checkpoint_status": "IMPLEMENTED_TARGETED_VALIDATION_PASSED_REVIEW_PENDING",
+  "integrated_execution": {
+    "record": "research/all_dag_completion_20261018/FINAL_EXECUTION.json",
+    "source_authority": "research/all_dag_completion_20261018/SOURCE_MANIFEST.json",
+    "independent_review": "research/all_dag_completion_20261018/nodes/A12/REVIEW.json",
+    "broad_production": "HOLD"
+  }
+}

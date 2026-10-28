@@ -1,0 +1,43 @@
+warning: function `prepare` is never used
+ --> /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:3:8
+  |
+3 | pub fn prepare(n: usize, o: usize, d: usize, sweeps: usize) -> PacketWorkCounters {
+  |        ^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `initial_adapter` is never used
+  --> /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:95:8
+   |
+95 | pub fn initial_adapter(n: usize, g: usize) -> VerifiedTrajectoryWork {
+   |        ^^^^^^^^^^^^^^^
+
+warning: function `prepare_adapter` is never used
+   --> /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:104:8
+    |
+104 | pub fn prepare_adapter(
+    |        ^^^^^^^^^^^^^^^
+
+warning: function `query_adapter` is never used
+   --> /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:122:8
+    |
+122 | pub fn query_adapter(n: usize, o: usize, d: usize) -> VerifiedTrajectoryWork {
+    |        ^^^^^^^^^^^^^
+
+warning: function `rejected_tolerance_adapter` is never used
+   --> /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:134:8
+    |
+134 | pub fn rejected_tolerance_adapter(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `rodas5p-integrators` (lib test) generated 5 warnings
+    Finished `test` profile [unoptimized] target(s) in 0.67s
+     Running unittests src/lib.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target/debug/deps/rodas5p_integrators-eba85178c231de1a)
+
+running 3 tests
+test adaptive_output::tests::adaptive_output_session_refusals_preserve_the_issued_transaction ... ok
+test adaptive_output::tests::adaptive_output_session_rejected_represented_trial_must_shrink ... ok
+test adaptive_output::tests::adaptive_output_session_large_clock_uses_represented_steps_and_strict_cap ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 94 filtered out; finished in 0.01s
+

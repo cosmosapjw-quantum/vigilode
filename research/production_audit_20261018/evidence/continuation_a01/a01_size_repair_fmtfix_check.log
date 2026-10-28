@@ -1,0 +1,53 @@
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:17:
+ #[cfg(test)]
+ use std::sync::atomic::{AtomicBool, Ordering};
+ 
+-use rodas5p_core::directed::{add_up, sqrt_up, Interval};
++use rodas5p_core::directed::{Interval, add_up, sqrt_up};
+ use rodas5p_core::{CoreError, CoreResult};
+ 
+ use crate::collective_model::CollectiveModel;
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:1:
+ //! New adversarial regressions for the 2026-10-18 packet audit.
+ use rodas5p_integrators::{
+-    compile_packet, compute_certificate, evaluate_mode_at, generate_candidate, reconstruct_modes,
+-    reconstruct_outward_at_times, run_packet_trajectory, CausalWeights, CollectiveModel,
+-    OutwardPacketRequest, PacketError, PacketWorkCounters, TrajectoryConfig,
++    CausalWeights, CollectiveModel, OutwardPacketRequest, PacketError, PacketWorkCounters,
++    TrajectoryConfig, compile_packet, compute_certificate, evaluate_mode_at, generate_candidate,
++    reconstruct_modes, reconstruct_outward_at_times, run_packet_trajectory,
+ };
+ 
+ fn one_mode(width: f64, chi: f64, kappa: f64) -> CollectiveModel {
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:64:
+         &mut work,
+     )
+     .unwrap();
+-    assert!(out
+-        .modes
+-        .iter()
+-        .all(|&(re, im)| re.is_finite() && im.is_finite()));
++    assert!(
++        out.modes
++            .iter()
++            .all(|&(re, im)| re.is_finite() && im.is_finite())
++    );
+     assert!(out.mode_radii.iter().all(|r| r.is_finite() && *r >= 0.0));
+     assert!(out.mean_radii.iter().all(|r| r.is_finite() && *r >= 0.0));
+ }
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:331:
+         },
+         &mut work,
+     ) {
+-        Ok(out) => assert!(out
+-            .modes
+-            .iter()
+-            .all(|&(a, b)| a.is_finite() && b.is_finite())),
++        Ok(out) => assert!(
++            out.modes
++                .iter()
++                .all(|&(a, b)| a.is_finite() && b.is_finite())
++        ),
+         Err(PacketError::OutwardRefusal(_)) => {}
+         Err(e) => panic!("unexpected {e:?}"),
+     }

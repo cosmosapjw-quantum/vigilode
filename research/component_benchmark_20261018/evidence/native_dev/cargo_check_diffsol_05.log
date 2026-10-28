@@ -1,0 +1,43 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Checking vigilode-a07 v0.1.0 (/tmp/vigilode-all-dag-validation-20261018/tools/benchmarks/diffsol/a07)
+warning: field `algorithm_config` is never read
+  --> src/bin/../../../../../../crates/rodas5p-integrators/examples/component_benchmark_support/mod.rs:22:9
+   |
+11 | pub struct Case {
+   |            ---- field in this struct
+...
+22 |     pub algorithm_config: Value,
+   |         ^^^^^^^^^^^^^^^^
+   |
+   = note: `Case` has derived impls for the traits `Debug` and `Clone`, but these are intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: field `solver_config` is never read
+  --> src/bin/../../../../../../crates/rodas5p-integrators/examples/component_benchmark_support/mod.rs:32:9
+   |
+28 | pub struct Request {
+   |            ------- field in this struct
+...
+32 |     pub solver_config: Value,
+   |         ^^^^^^^^^^^^^
+   |
+   = note: `Request` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+
+warning: methods `autonomous`, `jac_into`, and `problem` are never used
+   --> src/bin/../../../../../../crates/rodas5p-integrators/examples/component_benchmark_support/mod.rs:82:12
+    |
+ 44 | impl Case {
+    | --------- methods in this implementation
+...
+ 82 |     pub fn autonomous(&self) -> bool {
+    |            ^^^^^^^^^^
+...
+460 |     pub fn jac_into(
+    |            ^^^^^^^^
+...
+553 |     pub fn problem(&self) -> CoreResult<OdeProblem> {
+    |            ^^^^^^^
+
+warning: `vigilode-a07` (bin "component_benchmark") generated 3 warnings
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.83s

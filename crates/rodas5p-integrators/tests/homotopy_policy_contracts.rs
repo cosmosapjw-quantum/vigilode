@@ -112,7 +112,11 @@ fn order_policy_screen_keeps_the_protected_sequential_fifth_order_gate() {
         })
         .filter_map(|row| row.observed_order)
         .collect();
-    assert!(orders.iter().any(|order| *order > 4.5), "orders={orders:?}");
+    assert!(!orders.is_empty(), "orders={orders:?}");
+    assert!(
+        orders.iter().all(|order| *order >= 4.8),
+        "orders={orders:?}"
+    );
     assert!(
         report
             .trajectory_gates

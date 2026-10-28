@@ -1,0 +1,45 @@
+    Checking rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+   Compiling rodas5p-fair-ab v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-fair-ab)
+error: the loop variable `i` is used to index `matrix`
+   --> crates/rodas5p-integrators/tests/production_audit_bound_collective.rs:290:18
+    |
+290 |         for i in 0..4 {
+    |                  ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+    |
+290 -         for i in 0..4 {
+290 +         for (i, <item>) in matrix.iter().enumerate() {
+    |
+
+error: the loop variable `j` is used to index `matrix`
+   --> crates/rodas5p-integrators/tests/production_audit_bound_collective.rs:291:22
+    |
+291 |             for j in i + 1..4 {
+    |                      ^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+291 -             for j in i + 1..4 {
+291 +             for (j, <item>) in matrix.iter().enumerate().skip(i + 1) {
+    |
+
+error: the loop variable `k` is used to index `matrix`
+   --> crates/rodas5p-integrators/tests/production_audit_bound_collective.rs:307:18
+    |
+307 |         for k in 0..4 {
+    |                  ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+307 -         for k in 0..4 {
+307 +         for (k, <item>) in matrix.iter_mut().enumerate() {
+    |
+
+error: could not compile `rodas5p-integrators` (test "production_audit_bound_collective") due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...

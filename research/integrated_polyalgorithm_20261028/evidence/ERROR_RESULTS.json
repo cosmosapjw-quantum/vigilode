@@ -1,0 +1,167 @@
+{
+  "anchors": {
+    "error": "1/5",
+    "invalid_mixed_bound": "1/10",
+    "status": "PASS",
+    "valid_discrete_bound": "1/5",
+    "valid_flow_bound": "1/5"
+  },
+  "continuous_allocation": {
+    "allocation": [
+      "1/16",
+      "3/8"
+    ],
+    "equal_product": "1/512",
+    "multipliers": [
+      "8/1",
+      "8/1"
+    ],
+    "optimal_product": "27/8192",
+    "status": "PASS"
+  },
+  "finite_menu": {
+    "equal_half_cost": 10,
+    "frontier": [
+      {
+        "choices": [
+          0,
+          0
+        ],
+        "cost": 5,
+        "error": "2/5"
+      },
+      {
+        "choices": [
+          0,
+          1
+        ],
+        "cost": 7,
+        "error": "3/10"
+      },
+      {
+        "choices": [
+          1,
+          1
+        ],
+        "cost": 10,
+        "error": "1/5"
+      },
+      {
+        "choices": [
+          1,
+          2
+        ],
+        "cost": 13,
+        "error": "3/20"
+      }
+    ],
+    "optimum": {
+      "choices": [
+        0,
+        1
+      ],
+      "cost": 7,
+      "error": "3/10"
+    },
+    "state_sensitive_counterexample": {
+      "cold_total": 100,
+      "warm_total": 1
+    },
+    "status": "PASS"
+  },
+  "precision": {
+    "loose_upper_bound_does_not_prove_impossibility": true,
+    "nearest_lattice_output": "3/8",
+    "proved_distance": "1/24",
+    "status": "PASS"
+  },
+  "representation_clock": {
+    "clock_rows": [
+      {
+        "observation_error": "1/100",
+        "step": 1,
+        "unnecessarily_repropagated_sum": "1/100"
+      },
+      {
+        "observation_error": "1/100",
+        "step": 2,
+        "unnecessarily_repropagated_sum": "1/50"
+      },
+      {
+        "observation_error": "1/100",
+        "step": 3,
+        "unnecessarily_repropagated_sum": "3/100"
+      },
+      {
+        "observation_error": "1/100",
+        "step": 4,
+        "unnecessarily_repropagated_sum": "1/25"
+      },
+      {
+        "observation_error": "1/100",
+        "step": 5,
+        "unnecessarily_repropagated_sum": "1/20"
+      }
+    ],
+    "coordinate_norm": "1/1",
+    "physical_norm": "1000/1",
+    "root_plus_update_bound": "11/1000",
+    "status": "PASS"
+  },
+  "scope": "exact finite supporting identities; no native solver validation",
+  "status": "PASS",
+  "switching": {
+    "positive_defect_family_saturates": "541/25600",
+    "rows": [
+      {
+        "actual_error": "31/600",
+        "backend": "positive",
+        "certified_bound": "31/600",
+        "step": 1
+      },
+      {
+        "actual_error": "39/800",
+        "backend": "positive",
+        "certified_bound": "39/800",
+        "step": 2
+      },
+      {
+        "actual_error": "71/3200",
+        "backend": "positive",
+        "certified_bound": "71/3200",
+        "step": 3
+      },
+      {
+        "actual_error": "119/4800",
+        "backend": "positive",
+        "certified_bound": "119/4800",
+        "step": 4
+      },
+      {
+        "actual_error": "43/1920",
+        "backend": "positive",
+        "certified_bound": "43/1920",
+        "step": 5
+      },
+      {
+        "actual_error": "343/12800",
+        "backend": "positive",
+        "certified_bound": "343/12800",
+        "step": 6
+      },
+      {
+        "actual_error": "937/51200",
+        "backend": "negative",
+        "certified_bound": "1623/51200",
+        "step": 7
+      },
+      {
+        "actual_error": "169/76800",
+        "backend": "positive",
+        "certified_bound": "797/25600",
+        "step": 8
+      }
+    ],
+    "status": "PASS"
+  }
+}

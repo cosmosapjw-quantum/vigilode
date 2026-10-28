@@ -1,0 +1,2111 @@
+{
+  "$schema": "./RESEARCH_REPORT.schema.json",
+  "schema_version": "rvj-nag-research-report/1.0.0",
+  "report_id": "RVJ_NAG_PARALLEL_20261028",
+  "date": "2026-10-28",
+  "timezone": "Asia/Seoul",
+  "language": "ko",
+  "title": "정칙 closure atlas·native 인증·퇴화 wall·collision count 교정·trace ODE 후속 연구",
+  "request_status": "REQUESTED_PARALLEL_RESEARCH_AND_REPORT_DELIVERED",
+  "original_dag_status": "F1_F2_F3_F4_F6_COMPLETE_SCOPED__F5_PARTIAL_WITH_SOURCE_CORRECTION",
+  "parent": {
+    "archive": "RVJ_NAG_RESUME_20261028.zip",
+    "sha256": "18d21a8e9f7f6e5656d991a37319abd2c826884a82eb1a156f793f0a5d602d7d",
+    "integrity": "evidence/BASELINE_INTEGRITY.json",
+    "source_policy": "Parent bytes preserved; historical runs are not counted as new runs."
+  },
+  "conventions": {
+    "physical_units": "All client variables dimensionless",
+    "exact_numbers": "Rational/algebraic expressions stored as strings; binary64 measurements as JSON numbers",
+    "equation_syntax": "Mathematical strings, ** is exponentiation, indices cyclic where specified; O terms are analytic asymptotic statements, not executable bounds",
+    "claim_status_axes": [
+      "basis",
+      "execution",
+      "review",
+      "scope"
+    ],
+    "newness": "Relative to recovered report; literature priority not claimed"
+  },
+  "summary_ko": [
+    "여섯 DAG node를 다섯 구현 작업과 독립 검토로 진행했다.",
+    "정칙 chart 전환, 4/8/16변수 native 잔차 인증, 퇴화 wall의 cuspidal butterfly 분류, 중복도 보존 trace ODE를 완료했다.",
+    "수평 same-abscissa collision이 원문 전역 count의 누락을 드러냈다. 기존116/58은 intrinsic 전체 count로 재사용하지 않는다.",
+    "전체 parameter family의 전역 count와 D=0 전체 stratum의 multiplicity 분류는 열린 의무로 보존한다."
+  ],
+  "claims": [
+    {
+      "id": "NEW-ATLAS",
+      "node": "F1",
+      "statement_ko": "유일한 contraction branch에 원래 residual로 연결한 u/v chart 전환과 전체 구간 오차 인증을 구현했다.",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "assumptions": [
+        "a,b in [-1/8,1/8], u,v in [-1/4,1/4] for coupled main client",
+        "exact initial state zero; original-residual certificate on every slab",
+        "transition preserves slow coordinates bitwise"
+      ],
+      "equations": [
+        "G=(u**2+v-a,v**2+u-b)",
+        "d=4*u*v-1",
+        "chart_u: v=a-u**2",
+        "chart_v: u=b-v**2",
+        "E_q <= 2*E_x+2*D_g"
+      ],
+      "evidence": [
+        "f1_atlas/derivation.md",
+        "f1_atlas/formulas.json",
+        "f1_atlas/results.json",
+        "reviews/review.json"
+      ],
+      "scope": "Both primitive charts have the same determinant coverage; separate prescribed-path control crosses unrelated-root discriminant."
+    },
+    {
+      "id": "NEW-CYCLE",
+      "node": "F2",
+      "statement_ko": "4·8·16변수 희소 cyclic closure에 O(n) 유리식 회로를 구성하고 전처리 크기와 비용을 측정했다.",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "assumptions": [
+        "cyclic q_i+q_(i+1)**2/4=x_i",
+        "X=[-1/8,1/8]^n,Q=[-1/4,1/4]^n",
+        "initial x=q=0"
+      ],
+      "equations": [
+        "||T(q)-T(r)||_inf <= (1/8)*||q-r||_inf",
+        "||q-Q(x)||_inf <= (8/7)*||G(x,q)||_inf",
+        "delta=D_f+D_g/7"
+      ],
+      "evidence": [
+        "f23_native/derivation.md",
+        "f23_native/generate.py",
+        "f23_native/circuits.hpp",
+        "f23_native/results.json"
+      ],
+      "scope": "Structured cyclic family; Newton uses the same structured linear solve, Krawczyk is post-Newton inclusion."
+    },
+    {
+      "id": "NEW-NATIVE",
+      "node": "F3",
+      "statement_ko": "Native outward interval 잔차와 radius 누적을 구현했다. 인증비용이 지배적이어서 반복 근찾기 제거가 전체 실행시간 우위로 일률적으로 이어지지는 않았다.",
+      "basis": [
+        "derived",
+        "implementation-verified",
+        "numerically checked"
+      ],
+      "assumptions": [
+        "IEEE binary64 RN",
+        " no FTZ/DAZ, no fast-math, FMA disabled",
+        " finite bounded input domain"
+      ],
+      "equations": [
+        "E_end <= E0/(1+(6/7)*h)+h*(D_f+D_g/7)",
+        "E_q_whole <= (8/7)*(E_x_whole+D_g)"
+      ],
+      "evidence": [
+        "f23_native/native.cpp",
+        "f23_native/reference.py",
+        "f23_native/results.json",
+        "f23_native/tests.log",
+        "reviews/native_secondary_review.json"
+      ],
+      "scope": "Measured n=4,8,16 and dyadic steps; all-component whole-path budget 1e-8, offline cost reported separately."
+    },
+    {
+      "id": "NEW-BUTTERFLY",
+      "node": "F4",
+      "statement_ko": "A>0, B=-A²/6에서 extended wall germ은 cuspidal butterfly이다. 특이 edge는 두 번째 foot으로 analytic하게 매개화되며 epsilon에 대해 분수 지수 이동을 갖는다.",
+      "basis": [
+        "derived",
+        "literature-supported",
+        "numerically checked"
+      ],
+      "assumptions": [
+        "fixed A>0",
+        "positive square-root branches near opposite feet",
+        "sufficiently small real neighborhood, extended incidence closure"
+      ],
+      "symbols": {
+        "x": "sqrt(A)*t",
+        "e": "epsilon/A**(3/2)",
+        "m": "A*r-1/3",
+        "y": "sqrt(A)*Y",
+        "eta_null": "partial_x"
+      },
+      "equations": [
+        "m=-e*x-5*x**4/36+O_w(6)",
+        "y=3*e*x**2/4+x**5/6+O_w(7)",
+        "e_c=-5*x**3/9+O(x**5)",
+        "m_c=5*x**4/12+O(x**6)",
+        "y_c=-x**5/4+O(x**7)",
+        "lambda_e=-1",
+        "eta_null(lambda)=eta_null**2(lambda)=0",
+        "eta_null**3(lambda)=-10/3"
+      ],
+      "evidence": [
+        "f4_degenerate/derivation.md",
+        "f4_degenerate/symbolic_results.json",
+        "f4_degenerate/probe_results.json",
+        "LITERATURE.json",
+        "reviews/review.json"
+      ],
+      "scope": "Smooth right-left germ equivalence; central physical epsilon=0 slice has Puiseux characteristic (4,5); punctured edge is regular, center is closure boundary."
+    },
+    {
+      "id": "NEW-TRANSVERSALITY",
+      "node": "F5",
+      "statement_ko": "Weierstrass 수직 packet의 정칙성과 횡단성은 서로 다른 조건이며 추가 인자 D가 단순성을 결정한다.",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "assumptions": [
+        "smooth y²=x³+p*x+q",
+        "eta>0",
+        "H>0,c>0,(eta²+3p)*(4eta²+3p)!=0"
+      ],
+      "equations": [
+        "H=-p-eta**2/3",
+        "c=4*q-8*eta*p/3-32*eta**3/27",
+        "D=4*eta**3*p+27*eta**2*q+27*p*q",
+        "det(J_vertical) = 8388608/10460353203*(eta**2+3*p)*(4*eta**2+3*p)*(8*eta**3+18*eta*p-27*q)**6*D"
+      ],
+      "counterexample": {
+        "eta": "1",
+        "p": "-1/2",
+        "q": "4/27",
+        "H": "1/6",
+        "c": "20/27",
+        "normal_product": "-5/9",
+        "curve_smoothness": "5/54",
+        "D": "0"
+      },
+      "evidence": [
+        "f5_global/symbolic_results.json",
+        "f5_global/derivation.md",
+        "reviews/review.json"
+      ],
+      "scope": "D!=0 proves simple vertical quotient point; D=0 stratification remains separate."
+    },
+    {
+      "id": "NEW-HORIZONTAL",
+      "node": "F5",
+      "statement_ko": "원문에서 누락된 수평 same-abscissa collision을 원래 incidence에서 구성하고 기준 cubic의 해가 reduced isolated point임을 확인했다.",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "assumptions": [
+        "eta>0",
+        "a**2=-4*p-4*eta**2/3 > 0",
+        "y**2=c/4 > 0",
+        "smooth curve",
+        "D!=0 for transversality"
+      ],
+      "equations": [
+        "x=eta/3-a/2",
+        "witness_1=((x,y),(x+a,y))",
+        "witness_2=((x,-y),(x+a,-y))",
+        "lambda=-1/(2*eta), mu=1/(2*eta)",
+        "det(n1,n2)=4*eta**2*a*y",
+        "P=(x+f_prime(x)/(2*eta),0)",
+        "Q=P+(2*a,0)",
+        "det(J_full_incidence)=(1024/3)*eta*H**2*c**2*D"
+      ],
+      "baseline_exact": {
+        "p": "-1",
+        "q": "1",
+        "eta": "1",
+        "a_squared": "8/3",
+        "y_squared": "37/27",
+        "P": "(1-a,0)",
+        "Q": "(1+a,0)",
+        "incidence_determinant": "-358875136/19683",
+        "new_ordered_points": 4,
+        "new_unordered_pairs": 2,
+        "double_quotient_orbits": 2,
+        "ordered_lifts_per_orbit": 2
+      },
+      "evidence": [
+        "f5_global/full_incidence.py",
+        "f5_global/full_incidence_results.json",
+        "f5_global/derivation.md",
+        "reviews/horizontal_independent_check.json"
+      ],
+      "scope": "Concrete omitted stratum and its multiplicity; complete global count requires corrected atlas coverage."
+    },
+    {
+      "id": "NEW-TRACE",
+      "node": "F6",
+      "statement_ko": "중복도를 포함한 모든 복소근의 polynomial trace를 사용하는 실제 결합 ODE를 구현하고 triple-root 통과를 전체 구간 residual로 인증했다.",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "assumptions": [
+        "aggregate of all complex roots with algebraic multiplicity",
+        "manufactured controlled coupled polynomial ODE on [-1,1]",
+        "D=[1/2,1]^2 and full tube/domain checks"
+      ],
+      "equations": [
+        "P(z)=z**4-2*a*z**2+z+a**2-b",
+        "S0=4,S1=0,S2=4*a,S3=-3",
+        "S4=4*a**2+4*b",
+        "S5=-10*a",
+        "S6=4*a**3+12*a*b+3",
+        "a_exact=b_exact=3/4+t/8+t**5/64",
+        "P(z)|a=b=3/4=(z-1/2)**3*(z+3/2)"
+      ],
+      "evidence": [
+        "f6_trace/derivation.md",
+        "f6_trace/symbolic_results.json",
+        "f6_trace/results.json",
+        "f6_trace/tests.log",
+        "reviews/review.json"
+      ],
+      "scope": "Polynomial all-root observables; branch-selected and real-only queries are rejected by contract."
+    },
+    {
+      "id": "NEW-D-LOCAL-LENGTH",
+      "node": "F5",
+      "statement_ko": "횡단성 wall의 명시적 점에서 수직 quotient 국소 대수 길이는 3이다.",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "assumptions": [
+        "eta=1,p=-1/2,q=4/27",
+        "a=0,m=1/3,H=1/6,c=20/27",
+        "local analytic quotient with c*H!=0"
+      ],
+      "equations": [
+        "det(implicit_minor)=12800000/1594323",
+        "m=1/3-a/2+(3/40)*a**2+O(a**3)",
+        "H=1/6-(9/20)*a**2+O(a**3)",
+        "c=20/27-(7/4)*a**2+O(a**3)",
+        "G_y_reduced=(2080/729)*a**3+O(a**4)"
+      ],
+      "evidence": [
+        "f5_global/wall_local.py",
+        "f5_global/wall_local_results.json",
+        "reviews/review.json"
+      ],
+      "scope": "One exact point on D=0; general D=0 stratum classification remains open."
+    }
+  ],
+  "dag": [
+    {
+      "id": "F1",
+      "task": "Build overlapping regular closure charts and certify same-branch chart transitions; separate unrelated-root discriminant crossings",
+      "prior_status": "NOT_RUN",
+      "status": "COMPLETE_SCOPED",
+      "evidence_report": "f1_atlas/task_report.json",
+      "review": {
+        "SPEC": "ACCEPTED_SCOPED",
+        "QUALITY": "ACCEPTED_SCOPED",
+        "accepted_scope": "Two fully overlapping primitive charts on same regular carrier; exact slow-state-preserving switches, branch identity by unique box root, closed-slab residual certification, unrelated discriminant crossing.",
+        "exclusions": [
+          "No enlarged determinant coverage",
+          "No continuation through selected d=0"
+        ],
+        "findings": []
+      }
+    },
+    {
+      "id": "F2",
+      "task": "Compile one larger sparse multivariable closure with measured offline circuit growth and compare Newton/Krawczyk at matched physical error including certificate cost",
+      "depends_on": [
+        "F1"
+      ],
+      "prior_status": "NOT_RUN",
+      "status": "COMPLETE_SCOPED",
+      "evidence_report": "f23_native/task_report.json",
+      "review": {
+        "SPEC": "ACCEPTED_SCOPED",
+        "QUALITY": "ACCEPTED_SCOPED",
+        "accepted_scope": "Structured cyclic n=4,8,16 family, finite rational O(n) circuit, measured source/object/codegen/compile growth. Newton uses structured solve; post-Newton Krawczyk is inclusion validation.",
+        "proof": "T(q)=x-q_next²/4 maps Q to Q and has factor1/8. Reduced dissipativity6/7 and residual defect df+dg/7.",
+        "exclusions": [
+          "No generic sparse elimination complexity claim",
+          "No F1 chart switches needed inside this unique global contraction box"
+        ],
+        "findings": []
+      }
+    },
+    {
+      "id": "F3",
+      "task": "Native floating-point outward residual implementation and matched-accuracy wall-clock campaign",
+      "depends_on": [
+        "F2"
+      ],
+      "prior_status": "NOT_RUN",
+      "status": "COMPLETE_SCOPED",
+      "evidence_report": "f23_native/task_report.json",
+      "review": {
+        "SPEC": "ACCEPTED_SCOPED",
+        "QUALITY": "ACCEPTED_SCOPED",
+        "accepted_scope": "Native IEEE binary64 nextafter outward primitive intervals with FMA disabled, exact dyadic constants/time steps; interval Hermite/Bernstein residual bounds and directed recurrence.",
+        "evidence": "Read native primitive arithmetic, coefficient construction, dyadic input restrictions, 816 exact-corner assertions and 27 representative Fraction slab comparisons in reported campaign. Secondary independent review native_secondary_review.json agrees; runtime RN/FTZ/DAZ checks present in final source.",
+        "exclusions": [
+          "Runtime arithmetic assumptions are explicit",
+          "Timing only measured environment; universal speedup not established"
+        ],
+        "findings": []
+      }
+    },
+    {
+      "id": "F4",
+      "task": "Classify higher-order wall at A^2+6B=0 using original analytic equations",
+      "prior_status": "NOT_RUN",
+      "status": "COMPLETE_SCOPED",
+      "evidence_report": "f4_degenerate/task_report.json",
+      "review": {
+        "SPEC": "ACCEPTED_SCOPED",
+        "QUALITY": "ACCEPTED_SCOPED",
+        "accepted_scope": "Analytic IFT germ, exact weighted jets and rank locus; explicit immersed front lift plus verified published recognition criterion proves smooth cuspidal butterfly. Central epsilon0 plane branch has Puiseux characteristic(4,5). Fractional edge asymptotics valid fixed A>0.",
+        "exclusions": [
+          "Central point lies outside nonparallel-normal regular carrier",
+          "No global topology, analytic normal-form equivalence, uniform neighborhood in A, or interval-certified numerical roots"
+        ],
+        "findings": [
+          "REPORT-DRIFT-003"
+        ]
+      }
+    },
+    {
+      "id": "F5",
+      "task": "Prove geometric/transversality range and global chart count for generalized Weierstrass collision family",
+      "prior_status": "NOT_RUN",
+      "status": "PARTIAL_WITH_SOURCE_CORRECTION",
+      "evidence_report": "f5_global/task_report.json",
+      "review": {
+        "SPEC": "PARTIAL_FULL_GLOBAL_COUNT_OPEN",
+        "QUALITY": "ACCEPTED_SCOPED",
+        "accepted_scope": "Vertical quotient determinant including D; independent original-incidence horizontal collisions and independent reduced 4x4 tangent determinant384/37 at baseline prove +4 ordered/+2 unordered isolated reduced contribution. Conditional baseline total120/60 requires reuse of archived nonhorizontal116/58 proof; generalized full count not established. At eta1,p−1/2,q4/27 vertical point is isolated nonreduced of local quotient length3; no full D0-stratum classification. Horizontal p!=0 chart exhaustion accepted. Local q unfolding coefficient6400/243 and nonvertical splitting a²=−120(q−4/27)/13+O((q−4/27)²) accepted using symmetry of the analytic zero germ.",
+        "findings": [
+          "F5-GLOBAL-001",
+          "F5-TRANSVERSE-002",
+          "F5-NORMALIZATION-004"
+        ],
+        "exclusions": [
+          "Conditional baseline120/60/31 requires independently retained complete b!=0 atlas",
+          "Full parameter discriminant, infinity boundary and finite-etale base degree not computed",
+          "p0 horizontal complex chart and full D0 locus classification remain open",
+          "Generic global saturation input generated but not executed"
+        ]
+      }
+    },
+    {
+      "id": "F6",
+      "task": "Implement trace-only symmetric-observable ODE client including multiplicities and explicit observable contract",
+      "prior_status": "NOT_RUN",
+      "status": "COMPLETE_SCOPED",
+      "evidence_report": "f6_trace/task_report.json",
+      "review": {
+        "SPEC": "ACCEPTED_SCOPED",
+        "QUALITY": "ACCEPTED_SCOPED",
+        "accepted_scope": "All-complex-root polynomial traces with algebraic multiplicities, exact Newton recurrence/companion identities, controlled coupled ODE crossing triple root, rational full-slab certificates.",
+        "proof": "On [1/2,1]² reduced Jacobian logarithmic row bounds −91/128 and −39/64 imply chosen contraction1/2. Polynomial trace recurrence is globally regular through repeated roots.",
+        "exclusions": [
+          "No selected physical branch or real-root subset trace",
+          "Manufactured forcing, not arbitrary application benchmark"
+        ],
+        "findings": [
+          "REPORT-DRIFT-003"
+        ]
+      }
+    }
+  ],
+  "remaining_dag": [
+    {
+      "id": "F5-GLOBAL-REPAIR",
+      "depends_on": [
+        "F5"
+      ],
+      "status": "OPEN",
+      "action": "Rebuild saturated full-incidence atlas including horizontal h=0,b=0; prove characteristic-zero complete count and parameter strata, with orbit stabilizers.",
+      "inputs": [
+        "f5_global/full_incidence.py",
+        "f5_global/sources/v13.txt",
+        "reviews/horizontal_independent_check.json"
+      ],
+      "acceptance": "Every regular chart covered, finite lengths and multiplicities certified, conditional inherited count independently closed."
+    },
+    {
+      "id": "F5-D-WALL",
+      "depends_on": [
+        "F5"
+      ],
+      "status": "OPEN",
+      "action": "Extend the proved length3 classification at eta=1,p=-1/2,q=4/27 to the full D=0 parameter stratum; handle the p=0 distinct-starting-x horizontal chart.",
+      "acceptance": "Normal form or local algebra with exact multiplicity and parameter crossing law."
+    }
+  ],
+  "corrections": [
+    {
+      "id": "CORR-HORIZONTAL",
+      "affected_source": "v13 sections14.3,14.5 and parent global116/58 references",
+      "old_statement": "horizontal chart has no regular collision; both involutions have free joint action giving uniform4 lifts",
+      "new_statement": "same-starting-x opposite-y horizontal witnesses produce regular collisions; joint stabilizer gives2 ordered lifts per horizontal quotient point",
+      "direct_consequence": "Existing global116/58 cannot be accepted as complete intrinsic counts.",
+      "conditional_total": {
+        "ordered": 120,
+        "unordered": 60,
+        "status": "CONDITIONAL_NOT_PROMOTED",
+        "premise": "Archived c!=0 contribution116/58 remains complete and no further charts contribute; new b=0 stratum contributes4/2."
+      },
+      "evidence": [
+        "reviews/horizontal_independent_check.json",
+        "f5_global/full_incidence_results.json"
+      ]
+    },
+    {
+      "id": "CORR-TRANSVERSE",
+      "old_scope": "H,c,normal-product conditions establish four vertical lifts",
+      "new_scope": "These remain sufficient for that geometric statement; simplicity/transversality additionally requires D!=0.",
+      "evidence": [
+        "f5_global/symbolic_results.json"
+      ]
+    }
+  ],
+  "measurements": {
+    "atlas": {
+      "runs": 4,
+      "slabs": 288,
+      "transitions": 150,
+      "root_solves": 0,
+      "raw": "f1_atlas/results.json"
+    },
+    "native": {
+      "counts": {
+        "distinct_configurations": 36,
+        "timed_integrations": 252,
+        "distinct_slabs": 2160,
+        "timed_slabs": 15120,
+        "fraction_reference_slabs": 27
+      },
+      "matched_budget": [
+        {
+          "n": 4,
+          "steps": 64,
+          "method": "compiled",
+          "repeats": 7,
+          "integration_seconds": [
+            4.709e-05,
+            3.363e-05,
+            3.0555e-05,
+            3.0206e-05,
+            2.9805e-05,
+            3.0916e-05,
+            3.0035e-05
+          ],
+          "certificate_seconds": [
+            0.002001662,
+            0.001829753,
+            0.002009243,
+            0.001790555,
+            0.001915132,
+            0.001818357,
+            0.001870575
+          ],
+          "total_seconds": [
+            0.002051457,
+            0.001864125,
+            0.002040271,
+            0.001821121,
+            0.001945679,
+            0.001849974,
+            0.001900971
+          ],
+          "closure_krawczyk_seconds": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "slow_whole_bound": 1.2434134270686288e-09,
+          "root_whole_bound": 1.421610267714539e-09,
+          "ode_residual": 2.878165584848059e-09,
+          "algebraic_residual": 1.0719774052000248e-12,
+          "physical_budget_met": true,
+          "counts": {
+            "rhs": 256,
+            "root_solves": 0,
+            "newton_updates": 0,
+            "cache_hits": 0,
+            "structured_solves": 0,
+            "krawczyk_inclusions": 0,
+            "krawczyk_failures": 0,
+            "generic_lu": 0,
+            "jvp": 0,
+            "vjp": 0
+          },
+          "integration_seconds_median": 3.0555e-05,
+          "integration_seconds_min": 2.9805e-05,
+          "integration_seconds_max": 4.709e-05,
+          "certificate_seconds_median": 0.001870575,
+          "certificate_seconds_min": 0.001790555,
+          "certificate_seconds_max": 0.002009243,
+          "total_seconds_median": 0.001900971,
+          "total_seconds_min": 0.001821121,
+          "total_seconds_max": 0.002051457,
+          "closure_krawczyk_seconds_median": 0,
+          "closure_krawczyk_seconds_min": 0,
+          "closure_krawczyk_seconds_max": 0,
+          "candidate_generation_seconds_median": 3.0555e-05,
+          "whole_path_certificate_fraction_of_total": 0.9840102768532503
+        },
+        {
+          "n": 4,
+          "steps": 64,
+          "method": "newton",
+          "repeats": 7,
+          "integration_seconds": [
+            9.8708e-05,
+            0.000107492,
+            8.2725e-05,
+            8.3696e-05,
+            8.2174e-05,
+            8.4667e-05,
+            8.4087e-05
+          ],
+          "certificate_seconds": [
+            0.002195975,
+            0.002022103,
+            0.001898587,
+            0.001726209,
+            0.002120791,
+            0.002034442,
+            0.005011172
+          ],
+          "total_seconds": [
+            0.002297638,
+            0.002130236,
+            0.001981832,
+            0.001810165,
+            0.002203366,
+            0.00211966,
+            0.00509603
+          ],
+          "closure_krawczyk_seconds": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "slow_whole_bound": 1.2434580148743386e-09,
+          "root_whole_bound": 1.4212998397697007e-09,
+          "ode_residual": 2.878398211523685e-09,
+          "algebraic_residual": 1.0667015239165618e-12,
+          "physical_budget_met": true,
+          "counts": {
+            "rhs": 256,
+            "root_solves": 256,
+            "newton_updates": 448,
+            "cache_hits": 64,
+            "structured_solves": 448,
+            "krawczyk_inclusions": 0,
+            "krawczyk_failures": 0,
+            "generic_lu": 0,
+            "jvp": 0,
+            "vjp": 0
+          },
+          "integration_seconds_median": 8.4087e-05,
+          "integration_seconds_min": 8.2174e-05,
+          "integration_seconds_max": 0.000107492,
+          "certificate_seconds_median": 0.002034442,
+          "certificate_seconds_min": 0.001726209,
+          "certificate_seconds_max": 0.005011172,
+          "total_seconds_median": 0.002130236,
+          "total_seconds_min": 0.001810165,
+          "total_seconds_max": 0.00509603,
+          "closure_krawczyk_seconds_median": 0,
+          "closure_krawczyk_seconds_min": 0,
+          "closure_krawczyk_seconds_max": 0,
+          "candidate_generation_seconds_median": 8.4087e-05,
+          "whole_path_certificate_fraction_of_total": 0.9550312735302566
+        },
+        {
+          "n": 4,
+          "steps": 64,
+          "method": "krawczyk",
+          "repeats": 7,
+          "integration_seconds": [
+            0.001148644,
+            0.000945092,
+            0.000966795,
+            0.00104963,
+            0.001317533,
+            0.000939014,
+            0.000861606
+          ],
+          "certificate_seconds": [
+            0.002050416,
+            0.00201999,
+            0.001882203,
+            0.002114933,
+            0.001800039,
+            0.002067592,
+            0.001967401
+          ],
+          "total_seconds": [
+            0.003201784,
+            0.002965804,
+            0.002849589,
+            0.003164953,
+            0.003118223,
+            0.003006866,
+            0.002829589
+          ],
+          "closure_krawczyk_seconds": [
+            0.0009275039999999999,
+            0.0008566639999999998,
+            0.0008811770000000005,
+            0.000895114,
+            0.0011378859999999994,
+            0.0008425390000000005,
+            0.0007769399999999998
+          ],
+          "slow_whole_bound": 1.2434580148743386e-09,
+          "root_whole_bound": 1.4212998397697007e-09,
+          "ode_residual": 2.878398211523685e-09,
+          "algebraic_residual": 1.0667015239165618e-12,
+          "physical_budget_met": true,
+          "counts": {
+            "rhs": 256,
+            "root_solves": 256,
+            "newton_updates": 448,
+            "cache_hits": 64,
+            "structured_solves": 1472,
+            "krawczyk_inclusions": 256,
+            "krawczyk_failures": 0,
+            "generic_lu": 0,
+            "jvp": 0,
+            "vjp": 0
+          },
+          "integration_seconds_median": 0.000966795,
+          "integration_seconds_min": 0.000861606,
+          "integration_seconds_max": 0.001317533,
+          "certificate_seconds_median": 0.00201999,
+          "certificate_seconds_min": 0.001800039,
+          "certificate_seconds_max": 0.002114933,
+          "total_seconds_median": 0.003006866,
+          "total_seconds_min": 0.002829589,
+          "total_seconds_max": 0.003201784,
+          "closure_krawczyk_seconds_median": 0.0008811770000000005,
+          "closure_krawczyk_seconds_min": 0.0007769399999999998,
+          "closure_krawczyk_seconds_max": 0.0011378859999999994,
+          "candidate_generation_seconds_median": 9.64749999999994e-05,
+          "whole_path_certificate_fraction_of_total": 0.6717924909191165
+        },
+        {
+          "n": 8,
+          "steps": 64,
+          "method": "compiled",
+          "repeats": 7,
+          "integration_seconds": [
+            3.9409e-05,
+            3.7377e-05,
+            3.337e-05,
+            3.292e-05,
+            3.3671e-05,
+            3.4031e-05,
+            3.355e-05
+          ],
+          "certificate_seconds": [
+            0.003549952,
+            0.003590333,
+            0.003634831,
+            0.003692006,
+            0.004300152,
+            0.005033055,
+            0.003888222
+          ],
+          "total_seconds": [
+            0.003592186,
+            0.003628411,
+            0.003668672,
+            0.003725426,
+            0.004334413,
+            0.005067597,
+            0.003922533
+          ],
+          "closure_krawczyk_seconds": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "slow_whole_bound": 1.2439768240307973e-09,
+          "root_whole_bound": 1.4222541795286813e-09,
+          "ode_residual": 2.879702173557341e-09,
+          "algebraic_residual": 1.0720128609298178e-12,
+          "physical_budget_met": true,
+          "counts": {
+            "rhs": 256,
+            "root_solves": 0,
+            "newton_updates": 0,
+            "cache_hits": 0,
+            "structured_solves": 0,
+            "krawczyk_inclusions": 0,
+            "krawczyk_failures": 0,
+            "generic_lu": 0,
+            "jvp": 0,
+            "vjp": 0
+          },
+          "integration_seconds_median": 3.3671e-05,
+          "integration_seconds_min": 3.292e-05,
+          "integration_seconds_max": 3.9409e-05,
+          "certificate_seconds_median": 0.003692006,
+          "certificate_seconds_min": 0.003549952,
+          "certificate_seconds_max": 0.005033055,
+          "total_seconds_median": 0.003725426,
+          "total_seconds_min": 0.003592186,
+          "total_seconds_max": 0.005067597,
+          "closure_krawczyk_seconds_median": 0,
+          "closure_krawczyk_seconds_min": 0,
+          "closure_krawczyk_seconds_max": 0,
+          "candidate_generation_seconds_median": 3.3671e-05,
+          "whole_path_certificate_fraction_of_total": 0.9910292138402427
+        },
+        {
+          "n": 8,
+          "steps": 64,
+          "method": "newton",
+          "repeats": 7,
+          "integration_seconds": [
+            0.000366121,
+            0.000102795,
+            0.000116525,
+            0.000142255,
+            9.6706e-05,
+            9.5073e-05,
+            9.7557e-05
+          ],
+          "certificate_seconds": [
+            0.003664816,
+            0.003882323,
+            0.003803715,
+            0.003477283,
+            0.003534249,
+            0.003586157,
+            0.003730605
+          ],
+          "total_seconds": [
+            0.004033921,
+            0.0039861,
+            0.003921282,
+            0.003620058,
+            0.003631536,
+            0.003681441,
+            0.003828602
+          ],
+          "closure_krawczyk_seconds": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "slow_whole_bound": 1.244030870836276e-09,
+          "root_whole_bound": 1.4219545213211877e-09,
+          "ode_residual": 2.8799686169459607e-09,
+          "algebraic_residual": 1.0667360718804833e-12,
+          "physical_budget_met": true,
+          "counts": {
+            "rhs": 256,
+            "root_solves": 256,
+            "newton_updates": 448,
+            "cache_hits": 64,
+            "structured_solves": 448,
+            "krawczyk_inclusions": 0,
+            "krawczyk_failures": 0,
+            "generic_lu": 0,
+            "jvp": 0,
+            "vjp": 0
+          },
+          "integration_seconds_median": 0.000102795,
+          "integration_seconds_min": 9.5073e-05,
+          "integration_seconds_max": 0.000366121,
+          "certificate_seconds_median": 0.003664816,
+          "certificate_seconds_min": 0.003477283,
+          "certificate_seconds_max": 0.003882323,
+          "total_seconds_median": 0.003828602,
+          "total_seconds_min": 0.003620058,
+          "total_seconds_max": 0.004033921,
+          "closure_krawczyk_seconds_median": 0,
+          "closure_krawczyk_seconds_min": 0,
+          "closure_krawczyk_seconds_max": 0,
+          "candidate_generation_seconds_median": 0.000102795,
+          "whole_path_certificate_fraction_of_total": 0.9572204162250346
+        },
+        {
+          "n": 8,
+          "steps": 64,
+          "method": "krawczyk",
+          "repeats": 7,
+          "integration_seconds": [
+            0.002884501,
+            0.004725723,
+            0.007537273,
+            0.003101798,
+            0.003117972,
+            0.003804246,
+            0.005168979
+          ],
+          "certificate_seconds": [
+            0.009005403,
+            0.003868892,
+            0.006539783,
+            0.004161583,
+            0.004282616,
+            0.004041332,
+            0.008270888
+          ],
+          "total_seconds": [
+            0.01189356,
+            0.008596358,
+            0.014078018,
+            0.007264072,
+            0.007401519,
+            0.00784622,
+            0.013440478
+          ],
+          "closure_krawczyk_seconds": [
+            0.002772995999999999,
+            0.004610110999999998,
+            0.007036960000000002,
+            0.0029988509999999977,
+            0.0030118160000000014,
+            0.0035114279999999987,
+            0.004752478000000001
+          ],
+          "slow_whole_bound": 1.244030870836276e-09,
+          "root_whole_bound": 1.4219545213211877e-09,
+          "ode_residual": 2.8799686169459607e-09,
+          "algebraic_residual": 1.0667360718804833e-12,
+          "physical_budget_met": true,
+          "counts": {
+            "rhs": 256,
+            "root_solves": 256,
+            "newton_updates": 448,
+            "cache_hits": 64,
+            "structured_solves": 2496,
+            "krawczyk_inclusions": 256,
+            "krawczyk_failures": 0,
+            "generic_lu": 0,
+            "jvp": 0,
+            "vjp": 0
+          },
+          "integration_seconds_median": 0.003804246,
+          "integration_seconds_min": 0.002884501,
+          "integration_seconds_max": 0.007537273,
+          "certificate_seconds_median": 0.004282616,
+          "certificate_seconds_min": 0.003868892,
+          "certificate_seconds_max": 0.009005403,
+          "total_seconds_median": 0.008596358,
+          "total_seconds_min": 0.007264072,
+          "total_seconds_max": 0.014078018,
+          "closure_krawczyk_seconds_median": 0.0035114279999999987,
+          "closure_krawczyk_seconds_min": 0.002772995999999999,
+          "closure_krawczyk_seconds_max": 0.007036960000000002,
+          "candidate_generation_seconds_median": 0.00011561200000000191,
+          "whole_path_certificate_fraction_of_total": 0.49818958214629966
+        },
+        {
+          "n": 16,
+          "steps": 64,
+          "method": "compiled",
+          "repeats": 7,
+          "integration_seconds": [
+            5.9219e-05,
+            5.8017e-05,
+            4.9665e-05,
+            4.8854e-05,
+            4.8443e-05,
+            7.7166e-05,
+            7.8017e-05
+          ],
+          "certificate_seconds": [
+            0.007457845,
+            0.007033896,
+            0.007379176,
+            0.007383963,
+            0.007398545,
+            0.008760935,
+            0.008995989
+          ],
+          "total_seconds": [
+            0.007520409,
+            0.007092895,
+            0.007430072,
+            0.007433848,
+            0.007448059,
+            0.008838993,
+            0.009075349
+          ],
+          "closure_krawczyk_seconds": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "slow_whole_bound": 1.2439698332053686e-09,
+          "root_whole_bound": 1.4222461995447818e-09,
+          "ode_residual": 2.879684407621772e-09,
+          "algebraic_residual": 1.0720128609298178e-12,
+          "physical_budget_met": true,
+          "counts": {
+            "rhs": 256,
+            "root_solves": 0,
+            "newton_updates": 0,
+            "cache_hits": 0,
+            "structured_solves": 0,
+            "krawczyk_inclusions": 0,
+            "krawczyk_failures": 0,
+            "generic_lu": 0,
+            "jvp": 0,
+            "vjp": 0
+          },
+          "integration_seconds_median": 5.8017e-05,
+          "integration_seconds_min": 4.8443e-05,
+          "integration_seconds_max": 7.8017e-05,
+          "certificate_seconds_median": 0.007398545,
+          "certificate_seconds_min": 0.007033896,
+          "certificate_seconds_max": 0.008995989,
+          "total_seconds_median": 0.007448059,
+          "total_seconds_min": 0.007092895,
+          "total_seconds_max": 0.009075349,
+          "closure_krawczyk_seconds_median": 0,
+          "closure_krawczyk_seconds_min": 0,
+          "closure_krawczyk_seconds_max": 0,
+          "candidate_generation_seconds_median": 5.8017e-05,
+          "whole_path_certificate_fraction_of_total": 0.9933520934783143
+        },
+        {
+          "n": 16,
+          "steps": 64,
+          "method": "newton",
+          "repeats": 7,
+          "integration_seconds": [
+            0.000227292,
+            0.000169395,
+            0.000144167,
+            0.000151418,
+            0.00013921,
+            0.000167572,
+            0.000143125
+          ],
+          "certificate_seconds": [
+            0.00857123,
+            0.008399431,
+            0.008194062,
+            0.0068973,
+            0.007237683,
+            0.007455902,
+            0.007419536
+          ],
+          "total_seconds": [
+            0.008804111,
+            0.008570829,
+            0.008339111,
+            0.00704988,
+            0.007377724,
+            0.007624115,
+            0.007564014
+          ],
+          "closure_krawczyk_seconds": [
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0
+          ],
+          "slow_whole_bound": 1.2440225643735405e-09,
+          "root_whole_bound": 1.4219450412315088e-09,
+          "ode_residual": 2.8799456520215463e-09,
+          "algebraic_residual": 1.066736042451382e-12,
+          "physical_budget_met": true,
+          "counts": {
+            "rhs": 256,
+            "root_solves": 256,
+            "newton_updates": 448,
+            "cache_hits": 64,
+            "structured_solves": 448,
+            "krawczyk_inclusions": 0,
+            "krawczyk_failures": 0,
+            "generic_lu": 0,
+            "jvp": 0,
+            "vjp": 0
+          },
+          "integration_seconds_median": 0.000151418,
+          "integration_seconds_min": 0.00013921,
+          "integration_seconds_max": 0.000227292,
+          "certificate_seconds_median": 0.007455902,
+          "certificate_seconds_min": 0.0068973,
+          "certificate_seconds_max": 0.00857123,
+          "total_seconds_median": 0.007624115,
+          "total_seconds_min": 0.00704988,
+          "total_seconds_max": 0.008804111,
+          "closure_krawczyk_seconds_median": 0,
+          "closure_krawczyk_seconds_min": 0,
+          "closure_krawczyk_seconds_max": 0,
+          "candidate_generation_seconds_median": 0.000151418,
+          "whole_path_certificate_fraction_of_total": 0.9779367179010285
+        },
+        {
+          "n": 16,
+          "steps": 64,
+          "method": "krawczyk",
+          "repeats": 7,
+          "integration_seconds": [
+            0.011973461,
+            0.010887807,
+            0.010708207,
+            0.012511721,
+            0.011420138,
+            0.015399658,
+            0.014205049
+          ],
+          "certificate_seconds": [
+            0.007409351,
+            0.0077078,
+            0.006913435,
+            0.007885027,
+            0.008331449,
+            0.009106515,
+            0.008958152
+          ],
+          "total_seconds": [
+            0.019386948,
+            0.018596898,
+            0.017622933,
+            0.020397088,
+            0.019753008,
+            0.024507384,
+            0.023164584
+          ],
+          "closure_krawczyk_seconds": [
+            0.011705822000000003,
+            0.010683321999999995,
+            0.010547147000000003,
+            0.012317642999999998,
+            0.011204844999999993,
+            0.015119414999999999,
+            0.013899631999999997
+          ],
+          "slow_whole_bound": 1.2440225643735405e-09,
+          "root_whole_bound": 1.4219450412315088e-09,
+          "ode_residual": 2.8799456520215463e-09,
+          "algebraic_residual": 1.066736042451382e-12,
+          "physical_budget_met": true,
+          "counts": {
+            "rhs": 256,
+            "root_solves": 256,
+            "newton_updates": 448,
+            "cache_hits": 64,
+            "structured_solves": 4544,
+            "krawczyk_inclusions": 256,
+            "krawczyk_failures": 0,
+            "generic_lu": 0,
+            "jvp": 0,
+            "vjp": 0
+          },
+          "integration_seconds_median": 0.011973461,
+          "integration_seconds_min": 0.010708207,
+          "integration_seconds_max": 0.015399658,
+          "certificate_seconds_median": 0.007885027,
+          "certificate_seconds_min": 0.006913435,
+          "certificate_seconds_max": 0.009106515,
+          "total_seconds_median": 0.019753008,
+          "total_seconds_min": 0.017622933,
+          "total_seconds_max": 0.024507384,
+          "closure_krawczyk_seconds_median": 0.011705822000000003,
+          "closure_krawczyk_seconds_min": 0.010547147000000003,
+          "closure_krawczyk_seconds_max": 0.015119414999999999,
+          "candidate_generation_seconds_median": 0.00021529300000000702,
+          "whole_path_certificate_fraction_of_total": 0.3991810766238742
+        }
+      ],
+      "offline": {
+        "code_growth": [
+          {
+            "n": 4,
+            "source_bytes": 391,
+            "source_lines": 16,
+            "arithmetic_ops": 25,
+            "negations": 4,
+            "add_sub": 7,
+            "mul": 13,
+            "div": 1,
+            "codegen_ns": 7571,
+            "largest_literal_numerator": 1,
+            "largest_literal_denominator": 2,
+            "recurrence_registers": 2,
+            "expression_swell": "linear DAG; expanded determinant intentionally avoided",
+            "object_compile_seconds": 0.2711260490032146,
+            "object_bytes": 3488
+          },
+          {
+            "n": 8,
+            "source_bytes": 663,
+            "source_lines": 28,
+            "arithmetic_ops": 53,
+            "negations": 8,
+            "add_sub": 15,
+            "mul": 29,
+            "div": 1,
+            "codegen_ns": 8944,
+            "largest_literal_numerator": 1,
+            "largest_literal_denominator": 2,
+            "recurrence_registers": 2,
+            "expression_swell": "linear DAG; expanded determinant intentionally avoided",
+            "object_compile_seconds": 0.198133449004672,
+            "object_bytes": 3808
+          },
+          {
+            "n": 16,
+            "source_bytes": 1263,
+            "source_lines": 52,
+            "arithmetic_ops": 109,
+            "negations": 16,
+            "add_sub": 31,
+            "mul": 61,
+            "div": 1,
+            "codegen_ns": 12489,
+            "largest_literal_numerator": 1,
+            "largest_literal_denominator": 2,
+            "recurrence_registers": 2,
+            "expression_swell": "linear DAG; expanded determinant intentionally avoided",
+            "object_compile_seconds": 0.24782133899861947,
+            "object_bytes": 4408
+          }
+        ],
+        "native_compile_seconds": 2.1548604929994326,
+        "probe_compile_seconds": 2.026437303000421
+      },
+      "raw": "f23_native/results.json"
+    },
+    "trace": {
+      "counts": {
+        "experiment_integration_runs": 12,
+        "experiment_certificate_runs": 12,
+        "experiment_slabs": 1008,
+        "benchmark_integration_runs": 10,
+        "benchmark_certificate_runs": 10,
+        "benchmark_slabs": 2560,
+        "unit_test_methods": 8,
+        "rational_companion_points": 18,
+        "rational_powers_per_point": 15,
+        "symbolic_identity_checks": 17,
+        "replay_certificate_runs": 12,
+        "replay_slabs": 1008
+      },
+      "matched_budget": [
+        {
+          "mode": "trace",
+          "slabs": 256,
+          "repetitions": 5,
+          "total_seconds_samples": [
+            0.7754544039999018,
+            0.8282659020042047,
+            0.6871229590033181,
+            0.6825315949972719,
+            0.700105302996235
+          ],
+          "median_integration_seconds": 0.005435788996692281,
+          "median_certificate_seconds": 0.6945044050007709,
+          "median_total_seconds": 0.700105302996235
+        },
+        {
+          "mode": "roots",
+          "slabs": 256,
+          "repetitions": 5,
+          "total_seconds_samples": [
+            0.8279117700003553,
+            1.013166797994927,
+            0.9061501850010245,
+            1.004575824001222,
+            0.7653686910052784
+          ],
+          "median_integration_seconds": 0.05611415499879513,
+          "median_certificate_seconds": 0.8500360300022294,
+          "median_total_seconds": 0.9061501850010245
+        }
+      ],
+      "raw": "f6_trace/results.json"
+    },
+    "geometry": {
+      "F4_symbolic_checks": 13,
+      "F4_edge_numeric_probes": 18,
+      "F4_central_numeric_probes": 9
+    },
+    "aggregation_policy": "Tests, exact identities, runs, slabs, repeated timing samples are separate categories. Do not sum them into a success rate."
+  },
+  "task_reports": {
+    "F1": {
+      "node_ids": [
+        "F1"
+      ],
+      "status": "SCOPED_IMPLEMENTATION_AND_VALIDATION_PASS_PENDING_INDEPENDENT_REVIEW",
+      "claims": [
+        {
+          "id": "F1-C1",
+          "statement": "Both primitive charts implement the same regular closure carrier with exact rational tangent circuits and polynomial transitions.",
+          "assumptions": [
+            "G1=G2=0",
+            "d != 0",
+            "characteristic zero"
+          ],
+          "equations": [
+            "G1=u**2+v-a",
+            "G2=v**2+u-b",
+            "Pu_u=-d after v=a-u**2",
+            "Pv_v=-d after u=b-v**2",
+            "2*u*Nu+Nv=d*fa",
+            "Nu+2*v*Nv=d*fb"
+          ],
+          "basis": "Exact sparse multivariate polynomial identities; implicit-function theorem at simple primitive roots.",
+          "evidence": [
+            "derivation.md sections 1-2",
+            "test_results.json symbolic_checks",
+            "formulas.json"
+          ],
+          "remaining_obligations": [
+            "Independent review; these two charts do not enlarge determinant coverage."
+          ]
+        },
+        {
+          "id": "F1-C2",
+          "statement": "Actual u/v switches preserve the unique small-box branch and account for exact reconstruction rounding without a slow-radius jump.",
+          "assumptions": [
+            "Main X=[-1/8,1/8]^2,Q=[-1/4,1/4]^2",
+            "Input and output domains and residual budgets checked",
+            "Slow x unchanged bitwise",
+            "Root initial state exactly zero"
+          ],
+          "equations": [
+            "q-T_x(q)=(G2,G1)",
+            "||q-q(x)||<=2*||G||",
+            "u_plus-u_minus=-G2+eps",
+            "v_plus-v_minus=-G1+eps",
+            "Delta_slow_radius=0"
+          ],
+          "basis": "Banach contraction uniqueness; original-residual radii attach both representations to the same q(x).",
+          "evidence": [
+            "atlas.py transition, validate_run, certify_run",
+            "results.json runs 0-2",
+            "test_results.json adversarial cases"
+          ],
+          "remaining_obligations": [
+            "Independent review; different parameter coordinate maps would require an explicit slow-radius increment."
+          ]
+        },
+        {
+          "id": "F1-C3",
+          "statement": "Three coupled main experiments pass the unchanged 1e-8 whole-path four-variable error budget with chart switching and zero online nonlinear solves.",
+          "assumptions": [
+            "Baseline fixed-box contraction and slow invariant domain theorem",
+            "Exact Fraction conversion of binary64 endpoints",
+            "Piecewise physical cubic Hermite output contract",
+            "Exact Bernstein domain and residual bounds"
+          ],
+          "equations": [
+            "delta=Df+Dg/2",
+            "Ewhole<=E0+h*delta",
+            "Eend<=ceil_dyadic96(E0/(1+h/2)+h*delta)",
+            "Eqwhole<=2*Ewhole+2*Dg"
+          ],
+          "basis": "Per-slab reduced differential defect and contractive Gronwall bound, unchanged across continuous slow coordinates.",
+          "evidence": [
+            "results.json runs 0-2",
+            "execution.log",
+            "../baseline/code/algebraic_client.py certificate"
+          ],
+          "remaining_obligations": [
+            "Independent review; no speed advantage or generic compiler claim."
+          ]
+        },
+        {
+          "id": "F1-C4",
+          "statement": "A separate analytic-control integration crosses the global discriminant while its certified selected root remains regular; unrelated roots collide.",
+          "assumptions": [
+            "Prescribed a=b=c(t), not the main coupled slow field",
+            "Exact dyadic s0=-49/32,c0=833/1024",
+            "Control Xc=[13/20,7/8]^2,Qc=[-8/5,-7/5]^2"
+          ],
+          "equations": [
+            "s=-49/32+t/16",
+            "c=s**2+s",
+            "a_prime=b_prime=(2*s+1)/16",
+            "D(c,c)=(4*c-3)**3*(4*c+1)",
+            "d>=1953/256",
+            "||q-q(x)||<=5*||G||/9",
+            "Eqwhole<=20*(Dg+Ex)/37"
+          ],
+          "basis": "Negative-square-root fixed-point contraction (proof only); exact regular analytic solution; original-residual secant bound on whole slabs.",
+          "evidence": [
+            "derivation.md section 4",
+            "results.json run 3 and control_discriminant",
+            "test_atlas.py test_unrelated_discriminant_control"
+          ],
+          "remaining_obligations": [
+            "Independent review; no claim about crossing selected d=0 or main coupled dynamics outside X."
+          ]
+        }
+      ],
+      "executions": [
+        {
+          "command": "python atlas.py",
+          "exit_code": 0,
+          "seconds": 0.44573705999937374,
+          "log": "execution.log"
+        },
+        {
+          "command": "python test_atlas.py",
+          "exit_code": 0,
+          "seconds": 0.40600804000132484,
+          "log": "execution.log"
+        }
+      ],
+      "checks": {
+        "status": "PASS",
+        "tests": 14,
+        "failures": 0,
+        "errors": 0,
+        "symbolic_identity_count": 11,
+        "symbolic_checks": {
+          "u_tangency": true,
+          "v_tangency": true,
+          "u_elimination": true,
+          "v_elimination": true,
+          "u_derivative_on_reconstruction": true,
+          "v_derivative_on_reconstruction": true,
+          "transition_u_to_v": true,
+          "transition_v_to_u": true,
+          "discriminant_diagonal": true,
+          "triple_root_control": true,
+          "closure_difference": true
+        },
+        "seconds": 0.3307186530000763
+      },
+      "count_summary": {
+        "scope": "final recorded production campaign only; independent test execution reported separately",
+        "integration_runs": 4,
+        "RK_rhs_calls": 1152,
+        "exact_certificate_endpoint_slope_vectors": 576,
+        "online_chart_switch_checks": 150,
+        "certification_transition_rechecks": 150,
+        "test_cases": 14,
+        "distinct_exact_symbolic_identities": 11,
+        "certified_slabs": 288,
+        "certified_transitions": 150,
+        "online_root_solves": 0
+      },
+      "limitations": [
+        "Both primitive charts have P_z=-d and the same determinant coverage.",
+        "True d=0 requires an event or physical-model decision; switching is not a cure.",
+        "Analytic control has a prescribed parameter path and separate certified domain.",
+        "Offline compile growth and native floating-point residual timings belong to F2/F3."
+      ],
+      "next_actions": [
+        "Independent reviewer reruns final commands and inspects transition, initial-condition and control-box proofs.",
+        "F2/F3 may reuse the contraction-box branch-token contract; no forced switches are needed when one chart covers their branch."
+      ],
+      "baseline_dependencies": {
+        "code/algebraic_client.py": "dcebf23d4c26f3f24b6964c65a0b9a27640eda4e635e4587abf92858c6378c63"
+      },
+      "files": {
+        "atlas.py": "a2eff93839432977a6602452267d030753e27d57aa76a2065f7e672d407b0656",
+        "test_results.json": "be1548be04c21656109505952de1184f87a59248b55cdb26b96dfd6042783734",
+        "test_atlas.py": "239f3d6fe7741e74cd210529f7cb426d08e58baf02f8ec324bde596664fd1784",
+        "execution.log": "62af64c3b91b75b8564d0d9909021841749a2a87feab46490dee19918076931b",
+        "derivation.md": "ff6e5fe5f565e18c5634b0c312fd9b67d90c4072d655bb60b45171673a522284",
+        "formulas.json": "0604d8373dbeee50a241f00581b8290a690f7b9c5f94d1568dff6d7ddc0de47b",
+        "results.json": "7241d2be02e786c3f92b1bd7e871b7d8157a1950bd87bf8907072a20016e7b36"
+      }
+    },
+    "F2": {
+      "nodes": [
+        "F2",
+        "F3"
+      ],
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_PASS_INDEPENDENT_REVIEW_PENDING",
+      "scope": "n=4,8,16 sparse cyclic closure, one globally regular contraction chart, [0,1], all state components 1e-8 whole-path budget",
+      "dependency_F1": {
+        "branch_contract_received": true,
+        "branch_token": "cyclic-small-real-zero",
+        "single_chart": true,
+        "transition_increment": 0,
+        "domain": "X=[-1/8,1/8]^n;Q=[-1/4,1/4]^n",
+        "same_branch_argument": "unique contraction root q(x) on every entire validated slab; no coordinate replacement"
+      },
+      "claims": [
+        {
+          "id": "F2-C1",
+          "claim": "finite rational O(n) action circuit for sparse coupled cycle; exact tangency and domain constants",
+          "kind": "constructive proof plus exact identities",
+          "evidence": [
+            "derivation.md",
+            "generate.py",
+            "circuits.hpp",
+            "reference.py"
+          ]
+        },
+        {
+          "id": "F2-C2",
+          "claim": "measured source/object/offline compile growth and actual matched-budget Newton/Krawczyk campaign",
+          "kind": "measured finite-family result",
+          "evidence": [
+            "results.json",
+            "measurements.md"
+          ]
+        },
+        {
+          "id": "F3-C1",
+          "claim": "native outward polynomial whole-slab residual and radius accumulation",
+          "kind": "interval enclosure argument plus executable checks",
+          "evidence": [
+            "native.cpp",
+            "reference.py",
+            "tests.py",
+            "tests.log",
+            "results.json"
+          ]
+        },
+        {
+          "id": "F3-C2",
+          "claim": "all three methods pass all-component whole-path 1e-8 at N64 for each dimension",
+          "kind": "certified under floating environment assumptions",
+          "evidence": [
+            "results.json"
+          ]
+        }
+      ],
+      "assumptions": [
+        "IEEE binary64 RN, FTZ/DAZ disabled, no fast-math/FMA contraction; checked at runtime on this x86 environment",
+        "Unchanged source and supported g++ arithmetic semantics",
+        "Initial x=q=0; model/constant/dimension/domain exactly as documented",
+        "Krawczyk means Newton candidate plus post-Newton inclusion; not an independent candidate solver"
+      ],
+      "counts": {
+        "distinct_configurations": 36,
+        "timed_integrations": 252,
+        "distinct_slabs": 2160,
+        "timed_slabs": 15120,
+        "fraction_reference_slabs": 27
+      },
+      "verification": {
+        "unit_tests": 8,
+        "unit_status": "PASS",
+        "exact_cyclic_identities": 15,
+        "interval_primitive_cases": 204,
+        "interval_primitive_assertions": 816,
+        "fraction_reference_slabs": 27,
+        "fraction_bound_assertions": 135,
+        "krawczyk_negative_controls": 6
+      },
+      "failure_registry": {
+        "budget_failure_configurations": 18,
+        "expected_rejected_native_configurations": 3,
+        "krawczyk_negative_controls_rejected": 6,
+        "unexpected_runtime_failures": 0,
+        "detail_file": "results.json"
+      },
+      "environment": {
+        "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+        "machine": "x86_64",
+        "python": "3.12.14",
+        "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+        "flags": [
+          "-std=c++17",
+          "-O2",
+          "-fno-fast-math",
+          "-ffp-contract=off",
+          "-frounding-math"
+        ],
+        "rounding_assumptions": "IEEE binary64 RN; no FTZ/DAZ, no fast-math, FMA disabled; finite bounded input domain",
+        "cpu_model": "AMD EPYC 9V74 80-Core Processor"
+      },
+      "commands": [
+        "bash REPLAY.sh"
+      ],
+      "evidence": [
+        "derivation.md",
+        "measurements.md",
+        "native.cpp",
+        "generate.py",
+        "circuits.hpp",
+        "reference.py",
+        "interval_probe.cpp",
+        "closure_probe.cpp",
+        "run.py",
+        "tests.py",
+        "results.json",
+        "campaign_summary.json",
+        "tests.log",
+        "source_hashes.json",
+        "REPLAY.sh",
+        "summarize.py"
+      ],
+      "remaining_obligations": [
+        "Independent review before parent acceptance",
+        "No actual chart transition tested for this cyclic family; one globally regular contraction chart suffices only on this domain",
+        "No generic sparse compiler, stiffness or near-singular benchmark",
+        "No universal runtime advantage; certificate dominates and compiled/Newton total ranking may reverse",
+        "Representative Fraction validation is not exhaustive floating-point formal verification"
+      ]
+    },
+    "F3": {
+      "nodes": [
+        "F2",
+        "F3"
+      ],
+      "status": "IMPLEMENTED_SCOPED_VALIDATION_PASS_INDEPENDENT_REVIEW_PENDING",
+      "scope": "n=4,8,16 sparse cyclic closure, one globally regular contraction chart, [0,1], all state components 1e-8 whole-path budget",
+      "dependency_F1": {
+        "branch_contract_received": true,
+        "branch_token": "cyclic-small-real-zero",
+        "single_chart": true,
+        "transition_increment": 0,
+        "domain": "X=[-1/8,1/8]^n;Q=[-1/4,1/4]^n",
+        "same_branch_argument": "unique contraction root q(x) on every entire validated slab; no coordinate replacement"
+      },
+      "claims": [
+        {
+          "id": "F2-C1",
+          "claim": "finite rational O(n) action circuit for sparse coupled cycle; exact tangency and domain constants",
+          "kind": "constructive proof plus exact identities",
+          "evidence": [
+            "derivation.md",
+            "generate.py",
+            "circuits.hpp",
+            "reference.py"
+          ]
+        },
+        {
+          "id": "F2-C2",
+          "claim": "measured source/object/offline compile growth and actual matched-budget Newton/Krawczyk campaign",
+          "kind": "measured finite-family result",
+          "evidence": [
+            "results.json",
+            "measurements.md"
+          ]
+        },
+        {
+          "id": "F3-C1",
+          "claim": "native outward polynomial whole-slab residual and radius accumulation",
+          "kind": "interval enclosure argument plus executable checks",
+          "evidence": [
+            "native.cpp",
+            "reference.py",
+            "tests.py",
+            "tests.log",
+            "results.json"
+          ]
+        },
+        {
+          "id": "F3-C2",
+          "claim": "all three methods pass all-component whole-path 1e-8 at N64 for each dimension",
+          "kind": "certified under floating environment assumptions",
+          "evidence": [
+            "results.json"
+          ]
+        }
+      ],
+      "assumptions": [
+        "IEEE binary64 RN, FTZ/DAZ disabled, no fast-math/FMA contraction; checked at runtime on this x86 environment",
+        "Unchanged source and supported g++ arithmetic semantics",
+        "Initial x=q=0; model/constant/dimension/domain exactly as documented",
+        "Krawczyk means Newton candidate plus post-Newton inclusion; not an independent candidate solver"
+      ],
+      "counts": {
+        "distinct_configurations": 36,
+        "timed_integrations": 252,
+        "distinct_slabs": 2160,
+        "timed_slabs": 15120,
+        "fraction_reference_slabs": 27
+      },
+      "verification": {
+        "unit_tests": 8,
+        "unit_status": "PASS",
+        "exact_cyclic_identities": 15,
+        "interval_primitive_cases": 204,
+        "interval_primitive_assertions": 816,
+        "fraction_reference_slabs": 27,
+        "fraction_bound_assertions": 135,
+        "krawczyk_negative_controls": 6
+      },
+      "failure_registry": {
+        "budget_failure_configurations": 18,
+        "expected_rejected_native_configurations": 3,
+        "krawczyk_negative_controls_rejected": 6,
+        "unexpected_runtime_failures": 0,
+        "detail_file": "results.json"
+      },
+      "environment": {
+        "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+        "machine": "x86_64",
+        "python": "3.12.14",
+        "compiler": "g++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0",
+        "flags": [
+          "-std=c++17",
+          "-O2",
+          "-fno-fast-math",
+          "-ffp-contract=off",
+          "-frounding-math"
+        ],
+        "rounding_assumptions": "IEEE binary64 RN; no FTZ/DAZ, no fast-math, FMA disabled; finite bounded input domain",
+        "cpu_model": "AMD EPYC 9V74 80-Core Processor"
+      },
+      "commands": [
+        "bash REPLAY.sh"
+      ],
+      "evidence": [
+        "derivation.md",
+        "measurements.md",
+        "native.cpp",
+        "generate.py",
+        "circuits.hpp",
+        "reference.py",
+        "interval_probe.cpp",
+        "closure_probe.cpp",
+        "run.py",
+        "tests.py",
+        "results.json",
+        "campaign_summary.json",
+        "tests.log",
+        "source_hashes.json",
+        "REPLAY.sh",
+        "summarize.py"
+      ],
+      "remaining_obligations": [
+        "Independent review before parent acceptance",
+        "No actual chart transition tested for this cyclic family; one globally regular contraction chart suffices only on this domain",
+        "No generic sparse compiler, stiffness or near-singular benchmark",
+        "No universal runtime advantage; certificate dominates and compiled/Newton total ranking may reverse",
+        "Representative Fraction validation is not exhaustive floating-point formal verification"
+      ]
+    },
+    "F4": {
+      "node": "F4",
+      "outcome": "Completed local proof, symbolic calculation and high-precision checks; independent review pending",
+      "claims": [
+        {
+          "id": "F4-C1",
+          "claim": "Unique local analytic wall chart for fixed A>0 at B=-A^2/6",
+          "status": "PROVED",
+          "proof": "derivation.md section 1; normalized IFT matrix diag(9,4/3)",
+          "evidence": [
+            "symbolic_results.json:wall_jacobian"
+          ],
+          "remaining_obligations": []
+        },
+        {
+          "id": "F4-C2",
+          "claim": "Exact rank equation H=0 iff N=0 on the original analytic wall chart",
+          "status": "PROVED",
+          "proof": "derivation.md section 1; explicit factor Phi_x=H(0,P,T), P(0)=1/9",
+          "evidence": [
+            "symbolic_results.json:critical_parallel_identity",
+            "symbolic_results.json:R_origin"
+          ],
+          "remaining_obligations": []
+        },
+        {
+          "id": "F4-C3",
+          "claim": "Weighted jets through weights 8 in m and 9 in sigma,y",
+          "status": "PROVED",
+          "proof": "derivation.md section 2; original equations substituted exactly",
+          "evidence": [
+            "symbolic_results.json:original_G1_weight8",
+            "symbolic_results.json:original_G2_weight9",
+            "symbolic_results.json:original_Y_weight9"
+          ],
+          "remaining_obligations": []
+        },
+        {
+          "id": "F4-C4",
+          "claim": "Unique real singular edge with eps^(1/3), abs(eps)^(4/3), signed abs(eps)^(5/3) scaling and exact constants",
+          "status": "PROVED_LOCAL",
+          "proof": "derivation.md section 3; IFT in e and analytic inversion after real cube-root substitution",
+          "evidence": [
+            "symbolic_results.json:edge_jets",
+            "probe_results.json:18 edge solves"
+          ],
+          "remaining_obligations": [
+            "No explicit uniform neighborhood radius or interval root enclosure supplied"
+          ]
+        },
+        {
+          "id": "F4-C5",
+          "claim": "Smooth right-left cuspidal-butterfly classification of extended wall germ",
+          "status": "PROVED_USING_PUBLISHED_CRITERION",
+          "proof": "derivation.md section 4 constructs front lift and verifies all hypotheses of Fukui-Hasegawa Theorem 3.1",
+          "evidence": [
+            "symbolic_results.json:front_slope_derivative",
+            "symbolic_results.json:rank_null_derivative_1",
+            "symbolic_results.json:rank_null_derivative_2",
+            "symbolic_results.json:rank_null_derivative_3",
+            "symbolic_results.json:rank_transverse_derivative"
+          ],
+          "remaining_obligations": [
+            "Independent reviewer check pending",
+            "Analytic right-left equivalence is not claimed"
+          ]
+        },
+        {
+          "id": "F4-C6",
+          "claim": "Fixed epsilon=0 section has primitive plane-branch characteristic (4,5)",
+          "status": "PROVED_LOCAL",
+          "proof": "derivation.md section 5; nonzero fourth/fifth leading coefficients and gcd(4,5)=1",
+          "evidence": [
+            "symbolic_results.json:normalized",
+            "probe_results.json:9 central solves"
+          ],
+          "remaining_obligations": [
+            "No full analytic plane-branch normal form claimed"
+          ]
+        },
+        {
+          "id": "F4-C7",
+          "claim": "Punctured local singular edge has nonparallel normals; center remains excluded from regular carrier",
+          "status": "PROVED_LOCAL",
+          "proof": "derivation.md section 3 determinant x/(3sqrt(A))+O(x^3)",
+          "evidence": [
+            "probe_results.json:normal_det_ratio"
+          ],
+          "remaining_obligations": []
+        }
+      ],
+      "commands": [
+        {
+          "command": "cat baseline/symbolic_checks.py baseline/geometry_probes.py",
+          "exit_code": 1,
+          "result": "Paths absent; corrected to baseline/code/"
+        },
+        {
+          "command": "python f4_degenerate/derive.py",
+          "exit_code": 1,
+          "result": "ModuleNotFoundError: sympy"
+        },
+        {
+          "command": "$CODEX_PRIMARY_RUNTIME_PYTHON f4_degenerate/derive.py",
+          "exit_code": 1,
+          "result": "ModuleNotFoundError: sympy"
+        },
+        {
+          "command": "python -m pip install sympy mpmath",
+          "exit_code": 0,
+          "result": "Installed SymPy 1.14.0 and mpmath 1.3.0 in user site"
+        },
+        {
+          "command": "python -u f4_degenerate/derive.py",
+          "exit_code": 1,
+          "result": "Verification wrapper compared zero Matrix with scalar 0; saved failure_matrix_comparison.log; corrected to Matrix.is_zero_matrix"
+        },
+        {
+          "command": "python -u f4_degenerate/derive.py > f4_degenerate/symbolic_run.log 2>&1",
+          "exit_code": 0,
+          "result": "13 exact checks pass"
+        },
+        {
+          "command": "python f4_degenerate/probes.py > f4_degenerate/probes_run.log 2>&1",
+          "exit_code": 0,
+          "result": "18 edge and 9 central 90-digit solves pass; max residual 3.7677351e-80"
+        }
+      ],
+      "actual_failures": [
+        "Initial source-script path assumption wrong",
+        "SymPy unavailable in both tested interpreters until installed",
+        "Zero matrix assertion representation mismatch (not mathematical residual failure)"
+      ],
+      "remaining_obligations": [
+        "Independent reviewer validation pending",
+        "Optional interval certification and explicit neighborhood bounds remain outside current local theorem scope"
+      ],
+      "files": [
+        "symbolic_results.json",
+        "derive.py",
+        "probes_run.log",
+        "jets.json",
+        "failure_matrix_comparison.log",
+        "derivation.md",
+        "probe_results.json",
+        "symbolic_run.log",
+        "results.json",
+        "probes.py"
+      ],
+      "final_editorial_correction": {
+        "reason": "Independent reviewer requested finest-scale ratios quoted directly from probe_results.json",
+        "source": "probe_results.json edge[4], A=1, tau=-0.025",
+        "changes": "Updated derivation.md section 6 to exact recorded t,r,Y ratio strings; calculations unchanged and not rerun",
+        "hashes": "No dependent hashes are stored in this task report"
+      }
+    },
+    "F5": {
+      "node": "F5",
+      "status": "PARTIAL_WITH_SOURCE_COUNT_OBSTRUCTION",
+      "summary": "Vertical geometry/transversality solved; cubic wall proved; missing horizontal chart invalidates source exhaustion. Global total remains conditional.",
+      "artifacts": [
+        "derivation.md",
+        "derive.py",
+        "full_incidence.py",
+        "wall_local.py",
+        "test_f5.py",
+        "symbolic_results.json",
+        "full_incidence_results.json",
+        "wall_local_results.json",
+        "generic_global_saturation.sing",
+        "results.json",
+        "test_output.txt"
+      ],
+      "scope": "new directory only; source and baseline unchanged",
+      "tests": {
+        "exact_named_unit_tests": 12,
+        "passed": 12,
+        "failed": 0,
+        "symbolic_derivation_programs": 3,
+        "native_global_saturation_runs": 0,
+        "numerical_geometry_probes": 0,
+        "source_historical_checks_inherited": 0
+      },
+      "assumptions": [
+        "real eta>0 for metric/scaling; characteristic zero for algebra",
+        "smooth cubic",
+        "regular four-distinct nonstationary incidence as stage5 carrier defines it"
+      ],
+      "proofs": [
+        "exact_dimensionless_moduli",
+        "necessary_and_sufficient_vertical_real_regular_range",
+        "exact_vertical_self_transversality_factor",
+        "length_three_smooth_regular_wall",
+        "local_real_splitting_coefficient",
+        "new_horizontal_same_abscissa_packet",
+        "horizontal_original_12_equation_certificate",
+        "horizontal_exact_Jacobian_and_baseline_reducedness",
+        "horizontal_chart_exhaustion_for_p_nonzero",
+        "universal_full_incidence_saturation_input"
+      ],
+      "remaining_obligations": [
+        "independent b!=0 saturated atlas verification",
+        "p=0 horizontal complex exceptional chart",
+        "repair quotient action and chart coverage",
+        "full global boundary/discriminant computation",
+        "prove nonempty finite-etale base open and compute its degree"
+      ]
+    },
+    "F6": {
+      "node": "F6",
+      "status": "IMPLEMENTED_LOCALLY_VALIDATED_PENDING_INDEPENDENT_REVIEW",
+      "directory": "/workspace/scratch/eadbfca26db8/RVJ_NAG_PARALLEL_20261028/f6_trace",
+      "scope": "Dimensionless trace-only polynomial symmetric-observable coupled ODE; all complex roots counted with algebraic multiplicity.",
+      "baseline_read_only": [
+        "../PLAN.json",
+        "../baseline/RESEARCH_NOTE_KO.md",
+        "../baseline/code/algebraic_client.py",
+        "../baseline/code/symbolic_checks.py"
+      ],
+      "baseline_modifications": false,
+      "deliverables": [
+        "derivation.md",
+        "trace_client.py",
+        "test_trace_client.py",
+        "symbolic_checks.py",
+        "run_experiments.py",
+        "replay_certificates.py",
+        "results.json",
+        "symbolic_results.json",
+        "replay_results.json",
+        "manifest.json"
+      ],
+      "summary": {
+        "symbolic_identity_checks_passed": 17,
+        "unit_test_methods_passed": 8,
+        "exact_rational_companion_points": 18,
+        "powers_per_companion_point": 15,
+        "multiplicity_examples": [
+          "triple root plus simple root at a=b=3/4",
+          "double root plus complex conjugate pair at a=b=-1/4"
+        ],
+        "discriminant_crossing_exact_solution": true,
+        "observable_contract_rejects_branch_indicators": true,
+        "whole_path_budget": "1e-8",
+        "trace_256_whole_residual_bound": 5.75178389037761e-09,
+        "trace_256_whole_direct_reference_bound": 2.9003305070385427e-11,
+        "trace_256_root_enumerations": 0,
+        "baseline_256_root_enumerations": 1024,
+        "all_12_certificate_artifacts_replay_exactly": true
+      },
+      "count_scope": "results.json counts the final reproducible campaign and verification evidence, with experiment, benchmark, unit-test and replay counts separate; exploratory development runs are not presented as independent evidence.",
+      "final_campaign_counts": {
+        "experiment_integration_runs": 12,
+        "experiment_certificate_runs": 12,
+        "experiment_slabs": 1008,
+        "benchmark_integration_runs": 10,
+        "benchmark_certificate_runs": 10,
+        "benchmark_slabs": 2560,
+        "unit_test_methods": 8,
+        "rational_companion_points": 18,
+        "rational_powers_per_point": 15,
+        "symbolic_identity_checks": 17,
+        "replay_certificate_runs": 12,
+        "replay_slabs": 1008
+      },
+      "executed_commands": [
+        {
+          "argv": [
+            "python",
+            "-m",
+            "py_compile",
+            "trace_client.py",
+            "test_trace_client.py",
+            "symbolic_checks.py",
+            "run_experiments.py",
+            "replay_certificates.py"
+          ],
+          "exit_code": 0,
+          "seconds": 0.0403722929986543,
+          "log": "final_check_0.log"
+        },
+        {
+          "argv": [
+            "python",
+            "-m",
+            "unittest",
+            "-v",
+            "test_trace_client.py"
+          ],
+          "exit_code": 0,
+          "seconds": 1.32688840800256,
+          "log": "final_check_1.log"
+        },
+        {
+          "argv": [
+            "python",
+            "symbolic_checks.py"
+          ],
+          "exit_code": 0,
+          "seconds": 0.4553058199962834,
+          "log": "final_check_2.log"
+        },
+        {
+          "argv": [
+            "python",
+            "run_experiments.py"
+          ],
+          "environment": {
+            "PYTHONPATH": "/workspace/scratch/eadbfca26db8/research_deps"
+          },
+          "exit_code": 0,
+          "log": "experiments.log",
+          "note": "Final campaign, after certificate node persistence was added; an earlier development campaign was also run."
+        },
+        {
+          "argv": [
+            "python",
+            "replay_certificates.py"
+          ],
+          "exit_code": 0,
+          "log": "replay.log",
+          "evidence": "replay_results.json"
+        }
+      ],
+      "proof_numerical_boundary": {
+        "analytic": "Newton identities and quotient-algebra trace preserve multiplicities; explicit exact controlled path; contraction in the infinity norm on [1/2,1]^2; Bernstein convex hull and tube first-exit argument.",
+        "exact_computational": "17 SymPy zero identities; exact rational companion powers at rational points; exact Gaussian-rational multiple-root sums; Fraction Bernstein residual bounds on whole slabs.",
+        "numerical": "RK4 convergence, numpy.roots power sums, node discrepancies, and timings are floating-point comparisons.",
+        "formalization": "No proof-assistant formalization; exact computer algebra supports the explicit analytic derivation.",
+        "review": "Local tests and deterministic replay are not independent review."
+      },
+      "claim_boundaries": [
+        "all complex roots counted with algebraic multiplicity, not radical/distinct-root trace",
+        "explicit polynomial trace observable contract; no branch selection, arbitrary root weights, or physical branch recovery",
+        "formal polynomial identities and analytic contraction proof are distinguished from machine numerical comparisons",
+        "exact-rational certificates cover reconstructed whole cubic slabs; RK4 nodes alone do not define a continuous interpolant",
+        "manufactured controlled aggregate client, not baseline selected-physical-branch ODE",
+        "timings are one small model with five repeats; rational certificate dominates and is not a product benchmark",
+        "Controlled manufactured solution; no selected-physical-branch integration/recovery theorem.",
+        "Certificate is exact rational, not native outward-rounded floating-point implementation.",
+        "Flat monic quartic quotient only; no generic multivariable flatness theorem.",
+        "No large-system circuit-growth result; full-time measured ratio is descriptive and sequential batches were not randomized."
+      ],
+      "independent_review_status": "PARENT_REPORTS_SCIENCE_ACCEPTED_TIMING_PROSE_VERIFIED",
+      "manifest": "manifest.json",
+      "post_review_timing_reconciliation": {
+        "issue": "Reviewer timing-prose reconciliation",
+        "timestamp_utc": "2026-10-28T08:58:46.565290+00:00",
+        "finding": "Already corrected before review followup; current derivation.md line 122 matches current results.json rounded medians.",
+        "action": "Verified current JSON against prose, recorded receipt and refreshed manifest; no code changes and no campaign rerun.",
+        "rounded_prose_values": [
+          "0.00544",
+          "0.05611",
+          "0.700",
+          "0.906"
+        ],
+        "source": "results.json matched_budget_benchmark",
+        "medians": [
+          {
+            "mode": "trace",
+            "integration_seconds": 0.005435788996692281,
+            "total_seconds": 0.700105302996235
+          },
+          {
+            "mode": "roots",
+            "integration_seconds": 0.05611415499879513,
+            "total_seconds": 0.9061501850010245
+          }
+        ],
+        "scientific_review": "Parent reports reviewer accepts science."
+      }
+    }
+  },
+  "task_report_status_semantics": "Implementer submission snapshots are preserved; independent_review contains the later acceptance or correction verdict.",
+  "independent_review": {
+    "primary": "reviews/review.json",
+    "native_secondary": "reviews/native_secondary_review.json",
+    "method": "Separate agents read source equations and code; independent original-incidence derivation and targeted semantic checks; no blanket acceptance from test counts."
+  },
+  "reproducibility": {
+    "environment": "evidence/ENVIRONMENT.json",
+    "workflow": "WORKFLOW_RECORD.json",
+    "replay": "REPLAY.py",
+    "validation": "VALIDATE.py",
+    "manifest": "MANIFEST.json",
+    "timing_policy": "Native total includes candidate generation and certificate; offline generation/compiler cost separately measured. Timings are environment-specific and variable."
+  },
+  "literature": "LITERATURE.json",
+  "policy_overrides": [
+    {
+      "rule": "SDD sequential implementation",
+      "replacement": "parallel isolated directories for independent nodes; F2/F3 dependency checked at integration",
+      "basis": "explicit user parallel request"
+    },
+    {
+      "rule": "git worktree/diff/cleanup",
+      "replacement": "new research artifact directory, read-only parent snapshot, file hashes and persistent review evidence",
+      "basis": "deliverable is a standalone research package, not a git repository modification"
+    }
+  ],
+  "failures": "FAILURE_REGISTRY.json",
+  "evidence_index": "EVIDENCE_INDEX.json"
+}

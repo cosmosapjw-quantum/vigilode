@@ -1,0 +1,190 @@
+{
+  "schema": "vigilode.independent-reference-admission-review.v1",
+  "created_utc": "2026-10-25T11:23:14.028082+00:00",
+  "reviewer": "/root/runner_gate_independent_review",
+  "reviewer_role": "read-only independent reviewer; did not implement or compute candidate references",
+  "runtime_model_identity": "NOT_INDEPENDENTLY_OBSERVED",
+  "decision": "PASS_SCOPED_ADMITTED_REFERENCE",
+  "case": 3,
+  "scope": "Admit only the existing full-vector empirical endpoint reference for this exact standard-size model descriptor and interval.",
+  "reviewed_reference": {
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case03/EXTERNAL_REFERENCE_PRECOMMIT.json",
+    "sha256": "920f13442cd6180672c6ffe9eb7649f3a47ebc624c5e5cf3dd7545d58153b5b2"
+  },
+  "reviewed_evidence": {
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case03/REFERENCE_EVIDENCE.json",
+    "sha256": "99a1fc6bae5a1d868e7536b3ee7ac6db6f82fbe2a4c18ae790418f899a5ec9b7"
+  },
+  "reviewed_binding": {
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case03/REFERENCE_BINDING_PRECOMMIT.json",
+    "sha256": "f247ac577fe33aeb970a815befbdc56bdaaca100a757b53cfd397bdf96c792b8"
+  },
+  "model": {
+    "id": "vigilode.local-bottleneck.case3.v1",
+    "descriptor_sha256": "47f8915b336a078bacd7e62c1feb2ee919e1cdf15bf051f302dea884433599fc",
+    "dimension": 28,
+    "state_order": [
+      "x1",
+      "x2",
+      "x3",
+      "x4",
+      "x5",
+      "x6",
+      "x7",
+      "y1",
+      "y2",
+      "y3",
+      "y4",
+      "y5",
+      "y6",
+      "y7",
+      "vx1",
+      "vx2",
+      "vx3",
+      "vx4",
+      "vx5",
+      "vx6",
+      "vx7",
+      "vy1",
+      "vy2",
+      "vy3",
+      "vy4",
+      "vy5",
+      "vy6",
+      "vy7"
+    ],
+    "t_span": [
+      0.0,
+      3.0
+    ],
+    "norm": "max_component_absolute"
+  },
+  "frozen_source_binding": {
+    "commit": "2a4bf90d1445b67542bdac5030b4c5d10da20445",
+    "tree": "98a0af41837653065e5346d1dd21272474f34c52",
+    "models_source_path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/crates/vigilode/examples/local_bottleneck_support/models.rs",
+    "models_source_sha256_at_commit": "288cc9c54b9380dc35a59d52185cd0fe8f0b36947fafb08283048020efbdad2d",
+    "build_receipt": {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/native_diffsol_packet_build_20261025T1036/build_artifacts/BUILD_RECEIPT.json",
+      "sha256": "48804247685ea922d7ca95b87b1b5c9efb1b260074986b312e5ac24182a0c022"
+    },
+    "binary_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/native_diffsol_offline_locked_build_20261025T0924/target/measurement/examples/local_bottleneck_suite",
+    "binary_sha256": "b7eecc929570fd8ef25d3d7aca7d9a9d6aa4ea60ca84774996fc13f5556c9124",
+    "descriptor_command_receipt": {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/frozen_binary_describe_batch_20261025T0930/case03/ATTEMPT.json",
+      "sha256": "abdf9c8b9a4902498b5a400e0c8d7df0e44551a3c9dee4d399cc7a3e31ddd36c"
+    },
+    "descriptor_files": [
+      {
+        "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case03/descriptor_frozen.stdout",
+        "sha256": "47f8915b336a078bacd7e62c1feb2ee919e1cdf15bf051f302dea884433599fc"
+      },
+      {
+        "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case03/descriptor_patched_debug.stdout",
+        "sha256": "47f8915b336a078bacd7e62c1feb2ee919e1cdf15bf051f302dea884433599fc"
+      },
+      {
+        "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/describe_contracts/case03_standard.stdout",
+        "sha256": "47f8915b336a078bacd7e62c1feb2ee919e1cdf15bf051f302dea884433599fc"
+      },
+      {
+        "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/frozen_binary_describe_batch_20261025T0930/case03/stdout.bin",
+        "sha256": "47f8915b336a078bacd7e62c1feb2ee919e1cdf15bf051f302dea884433599fc"
+      }
+    ],
+    "status": "Saved frozen, patched-debug, contract, and measurement-binary descriptors have identical bytes and parsed objects. Measurement binary hash agrees with post-publication clean-source build receipt; published git blob checked directly. Later unrelated dirty worktree changes are outside this frozen reference review."
+  },
+  "checks": {
+    "all_bound_evidence_sha256_verified": true,
+    "finite_full_vector_verified": true,
+    "dimension_initial_state_parameters_order_and_t_end_verified": true,
+    "independent_rhs_probe_count": 3,
+    "rhs_probe_max_abs_differences": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "rhs_probe_comparison_tolerance": "128*f64_epsilon*max(1,abs(expected),abs(actual)); all observed differences exactly zero",
+    "saved_success_stdout_matches_evidence_vectors": true,
+    "saved_success_complete_markers_and_exit_zero": true,
+    "scripts_check_entire_interpolating_function_domains": true,
+    "source_and_numerical_basis": "Local CWI Pleiades report equations/initial state and Table 15.2: masses 1..7, G=1, no softening, interval [0,3]. All 28 published position and velocity components parsed in x,y,vx,vy block order agree with independent Wolfram ExplicitRungeKutta WP40/goal22 full-domain run.",
+    "recomputed_full_vector_crosscheck_spread_decimal": "1.7522907929816314061517788567705331117887263E-15",
+    "max_reference_float_rounding_decimal": "2.20174339294317178428173065185546875E-16",
+    "empirical_uncertainty": 1e-09,
+    "uncertainty_limit": 1e-05,
+    "spread_plus_rounding_below_U": true
+  },
+  "evidence_files": [
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case03/cwi_testset.pdf",
+      "sha256": "ec43ff8ade12e12b6e66382ca8415e4cd3c866fdbf0a9868d4df04bd01ece02f"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case03/page139.txt",
+      "sha256": "b4e62b120eb5a95c66dd22ba989f2e5996929fab17196c40e25d53862ce5315c"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case03/pleiades_reference_attempt1.wl",
+      "sha256": "788a08ecd02bb63cf72f0d5cb463ffa7c181f74a73279bdb7ab2e39d06b3eabf"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case03/stdout_attempt1.txt",
+      "sha256": "a0bda000cd762c6ffd277c7fcf57f823a036d1637b0995115962baf76d1d5b81"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case03/stderr_attempt1.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case03/resource_attempt1.txt",
+      "sha256": "757eb83218de799fbfc8263cc5cf9fe39ee6a6bc1962e4310f29ab3c6b523aaa"
+    }
+  ],
+  "cost_accounting": {
+    "global_chain_snapshot": {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/COST_EVENTS.jsonl",
+      "sha256": "94e6a1b573b90e9f11585f197e380104b4bfad60ad6f823efeafbbeced6453ff"
+    },
+    "event_count": 186,
+    "hash_chain_verified": true,
+    "reviewed_terminal_events": [
+      {
+        "attempt_id": "pleiades-wolfram-1",
+        "category": "reference",
+        "charge_basis": "exact_resource_wall",
+        "charged_seconds": 35.79,
+        "event_id": "pleiades-wolfram-1-terminal",
+        "evidence_path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/references/case03/resource_attempt1.txt",
+        "evidence_sha256": "757eb83218de799fbfc8263cc5cf9fe39ee6a6bc1962e4310f29ab3c6b523aaa",
+        "exact_duration_known": true,
+        "observed_utc": "2026-10-25T08:26:12.056138+00:00",
+        "phase": "TERMINAL",
+        "prev_event_sha256": "c0198bbbe2f7a87d3bd9234dfa048326be13d654abde2328fd1d763b69661aae",
+        "schema": "vigilode.local-continuation-cost-event.v1"
+      }
+    ],
+    "reviewed_attempts_charged_seconds": 35.79,
+    "all_listed_resource_hashes_verified": true,
+    "cost_reset": false,
+    "reviewer_solver_launches": 0,
+    "scope": "Checks recorded reference attempt wall charges, including saved HIRES failure. Does not claim complete CPU accounting or timing authority."
+  },
+  "limitations": [
+    "The source report uses first 14 components for its own scd plots; this admission explicitly checks all 28 saved components. The source report performance statistics are not imported.",
+    "Published-to-JSON rounding is numerical representation difference covered by empirical U, not a scientific-integrity failure.",
+    "U is a conservative empirical crosscheck allowance, not a directed-rounding enclosure, mathematical error bound, or solution certificate.",
+    "No trajectory-wide error, solver allocation, switching correctness, performance advantage, or broader physical-model claim is admitted.",
+    "Historical PRECOMMIT and CANDIDATE status strings remain preserved; this additive review resolves descriptor/reference admission only."
+  ],
+  "claim_ceiling": {
+    "reference_status": "ADMITTED_EMPIRICAL_FULL_VECTOR_ENDPOINT",
+    "certified_enclosure": false,
+    "production_admission": "HOLD",
+    "historical_805_rows_retroactively_promoted": false,
+    "historical_results_reclassified": false,
+    "launch_authorization": false,
+    "new_solver_work_requires_fresh_bounded_plan": true
+  },
+  "findings": []
+}

@@ -1,9 +1,27 @@
+use std::sync::OnceLock;
+
 use serde::Deserialize;
 
-use crate::{CoreError, CoreResult, DenseMatrix, inverse};
+use crate::{CoreError, CoreResult, DenseMatrix, inverse, sha256_hex};
+
+pub const RODAS5P_COEFFICIENT_SNAPSHOT_SCHEMA_VERSION: &str =
+    "vigilode-rodas5p-coefficient-snapshot-v2";
+
+/// SHA-256 of `fixtures/rodas5p_coefficients_snapshot.json`, checked at the single load.
+///
+/// The upstream `author_source_sha256` and `parity_source_sha256` fields name
+/// files that are not vendored in this repository, so they are checked for
+/// form only; this digest binds the bytes the tableau is actually parsed from.
+pub const RODAS5P_COEFFICIENT_SNAPSHOT_SHA256: &str =
+    "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6";
+
+const RODAS5P_COEFFICIENT_SNAPSHOT: &str =
+    include_str!("../../../fixtures/rodas5p_coefficients_snapshot.json");
 
 #[derive(Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 struct RawCoefficients {
+    schema_version: String,
     gamma: String,
     #[serde(rename = "A")]
     a: Vec<Vec<String>>,
@@ -11,10 +29,36 @@ struct RawCoefficients {
     c_matrix: Vec<Vec<String>>,
     c: Vec<String>,
     b_code: Vec<String>,
+    #[serde(rename = "H")]
+    dense_h: Vec<Vec<String>>,
+    provenance: Rodas5pCoefficientProvenance,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum CoefficientPrecisionAvailability {
+    NoPublicAuthoritativeValues,
+}
+
+#[derive(Clone, Debug, Deserialize, PartialEq, Eq)]
+#[serde(deny_unknown_fields)]
+pub struct Rodas5pCoefficientProvenance {
+    pub source_repository: String,
+    pub author_commit: String,
+    pub author_source_path: String,
+    pub author_source_sha256: String,
+    pub parity_commit: String,
+    pub parity_source_path: String,
+    pub parity_source_sha256: String,
+    pub search_as_of: String,
+    pub literal_semantics: String,
+    pub higher_precision: CoefficientPrecisionAvailability,
 }
 
 #[derive(Clone, Debug)]
 pub struct Rodas5pCoefficients {
+    pub snapshot_schema_version: String,
+    pub provenance: Rodas5pCoefficientProvenance,
     pub gamma: f64,
     pub a: DenseMatrix,
     pub c_matrix: DenseMatrix,
@@ -27,6 +71,13 @@ pub struct Rodas5pCoefficients {
     pub b: Vec<f64>,
     pub btilde: Vec<f64>,
     pub gamma_rows: Vec<f64>,
+    /// Official RODAS5P continuous-extension coefficients in raw-stage
+    /// coordinates.
+    pub dense_h: DenseMatrix,
+    /// Continuous-extension coefficients transformed into this crate's K
+    /// coordinates.  `StepResult::stages` are K, so dense evaluation uses
+    /// this matrix directly, without another factor of h.
+    pub dense_d: DenseMatrix,
 }
 
 impl Rodas5pCoefficients {
@@ -61,16 +112,65 @@ fn parse_matrix(rows: Vec<Vec<String>>) -> CoreResult<DenseMatrix> {
     DenseMatrix::from_vec_rows(parsed?)
 }
 
+static RODAS5P_COEFFICIENTS: OnceLock<Result<Rodas5pCoefficients, String>> = OnceLock::new();
+
+/// The process-lifetime RODAS5P tableau, parsed, verified and derived once.
+///
+/// Step construction and dense output used to re-parse the JSON snapshot and
+/// re-invert `Gamma^-1` on every call (audit F-049). The derivation is
+/// deterministic, so the cached tableau is bit-identical to a fresh one.
+pub fn rodas5p_coefficients() -> CoreResult<&'static Rodas5pCoefficients> {
+    RODAS5P_COEFFICIENTS
+        .get_or_init(|| {
+            parse_rodas5p_coefficients(RODAS5P_COEFFICIENT_SNAPSHOT).map_err(|error| match error {
+                CoreError::Coefficients(message) => message,
+                other => other.to_string(),
+            })
+        })
+        .as_ref()
+        .map_err(|message| CoreError::Coefficients(message.clone()))
+}
+
+/// Owned copy of the cached tableau, kept for callers that need ownership.
 pub fn load_rodas5p_coefficients() -> CoreResult<Rodas5pCoefficients> {
-    let raw: RawCoefficients = serde_json::from_str(include_str!(
-        "../../../fixtures/rodas5p_coefficients_snapshot.json"
-    ))
-    .map_err(|e| CoreError::Coefficients(e.to_string()))?;
+    rodas5p_coefficients().cloned()
+}
+
+fn is_lower_hex_sha256(value: &str) -> bool {
+    value.len() == 64
+        && value
+            .bytes()
+            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+}
+
+fn parse_rodas5p_coefficients(snapshot: &str) -> CoreResult<Rodas5pCoefficients> {
+    let digest = sha256_hex(snapshot.as_bytes());
+    if digest != RODAS5P_COEFFICIENT_SNAPSHOT_SHA256 {
+        return Err(CoreError::Coefficients(format!(
+            "RODAS5P coefficient snapshot digest {digest} differs from the pinned {RODAS5P_COEFFICIENT_SNAPSHOT_SHA256}"
+        )));
+    }
+    let raw: RawCoefficients =
+        serde_json::from_str(snapshot).map_err(|e| CoreError::Coefficients(e.to_string()))?;
+    if !is_lower_hex_sha256(&raw.provenance.author_source_sha256)
+        || !is_lower_hex_sha256(&raw.provenance.parity_source_sha256)
+    {
+        return Err(CoreError::Coefficients(
+            "RODAS5P coefficient provenance digests must be lowercase 64-hex".into(),
+        ));
+    }
+    if raw.schema_version != RODAS5P_COEFFICIENT_SNAPSHOT_SCHEMA_VERSION {
+        return Err(CoreError::Coefficients(format!(
+            "unsupported RODAS5P coefficient snapshot schema: {}",
+            raw.schema_version
+        )));
+    }
     let gamma = parse_number(&raw.gamma)?;
     let a = parse_matrix(raw.a)?;
     let c_matrix = parse_matrix(raw.c_matrix)?;
     let c: CoreResult<Vec<_>> = raw.c.into_iter().map(|s| parse_number(&s)).collect();
     let b_code: CoreResult<Vec<_>> = raw.b_code.into_iter().map(|s| parse_number(&s)).collect();
+    let dense_h = parse_matrix(raw.dense_h)?;
     let c = c?;
     let b_code = b_code?;
     let n = c.len();
@@ -79,6 +179,8 @@ pub fn load_rodas5p_coefficients() -> CoreResult<Rodas5pCoefficients> {
         || c_matrix.nrows() != n
         || c_matrix.ncols() != n
         || b_code.len() != n
+        || dense_h.nrows() != 3
+        || dense_h.ncols() != n
     {
         return Err(CoreError::Coefficients(
             "snapshot dimensions are inconsistent".into(),
@@ -92,7 +194,10 @@ pub fn load_rodas5p_coefficients() -> CoreResult<Rodas5pCoefficients> {
     let b = gamma_matrix.transpose().matvec(&b_code)?;
     let btilde = gamma_matrix.row(n - 1).to_vec();
     let gamma_rows = (0..n).map(|i| gamma_matrix.row(i).iter().sum()).collect();
+    let dense_d = dense_h.matmul(&gamma_matrix)?;
     Ok(Rodas5pCoefficients {
+        snapshot_schema_version: raw.schema_version,
+        provenance: raw.provenance,
         gamma,
         a,
         c_matrix,
@@ -105,5 +210,52 @@ pub fn load_rodas5p_coefficients() -> CoreResult<Rodas5pCoefficients> {
         b,
         btilde,
         gamma_rows,
+        dense_h,
+        dense_d,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_tampered_snapshot_is_rejected_before_parsing() {
+        let tampered =
+            RODAS5P_COEFFICIENT_SNAPSHOT.replacen("0.21193756319429014", "0.2119375631942902", 1);
+        assert_ne!(tampered, RODAS5P_COEFFICIENT_SNAPSHOT);
+        assert!(matches!(
+            parse_rodas5p_coefficients(&tampered),
+            Err(CoreError::Coefficients(message)) if message.contains("digest")
+        ));
+    }
+
+    #[test]
+    fn the_cached_tableau_equals_a_fresh_derivation_bit_for_bit() {
+        let cached = rodas5p_coefficients().unwrap();
+        let fresh = parse_rodas5p_coefficients(RODAS5P_COEFFICIENT_SNAPSHOT).unwrap();
+        let bits = |values: &[f64]| values.iter().map(|v| v.to_bits()).collect::<Vec<_>>();
+        assert_eq!(cached.gamma.to_bits(), fresh.gamma.to_bits());
+        for (a, b) in [
+            (&cached.a, &fresh.a),
+            (&cached.c_matrix, &fresh.c_matrix),
+            (&cached.gamma_matrix, &fresh.gamma_matrix),
+            (&cached.alpha, &fresh.alpha),
+            (&cached.beta, &fresh.beta),
+            (&cached.l, &fresh.l),
+            (&cached.dense_h, &fresh.dense_h),
+            (&cached.dense_d, &fresh.dense_d),
+        ] {
+            assert_eq!(bits(a.as_slice()), bits(b.as_slice()));
+        }
+        for (a, b) in [
+            (&cached.c, &fresh.c),
+            (&cached.b_code, &fresh.b_code),
+            (&cached.b, &fresh.b),
+            (&cached.btilde, &fresh.btilde),
+            (&cached.gamma_rows, &fresh.gamma_rows),
+        ] {
+            assert_eq!(bits(a), bits(b));
+        }
+    }
 }

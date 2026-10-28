@@ -1,0 +1,11 @@
+    Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+warning: function `ic_eval_physical` is never used
+   --> crates/rodas5p-integrators/src/packet_window.rs:206:4
+    |
+206 | fn ic_eval_physical(p: &[IComplex], tau: Interval, work: &mut PacketWorkCounters) -> Result<IComplex, PacketError> {
+    |    ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.29s

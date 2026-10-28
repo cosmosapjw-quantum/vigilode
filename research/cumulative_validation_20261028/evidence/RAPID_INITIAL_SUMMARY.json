@@ -1,0 +1,101 @@
+{
+  "schema": "vigilode.adaptive-causal-summary.v1",
+  "source_commit": "5c57bf146f2f5faf69f711f133a83fcb265cee90",
+  "records": 8,
+  "valid_replays": 8,
+  "solver_successes": 8,
+  "configurations": [
+    {
+      "id": 0,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "switch-rhs",
+      "rtol": 1e-06,
+      "windows": 16,
+      "eligible": true,
+      "completed_replays": 3,
+      "median_seconds": 0.001861852,
+      "min_seconds": 0.001272744,
+      "max_seconds": 0.002278336,
+      "max_error": 0.00010473060774418563,
+      "max_phase_error": 3.912786137480329e-05,
+      "max_amplitude_error": 9.753951124746862e-05,
+      "work": {
+        "accepted_steps": 3903,
+        "attempts": 4737,
+        "ft_calls": 0,
+        "jacobian_builds": 0,
+        "jvp_vectors": 0,
+        "linear_solves": 0,
+        "rejected_steps": 834,
+        "rhs_calls": 28423
+      },
+      "failures": []
+    },
+    {
+      "id": 1,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "dopri-whole",
+      "rtol": 1e-06,
+      "windows": 16,
+      "eligible": true,
+      "completed_replays": 3,
+      "median_seconds": 0.001419921,
+      "min_seconds": 0.001254509,
+      "max_seconds": 0.002236447,
+      "max_error": 0.00010473060774418563,
+      "max_phase_error": 3.912786137480329e-05,
+      "max_amplitude_error": 9.753951124746862e-05,
+      "work": {
+        "accepted_steps": 3903,
+        "attempts": 4737,
+        "ft_calls": 0,
+        "jacobian_builds": 0,
+        "jvp_vectors": 0,
+        "linear_solves": 0,
+        "rejected_steps": 834,
+        "rhs_calls": 28423
+      },
+      "failures": []
+    }
+  ],
+  "comparisons": [
+    {
+      "case": "rapid",
+      "dimension": 2,
+      "error_cap": 0.0001,
+      "best": {},
+      "ratios": {}
+    },
+    {
+      "case": "rapid",
+      "dimension": 2,
+      "error_cap": 1e-06,
+      "best": {},
+      "ratios": {}
+    },
+    {
+      "case": "rapid",
+      "dimension": 2,
+      "error_cap": 1e-08,
+      "best": {},
+      "ratios": {}
+    }
+  ],
+  "reference": {
+    "robertson": "SciPy VODE BDF analytic Jacobian, rtol1e-12 atol1e-15 versus1e-11/1e-14 refinement",
+    "scipy_version": "1.17.0",
+    "max_refinement_difference": 0.0,
+    "points": 0,
+    "analytic_other_cases": true
+  },
+  "timing_scope": "same binary, host, thread affinity, observation contract and common achieved-error caps; no old timing pooled",
+  "limitations": [
+    "Three timed repeats on shared host; median/min/max diagnostic only",
+    "Window controls include identical restarts; whole-call controlsretainworkspaces andcomparetheircompleteoutputcontract atsameactualerrorcap; wholeRODASusesWFilteredEnforcewhileendpointdriverdoesnot",
+    "Sampled errors are not uniform-time guarantees",
+    "Successful local error tests do not establish global error",
+    "JVP and finite differences explicitly labeled; neither called fully derivative-free"
+  ]
+}

@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "unit_id": "CONDITIONAL_STRUCTURED_CERTIFICATION",
+  "scope": "new standalone immutable CSR prototype; existing invariant_module kernel unchanged",
+  "status": "complete_scoped",
+  "production_integration": false,
+  "source": "crates/rodas5p-core/examples/structured_residual_sweep.rs",
+  "source_sha256": "019bc0fd92d45f7badea0ddb4c4fb10e2cc775286e0d8315e9d0eb9d21e84a9d",
+  "report": "analysis/CONDITIONAL_STRUCTURED_CERTIFICATION.md",
+  "execution_receipt": "evidence/STRUCTURED_CERTIFICATION.receipt.json",
+  "summary": "analysis/STRUCTURED_CERTIFICATION_SUMMARY.json",
+  "theorems": [
+    {
+      "id": "CSR_dissipativity",
+      "assumptions": [
+        "canonical immutable CSR defines exact B",
+        "upper directed diagonal_i+sum_offdiag(|bij|+|bji|)/2 <=0"
+      ],
+      "conclusion": "symmetric part negative semidefinite; alpha>=0 implies inverse2norm(I-alphaB)<=1",
+      "complexity": "O(n+nnz) setup",
+      "status": "proved"
+    },
+    {
+      "id": "CSR_residual",
+      "assumptions": [
+        "same binary B and alpha/RHS/candidate",
+        "directed arithmetic includes exact real operations",
+        "missing CSR entries are exactly zero by definition"
+      ],
+      "conclusion": "sum outward interval magnitudes bounds true residual l1 and solution error l2",
+      "complexity": "O(n+nnz) per candidate",
+      "status": "proved and prototype tested"
+    },
+    {
+      "id": "DLR_residual",
+      "assumptions": [
+        "binary factors define exact real B=D+UV^T",
+        "maxdiag(D)+Frobenius(U)*Frobenius(V)<=0 sufficient condition or other proved bound"
+      ],
+      "conclusion": "nested interval products yield original residual and solution bound",
+      "complexity": "O(n*r+n)",
+      "status": "proved design; not implemented"
+    }
+  ],
+  "checks": {
+    "rust_tests_passed": 2,
+    "internal_negative_controls_passed": 30,
+    "warmup_rows": 27,
+    "measurement_rows": 81,
+    "incorrect_candidates_refused": 9,
+    "fallbacks_certified": 9,
+    "all_measurements_certified": true
+  },
+  "independent_review": {
+    "reviewer": "fixed_p_homotopy agent",
+    "scope": "proof derivation only; not source code inspection",
+    "finding": "no blocking mathematical flaw under stated ownership/outward assumptions"
+  },
+  "decision": "conditional structured certificate candidate; substitute for dense certificate when exact structure is owned; do not turn on by default for cheap uncertified direct solves",
+  "cost_limits": [
+    "measured interval certificate remains 32-36x the very cheap direct solve in synthetic bidiagonal fixtures",
+    "same certificate is 13.8-330.5x faster than visiting dense zero entries in this host microbenchmark",
+    "no whole-ODE speed claim",
+    "one-time setup and failed-candidate fallback costs retained separately"
+  ],
+  "next_steps": [
+    {
+      "id": "structure_provider",
+      "action": "move private immutable CSR contract into independently reviewed core provider",
+      "requirement": "stale pattern/epoch tests and public resource budget"
+    },
+    {
+      "id": "cheap_bound",
+      "action": "prove low-cost roundoff bound around already computed residual; full interval only near tolerance boundary",
+      "status": "not implemented"
+    },
+    {
+      "id": "conditional_dispatch",
+      "action": "admit only matching structure, tolerance, original-error contract and measured cost budget; fallback otherwise",
+      "status": "local experiment registry prepared; production dispatch pending"
+    }
+  ]
+}

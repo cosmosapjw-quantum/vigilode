@@ -1,0 +1,26 @@
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_pr101_provider.rs:2:
+ use std::sync::Mutex;
+ use std::sync::atomic::{AtomicUsize, Ordering};
+ 
+-use rodas5p_core::{CoreError, CoreResult, WorkCounters};
+ use rodas5p_core::directed::Interval;
++use rodas5p_core::{CoreError, CoreResult, WorkCounters};
+ use rodas5p_integrators::{
+     BoundPr101Problem, ContinuousResidualProvider, DenseOutputError, DenseSegmentWork, OdeProblem,
+     Pr101Error, Rodas5pQuarticSegment, StepResult,
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_pr101_provider.rs:150:
+     assert!(nan_result.is_err());
+     assert!(work.provider_operations > 0);
+ 
+-    let wrong_shape = owner.enclose_rhs(
+-        Interval::point(0.0).unwrap(),
+-        &[],
+-        &mut rhs,
+-        &mut work,
+-    );
++    let wrong_shape = owner.enclose_rhs(Interval::point(0.0).unwrap(), &[], &mut rhs, &mut work);
+     assert!(wrong_shape.is_err());
+     assert!(work.validation_operations > 0);
+ 
+RUSTFMT_EXIT_CODE=1
+DIFF_CHECK_EXIT_CODE=0

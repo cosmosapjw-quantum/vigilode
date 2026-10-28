@@ -1,0 +1,29 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling vigilode-coupled v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-1024/crates/vigilode-coupled)
+    Finished `test` profile [unoptimized] target(s) in 6.23s
+     Running unittests src/lib.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/vigilode_coupled-c9ce801c0e5a2be4)
+     Running tests/adaptive_trajectory.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/adaptive_trajectory-2e5a50f58e0f0bee)
+     Running tests/causal_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/causal_contracts-d01c67f9618bda41)
+     Running tests/contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/contracts-e682bc7df0a9b405)
+     Running tests/convergence.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/convergence-765ec07ed2ff4954)
+     Running tests/eager_stage_jvp_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/eager_stage_jvp_contracts-f3be782f1bfd6cc3)
+     Running tests/economy_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/economy_contracts-49f0d5ef995c972c)
+     Running tests/economy_robustness.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/economy_robustness-7ac88a780247e3b1)
+     Running tests/frontier_causal_trajectory.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/frontier_causal_trajectory-3c386b4a6c43129e)
+     Running tests/raw_step_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/raw_step_contracts-5504eab6e5ecf855)
+     Running tests/robustness.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/robustness-8c596e07e17468da)
+     Running tests/switching_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/switching_contracts-ad7b83ddc23b5cba)
+     Running tests/zero_tolerance_scale.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/deps/zero_tolerance_scale-23610c56f5ae4208)
+     Running unittests examples/reconsideration_bench.rs (/workspace/scratch/0dc1e721cf82/runtime1024/target/debug/examples/reconsideration_bench-e410d9ef53532c98)

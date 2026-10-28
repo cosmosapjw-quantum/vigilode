@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "exec_sha": "314981e283ff9ae9961f2ec3fb220226c8b8dbab",
+  "runs": [
+    {
+      "id": "retained_gate_contract",
+      "command": "python3 research/production_audit_20261018_a07_gate_correction/verify_gate_contract.py",
+      "exit_code": 0,
+      "stdout": "verify_gate_contract_final.log",
+      "stderr": "verify_gate_contract_final.log",
+      "solver_campaign_rerun": false
+    },
+    {
+      "id": "identity_hash_check",
+      "command": "python3 inline SHA-256 input/output manifest verifier",
+      "exit_code": 0,
+      "campaign_outputs_modified": false
+    },
+    {
+      "id": "research_node_checker_first_attempt",
+      "command": "python3 tools/check-research-node.py --base origin/audit/production-readiness-20261018",
+      "exit_code": 1,
+      "log": "check_research_node.log",
+      "failure_class": "ledger output path schema"
+    }
+  ],
+  "thresholds_unchanged": true,
+  "tolerance_unchanged": true,
+  "timing_authority": "diagnostic_only"
+}

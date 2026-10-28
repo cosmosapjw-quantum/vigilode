@@ -1,0 +1,57 @@
+{
+  "baseline_source_commit": "7eb2dd0ffda39afb2871d76700a720986ff09fe0",
+  "checks": [
+    {
+      "arithmetic": "exact Fraction",
+      "id": "G1-G6",
+      "n": 3,
+      "scope": "General causal coefficients; no RODAS5P order assertion.",
+      "sharp_accumulated_norm": "2533166042018940696/1610317972029771319",
+      "stages": 3,
+      "status": "pass",
+      "step_sizes": [
+        "1/7",
+        "2/9",
+        "5/3"
+      ],
+      "steps": 3
+    },
+    {
+      "arithmetic": "exact Fraction",
+      "endpoint_bound": "438331/1800000",
+      "endpoint_error": "17/2000",
+      "id": "G13",
+      "scope": "One manufactured nonlinear causal root with a valid domain bound.",
+      "status": "pass",
+      "unweighted_majorant_norm": "11"
+    },
+    {
+      "arithmetic": "exact Fraction",
+      "id": "G20-G22",
+      "invariant_drift": "-2202750636351893/415747206414400",
+      "scope": "Inexact midpoint, including stage, RHS and endpoint defects.",
+      "status": "pass"
+    },
+    {
+      "arithmetic": "exact Fraction",
+      "id": "G17-G18",
+      "omega": "1",
+      "scope": "Specific stability/symplecticity counterexamples, not a universal no-go.",
+      "state_dependent_exact_flow_determinant": "6/5",
+      "status": "pass",
+      "step_sizes": [
+        "1",
+        "19/10"
+      ],
+      "two_step_determinant": "1",
+      "two_step_trace": "-9661/4000"
+    }
+  ],
+  "executed_at_utc": "2026-10-28T00:19:24.112775+00:00",
+  "interpretation": "Exact-rational supporting identities only; no production enclosure or runtime-speed conclusion.",
+  "native_solver_executed": false,
+  "performance_claim": false,
+  "preregistration_commit": "866668348f840bd43558859d2795576e292b6ca7",
+  "schema": "vigilode.geometry.rational_checks.v1",
+  "script_sha256": "9b64bf96c40cd4fc0d177d71e5e35ac4b5467b130d5c51e1f75e73d83dc78498"
+}

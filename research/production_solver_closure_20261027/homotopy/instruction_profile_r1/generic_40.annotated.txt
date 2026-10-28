@@ -1,0 +1,38 @@
+--------------------------------------------------------------------------------
+Profile data file 'research/production_solver_closure_20261027/homotopy/instruction_profile_r1/generic_40.callgrind' (creator: callgrind-3.22.0)
+--------------------------------------------------------------------------------
+I1 cache: 
+D1 cache: 
+LL cache: 
+Timerange: Basic block 0 - 22747004
+Trigger: Program termination
+Profiled target:  /workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench --arm generic 40 (PID 10, part 1)
+Events recorded:  Ir
+Events shown:     Ir
+Event sort order: Ir
+Thresholds:       85
+Include dirs:     
+User annotated:   
+Auto-annotation:  on
+
+--------------------------------------------------------------------------------
+Ir                   
+--------------------------------------------------------------------------------
+127,698,492 (100.0%)  PROGRAM TOTALS
+
+--------------------------------------------------------------------------------
+Ir                   file:function
+--------------------------------------------------------------------------------
+42,967,040 (33.65%)  ???:rodas5p_core::directed::Interval::mul [/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench]
+13,696,320 (10.73%)  ???:vigilode_coupled::rhs_homotopy::integrate_cubic_decay_accuracy_with_solver [/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench]
+12,008,430 ( 9.40%)  ???:0x00000000000ab170 [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 8,466,599 ( 6.63%)  ???:malloc [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 6,173,371 ( 4.83%)  ???:free [/usr/lib/x86_64-linux-gnu/libc.so.6]
+ 5,138,560 ( 4.02%)  ???:vigilode_coupled::rhs_homotopy::evaluate [/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench]
+ 4,702,680 ( 3.68%)  ???:rodas5p_core::directed::Interval::add [/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench]
+ 4,567,040 ( 3.58%)  ???:vigilode_coupled::rhs_homotopy::cubic_verified_step [/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench]
+ 3,687,264 ( 2.89%)  ???:fma [/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench]
+ 2,949,120 ( 2.31%)  ???:rodas5p_core::directed::Interval::sub [/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench]
+ 2,782,488 ( 2.18%)  ???:rodas5p_core::directed::add_up [/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench]
+ 2,517,458 ( 1.97%)  ???:0x00000000000ab570 [/usr/lib/x86_64-linux-gnu/libc.so.6]
+

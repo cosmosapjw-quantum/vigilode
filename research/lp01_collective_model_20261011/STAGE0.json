@@ -1,0 +1,49 @@
+{
+  "schema": "vigilode-lp01-stage0-v1",
+  "node_id": "LP01",
+  "decision": "FEASIBLE",
+  "verdict": "PASS",
+  "claim": "Stage 0 decision FEASIBLE: generative collective model satisfies zero-allocation RHS and JVP, weighted energy conservation, spectral moment preservation, Dahlquist boundary reduction, and typed structure admission.",
+  "scientific_gates": {
+    "vg1_zero_allocation": {
+      "rhs_hot_loop_allocations": 0,
+      "jvp_hot_loop_allocations": 0,
+      "energy_mean_allocations": 0,
+      "passed": true
+    },
+    "vg2_analytic_consistency": {
+      "dahlquist_linear_boundary_matches": true,
+      "jvp_finite_difference_agreement": true,
+      "passed": true
+    },
+    "vg3_invariants_and_moments": {
+      "continuous_energy_derivative_zero": true,
+      "spectral_moments_preserved": true,
+      "weighted_moments_preserved": true,
+      "passed": true
+    },
+    "negative_admission_gate": {
+      "empty_modes_rejected": true,
+      "dimension_mismatch_rejected": true,
+      "detuning_out_of_range_rejected": true,
+      "nonpositive_weight_rejected": true,
+      "unnormalized_weights_rejected": true,
+      "energy_exceeds_unit_ball_rejected": true,
+      "nonfinite_parameter_rejected": true,
+      "negative_width_rejected": true,
+      "negative_damping_rejected": true,
+      "generic_ode_without_model_rejected": true,
+      "passed": true
+    }
+  },
+  "rust_test_suite": {
+    "command": "cargo test --offline --locked -p rodas5p-integrators --test collective_admission_contracts -- --test-threads=1",
+    "exit_code": 0,
+    "tests_passed": 7,
+    "status": "PASS"
+  },
+  "input_files_sha256": {
+    "crates/rodas5p-integrators/src/collective_model.rs": "1cbcd3bfb6f1251e3f8dfcf3559d9db373610da89bebd7dab0432265a51a3a56",
+    "crates/rodas5p-integrators/tests/collective_admission_contracts.rs": "66f3d492ef112e371427a7fe4beb1734bd2da490f483add3abb242c0c9ce8fb7"
+  }
+}

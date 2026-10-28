@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "/workspace/scratch/0dc1e721cf82/r3/homotopy/certified_majorant.py", line 278, in <module>
+    if __name__=='__main__':main()
+                            ^^^^^^
+  File "/workspace/scratch/0dc1e721cf82/r3/homotopy/certified_majorant.py", line 269, in main
+    for h in [.1,1.,10.]: rows+=run_case(c,family,J,y,h,q)
+                                ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/0dc1e721cf82/r3/homotopy/certified_majorant.py", line 215, in run_case
+    p=Problem(c,J,y,h,q);t=time.perf_counter();ref=p.exact_root();refseconds=time.perf_counter()-t
+      ^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/0dc1e721cf82/r3/homotopy/certified_majorant.py", line 101, in __init__
+    raise ValueError('strict-lower coefficient premise failed: no silent truncation')
+ValueError: strict-lower coefficient premise failed: no silent truncation

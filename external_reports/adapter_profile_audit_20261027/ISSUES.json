@@ -1,0 +1,949 @@
+{
+ "schema": "vigilode.adapter-remaining-issues.v1",
+ "date": "2026-10-27",
+ "base_commit": "46939bbec73738585789490b53175be1d100c107",
+ "timing_authority": "diagnostic_only",
+ "tiers": {
+  "A": "promotion blockers: rules, correctness, evidence integrity",
+  "B": "large measured cost or decision bias",
+  "C": "medium/small kernel and bookkeeping costs",
+  "D": "measurement and evidence quality"
+ },
+ "resolved_during_audit": [
+  {
+   "id": "R02",
+   "title": "LIGHT_BENCH harness timed JSON and cold allocations",
+   "resolution": "harness v2 at 46939bbe (solver call only, warm/cold allocations, spread reruns); v1 data marked superseded"
+  }
+ ],
+ "refuted_sub_claims": [
+  "SC-02 option 1 (stop treating quota-stopped batches as pressure): refuted as hazardous. The winning initial entries on stiff-forced, relaxation, stale-return and case5 fire on quota-stopped batches with only 2-5 rejections.",
+  "SC-02 cooldown sequence '4,8,16,32,64': the observed spacing after the initial pilot is 8,16,32,64 batches. The callgrind shares 88%/83% include the one-time coefficient parse; steady state is 87%/82%.",
+  "SC-03 '18% of pilot Ir outside the stepping loop': that share included the 511k one-time coefficient parse. Steady state is 7.1% on rotation and 4-5.5% on gyro.",
+  "SC-04 'monomorphized vs not' mechanism and the +7-11% wall-time win: both paths make one out-of-line RHS call. The wall deltas are within noise (user callback code itself is +5.5%). Only +1.2-2.4% Ir is reliable.",
+  "SC-06 for run() probes: the ExplicitSolution is consumed there (final_state, stats, stop_reason, callback_failure). Only the main tenure path discards it.",
+  "SC-07 risk class 'counter-changing': removing landings changes batch boundaries and therefore pressure, so it is policy.",
+  "CE-01 impact on rotation, gyro and case5 decisions: rotation and gyro lose even at h0=L/3 (1051 vs 154 WU), and the case5 pilot already starts at h0=L. CE-01's 'DOPRI comparator runs warm' is false for initial comparisons.",
+  "CE-01 'passes exactly when h_R* >= L/k_hat': the condition is approximate. Pass/fail is non-monotone in h0 (0.40452: L/3 gives 196 WU, L/2 gives 290 WU).",
+  "CE-02 Ir saving of 0.76M per solve: understated. It is about 0.9M (16%), and the 5.86M denominator included the parse.",
+  "CE-03 alternative 'arm the Guard with floor(rho*W_D) - solves_so_far': not buildable, because the Guard is armed once and solves happen inside the driver.",
+  "CE-04 '337 WU (55%) startup excess': the 193 explicit WU are productive work. The true excess is about 283 WU (46%).",
+  "CE-07 claim that one warm attempt suffices for the relaxation recheck: h_E_entry still needs 5 attempts, saving about 1. The structural bias against returns is unobserved in the registered cells.",
+  "MFK-05 as an independent counter-changing fix: it is n-JVP assembly by another route, carries the MFK-01 governance question, and is subsumed by MFK-01.",
+  "MFK-07 expected 2-4% gain from hoisting finiteness checks: it is under 1%. There is no separate jacobian-output pass in ShiftedOperator, only a single check at operator.rs:693.",
+  "MFK-08 'Arc::get_mut overwrite of captured state': not possible through Arc<dyn LinearOperator> or a closure-captured Vec. A new concrete operator type is needed. Also, MFK-08 is a known open item, not a new finding.",
+  "DFS-04 'all bitwise-safe': slimming Stats.options/y0 changes the public SwitchingSegment record (api/governance), and reusing the Guard needs a full per-batch reset.",
+  "DFS-05 location rodas5p_fast.rs:2502-2600: Workspace::attempt is at :1114, with stage loops at :1154/:1167.",
+  "DFS-05 SPD06 gain '16-26%': the same-binary ratios include legacy drift. The cross-binary figure is 12-26%, measured on the small driver only.",
+  "DFS-06 'half of step_to cost is call overhead' and the '25-40% landing-path gain' from inlining: the prologue was double-counted. Call overhead is about 15 Ir of 59 per call, at most about 3% of DOPRI Ir.",
+  "DFS-07 '123 Ir per callback' (understated; about 193) and its implication that the micro-fixes are meaningful: they recover only about 1-3%.",
+  "DFS-08 rotation '551 vs 20 allocations from window bookkeeping': about 230 of those come from MF probe facade calls. Window bookkeeping is about 300.",
+  "ACG-01 'registered cross-model reviewer never ran': the AGENTS.md Opus reviewer ran pre-execution, and the preregistration discloses it. The 'both checkers exit 0' closure test is unattainable because of 310 pre-existing repo-wide FAILs.",
+  "ACG-02 'cannot support a speed claim' as a new insight: PROTOCOL.md already states this. The ladder remedy is already registered (NEXT_STEPS.json:51-52).",
+  "ACG-05 proposed rejection-fraction admissibility gate: it would not flag the cited window (2.4% vs 0.3). A Hairer stiffness detector contradicts the documented design (switching.rs:3).",
+  "ACG-06 'reports attribute the gap to landing obligations': the packet states the measured scope includes output obligations; it does not attribute the gap to them.",
+  "ACG-07 '+58% endpoint error is material': 1.74e-8 against a 1e-5 cap is in the same band as direct DOPRI (1.52e-8) and RODAS (1.18e-8).",
+  "ACG-08 'effects of 4-12% are unresolvable under the rules' and the case5 host 'flip': the paired ABBA classifier cancels drift, and case5 lost qualification without a reversal in sign.",
+  "ACG-10 'committed evidence contradicts the PASS narrative': PREREGISTRATION.md:163-166 discloses the DIFFERS flags and their cause."
+ ],
+ "issues": [
+  {
+   "final_id": "A1",
+   "tier": "A",
+   "final_status": "CONFIRMED",
+   "source_synthesis_id": "R01",
+   "title": "Promotion gates are red: check-research-node fails for two imported packet nodes, joint_controller cites an unrecoverable commit, and no post-run audit of the results exists",
+   "area": "accuracy-contract-governance",
+   "impact": "Under AGENTS.md section 2.7 step 5, no claim from adapter_integration_20261027 or joint_controller_20261025 can be promoted. That covers the R2 speedups and selector decisions. Breakdown: 4 check-research-node FAILs come from the two nodes; 18 check-authority-refs FAILs come from joint_controller. check-authority-refs is also red repo-wide, but 310 of its 328 FAILs belong to 11 other nodes and predate this work, so they are separate debt.",
+   "evidence": [
+    "`python3 tools/check-research-node.py --base e8572eac` -> 'missing PREREGISTRATION.md' and 'no research/LEDGER.jsonl row whose outputs_sha256 covers it' for research/adapter_integration_20261027/ and research/joint_controller_20261025/; final line 'check-research-node: FAIL (169 ledger rows ...)'",
+    "`python3 tools/check-authority-refs.py` -> 328 FAIL lines (missing=49). 18 are under joint_controller_20261025, all citing 040b6764102dc3ff27a14b1b7cbd54ac57bd9f04",
+    "`git cat-file -t 040b6764...` fails in ~/vigilode-integ-dda8d2f, ~/vigilode and ~/vigilode-adapter-perf. RECOVERY_INVENTORY_20261026.json records that the worktree holding it (vigilode-joint) was deleted",
+    "evidence/review/review_r1_astra_exit.txt exit=124; review_r2_astra_exit.txt exit=1 (usage limit). Only the pre-execution Opus diff review ran (0 BLOCKER / 0 MAJOR / 8 MINOR / 5 NOTE), and PREREGISTRATION.md:91-98 discloses this. No reviewer audited the Results section or RESULTS.json"
+   ],
+   "locations": [
+    "research/adapter_integration_20261027/ (no PREREGISTRATION.md)",
+    "research/joint_controller_20261025/ (no PREREGISTRATION.md)",
+    "research/joint_controller_20261025/RUN_CONTEXT.json:19",
+    "research/joint_controller_20261025/validation/*/RECEIPT.json (git_head)",
+    "research/LEDGER.jsonl (last row L-0172)",
+    "tools/authority_refs_allowlist.txt",
+    "research/adapter_checkpoint_followup_20261027/PREREGISTRATION.md:91-98"
+   ],
+   "proposed_fix": "(1) Give both packet nodes a PREREGISTRATION.md labelled as a retrospective registration, pointing to the frozen benchmark/PROTOCOL.md sha. Add LEDGER rows whose inputs_sha256 and outputs_sha256 cover the existing raw/ and evidence/ files, following the 5-step order. Alternatively, declare both nodes non-authority in DECISIONS.json and add a manifest that check-research-node honours. (2) Recovering 040b6764 is unrealistic. Add it to tools/authority_refs_allowlist.txt with RECOVERY_INVENTORY_20261026.json as the reason. (3) Run a post-execution audit of the results and receipts: Opus now, or codex after the 2026-11-02 quota reset. Store the receipt in evidence/review/.",
+   "risk_class": "api/governance",
+   "effort": "M",
+   "acceptance_test": "`python3 tools/check-research-node.py --base e8572eac` exits 0. check-authority-refs prints 0 FAIL lines under research/joint_controller_20261025/; FAILs for other nodes stay as documented pre-existing debt. evidence/review/ contains a post-run results-audit receipt with BLOCKER/MAJOR counts.",
+   "workflow_source_ids": [
+    "ACG-01",
+    "ACG-01-verifier-missed: repo-wide authority-ref debt",
+    "ACG-01-verifier-missed: 040b6764 unrecoverable"
+   ],
+   "v2_recheck_or_critique_note": "Critique C5 folded in: v1 diagnostic data had no committed source; v2 data is built from committed 46939bbe (data_v2/SOURCE.txt). Packet-node gates remain red. Status raised from synthesis PARTIAL to CONFIRMED for the gate failures themselves, re-run 2026-10-27 (check-research-node --base e8572eac: exactly 4 FAILs from the two packet nodes; check-authority-refs: 18 FAILs under joint_controller citing 040b6764). Repo-wide check-authority-refs stays red after this fix because of 310 pre-existing FAILs in 11 other nodes. 040b6764 is absent from every local clone and remote-tracking ref checked; recovery is unlikely but not proven impossible."
+  },
+  {
+   "final_id": "A2",
+   "tier": "A",
+   "final_status": "CONFIRMED",
+   "source_synthesis_id": "R05",
+   "title": "VG-1: 2-3 heap allocations per fresh matrix-free linearisation remain (known open since L-0172; G2 passed with this residual)",
+   "area": "matrix-free-kernel",
+   "impact": "Measured (data_v2/ALLOC_SWEEP.json, warm second call): case5 MF 3.0 per attempt + 73 fixed; transition-39 2.55; gyro-tight 1.97 (autonomous, no f_t). Dense route flat (63/62). Time impact negligible; it is a hard-gate VG-1 failure.",
+   "evidence": [
+    "heaptrack transition-39__adaptive.sites.txt: stacks through rodas5p_matrix_free_fast.rs:2657 (eval_partial_t -> vec!) and :2660 (Arc::new(ClosureOperator), y.to_vec() at problem.rs:884-886)",
+    "LIGHT_BENCH allocations minus the dense fixed 327, per attempt: (3579-327)/1111 = 2.93; (453-327)/39 = 3.2; (18632-326)/9454 = 1.94",
+    "problem.rs:702-729 eval_partial_t_into already exists with the same arithmetic, zero fill and counting",
+    "operator.rs:235-265: ClosureOperator captures its state inside closure F, so the analyst's Arc::get_mut overwrite is not possible as stated"
+   ],
+   "locations": [
+    "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2657",
+    "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2660",
+    "crates/rodas5p-integrators/src/problem.rs:675-729",
+    "crates/rodas5p-integrators/src/problem.rs:873-891",
+    "crates/rodas5p-core/src/operator.rs:235-265"
+   ],
+   "proposed_fix": "(1) At :2657, call problem.eval_partial_t_into(t, y, &mut self.ft, counters). This is trivial and bitwise-safe; on error, jvp and cached_callbacks are already None.\n(2) Add a concrete JVP operator type holding a state Vec, t, the jvp Arc, work and a token. Hold it as a concrete Arc in the workspace. On refresh, overwrite in place when the Arc is unique, otherwise allocate fresh.\n(3) Add a public token-advance API in rodas5p-core so recycle-identity semantics match a newly constructed operator.",
+   "risk_class": "bitwise-safe (site :2657, only when a time-derivative callback exists or the problem is autonomous) + api/governance (site :2660 needs a reusable concrete JVP operator and a rodas5p-core token-advance API)",
+   "effort": "S + M",
+   "acceptance_test": "- allocation_audit / CountingAlloc: 0 allocations inside MF attempts after warm-up on case5, transition-39 and gyro-tight.\n- t/y f64::to_bits identical and WorkCounters identical against the current path.\n- Recycle-token identity test unchanged.",
+   "workflow_source_ids": [
+    "MFK-08"
+   ],
+   "v2_recheck_or_critique_note": "eval_partial_t_into still allocates in its finite-difference f_t fallback (problem.rs:697-744) for non-autonomous problems without time_derivative; that branch needs its own in-place FD f_t."
+  },
+  {
+   "final_id": "A3",
+   "tier": "A",
+   "final_status": "CONFIRMED",
+   "source_synthesis_id": "R17",
+   "title": "Default finite-difference Jacobian route allocates 4 times per Jacobian build (measured; VG-1 gap; known open since WAVE3 task-3, 2026-10-21)",
+   "area": "dense-and-facade-setup",
+   "impact": "Measured (data_v2/ALLOC_SWEEP.json warm): case5 rodas-fd 63/82/122/162/198 at 5/10/20/30/39 attempts = 4.0 per Jacobian build; gyro-tight rodas-fd 97/137/217/373 at 10/20/40/80 = 3.93. Problem::new defaults to Jacobian::FiniteDifference (problem.rs:144), so every RODAS solve without a user Jacobian is affected. The fast driver zero-allocation statement (rodas5p_fast.rs:19-20) is conditional on an in-place Jacobian, which the FD provider does not supply.",
+   "evidence": [
+    "Code reading:\n- solve.rs:847-858 gives an unbanded FD Jacobian only an allocating `jacobian`, with no jacobian_into.\n- So problem.rs:786-789 takes the None branch (`let matrix = self.dense_jacobian(...)?; copy_from_slice`) on each build (rodas5p_fast.rs:1135).\n- fd.rs:250-254 allocates f0, shifted (y.to_vec()), f1 and an n x n DenseMatrix.\n- solve.rs:819-829 (band-on-dense fill) calls dense(t,y) -> DenseMatrix::zeros (solve.rs:794)."
+   ],
+   "locations": [
+    "crates/vigilode/src/solve.rs:794,819-829,847-858",
+    "crates/rodas5p-integrators/src/problem.rs:786-789",
+    "crates/vigilode/src/fd.rs:250-254",
+    "crates/rodas5p-integrators/src/rodas5p_fast.rs:19-20,1135",
+    "crates/vigilode/src/fd.rs banded_fd_fill (allocates f0, shifted, f1, deltas per build)"
+   ],
+   "proposed_fix": "Fill dense and banded FD Jacobians in place with workspace-owned f0/shifted/f1/deltas buffers using the same increments and evaluation order, and supply jacobian_into for the FD and band routes.",
+   "risk_class": "bitwise-safe",
+   "effort": "S",
+   "acceptance_test": "- A new VG-1 test with an FD-Jacobian user problem first demonstrates allocations greater than 0 per Jacobian build (confirming the hypothesis).\n- After the fix: 0 allocations per build after warm-up, with t/y bits and WorkCounters identical.",
+   "workflow_source_ids": [
+    "DFS-verifier-missed: FD Jacobian allocation"
+   ],
+   "v2_recheck_or_critique_note": "Already recorded as open question 2 in docs/plan/sdd/WAVE3/task-3-report.md:139 and task-3-review.md:15 (2026-10-21); this packet adds the first measurement (rodas-fd control arm)."
+  },
+  {
+   "final_id": "A4",
+   "tier": "A",
+   "final_status": "CONFIRMED",
+   "source_synthesis_id": null,
+   "title": "VG-1 zero-allocation contract does not cover the selector loop; selector allocations scale with batches, pilots and facade calls",
+   "area": "selector-control",
+   "impact": "Hard-gate scope gap. Steady allocations per solve: decay 78, stiff-forced 342, rotation 478, case5 595, transition-39 3,041.",
+   "evidence": [
+    "data_v2/heaptrack/STEADY_ALLOCATIONS.txt",
+    "data_v2/LIGHT_BENCH_v2.json allocations_warm"
+   ],
+   "locations": [
+    "crates/vigilode/tests/switching_economy_contracts.rs:444-479",
+    "crates/vigilode/src/switching.rs (drive_windows/run/commit)"
+   ],
+   "proposed_fix": "Decide by governance whether per-batch/per-facade-call allocations are inside the VG-1 hot loop; if so, add an allocation contract on a selector run with pilots, rechecks and implicit tenures, and remove the per-batch allocations (C3) and facade rebuilds (B9).",
+   "risk_class": "api/governance",
+   "effort": "M",
+   "acceptance_test": "A CountingAlloc contract on adaptive rotation/stiff-forced/case5 with pilots enabled reports the agreed bound (0 per attempt after warm-up, or a registered per-batch allowance).",
+   "workflow_source_ids": [],
+   "v2_recheck_or_critique_note": "Critique C7: VG-1 is not contracted for the selector loop; the only switching allocation contract disables pilots/rechecks and allows 6/batch+32. v2 steady allocations per solve (heaptrack = bench warm): decay 78, stiff-forced 342, rotation 478, case5 595, transition-39 3,041 versus direct DOPRI 16 and dense RODAS 63."
+  },
+  {
+   "final_id": "A5",
+   "tier": "A",
+   "final_status": "CONFIRMED",
+   "source_synthesis_id": "R16",
+   "title": "Selection evidence misreports incomplete comparisons: lower-bound return wins are recorded as admissible same-window point costs, and incomplete pilots publish a near-parity comparator ratio",
+   "area": "accuracy-contract-governance",
+   "impact": "Decisions are arithmetically sound, but the records mislead.\n- Downstream consumers keyed on SwitchingEvidence count lower-bound wins as completed comparisons.\n- Rotation pilots report comparator_work_ratio 0.984 and gyro pilots 0.932, although they covered under 0.05% and under 5% of the prefix.\n- The contract test locks in the conflation.",
+   "evidence": [
+    "switching.rs:1254-1263 calls qualified_work_preferred(&replay.record, &record, true, ...) for an incomplete replay. :784-795 builds the point interval as ObservedWork. :1305-1306 sets evidence = ExplicitCheaperOnSameWindow; only the decision string at :1299 differs",
+    "tests/return_sentinel_contracts.rs:267-270 asserts evidence == ExplicitCheaperOnSameWindow on the lower-bound path",
+    "OPUS_REVIEW.log MINOR (line 1228) asked for CostInterval{lower: W, upper: inf} plus a separate evidence variant; only the label was changed",
+    "switching.rs:1460-1465 computes the pilot comparator ratio as pilot WU / batch WU even for ceiling-stopped pilots (bench_bin rotation adaptive: cr 0.984)"
+   ],
+   "locations": [
+    "crates/vigilode/src/switching.rs:778-806,1254-1263,1295-1309,1460-1465",
+    "crates/vigilode/src/selection_evidence.rs:59-66,120-178",
+    "crates/vigilode/tests/return_sentinel_contracts.rs:240-274"
+   ],
+   "proposed_fix": "- Add CostEvidenceKind::ObservedLowerBound with the comparison arithmetic unchanged. Do not relax CostInterval::valid(); doing so changes decisions.\n- Add a SwitchingEvidence::ExplicitCheaperThanSameWindowLowerBound variant, use it at :1305, and update the contract test.\n- Report comparator_work_ratio as None, or as a rate-normalised value, when a pilot is incomplete.\n- Add a measurement cell with a counterfactual true completion cost.",
+   "risk_class": "api/governance",
+   "effort": "S",
+   "acceptance_test": "- Decisions, f64 results and WorkCounters are bit-identical on all cells.\n- The lower-bound fixture emits the new variant.\n- Incomplete pilots report no point ratio.",
+   "workflow_source_ids": [
+    "ACG-09",
+    "ACG-verifier-missed: contract test locks conflation",
+    "SC-verifier-missed: misleading comparator_work_ratio"
+   ],
+   "v2_recheck_or_critique_note": "Pilots already carry ImplicitPilotIncomplete evidence when incomplete (switching.rs ~1480); only their comparator_work_ratio is misleading. The return lower-bound path records ExplicitCheaperOnSameWindow, contradicting that variant doc (switching.rs:283-285) and pinned by return_sentinel_contracts.rs:267-270. The lower bound is sound only under the determinism/prefix assumption (Opus review NOTE)."
+  },
+  {
+   "final_id": "A6",
+   "tier": "A",
+   "final_status": "PARTIAL",
+   "source_synthesis_id": "R15",
+   "title": "Accuracy is gated on the endpoint only, though selector rows and exact solutions exist; RODAS has no public observed-output API for equal-output controls",
+   "area": "accuracy-contract-governance",
+   "impact": "Every registered accuracy pass certifies only the final state: 31 of 34 packet records, plus G3 and G4. Trajectory-accuracy claims are therefore blocked. This item is already planned (NEXT_STEPS.json:49-52). The claim that contraction masks errors injected at switch points is a hypothesis.",
+   "evidence": [
+    "adapter_integration_pilot.rs:315: error is computed from r.final_state only; :341 accuracy_pass = error + uncertainty <= cap",
+    "LIGHT_BENCH output_rows: decay 9, stiff-forced 10, relaxation 10, rotation 33, gyro-default 41, gyro-tight 129",
+    "PREREGISTRATION.md:125-132: 'Not claimed: phase or intermediate-time accuracy'",
+    "solve.rs:137: solve_observed_bounded is pub(crate). Dopri5::solve_observed is public (explicit.rs:223)"
+   ],
+   "locations": [
+    "crates/vigilode/examples/adapter_integration_pilot.rs:304-342",
+    "crates/vigilode/examples/adapter_integration_pilot.rs:411-441",
+    "crates/vigilode/src/solve.rs:120-144",
+    "research/adapter_integration_20261027/NEXT_STEPS.json:49-52"
+   ],
+   "proposed_fix": "- Score every returned selector row against exact(t_k), or against a tight dense reference for case5, using a scaled per-component error.\n- Add a dopri-observed arm at the same times (bitwise-safe).\n- A RODAS observed control needs a public observed API (api/governance).\n- Gate future G3/G4-type claims on max trajectory error.",
+   "risk_class": "bitwise-safe",
+   "effort": "M",
+   "acceptance_test": "- summary() reports max_trajectory_error per arm at identical t_k.\n- Solver t/y bits and counters are unchanged.\n- The preregistered gate uses the trajectory error.",
+   "workflow_source_ids": [
+    "ACG-03",
+    "ACG-verifier-missed: no public Rodas observed API"
+   ],
+   "v2_recheck_or_critique_note": ""
+  },
+  {
+   "final_id": "A7",
+   "tier": "A",
+   "final_status": "PARTIAL",
+   "source_synthesis_id": "R29",
+   "title": "Default-tolerance gyromotion failure is tolerance-proportional phase drift, not a selector defect (diagnosis of a known open item)",
+   "area": "accuracy-contract-governance",
+   "impact": "The relative phase error is about 9.2e-5, which is 92x rtol over 350 rad. Error scales as tol^0.97 (default/tight error ratio 811 for a 1000x tolerance ratio). MF RODAS also misses the cap (1.19e-2). The cohort is already report-only, and a work-precision ladder is already planned (NEXT_STEPS.json:51-52). The cap must not be widened.",
+   "evidence": [
+    "raw_r2 gyro-default adaptive: error 3.1599e-2 = phase 3.2182e-2 rad, in-plane amplitude -3.732e-4; DOPRI 3.1681e-2",
+    "gyro-tight adaptive 3.8968e-5 (phase 3.98e-5)",
+    "`bench_bin bench gyro-default rodas` -> max_component_absolute_error 0.011937"
+   ],
+   "locations": [
+    "crates/vigilode/examples/adapter_integration_pilot.rs:250-269",
+    "crates/vigilode/examples/local_bottleneck_support/models.rs:522-530,815-826",
+    "research/adapter_integration_20261027/benchmark/PROTOCOL.md:16,28-29"
+   ],
+   "proposed_fix": "Register a work-precision ladder (rtol 1e-6 to 1e-10) for all arms. Report phase and amplitude error separately using exact() at models.rs:815, plus a scaled per-component error. Compare selector and direct at matched attained error.",
+   "risk_class": "policy",
+   "effort": "M",
+   "acceptance_test": "The registered ladder reports selector and DOPRI work at matched phase error. The default cohort's documented cause is 'phase drift, about 92x rtol'.",
+   "workflow_source_ids": [
+    "ACG-02"
+   ],
+   "v2_recheck_or_critique_note": "v2: gyro-default adaptive 3.16e-2, dopri 3.17e-2 (cap 1e-4). The tol^0.97 exponent is a two-point estimate (default vs tight, error ratio 811 for tolerance ratio 1000); the ladder that would test it is only proposed."
+  },
+  {
+   "final_id": "B1",
+   "tier": "B",
+   "final_status": "CONFIRMED",
+   "source_synthesis_id": "R06",
+   "title": "Healthy long explicit tenures trigger repeated hopeless MF entry pilots: every 32-attempt quota yield counts as pressure, and backoff ignores how badly a pilot lost",
+   "area": "selector-control",
+   "impact": "v2 callgrind (solver-only harness, parse removed): discarded MF pilots (switching::run) are 1.285M of the 1.506M Ir/solve rotation selector-minus-direct difference (85%), 3.94M of 4.90M gyro-tight (80%), 2.36M of 2.69M gyro-default (88%); pilot work 568 / 896 / 538 WU. Every pilot loses decisively: rotation full-prefix RODAS needs 1,005-1,218 WU against a 154 WU ceiling.",
+   "evidence": [
+    "switching.rs:1377: pressure = budget_stop || attempts >= pressure_steps; explicit_attempt_budget 32 and pressure_steps 24 (:186-187); run_persistent_explicit sets budget_stop on Yield (:1720-1722)",
+    "EntryProbeMemory (switching.rs:670-702): cooldown 4*2^negatives capped at 64. Observed spacing after the initial pilot is 8, 16, 32, 64 batches",
+    "`bench_bin bench rotation adaptive`: pilot reasons initial, backoff-expired, backoff-expired; each 'exceeded entry work ceiling'; WU 190/189/189; each reached only 1.56e-5 of the 0.0313 prefix",
+    "gyro-tight pilots at segments 0/9/26/59/124 (backoff x3, sentinel-expired), WU 179-180",
+    "Hazard: on stiff-forced, relaxation, stale-return and case5, the winning initial pilot fires on a quota-stopped first batch with only 2-5 rejections, which looks the same as rotation's healthy batches"
+   ],
+   "locations": [
+    "crates/vigilode/src/switching.rs:186-187",
+    "crates/vigilode/src/switching.rs:1373-1398",
+    "crates/vigilode/src/switching.rs:670-745",
+    "crates/vigilode/src/switching.rs:715-725 (deterioration resets)"
+   ],
+   "proposed_fix": "Policy change requiring preregistration; ideally done after R04, because cold-pilot margins currently measure the ramp (q is about 1976 on rotation).\n- After a loss, add max(1, floor(log2(q*rho))) to the negative-comparison count, where q = (W_p/d_p)/(W_D/L), bounded by max_backoff_batches.\n- Alternatively, measure backoff in committed work or physical time rather than in 32-attempt batches.\n- Keep the WorkDeteriorated and RejectionDeteriorated resets.\n- Do NOT simply stop counting quota stops as pressure: that removes the initial-entry wins on stiff cells.",
+   "risk_class": "policy",
+   "effort": "M",
+   "acceptance_test": "Preregistered run:\n- rotation adaptive probe-rodas-discarded at most about 190 WU (one pilot); gyro-tight at most 2 pilots.\n- stiff-forced, relaxation, stale-return, case5 and transition-39 entry decisions and entry times identical or earlier.\n- Endpoint caps met.",
+   "workflow_source_ids": [
+    "SC-02",
+    "CE-08"
+   ],
+   "v2_recheck_or_critique_note": "Supersedes the v1 perf-inclusive 69%/55% (critique C1/C2) and v1 callgrind 87%/82%. Applies to the opt-in adaptive_evidence/evidence_driven presets with ProvidedOnly; SwitchingConfig::default() runs no pilots."
+  },
+  {
+   "final_id": "B2",
+   "tier": "B",
+   "final_status": "CONFIRMED",
+   "source_synthesis_id": "R03",
+   "title": "Small-n matrix-free RODAS costs 6.9x (case5) the Ir of a same-callback assembled dense route for identical steps; v2 wall-time minima 5.9x (case5) and 8.1x (gyro-tight), diagnostic",
+   "area": "matrix-free-kernel",
+   "impact": "v2 callgrind Ir/solve (parse removed): case5 MF 4.60M vs dense 0.67M vs FD-dense 0.74M; gyro-tight MF 2,159.6M vs FD-dense 332.4M (6.5x). MF and dense have identical attempts and RHS calls; FD-dense needs extra RHS calls for differencing (case5 409 vs 307; gyro-tight 139,252 vs 75,314; attempts 9,452 vs 9,454). Even with zero MF overhead gyro-tight RODAS stays several times DOPRI5, so this does not change method choice there.",
+   "evidence": [
+    "LIGHT_BENCH case5: rodas 349.5us, jvp 1206, wu 1859, err 1.0381916881740949e-07; rodas-dense 39.3us, 39 factorizations, wu 721, err 1.0381910309220643e-07",
+    "`bench_bin bench gyro-tight rodas-dense`: 9454 attempts, rhs 75314, err 1.1774019875e-05, 326 allocations, about 18.2-18.5 ms (diagnostic)",
+    "callgrind case5__rodas attempt_inner 13,505,376/(3x39) = 115.4k Ir/attempt; case5__rodas-dense Workspace::attempt 5,756,120/390 = 14.8k",
+    "JVP per attempt: 30.9 (case5), 32.0 (transition-39), 40.0 (gyro); exactly iterations + 2 per solve",
+    "MFK-05 variant: transition-39 runs exactly 2 = n Arnoldi columns per solve (17776/8888). case5 is 1.87 because some solves break down at k=1. Gyro-tight is 3 < n=6"
+   ],
+   "locations": [
+    "crates/vigilode/src/solve.rs:839-845 (facade build)",
+    "crates/rodas5p-integrators/src/routing.rs:58 (ROUTER_DENSE_SMALL_MAX = 8)",
+    "crates/rodas5p-integrators/src/routing.rs:500-506",
+    "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2647-2668",
+    "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:2724-2885",
+    "crates/vigilode/src/problem.rs:50-52 (Jacobian::Jvp 'never assembles a matrix')"
+   ],
+   "proposed_fix": "Add a caller-authorized opt-in, e.g. Jacobian::jvp(..).allow_small_assembly(n_max), with n_max fixed in a preregistration. The existing ROUTER_DENSE_SMALL_MAX is 8.\n- When n <= n_max, the facade build() supplies a jacobian_into that fills J column by column from n guarded JVP calls on unit vectors, charging n jvp units.\n- Route those problems Dense through the existing allocation-free rodas5p_fast driver.\n- Record a distinct provider identity, e.g. JacobianRecord::JvpAssembled.\n- Keep pure Krylov as the default.\n- MFK-05 (reusing the stage-0 Krylov basis when k=n) is the same assembly by another route and is subsumed. Pursue it only if assembly is refused on governance grounds.",
+   "risk_class": "api/governance",
+   "effort": "M",
+   "acceptance_test": "Preregistered same-quality comparison on case5 and gyro-tight.\n- The opt-in arm reproduces the rodas-dense attempt and RHS counts exactly.\n- Error stays within the registered bound.\n- jvp_vectors = n per linearization.\n- Allocations are zero after the first batch.\n- Without the opt-in, t/y f64 bits and WorkCounters are identical to current.",
+   "workflow_source_ids": [
+    "MFK-01",
+    "MFK-05"
+   ],
+   "v2_recheck_or_critique_note": "Critique C8: the dense control is already a caller-side n-JVP assembly (Jacobian::dense over JVP columns). AllowFiniteDifference only permits problems that already declare Jacobian::FiniteDifference (switching.rs:21-30, 2107-2121); it never substitutes a JVP provider. The FD-dense numbers come from a direct Rodas5p::solve on an FD-declared problem, not from the selector."
+  },
+  {
+   "final_id": "B3",
+   "tier": "B",
+   "final_status": "PARTIAL",
+   "source_synthesis_id": "R04",
+   "title": "Entry pilots start cold at opts.h0, so pass/fail tracks the step-size ramp and prefix length rather than regime cost; transition entries are delayed",
+   "area": "comparison-economics",
+   "impact": "Counterfactual replays:\n- transition-39: entry would move from t=0.4676 to 0.4261, saving about 10.3-10.5k of 48.4k WU (21-22%).\n- transition-79: saving about 9.8-10k of 34.9k WU (28%).\n- stiff-forced: pilot cost 144 -> 54 WU.\n- relaxation: pilot cost 72 -> 54 WU.\n- No decision change on rotation, gyro or case5. Rotation and gyro lose by at least 6.7x and 27x even with h0 = L/3. The case5 pilot already starts at h0 = L.",
+   "evidence": [
+    "switching.rs:1422-1427: pilot h0 = opts.h0.min(L).max(min_step). adaptive.rs:168 max_factor 5.0. Ceiling floor(0.8*W_D) at switching.rs:1430-1431",
+    "transition-39 losing pilots (segments 0/9/13/17/25/34/51/84): h0 = 1e-4, 4 attempts, 183-185 WU, ceiling-stopped",
+    "Replay at t = 0.4260973734585346: h0 = L/3 gives 2 attempts, 98 WU, PASS (ceiling 153.6); h0 = 1e-4 gives 196 WU, FAIL",
+    "`bench_bin transition-39 adaptive tenure 0.4260973734585346 0.625 3.274e-4` -> 8036 WU, against 12480 DOPRI WU committed over [0.4261, 0.4683]",
+    "stiff-forced ramp bound: ceil(log5(1 + 4*0.0082/1e-7)) = 8 attempts * 18 WU = 144 against a 154.4 ceiling. Replay with h0 = L/8 gives 3 attempts, 54 WU",
+    "Caveat 1: the h0 response is non-monotone. At 0.40452: h0 = 1e-4 gives 245 WU, L/3 gives 196, L/2 gives 290 (2 rejections), against a ceiling of 153.6",
+    "Caveat 2: the first DOPRI batch also starts cold from opts.h0, so initial comparisons are symmetric-cold"
+   ],
+   "locations": [
+    "crates/vigilode/src/switching.rs:1422-1427",
+    "crates/vigilode/src/switching.rs:1430-1431",
+    "crates/vigilode/src/switching.rs:755-761 (entry_pilot_growth_seed)",
+    "crates/rodas5p-integrators/src/adaptive.rs:168",
+    "crates/vigilode/src/solve.rs:145-151"
+   ],
+   "proposed_fix": "Seed the pilot at h0 = clamp(L/k_hat, min_step, L), with k_hat = max(1, floor(rho*W_D/c_hat)).\n- c_hat is the route's deterministic per-attempt work: s*(rhs + solve) + n*jac or JVPs.\n- Cap the pilot's max_steps at k_hat.\n- Register a rejection-aware margin, because one rejection exhausts k_hat = 3.\n- Evaluate initial (symmetric-cold) and later (warm-DOPRI) comparisons separately, and consider applying the change only to the later ones.\n- Seeding the tenure from the pilot's last accepted step instead of the mean is a separate policy change.",
+   "risk_class": "policy",
+   "effort": "S",
+   "acceptance_test": "Preregistered run:\n- transition-39 adaptive total WU at most about 38.5k, and transition-79 at most about 25.5k.\n- All endpoint caps met.\n- decay, rotation and gyro WU and decisions within the registered non-regression bound.\n- stiff-forced pilot at most 54 WU.\n- Initial-comparison outcomes reported separately.",
+   "workflow_source_ids": [
+    "CE-01",
+    "SC-verifier-missed: pilot h0 ignores DOPRI step",
+    "CE-verifier-missed: symmetric-cold initial comparisons",
+    "CE-verifier-missed: non-monotone h0"
+   ],
+   "v2_recheck_or_critique_note": ""
+  },
+  {
+   "final_id": "B4",
+   "tier": "B",
+   "final_status": "PARTIAL",
+   "source_synthesis_id": "R23",
+   "title": "Known open transition-39 entry-horizon miss: a 32-step prefix is shorter than one asymptotic RODAS step; R04 does not cover it",
+   "area": "comparison-economics",
+   "impact": "After R04, about 6144 DOPRI WU over [0.40452, 0.42610] remains where RODAS is cheaper on the following window. The pro-rata saving estimate of 3-4k WU is a hypothesis. This is the already-known open item; only the two-stage design is new.",
+   "evidence": [
+    "TRACE_SUMMARY_f4e971f5 point 51: prefix RODAS 245 vs DOPRI 193 WU; window to 0.5: RODAS 7056 vs DOPRI 28027",
+    "Replay at 0.40452 with h0 = L/3: 196 WU, still fails. Committed tenure mean step 1.3e-3 against prefix L = 6.47e-4",
+    "PREREGISTRATION.md:35-39,172 already records the miss"
+   ],
+   "locations": [
+    "crates/vigilode/src/switching.rs:1404-1540",
+    "crates/vigilode/src/switching.rs:1448-1453"
+   ],
+   "proposed_fix": "Two-stage entry pilot. If the prefix pilot fails only by the ceiling while its steps are still growing (h_last/h_first >= 2 and h_last >= L/k_hat), extend it to H = min(window end, start + M*L) and apply a rate test. On a pass, commit the pilot state; the explicit prefix becomes a discarded comparator. This changes the evidence contract from same-interval comparison to rate extrapolation.",
+   "risk_class": "policy",
+   "effort": "L",
+   "acceptance_test": "- Preregistered: transition-39 entry at t <= 0.41 with total WU reduced beyond R04.\n- rotation and gyro never extend: extension count 0.\n- Endpoint caps met.",
+   "workflow_source_ids": [
+    "CE-05"
+   ],
+   "v2_recheck_or_critique_note": "Known open item; two-stage design is new."
+  },
+  {
+   "final_id": "B5",
+   "tier": "B",
+   "final_status": "CONFIRMED",
+   "source_synthesis_id": "R14",
+   "title": "The fixed work-unit proxy underprices matrix-free RODAS by 2-4x per unit, so MF pilot ceilings and comparisons are too generous in time",
+   "area": "comparison-economics",
+   "impact": "v2 ns per work unit (batch minima / deterministic WU, diagnostic): DOPRI 40-100, dense RODAS 43-92 (case5 dense 81 with 5.4% spread; gyro-tight dense 92), MF RODAS 180-292. rho = 0.8 on WU therefore corresponds to a much larger time ratio for MF routes. MF/dense WU ratio on case5 is 2.6x while the v2 wall-time ratio is 5.9x.",
+   "evidence": [
+    "LIGHT_BENCH ns/WU. DOPRI: 43.3 / 40.2 / 70.3 / 97.1 / 98.7. Dense RODAS: 45.0 / 49.4 / 49.7 / 54.5. MF RODAS: 188.0 / 181.4 / 211.0 / 297.6",
+    "Same fixture, perf: transition-39 MF 192 vs DOPRI 91.3 ns/WU; rotation pilots 198 vs 47.7; gyro-tight 353 vs 112. callgrind rotation pilots 2237 Ir/WU",
+    "JVPs are already 1 unit each. What goes unweighted is orthogonalization and QR (case5 adaptive self: qr_in_place 6.83%, solve_into 3.39%, two_pass_mgs 2.75%, householder 1.57%) and per-run setup of about 69k Ir",
+    "MFK-03: gyro-tight decomposes as 2.32x more attempts x 3.3x intrinsic RODAS stage cost x 8.7x MF overhead (about 66x)"
+   ],
+   "locations": [
+    "crates/vigilode/src/switching.rs:196 (entry_cost_ratio 0.8)",
+    "crates/vigilode/src/switching.rs:778-806",
+    "crates/vigilode/src/switching.rs:1964-1965"
+   ],
+   "proposed_fix": "Register a versioned proxy v2 with deterministic counter weights: alpha*linear_iterations + beta*linear_solves on MF routes, plus a per-run setup unit. Fit the weights once from callgrind on non-holdout fixtures, then freeze them. Keep v1 for identity checks. Alternatively, use route-specific rho values. Adopt v2 only together with R04 and the horizon fix (R23); otherwise transition-39 entry gets later (the WU ratio of 0.51 at t=0.4261 becomes about 1.07 time-weighted). Shrinking MF overhead (R03, R09) also reduces the bias.",
+   "risk_class": "api/governance",
+   "effort": "M",
+   "acceptance_test": "- Under the registered v2 proxy, same-fixture diagnostic ns/WU ratios across DOPRI, dense and MF are within 1.5x.\n- With R04 applied, transition-39 entry is not later than t=0.4261.\n- WorkCounters v1 values are unchanged.",
+   "workflow_source_ids": [
+    "CE-06",
+    "MFK-03",
+    "MFK-verifier-missed: WU pricing understates MF"
+   ],
+   "v2_recheck_or_critique_note": "Critique C13: weights fitted on n<=6, cheap-RHS fixtures do not generalise; add a non-holdout scaling cell (D6) before freezing proxy v2."
+  },
+  {
+   "final_id": "B6",
+   "tier": "B",
+   "final_status": "CONFIRMED",
+   "source_synthesis_id": "R09",
+   "title": "faer column-pivoting QR on the tiny (k+1)xk GMRES Hessenberg dominates matrix-free instruction counts",
+   "area": "matrix-free-kernel",
+   "impact": "v2 callgrind transition-39 direct MF RODAS: least_squares_correction inclusive 48.5M of 122.8M Ir (39%); the column-pivot QR factor itself (qr_in_place) 22.3M (18%); replaceable share estimated at most about 33% (assuming 300-500 Ir per Givens solve, not measured). gyro-tight about 22-23%, case5 about 29%.",
+   "evidence": [
+    "callgrind transition-39__rodas: least_squares_correction 48,455,462 Ir (39.12%) over 8,888 calls; LeastSquaresWorkspace::solve_into 44,384,459; qr_in_place 22,320,107 (2.51k Ir per 3x2 QR)",
+    "gyro-tight__rodas: least_squares_correction 586,763,501 (27.16%); solve_into 530,114,979",
+    "perf self qr_in_place: 8.23% case5, 8.57% transition-39, 6.31% gyro-tight",
+    "gmres_givens.rs:3-17: no production caller, and its breakdown/stopping semantics differ"
+   ],
+   "locations": [
+    "crates/rodas5p-krylov/src/gmres_into.rs:503-536",
+    "crates/rodas5p-krylov/src/small.rs:186-330",
+    "crates/rodas5p-krylov/src/gmres_givens.rs:39-80"
+   ],
+   "proposed_fix": "Inside least_squares_correction only:\n- reduce H[0..k+1, 0..k] with k Givens rotations (RealGivens::from_pair) into a workspace array, then back-substitute;\n- fall back to LeastSquaresWorkspace::solve_into when |R_jj| <= c*eps*max|R_ii|;\n- keep the cycle structure, the loop-top true residual and the final-residual rules unchanged.\nDo not adopt gmres_givens.rs wholesale.",
+   "risk_class": "solution-changing (not bitwise; least-squares solution, stage solutions and step sequence change at roundoff level; needs a preregistered same-quality VG-2/VG-3 comparison)",
+   "effort": "M",
+   "acceptance_test": "Preregistered same-quality comparison on the MF cells:\n- accepted step sequences equal, or within a registered tolerance;\n- endpoint and trajectory errors within the caps;\n- callgrind least_squares_correction at most about 1k Ir per solve;\n- rank-deficient Hessenberg tests take the fallback.",
+   "workflow_source_ids": [
+    "MFK-02"
+   ],
+   "v2_recheck_or_critique_note": "v2: least_squares_correction 48.5M of 123.3M Ir in transition-39 rodas (39%)."
+  },
+  {
+   "final_id": "B7",
+   "tier": "B",
+   "final_status": "PARTIAL",
+   "source_synthesis_id": "R18",
+   "title": "Stiff entry requires a full 32-attempt explicit batch plus a cold pilot before any comparison (dense-route startup excess)",
+   "area": "comparison-economics",
+   "impact": "stiff-forced: startup excess is about 283 WU (46%) of 614 total, against 252 for direct RODAS. That is 193 explicit WU minus the 54 WU replay cost for the same interval, plus the 144 WU pilot.\nrelaxation: about 265 WU, about 20us (20%).\nAfter R04, a shorter first batch (k_D0 >= 12 for dense n=1) might remove about 120 more WU; this is unmeasured.",
+   "evidence": [
+    "stiff-forced segments: pilot 144 WU (h0 1e-7, 8 attempts); DOPRI 0 -> 0.0082 193 WU (32 attempts, budget stop); RODAS 108+54+90 = 252; recheck 25",
+    "perf stiff-forced adaptive: solve_observed_bounded 48.78%, run_persistent_explicit 21.88%",
+    "k_D0 >= 3*c_R/(rho*c_D) = 11.25: about 12 for dense n=1 (c_R=18, c_D=6), but about 31 for MF (c_R about 49), so a reduction applies only to dense routes"
+   ],
+   "locations": [
+    "crates/vigilode/src/switching.rs:186-187",
+    "crates/vigilode/src/switching.rs:1373-1378,1404-1428"
+   ],
+   "proposed_fix": "Requires R04 first. Give the first explicit batch of each tenure a route-sized budget k_D0 >= 3*c_R/(rho*c_D), dense routes only. Keep pressure_steps unchanged for later batches. Preregister.",
+   "risk_class": "policy",
+   "effort": "S",
+   "acceptance_test": "Preregistered run:\n- stiff-forced adaptive total at most about 400 WU and relaxation at most about 1150 WU, with endpoint caps met.\n- decay, rotation and gyro decisions and WU within the non-regression bound.",
+   "workflow_source_ids": [
+    "CE-04"
+   ],
+   "v2_recheck_or_critique_note": "v2: stiff-forced adaptive 588.6k vs rodas 176.7k Ir/solve (3.33x); light bench min 38.9 vs 10.9 us."
+  },
+  {
+   "final_id": "B8",
+   "tier": "B",
+   "final_status": "CONFIRMED",
+   "source_synthesis_id": "R07",
+   "title": "Losing pilots run on after they provably can no longer reach the prefix within the ceiling; a reachability screen keeps decisions unchanged",
+   "area": "comparison-economics",
+   "impact": "Rotation: saves 456 of 568 pilot WU and about 0.9M Ir per solve (about 16% of the 5.69M steady-state solver Ir).\nThe screen preserves decisions, because a stopped pilot could not have passed.\nThe gain on transition and gyro is small, and it largely disappears once R04 is adopted.",
+   "evidence": [
+    "Rotation pilot segments 0/9/26: 5 attempts each (4 accepted), 189-190 WU, ceiling-stopped",
+    "Reachability with c_min = 16 WU and growth <= 5:\n- before attempt 1, m = 9 and 1e-7*(5^9-1)/4 = 0.0488 >= 0.0313, so the pilot can still pass;\n- after about 38 WU, m = 7 and 5e-7*(5^7-1)/4 = 9.77e-3 < 0.0313, so it cannot",
+    "callgrind rotation__adaptive: (4,324,425 - 511,305 parse)/3 = 1.271M Ir per solve for pilots, 76.7k Ir per attempt",
+    "Retry edge: retry_unresolved_entry_once (switching.rs:1473-1479) fires when accepted_steps == 0"
+   ],
+   "locations": [
+    "crates/vigilode/src/switching.rs:1426-1444",
+    "crates/vigilode/src/switching.rs:1473-1479",
+    "crates/vigilode/src/solve.rs:193-205",
+    "crates/rodas5p-integrators/src/adaptive.rs:168"
+   ],
+   "proposed_fix": "Add a progress-aware stop hook in the RODAS driver; the Guard cannot see h_next, so it cannot live there.\n- Before each attempt, compute m = floor((rho*W_D - W)/c_min).\n- Stop when h_next*(5^m-1)/4 < remaining distance.\n- c_min = s RHS + s solves, plus ft for non-autonomous problems and n for a dense Jacobian build.\n- Fire only after at least one accepted step.\n- Record the stop as an ordinary losing comparison, so entry_memory and backoff are unchanged.",
+   "risk_class": "counter-changing",
+   "effort": "M",
+   "acceptance_test": "- rotation adaptive probe-rodas-discarded at most about 120 WU.\n- Every segment decision string, entry/return time and entry_memory state identical across all registered cells.\n- No new retry pilots appear.",
+   "workflow_source_ids": [
+    "CE-02"
+   ],
+   "v2_recheck_or_critique_note": "Critique C16: losing pilots end through Guard::charge FatalCallback(format!) - one String allocation and error-path teardown per losing pilot; a screen avoids it. Status refers to the measured waste; \"decisions unchanged\" is an argument from max_factor 5.0 and a per-attempt WU lower bound and must be verified by an all-cell decision-identity test."
+  },
+  {
+   "final_id": "B9",
+   "tier": "B",
+   "final_status": "PARTIAL",
+   "source_synthesis_id": "R08",
+   "title": "Every implicit batch or pilot rebuilds the RODAS facade from scratch: constant tableau-derived tables, fresh workspaces and GMRES/LS buffers, cloned observed rows, and new Arcs",
+   "area": "dense-and-facade-setup",
+   "impact": "Fixed cost per facade call is about 16.1k Ir for workspace build and drop (12.2k + 3.9k), plus about 8.5k Ir of facade work outside the driver, and about 63 allocations.\n- stiff-forced adaptive (4 calls per solve): about 102k of 584k solver Ir (17.4%), about 71% of solver allocations, and about 5.5us of the 36.3us perf gap.\n- relaxation adaptive: also 4 calls.\n- rotation MF pilots: 90.5k Ir per solve (7.1% of steady facade Ir, about 2.7us per pilot), with about 60 of 98 allocations per pilot outside the attempt loop.",
+   "evidence": [
+    "callgrind stiff-forced__rodas: Workspace::new (632,783 - 510,830)/10 = 12.2k Ir per call; drop 3.9k. stiff-forced__adaptive: (1,011,801 - 510,229)/40 = 12.5k",
+    "stiff-forced adaptive per call: 86.9k Ir total vs 61.5k in integrate_fast_in, so 25.4k (29%) is outside the driver",
+    "heaptrack stiff-forced rodas n=21 per call: from_iter (nonzero_row) 14, rodas5p_fast.rs:838 7, :835 2, :819 2; Arcs at solve.rs:170/773/779/793/805; 7 clone/to_vec blocks",
+    "heaptrack rotation facade: 98 allocations per pilot (Rodas5pMfFastWorkspace::new 34, ensure_pool 7, prepare/ensure_len 10)",
+    "solve.rs:276 clones routed.run.observed(); :552 clones run.observed.t/.y although `run` is owned and t/y are not read afterwards; :229 clones routed.partial"
+   ],
+   "locations": [
+    "crates/vigilode/src/switching.rs:1900-1909",
+    "crates/rodas5p-integrators/src/rodas5p_fast.rs:799-850",
+    "crates/rodas5p-integrators/src/rodas5p_fast.rs:2282-2285",
+    "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:1440-1500",
+    "crates/rodas5p-krylov/src/workspace.rs:69-80",
+    "crates/vigilode/src/solve.rs:156-170,229,276,552,570,576,771-814"
+   ],
+   "proposed_fix": "(a) Compute the tableau-derived tables (a_nonzero, c_nonzero, b_nonzero, c, gamma_rows) and the triangularity check once, in a static OnceLock, with the same entry order. This removes about 19 allocations and 3-4k Ir per call.\n(b) Move `observed` out of RoutedRun at :276 via an into_observed API, use mem::take at :552, and drop the partial clone at :229.\n(c) Keep a persistent implicit-workspace bundle in DriveState, passed through a pub(crate) solve_observed_bounded_in. Reset lu_chosen/lu_kind, faer_lu, w_dense, row_end/l_start/col_end, the Jacobian buffer, the GMRES/LS pools and the recycle scope. Reusing the Guard requires resetting every Guard field.\n(d) Slimming Stats.options/y0 is api/governance, because Stats is part of the public SwitchingSegment.",
+   "risk_class": "bitwise-safe",
+   "effort": "M",
+   "acceptance_test": "- On all 10 cells, t/y f64::to_bits and WorkCounters are identical, including diagnostic_matvecs, orthogonalization and Stats.callbacks.\n- Facade calls after the first allocate nothing outside the attempt loop.\n- callgrind stiff-forced adaptive: solve_observed_bounded minus integrate_fast_in is at most about 5k Ir per call.",
+   "workflow_source_ids": [
+    "SC-03",
+    "DFS-03",
+    "DFS-04"
+   ],
+   "v2_recheck_or_critique_note": ""
+  },
+  {
+   "final_id": "C1",
+   "tier": "C",
+   "final_status": "CONFIRMED",
+   "source_synthesis_id": "R10",
+   "title": "MF facade still uses RecomputeFinal accounting, spending a duplicate diagnostic JVP on every stage solve",
+   "area": "matrix-free-kernel",
+   "impact": "jvp_vectors fall 25% (transition-39), 20% (gyro-tight) and 25.9% (case5).\nwork_units fall: 54369 -> 45481, 529106 -> 453474, 1859 -> 1547 (-14 to -17%).\nInstruction counts fall 5.4%, 8.7% and 6.6%.\nSolution bits and step sequence are unchanged.\nFewer charged units move the facade work-ceiling boundary, so bounded trials at the ceiling and switching decisions can change.",
+   "evidence": [
+    "Identity JVP = iterations + 2*solves: 1206 = 582 + 624; 35552 = 17776 + 17776; 378160 = 226896 + 151264",
+    "accounting.rs:57 DEFAULT = RecomputeFinal; :25-28 the solution is identical under both modes; :35-41 the default was kept only because 9 tests pin counts",
+    "rodas5p_matrix_free_fast.rs:3154 passes AccountingRun::DEFAULT; :3245 set_residual_accounting",
+    "callgrind true_residual_into: 6,634,824 Ir (5.36%) transition-39; 187,416,096 (8.67%) gyro; 987,048 (6.59%) case5. Ledger L-0100: SP01 bitwise identity 44/44"
+   ],
+   "locations": [
+    "crates/rodas5p-krylov/src/accounting.rs:57",
+    "crates/rodas5p-krylov/src/gmres_into.rs:315-328",
+    "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs:3154,3245",
+    "crates/vigilode/src/solve.rs:218-221",
+    "crates/vigilode/src/solve.rs:204 (guard.arm_ceiling)"
+   ],
+   "proposed_fix": "Add a RoutingOptions field that forwards ResidualAccounting::ReuseConfirmed into the MF ls_workspace entry, and set it in solve.rs:218-221. Record the accounting id in DriverWork::MatrixFree. Keep the kernel default unchanged so SP01's pinned tests stay valid, and re-baseline the facade counter tests.",
+   "risk_class": "counter-changing",
+   "effort": "S",
+   "acceptance_test": "- On case5, transition-39 and gyro-tight: t/y bits and accepted steps identical, and jvp_vectors == linear_iterations + linear_solves exactly.\n- On the switching cells, any decision changes are reported under a preregistered counter change.",
+   "workflow_source_ids": [
+    "MFK-04"
+   ],
+   "v2_recheck_or_critique_note": "Critique C9: adopt only together with the proxy version of B5, otherwise MF underpricing widens."
+  },
+  {
+   "final_id": "C2",
+   "tier": "C",
+   "final_status": "CONFIRMED",
+   "source_synthesis_id": "R12",
+   "title": "Per-solve GMRES bookkeeping (full WorkCounters delta, redundant norms, per-stage validation, identity-preconditioner copies, workspace re-prepare) can be removed bit for bit",
+   "area": "matrix-free-kernel",
+   "impact": "Estimated savings: about 7-9% of Ir on the n=2 MF cells (transition-39, case5) and about 4-5% on gyro-tight. Results stay bit-identical.",
+   "evidence": [
+    "callgrind transition-39: WorkCounters::delta 3,235,232 Ir (2.61%, 364 per solve); safe_l2 6,805,071 (5.49%), about 80 Ir per call, 3 redundant calls per solve, about 1.7%",
+    "begin_cycle 3,736,122 (3.02%), of which ArnoldiWorkspace::prepare 2,234,050; resize_zeros 1,733,658; apply_preconditioner 2,053,128 (identity copy 1,368,752 Ir inside Arnoldi columns, 1.10%)",
+    "Per-stage validation, identical across the 8 stages: GmresConfig::validate 542,168, validate_system 684,376, validate_residual_scale 151,096 Ir (about 1.1%)",
+    "two_pass_mgs_into 4,995,056 (4.03%): Result-returning dot/axpy calls"
+   ],
+   "locations": [
+    "crates/rodas5p-krylov/src/gmres_into.rs:199-201,217-219,229-231,244,289-295,335,345,423-434,509-514",
+    "crates/rodas5p-krylov/src/workspace.rs:69-80",
+    "crates/rodas5p-krylov/src/kernels.rs:3-20,103-114",
+    "crates/rodas5p-core/src/work.rs:329-393",
+    "crates/rodas5p-core/src/operator.rs:722-734"
+   ],
+   "proposed_fix": "(1) Replace the full counter delta with the two fields the report reads.\n(2) With a zero iterate and the identity preconditioner, reuse right_norm as both the residual norm and beta. Scale with the same expression so bits are unchanged, and still increment the preconditioner counters.\n(3) Hoist validation and workspace prepare to once per attempt, and skip the LGMRES directions pool for GMRES. Hoisting the Hessenberg re-zero needs a test, because the prefix copy at :509-514 reads below-subdiagonal entries.\n(4) Skip the identity-preconditioner copy while still counting it.\n(5) Inline the MGS dot/axpy loops in the same order, with counters added in bulk.",
+   "risk_class": "bitwise-safe",
+   "effort": "S",
+   "acceptance_test": "- On the MF cells, to_bits identity and identical WorkCounters, including preconditioner_apps/vectors and orthogonalization counts.\n- callgrind transition-39__rodas total Ir at least 7% lower.",
+   "workflow_source_ids": [
+    "MFK-06",
+    "MFK-verifier-missed: per-stage validation",
+    "MFK-verifier-missed: identity preconditioner copy"
+   ],
+   "v2_recheck_or_critique_note": ""
+  },
+  {
+   "final_id": "C3",
+   "tier": "C",
+   "final_status": "CONFIRMED",
+   "source_synthesis_id": "R11",
+   "title": "Per-batch and per-tenure explicit bookkeeping: boxed stats records, cloned options and state, 3 snapshots per batch, and a full ExplicitSolution plus native rows that are discarded",
+   "area": "selector-control",
+   "impact": "Decay: adapter overhead is about 33.6k Ir per solve (29% of 116.4k solver Ir), plus 5.0k Ir for the SwitchingSolution teardown. It splits into drive_windows minus advance_to 20.9k (2.6k per batch), with_session itself 6.9k, and solve outside with_session 5.8k. In perf this is about 2.3us of the 9.36us decay gap.\nAllocations: decay about 40-75 per solve; rotation about 300 (about 9-10 per batch over 32 batches).\nShare of the selector gap: about 5% on rotation, about 6% on gyro-tight. Cost scales with the number of 32-attempt yields: 128 batches on gyro-tight, 142 on transition-39.",
+   "evidence": [
+    "callgrind decay__adaptive (n=30): stats_since 5.47k, commit 5.28k, RawVec::grow_one 9.07k, Dopri5Session::new 3.08k, WorkCounters::delta 364 Ir per batch",
+    "heaptrack rotation: Box at switching.rs:1764 (32), checkpoint.y.to_vec() :1717 (32), commit clone :2019 (32), stats_since atol clone session.rs:201 (32), accept_prechecked rows output.rs:981 (14 per tenure)",
+    "switching.rs:1709/1713/1714: 3 snapshots per batch; :485-488 result.t/y start at capacity 1",
+    "Rows are pushed per committed batch: rotation 33 rows for 8 windows, transition-39 148, gyro-tight 129",
+    "run() probes DO consume ExplicitSolution (final_state, stats boxed at switching.rs:1896, stop_reason, callback_failure); only the main tenure path discards it (switching.rs:579)"
+   ],
+   "locations": [
+    "crates/vigilode/src/switching.rs:485-488,542-583,1594,1701-1772,2001-2024",
+    "crates/vigilode/src/session.rs:166-228,252-268,339-380",
+    "crates/rodas5p-integrators/src/output.rs:979-983",
+    "crates/rodas5p-integrators/src/dopri5.rs:821-885"
+   ],
+   "proposed_fix": "Bitwise-safe changes:\n- Reserve result rows using a batch-count heuristic, not window_count + 1.\n- Push the moved state, then update final_state with clone_from.\n- Take one `after` snapshot per batch and derive stats_since from it.\n- Pass `times` as an owned Vec.\n- Use a pub(crate) no-retain session for the main tenure that skips row storage and ExplicitSolution assembly. Probes keep their driver record.\nSchema changes (api/governance, vigilode.stats.v4): share the per-tenure Options/ErrorControl through an Arc; make SwitchingDriverStats carry deltas only.",
+   "risk_class": "bitwise-safe",
+   "effort": "M",
+   "acceptance_test": "- t/y bits, SwitchingStats and WorkCounters identical on all cells.\n- callgrind decay: SwitchingSolver::solve minus advance_to at most about 15k Ir per solve.\n- heaptrack decay solver-only allocations at most about 40 per solve.",
+   "workflow_source_ids": [
+    "SC-05",
+    "SC-06",
+    "DFS-08",
+    "DFS-verifier-missed: per-window delta",
+    "DFS-verifier-missed: SwitchingSolution drop"
+   ],
+   "v2_recheck_or_critique_note": "v2: decay adaptive 123.7k vs dopri 77.6k Ir/solve (1.59x); light bench minima 7.94 vs 4.27 us (1.86x). The 33.6k bookkeeping decomposition is from v1 (116.4k denominator)."
+  },
+  {
+   "final_id": "C4",
+   "tier": "C",
+   "final_status": "CONFIRMED",
+   "source_synthesis_id": "R13",
+   "title": "Pilot work ceiling counts only callbacks, but the decision proxy also counts linear solves, so every losing pilot overshoots by about one solve per stage",
+   "area": "comparison-economics",
+   "impact": "Losing pilots carry linear solves outside the callback ceiling: 14-19% of their WU (v2 by_kind: rotation 105/568, transition-39 about 257/1,613, gyro-tight 125/896).",
+   "evidence": [
+    "fd.rs:63-95: charge counts rhs, jvp, ft and n*jac only. switching.rs:1964-1965: work_units also adds solves",
+    "transition-39 losers: 30 + 120 + 4 = 154 callbacks > 153 ceiling, but WU = 183. Rotation: 155 > 154, WU 190. Gyro: 155 > 154, WU 180",
+    "selection_evidence.rs:157-166: the pass test is W_p <= next_down(next_down(0.8)*W_D) on integer WU"
+   ],
+   "locations": [
+    "crates/vigilode/src/fd.rs:63-95",
+    "crates/vigilode/src/solve.rs:130-136,193-205",
+    "crates/vigilode/src/switching.rs:1430-1431,1964-1965"
+   ],
+   "proposed_fix": "Charge one Guard unit per counted linear solve (one atomic add, no allocation), or check WorkCounters in the driver after each stage solve. Arming the Guard once with ceiling minus solves is not buildable, because solves happen inside the driver. Keep the zero-accepted-step retry trigger unchanged.",
+   "risk_class": "counter-changing + api/governance (changes the meaning of Guard charged_units)",
+   "effort": "M",
+   "acceptance_test": "- On every registered cell, all decisions, entry/return times and retry pilots are identical.\n- probe-rodas-discarded WU drops by at least 200 on transition-39 and by at least 100 on rotation.",
+   "workflow_source_ids": [
+    "CE-03"
+   ],
+   "v2_recheck_or_critique_note": "Critique C14: charging solves changes the meaning of Guard charged_units (api/governance as well); C9: couple with B5."
+  },
+  {
+   "final_id": "C5",
+   "tier": "C",
+   "final_status": "PARTIAL",
+   "source_synthesis_id": "R19",
+   "title": "Callback and JVP wrapper chain (Guard, eval_rhs_into, facade closure, ShiftedOperator, ClosureOperator) costs more than the user callback on tiny problems",
+   "area": "dense-and-facade-setup",
+   "impact": "- Dense, stiff-forced rodas: about 193 Ir per callback (24.5k Ir per solve, 14% of Ir; 10-12% perf self), against 174 Ir for the user RHS.\n- MF, transition-39: 690 Ir per JVP against about 192 Ir for the user model, about 14% of Ir.\n- The proposed micro-fixes recover only about 1-3%. A real gain needs the layers flattened.",
+   "evidence": [
+    "callgrind stiff-forced__rodas self: vector_call 137,340 + eval_rhs_into 56,000 + build closure 43,260 + call_charged 8,400 Ir over 1,260 callbacks",
+    "callgrind transition-39: apply_counted inclusive 24,539,496 Ir over 35,552 JVPs",
+    "Redundant checks: Guard y scan fd.rs:111; output scans fd.rs:126 and problem.rs:597; direction scan solve.rs:842; OperatorApplicationWork struct comparison operator.rs:293-299",
+    "perf annotate: the lock RMW in vector_call is 5.02% of its samples (about 0.38% of the total). Skipping it contradicts the fd.rs:66 contract"
+   ],
+   "locations": [
+    "crates/vigilode/src/fd.rs:62-169",
+    "crates/rodas5p-integrators/src/problem.rs:582-601,873-891",
+    "crates/vigilode/src/solve.rs:771-782,842",
+    "crates/rodas5p-core/src/operator.rs:293-354,663-700"
+   ],
+   "proposed_fix": "Collapse the facade closure and Guard into one monomorphized wrapper, and replace the dyn hop with a concrete shifted-JVP operator. Keep the error ordering, NaN-fill semantics and counters. The micro-fixes are optional and small: skip the RMW when no ceiling is armed (requires a contract and doc update plus a test), drop duplicate scans, and decide the operator accounting branch once at construction.",
+   "risk_class": "bitwise-safe",
+   "effort": "M",
+   "acceptance_test": "- fd.rs:443-470 guard tests pass.\n- t/y bits and WorkCounters, including Stats.callbacks, are identical.\n- callgrind wrapper self Ir is at most about 100 per dense callback and at most about 350 per JVP.",
+   "workflow_source_ids": [
+    "DFS-07",
+    "MFK-07",
+    "MFK-verifier-missed: JVP direction scan",
+    "MFK-verifier-missed: ClosureOperator struct compare",
+    "DFS-verifier-missed: wrapper understated"
+   ],
+   "v2_recheck_or_critique_note": ""
+  },
+  {
+   "final_id": "C6",
+   "tier": "C",
+   "final_status": "PARTIAL",
+   "source_synthesis_id": "R20",
+   "title": "Dense fast driver does not enable the SPD01-verified bitwise prevalidated controller; SPD06 fixed stage tables are validated only for the const-N small driver (dynamic-n port is a hypothesis)",
+   "area": "dense-and-facade-setup",
+   "impact": "- Prevalidation: 167 Ir per attempt (1.3% of stiff-forced rodas Ir; 2.53% perf self there; about 1.1-1.3% on case5 dense and relaxation).\n- Porting the SPD06 fixed stage tables to the dynamic-n dense driver: up to 12-26% of per-attempt Ir. This figure is carried over from the const-N small driver; it is a hypothesis.",
+   "evidence": [
+    "callgrind stiff-forced__rodas: AdaptiveStepConfig::validate called 140x from propose_factor (adaptive.rs:334-342), 23,380 Ir",
+    "The facade routes through integrate_rodas5p_fast_observed_with_partial with Rodas5pFastOptions::default() (rodas5p_fast.rs:1778-1797; branch at :2441-2460)",
+    "SPD01 PREREGISTRATION.md:165-167: identity PASS, -val saves 170.6-171.2 Ir per attempt; :204-221: fused landing is non-identical",
+    "SPD06 cross-binary ratios 0.882 / 0.872 / 0.737. Workspace::attempt is at rodas5p_fast.rs:1114, stage loops at :1154/:1167 (8.9k Ir per attempt)"
+   ],
+   "locations": [
+    "crates/rodas5p-integrators/src/rodas5p_fast.rs:1114-1200,1293-1320,1778-1797,2441-2460",
+    "crates/rodas5p-integrators/src/routing.rs:473-477",
+    "crates/rodas5p-integrators/src/adaptive.rs:334-342"
+   ],
+   "proposed_fix": "(1) Pass prevalidated_controller: true on the facade's dense and banded routes. Update the driver_id and RoutingRecord constant (routing.rs:475). Do not enable fused_landing.\n(2) Register a node that ports the fixed 8-stage tables and index-loop triangular solves into rodas5p_fast::Workspace::attempt, gated on to_bits and WorkCounters identity.",
+   "risk_class": "api/governance",
+   "effort": "M",
+   "acceptance_test": "(1) validate is called O(1) times per solve rather than per attempt, results are bitwise-identical on the dense corpus plus the adapter fixtures, and the new driver id is recorded.\n(2) The port node shows bit identity and a measured callgrind Ir per attempt.",
+   "workflow_source_ids": [
+    "DFS-05"
+   ],
+   "v2_recheck_or_critique_note": ""
+  },
+  {
+   "final_id": "C7",
+   "tier": "C",
+   "final_status": "PARTIAL",
+   "source_synthesis_id": "R21",
+   "title": "Persistent DOPRI session path does about 1-2.5% more instructions than direct DOPRI for the same work (v1 callgrind: rotation +2.4%, gyro-tight +1.2%); wall-time effect unproven",
+   "area": "selector-control",
+   "impact": "Instruction overhead: +2.4% on rotation (about 0.1M Ir per solve) and +1.2% on gyro-tight (about 0.5M Ir per solve).\nThe wall-time deltas (+7-11%; +15-19% per WU) are within noise: identical user callback code differs by +5.5% between the same profiles. The mechanism is an indirect versus direct call per RHS, plus 32 yield/resume cycles; it is not missing monomorphization.",
+   "evidence": [
+    "callgrind: rotation 12,898,065 vs 12,594,271 Ir (n=3, 877 vs 875 attempts); gyro 44,842,544 vs 44,327,321",
+    "session.rs:104 type SessionRhs = dyn Fn; :314 &rhs as &SessionRhs. The direct path keeps evaluate_rhs out of line too (gyro 7.67% self)",
+    "gyro Model::component session 745us vs direct 707us with +0.1% RHS calls (noise indicator)"
+   ],
+   "locations": [
+    "crates/vigilode/src/session.rs:104,314",
+    "crates/rodas5p-integrators/src/dopri5.rs:920-1141",
+    "crates/vigilode/src/explicit.rs:295-342"
+   ],
+   "proposed_fix": "Run an experiment with a pub(crate) generic session path that uses the concrete closure type from SwitchingSolver::solve, keeping the dyn public API. Gate adoption on paired cycles or callgrind measurements, not on the claimed 7-11%.",
+   "risk_class": "bitwise-safe",
+   "effort": "M",
+   "acceptance_test": "- t/y bits and WorkCounters identical.\n- callgrind advance_to Ir within 0.5% of direct integrate_dopri5_impl for the same attempts.\n- Paired interleaved perf stat cycles show a non-negative gain.",
+   "workflow_source_ids": [
+    "SC-04",
+    "CE-verifier-missed: session per-WU overhead"
+   ],
+   "v2_recheck_or_critique_note": ""
+  },
+  {
+   "final_id": "C8",
+   "tier": "C",
+   "final_status": "PARTIAL",
+   "source_synthesis_id": "R22",
+   "title": "DOPRI step-landing helpers (3 land_capped + 6 step_to per attempt) are about 20% of perf self on cheap-RHS cells; out-of-line call overhead is a smaller part",
+   "area": "dense-and-facade-setup",
+   "impact": "- Pure landing share of perf self: 19.3% on decay dopri, 20.6% on rotation dopri, about 8.5% on gyro-tight dopri.\n- Inlining recovers at most about 160 Ir per attempt (about 3% of DOPRI Ir), and the profiles are from a cgu=16 no-LTO build.\n- A fused landing would save about 290 Ir per attempt (6%) but is counter-changing.",
+   "evidence": [
+    "callgrind decay__dopri: land_capped 1,440 calls at 290 Ir; step_to 2,880 calls at 59 Ir (about 15 Ir of prologue/epilogue per call); trial 1,094 Ir per attempt",
+    "perf self decay__dopri: land_capped 9.09, step_to 7.41, limit_step 1.90, adaptive_end_step 0.85",
+    "Cargo.toml:48-51: the measurement profile uses lto=false, codegen-units=16"
+   ],
+   "locations": [
+    "crates/rodas5p-integrators/src/output.rs:90-131,155-199,226-259,423-453,863-887,904"
+   ],
+   "proposed_fix": "Mark the landing helpers #[inline] and move format! error construction into #[cold] #[inline(never)] helpers; this is bitwise-safe. A DOPRI fused landing reusing limit_landed_step is counter-changing and needs a decision from the time-rule owner (SPD01 caveat below 2^16 eps).",
+   "risk_class": "bitwise-safe",
+   "effort": "S",
+   "acceptance_test": "On the release profile, a callgrind A/B shows decay__dopri per-attempt Ir at least 2% lower, with t/y bits and WorkCounters identical.",
+   "workflow_source_ids": [
+    "DFS-06"
+   ],
+   "v2_recheck_or_critique_note": ""
+  },
+  {
+   "final_id": "C9",
+   "tier": "C",
+   "final_status": "PARTIAL",
+   "source_synthesis_id": "R24",
+   "title": "Explicit return rechecks restart DOPRI from opts.h0 because explicit_step is cleared during implicit tenures; some rechecks provably cannot pass",
+   "area": "comparison-economics",
+   "impact": "Wasted work per recheck is small (25-97 WU).\n- The stiff-forced recheck cannot pass: it needs at least 10 attempts, at least 61 RHS, against a 22-unit ceiling.\n- A warm seed (h_E_entry) saves about 1 attempt (about 6 WU) on relaxation.\n- No registered cell shows a return that was wrongly blocked, so the claimed bias against returns is a hypothesis.",
+   "evidence": [
+    "switching.rs:1588-1592 sets explicit_step = None; :1119-1123 recheck h0 = explicit_step.unwrap_or(opts.h0); sentinel :938-942",
+    "stiff-forced segment 4: h0 = 1e-7, 4 attempts, 25 RHS, reached 0.500016; ceiling floor(0.8*216*0.125)+1 = 22",
+    "relaxation segment 4: 6 attempts = ceil(log5(5001)), 37 WU, passed"
+   ],
+   "locations": [
+    "crates/vigilode/src/switching.rs:938-942,1119-1123,1147-1152,1588-1592"
+   ],
+   "proposed_fix": "(a) Add a ramp screen that skips a recheck when ceil(log5(1 + 4*span/h0))*6 > C, counting it as a discarded recheck. This preserves decisions and changes counters. (b) Optionally seed the recheck from clamp(max(opts.h0, h_E_entry), min_step, span); this is a policy change.",
+   "risk_class": "counter-changing",
+   "effort": "S",
+   "acceptance_test": "With (a), all return decisions are identical on registered cells and the stiff-forced recheck work falls from 25 to 0 WU.",
+   "workflow_source_ids": [
+    "CE-07"
+   ],
+   "v2_recheck_or_critique_note": ""
+  },
+  {
+   "final_id": "D1",
+   "tier": "D",
+   "final_status": "PARTIAL",
+   "source_synthesis_id": "R26",
+   "title": "Timing classes are host-dependent and their labels hide which arm is faster",
+   "area": "accuracy-contract-governance",
+   "impact": "- 12 cells change class between hosts.\n- 15 of 26 R2 pairs are unqualified.\n- RESULTS.md labels the cases where the selector is faster (transition-39 1.615, stale-return 3.258) as 'observed_paired_regression'.\n- The paired ABBA classifier itself is sound. The cross-host case5 change is a loss of qualification, not a reversal.",
+   "evidence": [
+    "INTERPRETATION_R2.json: 15/26 not eligible (drift 13, block range 13)",
+    "case5 adaptive vs rodas: 1.2447 [1.207, 1.281] on the Xeon vs 1.187 [1.024-1.192] on the 5900X",
+    "analyze_pairs.py:22-35: every paired ratio must be < 0.95 or > 1.05"
+   ],
+   "locations": [
+    "research/adapter_integration_20261027/benchmark/analyze_pairs.py:22-35",
+    "research/adapter_checkpoint_followup_20261027/evidence/RESULTS.md"
+   ],
+   "proposed_fix": "Emit a_faster / b_faster / no_clear labels. Require replication (a second host or run with the same class) before a timing class enters DECISIONS.json. Keep WorkCounters as the hard gate.",
+   "risk_class": "api/governance",
+   "effort": "S",
+   "acceptance_test": "Regenerated RESULTS class table names the faster arm. DECISIONS.json cites only replicated classes.",
+   "workflow_source_ids": [
+    "ACG-08"
+   ],
+   "v2_recheck_or_critique_note": "Critique C3: v2 harness reruns noisy cells, yet 9 of 34 cells still exceed 5% spread (rotation adaptive 41.7%, relaxation adaptive 26.4%, case5 rodas-fd 23.8%); use callgrind for shares, wall time only as diagnostic."
+  },
+  {
+   "final_id": "D2",
+   "tier": "D",
+   "final_status": "CONFIRMED",
+   "source_synthesis_id": "R27",
+   "title": "Trace-tool validity defects: unnormalised rerun identity, landing_clipped computed from roundoff, and an entry_point that does not reflect the route options",
+   "area": "accuracy-contract-governance",
+   "impact": "No gate verdict changes, but evidence quality suffers:\n- landing_clipped overstates clipping by about 10^4 (case5: 37553 flagged vs 1 real), which could misdirect landing-policy work.\n- The 'checked separately' rerun identity is not recorded in any artifact.\n- Route provenance depends on a secondary field.",
+   "evidence": [
+    "run_checkpoint_traces.py:65-67 compares unnormalised JSON; analyze_followup.py:18 and cross_binary.py:48 normalise the krylov id. TRACES_RUN.json shows false for case5 and transition-39",
+    "adapter_checkpoint_trace.rs:458-462: trial = stage_max - t_before against a 1e-12 threshold. With a 1e-6 threshold: case5 37553 -> 1; transition-39 614 -> 1 and 1903 -> 1",
+    "solve.rs:37,283: ENTRY_ROUTED is used although :219 sets krylov_ls_workspace = true"
+   ],
+   "locations": [
+    "research/adapter_checkpoint_followup_20261027/tools/run_checkpoint_traces.py:65-68",
+    "crates/vigilode/examples/adapter_checkpoint_trace.rs:474-478 (at 46939bbe; 459-462 at 381a9cc2)",
+    "crates/vigilode/src/solve.rs:37,219,283"
+   ],
+   "proposed_fix": "- Reuse norm() from analyze_followup.py and emit both raw and normalised identity flags.\n- Compute landing_clipped from the session's reported step, or use a threshold of 64*eps*max(|t|,1)/h.\n- Regenerate TRACES_RUN.json and TRACE_SUMMARY from the archived traces.\n- Add a distinct entry constant or an options digest to the route record; this is a record-string change.",
+   "risk_class": "bitwise-safe",
+   "effort": "S",
+   "acceptance_test": "- Regenerated TRACES_RUN.json has normalised identity true on all 4 cells.\n- TRACE_SUMMARY case5 landing_clipped_attempts is at most 10.\n- The route record distinguishes the LS-workspace route.",
+   "workflow_source_ids": [
+    "ACG-10"
+   ],
+   "v2_recheck_or_critique_note": ""
+  },
+  {
+   "final_id": "D3",
+   "tier": "D",
+   "final_status": "PARTIAL",
+   "source_synthesis_id": "R28",
+   "title": "Selector output rows depend on 32-attempt batching, and landing cost is never separated from selection overhead",
+   "area": "selector-control",
+   "impact": "Landings add only a small amount of RHS work:\n- decay: +6 RHS (+6.2%)\n- rotation: +12 (+0.23%)\n- gyro-tight: +24 (+0.1%)\nThe remaining explicit-cell gap is per-segment machinery plus pilots (R06, R11).\nRow times are an artifact of the quota rather than the user's problem: rotation returns 33 rows for 8 windows, transition-39 148, gyro-tight 129. Removing window landings would change pressure and pilot cadence, so it is a policy change with low value.",
+   "evidence": [
+    "LIGHT_BENCH: decay RHS 103 vs 97; rotation 5263 vs 5251; gyro-tight 24427 vs 24403; gyro-default 6667 vs 6631",
+    "switching.rs:2015-2019: commit pushes reached_time for every batch; :542-548 session schedule = all window endpoints; explicit.rs:204-215: direct path uses [t0, t1]",
+    "Batch boundaries decide pressure: a window-ended batch with fewer than 24 attempts is 'uncompared' (transition-39 segment 4)"
+   ],
+   "locations": [
+    "crates/vigilode/src/switching.rs:96,542-549,1163-1169,2001-2024",
+    "crates/vigilode/src/explicit.rs:204-215",
+    "crates/vigilode/examples/adapter_integration_pilot.rs:405-441"
+   ],
+   "proposed_fix": "- Add a dopri-observed8 control arm (bitwise-safe) so landing cost and selection overhead can be reported separately.\n- api/governance: let callers pass an observation schedule to SwitchingSolver, and keep batch endpoints in stats.segments instead of t/y rows.\n- Do not remove window landings without a preregistered policy review.",
+   "risk_class": "api/governance",
+   "effort": "S",
+   "acceptance_test": "- The benchmark reports selector/direct-observed8 and direct-observed8/direct-endpoint separately.\n- With a caller schedule, SwitchingSolution.t equals that schedule.",
+   "workflow_source_ids": [
+    "SC-07",
+    "ACG-06",
+    "SC-verifier-missed: rows at every quota yield"
+   ],
+   "v2_recheck_or_critique_note": ""
+  },
+  {
+   "final_id": "D4",
+   "tier": "D",
+   "final_status": "PARTIAL",
+   "source_synthesis_id": "R30",
+   "title": "Trace accuracy metric is max-norm while the controller uses WRMS; DOPRI's estimator undershoots near the stability boundary (latent, diagnostic)",
+   "area": "accuracy-contract-governance",
+   "impact": "No registered decision changes: case5's explicit return lost, 464695 vs 98 units. In the case5 return window, true-error WRMS exceeds 1 in 4.2% of accepted DOPRI steps (max 1.076). TRACE_SUMMARY's max-norm ratio of 1.52 overstates the violation relative to the controller's contract.",
+   "evidence": [
+    "Archived case5 trace window [1, 1.25]: 75556 accepted steps; WRMS > 1 in 3145 (max 1.0757); max-norm > 1 in 27071 (max 1.5212); RODAS WRMS 0.0017",
+    "Rejection fraction in that window is 1893/77449 = 2.4%, against config.rejection_fraction 0.3 (switching.rs:188)"
+   ],
+   "locations": [
+    "crates/vigilode/examples/adapter_checkpoint_trace.rs:398-413 (at 46939bbe)",
+    "crates/vigilode/src/switching.rs:778-806",
+    "crates/vigilode/src/selection_evidence.rs:76-83"
+   ],
+   "proposed_fix": "Report the WRMS true-error ratio (true_local_error_ratio_rms) and the fraction of steps above 1 next to the max-norm ratio in TRACE_SUMMARY. Any admissibility policy change needs a fixture where it alters a decision.",
+   "risk_class": "bitwise-safe",
+   "effort": "S",
+   "acceptance_test": "Regenerated TRACE_SUMMARY reports WRMS max and the fraction above 1 for each window. Solver output is unchanged.",
+   "workflow_source_ids": [
+    "ACG-05"
+   ],
+   "v2_recheck_or_critique_note": ""
+  },
+  {
+   "final_id": "D5",
+   "tier": "D",
+   "final_status": "PARTIAL",
+   "source_synthesis_id": "R25",
+   "title": "Return sentinel's only positive evidence is the post-hoc stale-return fixture at k=1; it costs work on every pre-existing recheck cell",
+   "area": "accuracy-contract-governance",
+   "impact": "There is no basis for when to enable the sentinel. Work ratio sentinel/adaptive by cell:\n- case5: 1.022\n- stiff-forced: 1.039 (paired time 1.084)\n- relaxation: 1.000\n- transition-39: 1.074 (+11.8% RHS)\nThe default is already 0. The +58% G3 endpoint error is not material: 1.74e-8 against a 1e-5 cap, the same band as direct DOPRI and RODAS.",
+   "evidence": [
+    "PREREGISTRATION.md:54-58: the E4 fixture was designed after the false negative; :62 default 0; :125-127 G3/G4",
+    "RESULTS.md G3: 5099 -> 3335 WU, RHS 2445 -> 2036",
+    "adapter_integration_pilot.rs:281: only return_sentinel_interval = 1 was measured"
+   ],
+   "locations": [
+    "crates/vigilode/src/switching.rs:885-1047",
+    "crates/vigilode/examples/adapter_integration_pilot.rs:281",
+    "research/adapter_checkpoint_followup_20261027/evidence/RESULTS.json"
+   ],
+   "proposed_fix": "Pre-register a k sweep (1, 2, 4, 8) on the registered cells plus an independently designed, non-holdout family with regime change. Report break-even and matched-trajectory-error work (R15). Add a sentinel attempt cap tied to the implicit window's attempts.",
+   "risk_class": "policy",
+   "effort": "M",
+   "acceptance_test": "A preregistered node reports net work at matched error for each k on at least one family other than stale-return before any default change.",
+   "workflow_source_ids": [
+    "ACG-07"
+   ],
+   "v2_recheck_or_critique_note": ""
+  },
+  {
+   "final_id": "D6",
+   "tier": "D",
+   "final_status": "CONFIRMED",
+   "source_synthesis_id": null,
+   "title": "Fixture coverage: every registered fixture is n<=6 with a cheap RHS, so overhead shares and proxy weights do not generalise",
+   "area": "measurement",
+   "impact": "Ranking of fixed-overhead items and any fitted proxy weights are fixture-specific.",
+   "evidence": [
+    "adapter_integration_pilot.rs: \"These tiny fixed fixtures have n<=6\""
+   ],
+   "locations": [
+    "crates/vigilode/examples/adapter_integration_pilot.rs:217"
+   ],
+   "proposed_fix": "Add non-holdout cells with larger n (e.g. 32-256 method-of-lines) and an expensive RHS before freezing proxy weights or ranking fixed-overhead work.",
+   "risk_class": "api/governance",
+   "effort": "M",
+   "acceptance_test": "Same-route ns/WU and Ir shares reported on at least one n>=32 and one costly-RHS cell.",
+   "workflow_source_ids": [],
+   "v2_recheck_or_critique_note": "Critique C13: every registered fixture has n<=6 and a cheap user RHS (adapter_integration_pilot.rs comment), so fixed-overhead items (B6, B9, C2, C5, C6, C8) shrink with larger n or costly RHS and the proxy weights of B5 cannot be fitted from them alone. Add non-holdout scaling cells."
+  }
+ ],
+ "scope_notes": [
+  "All selector arms are SwitchingConfig::adaptive_evidence(DerivativeFallback::ProvidedOnly) (evidence arm: evidence_driven). SwitchingConfig::default() is DOPRI-only (fallback Forbidden, no pilots/backoff/rechecks), so B1, B3, B7, B8, C4 and C9 apply only to these opt-in presets.",
+  "All Ir and times use the measurement profile (lto=false, codegen-units=16). Call/inline overhead items (C2, C5, C7, C8) must be re-ranked on the release profile (fat LTO, cgu=1).",
+  "Numbers are v2 (46939bbe) unless labelled v1; v1 numbers come from the workflow analyses on superseded data and are kept only where no v2 recomputation exists.",
+  "No heterogeneous-model review of this packet exists: analysts, verifiers, synthesis, critique and the pre-push packet verification were Claude subagents of the same model/session; codex is over quota until 2026-11-02 and the Gemini CLI does not start (snap cgroup error)."
+ ]
+}

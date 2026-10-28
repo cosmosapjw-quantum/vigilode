@@ -1,0 +1,1105 @@
+{
+  "schema": "vigilode.reaudit.research-dag.v1",
+  "date": "2026-10-21",
+  "author_workstream": "research_dag_audit",
+  "read_only_baseline": "4a5fc656730fe8243f06b6e603cb8aa758b00b2f",
+  "production_code_parent": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1",
+  "plan_parent": "cc2e1a0",
+  "published_all_dag_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+  "latest_all_dag_tip": "ee65d4dbecf3b3cd5f4587c27f87ef297d2bb406",
+  "merge_base": "59d95eb7404882f024eb8bd3856f2ce4f1f830c9",
+  "comparison_counts": {
+    "same": 321,
+    "changed": 46,
+    "missing": 47
+  },
+  "source_comparison": {
+    "same": [
+      ".cargo/config.toml",
+      "crates/rodas5p-core/Cargo.toml",
+      "crates/rodas5p-core/examples/py05_leja_profile.rs",
+      "crates/rodas5p-core/examples/shared_shift_jet_study.rs",
+      "crates/rodas5p-core/src/binary_scaling.rs",
+      "crates/rodas5p-core/src/coefficients.rs",
+      "crates/rodas5p-core/src/complex_shift_jet.rs",
+      "crates/rodas5p-core/src/directed.rs",
+      "crates/rodas5p-core/src/error.rs",
+      "crates/rodas5p-core/src/hash.rs",
+      "crates/rodas5p-core/src/laguerre_adjoint.rs",
+      "crates/rodas5p-core/src/leja_setup_work.rs",
+      "crates/rodas5p-core/src/matrix.rs",
+      "crates/rodas5p-core/src/matrix_functions.rs",
+      "crates/rodas5p-core/src/nonnormal_certificate.rs",
+      "crates/rodas5p-core/src/polynomial_action.rs",
+      "crates/rodas5p-core/src/polynomial_action/router.rs",
+      "crates/rodas5p-core/src/residual_gain.rs",
+      "crates/rodas5p-core/src/shared_shift_jet.rs",
+      "crates/rodas5p-core/src/shared_shift_policy.rs",
+      "crates/rodas5p-core/src/sparse_direct.rs",
+      "crates/rodas5p-core/src/taylor_phi.rs",
+      "crates/rodas5p-core/src/taylor_phi_total.rs",
+      "crates/rodas5p-core/src/transform_bound.rs",
+      "crates/rodas5p-core/src/work.rs",
+      "crates/rodas5p-core/tests/allocation_contracts.rs",
+      "crates/rodas5p-core/tests/damped_forcing_moment_consumer.rs",
+      "crates/rodas5p-core/tests/damped_moment_contracts.rs",
+      "crates/rodas5p-core/tests/damped_moment_enclosure_regressions.rs",
+      "crates/rodas5p-core/tests/fused_normalization_contract.rs",
+      "crates/rodas5p-core/tests/fused_phi_contracts.rs",
+      "crates/rodas5p-core/tests/int05_nonnormal_contracts.rs",
+      "crates/rodas5p-core/tests/int05_nonnormal_metric_bound.rs",
+      "crates/rodas5p-core/tests/laguerre_adjoint_holdout.rs",
+      "crates/rodas5p-core/tests/laguerre_component_export.rs",
+      "crates/rodas5p-core/tests/leja_fraction_oracle.py",
+      "crates/rodas5p-core/tests/matrix_function_contracts.rs",
+      "crates/rodas5p-core/tests/native_reaudit_laguerre_contracts.rs",
+      "crates/rodas5p-core/tests/polynomial_single_backend_router.rs",
+      "crates/rodas5p-core/tests/pp03_rhs_compression.rs",
+      "crates/rodas5p-core/tests/pp04_shared_shift_policy.rs",
+      "crates/rodas5p-core/tests/pp08_laguerre_router_contracts.rs",
+      "crates/rodas5p-core/tests/pp08_laguerre_router_study.rs",
+      "crates/rodas5p-core/tests/pp10_leja_contracts.rs",
+      "crates/rodas5p-core/tests/pp10_leja_study.rs",
+      "crates/rodas5p-core/tests/pp11_taylor_fused_total_contracts.rs",
+      "crates/rodas5p-core/tests/pp11_taylor_fused_total_study.rs",
+      "crates/rodas5p-core/tests/pp12_lognorm_decay.rs",
+      "crates/rodas5p-core/tests/pp12b_chain_symmetrizer.rs",
+      "crates/rodas5p-core/tests/pp16_complex_shift_contracts.rs",
+      "crates/rodas5p-core/tests/pp16_complex_shift_study.rs",
+      "crates/rodas5p-core/tests/production_audit_leja_arithmetic_oracle.rs",
+      "crates/rodas5p-core/tests/production_audit_sparse.rs",
+      "crates/rodas5p-core/tests/r3_polynomial_action_contracts.rs",
+      "crates/rodas5p-core/tests/r4_polynomial_contracts.rs",
+      "crates/rodas5p-core/tests/r4_taylor_phi_contracts.rs",
+      "crates/rodas5p-core/tests/r4_transform_bound_contracts.rs",
+      "crates/rodas5p-core/tests/residual_gain_contract.rs",
+      "crates/rodas5p-core/tests/rev02_nonnormal_contracts.rs",
+      "crates/rodas5p-core/tests/rev02_nonnormal_stepping.rs",
+      "crates/rodas5p-core/tests/rnext04_laguerre_admission.rs",
+      "crates/rodas5p-core/tests/safe_enclosure_exp_floor.rs",
+      "crates/rodas5p-core/tests/safe_enclosure_probes.rs",
+      "crates/rodas5p-core/tests/shared_shift_jet_contracts.rs",
+      "crates/rodas5p-core/tests/sparse_direct_contract.rs",
+      "crates/rodas5p-core/tests/storage_runtime.rs",
+      "crates/rodas5p-core/tests/thread_transfer_laguerre_adjoint.rs",
+      "crates/rodas5p-core/tests/thread_transfer_laguerre_cache.rs",
+      "crates/rodas5p-core/tests/transform_bound_contracts.rs",
+      "crates/rodas5p-core/tests/work_counter_contracts.rs",
+      "crates/rodas5p-core/tests/work_unit_contracts.rs",
+      "crates/rodas5p-integrators/Cargo.toml",
+      "crates/rodas5p-integrators/build.rs",
+      "crates/rodas5p-integrators/examples/audit2_bateman_local_six_case.rs",
+      "crates/rodas5p-integrators/examples/reaudit_20261010.rs",
+      "crates/rodas5p-integrators/examples/solve_stiff.rs",
+      "crates/rodas5p-integrators/examples/sp01_dupfix_profile.rs",
+      "crates/rodas5p-integrators/examples/sp02_workspace_profile.rs",
+      "crates/rodas5p-integrators/examples/sp04_zero_start_profile.rs",
+      "crates/rodas5p-integrators/src/a1_two_arm_receipt.rs",
+      "crates/rodas5p-integrators/src/adaptive.rs",
+      "crates/rodas5p-integrators/src/adaptive_exponential.rs",
+      "crates/rodas5p-integrators/src/audit2_bateman_real_client_research.rs",
+      "crates/rodas5p-integrators/src/audit2_matrix_free_research.rs",
+      "crates/rodas5p-integrators/src/audit2_research.rs",
+      "crates/rodas5p-integrators/src/audit2_reusable_transaction_research.rs",
+      "crates/rodas5p-integrators/src/audit2_stage_certificate_research.rs",
+      "crates/rodas5p-integrators/src/bdf.rs",
+      "crates/rodas5p-integrators/src/block.rs",
+      "crates/rodas5p-integrators/src/candidates.rs",
+      "crates/rodas5p-integrators/src/causal_majorant.rs",
+      "crates/rodas5p-integrators/src/certification.rs",
+      "crates/rodas5p-integrators/src/certified_budget.rs",
+      "crates/rodas5p-integrators/src/chart_transport.rs",
+      "crates/rodas5p-integrators/src/common_w_gate.rs",
+      "crates/rodas5p-integrators/src/comparator_fidelity.rs",
+      "crates/rodas5p-integrators/src/controller_telemetry.rs",
+      "crates/rodas5p-integrators/src/exponential.rs",
+      "crates/rodas5p-integrators/src/fourier_path_candidate.rs",
+      "crates/rodas5p-integrators/src/fourier_path_certificate.rs",
+      "crates/rodas5p-integrators/src/g1_transactional_gate.rs",
+      "crates/rodas5p-integrators/src/g2_exponential_gate.rs",
+      "crates/rodas5p-integrators/src/g3_fused_adaptive_gate.rs",
+      "crates/rodas5p-integrators/src/g4_prefix_kernel_gate.rs",
+      "crates/rodas5p-integrators/src/g4_s5b0_inner_tolerance.rs",
+      "crates/rodas5p-integrators/src/g4_s5b0_regime_atlas.rs",
+      "crates/rodas5p-integrators/src/g4_s5b0_trace_authority.rs",
+      "crates/rodas5p-integrators/src/g4_s5b3_attempt_geometry.rs",
+      "crates/rodas5p-integrators/src/homotopy.rs",
+      "crates/rodas5p-integrators/src/homotopy_experiments.rs",
+      "crates/rodas5p-integrators/src/homotopy_order_policy.rs",
+      "crates/rodas5p-integrators/src/homotopy_policy.rs",
+      "crates/rodas5p-integrators/src/native_gates.rs",
+      "crates/rodas5p-integrators/src/nonlinear.rs",
+      "crates/rodas5p-integrators/src/outward_certificate.rs",
+      "crates/rodas5p-integrators/src/parallel.rs",
+      "crates/rodas5p-integrators/src/path_controller.rs",
+      "crates/rodas5p-integrators/src/policy_redesign_v25.rs",
+      "crates/rodas5p-integrators/src/problems.rs",
+      "crates/rodas5p-integrators/src/radau.rs",
+      "crates/rodas5p-integrators/src/raw_stage_target.rs",
+      "crates/rodas5p-integrators/src/rhs_telemetry.rs",
+      "crates/rodas5p-integrators/src/sabr.rs",
+      "crates/rodas5p-integrators/src/scientific_corpus_v2.rs",
+      "crates/rodas5p-integrators/src/scientific_validity_v2_gate.rs",
+      "crates/rodas5p-integrators/src/stage_batch.rs",
+      "crates/rodas5p-integrators/src/stage_chart_candidate.rs",
+      "crates/rodas5p-integrators/src/stage_target.rs",
+      "crates/rodas5p-integrators/src/transactional_q1_q2.rs",
+      "crates/rodas5p-integrators/src/unified_gates.rs",
+      "crates/rodas5p-integrators/src/unified_screen.rs",
+      "crates/rodas5p-integrators/src/v38d_performance_tournament.rs",
+      "crates/rodas5p-integrators/tests/a11_gray_scott_log_norm.rs",
+      "crates/rodas5p-integrators/tests/a1_committed_trace_regression.rs",
+      "crates/rodas5p-integrators/tests/a1_inner_tolerance_parity_contracts.rs",
+      "crates/rodas5p-integrators/tests/a1_two_arm_receipt_contracts.rs",
+      "crates/rodas5p-integrators/tests/adaptive_bdf_contracts.rs",
+      "crates/rodas5p-integrators/tests/adaptive_controller_contracts.rs",
+      "crates/rodas5p-integrators/tests/adaptive_fused_exponential_contracts.rs",
+      "crates/rodas5p-integrators/tests/adaptive_homotopy_contracts.rs",
+      "crates/rodas5p-integrators/tests/adaptive_radau_contracts.rs",
+      "crates/rodas5p-integrators/tests/adaptive_rodas_contracts.rs",
+      "crates/rodas5p-integrators/tests/alg01_common/mod.rs",
+      "crates/rodas5p-integrators/tests/alg01_coupled_stage_target.rs",
+      "crates/rodas5p-integrators/tests/alg04_alg06.rs",
+      "crates/rodas5p-integrators/tests/alg05_predictive_capped2.rs",
+      "crates/rodas5p-integrators/tests/audit0930_accounting_contracts.rs",
+      "crates/rodas5p-integrators/tests/audit0930_reuse_certificate_contracts.rs",
+      "crates/rodas5p-integrators/tests/audit0930_validation_contracts.rs",
+      "crates/rodas5p-integrators/tests/audit2_matrix_free_common_w_contracts.rs",
+      "crates/rodas5p-integrators/tests/audit2_real_client_authority_contracts.rs",
+      "crates/rodas5p-integrators/tests/audit2_reusable_preconditioner_transaction_contracts.rs",
+      "crates/rodas5p-integrators/tests/audit2_stage_certificate_contracts.rs",
+      "crates/rodas5p-integrators/tests/audit2_structured_correction_contracts.rs",
+      "crates/rodas5p-integrators/tests/band_verification_range.rs",
+      "crates/rodas5p-integrators/tests/block_vector_unit_contracts.rs",
+      "crates/rodas5p-integrators/tests/clipped_controller_contracts.rs",
+      "crates/rodas5p-integrators/tests/coefficient_structural_contracts.rs",
+      "crates/rodas5p-integrators/tests/common_w_gate_contracts.rs",
+      "crates/rodas5p-integrators/tests/comparator_tier_a_contracts.rs",
+      "crates/rodas5p-integrators/tests/constants_provenance_contracts.rs",
+      "crates/rodas5p-integrators/tests/declared_structure_routing.rs",
+      "crates/rodas5p-integrators/tests/dense_error_control_contracts.rs",
+      "crates/rodas5p-integrators/tests/dense_output_v2_contracts.rs",
+      "crates/rodas5p-integrators/tests/early_flow_defect_contracts.rs",
+      "crates/rodas5p-integrators/tests/enforced_prefix_budget_contracts.rs",
+      "crates/rodas5p-integrators/tests/enforced_prefix_budget_runner_contracts.rs",
+      "crates/rodas5p-integrators/tests/exponential_contracts.rs",
+      "crates/rodas5p-integrators/tests/exponential_order_contracts.rs",
+      "crates/rodas5p-integrators/tests/fixed_step_order_contracts.rs",
+      "crates/rodas5p-integrators/tests/frozen_full_e_shadow_contracts.rs",
+      "crates/rodas5p-integrators/tests/fused_exponential_contracts.rs",
+      "crates/rodas5p-integrators/tests/fused_phi_krylov_contracts.rs",
+      "crates/rodas5p-integrators/tests/fused_phi_scaling_contracts.rs",
+      "crates/rodas5p-integrators/tests/g1_transactional_gate.rs",
+      "crates/rodas5p-integrators/tests/g2_exponential_gate_contracts.rs",
+      "crates/rodas5p-integrators/tests/g3_fused_adaptive_gate_contracts.rs",
+      "crates/rodas5p-integrators/tests/g4_prefix_kernel_gate_contracts.rs",
+      "crates/rodas5p-integrators/tests/g4_s5b0_regime_atlas_contracts.rs",
+      "crates/rodas5p-integrators/tests/g4_s5b3_attempt_geometry_contracts.rs",
+      "crates/rodas5p-integrators/tests/generic_problem_contracts.rs",
+      "crates/rodas5p-integrators/tests/generic_scope_contracts.rs",
+      "crates/rodas5p-integrators/tests/homotopy_numerical_contracts.rs",
+      "crates/rodas5p-integrators/tests/homotopy_path_controller_contracts.rs",
+      "crates/rodas5p-integrators/tests/homotopy_policy_contracts.rs",
+      "crates/rodas5p-integrators/tests/homotopy_research_contracts.rs",
+      "crates/rodas5p-integrators/tests/inner_forcing_fixed_step_ladder_contracts.rs",
+      "crates/rodas5p-integrators/tests/inner_forcing_resolution_contracts.rs",
+      "crates/rodas5p-integrators/tests/inner_forcing_v2_contracts.rs",
+      "crates/rodas5p-integrators/tests/int01_gcrodr_verified_reuse.rs",
+      "crates/rodas5p-integrators/tests/int01_posthoc_tolerance.rs",
+      "crates/rodas5p-integrators/tests/int02_structural_certificate.rs",
+      "crates/rodas5p-integrators/tests/int02_structural_certificate_contracts.rs",
+      "crates/rodas5p-integrators/tests/int03_banded_fast.rs",
+      "crates/rodas5p-integrators/tests/int03_banded_fast_contracts.rs",
+      "crates/rodas5p-integrators/tests/int04_common/mod.rs",
+      "crates/rodas5p-integrators/tests/int04_stage_chart.rs",
+      "crates/rodas5p-integrators/tests/int04_stage_chart_contracts.rs",
+      "crates/rodas5p-integrators/tests/integrator_contracts.rs",
+      "crates/rodas5p-integrators/tests/interpolant_audit_contracts.rs",
+      "crates/rodas5p-integrators/tests/jvp_only_direct_config_validation.rs",
+      "crates/rodas5p-integrators/tests/linearized_certificate_contracts.rs",
+      "crates/rodas5p-integrators/tests/matrix_free_problem_contracts.rs",
+      "crates/rodas5p-integrators/tests/native_candidate_contracts.rs",
+      "crates/rodas5p-integrators/tests/native_implicit_contracts.rs",
+      "crates/rodas5p-integrators/tests/native_reaudit_cache_contracts.rs",
+      "crates/rodas5p-integrators/tests/native_reaudit_chart_transport.rs",
+      "crates/rodas5p-integrators/tests/native_reaudit_radius_contracts.rs",
+      "crates/rodas5p-integrators/tests/operator_accounting_contracts.rs",
+      "crates/rodas5p-integrators/tests/output_observer_contracts.rs",
+      "crates/rodas5p-integrators/tests/output_time_covariance_contracts.rs",
+      "crates/rodas5p-integrators/tests/outward_certificate_contracts.rs",
+      "crates/rodas5p-integrators/tests/p1_00_tolerance_scaled_attempt_geometry_contracts.rs",
+      "crates/rodas5p-integrators/tests/packet_curve_fraction_oracle.py",
+      "crates/rodas5p-integrators/tests/packet_curve_output_fraction_oracle.py",
+      "crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs",
+      "crates/rodas5p-integrators/tests/packet_window_contracts.rs",
+      "crates/rodas5p-integrators/tests/pexprb_continuation_budget_contracts.rs",
+      "crates/rodas5p-integrators/tests/pexprb_defect_certificate_contract.rs",
+      "crates/rodas5p-integrators/tests/pexprb_level1_prefix_contracts.rs",
+      "crates/rodas5p-integrators/tests/pexprb_level2_continuation_accounting.rs",
+      "crates/rodas5p-integrators/tests/pexprb_level2_prefix_contracts.rs",
+      "crates/rodas5p-integrators/tests/phi_action_certificate_contracts.rs",
+      "crates/rodas5p-integrators/tests/phi_nonnormal_breakdown_contracts.rs",
+      "crates/rodas5p-integrators/tests/phi_normalized_augmentation_contracts.rs",
+      "crates/rodas5p-integrators/tests/policy_redesign_v25_contracts.rs",
+      "crates/rodas5p-integrators/tests/pp05_fourier_client.rs",
+      "crates/rodas5p-integrators/tests/pp06_fourier_fft.rs",
+      "crates/rodas5p-integrators/tests/pp15_fourier_comparator.rs",
+      "crates/rodas5p-integrators/tests/predictive_extreme_contract.rs",
+      "crates/rodas5p-integrators/tests/prefix_phi_contracts.rs",
+      "crates/rodas5p-integrators/tests/production_audit_packet.rs",
+      "crates/rodas5p-integrators/tests/production_audit_split.rs",
+      "crates/rodas5p-integrators/tests/q2_diagnostic_replacement_contracts.rs",
+      "crates/rodas5p-integrators/tests/quadratic_remainder_drift_contracts.rs",
+      "crates/rodas5p-integrators/tests/r2_output_budget_contracts.rs",
+      "crates/rodas5p-integrators/tests/r2_output_time_identity_contracts.rs",
+      "crates/rodas5p-integrators/tests/r2_phi_range_contracts.rs",
+      "crates/rodas5p-integrators/tests/r3_certified_budget_contracts.rs",
+      "crates/rodas5p-integrators/tests/r3_phi_transform_authority_contracts.rs",
+      "crates/rodas5p-integrators/tests/r3_represented_clock_contracts.rs",
+      "crates/rodas5p-integrators/tests/r4_homotopy_contracts.rs",
+      "crates/rodas5p-integrators/tests/r4_time_contracts.rs",
+      "crates/rodas5p-integrators/tests/residual_acceptance_contract.rs",
+      "crates/rodas5p-integrators/tests/rev01_calibration.rs",
+      "crates/rodas5p-integrators/tests/rev01_common/mod.rs",
+      "crates/rodas5p-integrators/tests/rev01_gcrodr_start_projection.rs",
+      "crates/rodas5p-integrators/tests/rev01b_calibration.rs",
+      "crates/rodas5p-integrators/tests/rev01b_gcrodr_recycle_reorthogonalization.rs",
+      "crates/rodas5p-integrators/tests/rev01b_posthoc_breakdown.rs",
+      "crates/rodas5p-integrators/tests/rev01c_calibration.rs",
+      "crates/rodas5p-integrators/tests/rev01c_gcrodr_refreshed_update.rs",
+      "crates/rodas5p-integrators/tests/rev03_export.rs",
+      "crates/rodas5p-integrators/tests/rev04_lgmres_into.rs",
+      "crates/rodas5p-integrators/tests/rhs_telemetry_contracts.rs",
+      "crates/rodas5p-integrators/tests/right_preconditioner_contract.rs",
+      "crates/rodas5p-integrators/tests/rnext01_residual_output.rs",
+      "crates/rodas5p-integrators/tests/rnext02_gmres_into_study.rs",
+      "crates/rodas5p-integrators/tests/rnext03_gcrodr_attribution.rs",
+      "crates/rodas5p-integrators/tests/rnext03_posthoc_invariant.rs",
+      "crates/rodas5p-integrators/tests/rnext05_chart_provider.rs",
+      "crates/rodas5p-integrators/tests/rnext06_homotopy_net_cost.rs",
+      "crates/rodas5p-integrators/tests/rnext07_model_epoch.rs",
+      "crates/rodas5p-integrators/tests/rnext_common/mod.rs",
+      "crates/rodas5p-integrators/tests/rodas5p_fast_contracts.rs",
+      "crates/rodas5p-integrators/tests/rvj_integration_boundaries.rs",
+      "crates/rodas5p-integrators/tests/safe_recycle_policy.rs",
+      "crates/rodas5p-integrators/tests/scientific_corpus_v2_1_calibration_oracle.rs",
+      "crates/rodas5p-integrators/tests/scientific_corpus_v2_1_pde_contracts.rs",
+      "crates/rodas5p-integrators/tests/scientific_corpus_v2_contracts.rs",
+      "crates/rodas5p-integrators/tests/scientific_corpus_v2_spectral_contracts.rs",
+      "crates/rodas5p-integrators/tests/scientific_validity_v2_gates.rs",
+      "crates/rodas5p-integrators/tests/sp01_dupfix_adoption.rs",
+      "crates/rodas5p-integrators/tests/spd01_overhead.rs",
+      "crates/rodas5p-integrators/tests/spd02_lu_column_extents.rs",
+      "crates/rodas5p-integrators/tests/spd03_banded_arm.rs",
+      "crates/rodas5p-integrators/tests/spd04_ls_workspace_study.rs",
+      "crates/rodas5p-integrators/tests/spd05_lgmres_ls_once.rs",
+      "crates/rodas5p-integrators/tests/spd06_small_static_stages.rs",
+      "crates/rodas5p-integrators/tests/spd07_mf_step_warm_start.rs",
+      "crates/rodas5p-integrators/tests/spd08_small_ensemble_lanes.rs",
+      "crates/rodas5p-integrators/tests/stage_batch_contracts.rs",
+      "crates/rodas5p-integrators/tests/stage_residual_telemetry.rs",
+      "crates/rodas5p-integrators/tests/thread_transfer_common/mod.rs",
+      "crates/rodas5p-integrators/tests/thread_transfer_mf_workspace.rs",
+      "crates/rodas5p-integrators/tests/thread_transfer_negative_controls.rs",
+      "crates/rodas5p-integrators/tests/thread_transfer_path_action.rs",
+      "crates/rodas5p-integrators/tests/thread_transfer_radius.rs",
+      "crates/rodas5p-integrators/tests/thread_transfer_radius_policy.rs",
+      "crates/rodas5p-integrators/tests/thread_transfer_raw_target.rs",
+      "crates/rodas5p-integrators/tests/thread_transfer_smalln.rs",
+      "crates/rodas5p-integrators/tests/tolerance_scaled_early_defect_contracts.rs",
+      "crates/rodas5p-integrators/tests/transactional_q1_q2_adaptive.rs",
+      "crates/rodas5p-integrators/tests/transactional_q1_q2_contracts.rs",
+      "crates/rodas5p-integrators/tests/unified_candidate_contracts.rs",
+      "crates/rodas5p-integrators/tests/v33_zeta34_calibration_contracts.rs",
+      "crates/rodas5p-integrators/tests/v37_continuation_transaction_contracts.rs",
+      "crates/rodas5p-integrators/tests/v38d_performance_probe_contracts.rs",
+      "crates/rodas5p-integrators/tests/vector_remainder_geometry_contracts.rs",
+      "crates/rodas5p-integrators/tests/work_counter_lane_contracts.rs",
+      "crates/rodas5p-integrators/tests/zero_start_policy_holdout.rs",
+      "docs/CONSTANTS_PROVENANCE.toml",
+      "docs/reviews/thread_transfer_20261002/results/homotopy_radius_probe.json",
+      "fixtures/r3_certified_budget_fixtures.json",
+      "fixtures/r3_homotopy_certificate_fixtures.json",
+      "fixtures/r3_polynomial_oracle_fixtures.json",
+      "fixtures/r4_polynomial_range_fixtures.json",
+      "fixtures/r4_transform_oracle_fixtures.json",
+      "fixtures/rodas5p_coefficients_snapshot.json",
+      "fixtures/scientific_corpus_v2_1_calibration_oracle.json",
+      "fixtures/scientific_corpus_v2_1_semilinear_oracle.json",
+      "fixtures/stage_target_semantics.json",
+      "research/alg06_guard_v2_20261010/RUNS.json",
+      "research/audit2_real_client_authority_construction_20260830/CODEX_START_HERE.md",
+      "research/audit2_real_client_authority_construction_20260830/authority_manifest.json",
+      "research/audit2_real_client_authority_construction_20260830/evidence/AUTHORITY_VERIFICATION_RECEIPT.json",
+      "research/audit2_real_client_authority_construction_20260830/handoff.json",
+      "research/audit2_real_client_authority_construction_20260830/verify_authority_manifest.py",
+      "research/generic_timing_replication_continuation_transaction_v37/results/V37_TRAJECTORY_SNAPSHOT_V4_20260930.json",
+      "research/production_audit_20261018/evidence/continuation_a02/linear_oracle_mpmath.json",
+      "rust-toolchain.toml"
+    ],
+    "changed": [
+      "Cargo.lock",
+      "Cargo.toml",
+      "crates/rodas5p-cli/src/main.rs",
+      "crates/rodas5p-core/src/damped_moments.rs",
+      "crates/rodas5p-core/src/leja_action.rs",
+      "crates/rodas5p-core/src/lib.rs",
+      "crates/rodas5p-core/src/norms.rs",
+      "crates/rodas5p-core/src/operator.rs",
+      "crates/rodas5p-core/src/solver_types.rs",
+      "crates/rodas5p-core/tests/core_contracts.rs",
+      "crates/rodas5p-core/tests/leja_setup_work_contract.rs",
+      "crates/rodas5p-core/tests/leja_total_contract.rs",
+      "crates/rodas5p-core/tests/leja_total_holdout.rs",
+      "crates/rodas5p-integrators/src/bound_collective.rs",
+      "crates/rodas5p-integrators/src/bound_pr101.rs",
+      "crates/rodas5p-integrators/src/collective_direct.rs",
+      "crates/rodas5p-integrators/src/collective_model.rs",
+      "crates/rodas5p-integrators/src/dense_output_v2.rs",
+      "crates/rodas5p-integrators/src/gray_scott.rs",
+      "crates/rodas5p-integrators/src/integrate.rs",
+      "crates/rodas5p-integrators/src/lib.rs",
+      "crates/rodas5p-integrators/src/output.rs",
+      "crates/rodas5p-integrators/src/packet_curve.rs",
+      "crates/rodas5p-integrators/src/packet_curve_output.rs",
+      "crates/rodas5p-integrators/src/packet_trajectory.rs",
+      "crates/rodas5p-integrators/src/packet_window.rs",
+      "crates/rodas5p-integrators/src/packet_work.rs",
+      "crates/rodas5p-integrators/src/problem.rs",
+      "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+      "crates/rodas5p-integrators/src/rodas5p_fast_small.rs",
+      "crates/rodas5p-integrators/src/rodas5p_fast_small_batch.rs",
+      "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+      "crates/rodas5p-integrators/src/routing.rs",
+      "crates/rodas5p-integrators/src/sequential.rs",
+      "crates/rodas5p-integrators/tests/a05_dense_global_output.rs",
+      "crates/rodas5p-integrators/tests/collective_admission_contracts.rs",
+      "crates/rodas5p-integrators/tests/krylov_workspace_driver_contract.rs",
+      "crates/rodas5p-integrators/tests/packet_unequal_fraction_oracle.py",
+      "crates/rodas5p-integrators/tests/production_audit_bound_collective.rs",
+      "crates/rodas5p-integrators/tests/production_audit_collective_direct.rs",
+      "crates/rodas5p-integrators/tests/production_audit_packet_curve.rs",
+      "crates/rodas5p-integrators/tests/production_audit_packet_curve_output.rs",
+      "crates/rodas5p-integrators/tests/production_audit_packet_local_certificate.rs",
+      "crates/rodas5p-integrators/tests/production_audit_packet_unequal_reference.rs",
+      "crates/rodas5p-integrators/tests/rodas5p_fast_allocations.rs",
+      "research/production_audit_20261018/evidence/continuation_a04/arithmetic_research_01/RESEARCH_DECISION.json"
+    ],
+    "missing": [
+      "crates/rodas5p-core/src/polynomial_router.rs",
+      "crates/rodas5p-core/tests/guarded_polynomial_router.rs",
+      "crates/rodas5p-core/tests/leja_enclosed_contract.rs",
+      "crates/rodas5p-integrators/examples/actual_k_homotopy_run.rs",
+      "crates/rodas5p-integrators/examples/collective_structured_compare.rs",
+      "crates/rodas5p-integrators/examples/damped_packet_run.rs",
+      "crates/rodas5p-integrators/examples/gray_scott_verified_run.rs",
+      "crates/rodas5p-integrators/examples/nonlinear_homotopy_run.rs",
+      "crates/rodas5p-integrators/examples/packet_adaptive_run.rs",
+      "crates/rodas5p-integrators/examples/packet_verified_run.rs",
+      "crates/rodas5p-integrators/examples/pr101_verified_run.rs",
+      "crates/rodas5p-integrators/examples/verified_residual_compare.rs",
+      "crates/rodas5p-integrators/src/actual_k_homotopy.rs",
+      "crates/rodas5p-integrators/src/affine_transport.rs",
+      "crates/rodas5p-integrators/src/collective_rodas5p.rs",
+      "crates/rodas5p-integrators/src/damped_packet.rs",
+      "crates/rodas5p-integrators/src/generic_verified.rs",
+      "crates/rodas5p-integrators/src/gray_scott_verified.rs",
+      "crates/rodas5p-integrators/src/nonlinear_homotopy.rs",
+      "crates/rodas5p-integrators/src/packet_verified_trajectory.rs",
+      "crates/rodas5p-integrators/tests/actual_k_homotopy_contracts.rs",
+      "crates/rodas5p-integrators/tests/affine_transport_contract.rs",
+      "crates/rodas5p-integrators/tests/all_dag_a01_packet.rs",
+      "crates/rodas5p-integrators/tests/all_dag_a05_verified.rs",
+      "crates/rodas5p-integrators/tests/all_dag_a06_direct.rs",
+      "crates/rodas5p-integrators/tests/all_dag_a10_bernstein.rs",
+      "crates/rodas5p-integrators/tests/all_dag_a11_verified.rs",
+      "crates/rodas5p-integrators/tests/collective_rodas5p_allocation_contract.rs",
+      "crates/rodas5p-integrators/tests/collective_rodas5p_contracts.rs",
+      "crates/rodas5p-integrators/tests/independent_pr101_review.rs",
+      "crates/rodas5p-integrators/tests/nonlinear_homotopy_contracts.rs",
+      "crates/rodas5p-integrators/tests/packet_unequal_frequency_oracle.py",
+      "crates/rodas5p-integrators/tests/pr101_cloud_fraction_oracle.py",
+      "crates/rodas5p-integrators/tests/production_audit_damped_packet.rs",
+      "crates/rodas5p-integrators/tests/production_audit_packet_adaptive.rs",
+      "crates/rodas5p-integrators/tests/production_audit_packet_verified.rs",
+      "crates/rodas5p-integrators/tests/production_audit_pr101_cloud.rs",
+      "research/all_dag_completion_20261018/nodes/A03/damped_fraction_oracle.py",
+      "research/all_dag_completion_20261018/nodes/A09/actual_k_fraction.py",
+      "research/all_dag_completion_20261018/nodes/A09/actual_k_reference.py",
+      "research/all_dag_completion_20261018/nodes/A09/theory/checks/discriminating_checks.py",
+      "research/cloud_completion_20261018/evidence/affine_oracles.json",
+      "research/cloud_completion_20261018/run_local.py",
+      "tools/all_dag_benchmark.py",
+      "tools/tests/test_all_dag_benchmark.py",
+      "tools/tests/test_all_dag_handoff.py",
+      "tools/validate_all_dag_completion.py"
+    ]
+  },
+  "scope": "Baseline inventory plus new theorem audit; root final package records actual imported changes/tests and production ruling.",
+  "original_audit_nodes": [
+    {
+      "id": "A01",
+      "title": "Certified undamped packet window",
+      "depends_on": [],
+      "published_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+      "published_status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "published_scope": "kappa=0, carrier=0 collective packet; 실제 양의 weight sum 사용",
+      "published_apis": [
+        "PacketFrozenOutput::from_weighted_radius",
+        "PacketCertifiedView::centered_weighted_radius"
+      ],
+      "published_evidence": [
+        "research/all_dag_completion_20261018/nodes/A01/RESULT.json"
+      ],
+      "published_reuse_rule": "Reuse unchanged proof and execution only at stated source/model identity; do not infer current source or global promotion.",
+      "baseline_status": "PARTIAL_LOCAL_CERTIFICATE",
+      "baseline_evidence": "crates/rodas5p-integrators/src/packet_curve_output.rs",
+      "baseline_difference": "Local represented-window certificate and immutable owner remain, but weighted initial-ball and centered-radius additions absent.",
+      "current_port_workstream": "full scoped source reconciliation by runtime_restore/root; final execution authority belongs to root FINAL_EXECUTION, not this baseline inventory",
+      "promotion": "SCOPED_ONLY; final root decision authoritative",
+      "delivery_status": "INTEGRATED_SCOPED_SOURCE_NATIVE_PORT_VALIDATED",
+      "delivery_evidence": [
+        "evidence/port/PORT.json",
+        "evidence/theory/INDEPENDENT_REVIEW.json"
+      ]
+    },
+    {
+      "id": "A02",
+      "title": "Weighted global trajectory",
+      "depends_on": [
+        "A01"
+      ],
+      "published_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+      "published_status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "published_scope": "원래 출력 mesh/허용오차/초기 불확실성 보존",
+      "published_apis": [
+        "VerifiedPacketState",
+        "advance_verified_packet",
+        "integrate_verified_packet_adaptive"
+      ],
+      "published_evidence": [
+        "research/all_dag_completion_20261018/nodes/A02/RESULT.json"
+      ],
+      "published_reuse_rule": "Reuse unchanged proof and execution only at stated source/model identity; do not infer current source or global promotion.",
+      "baseline_status": "NOT_PORTED",
+      "baseline_evidence": "crates/rodas5p-integrators/src/packet_trajectory.rs",
+      "baseline_difference": "Nonlinear inherited-radius adaptive trajectory API absent; existing packet_trajectory is not the all-dag verified driver.",
+      "current_port_workstream": "full scoped source reconciliation by runtime_restore/root; final execution authority belongs to root FINAL_EXECUTION, not this baseline inventory",
+      "promotion": "SCOPED_ONLY; final root decision authoritative",
+      "delivery_status": "INTEGRATED_SCOPED_SOURCE_NATIVE_PORT_VALIDATED",
+      "delivery_evidence": [
+        "evidence/port/PORT.json",
+        "evidence/theory/INDEPENDENT_REVIEW.json"
+      ]
+    },
+    {
+      "id": "A03",
+      "title": "Native common-damping packet",
+      "depends_on": [
+        "A01"
+      ],
+      "published_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+      "published_status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "published_scope": "공통 kappa>=0, carrier=0, 실제 S; 다중 window 초기 radius 전달",
+      "published_apis": [
+        "DampedPacketDescriptor",
+        "verify_damped_packet_window",
+        "integrate_verified_damped_packet"
+      ],
+      "published_evidence": [
+        "research/all_dag_completion_20261018/nodes/A03/RESULTS.json",
+        "research/all_dag_completion_20261018/nodes/A03/PROOF.md"
+      ],
+      "published_reuse_rule": "Reuse unchanged proof and execution only at stated source/model identity; do not infer current source or global promotion.",
+      "baseline_status": "SCALAR_MOMENTS_ONLY",
+      "baseline_evidence": "crates/rodas5p-core/src/damped_moments.rs",
+      "baseline_difference": "Damped moments present; damped_packet trajectory module absent.",
+      "current_port_workstream": "full scoped source reconciliation by runtime_restore/root; final execution authority belongs to root FINAL_EXECUTION, not this baseline inventory",
+      "promotion": "SCOPED_ONLY; final root decision authoritative",
+      "delivery_status": "INTEGRATED_SCOPED_SOURCE_NATIVE_PORT_VALIDATED",
+      "delivery_evidence": [
+        "evidence/port/PORT.json",
+        "evidence/theory/INDEPENDENT_REVIEW.json"
+      ]
+    },
+    {
+      "id": "A04",
+      "title": "Leja full arithmetic authority",
+      "depends_on": [],
+      "published_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+      "published_status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "published_scope": "검증된 represented dense symmetric operator의 fused action",
+      "published_apis": [
+        "CertifiedLejaReport::admit_requested_budget",
+        "AdmittedLejaFused"
+      ],
+      "published_evidence": [
+        "research/all_dag_completion_20261018/nodes/A04/RESULT.json"
+      ],
+      "published_reuse_rule": "Reuse unchanged proof and execution only at stated source/model identity; do not infer current source or global promotion.",
+      "baseline_status": "ESTIMATE_ONLY_LEGACY",
+      "baseline_evidence": "crates/rodas5p-core/src/leja_action.rs",
+      "baseline_difference": "Legacy Leja report and 218 Fraction oracle retained; original-budget immutable admission API absent.",
+      "current_port_workstream": "full scoped source reconciliation by runtime_restore/root; final execution authority belongs to root FINAL_EXECUTION, not this baseline inventory",
+      "promotion": "SCOPED_ONLY; final root decision authoritative",
+      "delivery_status": "INTEGRATED_SCOPED_SOURCE_NATIVE_PORT_VALIDATED",
+      "delivery_evidence": [
+        "evidence/port/PORT.json",
+        "evidence/theory/INDEPENDENT_REVIEW.json"
+      ]
+    },
+    {
+      "id": "A05",
+      "title": "Generic dense-output residual controller",
+      "depends_on": [],
+      "published_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+      "published_status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "published_scope": "PR101/collective/A11 GrayScott generated model owners, 절대 L2 budget",
+      "published_apis": [
+        "VerifiedContinuousProblem",
+        "integrate_verified_residual",
+        "DenseErrorControl::VerifiedResidual"
+      ],
+      "published_evidence": [
+        "research/all_dag_completion_20261018/nodes/A05/RESULT.json"
+      ],
+      "published_reuse_rule": "Reuse unchanged proof and execution only at stated source/model identity; do not infer current source or global promotion.",
+      "baseline_status": "LOCAL_DENSE_CONTROL_ONLY",
+      "baseline_evidence": "crates/rodas5p-integrators/src/dense_output_v2.rs",
+      "baseline_difference": "W-filtered local control added; generic_verified owner/controller and VerifiedResidual variant absent.",
+      "current_port_workstream": "full scoped source reconciliation by runtime_restore/root; final execution authority belongs to root FINAL_EXECUTION, not this baseline inventory",
+      "promotion": "SCOPED_ONLY; final root decision authoritative",
+      "delivery_status": "INTEGRATED_SCOPED_SOURCE_NATIVE_PORT_VALIDATED",
+      "delivery_evidence": [
+        "evidence/port/PORT.json",
+        "evidence/theory/INDEPENDENT_REVIEW.json"
+      ]
+    },
+    {
+      "id": "A06",
+      "title": "Strong rank-two direct baseline",
+      "depends_on": [],
+      "published_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+      "published_status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "published_scope": "exact represented weight sum=1, carrier=0; nonsingular interval Schur",
+      "published_apis": [
+        "CollectiveStageFactors",
+        "CollectiveRodas5pWorkspace certified step"
+      ],
+      "published_evidence": [
+        "research/all_dag_completion_20261018/nodes/A06/RESULT.json"
+      ],
+      "published_reuse_rule": "Reuse unchanged proof and execution only at stated source/model identity; do not infer current source or global promotion.",
+      "baseline_status": "PARTIAL_RANK_TWO_LINEAR_SOLVE",
+      "baseline_evidence": "crates/rodas5p-integrators/src/collective_direct.rs",
+      "baseline_difference": "CollectiveStageFactors linear residual witness present; eight-stage native collective_rodas5p driver and Schur fallback from sibling absent.",
+      "current_port_workstream": "full scoped source reconciliation by runtime_restore/root; final execution authority belongs to root FINAL_EXECUTION, not this baseline inventory",
+      "promotion": "SCOPED_ONLY; final root decision authoritative",
+      "delivery_status": "INTEGRATED_SCOPED_SOURCE_NATIVE_PORT_VALIDATED",
+      "delivery_evidence": [
+        "evidence/port/PORT.json",
+        "evidence/theory/INDEPENDENT_REVIEW.json"
+      ]
+    },
+    {
+      "id": "A07",
+      "title": "Comparable benchmark and generated report",
+      "depends_on": [],
+      "published_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+      "published_status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "published_scope": "동일 equation/tolerance/output/cost boundary의 diagnostic comparison",
+      "published_apis": [
+        "tools/all_dag_benchmark.py"
+      ],
+      "published_evidence": [
+        "research/all_dag_completion_20261018/nodes/A07/STATUS.json",
+        "research/all_dag_completion_20261018/nodes/A07/REPORT.md"
+      ],
+      "published_reuse_rule": "Reuse unchanged proof and execution only at stated source/model identity; do not infer current source or global promotion.",
+      "baseline_status": "NEW_EMPIRICAL_BENCHMARK",
+      "baseline_evidence": "research/bench_wave3_20261021/REPORT.md",
+      "baseline_difference": "Wave3 132-row interpolating comparator corpus present; legacy all-dag source-bound harness absent. Benchmark scopes differ.",
+      "current_port_workstream": "full scoped source reconciliation by runtime_restore/root; final execution authority belongs to root FINAL_EXECUTION, not this baseline inventory",
+      "promotion": "SCOPED_ONLY; final root decision authoritative",
+      "delivery_status": "HARNESS_PORTED_RETAINED_CAMPAIGN_REVIEWED",
+      "delivery_evidence": [
+        "evidence/port/PORT.json",
+        "evidence/theory/INDEPENDENT_REVIEW.json",
+        "evidence/theory/RETAINED_SIBLING_REVIEW.json"
+      ]
+    },
+    {
+      "id": "A08",
+      "title": "Polynomial route choice",
+      "depends_on": [
+        "A04",
+        "A07"
+      ],
+      "published_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+      "published_status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "published_scope": "dense symmetric nonpositive Gershgorin operator, unchanged absolute budget",
+      "published_apis": [
+        "guarded_polynomial_action",
+        "GuardedPolynomialAction"
+      ],
+      "published_evidence": [
+        "research/all_dag_completion_20261018/nodes/A08.json",
+        "research/all_dag_completion_20261018/nodes/A08.md"
+      ],
+      "published_reuse_rule": "Reuse unchanged proof and execution only at stated source/model identity; do not infer current source or global promotion.",
+      "baseline_status": "NOT_PORTED",
+      "baseline_evidence": "crates/rodas5p-core/src/polynomial_action/router.rs",
+      "baseline_difference": "Older polynomial_action/router exists; guarded_polynomial_action with same-input certified admissibility absent.",
+      "current_port_workstream": "full scoped source reconciliation by runtime_restore/root; final execution authority belongs to root FINAL_EXECUTION, not this baseline inventory",
+      "promotion": "SCOPED_ONLY; final root decision authoritative",
+      "delivery_status": "INTEGRATED_SCOPED_SOURCE_NATIVE_PORT_VALIDATED",
+      "delivery_evidence": [
+        "evidence/port/PORT.json",
+        "evidence/theory/INDEPENDENT_REVIEW.json"
+      ]
+    },
+    {
+      "id": "A09",
+      "title": "Homotopy parallel target preservation",
+      "depends_on": [
+        "A04",
+        "A07"
+      ],
+      "published_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+      "published_status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "published_scope": "actual floating alpha/beta 전체 유지; window 결과는 원래 ODE의 요청 endpoint 인증",
+      "published_apis": [
+        "certify_collective_actual_k_homotopy",
+        "integrate_nonlinear_homotopy"
+      ],
+      "published_evidence": [
+        "research/all_dag_completion_20261018/nodes/A09/RESULT.json"
+      ],
+      "published_reuse_rule": "Reuse unchanged proof and execution only at stated source/model identity; do not infer current source or global promotion.",
+      "baseline_status": "DIFFERENT_RESEARCH_CLIENTS",
+      "baseline_evidence": "crates/rodas5p-integrators/src/homotopy.rs",
+      "baseline_difference": "Existing frozen homotopy/coupled clients do not contain nonlinear window client or actual-K certificate on sibling.",
+      "current_port_workstream": "full scoped source reconciliation by runtime_restore/root; final execution authority belongs to root FINAL_EXECUTION, not this baseline inventory",
+      "promotion": "SCOPED_ONLY; final root decision authoritative",
+      "delivery_status": "INTEGRATED_SCOPED_SOURCE_NATIVE_PORT_VALIDATED",
+      "delivery_evidence": [
+        "evidence/port/PORT.json",
+        "evidence/theory/INDEPENDENT_REVIEW.json"
+      ]
+    },
+    {
+      "id": "A10",
+      "title": "Adaptive Bernstein enclosure",
+      "depends_on": [
+        "A01"
+      ],
+      "published_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+      "published_status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "published_scope": "동일 frozen polynomial/source/initial tube 및 tail model; 원래 physical gate 유지",
+      "published_apis": [
+        "RepresentedPacketCurve::with_bernstein_residual_bound",
+        "VerifiedPacketAdaptiveConfig::bernstein_max_depth"
+      ],
+      "published_evidence": [
+        "research/all_dag_completion_20261018/nodes/A10/RESULT.json"
+      ],
+      "published_reuse_rule": "Reuse unchanged proof and execution only at stated source/model identity; do not infer current source or global promotion.",
+      "baseline_status": "HELPER_ONLY",
+      "baseline_evidence": "crates/rodas5p-integrators/src/packet_curve.rs",
+      "baseline_difference": "Bernstein helpers retained; represented verified packet residual refinement API absent.",
+      "current_port_workstream": "full scoped source reconciliation by runtime_restore/root; final execution authority belongs to root FINAL_EXECUTION, not this baseline inventory",
+      "promotion": "SCOPED_ONLY; final root decision authoritative",
+      "delivery_status": "INTEGRATED_SCOPED_SOURCE_NATIVE_PORT_VALIDATED",
+      "delivery_evidence": [
+        "evidence/port/PORT.json",
+        "evidence/theory/INDEPENDENT_REVIEW.json"
+      ]
+    },
+    {
+      "id": "A11",
+      "title": "EX01 full Jacobian symmetric-part bound",
+      "depends_on": [],
+      "published_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+      "published_status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "published_scope": "원래 periodic GrayScott model와 generated provider의 L2 tube",
+      "published_apis": [
+        "BoundGrayScottProblem",
+        "gray_scott_2d_verified"
+      ],
+      "published_evidence": [
+        "research/all_dag_completion_20261018/nodes/A11/RESULT.json"
+      ],
+      "published_reuse_rule": "Reuse unchanged proof and execution only at stated source/model identity; do not infer current source or global promotion.",
+      "baseline_status": "BOUND_HELPER_ONLY",
+      "baseline_evidence": "crates/rodas5p-integrators/src/gray_scott.rs",
+      "baseline_difference": "Gray-Scott bound helper retained; immutable bound model feeding generic verified trajectory absent.",
+      "current_port_workstream": "full scoped source reconciliation by runtime_restore/root; final execution authority belongs to root FINAL_EXECUTION, not this baseline inventory",
+      "promotion": "SCOPED_ONLY; final root decision authoritative",
+      "delivery_status": "INTEGRATED_SCOPED_SOURCE_NATIVE_PORT_VALIDATED",
+      "delivery_evidence": [
+        "evidence/port/PORT.json",
+        "evidence/theory/INDEPENDENT_REVIEW.json"
+      ]
+    },
+    {
+      "id": "A12",
+      "title": "Scoped production decision",
+      "depends_on": [],
+      "published_commit": "33e45625be0803771156704263c3b1c1f92d2b40",
+      "published_status": "IMPLEMENTED_SCOPED_VALIDATION_COMPLETE",
+      "published_scope": "이번 추가분과 재사용 증거의 선언된 계약만 판정",
+      "published_apis": [
+        "nodes/A12/REVIEW.json",
+        "nodes/A12/DECISION.json"
+      ],
+      "published_evidence": [
+        "research/all_dag_completion_20261018/nodes/A12/REVIEW.json",
+        "research/all_dag_completion_20261018/nodes/A12/DECISION.json"
+      ],
+      "published_reuse_rule": "Reuse unchanged proof and execution only at stated source/model identity; do not infer current source or global promotion.",
+      "baseline_status": "REVIEW_REQUIRED",
+      "baseline_evidence": "DAG.json",
+      "baseline_difference": "Root DAG describes older correction; latest production plan and sibling scoped decisions differ in source and contract, not logically inconsistent verdicts.",
+      "current_port_workstream": "full scoped source reconciliation by runtime_restore/root; final execution authority belongs to root FINAL_EXECUTION, not this baseline inventory",
+      "promotion": "SCOPED_ONLY; final root decision authoritative",
+      "delivery_status": "FINAL_INDEPENDENT_REVIEW_IN_PROGRESS",
+      "delivery_evidence": [
+        "evidence/port/PORT.json",
+        "evidence/theory/INDEPENDENT_REVIEW.json"
+      ]
+    }
+  ],
+  "production_workstreams": [
+    {
+      "id": "A1",
+      "title": "production facade",
+      "baseline_status": "IMPLEMENTED_PARTIAL",
+      "detail": "P0 typed API, finite-difference dense/band, scalar/vector tolerances, mass and postprocessed events exist; Stats internals, sequential vector atol, all research-line reconciliation remain.",
+      "evidence": [
+        "docs/plan/nodes/p0-facade.md",
+        "crates/vigilode/src/lib.rs"
+      ]
+    },
+    {
+      "id": "A2",
+      "title": "W-filtered interior estimator",
+      "baseline_status": "IMPLEMENTED_LOCAL_ESTIMATE",
+      "detail": "Fast and sequential control exist; O-01 fail-open sequential refusal and O-02 global accumulation require separate closure.",
+      "evidence": [
+        "docs/plan/WAVE3_REPORT.md",
+        "crates/rodas5p-integrators/src/dense_output_v2.rs"
+      ]
+    },
+    {
+      "id": "A3",
+      "title": "controller hardening",
+      "baseline_status": "DEFERRED",
+      "detail": "Existing predictive controller reused; van der Pol rejection target remains unclosed.",
+      "evidence": [
+        "docs/plan/OPEN_ITEMS.md#O-22"
+      ]
+    },
+    {
+      "id": "A4",
+      "title": "structure routing",
+      "baseline_status": "IMPLEMENTED_PARTIAL",
+      "detail": "Dense/banded/JVP routes present with refusals; sparse colouring, small-N facade and low-rank routes remain.",
+      "evidence": [
+        "crates/vigilode/src/solve.rs",
+        "docs/plan/OPEN_ITEMS.md"
+      ]
+    },
+    {
+      "id": "B1",
+      "title": "lagged factorization stage solves",
+      "baseline_status": "FAIL_GATE_UNROUTED",
+      "detail": "B1c HIRES fact/accepted .588 exceeds .4; new resolvent mechanism must be a separate result.",
+      "evidence": [
+        "research/b1c_staleness_20261021/results.json"
+      ]
+    },
+    {
+      "id": "B2",
+      "title": "preconditioned JVP tier",
+      "baseline_status": "RESEARCH_PARTIAL",
+      "detail": "Matrix-free GMRES present; declared structural preconditioner and certified sensitivity forcing not closed for full PDE corpus.",
+      "evidence": [
+        "docs/plan/OPEN_ITEMS.md",
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
+      ]
+    },
+    {
+      "id": "B3",
+      "title": "batched small-N",
+      "baseline_status": "RESEARCH_PARTIAL",
+      "detail": "Existing batch implementation; production facade and 1024-instance ≥4x gate not yet established.",
+      "evidence": [
+        "crates/rodas5p-integrators/src/rodas5p_fast_small_batch.rs"
+      ]
+    },
+    {
+      "id": "C1",
+      "title": "causal transaction",
+      "baseline_status": "IMPLEMENTED_STANDALONE",
+      "detail": "Common transaction semantics/tests exist; all candidate integrations not completed.",
+      "evidence": [
+        "crates/rodas5p-integrators/src/transaction.rs"
+      ]
+    },
+    {
+      "id": "C2",
+      "title": "exponential candidate",
+      "baseline_status": "FROZEN_RESEARCH",
+      "detail": "Candidate not attached to facade; sealed oscillatory holdout gate remains.",
+      "evidence": [
+        "crates/rodas5p-integrators/src/adaptive_exponential.rs",
+        "crates/vigilode/src/lib.rs"
+      ]
+    },
+    {
+      "id": "C3",
+      "title": "structured candidates",
+      "baseline_status": "SCOPED_RESEARCH",
+      "detail": "Hybrid and collective mechanisms show model-specific benefit; canonical admission and exact closure binding remain.",
+      "evidence": [
+        "research/hybrid_20261020/RECOVERY_REVIEW_KO.md"
+      ]
+    },
+    {
+      "id": "C4",
+      "title": "admission economics",
+      "baseline_status": "IMPLEMENTED_PARTIAL",
+      "detail": "Deterministic budget mechanism exists; adaptive-bin regret statement not proved and all candidates not routed.",
+      "evidence": [
+        "crates/rodas5p-integrators/src/transaction.rs"
+      ]
+    },
+    {
+      "id": "D1",
+      "title": "certified generated windows",
+      "baseline_status": "SCOPED_ON_TWO_LINES",
+      "detail": "Hybrid current line and all-dag packet sibling provide different model owners; integration/review is necessary, not a universal production theorem.",
+      "evidence": [
+        "research/hybrid_20261020/RECOVERY_REVIEW_KO.md",
+        "git:33e45625be0803771156704263c3b1c1f92d2b40:research/all_dag_completion_20261018/DAG.json"
+      ]
+    },
+    {
+      "id": "D2",
+      "title": "damped/Leja/generic certificates",
+      "baseline_status": "SCOPED_SIBLING_PORT_REQUIRED",
+      "detail": "Published sibling closes selected APIs; current production baseline lacks those routes.",
+      "evidence": [
+        "git:33e45625be0803771156704263c3b1c1f92d2b40:research/all_dag_completion_20261018/REPORT_KO.md"
+      ]
+    },
+    {
+      "id": "E1",
+      "title": "comparator harness",
+      "baseline_status": "IMPLEMENTED_PARTIAL_DIAGNOSTIC_TIMING",
+      "detail": "132 rows/four problems/four external solver families; loaded host and preregistration retain INCONCLUSIVE; reference rule/corpus incomplete.",
+      "evidence": [
+        "research/bench_wave3_20261021/REPORT.md"
+      ]
+    },
+    {
+      "id": "E2",
+      "title": "release",
+      "baseline_status": "NOT_RELEASED",
+      "detail": "CI/docs exist; blocking semver baseline, external review, 1.0 and complete gates remain.",
+      "evidence": [
+        ".github/workflows/production.yml",
+        "docs/plan/OPEN_ITEMS.md"
+      ]
+    }
+  ],
+  "production_workstream_count": 15,
+  "plan_count_correction": "Plan prose says fourteen workstreams; the table contains15 (A4+B3+C4+D2+E2).",
+  "wave4_nodes": [
+    {
+      "id": "W4T0",
+      "node": "controller-preflight",
+      "depends_on": [],
+      "task": "plan merge and source choice",
+      "baseline_status": "PLANNED",
+      "final_status_authority": "root delivery execution report"
+    },
+    {
+      "id": "W4T1",
+      "node": "p0-seqdense",
+      "depends_on": [
+        "W4T0"
+      ],
+      "task": "reject unavailable enforcement estimate; schema v4",
+      "baseline_status": "PLANNED",
+      "final_status_authority": "root delivery execution report"
+    },
+    {
+      "id": "W4T2",
+      "node": "g1-global",
+      "depends_on": [
+        "W4T0"
+      ],
+      "task": "separate true local defect, amplification and estimator bias",
+      "baseline_status": "PLANNED",
+      "final_status_authority": "root delivery execution report"
+    },
+    {
+      "id": "W4T3",
+      "node": "b1d-resolvent",
+      "depends_on": [
+        "W4T0"
+      ],
+      "task": "new resolvent staleness mechanism and original gate",
+      "baseline_status": "PLANNED",
+      "final_status_authority": "root delivery execution report"
+    },
+    {
+      "id": "W4T4",
+      "node": "h-alloc",
+      "depends_on": [
+        "W4T0"
+      ],
+      "task": "allocation budgets and focused hygiene",
+      "baseline_status": "PLANNED",
+      "final_status_authority": "root delivery execution report"
+    },
+    {
+      "id": "W4T5",
+      "node": "p0-stats",
+      "depends_on": [
+        "W4T1"
+      ],
+      "task": "facade-owned stats and event failure typing",
+      "baseline_status": "PLANNED",
+      "final_status_authority": "root delivery execution report"
+    },
+    {
+      "id": "W4T6",
+      "node": "a5-epus",
+      "depends_on": [
+        "W4T2",
+        "W4T3"
+      ],
+      "task": "conditional on W4T2 PASS; no unconditional controller retune",
+      "baseline_status": "PLANNED",
+      "final_status_authority": "root delivery execution report"
+    },
+    {
+      "id": "W4T7",
+      "node": "controller-closeout",
+      "depends_on": [
+        "W4T1",
+        "W4T2",
+        "W4T3",
+        "W4T4",
+        "W4T5"
+      ],
+      "task": "integration audit and local handoff; W4T6 only if admitted",
+      "baseline_status": "PLANNED",
+      "final_status_authority": "root delivery execution report"
+    }
+  ],
+  "theory_audit": [
+    {
+      "id": "T1",
+      "status": "VALID_CONDITIONAL_WITH_TEXT_REPAIR",
+      "correction": "Use integrated Jacobian along stage segment; residual bounds imply step perturbation, not order5 at fixed absolute residual tolerance."
+    },
+    {
+      "id": "T2",
+      "status": "VALID_MATCHING_NORM_COORDINATES",
+      "correction": "GMRES minimization norm must match bound; exact U-form P scaling differs from normalized W. Corrected sign already published; stronger dissipative normalized bound proved here."
+    },
+    {
+      "id": "T3",
+      "status": "PROVED_REAL_SCALAR_RESTRICTED",
+      "correction": "Exact monotonic proof now complete; complex left-half-plane extension false; sampled varying defect remains estimator."
+    },
+    {
+      "id": "T4",
+      "status": "VALID_THEOREM_FALSE_DEGREE_COROLLARY_REPAIRED",
+      "correction": "Polynomial degree-r RHS gives max(p−1,rp), not2p generally; rational models need denominator separation."
+    },
+    {
+      "id": "T5",
+      "status": "VALID_NONNEGATIVE_MAJORANT_SCOPE",
+      "correction": "Nilpotence applies strict triangular exact map; E≥0 and true q<1 required for nonnegative inverse bound."
+    },
+    {
+      "id": "T6",
+      "status": "VALID_WITH_COMPLEXITY_REPAIR",
+      "correction": "Woodbury setup includes nr² and per RHS r²; quotient degree-m costsm vsd−1 products under exact annihilator."
+    },
+    {
+      "id": "T7",
+      "status": "CONDITIONAL_COST_MODEL",
+      "correction": "m≈2hρ is not universal lower bound; eigenvector action may require dimension1 regardlessρ. Measured candidate economics still needed."
+    },
+    {
+      "id": "T8",
+      "status": "EXPECTED_COST_VALID_REGRET_UNPROVED",
+      "correction": "Fixed costs same accepted advance gives threshold; Beta admission is not UCB1 and adaptive solver regimes not stationary by default."
+    },
+    {
+      "id": "T9",
+      "status": "VALID_CONDITIONAL_KKT_NEW_EXACT_BOUND",
+      "correction": "Certified full-real-spectrum sensitivity bounds replace grid-only evidence; rounded optimum cost withinΣc_i of integer optimum under fixed contractions."
+    }
+  ],
+  "new_proofs": [
+    {
+      "id": "R-SENSITIVITY",
+      "artifact": "evidence/theory/SENSITIVITY_PROOF.json",
+      "claim": "Full w[0,1]: scalar pointwise |p_j|≤6.25 and1≤Σ|p_j|≤23.34; normal-operator sum of per-stage suprema≤23.35.",
+      "scope": "normal Jacobian nonpositive real spectrum, exact scalar transformed stage system; both decimal and binary64 tableau values",
+      "conditional_work_reduction": "Equal R=1,q=1/2,B=1/16 uniform budget total96→72iterations",
+      "execution": "PASS exact Fraction proof; independently reviewed by dense_transaction_audit, repaired sum-sup domain distinction."
+    },
+    {
+      "id": "R-T3-MONOTONIC",
+      "claim": "R increases from1 to1/(2γ) for realx>0,0<γ≤1/4",
+      "proof": "e^x−1−x−2γx²>0 by exponential series",
+      "execution": "analytic proof; root independent CAS crosscheck"
+    },
+    {
+      "id": "R-RESOLVENT",
+      "claim": "||P^-1−I||_M≤1 for μ_M(J)≤0; normalized same-J q≤|h/h_old−1|",
+      "scope": "fixed positive definite Hilbert metric; explicit coordinate rescaling required before application to current U-form solver"
+    },
+    {
+      "id": "R-CAYLEY",
+      "author": "integrator_audit",
+      "reviewer": "research_dag_audit",
+      "claim": "Dissipative Hilbert linear-stage Cayley coefficient sums reduce189.418 rawpowermajorant to31.334689 forrawresidual and37.602843 forpreconditioned residual.",
+      "review": "32exact inverse-polynomialsubstitution andcoefficient-sumchecksPASS; no normality required, noFPcertificateclaim."
+    }
+  ],
+  "literature": [
+    {
+      "tool": "Exa",
+      "primary_url": "https://cesa-bianchi.di.unimi.it/Pubblicazioni/ml-02.pdf",
+      "used_for": "T8 UCB1 assumptions; not evidence for current Beta rule"
+    },
+    {
+      "tool": "SciSpace",
+      "doi": "10.1137/0732001",
+      "used_for": "Relevant prior global a posteriori error-control literature; abstract-level discovery only, no imported unverified theorem"
+    },
+    {
+      "tool": "SciSpace",
+      "doi": "10.1007/S00211-009-0254-2",
+      "used_for": "Continuous reconstruction prior art; abstract-level discovery only"
+    }
+  ],
+  "reuse_policy": "Do not rerun unchanged published proofs/campaigns; execute only changed source/API dependencies, new full-interval proof obligation, and integration closure.",
+  "port_update": {
+    "status": "INTEGRATED",
+    "native_tests": 85,
+    "compile_fail_doctests": 2,
+    "source": "evidence/port/PORT.json",
+    "open": "Three old compatibility targets hit compiler artifact E0463 before test execution; root fresh-target retry pending at this update."
+  },
+  "latest_sibling_evidence_review": "evidence/theory/RETAINED_SIBLING_REVIEW.json",
+  "additional_theory_review": "evidence/theory/INDEPENDENT_REVIEW.json"
+}

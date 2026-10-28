@@ -1,0 +1,46 @@
+{
+  "schema": "vigilode.nonstiff-api-map.v1",
+  "source_commit": "45037fc24e8f8101605f309e1fdb3a9a4e3df56d",
+  "entries": [
+    {
+      "symbol": "Dopri5::solve / solve_observed",
+      "path": "crates/vigilode/src/explicit.rs",
+      "contract": "Explicit caller choice; identity mass; scalar/vector tolerances; nonautonomous RHS; observed endpoints; typed failure and partial result."
+    },
+    {
+      "symbol": "integrate_dopri5_observed",
+      "path": "crates/rodas5p-integrators/src/dopri5.rs",
+      "contract": "Adaptive DP5(4), direct embedded error, fixed-model FSAL, robust streaming WRMS; no derivative or linear/nonlinear solve providers."
+    },
+    {
+      "symbol": "Dopri5Workspace::step_into",
+      "path": "crates/rodas5p-integrators/src/dopri5.rs",
+      "contract": "Reusable fixed-step storage; 7 fresh evaluations per independent fixed-step call; successful hot path allocation-free."
+    },
+    {
+      "symbol": "Dopri5Ensemble",
+      "path": "crates/vigilode/src/explicit_ensemble.rs",
+      "contract": "Bounded local pool; ordered results; each member retains its own error controller and failure."
+    },
+    {
+      "symbol": "nonstiff_bench",
+      "path": "crates/vigilode/examples/nonstiff_bench.rs",
+      "contract": "Analytic whole-trajectory native explicit/implicit comparison, full states, independent scoring."
+    },
+    {
+      "symbol": "nonstiff_ensemble_bench",
+      "path": "crates/vigilode/examples/nonstiff_ensemble_bench.rs",
+      "contract": "Independent-trajectory throughput; pool setup reported outside integration timer."
+    }
+  ],
+  "unchanged_entry": "Rodas5p",
+  "not_implemented": [
+    "automatic explicit/implicit switching",
+    "explicit dense interpolation",
+    "explicit events",
+    "explicit nonidentity mass",
+    "stage-parallel iterative RK candidate",
+    "new SIMD intrinsics"
+  ],
+  "ncp_used": false
+}

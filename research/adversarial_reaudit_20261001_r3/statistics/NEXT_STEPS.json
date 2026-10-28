@@ -1,0 +1,150 @@
+{
+  "schema": "vigilode-r3-statistics-next-v1",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "nodes": [
+    {
+      "id": "STAT-DEV-01",
+      "title_ko": "원자료 프로토콜 admission 일원화",
+      "depends_on": [],
+      "priority": "P2",
+      "inputs": [
+        "PairedTimingCase",
+        "PairedTimingProtocol"
+      ],
+      "target_files": [
+        "crates/rodas5p-fair-ab/src/paired_timing.rs",
+        "crates/rodas5p-fair-ab/tests/r2_timing_authority_contracts.rs"
+      ],
+      "implementation": [
+        "원자료 warmup의 유한성·비음수성 검사",
+        "batch calibration 재계산 및 exact integer equality",
+        "pair 길이에 대응하는 seeded ABBA order equality",
+        "producer/replay/raw verifier가 동일 admission 호출"
+      ],
+      "acceptance": [
+        "기존 R2 closure fixture 유지",
+        "five malformed variants rejected before assessment",
+        "valid producer and serialize/deserialize receipt accepted",
+        "AA raw cases에도 같은 검증 적용"
+      ],
+      "failure_status": "INVALID_RAW_TIMING_PROTOCOL",
+      "deliverables": [
+        "regression tests",
+        "schema compatibility note",
+        "source-bound raw receipt"
+      ]
+    },
+    {
+      "id": "STAT-DEV-02",
+      "title_ko": "paired runner 및 raw receipt 결속",
+      "depends_on": [
+        "STAT-DEV-01"
+      ],
+      "priority": "P2",
+      "inputs": [
+        "validated raw schema",
+        "existing CLI NotEvaluated gate"
+      ],
+      "target_files": [
+        "crates/rodas5p-cli/src/main.rs",
+        "crates/rodas5p-fair-ab/src/paired_timing.rs"
+      ],
+      "implementation": [
+        "campaign UUID and session provenance",
+        "actual order and batched elapsed seconds",
+        "candidate/reference executable and problem identity",
+        "CLI consumes verify_against_raw before wall gate"
+      ],
+      "acceptance": [
+        "six independent observed sessions; matched A/A",
+        "all durations from real monotonic clock",
+        "no raw receipt -> NotEvaluated",
+        "replayed raw protocol corruption rejected",
+        "honest failures and unsuccessful session observations retained"
+      ],
+      "failure_status": "TIMING_NOT_EVALUATED",
+      "deliverables": [
+        "portable run manifest",
+        "raw sample artifacts",
+        "campaign receipt",
+        "CLI integration test"
+      ]
+    },
+    {
+      "id": "STAT-DEV-03",
+      "title_ko": "조건부 MC 오차 gate를 preview에 적용",
+      "depends_on": [
+        "STAT-DEV-01"
+      ],
+      "priority": "RESEARCH",
+      "inputs": [
+        "fixed B,delta,threshold",
+        "exact finite bootstrap fixtures"
+      ],
+      "target_files": [
+        "crates/rodas5p-fair-ab/src/paired_timing.rs"
+      ],
+      "implementation": [
+        "Bernoulli below-threshold count",
+        "predeclared two-sided simulation failure budget",
+        "conservative Promote/Block/Inconclusive",
+        "retain old endpoint diagnostic separately"
+      ],
+      "acceptance": [
+        "46656-outcome oracle endpoints reproduced",
+        "exact conditional CDF compared against MC bounds",
+        "atom-at-threshold and all-equal cases",
+        "no population-coverage claim",
+        "B extension policy fixed ahead of data or separate confidence-sequence proof"
+      ],
+      "failure_status": "MC_UNRESOLVED",
+      "deliverables": [
+        "theorem assumptions",
+        "preview field schema",
+        "independent exact fixtures",
+        "decision reviewer scope"
+      ]
+    },
+    {
+      "id": "STAT-DEV-04",
+      "title_ko": "성능 estimand와 session×case 설계 고정",
+      "depends_on": [
+        "STAT-DEV-02",
+        "STAT-DEV-03"
+      ],
+      "priority": "RESEARCH",
+      "inputs": [
+        "campaign incidence table",
+        "declared performance population"
+      ],
+      "target_files": [
+        "benchmark protocol documentation",
+        "statistical simulation harness"
+      ],
+      "implementation": [
+        "specify case weights and within-session pair counts",
+        "balanced intended design plus missing-cell sensitivity",
+        "separate empirical resampling error and population coverage",
+        "frozen holdout before final claim"
+      ],
+      "acceptance": [
+        "session duplication cannot increase independent count",
+        "pair multiplication within session cannot manufacture authority",
+        "coverage study under predeclared dependence and missingness models",
+        "real wall campaign run after protocol freeze"
+      ],
+      "failure_status": "STATISTICAL_AUTHORITY_HOLD",
+      "deliverables": [
+        "design contract",
+        "coverage report",
+        "frozen campaign recipe"
+      ]
+    }
+  ],
+  "topological_order": [
+    "STAT-DEV-01",
+    "STAT-DEV-02",
+    "STAT-DEV-03",
+    "STAT-DEV-04"
+  ]
+}

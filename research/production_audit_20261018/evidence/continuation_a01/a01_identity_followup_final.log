@@ -1,0 +1,36 @@
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 3.45s
+     Running tests/packet_window_contracts.rs (target/debug/deps/packet_window_contracts-308dfee491eaba91)
+
+running 6 tests
+test test_negative_refusal_contracts ... ok
+test test_vg2_dahlquist_linear_boundary_zero_defect ... ok
+test test_vg1_zero_online_solver_counters_contract ... ok
+test test_vg3_reconstruction_initial_state_consistency ... ok
+test test_vg3_certificate_mode_bounds_enclosure_consistency ... ok
+test test_vg2_picard_sweeps_convergence_and_defect_reduction ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/production_audit_packet.rs (target/debug/deps/production_audit_packet-1678bd1aadabbee6)
+
+running 16 tests
+test candidate_cannot_be_reused_with_a_different_compiled_packet ... ok
+test coefficient_overflow_is_refused_and_subnormal_stays_diagnostic_only ... ok
+test certificate_uses_actual_weight_sum_and_spectral_support_and_charges_work ... ok
+test admitted_small_uncertainty_remains_supported ... ok
+test compiled_descriptor_is_read_only_and_cross_packet_candidate_is_refused ... ok
+test distinct_signed_zero_model_cannot_reuse_a_candidate ... ok
+test inherited_uncertainty_must_fit_proved_unit_energy_domain ... ok
+test kappa_zero_packet_refuses_damped_model ... ok
+test mutable_config_is_validated_at_run_boundary ... ok
+test dense_output_restricts_normalized_time_waveform ... ok
+test nonfinite_candidate_cannot_receive_certificate ... ok
+test subunit_weight_does_not_shrink_the_free_mode_error_bound ... ok
+test multimode_high_precision_linear_oracle_is_close_at_intermediate_and_endpoints ... ok
+test subunit_weight_inherited_radius_uses_microscopic_lipschitz_factor ... ok
+test trajectory_tail_uses_force_bound_not_already_scaled_model_error ... ok
+test tiny_nonempty_interval_is_actually_advanced ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

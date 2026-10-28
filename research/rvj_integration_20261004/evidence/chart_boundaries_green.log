@@ -1,0 +1,36 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.35s
+     Running tests/int04_stage_chart_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime_integration/target/debug/deps/int04_stage_chart_contracts-0cadbb3c99de5729)
+
+running 3 tests
+test regular_charts_invert_and_differentiate ... ok
+test invalid_inputs_are_errors ... ok
+test singular_charts_and_domain_exits_are_typed ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.15s
+
+     Running tests/native_reaudit_chart_transport.rs (/workspace/scratch/0dc1e721cf82/runtime_integration/target/debug/deps/native_reaudit_chart_transport-26edb438bcef3d35)
+
+running 5 tests
+test reconstruction_encloses_every_dyadic_corner_and_interior_sample ... ok
+test nonfinite_negative_or_overflowing_inputs_fail_closed ... ok
+test a_bad_stored_reconstruction_is_included_not_assumed_exact ... ok
+test zero_coordinate_and_reconstruction_error_gives_zero ... ok
+test the_whole_box_not_just_its_center_must_remain_in_the_chart ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/rvj_integration_boundaries.rs (/workspace/scratch/0dc1e721cf82/runtime_integration/target/debug/deps/rvj_integration_boundaries-5f3f19fd1434d45c)
+
+running 8 tests
+test chart_rejects_nonfinite_configuration_and_output_times ... ok
+test chart_refuses_before_advancing_at_an_unchanged_time ... ok
+test regular_chart_steps_still_reach_the_requested_output ... ok
+test malformed_target_is_an_error_not_a_panic ... ok
+test nan_problem_cannot_report_converged ... ok
+test wrong_jvp_length_is_a_dimension_error_not_a_panic ... ok
+test nonfinite_jvp_is_explicitly_nonfinite ... ok
+test wrong_forward_length_is_a_dimension_error ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

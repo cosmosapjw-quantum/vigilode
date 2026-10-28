@@ -1,0 +1,638 @@
+{
+ "not_in_corpus": [],
+ "problems": [
+  {
+   "atol_scale": 0.0001,
+   "dimension": 3,
+   "exact_solution": false,
+   "id": "robertson",
+   "jacobian": "analytic",
+   "mass": false,
+   "oscillatory": false,
+   "partition": "calibration",
+   "reference": {
+    "kind": "two_method",
+    "methods": [
+     "scipy-radau",
+     "scipy-lsoda"
+    ]
+   },
+   "structure": "dense",
+   "t_span": [
+    0.0,
+    40.0
+   ],
+   "tier": "G"
+  },
+  {
+   "atol_scale": 0.0001,
+   "dimension": 8,
+   "exact_solution": false,
+   "id": "hires",
+   "jacobian": "analytic",
+   "mass": false,
+   "oscillatory": false,
+   "partition": "calibration",
+   "reference": {
+    "kind": "two_method",
+    "methods": [
+     "scipy-radau",
+     "scipy-lsoda"
+    ]
+   },
+   "structure": "dense",
+   "t_span": [
+    0.0,
+    321.8122
+   ],
+   "tier": "G"
+  },
+  {
+   "atol_scale": 1.0,
+   "dimension": 2,
+   "exact_solution": false,
+   "id": "van-der-pol-mu1000",
+   "jacobian": "analytic",
+   "mass": false,
+   "oscillatory": true,
+   "partition": "calibration",
+   "reference": {
+    "kind": "two_method",
+    "methods": [
+     "scipy-radau",
+     "scipy-lsoda"
+    ]
+   },
+   "structure": "dense",
+   "t_span": [
+    0.0,
+    2000.0
+   ],
+   "tier": "G"
+  },
+  {
+   "atol_scale": 0.001,
+   "dimension": 1,
+   "exact_solution": true,
+   "id": "prothero-robinson-nl",
+   "jacobian": "analytic",
+   "mass": false,
+   "oscillatory": false,
+   "partition": "calibration",
+   "reference": {
+    "kind": "exact",
+    "methods": [
+     "exact"
+    ]
+   },
+   "structure": "dense",
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "tier": "G"
+  },
+  {
+   "atol_scale": 0.001,
+   "dimension": 1,
+   "exact_solution": true,
+   "id": "scalar-linear",
+   "jacobian": "analytic",
+   "mass": false,
+   "oscillatory": false,
+   "partition": "calibration",
+   "reference": {
+    "kind": "exact",
+    "methods": [
+     "exact"
+    ]
+   },
+   "structure": "dense",
+   "t_span": [
+    0.0,
+    0.01
+   ],
+   "tier": "G"
+  },
+  {
+   "atol_scale": 0.01,
+   "dimension": 32,
+   "exact_solution": true,
+   "id": "complex-dahlquist-32",
+   "jacobian": "analytic",
+   "mass": false,
+   "oscillatory": true,
+   "partition": "calibration",
+   "reference": {
+    "kind": "exact",
+    "methods": [
+     "exact"
+    ]
+   },
+   "structure": "dense",
+   "t_span": [
+    0.0,
+    0.02
+   ],
+   "tier": "G"
+  },
+  {
+   "atol_scale": 0.01,
+   "dimension": 32,
+   "exact_solution": true,
+   "id": "manufactured-vector-32",
+   "jacobian": "analytic",
+   "mass": false,
+   "oscillatory": false,
+   "partition": "calibration",
+   "reference": {
+    "kind": "exact",
+    "methods": [
+     "exact"
+    ]
+   },
+   "structure": "dense",
+   "t_span": [
+    0.0,
+    0.02
+   ],
+   "tier": "G"
+  },
+  {
+   "atol_scale": 0.01,
+   "dimension": 1,
+   "exact_solution": true,
+   "id": "oscillatory-prothero-robinson",
+   "jacobian": "analytic",
+   "mass": false,
+   "oscillatory": true,
+   "partition": "calibration",
+   "reference": {
+    "kind": "exact",
+    "methods": [
+     "exact"
+    ]
+   },
+   "structure": "dense",
+   "t_span": [
+    0.0,
+    0.02
+   ],
+   "tier": "G"
+  },
+  {
+   "atol_scale": 0.001,
+   "dimension": 2,
+   "exact_solution": false,
+   "id": "mass-affine",
+   "jacobian": "analytic",
+   "mass": true,
+   "oscillatory": false,
+   "partition": "calibration",
+   "reference": {
+    "kind": "two_method",
+    "methods": [
+     "scipy-radau",
+     "scipy-lsoda"
+    ]
+   },
+   "structure": "dense",
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "tier": "G"
+  },
+  {
+   "atol_scale": 0.001,
+   "dimension": 2,
+   "exact_solution": true,
+   "id": "mass-nonlinear",
+   "jacobian": "analytic",
+   "mass": true,
+   "oscillatory": false,
+   "partition": "calibration",
+   "reference": {
+    "kind": "exact",
+    "methods": [
+     "exact"
+    ]
+   },
+   "structure": "dense",
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "tier": "G"
+  },
+  {
+   "atol_scale": 0.01,
+   "dimension": 32,
+   "exact_solution": true,
+   "id": "semilinear-advdiff-32",
+   "jacobian": "analytic",
+   "mass": false,
+   "oscillatory": false,
+   "partition": "calibration",
+   "reference": {
+    "kind": "exact",
+    "methods": [
+     "exact"
+    ]
+   },
+   "structure": "dense",
+   "t_span": [
+    0.0,
+    0.02
+   ],
+   "tier": "G"
+  },
+  {
+   "atol_scale": 0.010000000000000002,
+   "dimension": 3,
+   "exact_solution": false,
+   "id": "oregonator",
+   "jacobian": "jvp",
+   "mass": false,
+   "numpy_model": "oregonator-holdout-v2",
+   "oscillatory": true,
+   "partition": "holdout",
+   "reference": {
+    "kind": "two_method",
+    "methods": [
+     "scipy-radau",
+     "scipy-lsoda"
+    ]
+   },
+   "structure": "unstructured",
+   "t_span": [
+    0.0,
+    360.0
+   ],
+   "tier": "G"
+  },
+  {
+   "atol_scale": 0.010000000000000002,
+   "dimension": 20,
+   "exact_solution": false,
+   "id": "pollution",
+   "jacobian": "jvp",
+   "mass": false,
+   "numpy_model": "pollution-holdout-v2",
+   "oscillatory": false,
+   "partition": "holdout",
+   "reference": {
+    "kind": "two_method",
+    "methods": [
+     "scipy-radau",
+     "scipy-lsoda"
+    ]
+   },
+   "structure": "unstructured",
+   "t_span": [
+    0.0,
+    60.0
+   ],
+   "tier": "G"
+  },
+  {
+   "atol_scale": 1.0,
+   "dimension": 100,
+   "exact_solution": false,
+   "id": "brusselator-1d-50",
+   "jacobian": "analytic",
+   "mass": false,
+   "oscillatory": true,
+   "partition": "calibration",
+   "reference": {
+    "kind": "two_method",
+    "methods": [
+     "scipy-radau",
+     "scipy-lsoda"
+    ]
+   },
+   "structure": "banded",
+   "t_span": [
+    0.0,
+    10.0
+   ],
+   "tier": "P"
+  },
+  {
+   "atol_scale": 1.0,
+   "dimension": 500,
+   "exact_solution": false,
+   "id": "brusselator-1d-250",
+   "jacobian": "analytic",
+   "mass": false,
+   "oscillatory": true,
+   "partition": "calibration",
+   "reference": {
+    "kind": "two_method",
+    "methods": [
+     "scipy-radau",
+     "scipy-lsoda"
+    ]
+   },
+   "structure": "banded",
+   "t_span": [
+    0.0,
+    10.0
+   ],
+   "tier": "P"
+  },
+  {
+   "atol_scale": 1.0,
+   "dimension": 2000,
+   "exact_solution": false,
+   "id": "brusselator-1d-1000",
+   "jacobian": "analytic",
+   "mass": false,
+   "oscillatory": true,
+   "partition": "holdout",
+   "reference": {
+    "kind": "two_method",
+    "methods": [
+     "scipy-radau",
+     "scipy-lsoda"
+    ]
+   },
+   "structure": "banded",
+   "t_span": [
+    0.0,
+    10.0
+   ],
+   "tier": "P"
+  },
+  {
+   "atol_scale": 1.0,
+   "dimension": 500,
+   "exact_solution": false,
+   "id": "brusselator-1d-jvp-250",
+   "jacobian": "jvp",
+   "mass": false,
+   "numpy_model": "brusselator-1d-250",
+   "oscillatory": true,
+   "partition": "calibration",
+   "reference": {
+    "kind": "two_method",
+    "methods": [
+     "scipy-radau",
+     "scipy-lsoda"
+    ]
+   },
+   "structure": "unstructured",
+   "t_span": [
+    0.0,
+    10.0
+   ],
+   "tier": "P"
+  },
+  {
+   "atol_scale": 1.0,
+   "dimension": 2000,
+   "exact_solution": false,
+   "id": "brusselator-1d-jvp-1000",
+   "jacobian": "jvp",
+   "mass": false,
+   "numpy_model": "brusselator-1d-1000",
+   "oscillatory": true,
+   "partition": "holdout",
+   "reference": {
+    "kind": "two_method",
+    "methods": [
+     "scipy-radau",
+     "scipy-lsoda"
+    ]
+   },
+   "structure": "unstructured",
+   "t_span": [
+    0.0,
+    10.0
+   ],
+   "tier": "P"
+  },
+  {
+   "atol_scale": 0.010000000000000002,
+   "dimension": 512,
+   "exact_solution": false,
+   "id": "brusselator-2d",
+   "jacobian": "jvp",
+   "mass": false,
+   "numpy_model": "brusselator-2d-holdout-v2",
+   "oscillatory": true,
+   "partition": "holdout",
+   "reference": {
+    "kind": "two_method",
+    "methods": [
+     "scipy-radau",
+     "scipy-lsoda"
+    ]
+   },
+   "structure": "unstructured",
+   "t_span": [
+    0.0,
+    11.5
+   ],
+   "tier": "P"
+  },
+  {
+   "atol_scale": 0.010000000000000002,
+   "dimension": 400,
+   "exact_solution": false,
+   "id": "medical-akzo",
+   "jacobian": "jvp",
+   "mass": false,
+   "numpy_model": "medical-akzo-holdout-v2",
+   "oscillatory": false,
+   "partition": "holdout",
+   "reference": {
+    "kind": "two_method",
+    "methods": [
+     "scipy-radau",
+     "scipy-lsoda"
+    ]
+   },
+   "structure": "unstructured",
+   "t_span": [
+    0.0,
+    20.0
+   ],
+   "tier": "P"
+  },
+  {
+   "atol_scale": 1.0,
+   "dimension": 512,
+   "exact_solution": false,
+   "id": "gray-scott-16",
+   "jacobian": "jvp",
+   "mass": false,
+   "oscillatory": false,
+   "partition": "calibration",
+   "reference": {
+    "kind": "two_method",
+    "methods": [
+     "scipy-radau",
+     "scipy-lsoda"
+    ]
+   },
+   "structure": "sparse_linear_part",
+   "t_span": [
+    0.0,
+    20.0
+   ],
+   "tier": "P"
+  },
+  {
+   "atol_scale": 1.0,
+   "dimension": 2048,
+   "exact_solution": false,
+   "id": "gray-scott-32",
+   "jacobian": "jvp",
+   "mass": false,
+   "oscillatory": false,
+   "partition": "calibration",
+   "reference": {
+    "kind": "two_method",
+    "methods": [
+     "scipy-radau",
+     "scipy-lsoda"
+    ]
+   },
+   "structure": "sparse_linear_part",
+   "t_span": [
+    0.0,
+    20.0
+   ],
+   "tier": "P"
+  },
+  {
+   "atol_scale": 1.0,
+   "dimension": 8192,
+   "exact_solution": false,
+   "id": "gray-scott-64",
+   "jacobian": "jvp",
+   "mass": false,
+   "oscillatory": false,
+   "partition": "holdout",
+   "reference": {
+    "kind": "two_method",
+    "methods": [
+     "scipy-radau",
+     "scipy-lsoda"
+    ]
+   },
+   "structure": "sparse_linear_part",
+   "t_span": [
+    0.0,
+    20.0
+   ],
+   "tier": "P"
+  },
+  {
+   "atol_scale": 0.010000000000000002,
+   "dimension": 96,
+   "exact_solution": true,
+   "id": "semilinear-advdiff-2d-96",
+   "jacobian": "jvp",
+   "mass": false,
+   "numpy_model": "semilinear-advection-diffusion-ramped-n96-grid8x12-v2.1",
+   "oscillatory": false,
+   "partition": "calibration",
+   "reference": {
+    "kind": "exact",
+    "methods": [
+     "exact"
+    ]
+   },
+   "structure": "unstructured",
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "tier": "P"
+  },
+  {
+   "atol_scale": 0.010000000000000002,
+   "dimension": 384,
+   "exact_solution": true,
+   "id": "semilinear-advdiff-2d-384",
+   "jacobian": "jvp",
+   "mass": false,
+   "numpy_model": "semilinear-advection-diffusion-ramped-n384-grid16x24-v2.1",
+   "oscillatory": false,
+   "partition": "calibration",
+   "reference": {
+    "kind": "exact",
+    "methods": [
+     "exact"
+    ]
+   },
+   "structure": "unstructured",
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "tier": "P"
+  },
+  {
+   "atol_scale": 0.010000000000000002,
+   "dimension": 1536,
+   "exact_solution": true,
+   "id": "semilinear-advdiff-2d-1536",
+   "jacobian": "jvp",
+   "mass": false,
+   "numpy_model": "semilinear-advection-diffusion-ramped-n1536-grid32x48-v2.1",
+   "oscillatory": false,
+   "partition": "holdout",
+   "reference": {
+    "kind": "exact",
+    "methods": [
+     "exact"
+    ]
+   },
+   "structure": "unstructured",
+   "t_span": [
+    0.0,
+    1.0
+   ],
+   "tier": "P"
+  }
+ ],
+ "profile_subset": {
+  "grids": [
+   "uniform101"
+  ],
+  "h0_scales": [
+   1.0
+  ],
+  "max_dimension": 2048,
+  "rtols": [
+   0.0001,
+   1e-06,
+   1e-08
+  ]
+ },
+ "schema": "vigilode-triage-corpus-v1",
+ "sweep": {
+  "grids": [
+   "endpoint",
+   "uniform101"
+  ],
+  "h0_scales": [
+   0.5,
+   1.0,
+   2.0
+  ],
+  "rtols": [
+   0.001,
+   0.0001,
+   1e-05,
+   1e-06,
+   1e-07,
+   1e-08,
+   1e-09,
+   1e-10
+  ]
+ }
+}

@@ -1,0 +1,14 @@
+{
+ "schema": "bassrei-dag-status-v1",
+ "node": "C1",
+ "node_dir": "research/bassrei_ncp_wp_c1_20261022",
+ "ledger_id": ["L-0154", "L-0155"],
+ "verdict": {"attempt2": "PASS", "attempt3": "PASS"},
+ "attempts": {"attempt1": "INVALID (setup: cargo not on PATH; no ledger row)",
+              "attempt2": "PASS, Julia arms HOLD (tmpfs depot cleared)",
+              "attempt3": "PASS, all comparator arms incl. Julia (user-authorized online install)"},
+ "gates": {"G1": true, "G2": true, "G3": true, "G4": true, "G5": true, "G6": true, "G7": true},
+ "timing_authority": "diagnostic_only (STATISTICAL_AUTHORITY_HOLD); no speed claim",
+ "downstream": {"DAG": "P02-P06 and C1 complete"},
+ "production": "HOLD"
+}

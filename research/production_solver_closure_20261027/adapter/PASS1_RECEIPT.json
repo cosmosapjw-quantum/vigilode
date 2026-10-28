@@ -1,0 +1,40 @@
+{
+  "schema_version": 1,
+  "pass": 1,
+  "correction_count": 1,
+  "diagnosis": "same-prefix losing pilots discard an accepted mean step, causing restart overhead",
+  "change": "opt-in observed accepted-prefix mean transport",
+  "integration_tests": {
+    "pass": 4,
+    "fail": 0
+  },
+  "lib_tests": {
+    "executed": false,
+    "compile_exit": 101,
+    "reason": "existing private EntryProbeMemory initializer omitted new field"
+  },
+  "benchmark_arms": 16,
+  "accuracy_and_accounting_pass": 16,
+  "source": [
+    {
+      "source": "crates/vigilode/src/switching.rs",
+      "snapshot": "research/production_solver_closure_20261027/adapter/raw/pass1_source/switching.rs",
+      "sha256": "12f2706fb0ccb69cadbdf90d4dc7f0837e8812964afd869fca9fdbeac22cccf4"
+    },
+    {
+      "source": "crates/vigilode/examples/production_return_bench_20261027.rs",
+      "snapshot": "research/production_solver_closure_20261027/adapter/raw/pass1_source/production_return_bench_20261027.rs",
+      "sha256": "2657e4a96ef370eeb1764b19a8bd63ed6590d5a09cae9d8d7f97ddb23ef862d8"
+    },
+    {
+      "source": "crates/vigilode/examples/support/production_return_cases.rs",
+      "snapshot": "research/production_solver_closure_20261027/adapter/raw/pass1_source/production_return_cases.rs",
+      "sha256": "5934fdb19da9a51939c45f42a68c4a65a46718f312defbbc5c78738fa8495d59"
+    },
+    {
+      "source": "crates/vigilode/tests/strict_return_work_contracts.rs",
+      "snapshot": "research/production_solver_closure_20261027/adapter/raw/pass1_source/strict_return_work_contracts.rs",
+      "sha256": "e852ff7860d9b9ae4f9ae411988ae8d5b99dc3d56b63d6025b0d7842d087e585"
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.06s
+     Running tests/native_reaudit_radius_contracts.rs (target/debug/deps/native_reaudit_radius_contracts-5ba7062e30d08355)
+
+running 3 tests
+test valid_state_map_requires_one_unit_of_radius ... ok
+test radius_policies_reject_nonfinite_or_negative_alpha ... ok
+test negative_alpha_cannot_turn_a_required_positive_radius_into_zero ... FAILED
+
+failures:
+
+---- negative_alpha_cannot_turn_a_required_positive_radius_into_zero stdout ----
+
+thread 'negative_alpha_cannot_turn_a_required_positive_radius_into_zero' (6080) panicked at crates/rodas5p-integrators/tests/native_reaudit_radius_contracts.rs:25:5:
+invalid negative absolute coefficient produced Ok(BoxEvaluation { mode: ActionFirst, bound: [[1.0], [0.0]], state_radius: [[0.0, -1.0]], max_state_radius: 0.0, closes: true, work: PathSumWork { directed_operations: 2, matrix_products: 0, matrix_vector_products: 1, allocated_values: 12, peak_live_values: 8 }, nonzeros: 0 })
+stack backtrace:
+   0:     0x557cf0fb9e82 - std::backtrace_rs::backtrace::libunwind::trace::h650f3484750cac6f
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/../../backtrace/src/backtrace/libunwind.rs:117:9
+   1:     0x557cf0fb9e82 - std::backtrace_rs::backtrace::trace_unsynchronized::hee951f78e969ac04
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/../../backtrace/src/backtrace/mod.rs:66:14
+   2:     0x557cf0fb9e82 - std::sys::backtrace::_print_fmt::hb210b023f6e87be7
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/backtrace.rs:74:9
+   3:     0x557cf0fb9e82 - <std::sys::backtrace::BacktraceLock::print::DisplayBacktrace as core::fmt::Display>::fmt::hdadc7c28d26d7ce3
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/backtrace.rs:44:26
+   4:     0x557cf0fca8fa - core::fmt::rt::Argument::fmt::hca43ba1468fa0a13
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/fmt/rt.rs:152:76
+   5:     0x557cf0fca8fa - core::fmt::write::h469843d235cc4241
+   6:     0x557cf0f88b66 - std::io::default_write_fmt::hd7a1b719f1eee29b
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/io/mod.rs:639:11
+   7:     0x557cf0f88b66 - std::io::Write::write_fmt::h86cdd20e46f95ef0
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/io/mod.rs:1994:13
+   8:     0x557cf0f991f9 - std::sys::backtrace::BacktraceLock::print::hb91bd19c9b07a6b2
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/backtrace.rs:47:9
+   9:     0x557cf0f991f9 - std::panicking::default_hook::{{closure}}::hd9d92b9a46805102
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:292:27
+  10:     0x557cf0f99091 - std::panicking::default_hook::hedb2be0819bbe276
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:316:9
+  11:     0x557cf0f2697e - <alloc::boxed::Box<F,A> as core::ops::function::Fn<Args>>::call::he80a7da40294963b
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/alloc/src/boxed.rs:2220:9
+  12:     0x557cf0f2697e - test::test_main_with_exit_callback::{{closure}}::h816111d0ddcced19
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:145:21
+  13:     0x557cf0f99522 - <alloc::boxed::Box<F,A> as core::ops::function::Fn<Args>>::call::h575effa6ce691fba
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/alloc/src/boxed.rs:2220:9
+  14:     0x557cf0f99522 - std::panicking::panic_with_hook::h0fc23abecf35c6bd
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:833:13
+  15:     0x557cf0f992b8 - std::panicking::panic_handler::{{closure}}::ha111c1a3ccf85d19
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:698:13
+  16:     0x557cf0f947f9 - std::sys::backtrace::__rust_end_short_backtrace::h41d63216e1ba5fa4
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/backtrace.rs:182:18
+  17:     0x557cf0f7d74d - __rustc[16f1505adc47261a]::rust_begin_unwind
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:689:5
+  18:     0x557cf0fd214c - core::panicking::panic_fmt::hc13412975f563dde
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/panicking.rs:80:14
+  19:     0x557cf0f05c38 - native_reaudit_radius_contracts::negative_alpha_cannot_turn_a_required_positive_radius_into_zero::h63d76aa35b665ace
+                               at /mnt/data/vigilode_resume_20261003/repo/crates/rodas5p-integrators/tests/native_reaudit_radius_contracts.rs:25:5
+  20:     0x557cf0efcf07 - native_reaudit_radius_contracts::negative_alpha_cannot_turn_a_required_positive_radius_into_zero::{{closure}}::h31b98f33f73fd771
+                               at /mnt/data/vigilode_resume_20261003/repo/crates/rodas5p-integrators/tests/native_reaudit_radius_contracts.rs:15:69
+  21:     0x557cf0ef69f6 - core::ops::function::FnOnce::call_once::h50f86ec94a0374f5
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/function.rs:250:5
+  22:     0x557cf0f2677b - core::ops::function::FnOnce::call_once::hcedf29067db45234
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/function.rs:250:5
+  23:     0x557cf0f2677b - test::__rust_begin_short_backtrace::h253a2097187731c8
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:663:18
+  24:     0x557cf0f3a14a - test::run_test_in_process::{{closure}}::h9f29dfec2aca52f7
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:686:74
+  25:     0x557cf0f3a14a - <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once::hd73326fdd719e811
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/panic/unwind_safe.rs:274:9
+  26:     0x557cf0f3a14a - std::panicking::catch_unwind::do_call::h4acd66bf04832c2e
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:581:40
+  27:     0x557cf0f3a14a - std::panicking::catch_unwind::h145e182474d2aec9
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:544:19
+  28:     0x557cf0f3a14a - std::panic::catch_unwind::h13b3eeaad06e07e2
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panic.rs:359:14
+  29:     0x557cf0f3a14a - test::run_test_in_process::h8630a98bbeca471b
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:686:27
+  30:     0x557cf0f3a14a - test::run_test::{{closure}}::h1a5d6d0603e1925c
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:607:43
+  31:     0x557cf0f14564 - test::run_test::{{closure}}::h179c37d8042186f7
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/test/src/lib.rs:637:41
+  32:     0x557cf0f14564 - std::sys::backtrace::__rust_begin_short_backtrace::hb67b3f617d02f8cc
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/backtrace.rs:166:18
+  33:     0x557cf0f17f02 - std::thread::lifecycle::spawn_unchecked::{{closure}}::{{closure}}::h97f549af76bb89d9
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/thread/lifecycle.rs:91:13
+  34:     0x557cf0f17f02 - <core::panic::unwind_safe::AssertUnwindSafe<F> as core::ops::function::FnOnce<()>>::call_once::h572411d6447c3318
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/panic/unwind_safe.rs:274:9
+  35:     0x557cf0f17f02 - std::panicking::catch_unwind::do_call::h561e21b3bae62d2d
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:581:40
+  36:     0x557cf0f17f02 - std::panicking::catch_unwind::hb9c2999cbf1df339
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panicking.rs:544:19
+  37:     0x557cf0f17f02 - std::panic::catch_unwind::h831cfbf01bfc7230
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/panic.rs:359:14
+  38:     0x557cf0f17f02 - std::thread::lifecycle::spawn_unchecked::{{closure}}::hd4fd692d2bb5f73a
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/thread/lifecycle.rs:89:26
+  39:     0x557cf0f17f02 - core::ops::function::FnOnce::call_once{{vtable.shim}}::h920ca148ba3af64d
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/function.rs:250:5
+  40:     0x557cf0f8fa8f - <alloc::boxed::Box<F,A> as core::ops::function::FnOnce<Args>>::call_once::hf477931d93d2e366
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/alloc/src/boxed.rs:2206:9
+  41:     0x557cf0f8fa8f - std::sys::thread::unix::Thread::new::thread_start::h96f969bf98c6e59d
+                               at /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/std/src/sys/thread/unix.rs:130:17
+  42:     0x7fb6bae39b7b - <unknown>
+  43:     0x7fb6baeb77f8 - <unknown>
+  44:                0x0 - <unknown>
+
+
+failures:
+    negative_alpha_cannot_turn_a_required_positive_radius_into_zero
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test native_reaudit_radius_contracts`

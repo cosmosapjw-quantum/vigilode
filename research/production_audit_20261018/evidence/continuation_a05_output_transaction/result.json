@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "unit": "A05 transactional verified-output collector preparation",
+  "scope_status": "SCOPED_PASS",
+  "full_a05_status": "HOLD",
+  "source_commit": "f5a1b15971e435aee661e6deb39c65677c432bf4",
+  "source_commit_remote_verified": true,
+  "working_tree_dependencies_at_execution": {
+    "crates/rodas5p-integrators/src/output.rs": "071dd29860921439f093c62728df4af608f218228c4dab51be37c2c6cf359992",
+    "crates/rodas5p-integrators/src/packet_window.rs": "9debf64a83aade053cf24533059dd720dd2af10b771eb3d6608e0765bb32838c",
+    "crates/rodas5p-integrators/src/packet_curve.rs": "28534d53f2739b9de04e83aa0b9608d0e581828c0944de6e237bb96c192a6992",
+    "crates/rodas5p-integrators/src/lib.rs": "c7e31189cba73513c5571347e876a349f2bbec3059dc9d125e44c16d6a952c78",
+    "Cargo.lock": "04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400"
+  },
+  "command": "cargo test --locked --offline -p rodas5p-integrators --lib transactional_dense_output_tests -- --nocapture",
+  "exit_code": 0,
+  "environment": {
+    "rustc": "1.94.1 (e408947bf 2026-03-25)",
+    "cargo": "1.94.1 (29ea6fb6a 2026-03-24)",
+    "offline": true,
+    "locked": true,
+    "runtime_model_identity": "NOT_INDEPENDENTLY_OBSERVED"
+  },
+  "tests": {
+    "passed": 5,
+    "failed": 0,
+    "filtered": 51,
+    "test_names": [
+      "ordinary_collector_has_no_verified_radius_prefix",
+      "late_preparation_refusal_invalidates_earlier_staged_rows",
+      "prepared_dense_interval_refusal_keeps_committed_prefix",
+      "verified_radius_mode_cannot_be_reentered_after_preparation",
+      "prepared_dense_interval_rejects_nonfinite_radius_without_commit"
+    ]
+  },
+  "independent_review": {
+    "reviewer_role": "costroute-research-review",
+    "requested_model_effort": "gpt-6-astra/xhigh",
+    "runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+    "verdict": "PASS",
+    "reviewed_source_sha256": "071dd29860921439f093c62728df4af608f218228c4dab51be37c2c6cf359992",
+    "findings_closed": [
+      "Repeated verified-mode activation cannot replace a valid prepared staging token.",
+      "Ordinary-mode radius access returns an empty slice instead of panicking.",
+      "A late preparation refusal invalidates all staged rows while retaining the committed prefix."
+    ]
+  },
+  "claim_ceiling": "Only the opt-in collector's preallocated prepare/commit transaction is admitted. No adaptive-driver integration, verified provider/model identity, global trajectory, PR101 witness, or generic global-output claim."
+}

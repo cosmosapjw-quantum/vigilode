@@ -1,0 +1,791 @@
+{
+  "schema_version": 1,
+  "audit_source_commit": "7a63876a97fc17f640771ec06658269947049994",
+  "solver_source_commit": "de4c10a9f41321beef2313a3d7fb503bab35d714",
+  "method": "Read-only artifact hashes, independent aggregation and analytic output evaluation; no new solver runs",
+  "integrity": {
+    "manifest_entries": 759,
+    "actual_files": 760,
+    "mismatches": [],
+    "unlisted_files": [
+      "ARTIFACT_SHA256SUMS.json"
+    ],
+    "status": "PASS"
+  },
+  "phase_counts": {
+    "screening": {
+      "attempts": 216,
+      "statuses": {
+        "OK": 216
+      },
+      "recorded_accuracy_pass": 66,
+      "recorded_accuracy_fail": 132,
+      "recorded_accuracy_unknown": 18,
+      "sources": [
+        "RAW_RESULTS.jsonl"
+      ]
+    },
+    "confirmation_original": {
+      "attempts": 147,
+      "statuses": {
+        "OK": 126,
+        "ENVIRONMENT_OR_ADAPTER_FAILURE": 21
+      },
+      "recorded_accuracy_pass": 56,
+      "recorded_accuracy_fail": 70,
+      "recorded_accuracy_unknown": 21,
+      "sources": [
+        "CONFIRMATION_RESULTS.jsonl"
+      ]
+    },
+    "confirmation_rotation_corrected": {
+      "attempts": 21,
+      "statuses": {
+        "OK": 21
+      },
+      "recorded_accuracy_pass": 0,
+      "recorded_accuracy_fail": 21,
+      "recorded_accuracy_unknown": 0,
+      "sources": [
+        "CONFIRMATION_ROTATION_V2.jsonl"
+      ]
+    },
+    "julia_confirmation": {
+      "attempts": 49,
+      "statuses": {
+        "OK": 49
+      },
+      "recorded_accuracy_pass": 42,
+      "recorded_accuracy_fail": 7,
+      "recorded_accuracy_unknown": 0,
+      "sources": [
+        "JULIA_RESULTS.jsonl"
+      ]
+    },
+    "throughput_main": {
+      "attempts": 196,
+      "statuses": {
+        "OK": 175,
+        "ENVIRONMENT_OR_ADAPTER_FAILURE": 21
+      },
+      "recorded_accuracy_pass": 56,
+      "recorded_accuracy_fail": 70,
+      "recorded_accuracy_unknown": 70,
+      "sources": [
+        "THROUGHPUT_RESULTS.jsonl",
+        "throughput_raw/A-decay-n8__scipy_vode_adams.jsonl",
+        "throughput_raw/A-decay-n8__scipy_vode_bdf.jsonl",
+        "throughput_raw/A-decay-n8__vigilode.jsonl",
+        "throughput_raw/B-stiffdiag-n32-L1000__scipy_vode_adams.jsonl",
+        "throughput_raw/B-stiffdiag-n32-L1000__scipy_vode_bdf.jsonl",
+        "throughput_raw/B-stiffdiag-n32-L1000__vigilode.jsonl",
+        "throughput_raw/C-rotation-w10__scipy_vode_adams.jsonl",
+        "throughput_raw/C-rotation-w10__scipy_vode_bdf.jsonl",
+        "throughput_raw/C-rotation-w10__vigilode.jsonl",
+        "throughput_raw/D-damping-z1__scipy_vode_adams.jsonl",
+        "throughput_raw/D-damping-z1__scipy_vode_bdf.jsonl",
+        "throughput_raw/D-damping-z1__vigilode.jsonl",
+        "throughput_raw/E-nonnormal-transient__scipy_vode_adams.jsonl",
+        "throughput_raw/E-nonnormal-transient__scipy_vode_bdf.jsonl",
+        "throughput_raw/E-nonnormal-transient__vigilode.jsonl",
+        "throughput_raw/F-heat-n128__scipy_vode_adams.jsonl",
+        "throughput_raw/F-heat-n128__scipy_vode_bdf.jsonl",
+        "throughput_raw/F-heat-n128__vigilode.jsonl",
+        "throughput_raw/G-mixed-nearzero__scipy_vode_adams.jsonl",
+        "throughput_raw/G-mixed-nearzero__scipy_vode_bdf.jsonl",
+        "throughput_raw/G-mixed-nearzero__vigilode.jsonl"
+      ]
+    },
+    "throughput_rotation_corrected": {
+      "attempts": 21,
+      "statuses": {
+        "OK": 21
+      },
+      "recorded_accuracy_pass": 0,
+      "recorded_accuracy_fail": 21,
+      "recorded_accuracy_unknown": 0,
+      "sources": [
+        "THROUGHPUT_ROTATION_V2.jsonl"
+      ]
+    },
+    "diffsol_confirmation": {
+      "attempts": 70,
+      "statuses": {
+        "OK": 70
+      },
+      "recorded_accuracy_pass": 28,
+      "recorded_accuracy_fail": 28,
+      "recorded_accuracy_unknown": 14,
+      "sources": [
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ]
+    },
+    "decay_work_precision": {
+      "attempts": 140,
+      "statuses": {
+        "OK": 112,
+        "UNSPECIFIED": 28
+      },
+      "recorded_accuracy_pass": 77,
+      "recorded_accuracy_fail": 63,
+      "recorded_accuracy_unknown": 0,
+      "sources": [
+        "TOLERANCE_RESULTS.jsonl"
+      ]
+    },
+    "rotation_work_precision": {
+      "attempts": 140,
+      "statuses": {
+        "UNSPECIFIED": 28,
+        "OK": 112
+      },
+      "recorded_accuracy_pass": 7,
+      "recorded_accuracy_fail": 133,
+      "recorded_accuracy_unknown": 0,
+      "sources": [
+        "ROTATION_TOLERANCE_RESULTS_RECOVERED.jsonl"
+      ]
+    },
+    "nonlinear_confirmation": {
+      "attempts": 70,
+      "statuses": {
+        "OK": 70
+      },
+      "recorded_accuracy_pass": 0,
+      "recorded_accuracy_fail": 0,
+      "recorded_accuracy_unknown": 70,
+      "sources": [
+        "NONLINEAR_CONFIRMATION_RESULTS.jsonl"
+      ]
+    }
+  },
+  "measurement_attempts": 1070,
+  "rotation_work_precision_corrected": [
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "rtol": 1e-10,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 1.0972422970212392,
+      "median_correct_scope_seconds": 0.001671373,
+      "timing_scope": "elapsed_seconds_or_vode_wrapper_call",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 0
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "rtol": 1e-08,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 26.088876069212173,
+      "median_correct_scope_seconds": 0.000901016,
+      "timing_scope": "elapsed_seconds_or_vode_wrapper_call",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 0
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "rtol": 1e-06,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 7123.064228402349,
+      "median_correct_scope_seconds": 0.00037559100000000004,
+      "timing_scope": "elapsed_seconds_or_vode_wrapper_call",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 0
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "rtol": 0.0001,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 2406287.442536948,
+      "median_correct_scope_seconds": 0.000161554,
+      "timing_scope": "elapsed_seconds_or_vode_wrapper_call",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 0
+    },
+    {
+      "solver": "diffsol",
+      "rtol": 1e-10,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 3.7163150334862394,
+      "median_correct_scope_seconds": 0.000628673,
+      "timing_scope": "elapsed_seconds_or_vode_wrapper_call",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 0
+    },
+    {
+      "solver": "diffsol",
+      "rtol": 1e-08,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 119.58028796193908,
+      "median_correct_scope_seconds": 0.00039082,
+      "timing_scope": "elapsed_seconds_or_vode_wrapper_call",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 0
+    },
+    {
+      "solver": "diffsol",
+      "rtol": 1e-06,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 25410.22020075078,
+      "median_correct_scope_seconds": 0.000193787,
+      "timing_scope": "elapsed_seconds_or_vode_wrapper_call",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 0
+    },
+    {
+      "solver": "diffsol",
+      "rtol": 0.0001,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 3537858.4023971697,
+      "median_correct_scope_seconds": 9.0177e-05,
+      "timing_scope": "elapsed_seconds_or_vode_wrapper_call",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 0
+    },
+    {
+      "solver": "scipy_vode_adams",
+      "rtol": 1e-10,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 732.8525103433847,
+      "median_correct_scope_seconds": 0.005172777047846466,
+      "timing_scope": "elapsed_seconds_or_vode_wrapper_call",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 7
+    },
+    {
+      "solver": "scipy_vode_adams",
+      "rtol": 1e-08,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 1655.3165084568493,
+      "median_correct_scope_seconds": 0.0023445039987564087,
+      "timing_scope": "elapsed_seconds_or_vode_wrapper_call",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 7
+    },
+    {
+      "solver": "scipy_vode_adams",
+      "rtol": 1e-06,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 376694.9318761991,
+      "median_correct_scope_seconds": 0.0016388989752158523,
+      "timing_scope": "elapsed_seconds_or_vode_wrapper_call",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 7
+    },
+    {
+      "solver": "scipy_vode_adams",
+      "rtol": 0.0001,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 6951540.6726319315,
+      "median_correct_scope_seconds": 0.0017373059527017176,
+      "timing_scope": "elapsed_seconds_or_vode_wrapper_call",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 7
+    },
+    {
+      "solver": "scipy_vode_bdf",
+      "rtol": 1e-10,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 757.9399979862344,
+      "median_correct_scope_seconds": 0.0076368789887055755,
+      "timing_scope": "elapsed_seconds_or_vode_wrapper_call",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 7
+    },
+    {
+      "solver": "scipy_vode_bdf",
+      "rtol": 1e-08,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 5046.432473493525,
+      "median_correct_scope_seconds": 0.003245775995310396,
+      "timing_scope": "elapsed_seconds_or_vode_wrapper_call",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 7
+    },
+    {
+      "solver": "scipy_vode_bdf",
+      "rtol": 1e-06,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 488891.6463559608,
+      "median_correct_scope_seconds": 0.0017446320271119475,
+      "timing_scope": "elapsed_seconds_or_vode_wrapper_call",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 7
+    },
+    {
+      "solver": "scipy_vode_bdf",
+      "rtol": 0.0001,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 49033059.85459641,
+      "median_correct_scope_seconds": 0.0012257980415597558,
+      "timing_scope": "elapsed_seconds_or_vode_wrapper_call",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 7
+    },
+    {
+      "solver": "vigilode",
+      "rtol": 1e-10,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 7,
+      "recorded_max_scaled_error": 0.38768280732598714,
+      "median_correct_scope_seconds": 0.001515231,
+      "timing_scope": "native_internal_timed_solve",
+      "recomputed_endpoint_pass": 7,
+      "recomputed_endpoint_count": 7
+    },
+    {
+      "solver": "vigilode",
+      "rtol": 1e-08,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 24.37043373518188,
+      "median_correct_scope_seconds": 0.00083036,
+      "timing_scope": "native_internal_timed_solve",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 7
+    },
+    {
+      "solver": "vigilode",
+      "rtol": 1e-06,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 5156.614120926653,
+      "median_correct_scope_seconds": 0.000402479,
+      "timing_scope": "native_internal_timed_solve",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 7
+    },
+    {
+      "solver": "vigilode",
+      "rtol": 0.0001,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "measurements": 7,
+      "recorded_grid_pass": 0,
+      "recorded_max_scaled_error": 903534.6119907275,
+      "median_correct_scope_seconds": 0.000146849,
+      "timing_scope": "native_internal_timed_solve",
+      "recomputed_endpoint_pass": 0,
+      "recomputed_endpoint_count": 7
+    }
+  ],
+  "julia_rotation_throughput_corrections": [
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "repetition": 1,
+      "old_max_scaled_error": 35126828.92881432,
+      "corrected": {
+        "max_abs_error": 7.123064228698983e-07,
+        "max_scaled_error": 7123.064228402349,
+        "accuracy_pass_scaled_le_1": false
+      },
+      "time_grid_source": "harness/cases.json"
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "repetition": 2,
+      "old_max_scaled_error": 35126828.92881432,
+      "corrected": {
+        "max_abs_error": 7.123064228698983e-07,
+        "max_scaled_error": 7123.064228402349,
+        "accuracy_pass_scaled_le_1": false
+      },
+      "time_grid_source": "harness/cases.json"
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "repetition": 3,
+      "old_max_scaled_error": 35126828.92881432,
+      "corrected": {
+        "max_abs_error": 7.123064228698983e-07,
+        "max_scaled_error": 7123.064228402349,
+        "accuracy_pass_scaled_le_1": false
+      },
+      "time_grid_source": "harness/cases.json"
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "repetition": 4,
+      "old_max_scaled_error": 35126828.92881432,
+      "corrected": {
+        "max_abs_error": 7.123064228698983e-07,
+        "max_scaled_error": 7123.064228402349,
+        "accuracy_pass_scaled_le_1": false
+      },
+      "time_grid_source": "harness/cases.json"
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "repetition": 5,
+      "old_max_scaled_error": 35126828.92881432,
+      "corrected": {
+        "max_abs_error": 7.123064228698983e-07,
+        "max_scaled_error": 7123.064228402349,
+        "accuracy_pass_scaled_le_1": false
+      },
+      "time_grid_source": "harness/cases.json"
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "repetition": 6,
+      "old_max_scaled_error": 35126828.92881432,
+      "corrected": {
+        "max_abs_error": 7.123064228698983e-07,
+        "max_scaled_error": 7123.064228402349,
+        "accuracy_pass_scaled_le_1": false
+      },
+      "time_grid_source": "harness/cases.json"
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "repetition": 7,
+      "old_max_scaled_error": 35126828.92881432,
+      "corrected": {
+        "max_abs_error": 7.123064228698983e-07,
+        "max_scaled_error": 7123.064228402349,
+        "accuracy_pass_scaled_le_1": false
+      },
+      "time_grid_source": "harness/cases.json"
+    }
+  ],
+  "independent_full_grid_checks": [
+    {
+      "source": "JULIA_RESULTS.jsonl",
+      "checked": 49,
+      "classification_mismatches": 0
+    },
+    {
+      "source": "DIFFSOL_RESULTS_RECOVERED.jsonl",
+      "checked": 56,
+      "classification_mismatches": 0
+    }
+  ],
+  "decision_scope_corrections": [
+    {
+      "solver": "vigilode",
+      "case_id": "E-nonnormal-transient",
+      "old_rtol": 1e-06,
+      "correct_rtol": 1e-07,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "existing_verdict": "hold"
+    },
+    {
+      "solver": "scipy_vode_adams",
+      "case_id": "E-nonnormal-transient",
+      "old_rtol": 1e-06,
+      "correct_rtol": 1e-07,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "existing_verdict": "prune"
+    },
+    {
+      "solver": "scipy_vode_bdf",
+      "case_id": "E-nonnormal-transient",
+      "old_rtol": 1e-06,
+      "correct_rtol": 1e-07,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "existing_verdict": "prune"
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "case_id": "E-nonnormal-transient",
+      "old_rtol": 1e-06,
+      "correct_rtol": 1e-07,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "existing_verdict": "hold"
+    },
+    {
+      "solver": "diffsol",
+      "case_id": "E-nonnormal-transient",
+      "old_rtol": 1e-06,
+      "correct_rtol": 1e-07,
+      "atol": [
+        1e-10,
+        1e-10
+      ],
+      "existing_verdict": "hold"
+    },
+    {
+      "solver": "vigilode",
+      "case_id": "G-mixed-nearzero",
+      "old_rtol": 1e-06,
+      "correct_rtol": 1e-08,
+      "atol": [
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14
+      ],
+      "existing_verdict": "hold"
+    },
+    {
+      "solver": "scipy_vode_adams",
+      "case_id": "G-mixed-nearzero",
+      "old_rtol": 1e-06,
+      "correct_rtol": 1e-08,
+      "atol": [
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14
+      ],
+      "existing_verdict": "prune"
+    },
+    {
+      "solver": "scipy_vode_bdf",
+      "case_id": "G-mixed-nearzero",
+      "old_rtol": 1e-06,
+      "correct_rtol": 1e-08,
+      "atol": [
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14
+      ],
+      "existing_verdict": "prune"
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "case_id": "G-mixed-nearzero",
+      "old_rtol": 1e-06,
+      "correct_rtol": 1e-08,
+      "atol": [
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14
+      ],
+      "existing_verdict": "hold"
+    },
+    {
+      "solver": "diffsol",
+      "case_id": "G-mixed-nearzero",
+      "old_rtol": 1e-06,
+      "correct_rtol": 1e-08,
+      "atol": [
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14,
+        1e-14
+      ],
+      "existing_verdict": "prune"
+    }
+  ],
+  "findings": [
+    {
+      "id": "NCP-A01",
+      "severity": "high",
+      "class": "reporting",
+      "evidence": "REPORT_KO.md versus ROTATION_TOLERANCE_RESULTS_RECOVERED.jsonl / WORK_PRECISION_COVERAGE.json",
+      "finding": "Report says rotation0/140 pass; raw and coverage support7/140 pass (VigilODE rtol1e-10),133fail.",
+      "action": "Use corrected derived aggregate; keep historical text and evidence unchanged."
+    },
+    {
+      "id": "NCP-A02",
+      "severity": "high",
+      "class": "implementation",
+      "evidence": "harness/analyze_campaign.py exact_rotation caller",
+      "finding": "Julia throughput rotation reference uses invented0.01 time grid; actual request uses2*pi*i/40.",
+      "action": "Corrected metrics above; maintain failure classification at rtol1e-6 but replace inflated error."
+    },
+    {
+      "id": "NCP-A03",
+      "severity": "high",
+      "class": "measurement_semantics",
+      "evidence": "harness/analyze_campaign.py work precision times selection",
+      "finding": "VigilODE process wall includes startup and internal warmup whereas Julia/diffsol use warmed solver timing; available native timing.elapsed_ns is ignored.",
+      "action": "Use separate cold-process and timed-solve cohorts; no speed promotion from current plot."
+    },
+    {
+      "id": "NCP-A04",
+      "severity": "medium",
+      "class": "reporting",
+      "evidence": "DECISIONS.json; harness/cases.json",
+      "finding": "Nonnormal and mixed-nearzero decisions incorrectly label rtol1e-6; actual1e-7 and1e-8 respectively.",
+      "action": "Apply scope corrections listed above."
+    },
+    {
+      "id": "NCP-A05",
+      "severity": "high",
+      "class": "comparison_configuration",
+      "evidence": "harness/confirmation_worker.py and SciPy v1.11.4 scipy/integrate/_ode.py vode defaults / _determine_mf_and_set_bands",
+      "finding": "VODE has no Jacobian callback, bands or with_jacobian=True, so Adams/BDF are functional iteration MF10/MF20. Metadata calling this default finite-difference Jacobian is incorrect.",
+      "action": "Keep original evidence; add explicit analytic or internal-Jacobian BDF comparison with complete derivative work before performance conclusions.",
+      "reference": "https://github.com/scipy/scipy/blob/v1.11.4/scipy/integrate/_ode.py"
+    },
+    {
+      "id": "NCP-A06",
+      "severity": "medium",
+      "class": "measurement_semantics",
+      "evidence": "harness/julia_solver_v2.jl solveonce counters",
+      "finding": "Julia nlu is mapped to nsolve/nsolve_linear, which counts solves rather than LU factorizations.",
+      "action": "Record linear_solves separately; report nlu null unless actual factorization count available."
+    },
+    {
+      "id": "NCP-A07",
+      "severity": "high",
+      "class": "unsupported_claim",
+      "evidence": "CONFIG.json and all campaign solver identifiers",
+      "finding": "This bundle exercises native-rodas5p-fast only, not SP02 GMRES; no evidence for claimed dense-fast/SP02 3-5x or preconditioned3-5iterations.",
+      "action": "Treat as hypotheses and measure actual dimension/preconditioner crossover."
+    },
+    {
+      "id": "NCP-A08",
+      "severity": "medium",
+      "class": "evidence_coverage",
+      "evidence": "Native/VODE confirmation and precision rows preserve states_final but not full states",
+      "finding": "Native/VODE full sampled-grid errors cannot be independently recomputed from saved rows; endpoints can be checked, Julia/diffsol full grids are available.",
+      "action": "Persist output_times and complete states or hashed lossless array artifacts for next campaign."
+    },
+    {
+      "id": "NCP-A09",
+      "severity": "medium",
+      "class": "metric_validation",
+      "evidence": "harness/confirmation_worker.py metrics and related copies",
+      "finding": "zip silently truncates mismatched grids/dimensions; empty output yields max error0. Existing complete-output rows do not prove the validator safe.",
+      "action": "Require nonempty exact-length finite output and terminal-time match before accuracy evaluation."
+    }
+  ],
+  "interpretation": {
+    "broad_production": "HOLD",
+    "rotation_rtol_1e_10": "recorded sampled-grid PASS; endpoints independently recomputed; full native trajectory not retained",
+    "rotation_rtol_1e_6": "scoped measured failure persists",
+    "stiffness": "local-error tolerance is not a global trajectory-error guarantee; use fixed application budget separate from internal tolerance",
+    "speed_claims": "diagnostic only; matched timing scopes and paired rerun required",
+    "largescale_FVM_readiness": "not established by n<=512 dense-adapter screening"
+  },
+  "metric_contract_checks": {
+    "exact_initial_state": "pass",
+    "empty_mismatched_nonfinite_rejections": 4
+  },
+  "execution": {
+    "status": "completed",
+    "exit_code": 0,
+    "command": "python3 research/ncp_followup_20261021/audit_ncp_artifacts.py",
+    "solver_runs": 0
+  }
+}

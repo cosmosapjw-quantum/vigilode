@@ -1,0 +1,129 @@
+{
+  "schema_version": 1,
+  "unit": "A02-CONTRACT-SUPPLEMENT-01",
+  "status": "HOLD_PENDING_INDEPENDENT_SUPPLEMENT_REVIEW",
+  "requested_model": "gpt-6.1-sol",
+  "requested_effort": "xhigh",
+  "observed_runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+  "created_at_utc": "2026-10-18T10:55:02.218043+00:00",
+  "cwd": "/home/cosmosapjw/vigilode",
+  "observed_head": "7e2873887ed6038b47b667c976435810851c5dba",
+  "allowed_write_scope": [
+    "A02_VERIFIED_TRAJECTORY_CONTRACT.md",
+    "A02_RESEARCH_DECISION.json",
+    "evidence/continuation_a02_research/supplement_01/**"
+  ],
+  "actual_work": "source intake, exact scalar subtraction witness for input freezing, contract/manifest/preregistration assembly, source hash/JSON readback",
+  "code_modified": false,
+  "tests_modified": false,
+  "tests_run": false,
+  "builds_run": false,
+  "solver_or_oracle_runs": false,
+  "commands": [
+    {
+      "command": "pwd; git status --short; git branch --show-current; git rev-parse HEAD (read-only state intake)",
+      "exit_code": 0
+    },
+    {
+      "command": "rg memory and read AGENTS.md plus physmath-research-loop1.3.0 selected instructions",
+      "exit_code": 0
+    },
+    {
+      "command": "read trajectory/local certificate source with line numbers and original source/decision bindings",
+      "exit_code": 0
+    },
+    {
+      "command": "read guessed packet_unequal_frequency_fraction_oracle.py path",
+      "exit_code": 2,
+      "classification": "SOURCE_LOOKUP_PATH_NOT_FOUND",
+      "corrected_to": "crates/rodas5p-integrators/tests/packet_unequal_fraction_oracle.py",
+      "scientific_failure": false,
+      "raw_message": "sed: can't read crates/rodas5p-integrators/tests/packet_unequal_frequency_fraction_oracle.py: No such file or directory"
+    },
+    {
+      "command": "Python inline metadata assembly: preserve prior contract/decision and parent-reported prior review input",
+      "exit_code": 0
+    },
+    {
+      "command": "Python inline metadata assembly: freeze AT01-AT12 model/config/bits/schedule/limits manifest and exact scalar offset witness",
+      "exit_code": 0
+    },
+    {
+      "command": "Python inline metadata assembly: supplement contract, source bindings, pure preregistration and decision",
+      "exit_code": 0
+    },
+    {
+      "command": "Python inline metadata readback: parse JSON, compare source/document hashes and unchanged D1-D5 byte range",
+      "exit_code": 0,
+      "readback_output": "METADATA_READBACK.json"
+    },
+    {
+      "command": "git diff --no-index --check research/production_audit_20261018/evidence/continuation_a02_research/supplement_01/PRIOR_CONTRACT.md research/production_audit_20261018/A02_VERIFIED_TRAJECTORY_CONTRACT.md",
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "",
+      "classification": "EXPECTED_NO_INDEX_CONTENT_DIFFERENCES; NO_WHITESPACE_DIAGNOSTICS",
+      "scientific_failure": false,
+      "raw_record": "DIFF_CHECK.json"
+    }
+  ],
+  "skill_context_used": [
+    "/home/cosmosapjw/.codex/plugins/cache/created-by-me-remote/physmath-research-loop/1.3.0/skills/physmath-research-loop/SKILL.md",
+    "references/POLICY_INTEGRATION.md",
+    "references/THEORY_LOOP.md",
+    "references/SUBAGENT_MODE.md"
+  ],
+  "delegation_boundary": "No recursive delegation. Parent supplied this bounded research contract task and owns independent review/implementation dispatch.",
+  "output_hashes": [
+    {
+      "path": "research/production_audit_20261018/A02_VERIFIED_TRAJECTORY_CONTRACT.md",
+      "sha256": "566130e113b172a7352072dfc0dc71fd92960e6b24ae72e2a4684cde0d048e78"
+    },
+    {
+      "path": "research/production_audit_20261018/A02_RESEARCH_DECISION.json",
+      "sha256": "d8b426104636ec9af94afd4a147adb350998dc1b947159f19681d208b9cbdd2e"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02_research/supplement_01/CONTRACT_SUPPLEMENT.diff",
+      "sha256": "59b9f4851e3dcd4d9993ecd0b07ec28084da252d0d50332ecc2173bb25347f66"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02_research/supplement_01/DIFF_CHECK.json",
+      "sha256": "47e41f32113d6ea4189d35bc4f98fe67832bbd8381508761a9c1258d32d89afb"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02_research/supplement_01/FROZEN_ACCEPTANCE_INPUTS.json",
+      "sha256": "5a867fc2ee80db7afe29834681f50819305d59cb37d9b802d48223a14a31837d"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02_research/supplement_01/IDENTITY_BEFORE.json",
+      "sha256": "6b159572ced7e57e700781c9534177468328be945cc5f5f7b19707f9e1aabc0a"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02_research/supplement_01/METADATA_READBACK.json",
+      "sha256": "2c1a7d3a4d1b99472996f2c64c08c4c5413d4ff8a5076761d9234820f401a731"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02_research/supplement_01/PREREGISTRATION.md",
+      "sha256": "f299a3bfd97261312ba64653f2bb96b2fd9f04d6129009f780727e5432648b96"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02_research/supplement_01/PRIOR_CONTRACT.md",
+      "sha256": "3fb06e7977ac4b0fd4eba9379aad647c1203204bd4573a87058a87bad1593105"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02_research/supplement_01/PRIOR_DECISION.json",
+      "sha256": "a3af478633ccbe4ecbe19b318545a98ad0d45aef5270472751f836918dade596"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02_research/supplement_01/PRIOR_REVIEW_HANDOFF.json",
+      "sha256": "ffbb97a899f7cec88291b7d9841b9d8655f59d0be577d892142f1adfcb4c09a4"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02_research/supplement_01/SOURCE_BINDINGS.json",
+      "sha256": "1170fad132e157c3a6c8aae085d3abe1791700e41ada31dbda21f389f25b0639"
+    }
+  ],
+  "next_action": "Parent dispatches read-only independent C1/C2 supplement review; implementation_approved remains false pending verdict",
+  "observed_final_head": "7e2873887ed6038b47b667c976435810851c5dba"
+}

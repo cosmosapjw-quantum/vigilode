@@ -1,0 +1,47 @@
+
+running 20 tests
+test unsupported_requests_are_refused_not_substituted ... ok
+test malformed_input_is_refused_before_any_step ... ok
+test an_exhausted_attempt_budget_is_a_typed_failure ... ok
+test a_recoverable_rhs_error_rejects_the_step_and_the_run_succeeds ... ok
+test explicit_time_derivative_drives_a_nonautonomous_problem ... ok
+test dense_jacobian_with_declared_band_is_verified_and_routed_to_the_banded_driver ... ok
+test vector_atol_refused_on_mf_sequential_and_declared_band ... ok
+test banded_finite_difference_uses_grouped_columns_and_the_banded_driver ... ok
+test dense_route_records_jacobian_reuses_and_lu ... ok
+test banded_routes_record_band_work ... ok
+test a_failing_rhs_returns_the_partial_solution_and_a_typed_reason ... ok
+test finite_difference_robertson_is_within_twice_the_analytic_error ... ok
+test performance_tier_executes_the_protected_route_bit_for_bit ... ok
+test banded_user_jacobian_is_bit_identical_to_the_direct_banded_driver ... ok
+test stats_serialize_every_option_and_counter ... ok
+test robertson_dense_jacobian_is_bit_identical_to_the_direct_fast_driver ... ok
+test vector_atol_accepted_on_fast_routes ... ok
+test zero_atol_with_an_identically_zero_component_succeeds_on_dense_and_jvp_routes ... ok
+test stiff_example_jvp_is_bit_identical_to_the_direct_matrix_free_driver ... ok
+test matrix_free_route_records_state_reuses_and_policy_ids ... ok
+
+test result: ok. 20 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.50s
+
+
+running 3 tests
+test fatal_on_last_budget_attempt_overrides_budget_and_skips_events ... ok
+test fatal_interior_sink_rejects_candidate_and_keeps_initial_prefix ... ok
+test terminal_callbacks_stop_once_and_preserve_prefix_on_supported_routes ... FAILED
+
+failures:
+
+---- terminal_callbacks_stop_once_and_preserve_prefix_on_supported_routes stdout ----
+
+thread 'terminal_callbacks_stop_once_and_preserve_prefix_on_supported_routes' (103938) panicked at crates/vigilode/tests/frontier_fatal_session_contracts.rs:181:17:
+assertion `left == right` failed
+  left: 1
+ right: 0
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    terminal_callbacks_stop_once_and_preserve_prefix_on_supported_routes
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.29s
+

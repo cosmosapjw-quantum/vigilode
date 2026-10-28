@@ -1,0 +1,19 @@
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.62s
+     Running tests/a05_dense_global_output.rs (target/debug/deps/a05_dense_global_output-e259d7a60d25c1b8)
+
+running 1 test
+
+thread 'signed_one_sided_gain_uses_outward_residual_integral_and_refuses_overflow' (3675405) panicked at crates/rodas5p-integrators/tests/a05_dense_global_output.rs:614:5:
+unexpected overflow refusal: Err(Core(InvalidInput("interval [-1.7976931348623157e308, inf] is not a finite ordered pair")))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test signed_one_sided_gain_uses_outward_residual_integral_and_refuses_overflow ... FAILED
+
+failures:
+
+failures:
+    signed_one_sided_gain_uses_outward_residual_integral_and_refuses_overflow
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 14 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test a05_dense_global_output`

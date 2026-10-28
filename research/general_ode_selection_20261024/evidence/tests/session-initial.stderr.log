@@ -1,0 +1,102 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-production-1024/crates/vigilode)
+error[E0061]: this method takes 0 arguments but 1 argument was supplied
+   --> crates/vigilode/tests/production_selection_contracts.rs:11:10
+    |
+ 11 |         .autonomous(true)
+    |          ^^^^^^^^^^ ---- unexpected argument of type `bool`
+    |
+note: method defined here
+   --> crates/vigilode/src/problem.rs:213:12
+    |
+213 |     pub fn autonomous(mut self) -> Self {
+    |            ^^^^^^^^^^
+help: remove the extra argument
+    |
+ 11 -         .autonomous(true)
+ 11 +         .autonomous()
+    |
+
+error[E0061]: this method takes 0 arguments but 1 argument was supplied
+   --> crates/vigilode/tests/production_selection_contracts.rs:38:15
+    |
+ 38 |     let p = p.autonomous(true);
+    |               ^^^^^^^^^^ ---- unexpected argument of type `bool`
+    |
+note: method defined here
+   --> crates/vigilode/src/problem.rs:213:12
+    |
+213 |     pub fn autonomous(mut self) -> Self {
+    |            ^^^^^^^^^^
+help: remove the extra argument
+    |
+ 38 -     let p = p.autonomous(true);
+ 38 +     let p = p.autonomous();
+    |
+
+error[E0061]: this method takes 0 arguments but 1 argument was supplied
+   --> crates/vigilode/tests/production_selection_contracts.rs:48:59
+    |
+ 48 |         .jacobian(Jacobian::dense(|_, _, _| panic!("J"))).autonomous(true);
+    |                                                           ^^^^^^^^^^ ---- unexpected argument of type `bool`
+    |
+note: method defined here
+   --> crates/vigilode/src/problem.rs:213:12
+    |
+213 |     pub fn autonomous(mut self) -> Self {
+    |            ^^^^^^^^^^
+help: remove the extra argument
+    |
+ 48 -         .jacobian(Jacobian::dense(|_, _, _| panic!("J"))).autonomous(true);
+ 48 +         .jacobian(Jacobian::dense(|_, _, _| panic!("J"))).autonomous();
+    |
+
+error[E0061]: this method takes 0 arguments but 1 argument was supplied
+   --> crates/vigilode/tests/production_selection_contracts.rs:52:68
+    |
+ 52 |     let p = Problem::new(65, |_, _, _| panic!("RHS")).banded(0, 0).autonomous(true);
+    |                                                                    ^^^^^^^^^^ ---- unexpected argument of type `bool`
+    |
+note: method defined here
+   --> crates/vigilode/src/problem.rs:213:12
+    |
+213 |     pub fn autonomous(mut self) -> Self {
+    |            ^^^^^^^^^^
+help: remove the extra argument
+    |
+ 52 -     let p = Problem::new(65, |_, _, _| panic!("RHS")).banded(0, 0).autonomous(true);
+ 52 +     let p = Problem::new(65, |_, _, _| panic!("RHS")).banded(0, 0).autonomous();
+    |
+
+error[E0061]: this method takes 0 arguments but 1 argument was supplied
+   --> crates/vigilode/tests/production_selection_contracts.rs:60:62
+    |
+ 60 |         .jacobian(Jacobian::jvp(|_, _, _, _| panic!("JVP"))).autonomous(true);
+    |                                                              ^^^^^^^^^^ ---- unexpected argument of type `bool`
+    |
+note: method defined here
+   --> crates/vigilode/src/problem.rs:213:12
+    |
+213 |     pub fn autonomous(mut self) -> Self {
+    |            ^^^^^^^^^^
+help: remove the extra argument
+    |
+ 60 -         .jacobian(Jacobian::jvp(|_, _, _, _| panic!("JVP"))).autonomous(true);
+ 60 +         .jacobian(Jacobian::jvp(|_, _, _, _| panic!("JVP"))).autonomous();
+    |
+
+For more information about this error, try `rustc --explain E0061`.
+error: could not compile `vigilode` (test "production_selection_contracts") due to 5 previous errors
+warning: build failed, waiting for other jobs to finish...

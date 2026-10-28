@@ -1,0 +1,572 @@
+{
+  "schema": "vigilode.adapter-integration-run.v1",
+  "commit": "e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824",
+  "binary": "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+  "binary_sha256": "a1bcf11a07f0518ee964966206b8e09d3648f0564c258e99c323630cb3d62efb",
+  "source_sha256": "d79350f8acc55abb91a09c9d1ea6f606f5afd06d3630c3a74ed2f41e68d73f5f",
+  "source_dirty": "A  crates/vigilode/examples/adaptive_entry_pilot.rs\nA  crates/vigilode/examples/causal_budget_pilot.rs\nA  crates/vigilode/examples/joint_execution_pilot.rs\nMM crates/vigilode/src/automatic.rs\nA  crates/vigilode/src/causal_budget.rs\nM  crates/vigilode/src/execution_policy.rs\nM  crates/vigilode/src/lib.rs\nA  crates/vigilode/src/selection_evidence.rs\nMM crates/vigilode/src/switching.rs\nAM crates/vigilode/tests/adaptive_entry_contracts.rs\n M crates/vigilode/tests/automatic_adapter_contracts.rs\nA  crates/vigilode/tests/causal_budget_contracts.rs\nA  crates/vigilode/tests/execution_identity_drift.rs\nA  crates/vigilode/tests/selection_evidence_contracts.rs\nA  research/joint_controller_20261025/ARTIFACT_MANIFEST.json\nA  research/joint_controller_20261025/DECISIONS.json\nA  research/joint_controller_20261025/LOCAL_CODEX_HANDOFF_KO.md\nA  research/joint_controller_20261025/NEXT_STEPS.json\nA  research/joint_controller_20261025/README_KO.md\nA  research/joint_controller_20261025/RECOVERY_INVENTORY_20261026.json\nA  research/joint_controller_20261025/REPORT_KO.md\nA  research/joint_controller_20261025/RESEARCH_WORKFLOW.json\nA  research/joint_controller_20261025/RUN_CONTEXT.json\nA  research/joint_controller_20261025/SOURCE_BASELINE.json\nA  research/joint_controller_20261025/VALIDATION.json\nA  research/joint_controller_20261025/causal/CONTRACT.json\nA  research/joint_controller_20261025/causal/PILOT_SUMMARY.json\nA  research/joint_controller_20261025/causal/README_KO.md\nA  research/joint_controller_20261025/causal/native/RECEIPT.json\nA  research/joint_controller_20261025/causal/native/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/causal/native/stderr.log\nA  research/joint_controller_20261025/causal/native/stdout.log\nA  research/joint_controller_20261025/causal/summarize_pilot.py\nA  research/joint_controller_20261025/evidence/EVIDENCE_SUMMARY.md\nA  research/joint_controller_20261025/evidence/EXECUTION.json\nA  research/joint_controller_20261025/evidence/FINAL_PILOT_ANALYSIS.json\nA  research/joint_controller_20261025/evidence/FINAL_PILOT_ANALYSIS.md\nA  research/joint_controller_20261025/evidence/INITIAL_PILOT_ANALYSIS.json\nA  research/joint_controller_20261025/evidence/INITIAL_PILOT_ANALYSIS.md\nA  research/joint_controller_20261025/evidence/NATIVE_PILOT_SUMMARY.json\nA  research/joint_controller_20261025/evidence/NATIVE_PILOT_SUMMARY_FINAL.json\nA  research/joint_controller_20261025/evidence/PUBLISHED_SELECTION_AUDIT.json\nA  research/joint_controller_20261025/evidence/REVIEW_KO.md\nA  research/joint_controller_20261025/evidence/figures/final_native/native_selection_pilots.pdf\nA  research/joint_controller_20261025/evidence/figures/final_native/native_selection_pilots.png\nA  research/joint_controller_20261025/evidence/figures/final_native/native_selection_pilots.svg\nA  research/joint_controller_20261025/evidence/figures/initial_native/native_selection_pilots.pdf\nA  research/joint_controller_20261025/evidence/figures/initial_native/native_selection_pilots.png\nA  research/joint_controller_20261025/evidence/figures/initial_native/native_selection_pilots.svg\nA  research/joint_controller_20261025/evidence/figures/published_selection_costs.pdf\nA  research/joint_controller_20261025/evidence/figures/published_selection_costs.png\nA  research/joint_controller_20261025/evidence/figures/published_selection_costs.svg\nA  research/joint_controller_20261025/execution/IMPLEMENTATION.json\nA  research/joint_controller_20261025/execution/RESEARCH_KO.md\nA  research/joint_controller_20261025/execution/native/RECEIPT.json\nA  research/joint_controller_20261025/execution/native/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/execution/native/stderr.log\nA  research/joint_controller_20261025/execution/native/stdout.log\nA  research/joint_controller_20261025/history/CHECKS.json\nA  research/joint_controller_20261025/history/REUSE_KO.md\nA  research/joint_controller_20261025/history/REUSE_MATRIX.json\nA  research/joint_controller_20261025/review/EXACT_ORACLE_CHECK.json\nA  research/joint_controller_20261025/review/EXACT_ORACLE_CHECK_INITIAL.json\nA  research/joint_controller_20261025/review/INDEPENDENT_EXECUTION.json\nA  research/joint_controller_20261025/review/INDEPENDENT_EXECUTION_INITIAL.json\nA  research/joint_controller_20261025/review/NATIVE_ORACLE_ROWS.txt\nA  research/joint_controller_20261025/review/NATIVE_ORACLE_ROWS_INITIAL.txt\nA  research/joint_controller_20261025/review/REVIEW.json\nA  research/joint_controller_20261025/review/REVIEW_KO.md\nA  research/joint_controller_20261025/review/check_probe.py\nA  research/joint_controller_20261025/review/independent_probe.rs\nA  research/joint_controller_20261025/review/independent_probe_initial.rs\nA  research/joint_controller_20261025/review/probe_check.stderr\nA  research/joint_controller_20261025/review/probe_compile.stderr\nA  research/joint_controller_20261025/review/probe_compile.stdout\nA  research/joint_controller_20261025/review/probe_run.stderr\nA  research/joint_controller_20261025/sources/WOLFRAM_CHECK.json\nA  research/joint_controller_20261025/switching/DESIGN_KO.md\nA  research/joint_controller_20261025/switching/IMPLEMENTATION.json\nA  research/joint_controller_20261025/switching/native/RUN.json\nA  research/joint_controller_20261025/switching/native/case5_adaptive_0.stderr\nA  research/joint_controller_20261025/switching/native/case5_adaptive_0.stdout\nA  research/joint_controller_20261025/switching/native/case5_adaptive_1.stderr\nA  research/joint_controller_20261025/switching/native/case5_adaptive_1.stdout\nA  research/joint_controller_20261025/switching/native/case5_adaptive_2.stderr\nA  research/joint_controller_20261025/switching/native/case5_adaptive_2.stdout\nA  research/joint_controller_20261025/switching/native/case5_adaptive_3.stderr\nA  research/joint_controller_20261025/switching/native/case5_adaptive_3.stdout\nA  research/joint_controller_20261025/switching/native/case5_adaptive_4.stderr\nA  research/joint_controller_20261025/switching/native/case5_adaptive_4.stdout\nA  research/joint_controller_20261025/switching/native/case5_adaptive_5.stderr\nA  research/joint_controller_20261025/switching/native/case5_adaptive_5.stdout\nA  research/joint_controller_20261025/switching/native/case5_evidence_0.stderr\nA  research/joint_controller_20261025/switching/native/case5_evidence_0.stdout\nA  research/joint_controller_20261025/switching/native/case5_evidence_1.stderr\nA  research/joint_controller_20261025/switching/native/case5_evidence_1.stdout\nA  research/joint_controller_20261025/switching/native/case5_evidence_2.stderr\nA  research/joint_controller_20261025/switching/native/case5_evidence_2.stdout\nA  research/joint_controller_20261025/switching/native/case5_evidence_3.stderr\nA  research/joint_controller_20261025/switching/native/case5_evidence_3.stdout\nA  research/joint_controller_20261025/switching/native/case5_evidence_4.stderr\nA  research/joint_controller_20261025/switching/native/case5_evidence_4.stdout\nA  research/joint_controller_20261025/switching/native/case5_evidence_5.stderr\nA  research/joint_controller_20261025/switching/native/case5_evidence_5.stdout\nA  research/joint_controller_20261025/switching/native/case5_rodas_0.stderr\nA  research/joint_controller_20261025/switching/native/case5_rodas_0.stdout\nA  research/joint_controller_20261025/switching/native/case5_rodas_1.stderr\nA  research/joint_controller_20261025/switching/native/case5_rodas_1.stdout\nA  research/joint_controller_20261025/switching/native/case5_rodas_2.stderr\nA  research/joint_controller_20261025/switching/native/case5_rodas_2.stdout\nA  research/joint_controller_20261025/switching/native/case5_rodas_3.stderr\nA  research/joint_controller_20261025/switching/native/case5_rodas_3.stdout\nA  research/joint_controller_20261025/switching/native/case5_rodas_4.stderr\nA  research/joint_controller_20261025/switching/native/case5_rodas_4.stdout\nA  research/joint_controller_20261025/switching/native/case5_rodas_5.stderr\nA  research/joint_controller_20261025/switching/native/case5_rodas_5.stdout\nA  research/joint_controller_20261025/switching/native/decay_adaptive_0.stderr\nA  research/joint_controller_20261025/switching/native/decay_adaptive_0.stdout\nA  research/joint_controller_20261025/switching/native/decay_adaptive_1.stderr\nA  research/joint_controller_20261025/switching/native/decay_adaptive_1.stdout\nA  research/joint_controller_20261025/switching/native/decay_adaptive_2.stderr\nA  research/joint_controller_20261025/switching/native/decay_adaptive_2.stdout\nA  research/joint_controller_20261025/switching/native/decay_adaptive_3.stderr\nA  research/joint_controller_20261025/switching/native/decay_adaptive_3.stdout\nA  research/joint_controller_20261025/switching/native/decay_adaptive_4.stderr\nA  research/joint_controller_20261025/switching/native/decay_adaptive_4.stdout\nA  research/joint_controller_20261025/switching/native/decay_adaptive_5.stderr\nA  research/joint_controller_20261025/switching/native/decay_adaptive_5.stdout\nA  research/joint_controller_20261025/switching/native/decay_dopri_0.stderr\nA  research/joint_controller_20261025/switching/native/decay_dopri_0.stdout\nA  research/joint_controller_20261025/switching/native/decay_dopri_1.stderr\nA  research/joint_controller_20261025/switching/native/decay_dopri_1.stdout\nA  research/joint_controller_20261025/switching/native/decay_dopri_2.stderr\nA  research/joint_controller_20261025/switching/native/decay_dopri_2.stdout\nA  research/joint_controller_20261025/switching/native/decay_dopri_3.stderr\nA  research/joint_controller_20261025/switching/native/decay_dopri_3.stdout\nA  research/joint_controller_20261025/switching/native/decay_dopri_4.stderr\nA  research/joint_controller_20261025/switching/native/decay_dopri_4.stdout\nA  research/joint_controller_20261025/switching/native/decay_dopri_5.stderr\nA  research/joint_controller_20261025/switching/native/decay_dopri_5.stdout\nA  research/joint_controller_20261025/switching/native/decay_evidence_0.stderr\nA  research/joint_controller_20261025/switching/native/decay_evidence_0.stdout\nA  research/joint_controller_20261025/switching/native/decay_evidence_1.stderr\nA  research/joint_controller_20261025/switching/native/decay_evidence_1.stdout\nA  research/joint_controller_20261025/switching/native/decay_evidence_2.stderr\nA  research/joint_controller_20261025/switching/native/decay_evidence_2.stdout\nA  research/joint_controller_20261025/switching/native/decay_evidence_3.stderr\nA  research/joint_controller_20261025/switching/native/decay_evidence_3.stdout\nA  research/joint_controller_20261025/switching/native/decay_evidence_4.stderr\nA  research/joint_controller_20261025/switching/native/decay_evidence_4.stdout\nA  research/joint_controller_20261025/switching/native/decay_evidence_5.stderr\nA  research/joint_controller_20261025/switching/native/decay_evidence_5.stdout\nA  research/joint_controller_20261025/switching/native/pilot.jsonl\nA  research/joint_controller_20261025/switching/native/relaxation_adaptive_0.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_adaptive_0.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_adaptive_1.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_adaptive_1.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_adaptive_2.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_adaptive_2.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_adaptive_3.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_adaptive_3.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_adaptive_4.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_adaptive_4.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_adaptive_5.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_adaptive_5.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_evidence_0.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_evidence_0.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_evidence_1.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_evidence_1.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_evidence_2.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_evidence_2.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_evidence_3.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_evidence_3.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_evidence_4.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_evidence_4.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_evidence_5.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_evidence_5.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_rodas_0.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_rodas_0.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_rodas_1.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_rodas_1.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_rodas_2.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_rodas_2.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_rodas_3.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_rodas_3.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_rodas_4.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_rodas_4.stdout\nA  research/joint_controller_20261025/switching/native/relaxation_rodas_5.stderr\nA  research/joint_controller_20261025/switching/native/relaxation_rodas_5.stdout\nA  research/joint_controller_20261025/switching/native/rotation_adaptive_0.stderr\nA  research/joint_controller_20261025/switching/native/rotation_adaptive_0.stdout\nA  research/joint_controller_20261025/switching/native/rotation_adaptive_1.stderr\nA  research/joint_controller_20261025/switching/native/rotation_adaptive_1.stdout\nA  research/joint_controller_20261025/switching/native/rotation_adaptive_2.stderr\nA  research/joint_controller_20261025/switching/native/rotation_adaptive_2.stdout\nA  research/joint_controller_20261025/switching/native/rotation_adaptive_3.stderr\nA  research/joint_controller_20261025/switching/native/rotation_adaptive_3.stdout\nA  research/joint_controller_20261025/switching/native/rotation_adaptive_4.stderr\nA  research/joint_controller_20261025/switching/native/rotation_adaptive_4.stdout\nA  research/joint_controller_20261025/switching/native/rotation_adaptive_5.stderr\nA  research/joint_controller_20261025/switching/native/rotation_adaptive_5.stdout\nA  research/joint_controller_20261025/switching/native/rotation_dopri_0.stderr\nA  research/joint_controller_20261025/switching/native/rotation_dopri_0.stdout\nA  research/joint_controller_20261025/switching/native/rotation_dopri_1.stderr\nA  research/joint_controller_20261025/switching/native/rotation_dopri_1.stdout\nA  research/joint_controller_20261025/switching/native/rotation_dopri_2.stderr\nA  research/joint_controller_20261025/switching/native/rotation_dopri_2.stdout\nA  research/joint_controller_20261025/switching/native/rotation_dopri_3.stderr\nA  research/joint_controller_20261025/switching/native/rotation_dopri_3.stdout\nA  research/joint_controller_20261025/switching/native/rotation_dopri_4.stderr\nA  research/joint_controller_20261025/switching/native/rotation_dopri_4.stdout\nA  research/joint_controller_20261025/switching/native/rotation_dopri_5.stderr\nA  research/joint_controller_20261025/switching/native/rotation_dopri_5.stdout\nA  research/joint_controller_20261025/switching/native/rotation_evidence_0.stderr\nA  research/joint_controller_20261025/switching/native/rotation_evidence_0.stdout\nA  research/joint_controller_20261025/switching/native/rotation_evidence_1.stderr\nA  research/joint_controller_20261025/switching/native/rotation_evidence_1.stdout\nA  research/joint_controller_20261025/switching/native/rotation_evidence_2.stderr\nA  research/joint_controller_20261025/switching/native/rotation_evidence_2.stdout\nA  research/joint_controller_20261025/switching/native/rotation_evidence_3.stderr\nA  research/joint_controller_20261025/switching/native/rotation_evidence_3.stdout\nA  research/joint_controller_20261025/switching/native/rotation_evidence_4.stderr\nA  research/joint_controller_20261025/switching/native/rotation_evidence_4.stdout\nA  research/joint_controller_20261025/switching/native/rotation_evidence_5.stderr\nA  research/joint_controller_20261025/switching/native/rotation_evidence_5.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_adaptive_0.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_adaptive_0.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_adaptive_1.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_adaptive_1.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_adaptive_2.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_adaptive_2.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_adaptive_3.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_adaptive_3.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_adaptive_4.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_adaptive_4.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_adaptive_5.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_adaptive_5.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_evidence_0.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_evidence_0.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_evidence_1.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_evidence_1.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_evidence_2.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_evidence_2.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_evidence_3.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_evidence_3.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_evidence_4.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_evidence_4.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_evidence_5.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_evidence_5.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_rodas_0.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_rodas_0.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_rodas_1.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_rodas_1.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_rodas_2.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_rodas_2.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_rodas_3.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_rodas_3.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_rodas_4.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_rodas_4.stdout\nA  research/joint_controller_20261025/switching/native/stiff-forced_rodas_5.stderr\nA  research/joint_controller_20261025/switching/native/stiff-forced_rodas_5.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_adaptive_0.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_adaptive_0.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_adaptive_1.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_adaptive_1.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_adaptive_2.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_adaptive_2.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_adaptive_3.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_adaptive_3.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_adaptive_4.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_adaptive_4.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_adaptive_5.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_adaptive_5.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_evidence_0.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_evidence_0.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_evidence_1.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_evidence_1.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_evidence_2.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_evidence_2.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_evidence_3.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_evidence_3.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_evidence_4.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_evidence_4.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_evidence_5.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_evidence_5.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_rodas_0.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_rodas_0.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_rodas_1.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_rodas_1.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_rodas_2.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_rodas_2.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_rodas_3.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_rodas_3.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_rodas_4.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_rodas_4.stdout\nA  research/joint_controller_20261025/switching/native/transition-47_rodas_5.stderr\nA  research/joint_controller_20261025/switching/native/transition-47_rodas_5.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_adaptive_0.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_adaptive_0.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_adaptive_1.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_adaptive_1.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_adaptive_2.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_adaptive_2.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_adaptive_3.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_adaptive_3.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_adaptive_4.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_adaptive_4.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_adaptive_5.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_adaptive_5.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_evidence_0.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_evidence_0.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_evidence_1.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_evidence_1.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_evidence_2.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_evidence_2.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_evidence_3.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_evidence_3.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_evidence_4.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_evidence_4.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_evidence_5.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_evidence_5.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_rodas_0.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_rodas_0.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_rodas_1.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_rodas_1.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_rodas_2.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_rodas_2.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_rodas_3.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_rodas_3.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_rodas_4.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_rodas_4.stdout\nA  research/joint_controller_20261025/switching/native/transition-91_rodas_5.stderr\nA  research/joint_controller_20261025/switching/native/transition-91_rodas_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/RUN.json\nA  research/joint_controller_20261025/switching/native_r2/case5_adaptive_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_adaptive_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_adaptive_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_adaptive_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_adaptive_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_adaptive_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_adaptive_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_adaptive_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_adaptive_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_adaptive_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_adaptive_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_adaptive_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_evidence_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_evidence_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_evidence_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_evidence_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_evidence_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_evidence_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_evidence_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_evidence_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_evidence_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_evidence_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_evidence_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_evidence_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_rodas_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_rodas_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_rodas_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_rodas_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_rodas_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_rodas_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_rodas_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_rodas_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_rodas_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_rodas_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/case5_rodas_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/case5_rodas_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_adaptive_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_adaptive_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_adaptive_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_adaptive_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_adaptive_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_adaptive_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_adaptive_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_adaptive_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_adaptive_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_adaptive_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_adaptive_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_adaptive_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_dopri_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_dopri_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_dopri_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_dopri_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_dopri_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_dopri_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_dopri_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_dopri_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_dopri_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_dopri_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_dopri_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_dopri_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_evidence_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_evidence_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_evidence_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_evidence_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_evidence_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_evidence_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_evidence_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_evidence_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_evidence_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_evidence_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/decay_evidence_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/decay_evidence_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/pilot.jsonl\nA  research/joint_controller_20261025/switching/native_r2/relaxation_adaptive_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_adaptive_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_adaptive_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_adaptive_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_adaptive_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_adaptive_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_adaptive_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_adaptive_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_adaptive_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_adaptive_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_adaptive_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_adaptive_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_evidence_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_evidence_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_evidence_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_evidence_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_evidence_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_evidence_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_evidence_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_evidence_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_evidence_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_evidence_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_evidence_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_evidence_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_rodas_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_rodas_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_rodas_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_rodas_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_rodas_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_rodas_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_rodas_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_rodas_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_rodas_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_rodas_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/relaxation_rodas_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/relaxation_rodas_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_adaptive_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_adaptive_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_adaptive_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_adaptive_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_adaptive_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_adaptive_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_adaptive_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_adaptive_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_adaptive_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_adaptive_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_adaptive_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_adaptive_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_dopri_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_dopri_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_dopri_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_dopri_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_dopri_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_dopri_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_dopri_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_dopri_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_dopri_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_dopri_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_dopri_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_dopri_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_evidence_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_evidence_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_evidence_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_evidence_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_evidence_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_evidence_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_evidence_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_evidence_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_evidence_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_evidence_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/rotation_evidence_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/rotation_evidence_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_adaptive_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_adaptive_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_adaptive_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_adaptive_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_adaptive_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_adaptive_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_adaptive_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_adaptive_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_adaptive_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_adaptive_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_adaptive_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_adaptive_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_evidence_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_evidence_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_evidence_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_evidence_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_evidence_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_evidence_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_evidence_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_evidence_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_evidence_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_evidence_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_evidence_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_evidence_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_rodas_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_rodas_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_rodas_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_rodas_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_rodas_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_rodas_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_rodas_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_rodas_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_rodas_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_rodas_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_rodas_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/stiff-forced_rodas_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_adaptive_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_adaptive_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_adaptive_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_adaptive_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_adaptive_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_adaptive_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_adaptive_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_adaptive_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_adaptive_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_adaptive_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_adaptive_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_adaptive_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_evidence_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_evidence_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_evidence_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_evidence_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_evidence_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_evidence_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_evidence_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_evidence_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_evidence_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_evidence_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_evidence_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_evidence_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_rodas_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_rodas_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_rodas_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_rodas_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_rodas_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_rodas_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_rodas_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_rodas_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_rodas_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_rodas_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-43_rodas_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-43_rodas_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_adaptive_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_adaptive_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_adaptive_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_adaptive_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_adaptive_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_adaptive_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_adaptive_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_adaptive_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_adaptive_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_adaptive_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_adaptive_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_adaptive_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_evidence_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_evidence_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_evidence_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_evidence_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_evidence_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_evidence_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_evidence_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_evidence_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_evidence_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_evidence_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_evidence_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_evidence_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_rodas_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_rodas_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_rodas_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_rodas_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_rodas_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_rodas_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_rodas_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_rodas_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_rodas_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_rodas_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-47_rodas_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-47_rodas_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_adaptive_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_adaptive_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_adaptive_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_adaptive_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_adaptive_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_adaptive_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_adaptive_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_adaptive_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_adaptive_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_adaptive_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_adaptive_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_adaptive_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_evidence_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_evidence_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_evidence_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_evidence_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_evidence_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_evidence_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_evidence_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_evidence_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_evidence_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_evidence_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_evidence_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_evidence_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_rodas_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_rodas_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_rodas_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_rodas_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_rodas_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_rodas_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_rodas_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_rodas_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_rodas_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_rodas_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-87_rodas_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-87_rodas_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_adaptive_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_adaptive_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_adaptive_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_adaptive_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_adaptive_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_adaptive_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_adaptive_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_adaptive_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_adaptive_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_adaptive_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_adaptive_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_adaptive_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_evidence_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_evidence_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_evidence_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_evidence_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_evidence_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_evidence_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_evidence_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_evidence_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_evidence_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_evidence_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_evidence_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_evidence_5.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_rodas_0.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_rodas_0.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_rodas_1.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_rodas_1.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_rodas_2.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_rodas_2.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_rodas_3.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_rodas_3.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_rodas_4.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_rodas_4.stdout\nA  research/joint_controller_20261025/switching/native_r2/transition-91_rodas_5.stderr\nA  research/joint_controller_20261025/switching/native_r2/transition-91_rodas_5.stdout\nA  research/joint_controller_20261025/switching/transient_diagnostic/RECEIPT.json\nA  research/joint_controller_20261025/switching/transient_diagnostic/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/switching/transient_diagnostic/stderr.log\nA  research/joint_controller_20261025/switching/transient_diagnostic/stdout.log\nA  research/joint_controller_20261025/theory/CHECK_RESULTS.json\nA  research/joint_controller_20261025/theory/DERIVATIONS_KO.md\nA  research/joint_controller_20261025/theory/SEARCH_RECEIPT.json\nA  research/joint_controller_20261025/theory/SOURCE_LEDGER.json\nA  research/joint_controller_20261025/theory/check_derivations.py\nA  research/joint_controller_20261025/tools/audit_published_selection.py\nA  research/joint_controller_20261025/tools/plot_native_pilots.py\nA  research/joint_controller_20261025/tools/plot_published_selection.py\nA  research/joint_controller_20261025/tools/run_recorded.py\nA  research/joint_controller_20261025/tools/run_switch_pilot.py\nA  research/joint_controller_20261025/tools/summarize_native_pilots.py\nA  research/joint_controller_20261025/tools/verify_package.py\nA  research/joint_controller_20261025/validation/facade_final/RECEIPT.json\nA  research/joint_controller_20261025/validation/facade_final/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/validation/facade_final/stderr.log\nA  research/joint_controller_20261025/validation/facade_final/stdout.log\nA  research/joint_controller_20261025/validation/facade_final_r2/RECEIPT.json\nA  research/joint_controller_20261025/validation/facade_final_r2/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/validation/facade_final_r2/stderr.log\nA  research/joint_controller_20261025/validation/facade_final_r2/stdout.log\nA  research/joint_controller_20261025/validation/facade_final_r3/RECEIPT.json\nA  research/joint_controller_20261025/validation/facade_final_r3/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/validation/facade_final_r3/stderr.log\nA  research/joint_controller_20261025/validation/facade_final_r3/stdout.log\nA  research/joint_controller_20261025/validation/facade_r1/ENVIRONMENT_FAILURE.json\nA  research/joint_controller_20261025/validation/facade_r1/RECEIPT.json\nA  research/joint_controller_20261025/validation/facade_r1/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/validation/facade_r1/stderr.log\nA  research/joint_controller_20261025/validation/facade_r1/stdout.log\nA  research/joint_controller_20261025/validation/facade_r2/RECEIPT.json\nA  research/joint_controller_20261025/validation/facade_r2/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/validation/facade_r2/stderr.log\nA  research/joint_controller_20261025/validation/facade_r2/stdout.log\nA  research/joint_controller_20261025/validation/initial_compile/RECEIPT.json\nA  research/joint_controller_20261025/validation/initial_compile/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/validation/initial_compile/stderr.log\nA  research/joint_controller_20261025/validation/initial_compile/stdout.log\nA  research/joint_controller_20261025/validation/measurement_build/RECEIPT.json\nA  research/joint_controller_20261025/validation/measurement_build/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/validation/measurement_build/stderr.log\nA  research/joint_controller_20261025/validation/measurement_build/stdout.log\nA  research/joint_controller_20261025/validation/measurement_build_r2/RECEIPT.json\nA  research/joint_controller_20261025/validation/measurement_build_r2/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/validation/measurement_build_r2/stderr.log\nA  research/joint_controller_20261025/validation/measurement_build_r2/stdout.log\nA  research/joint_controller_20261025/validation/measurement_final/RECEIPT.json\nA  research/joint_controller_20261025/validation/measurement_final/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/validation/measurement_final/stderr.log\nA  research/joint_controller_20261025/validation/measurement_final/stdout.log\nA  research/joint_controller_20261025/validation/measurement_final_r2/RECEIPT.json\nA  research/joint_controller_20261025/validation/measurement_final_r2/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/validation/measurement_final_r2/stderr.log\nA  research/joint_controller_20261025/validation/measurement_final_r2/stdout.log\nA  research/joint_controller_20261025/validation/measurement_final_r3/RECEIPT.json\nA  research/joint_controller_20261025/validation/measurement_final_r3/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/validation/measurement_final_r3/stderr.log\nA  research/joint_controller_20261025/validation/measurement_final_r3/stdout.log\nA  research/joint_controller_20261025/validation/return_r1/RECEIPT.json\nA  research/joint_controller_20261025/validation/return_r1/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/validation/return_r1/stderr.log\nA  research/joint_controller_20261025/validation/return_r1/stdout.log\nA  research/joint_controller_20261025/validation/transient_pending_repair/RECEIPT.json\nA  research/joint_controller_20261025/validation/transient_pending_repair/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/validation/transient_pending_repair/stderr.log\nA  research/joint_controller_20261025/validation/transient_pending_repair/stdout.log\nA  research/joint_controller_20261025/validation/transient_repair/RECEIPT.json\nA  research/joint_controller_20261025/validation/transient_repair/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/validation/transient_repair/stderr.log\nA  research/joint_controller_20261025/validation/transient_repair/stdout.log\nA  research/joint_controller_20261025/validation/transient_trace_build/RECEIPT.json\nA  research/joint_controller_20261025/validation/transient_trace_build/SOURCE_INPUTS.json\nA  research/joint_controller_20261025/validation/transient_trace_build/stderr.log\nA  research/joint_controller_20261025/validation/transient_trace_build/stdout.log\n?? crates/vigilode/examples/adapter_integration_pilot.rs\n?? crates/vigilode/tests/automatic_availability_contracts.rs\n?? crates/vigilode/tests/switching_integration_contracts.rs\n?? research/adapter_integration_20261027/\n",
+  "host": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "processor": "x86_64",
+  "cpu_count": 9,
+  "thread_environment": {
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "pairs": [
+    [
+      "rotation",
+      "evidence",
+      "adaptive"
+    ],
+    [
+      "rotation",
+      "adaptive",
+      "dopri"
+    ],
+    [
+      "decay",
+      "evidence",
+      "adaptive"
+    ],
+    [
+      "decay",
+      "adaptive",
+      "dopri"
+    ],
+    [
+      "case5",
+      "evidence",
+      "adaptive"
+    ],
+    [
+      "case5",
+      "adaptive",
+      "rodas"
+    ],
+    [
+      "case5",
+      "adaptive-unseeded",
+      "adaptive"
+    ],
+    [
+      "case5",
+      "adaptive",
+      "rodas-dense"
+    ],
+    [
+      "case5",
+      "rodas",
+      "rodas-dense"
+    ],
+    [
+      "case5",
+      "adaptive-no-startup-retry",
+      "adaptive"
+    ],
+    [
+      "stiff-forced",
+      "evidence",
+      "adaptive"
+    ],
+    [
+      "stiff-forced",
+      "adaptive",
+      "rodas"
+    ],
+    [
+      "stiff-forced",
+      "adaptive-unseeded",
+      "adaptive"
+    ],
+    [
+      "relaxation",
+      "evidence",
+      "adaptive"
+    ],
+    [
+      "relaxation",
+      "adaptive",
+      "rodas"
+    ],
+    [
+      "relaxation",
+      "adaptive-unseeded",
+      "adaptive"
+    ],
+    [
+      "transition-39",
+      "evidence",
+      "adaptive"
+    ],
+    [
+      "transition-39",
+      "adaptive",
+      "rodas"
+    ],
+    [
+      "transition-39",
+      "adaptive-unseeded",
+      "adaptive"
+    ],
+    [
+      "transition-79",
+      "evidence",
+      "adaptive"
+    ],
+    [
+      "transition-79",
+      "adaptive",
+      "rodas"
+    ],
+    [
+      "transition-79",
+      "adaptive-unseeded",
+      "adaptive"
+    ],
+    [
+      "gyro-tight",
+      "evidence",
+      "adaptive"
+    ],
+    [
+      "gyro-tight",
+      "adaptive",
+      "dopri"
+    ],
+    [
+      "gyro-default",
+      "evidence",
+      "adaptive"
+    ],
+    [
+      "gyro-default",
+      "adaptive",
+      "dopri"
+    ]
+  ],
+  "blocks": 5,
+  "runs": [
+    {
+      "case": "rotation",
+      "a": "evidence",
+      "b": "adaptive",
+      "exit": 0,
+      "wall_seconds": 3.919516535999719,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "rotation",
+        "evidence",
+        "adaptive",
+        "5"
+      ],
+      "stdout": "rotation__evidence__adaptive.stdout.json",
+      "stderr": "rotation__evidence__adaptive.stderr.log"
+    },
+    {
+      "case": "rotation",
+      "a": "adaptive",
+      "b": "dopri",
+      "exit": 0,
+      "wall_seconds": 4.365397768997354,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "rotation",
+        "adaptive",
+        "dopri",
+        "5"
+      ],
+      "stdout": "rotation__adaptive__dopri.stdout.json",
+      "stderr": "rotation__adaptive__dopri.stderr.log"
+    },
+    {
+      "case": "decay",
+      "a": "evidence",
+      "b": "adaptive",
+      "exit": 0,
+      "wall_seconds": 4.373567896000168,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "decay",
+        "evidence",
+        "adaptive",
+        "5"
+      ],
+      "stdout": "decay__evidence__adaptive.stdout.json",
+      "stderr": "decay__evidence__adaptive.stderr.log"
+    },
+    {
+      "case": "decay",
+      "a": "adaptive",
+      "b": "dopri",
+      "exit": 0,
+      "wall_seconds": 3.614242389001447,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "decay",
+        "adaptive",
+        "dopri",
+        "5"
+      ],
+      "stdout": "decay__adaptive__dopri.stdout.json",
+      "stderr": "decay__adaptive__dopri.stderr.log"
+    },
+    {
+      "case": "case5",
+      "a": "evidence",
+      "b": "adaptive",
+      "exit": 0,
+      "wall_seconds": 4.6206867690016225,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "case5",
+        "evidence",
+        "adaptive",
+        "5"
+      ],
+      "stdout": "case5__evidence__adaptive.stdout.json",
+      "stderr": "case5__evidence__adaptive.stderr.log"
+    },
+    {
+      "case": "case5",
+      "a": "adaptive",
+      "b": "rodas",
+      "exit": 0,
+      "wall_seconds": 4.125939563000429,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "case5",
+        "adaptive",
+        "rodas",
+        "5"
+      ],
+      "stdout": "case5__adaptive__rodas.stdout.json",
+      "stderr": "case5__adaptive__rodas.stderr.log"
+    },
+    {
+      "case": "case5",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "exit": 0,
+      "wall_seconds": 3.8245967469993047,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "case5",
+        "adaptive-unseeded",
+        "adaptive",
+        "5"
+      ],
+      "stdout": "case5__adaptive-unseeded__adaptive.stdout.json",
+      "stderr": "case5__adaptive-unseeded__adaptive.stderr.log"
+    },
+    {
+      "case": "case5",
+      "a": "adaptive",
+      "b": "rodas-dense",
+      "exit": 0,
+      "wall_seconds": 3.222007749001932,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "case5",
+        "adaptive",
+        "rodas-dense",
+        "5"
+      ],
+      "stdout": "case5__adaptive__rodas-dense.stdout.json",
+      "stderr": "case5__adaptive__rodas-dense.stderr.log"
+    },
+    {
+      "case": "case5",
+      "a": "rodas",
+      "b": "rodas-dense",
+      "exit": 0,
+      "wall_seconds": 3.4419993740011705,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "case5",
+        "rodas",
+        "rodas-dense",
+        "5"
+      ],
+      "stdout": "case5__rodas__rodas-dense.stdout.json",
+      "stderr": "case5__rodas__rodas-dense.stderr.log"
+    },
+    {
+      "case": "case5",
+      "a": "adaptive-no-startup-retry",
+      "b": "adaptive",
+      "exit": 0,
+      "wall_seconds": 4.359636257999227,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "case5",
+        "adaptive-no-startup-retry",
+        "adaptive",
+        "5"
+      ],
+      "stdout": "case5__adaptive-no-startup-retry__adaptive.stdout.json",
+      "stderr": "case5__adaptive-no-startup-retry__adaptive.stderr.log"
+    },
+    {
+      "case": "stiff-forced",
+      "a": "evidence",
+      "b": "adaptive",
+      "exit": 0,
+      "wall_seconds": 2.900560416001099,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "stiff-forced",
+        "evidence",
+        "adaptive",
+        "5"
+      ],
+      "stdout": "stiff-forced__evidence__adaptive.stdout.json",
+      "stderr": "stiff-forced__evidence__adaptive.stderr.log"
+    },
+    {
+      "case": "stiff-forced",
+      "a": "adaptive",
+      "b": "rodas",
+      "exit": 0,
+      "wall_seconds": 3.058319837000454,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "stiff-forced",
+        "adaptive",
+        "rodas",
+        "5"
+      ],
+      "stdout": "stiff-forced__adaptive__rodas.stdout.json",
+      "stderr": "stiff-forced__adaptive__rodas.stderr.log"
+    },
+    {
+      "case": "stiff-forced",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "exit": 0,
+      "wall_seconds": 2.901181886001723,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "stiff-forced",
+        "adaptive-unseeded",
+        "adaptive",
+        "5"
+      ],
+      "stdout": "stiff-forced__adaptive-unseeded__adaptive.stdout.json",
+      "stderr": "stiff-forced__adaptive-unseeded__adaptive.stderr.log"
+    },
+    {
+      "case": "relaxation",
+      "a": "evidence",
+      "b": "adaptive",
+      "exit": 0,
+      "wall_seconds": 2.7563797709990467,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "relaxation",
+        "evidence",
+        "adaptive",
+        "5"
+      ],
+      "stdout": "relaxation__evidence__adaptive.stdout.json",
+      "stderr": "relaxation__evidence__adaptive.stderr.log"
+    },
+    {
+      "case": "relaxation",
+      "a": "adaptive",
+      "b": "rodas",
+      "exit": 0,
+      "wall_seconds": 3.0221944779987098,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "relaxation",
+        "adaptive",
+        "rodas",
+        "5"
+      ],
+      "stdout": "relaxation__adaptive__rodas.stdout.json",
+      "stderr": "relaxation__adaptive__rodas.stderr.log"
+    },
+    {
+      "case": "relaxation",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "exit": 0,
+      "wall_seconds": 2.9754088109984878,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "relaxation",
+        "adaptive-unseeded",
+        "adaptive",
+        "5"
+      ],
+      "stdout": "relaxation__adaptive-unseeded__adaptive.stdout.json",
+      "stderr": "relaxation__adaptive-unseeded__adaptive.stderr.log"
+    },
+    {
+      "case": "transition-39",
+      "a": "evidence",
+      "b": "adaptive",
+      "exit": 0,
+      "wall_seconds": 4.4222864039984415,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "transition-39",
+        "evidence",
+        "adaptive",
+        "5"
+      ],
+      "stdout": "transition-39__evidence__adaptive.stdout.json",
+      "stderr": "transition-39__evidence__adaptive.stderr.log"
+    },
+    {
+      "case": "transition-39",
+      "a": "adaptive",
+      "b": "rodas",
+      "exit": 0,
+      "wall_seconds": 5.276717867000116,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "transition-39",
+        "adaptive",
+        "rodas",
+        "5"
+      ],
+      "stdout": "transition-39__adaptive__rodas.stdout.json",
+      "stderr": "transition-39__adaptive__rodas.stderr.log"
+    },
+    {
+      "case": "transition-39",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "exit": 0,
+      "wall_seconds": 5.298981869000272,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "transition-39",
+        "adaptive-unseeded",
+        "adaptive",
+        "5"
+      ],
+      "stdout": "transition-39__adaptive-unseeded__adaptive.stdout.json",
+      "stderr": "transition-39__adaptive-unseeded__adaptive.stderr.log"
+    },
+    {
+      "case": "transition-79",
+      "a": "evidence",
+      "b": "adaptive",
+      "exit": 0,
+      "wall_seconds": 4.073609989001852,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "transition-79",
+        "evidence",
+        "adaptive",
+        "5"
+      ],
+      "stdout": "transition-79__evidence__adaptive.stdout.json",
+      "stderr": "transition-79__evidence__adaptive.stderr.log"
+    },
+    {
+      "case": "transition-79",
+      "a": "adaptive",
+      "b": "rodas",
+      "exit": 0,
+      "wall_seconds": 3.9139161720013362,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "transition-79",
+        "adaptive",
+        "rodas",
+        "5"
+      ],
+      "stdout": "transition-79__adaptive__rodas.stdout.json",
+      "stderr": "transition-79__adaptive__rodas.stderr.log"
+    },
+    {
+      "case": "transition-79",
+      "a": "adaptive-unseeded",
+      "b": "adaptive",
+      "exit": 0,
+      "wall_seconds": 4.934909060997597,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "transition-79",
+        "adaptive-unseeded",
+        "adaptive",
+        "5"
+      ],
+      "stdout": "transition-79__adaptive-unseeded__adaptive.stdout.json",
+      "stderr": "transition-79__adaptive-unseeded__adaptive.stderr.log"
+    },
+    {
+      "case": "gyro-tight",
+      "a": "evidence",
+      "b": "adaptive",
+      "exit": 0,
+      "wall_seconds": 5.037885154000833,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "gyro-tight",
+        "evidence",
+        "adaptive",
+        "5"
+      ],
+      "stdout": "gyro-tight__evidence__adaptive.stdout.json",
+      "stderr": "gyro-tight__evidence__adaptive.stderr.log"
+    },
+    {
+      "case": "gyro-tight",
+      "a": "adaptive",
+      "b": "dopri",
+      "exit": 0,
+      "wall_seconds": 4.453030078999291,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "gyro-tight",
+        "adaptive",
+        "dopri",
+        "5"
+      ],
+      "stdout": "gyro-tight__adaptive__dopri.stdout.json",
+      "stderr": "gyro-tight__adaptive__dopri.stderr.log"
+    },
+    {
+      "case": "gyro-default",
+      "a": "evidence",
+      "b": "adaptive",
+      "exit": 0,
+      "wall_seconds": 4.101400421997823,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "gyro-default",
+        "evidence",
+        "adaptive",
+        "5"
+      ],
+      "stdout": "gyro-default__evidence__adaptive.stdout.json",
+      "stderr": "gyro-default__evidence__adaptive.stderr.log"
+    },
+    {
+      "case": "gyro-default",
+      "a": "adaptive",
+      "b": "dopri",
+      "exit": 0,
+      "wall_seconds": 3.6038622230007604,
+      "command": [
+        "/tmp/vigilode-target-current-20261027/measurement/examples/adapter_integration_pilot",
+        "gyro-default",
+        "adaptive",
+        "dopri",
+        "5"
+      ],
+      "stdout": "gyro-default__adaptive__dopri.stdout.json",
+      "stderr": "gyro-default__adaptive__dopri.stderr.log"
+    }
+  ],
+  "prior_native_source": "596dcdfae8b95d24f27b57975d9f4626267b8149",
+  "prior_native_tip": "e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824",
+  "native_behavior_parity": "NOT_ASSERTED_BY_THIS_RUNNER; requires separate fixture/config/counter comparison",
+  "same_binary_comparison": true,
+  "concurrent_timed_cells": 1
+}

@@ -1,0 +1,25 @@
+   Compiling rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+error[E0502]: cannot borrow `workspace` as immutable because it is also borrowed as mutable
+    --> crates/rodas5p-core/src/leja_action.rs:2296:13
+     |
+2291 |             &mut workspace,
+     |             -------------- mutable borrow occurs here
+...
+2296 |             workspace.last_certification_ops() > 0,
+     |             ^^^^^^^^^ immutable borrow occurs here
+2297 |             "refusal {failure:?} had no certification work"
+     |                       ------- mutable borrow later used here
+
+error[E0502]: cannot borrow `workspace` as immutable because it is also borrowed as mutable
+    --> crates/rodas5p-core/src/leja_action.rs:2331:13
+     |
+2326 |             &mut workspace,
+     |             -------------- mutable borrow occurs here
+...
+2331 |             workspace.last_certification_ops() > 0,
+     |             ^^^^^^^^^ immutable borrow occurs here
+2332 |             "refusal {failure:?} had no certification work"
+     |                       ------- mutable borrow later used here
+
+For more information about this error, try `rustc --explain E0502`.
+error: could not compile `rodas5p-core` (lib test) due to 2 previous errors

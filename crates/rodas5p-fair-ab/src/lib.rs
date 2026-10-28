@@ -5,14 +5,26 @@ mod adaptive_global_error;
 mod budget;
 mod contracts;
 mod error;
+mod external_comparators;
 mod global_error;
+mod numerical_reference;
+mod output_admissibility;
+mod paired_receipt;
+mod paired_timing;
 mod runner;
 mod scenarios;
+mod scientific_validity_v2_campaign;
 mod session;
+mod session_median;
+mod session_median_study;
+mod timing_authority;
+mod timing_design;
+mod two_arm_campaign_v3;
 
 pub use adapters::solve_case;
 pub use adaptive_global_error::{
     AdaptiveCandidateDescriptor, AdaptiveCandidateFamily, AdaptiveGlobalErrorReport,
+    AdaptiveOutputMode, AdaptiveOutputPolicyPairRecord, AdaptiveOutputPolicyPairStatus,
     AdaptiveProblemDescriptor, AdaptiveRunRow, AdaptiveScreenExecution,
     run_adaptive_global_error_screen, run_g1_adaptive_global_error_screen,
 };
@@ -22,6 +34,33 @@ pub use contracts::{
     ResidualCertificate, SequenceKind, SolveStatus, SolverKind, TimingLedger, WorkLedger,
 };
 pub use error::{FairError, FairResult};
+pub use external_comparators::{
+    EXTERNAL_COMPARATOR_EVIDENCE_SCHEMA_VERSION, ExternalComparatorContract,
+    ExternalComparatorEvidence, ExternalComparatorKind, ExternalDenseOutputPolicy,
+    ExternalEvidenceChecksums, ExternalMassTreatment, ExternalNativeWork, ExternalProblemBinding,
+    ExternalReferenceDependency, ExternalRunStatus, ExternalRunnerBinding,
+    ExternalRunnerDependency, ExternalRuntimeIdentity, ExternalToleranceBinding,
+    SundialsProbeFinding, external_runner_dependency_closure_checksum,
+    external_runtime_identity_checksum, load_external_comparator_evidence,
+    sundials_probe_evidence_checksum,
+};
+pub use paired_receipt::{
+    ArmIdentity, PAIRED_TIMING_MONOTONIC_CLOCK, PAIRED_TIMING_RECEIPT_SCHEMA, PairedTimingEvidence,
+    PairedTimingReceipt, PairedWorkload, SessionFailure, SessionProvenance, SessionRecord,
+    measure_paired_session, merge_session_cases, session_batches,
+};
+pub use paired_timing::{
+    AaControlAssessment, MonteCarloGate, PAIRED_TIMING_BOOTSTRAP_RESAMPLES,
+    PAIRED_TIMING_CONFIDENCE_LEVEL, PAIRED_TIMING_MC_EXTENSION_POLICY,
+    PAIRED_TIMING_MC_FAILURE_BUDGET, PAIRED_TIMING_MIN_INDEPENDENT_BLOCKS, PAIRED_TIMING_MIN_PAIRS,
+    PAIRED_TIMING_MIN_WARMUPS, PAIRED_TIMING_REQUIRED_SPEEDUP, PAIRED_TIMING_SCHEMA,
+    POOLED_PAIR_MEDIAN_ESTIMAND, PairedArm, PairedCaseSummary, PairedTimingAssessment,
+    PairedTimingCase, PairedTimingDecision, PairedTimingProtocol, SESSION_CELL_MEDIAN_ESTIMAND,
+    SpeedupInterval, TimingHostMetadata, abba_pair_order, assess_aa_control, assess_paired_timing,
+    calibrate_batch_iterations, case_clustered_bootstrap, detect_timing_host_metadata,
+    measure_paired_case, measure_paired_case_in_session, monte_carlo_gate, paired_timing_decision,
+    percentile_endpoint_decision, session_abba_order,
+};
 pub use runner::{
     BenchmarkCell, BenchmarkPlan, ComparisonResult, SummaryRow, TraceRunResult,
     build_execution_order, run_comparison, run_trace, summarize_comparison,
@@ -29,17 +68,102 @@ pub use runner::{
 pub use scenarios::{
     CaseDocument, LinearSystemTrace, SequenceConfig, TraceDocument, generate_trace,
 };
+pub use scientific_validity_v2_campaign::{
+    SCIENTIFIC_VALIDITY_V2_CAMPAIGN_SCHEMA, SCIENTIFIC_VALIDITY_V2_CANDIDATE_ID,
+    SCIENTIFIC_VALIDITY_V2_MAX_ATTEMPTS_PER_ARM, SCIENTIFIC_VALIDITY_V2_RUNNER_SCHEMA,
+    ScientificValidityV2CaseArtifact, V2CampaignArmEvidence, V2CampaignArmStatus,
+    V2CampaignOutputMode, V2CampaignReferenceBinding, V2Rodas5pCampaignConfig,
+    freeze_scientific_validity_v2_calibration_artifacts,
+    replay_scientific_validity_v2_oregonator_artifacts, run_scientific_validity_v2_case,
+    run_scientific_validity_v2_case_synthetic_smoke, scientific_validity_v2_campaign_specs,
+    scientific_validity_v2_canonical_campaign_binding, scientific_validity_v2_compiled_revision,
+    scientific_validity_v2_detected_revision, scientific_validity_v2_source_dirty_at_build,
+    validate_scientific_validity_v2_case_artifact,
+};
 pub use session::{RecycleSessionManager, SolverSession, StateTransition};
+pub use session_median::{
+    ExactRatio, SESSION_MEDIAN_MAX_SESSIONS, SessionCells, SessionIntervalStatus,
+    SessionMedianDesign, SessionMedianInterval, exact_session_median_interval,
+    session_cells_from_records, session_median_design,
+};
+pub use session_median_study::{
+    SESSION_MEDIAN_STUDY_PAIRS, SessionMedianLaw, SessionMedianScenario,
+    SessionMedianScenarioResult, SessionMedianStudyReport, session_median_replication_seed,
+    session_median_study, session_median_study_grid, simulate_session_cells,
+};
+pub use timing_authority::{
+    AdmissibleTimingDecision, HypotheticalTimingDecision, SESSION_MEDIAN_INTERVAL_SCHEMA,
+    TimingAuthority, TimingAuthorityDomain, TimingAuthorityStatus, TimingDesignIdentity,
+    select_timing_authority, timing_authority_registry, verify_timing_authority,
+};
+pub use timing_design::{
+    COVERAGE_STUDY_MAX_FALSE_PROMOTE, COVERAGE_STUDY_MIN_COVERAGE, COVERAGE_STUDY_REPLICATIONS,
+    COVERAGE_STUDY_SCHEMA, CoverageReplication, CoverageScenario, CoverageScenarioResult,
+    CoverageStudyReport, DependenceModel, Missingness, SimulatedCorpus, TIMING_DESIGN_CONTRACT,
+    TimingDesign, coverage_replication, coverage_study, preregistered_coverage_grid,
+    replication_seeds, simulate_corpus,
+};
 
 pub(crate) use contracts::relative_solution_error;
 
+/// Audit F-052/F-056 comparator labels carried by fair-ab records.
+pub use rodas5p_integrators::{ComparativeReading, ComparatorFidelity};
+
 pub use global_error::{
-    CommonOutputGrid, ExternalErrorScale, FixedAnchorCandidate, GlobalErrorMetric,
-    GlobalErrorMetrics, GlobalErrorParetoFront, GlobalErrorParetoProfile, GlobalErrorParetoReport,
-    GlobalErrorReport, GlobalErrorRunRow, GlobalErrorTarget, GlobalRunStatus, IntegratorRunRecord,
-    IntegratorRunStatus, IntegratorTimingReport, IntegratorWorkReport, OutputPolicyMetadata,
-    ParetoCostMetric, ParetoFront, ParetoObservation, ParetoObservationStatus,
-    ReferenceSolutionProvenance, ReferenceSourceKind, ReferenceTrajectory, TargetAttainment,
-    TimingProtocol, compute_global_error_metrics, nondominated_observation_ids,
+    CommonOutputGrid, DualOutputPolicyEvidence, ExternalErrorScale, FixedAnchorCandidate,
+    GlobalErrorMetric, GlobalErrorMetrics, GlobalErrorParetoFront, GlobalErrorParetoProfile,
+    GlobalErrorParetoReport, GlobalErrorReport, GlobalErrorRunRow, GlobalErrorTarget,
+    GlobalRunStatus, IntegratorRunRecord, IntegratorRunStatus, IntegratorTimingReport,
+    IntegratorWorkReport, OutputPolicyDominance, OutputPolicyMetadata, OutputPolicyPairRecord,
+    OutputPolicyRunEvidence, ParetoCostMetric, ParetoFront, ParetoObservation,
+    ParetoObservationStatus, ReferenceSolutionProvenance, ReferenceSourceKind, ReferenceTrajectory,
+    ReferenceWrmsBasis, TargetAttainment, TimingProtocol, apply_output_policy_dominance,
+    classify_output_policy_dominance, compute_global_error_metrics, nondominated_observation_ids,
     run_global_error_pareto_screen, select_cheapest_below_target,
+};
+pub use numerical_reference::{
+    NUMERICAL_REFERENCE_ARTIFACT_SCHEMA_VERSION, NUMERICAL_REFERENCE_MANIFEST_SCHEMA_VERSION,
+    NUMERICAL_REFERENCE_V2_ARTIFACT_SCHEMA_VERSION, NUMERICAL_REFERENCE_V2_MANIFEST_SCHEMA_VERSION,
+    NUMERICAL_REFERENCE_V2_WRMS_FORMULA_ID, NumericalReferenceArtifact,
+    NumericalReferenceArtifactV2, NumericalReferenceBundle, NumericalReferenceBundleV2,
+    NumericalReferenceCaseBindingV2, NumericalReferenceChecksums, NumericalReferenceConvergence,
+    NumericalReferenceConvergenceV2, NumericalReferenceGenerationStatusV2,
+    NumericalReferenceGeneratorPins, NumericalReferenceManifest, NumericalReferenceManifestEntry,
+    NumericalReferenceManifestEntryV2, NumericalReferenceManifestV2, NumericalReferenceMethod,
+    NumericalReferenceProblem, NumericalReferenceProblemV2, NumericalReferenceProducerIdentityV2,
+    NumericalReferenceProvenance, NumericalReferenceRunEvidenceV2, NumericalReferenceRunStatusV2,
+    NumericalReferenceRuntimeIdentityV2, NumericalReferenceRuntimeLibraryV2,
+    NumericalReferenceSourceDefinition, NumericalReferenceWrmsBasisV2,
+    NumericalReferenceWrmsPolicyV2, NumericalReferenceWrmsScale, ReferenceDominance,
+    classify_reference_dominance, load_numerical_reference, load_numerical_reference_v2,
+    numerical_reference_artifact_set_checksum, numerical_reference_artifact_set_checksum_v2,
+    numerical_reference_binding_set_checksum_v2, numerical_reference_case_binding_checksum_v2,
+    numerical_reference_grid_checksum, numerical_reference_problem_definition_checksum_v2,
+    numerical_reference_state_checksum, numerical_reference_v2_not_run_manifest,
+    validate_numerical_reference_convergence, validate_numerical_reference_error_scale,
+    validate_numerical_reference_manifest, validate_numerical_reference_manifest_v2,
+};
+pub use output_admissibility::{
+    ArmBudget, OutputArmExceedance, TWO_ARM_ADMISSIBILITY_PROTOCOL_ID, TWO_ARM_GLOBAL_ERROR_BUDGET,
+    TWO_ARM_INTERPOLANT_DELTA_LIMIT, TwoArmAdmissibility, TwoArmRowStatus,
+    check_policy_gap_triangle, classify_arm_budget, classify_two_arm_row,
+    classify_two_arm_v3_states,
+};
+pub use two_arm_campaign_v3::{
+    TWO_ARM_V3_CASE_SCHEMA, TWO_ARM_V3_INEXACT_STAGE_RATIO, TwoArmAdmissibilityCaseV3,
+    TwoArmV3ArmSummary, TwoArmV3Attribution, TwoArmV3AttributionReading,
+    TwoArmV3InterpolantSummary, run_two_arm_admissibility_v3_case,
+    run_two_arm_admissibility_v3_case_synthetic_smoke, two_arm_v3_record_checksum,
+};
+
+mod output_accuracy;
+pub use output_accuracy::{
+    AccuracyBudgetVerdict, ErrorBudgetAssessment, OutputAccuracyAssessment,
+    ReferenceUncertaintyTreatment, assess_error_budget, assess_output_accuracy,
+};
+
+pub mod packet_benchmark;
+pub use packet_benchmark::{
+    ArmRunSummary, BenchmarkArm, PacketBenchmarkConfig, PacketBenchmarkReport,
+    WorkReductionSummary, build_hoisted_collective_ode_problem, run_packet_benchmark,
 };

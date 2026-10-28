@@ -1,0 +1,21 @@
+    Blocking waiting for file lock on build directory
+    Checking rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+error: this function has too many arguments (11/7)
+   --> crates/rodas5p-core/src/leja_action.rs:699:1
+    |
+699 | / fn replay_scaled_fusion(
+700 | |     scales: &[f64; JOINT_PHI_TERMS],
+701 | |     sums: &[Vec<f64>],
+702 | |     sums_lo: &[Vec<f64>],
+...   |
+710 | |     ops: &mut u64,
+711 | | ) -> CoreResult<f64> {
+    | |____________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#too_many_arguments
+    = note: `-D clippy::too-many-arguments` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_arguments)]`
+
+error: could not compile `rodas5p-core` (lib) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rodas5p-core` (lib test) due to 1 previous error

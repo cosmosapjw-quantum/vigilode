@@ -1,0 +1,24 @@
+usage: reproduce.py [-h]
+                    (--validate | --research | --native [{all,time,statistics,arithmetic}])
+                    [--repo REPO] [--out OUT] [--prepare-only]
+                    [--independent-checks] [--lock-file LOCK_FILE]
+
+Reproduce the R3 audit into a new directory; never overwrite its evidence.
+
+options:
+  -h, --help            show this help message and exit
+  --validate            Run root package validator; no science/build
+  --research            Run polynomial, projected homotopy and MC research
+  --native [{all,time,statistics,arithmetic}]
+                        Run focused native reproductions; default all, never
+                        the workspace suite
+  --repo REPO           VigilODE checkout; inferred from report parents when
+                        possible
+  --out OUT             Required new output directory for research/native
+  --prepare-only        Prepare/source-check only; do not compile or execute
+                        science
+  --independent-checks  Also replay the two recorded reviewer-selected Python
+                        checks
+  --lock-file LOCK_FILE
+                        Optional shared Linux flock for the sequential native
+                        run

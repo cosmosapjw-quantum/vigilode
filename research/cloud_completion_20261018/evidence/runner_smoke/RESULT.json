@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "success": true,
+  "executions": [
+    {
+      "name": "packet_run",
+      "command": [
+        "cargo",
+        "run",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--example",
+        "packet_verified_run",
+        "--",
+        "16",
+        "32"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 47.50732609000261,
+      "stdout": "packet_run.stdout",
+      "stderr": "packet_run.stderr"
+    },
+    {
+      "name": "pr101_run",
+      "command": [
+        "cargo",
+        "run",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--example",
+        "pr101_verified_run"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 7.475933477995568,
+      "stdout": "pr101_run.stdout",
+      "stderr": "pr101_run.stderr"
+    }
+  ],
+  "scientific_scope": "See DECISION.json; successful process alone does not establish accuracy or speed.",
+  "return_to_review": [
+    "environment.json",
+    "executions.json",
+    "*.stdout",
+    "*.stderr",
+    "*.json"
+  ]
+}

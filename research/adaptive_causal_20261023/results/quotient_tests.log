@@ -1,0 +1,33 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-adaptive-causal-1023/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized] target(s) in 2.36s
+     Running tests/quotient_flow_contracts.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/quotient_flow_contracts-40423a9ab883eb82)
+
+running 12 tests
+test invalid_inputs_refused_before_callback_and_large_damping_stays_finite ... ok
+test quotient_inverse_divides_before_large_sum ... ok
+test coalescence_and_group_sharing_are_regular ... ok
+test quotient_inverse_handles_product_and_square_overflow ... ok
+test quotient_inverse_satisfies_independent_equation ... ok
+test subnormal_coefficient_is_scaled_before_large_state ... ok
+test underflowing_exponential_coefficient_does_not_erase_large_state ... ok
+test pure_carrier_exact_step_and_zero_derivative_work ... ok
+test callback_failure_preserves_accepted_state_and_work ... ok
+test malformed_callback_is_fatal_even_when_recoverable_protocol_enabled ... ok
+test nonlinear_radial_equivariant_solution ... ok
+test fifth_order_on_noncommuting_residual ... ok
+
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+

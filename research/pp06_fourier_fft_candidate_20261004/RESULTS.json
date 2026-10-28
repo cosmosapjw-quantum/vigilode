@@ -1,0 +1,84 @@
+{
+ "schema": "vigilode-pp06-check-v1",
+ "runs": {
+  "forty": {
+   "ok": true,
+   "steps": 4,
+   "counts": {
+    "candidate_builds": 8,
+    "candidate_rejections": 4,
+    "rhs_calls": 24,
+    "step_halvings": 0
+   },
+   "fft_work": {
+    "forward_2d": 120,
+    "inverse_2d": 48,
+    "max_grid_points": 1024,
+    "padded_grid_points": 6688,
+    "rhs_calls": 24
+   },
+   "predictor_calls": 24,
+   "worst_relative_difference_fft_vs_direct": 5.325647035653643e-16,
+   "worst_error_over_bound": 0.08263817666126602,
+   "worst_interior_error_over_bound": 0.06186631288787052,
+   "reference_difference": null,
+   "final_error_bound": 2.8941211521454044e-12
+  },
+  "fast": {
+   "ok": true,
+   "steps": 4,
+   "counts": {
+    "candidate_builds": 8,
+    "candidate_rejections": 4,
+    "rhs_calls": 24,
+    "step_halvings": 0
+   },
+   "fft_work": {
+    "forward_2d": 120,
+    "inverse_2d": 48,
+    "max_grid_points": 1024,
+    "padded_grid_points": 6688,
+    "rhs_calls": 24
+   },
+   "predictor_calls": 24,
+   "worst_relative_difference_fft_vs_direct": 5.326479288572738e-16,
+   "worst_error_over_bound": 0.10788585253050745,
+   "worst_interior_error_over_bound": 0.0689208915542212,
+   "reference_difference": 1.0418029728095927e-14,
+   "final_error_bound": 2.2027153768783057e-12
+  },
+  "forty_alias": {
+   "ok": true,
+   "steps": 4,
+   "counts": {
+    "candidate_builds": 8,
+    "candidate_rejections": 4,
+    "rhs_calls": 24,
+    "step_halvings": 0
+   },
+   "fft_work": {
+    "forward_2d": 120,
+    "inverse_2d": 48,
+    "max_grid_points": 256,
+    "padded_grid_points": 1856,
+    "rhs_calls": 24
+   },
+   "predictor_calls": 24,
+   "worst_relative_difference_fft_vs_direct": 3.595784964100523e-12,
+   "worst_error_over_bound": 0.0826098492663778,
+   "worst_interior_error_over_bound": 0.06186642692725066,
+   "reference_difference": null,
+   "final_error_bound": 2.8915010008730804e-12,
+   "refused_without_override": 16,
+   "committed_steps": 4,
+   "committed_steps_enclose_reference": true
+  }
+ },
+ "gate": {
+  "g1_fft_equals_direct": true,
+  "g2_enclosure": true,
+  "g3_alias_refused_and_rejected": false,
+  "g4": "unit test fourier_path_candidate::tests::roundtrip_and_conjugation_order"
+ },
+ "verdict": "FAIL"
+}

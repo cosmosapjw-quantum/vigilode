@@ -1,0 +1,16 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-readonly/crates/rodas5p-integrators)
+error[E0063]: missing field `bernstein_max_depth` in initializer of `VerifiedPacketAdaptiveConfig`
+   --> crates/rodas5p-integrators/tests/production_audit_packet_adaptive.rs:250:13
+    |
+250 |             VerifiedPacketAdaptiveConfig {
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ missing `bernstein_max_depth`
+
+error[E0063]: missing field `bernstein_max_depth` in initializer of `VerifiedPacketAdaptiveConfig`
+   --> crates/rodas5p-integrators/tests/production_audit_packet_adaptive.rs:300:13
+    |
+300 |             VerifiedPacketAdaptiveConfig {
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^ missing `bernstein_max_depth`
+
+For more information about this error, try `rustc --explain E0063`.
+error: could not compile `rodas5p-integrators` (test "production_audit_packet_adaptive") due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...

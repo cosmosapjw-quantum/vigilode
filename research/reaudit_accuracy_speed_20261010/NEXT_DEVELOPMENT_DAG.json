@@ -1,0 +1,993 @@
+{
+  "schema_version": "1.0",
+  "artifact": "vigilode_next_development_dag",
+  "source_base": "cfed140bf127f5aa8fcf4fe4c16689d7de062b87",
+  "new_native_study_source": "95d589e862c35c675fac3bee7ebdb962415a97de",
+  "nodes": [
+    {
+      "id": "AS01",
+      "title_ko": "fallback norm overflow 차단",
+      "priority": "P0",
+      "kind": "software_fix",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [],
+      "edit_targets": [
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs::staged_stage_solve"
+      ],
+      "contract": [
+        "All acceptance thresholds, norms and scales must be finite.",
+        "Uniform physical rescaling must not convert rejection into acceptance."
+      ],
+      "implementation_steps": [
+        "Check physical RHS norm and production threshold before constructing fallback.",
+        "Use overflow-safe homogeneous relative comparison or explicit nonfinite rejection; include absolute floor units.",
+        "Check unscaled residual and final candidate; preserve transactional stage failure."
+      ],
+      "acceptance_gate": [
+        "New 4x4 scaled callback counterexample cannot be accepted via Inf<=Inf.",
+        "Direct public-driver boundary test and finite control pass; no new dependency."
+      ],
+      "kill_or_hold_gate": [
+        "Do not claim all large finite systems solvable: reject when a safe norm cannot be represented."
+      ],
+      "reused_evidence": [
+        "This node NATIVE.json fallback_seam; cfed140 source"
+      ],
+      "measurement_units": [
+        "dimensionless relative residual",
+        "accept/reject",
+        "matvecs"
+      ],
+      "execution": {
+        "requires_new_preregistration": false,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked -p rodas5p-integrators --test residual_acceptance_contract"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "AS02",
+      "title_ko": "predictive factor를 log domain에서 계산",
+      "priority": "P1",
+      "kind": "software_fix",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [],
+      "edit_targets": [
+        "crates/rodas5p-integrators/src/adaptive.rs::predictive_factor"
+      ],
+      "contract": [
+        "For positive finite h,h_acc,error, use err_acc=max(err_prev,PREDICTIVE_ERROR_FLOOR) and evaluate log(safety)+log(h)-log(h_acc)+(log(err_acc)-2log(error))/p; preserve the existing floor.",
+        "Clamp in log domain before exp; retain err=0 and post-rejection special cases."
+      ],
+      "implementation_steps": [
+        "Avoid error*error and h/h_acc intermediate under/overflow.",
+        "Reuse the ordinary integral branch; document rounding-level changes to predictive opt-in mode.",
+        "Declare informative clipping restoration versus actual-trial cap as distinct policies."
+      ],
+      "acceptance_gate": [
+        "The registered tiny-error case selects min_factor=0.2, ordinary control agrees within specified ulps.",
+        "Near-underflow/overflow neighbors, err=0, rejection, sliver and informative grids obey the chosen contract."
+      ],
+      "kill_or_hold_gate": [
+        "Any changed Integral/default trajectory or nonfinite positive-input proposal is a blocker."
+      ],
+      "reused_evidence": [
+        "NATIVE.json public_controller_updates",
+        "ALG05 published edge fixes"
+      ],
+      "measurement_units": [
+        "factor",
+        "next h",
+        "state flags"
+      ],
+      "execution": {
+        "requires_new_preregistration": false,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked -p rodas5p-integrators --test predictive_extreme_contract"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "AS03",
+      "title_ko": "공통 evidence validator를 fail-closed로 분리",
+      "priority": "P1",
+      "kind": "software_fix",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [],
+      "edit_targets": [
+        "tools/alg04_coupled_target_v2_check.py",
+        "tools/alg05_controller_v2_check.py",
+        "tools/alg06_guard_v2_check.py",
+        "tools/evidence_schema_v2.py (new)"
+      ],
+      "contract": [
+        "Exact row/arm/key set; unique raw keys; equal nonempty vector length; every number finite and correctly typed.",
+        "Bind reference/twin to immutable base before scientific gates. INVALID is distinct from FAIL."
+      ],
+      "implementation_steps": [
+        "Add new versioned validator and mutation tests without rewriting old RESULTS or ledger lines.",
+        "Gate twin/source identity and execution receipts; remove assert-only authority checks."
+      ],
+      "acceptance_gate": [
+        "All four recorded malformed full-checker copies become INVALID.",
+        "Valid frozen historical inputs can be schema-checked once without rerunning solver science."
+      ],
+      "kill_or_hold_gate": [
+        "No threshold relaxation or historical FAIL-to-PASS rewriting."
+      ],
+      "reused_evidence": [
+        "CHECKER_PROBES.json",
+        "evidence/evidence_audit.md"
+      ],
+      "measurement_units": [
+        "invalid cases rejected",
+        "exact counts"
+      ],
+      "execution": {
+        "requires_new_preregistration": false,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "python3 -m unittest discover -s tools -p test_evidence_schema_v2.py"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "AS04",
+      "title_ko": "모든 승인 stage의 잔차와 예산을 기록",
+      "priority": "P1",
+      "kind": "research_port",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "AS01"
+      ],
+      "edit_targets": [
+        "crates/rodas5p-krylov/src/gmres_staged.rs::StagedGmresReport",
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs::StageSolveStatistics"
+      ],
+      "contract": [
+        "Track Converged/StallAccepted/FloorAccepted/FallbackAccepted uniformly.",
+        "Separate requested target, roundoff-raised target, actual residual, heuristic gain and verified bound."
+      ],
+      "implementation_steps": [
+        "Store norm/metric and operator epoch per attempt; debit only committed attempts but charge all failed work.",
+        "Return explicit BudgetExceeded/Unverified status instead of silently treating floor as achieved target."
+      ],
+      "acceptance_gate": [
+        "Synthetic strict/stall/floor/fallback cases have complete consistent telemetry.",
+        "No residual vector copy or JVP cost hidden in accounting; accepted residual above target is visible."
+      ],
+      "kill_or_hold_gate": [
+        "Telemetry alone is not an error certificate; do not enable default coupled acceptance."
+      ],
+      "reused_evidence": [
+        "ALG06 G3 unchanged mechanism closed",
+        "NATIVE.json stage_acceptance"
+      ],
+      "measurement_units": [
+        "WRMS",
+        "weighted infinity",
+        "residual JVP count"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked -p rodas5p-integrators --test stage_residual_telemetry"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "AS05",
+      "title_ko": "current-operator gain witness를 core에 이식",
+      "priority": "P1",
+      "kind": "research_port",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "AS01",
+        "AS03"
+      ],
+      "edit_targets": [
+        "research/reaudit_accuracy_speed_20261010/gain_witness.rs",
+        "crates/rodas5p-core/src/residual_gain.rs (new)",
+        "crates/rodas5p-core/src/directed.rs",
+        "crates/rodas5p-core/src/nonnormal_certificate.rs"
+      ],
+      "contract": [
+        "Reuse native research witness only for exact represented 2x2 input or fully declared isolated blocks.",
+        "Bind J/h/gamma/metric/operator assembly uncertainty; reject stale or incomplete authority."
+      ],
+      "implementation_steps": [
+        "Replace research-local intervals with reviewed existing outward primitives after parity tests.",
+        "Offer Verified/Estimated/Unavailable enum and immutable witness; no Deserialize proof object.",
+        "For larger structured systems consider verified lognorm or approximate-inverse defect q<1 with full setup cost."
+      ],
+      "acceptance_gate": [
+        "Exact-binary 2x2 oracle retained; new W-formation, metric-change, stale-epoch and off-block negatives reject.",
+        "Bound includes assembly/JVP error before direct driver use; dense LU is comparator for small n."
+      ],
+      "kill_or_hold_gate": [
+        "No projected Hessenberg nu as full-space inverse norm upper bound.",
+        "No generic matrix-free claim from 2x2 tests."
+      ],
+      "reused_evidence": [
+        "This node 30-cell Fraction oracle",
+        "PP12/PP12b native metric machinery"
+      ],
+      "measurement_units": [
+        "weighted error bound",
+        "setup flops",
+        "verification flops"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked -p rodas5p-core --test residual_gain_contract"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "AS06",
+      "title_ko": "stage chain과 전체 오염예산 증명",
+      "priority": "P1",
+      "kind": "math_research",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "AS04",
+        "AS05"
+      ],
+      "edit_targets": [
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+        "crates/rodas5p-integrators/src/outward_certificate.rs",
+        "crates/rodas5p-integrators/src/transactional_q1_q2.rs"
+      ],
+      "contract": [
+        "For frozen metric/tube derive q_i <= G_i(rho_i+xi_i+sum_j (|h gamma|L_i|a_ij|+|gamma C_ij|)q_j).",
+        "Transport to actual U-form output and estimator, then future-step amplification and changing metrics."
+      ],
+      "implementation_steps": [
+        "Retain sampled tau as explicitly heuristic diagnostic.",
+        "Derive exact-linear transfer first; bound nonlinear tube remainder separately.",
+        "Create a cumulative committed contamination ledger with per-window budget and immutable T."
+      ],
+      "acceptance_gate": [
+        "Independent exact-linear/nonlinear tube adversaries enclosed, including missed embedded-error direction.",
+        "Every floor/stall/fallback debit fits declared cumulative budget; all directed sums outward."
+      ],
+      "kill_or_hold_gate": [
+        "If verified bounds too loose to save work, retain as certificate/diagnostic and stop speed promotion.",
+        "Local linear witness alone cannot establish global fifth order."
+      ],
+      "reused_evidence": [
+        "Loop archive once-audited causal certificates",
+        "ALG04/06 failures reused"
+      ],
+      "measurement_units": [
+        "weighted state bound",
+        "embedded bound",
+        "global amplification"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked -p rodas5p-integrators --features audit2-stage-certificate --test contamination_budget_contract"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "AS07",
+      "title_ko": "새 정확도 holdout으로 driver 연결 판정",
+      "priority": "P1",
+      "kind": "experiment",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "AS02",
+        "AS03",
+        "AS04",
+        "AS05",
+        "AS06"
+      ],
+      "edit_targets": [
+        "crates/rodas5p-integrators/tests/gain_budget_driver_holdout.rs (new)",
+        "tools/gain_budget_check.py (new)"
+      ],
+      "contract": [
+        "Prospective new h0/metric/scale/output-grid cells; exact or independent reference uncertainty recorded.",
+        "Worst cells, failures and near-zero denominators remain visible; no retuning on holdout."
+      ],
+      "implementation_steps": [
+        "Register baseline-relative plus absolute catastrophic error gates before running.",
+        "Compare protected direct/DupFix/ProjL2 and gain-budget candidate at matched achieved error."
+      ],
+      "acceptance_gate": [
+        "All mandatory accuracy/validity gates pass across fixed perturbations; complete raw traces saved."
+      ],
+      "kill_or_hold_gate": [
+        "Any false certificate, added catastrophic failure, missing reference coverage or unexplained order loss => HOLD."
+      ],
+      "reused_evidence": [
+        "Published ALG04/06 trajectories are design evidence, not rerun targets"
+      ],
+      "measurement_units": [
+        "error",
+        "complete trajectory work",
+        "failure counts"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked --release -p rodas5p-integrators --test gain_budget_driver_holdout -- --ignored --nocapture --test-threads=1"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "SP01",
+      "title_ko": "DupFix 단독 채택 심사",
+      "priority": "P1",
+      "kind": "adoption",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "AS03"
+      ],
+      "edit_targets": [
+        "crates/rodas5p-krylov/src/gmres_into.rs::solve_gmres_into_with_options",
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
+      ],
+      "contract": [
+        "Remove only duplicate diagnostic residual; true residual required for acceptance remains.",
+        "Solver solution/decisions unchanged under same operation order."
+      ],
+      "implementation_steps": [
+        "Audit zero RHS, failed/budget/exhaustion exits, residual telemetry and preconditioned callers.",
+        "Use existing ALG04 bit identity; new focused boundary coverage only."
+      ],
+      "acceptance_gate": [
+        "Exact output/decision parity; predicted removed diagnostic JVPs accounted.",
+        "Public report residual contract preserved or explicitly versioned."
+      ],
+      "kill_or_hold_gate": [
+        "No bundling with coupled targets, predictive controller or guard promotion."
+      ],
+      "reused_evidence": [
+        "ALG04 DupFix small-n JVP ratios 0.63–0.89; no rerun of 65-cell campaign"
+      ],
+      "measurement_units": [
+        "JVP per attempt",
+        "same-binary instructions"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked -p rodas5p-krylov --test dupfix_promotion_contract"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "SP02",
+      "title_ko": "workspace와 LGMRES 실제 caller 연결",
+      "priority": "P2",
+      "kind": "adoption",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "AS03"
+      ],
+      "edit_targets": [
+        "crates/rodas5p-krylov/src/small.rs",
+        "crates/rodas5p-krylov/src/lgmres_into.rs",
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs"
+      ],
+      "contract": [
+        "Preserve faer0.24.4 and parallelism scope; failure rollback and workspace growth semantics."
+      ],
+      "implementation_steps": [
+        "Wire SPD04 workspace into explicit driver option.",
+        "Add LGMRES-into caller before calling SPD05 a solver gain."
+      ],
+      "acceptance_gate": [
+        "Caller parity/growth/failure tests, full trajectory allocation reduction and charged workspace memory."
+      ],
+      "kill_or_hold_gate": [
+        "Library allocation PASS without caller is insufficient; new faer version requires fresh premise review."
+      ],
+      "reused_evidence": [
+        "SPD04/L0087",
+        "SPD05/L0088"
+      ],
+      "measurement_units": [
+        "allocator events",
+        "peak bytes",
+        "instructions"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked -p rodas5p-integrators --test krylov_workspace_driver_contract"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "SP03",
+      "title_ko": "선언 구조에 따른 direct/banded routing",
+      "priority": "P1",
+      "kind": "research_port",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "AS03"
+      ],
+      "edit_targets": [
+        "crates/rodas5p-integrators/src/problem.rs",
+        "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+        "crates/rodas5p-cli/src/stiff_benchmark.rs"
+      ],
+      "contract": [
+        "Trust only validated declared dimension/band/structure, not runtime inferred sparsity.",
+        "Existing banded path is not general sparse LU."
+      ],
+      "implementation_steps": [
+        "Add ProblemStructure or explicit banded constructor with validated bounds.",
+        "Route small dense and declared bands; expose routing reason/fallback; keep unstructured MF option."
+      ],
+      "acceptance_gate": [
+        "Malformed structure rejects; declared band matches dense states and beats strongest applicable arm at matched error."
+      ],
+      "kill_or_hold_gate": [
+        "Unverified zeros outside declared band or hidden O(n²) assembly removes expected scaling."
+      ],
+      "reused_evidence": [
+        "SPD03/L0083 native band fill; pilot structural-rival advantage"
+      ],
+      "measurement_units": [
+        "instructions per trajectory",
+        "assembly/factor/solve work"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked -p rodas5p-integrators --test declared_structure_routing"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "SP04",
+      "title_ko": "zero-start 선택과 recycling 상호작용",
+      "priority": "P2",
+      "kind": "experiment",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "AS03"
+      ],
+      "edit_targets": [
+        "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+        "crates/rodas5p-krylov/src/gmres_into.rs"
+      ],
+      "contract": [
+        "Separate GMRES zero/Previous from LGMRES/GCRODR state reuse; same current W."
+      ],
+      "implementation_steps": [
+        "Prospectively register expensive-JVP and nonnormal new cells plus refresh/cold comparator."
+      ],
+      "acceptance_gate": [
+        "Equal accuracy/failures and total work gain over strongest current policy including refresh cost."
+      ],
+      "kill_or_hold_gate": [
+        "Do not revive failed previous-step warm-start unchanged or stale-W order claims."
+      ],
+      "reused_evidence": [
+        "SPD07/L0084 negative warm-start; SAFE-RECYCLE/L0066"
+      ],
+      "measurement_units": [
+        "JVP",
+        "orthogonalization",
+        "total counted cost"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked --release -p rodas5p-integrators --test zero_start_policy_holdout -- --ignored --nocapture"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "CT01",
+      "title_ko": "predictive controller의 grid·분포 gate",
+      "priority": "P1",
+      "kind": "experiment",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "AS02",
+        "AS03"
+      ],
+      "edit_targets": [
+        "crates/rodas5p-cli/tests/controller_grid_holdout.rs (new)",
+        "tools/controller_grid_check.py (new)"
+      ],
+      "contract": [
+        "Fresh interior grid and fixed h0 perturbation corpus; baseline-relative calibration plus worst-case guard.",
+        "Fixed deterministic seeds are not independent random statistical population samples."
+      ],
+      "implementation_steps": [
+        "Activate err=0, sliver and informative clipped rejection history.",
+        "Save achieved-error pairs and measured cheapest-run plus fit residual/range diagnostics."
+      ],
+      "acceptance_gate": [
+        "Predeclared relative calibration, catastrophic cell and matched-error work gates all pass."
+      ],
+      "kill_or_hold_gate": [
+        "Never delete ALG05 shared outlier or re-score FAIL as PASS after threshold revision."
+      ],
+      "reused_evidence": [
+        "ALG05/L0098 work benefit and shared65x outlier"
+      ],
+      "measurement_units": [
+        "attempts",
+        "rejections",
+        "error/rtol",
+        "matched-error cost"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked --release -p rodas5p-cli --test controller_grid_holdout -- --ignored --nocapture"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "PY01",
+      "title_ko": "Laguerre total bound 항별 telemetry",
+      "priority": "P2",
+      "kind": "research_port",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "AS03"
+      ],
+      "edit_targets": [
+        "crates/rodas5p-core/src/polynomial_action.rs",
+        "research/pp09_laguerre_envelope_20261004"
+      ],
+      "contract": [
+        "Export truncation/coefficient/recurrence-adjoint/summation/assembly terms before changing bounds."
+      ],
+      "implementation_steps": [
+        "Add additive decomposition with unique backend/degree/scale/enclosure identity.",
+        "Only necessary instrumented cases get a new registration; reuse published envelope proof."
+      ],
+      "acceptance_gate": [
+        "Outward sum encloses existing total; all terms present and source-bound; no inferred missing components."
+      ],
+      "kill_or_hold_gate": [
+        "No repeat broad Laguerre campaign while missing components prevent attribution."
+      ],
+      "reused_evidence": [
+        "PP09/L0077 G1 failure and supplementary derived emulation"
+      ],
+      "measurement_units": [
+        "absolute bound components",
+        "products"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked -p rodas5p-core --test laguerre_component_export"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "PY02",
+      "title_ko": "Laguerre recurrence-adjoint 상계 개선",
+      "priority": "P3",
+      "kind": "math_research",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "PY01"
+      ],
+      "edit_targets": [
+        "crates/rodas5p-core/src/polynomial_action.rs",
+        "research new finite-degree adjoint-bound node"
+      ],
+      "contract": [
+        "Bound actual adjoint polynomial recurrence over verified spectral interval; include rounding/coefficient errors."
+      ],
+      "implementation_steps": [
+        "Explore interval Taylor/Bernstein subdivision or scaled recurrence using component evidence.",
+        "Compare to Chebyshev alone under identical total certificate and target."
+      ],
+      "acceptance_gate": [
+        "Fresh disjoint target cases have total bound within budget and lower complete admitted work."
+      ],
+      "kill_or_hold_gate": [
+        "Envelope-only4.196x improvement cannot close published >10^9 gap; no unchanged envelope tuning."
+      ],
+      "reused_evidence": [
+        "PP08/09 accepted/failed cases reused"
+      ],
+      "measurement_units": [
+        "total bound",
+        "setup+recurrence+certificate cost"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked --release -p rodas5p-core --test laguerre_adjoint_holdout -- --ignored --nocapture"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "PY03",
+      "title_ko": "Chebyshev 우선 사전선택으로 이중계산 제거",
+      "priority": "P2",
+      "kind": "research_port",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "AS03"
+      ],
+      "edit_targets": [
+        "crates/rodas5p-core/src/polynomial_action.rs",
+        "crates/rodas5p-core/src/polynomial_action/router.rs"
+      ],
+      "contract": [
+        "Same joint phi target and total certified budget; cheap preflight may abstain."
+      ],
+      "implementation_steps": [
+        "Separate degree/coefficient planning from executing a backend; charge failed preflight and cold/warm cache."
+      ],
+      "acceptance_gate": [
+        "Selected result certified; complete cost lower than Chebyshev alone on declared niche."
+      ],
+      "kill_or_hold_gate": [
+        "PP08 zero Laguerre selections supplies no current Laguerre routing benefit."
+      ],
+      "reused_evidence": [
+        "PP08/L0071 Cheb76 Laguerre0 fallback3"
+      ],
+      "measurement_units": [
+        "products",
+        "coefficient cost",
+        "certification cost"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked -p rodas5p-core --test polynomial_single_backend_router"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "PY04",
+      "title_ko": "fused Taylor RHS power-of-two normalization",
+      "priority": "P2",
+      "kind": "research_port",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "AS03"
+      ],
+      "edit_targets": [
+        "crates/rodas5p-core/src/taylor_phi_total.rs",
+        "crates/rodas5p-core/src/directed.rs"
+      ],
+      "contract": [
+        "F(A,h,sigma*w)=sigma*F(A,h,w); rescale interval candidate and total bound outward.",
+        "Normalization subnormal rounding must be exact or enclosed; never form overflowing reciprocal sigma."
+      ],
+      "implementation_steps": [
+        "Represent sigma as signed exponent and staged scalbn operations; preserve vector relationships.",
+        "Choose fresh scales around normal/subnormal/overflow boundaries, not full PP11 rerun."
+      ],
+      "acceptance_gate": [
+        "All exact/high-precision oracle enclosures valid; new scale extremes useful under mixed absolute-relative budget."
+      ],
+      "kill_or_hold_gate": [
+        "Pure relative gate below binary64 range is infeasible; declare absolute budget or higher precision."
+      ],
+      "reused_evidence": [
+        "PP11/L0078; PP12b/L0076 binary64 floor"
+      ],
+      "measurement_units": [
+        "absolute/relative bound",
+        "normalization work"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked -p rodas5p-core --test fused_normalization_contract"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "PY05",
+      "title_ko": "Leja EstimateOnly에서 total certificate까지",
+      "priority": "P3",
+      "kind": "math_research",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "AS03"
+      ],
+      "edit_targets": [
+        "crates/rodas5p-core/src/polynomial_action.rs",
+        "crates/rodas5p-core/src/leja_action.rs"
+      ],
+      "contract": [
+        "Backward error, forward conversion and rounding all required; last terms are not a tail proof."
+      ],
+      "implementation_steps": [
+        "Use primary Leja scaling/degree analysis for declared real-spectrum expensive-JVP niche."
+      ],
+      "acceptance_gate": [
+        "Total certificate encloses independent error and complete cost wins strongest certified rival."
+      ],
+      "kill_or_hold_gate": [
+        "Keep EstimateOnly if any proof/cost gate absent;72 fixture successes do not grant authority."
+      ],
+      "reused_evidence": [
+        "PP10/L0080; Caliari et al2016"
+      ],
+      "measurement_units": [
+        "total certified error",
+        "full cost"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked --release -p rodas5p-core --test leja_total_holdout -- --ignored --nocapture"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "HT01",
+      "title_ko": "homotopy 병렬화용 실제 client와 work/span 계약",
+      "priority": "P2",
+      "kind": "design",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [],
+      "edit_targets": [
+        "crates/rodas5p-integrators/src/chart_transport.rs",
+        "crates/rodas5p-core/src/shared_shift_jet.rs",
+        "docs new expensive-client contract"
+      ],
+      "contract": [
+        "Freeze the original lambda=1 target, interval tube and certification requirements.",
+        "Parallelize independent windows/coefficient tasks within a round; continuation rounds remain dependent."
+      ],
+      "implementation_steps": [
+        "Require declared expensive RHS/JVP client and strong sequential comparator.",
+        "Account setup, max task per round, synchronization, certificate, rejected candidates and fallback."
+      ],
+      "acceptance_gate": [
+        "Identified real workload has useful parallel span under fixed budget and unchanged endpoint certificate."
+      ],
+      "kill_or_hold_gate": [
+        "No shifted solves in Fourier client => preserve PP07 ABSTAIN; no manufactured many-shift target.",
+        "Do not rerun cheap diagonal/depth7 studies without new cost mechanism."
+      ],
+      "reused_evidence": [
+        "PP07/L0074; prior homotopy evidence once audited"
+      ],
+      "measurement_units": [
+        "work",
+        "critical-path span",
+        "memory",
+        "certification work"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "design review only; numerical command must be registered after real client selection"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "HT02",
+      "title_ko": "windowed homotopy parallel native pilot",
+      "priority": "P3",
+      "kind": "experiment",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "HT01",
+        "AS03"
+      ],
+      "edit_targets": [
+        "crates/rodas5p-integrators/src/chart_transport.rs",
+        "crates/rodas5p-integrators/src/transactional_q1_q2.rs"
+      ],
+      "contract": [
+        "Verified contraction/inverse defect on fixed tube; final lambda=1 candidate through unchanged endpoint certificate."
+      ],
+      "implementation_steps": [
+        "Implement deterministic workers and round barriers, partition-independent output authority, complete fallback counters."
+      ],
+      "acceptance_gate": [
+        "Held-out real client enclosure parity and lower measured critical path including certificate/sync; full work recorded."
+      ],
+      "kill_or_hold_gate": [
+        "More continuation/certification than saved sequential work or failed tube => stop; no speed claim from lane count."
+      ],
+      "reused_evidence": [
+        "Existing chart/full-path certificates; no repeated old theorem validation"
+      ],
+      "measurement_units": [
+        "work/span",
+        "RHS/JVP",
+        "peak bytes"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked --release -p rodas5p-integrators --test homotopy_client_parallel -- --ignored --nocapture"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "EX01",
+      "title_ko": "PEXPRB own-step native 및 defect 적분 인증",
+      "priority": "P3",
+      "kind": "research_port",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "AS03"
+      ],
+      "edit_targets": [
+        "crates/rodas5p-integrators/src/exponential.rs",
+        "crates/rodas5p-integrators/src/adaptive_exponential.rs",
+        "docs/reviews/20261008_algorithmic_directions/pilot/phase3_code/expo"
+      ],
+      "contract": [
+        "Declared semilinear nonnormal niche; rigorous defect quadrature remainder and arithmetic enclosure."
+      ],
+      "implementation_steps": [
+        "Preserve pilot attribution against improved MF/direct/ROCK4 rivals; implement phi engine parity before trajectory study."
+      ],
+      "acceptance_gate": [
+        "Independent native method/order and total-certificate gates; matched accuracy/full work on fresh niche corpus."
+      ],
+      "kill_or_hold_gate": [
+        "Simpson quadrature agreement with dense expm is not a machine certificate; reject missing remainder."
+      ],
+      "reused_evidence": [
+        "Pilot B3 exploratory; JAK2019 primary theory"
+      ],
+      "measurement_units": [
+        "phi error bound",
+        "complete work",
+        "reference uncertainty"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked --release -p rodas5p-integrators --test pexprb_own_step_holdout -- --ignored --nocapture"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "PC01",
+      "title_ko": "linear-part right preconditioner",
+      "priority": "P3",
+      "kind": "research_port",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "SP03",
+        "AS03"
+      ],
+      "edit_targets": [
+        "crates/rodas5p-core/src/operator.rs::Preconditioner",
+        "crates/rodas5p-core/src/sparse_direct.rs (new)"
+      ],
+      "contract": [
+        "Current production preconditioning is left-only; right preconditioning must preserve true residual units.",
+        "No unqualified shifted-space reuse with arbitrary preconditioner."
+      ],
+      "implementation_steps": [
+        "Implement declared sparse linear-part P once per bounded h-window; track factor refresh and residual verification."
+      ],
+      "acceptance_gate": [
+        "Fresh2Dmulti-species native accuracy+full-work win over strong sparse direct comparator."
+      ],
+      "kill_or_hold_gate": [
+        "Pilot467 runs or kernel timing cannot become solver speed; no unstructured extrapolation."
+      ],
+      "reused_evidence": [
+        "Pilot B4 only"
+      ],
+      "measurement_units": [
+        "factorization",
+        "apply",
+        "true residual",
+        "total work"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "cargo test --offline --locked --release -p rodas5p-integrators --test right_preconditioner_holdout -- --ignored --nocapture"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    },
+    {
+      "id": "ME01",
+      "title_ko": "정확도 통과 후보의 전체 비용·시간 판정",
+      "priority": "P2",
+      "kind": "measurement",
+      "status": "PROPOSED_NOT_EXECUTED",
+      "depends_on": [
+        "AS03"
+      ],
+      "edit_targets": [
+        "docs/TIMING_DESIGN_CONTRACT.md",
+        "crates/rodas5p-cli/src/stiff_benchmark.rs",
+        "profiling exporters"
+      ],
+      "contract": [
+        "Only candidates with their accuracy gate passed enter; strongest applicable rival and same-binary attribution.",
+        "Instructions, allocations, flops, wall time are separate units and authorities."
+      ],
+      "implementation_steps": [
+        "Capture completed-trajectory costs incl failures, SVD, basis, setup, certificates, preconditioners and fallback.",
+        "For wall time resolve existing independent timing-domain review before hardware/scheduling/repetition protocol."
+      ],
+      "acceptance_gate": [
+        "Operation claim supported by its own counters; any wall-time interval follows approved timing authority."
+      ],
+      "kill_or_hold_gate": [
+        "Until timing authority released: wall_time_speedup=null and status=HOLD."
+      ],
+      "reused_evidence": [
+        "SPD01–09 instructions/allocations; L0018/L0025 timing HOLD"
+      ],
+      "measurement_units": [
+        "Ir per trajectory",
+        "allocation events",
+        "bytes",
+        "seconds only after authority"
+      ],
+      "execution": {
+        "requires_new_preregistration": true,
+        "command_status": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE",
+        "command": "existing profiling CLI after new preregistration; no unrecorded MEASUREMENT_BINARY placeholder"
+      },
+      "claim_ceiling": "No default/global-accuracy/wall-time promotion without the separately stated gate."
+    }
+  ],
+  "recommended_first_wave": [
+    "AS01",
+    "AS02",
+    "AS03",
+    "SP01",
+    "SP03"
+  ],
+  "parallel_lanes": {
+    "software_safety": [
+      "AS01",
+      "AS02",
+      "AS03"
+    ],
+    "mathematics_accuracy": [
+      "AS04",
+      "AS05",
+      "AS06",
+      "AS07"
+    ],
+    "measured_low_risk_work": [
+      "SP01",
+      "SP02",
+      "SP03",
+      "SP04",
+      "CT01"
+    ],
+    "polynomial": [
+      "PY01",
+      "PY02",
+      "PY03",
+      "PY04",
+      "PY05"
+    ],
+    "parallelism_and_new_methods": [
+      "HT01",
+      "HT02",
+      "EX01",
+      "PC01"
+    ],
+    "measurement": [
+      "ME01"
+    ]
+  },
+  "global_invariants": [
+    "Do not change historical FAIL/PASS records or rerun published campaigns without a concrete new gap.",
+    "No production default promotion in this audit.",
+    "No wall-time speedup claim from work counters.",
+    "Persist full raw new runs before scientific gate evaluation."
+  ]
+}

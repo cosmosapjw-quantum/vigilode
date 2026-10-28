@@ -1,0 +1,26 @@
+..[P04REF] numpy.hypot vs ctypes libm hypot on 768 HeI GL nodes: 0 differ
+.[P04REF] sbar scalar vs vectorized max rel 0.000e+00; 16-pt GL vs adaptive quad max rel 3.406e-16 (grid 4,4,4)
+.[P04REF] K_D = 9.967662314789024e-40 cm^3 eV^-1 s^-2; T domain [10000.00000000001, 24000.00000000003] K
+.[P04REF] Verner vectorized vs scalar: 60015 values, 0 differ
+.[P04REF] refusal at T_min*(1-1e-15), T_max*(1+1e-15), nextafter, NaN, +-inf, 0: all CASE_A_T_DOMAIN
+..[P04REF] out-of-domain Radau run: success=False status=-1 refusals=308 failure={'kind': 'NonFinite', 'where': 'rhs', 'message': 'CASE_A_T_DOMAIN: T=24000.000000000033 K outside [10000.00000000001, 24000.00000000003] K', 'solver_message': 'Required step size is less than spacing between numbers.', 'last_refusal': {'t': 175661667696.20078, 'message': 'CASE_A_T_DOMAIN: T=24000.000000000033 K outside [10000.00000000001, 24000.00000000003] K'}, 't_reached': 175661667696.20038}
+..[P04REF] invariant weighted-RHS |sum w f| / sum |w| |terms| (94 states): number_ledger 4.81e-16, H_ledger 0.00e+00, He_ledger 4.24e-16, photon_ledger 5.21e-17, energy_ledger 4.16e-16
+.[P04REF] Jacobian vs FD (12 states): max per-column rel test 4.16e-08, stress 1.95e-08, thomson 2.42e-10; max per-entry rel (entries >= 1e-3 col max) test 4.02e-07, stress 2.41e-07, thomson 1.03e-09
+./home/cosmosapjw/vigilode-bassrei/research/bassrei_p04_source_exchange_stress_20261022/reference/test_p04_reference.py:484: RuntimeWarning: invalid value encountered in divide
+  worst_ratio = max(worst_ratio, float(np.max(np.abs(d - col) / bound)))
+[P04REF] photon/W rows vs species (exact linearity): max |d-J|/(1e-9|J| + roundoff floor) 0.00e+00; Thomson-dominated dGam/dN_HII, dN_HeIII entries max rel 2.47e-10
+...[P04REF] partial_t vs FD (15 states): max rel (max-norm) 1.07e-11; max per-component rel (components >= 1e-6 max) 1.17e-09
+.[P04REF] f_t[s]: with the K_D*d(a^-3)/dt term max rel vs FD 2.32e-12; dH/dt-only (spec bullet list) min rel vs FD 1.00e+00 (amp=1e30 stress scenario)
+.[P04REF] PCHIP Hermite coefficients manual vs scipy: 4096 entries, 0 differ
+.[P04REF] PCHIP dense sweep 20001 T x 8 cols: 160008 values, bitwise 160008, max rel 0.000e+00; P' vs derivative(): bitwise 160008, max rel 0.000e+00; P' vs __call__(nu=1): bitwise 160008, max rel 0.000e+00
+[P04REF] Case-A coefficients exp(P) scipy vs manual: 160008 values, bitwise 160008, max rel 0.000e+00; dv/dT max rel 0.000e+00
+...[P04REF] PCHIP at 129 nodes x 8 cols: 1032 values, bitwise 1032, max rel 0.000e+00; P' vs derivative(): bitwise 1032, max rel 0.000e+00; P' vs __call__(nu=1): bitwise 1032, max rel 0.000e+00
+.[P04REF] photoionization energy identity: max rel 2.15e-16; A_i bitwise = sum of R (s, j order)
+.[P04REF] Radau t=[0,1e12] rtol 1e-10 atol 1e-14*scale: nfev 1359 njev 2 nlu 34; drift number_ledger 2.62e-16, H_ledger 0.00e+00, He_ledger 2.17e-16, photon_ledger 3.53e-16, energy_ledger 1.86e-16
+[P04REF] diagnostics t=0: t=0, n_gamma=1.2e-06, E_gamma=3.264575081e-05, D_gamma=2.295404354e-06, T=12000, x_HII=0.4, x_HeII=0.5, x_HeIII=0.3, s_over_H=0.1, number_ledger=1.294635569e-05, H_ledger=2.4e-05, He_ledger=1.951232441e-06, photon_ledger=1.2e-06, energy_ledger=0.0002918992838
+[P04REF] diagnostics t=1e12: t=1e+12, n_gamma=5.626837488e-07, E_gamma=2.009506195e-05, D_gamma=1.412850651e-06, T=12526.8556, x_HII=0.4257498626, x_HeII=0.5074976967, x_HeIII=0.3011809212, s_over_H=0.0999955002, number_ledger=1.294635569e-05, H_ledger=2.4e-05, He_ledger=1.951232441e-06, photon_ledger=1.2e-06, energy_ledger=0.0002918992838
+.
+----------------------------------------------------------------------
+Ran 24 tests in 2.036s
+
+OK

@@ -1,0 +1,61 @@
+{
+  "schema": "vigilode.nonstiff-ensemble-campaign.v1",
+  "source_commit": "45037fc24e8f8101605f309e1fdb3a9a4e3df56d",
+  "binary": "/home/cosmosapjw/vigilode-nonstiff-run-Ioh017/build/measurement/examples/nonstiff_ensemble_bench",
+  "binary_sha256": "d42d7338120dcd7288e9b1ac3a622fe0385ccba5d7bd9ba3ddd17f99e9228480",
+  "ncp_used": false,
+  "members": 16,
+  "dimension_per_member": 4096,
+  "configurations": [
+    {
+      "id": 0,
+      "threads": 1,
+      "rtol": 1e-06
+    },
+    {
+      "id": 1,
+      "threads": 2,
+      "rtol": 1e-06
+    },
+    {
+      "id": 2,
+      "threads": 1,
+      "rtol": 1e-08
+    },
+    {
+      "id": 3,
+      "threads": 2,
+      "rtol": 1e-08
+    }
+  ],
+  "warmups": 1,
+  "repeats": 3,
+  "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17,
+    18,
+    19,
+    20,
+    21,
+    22,
+    23
+  ],
+  "budget_seconds": 180.0,
+  "timing": "reused Rayon pool constructed before timer; all member problem/y0/workspace/integration inside timer"
+}

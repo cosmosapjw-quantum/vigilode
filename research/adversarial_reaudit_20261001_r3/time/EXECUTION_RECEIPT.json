@@ -1,0 +1,64 @@
+{
+  "schema": "vigilode.r3.time.execution_receipt.v1",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "source_tree": "182fa306067b84ee10ec1f1b1e5fbad9e769aae1",
+  "finished_utc": "2026-09-30T15:59:12.395557+00:00",
+  "production_modified": false,
+  "features": "default",
+  "rust": "1.94.1",
+  "cargo": "1.94.1",
+  "incremental_compilation": false,
+  "commands": [
+    {
+      "command": "source runtime_r3/env.sh && flock runtime_r3/cargo-build.lock cargo run --locked --offline --jobs 1 --manifest-path r3/time/probe/Cargo.toml",
+      "exit_code": 0,
+      "raw_stdout": "native_raw.jsonl",
+      "raw_stderr": "native_build.log",
+      "raw_json_rows": 29
+    },
+    {
+      "command": "python r3/time/exact_oracle.py",
+      "exit_code": 0,
+      "stdout": "oracle.log",
+      "result": "exact_oracle.json"
+    }
+  ],
+  "attempt_history": "BUILD_FAILURES.json",
+  "targeted_contracts": {
+    "name": "r2_output_time_identity_contracts",
+    "test_count": 9,
+    "lane_status": "NOT_RUN_IN_LANE",
+    "execution_owner": "../evidence/runtime/",
+    "reason": "Shared full campaign includes the current unchanged contract suite; avoid duplicate Cargo executions."
+  },
+  "harness_read": [
+    "research/START_HERE.md",
+    "research/PROJECT_INSTRUCTIONS.md",
+    "research/state/RESEARCH_STATE.md",
+    "research/docs/MODEL_ROUTING.md",
+    "research/prompts/00_integrated_work_run.md",
+    "coding/START_HERE.md",
+    "coding/AGENTS.md",
+    "coding/SCIENTIFIC_CONTRACT.md",
+    "coding/prompts/01_deep_once.md"
+  ],
+  "independent_oracle": "Python Fraction.from_float constant-flow law, no solver coefficients or interpolation imported",
+  "scientific_claim_ceiling": "Fixture closures and exact scalar-output counterexamples; no solver-wide correctness or benchmark speed claim",
+  "tested_artifact_hashes": {
+    "probe/src/main.rs": "f0b859bc410af4a77f52b8a03f76b182ea0ae46037c2a49dc4c4dc8d619b6f98",
+    "probe/Cargo.toml": "4edb8d3eb0d8398084f6cf6a69b7902ddd33b3768a20005b260ee0b15787dd72",
+    "probe/Cargo.lock": "15b009683462db0e0360e1eabd4661f7633347943f34c233c16f289a63d5d7eb",
+    "exact_oracle.py": "29fa952fee1e0497c7253465336218fce4c5bfcc5119f8ffef99baff870ed4f6"
+  },
+  "native_binary": {
+    "path_at_execution": "runtime_r3/target-shared/debug/vigilode-output-cert-reaudit",
+    "sha256": "e409a4847a202194de6fe22595b44cd416eaa4465f1e7edafec492226d433777",
+    "size": 112370336
+  },
+  "portable_runner_validation": {
+    "prepare_only_exit_code": 0,
+    "syntax_compile_exit_code": 0,
+    "native_execution_via_relocated_wrapper": "NOT_RUN",
+    "evidence": "relocation_check_final.log"
+  }
+}

@@ -1,0 +1,26 @@
+   Compiling rodas5p-krylov v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-krylov)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 5.73s
+     Running tests/reaudit_monitored_progress.rs (/workspace/scratch/0dc1e721cf82/runtime/dense-target/debug/deps/reaudit_monitored_progress-965ece1ecaa349f2)
+
+running 3 tests
+test happy_breakdown_continue_exhausts_without_false_error_or_output_commit ... ok
+test monitor_error_keeps_two_columns_and_next_call_resets_progress ... ok
+test second_column_operator_and_preconditioner_errors_retain_first_column ... FAILED
+
+failures:
+
+---- second_column_operator_and_preconditioner_errors_retain_first_column stdout ----
+
+thread 'second_column_operator_and_preconditioner_errors_retain_first_column' (272) panicked at crates/rodas5p-krylov/tests/reaudit_monitored_progress.rs:108:9:
+assertion `left == right` failed
+  left: 1
+ right: 2
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    second_column_operator_and_preconditioner_errors_retain_first_column
+
+test result: FAILED. 2 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-krylov --test reaudit_monitored_progress`

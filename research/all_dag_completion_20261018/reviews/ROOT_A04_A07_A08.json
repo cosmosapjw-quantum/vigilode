@@ -1,0 +1,49 @@
+{
+  "reviewer": "root independent of implementation authors",
+  "nodes": [
+    "A04",
+    "A07",
+    "A08"
+  ],
+  "status": "PASS_SCOPED_SOURCE_REVIEW",
+  "source_sha256": {
+    "crates/rodas5p-core/src/leja_action.rs": "8e980e402a7e80a226d066166dfe15102dbb879ec9d03dffc88b2fdbd37f6736",
+    "crates/rodas5p-core/src/polynomial_router.rs": "d2591d77f58b6c295e5e880ad78b2f3d72cbfab7985bb71d19606bd6cce4e4ec",
+    "crates/rodas5p-core/tests/leja_enclosed_contract.rs": "ff93fec6203e5e32c9f3ab35ed961543e2d8ed10563bdb0db78e504b81b3496d",
+    "crates/rodas5p-core/tests/guarded_polynomial_router.rs": "b5a61b7d64201af898b3669f4fe40c420c7b7494d2a8505de3356a7a8e173568",
+    "tools/all_dag_benchmark.py": "7c953f73a365863d1956f31e70ef94e82dd41ace3f5650abe8c002fe94e8cdd5",
+    "tools/tests/test_all_dag_benchmark.py": "f5ddfbb700805160040735b2cd98d7d0cb6158ef8e16ac4785adcb1f1fb6dc78"
+  },
+  "checks": [
+    "Leja private borrowed admission token binds original output and complete finite bound; original-budget method cannot relax request",
+    "Legacy estimate-only reports cannot acquire admission; original enclosure kernel reused unchanged",
+    "Router identical target/operator/input/budget identity for every backend; mutable caches cannot mutate owned returned output",
+    "All three backends use their existing complete total-error authority; declared spectral enclosures abstain",
+    "Leja failure certification counter resets at actual entry; old successful workspace report cannot be admitted for a failed new request",
+    "Laguerre degree limit checked before products; all attempts retained; no timing or degree based scientific promotion",
+    "Benchmark source identity captured before build and checked after build/runs; exact executable and failed rows retained",
+    "Empirical reference and allocator-instrumented timings explicitly diagnostic; no certified ODE speed claim"
+  ],
+  "findings": [
+    {
+      "id": "R-A07-01",
+      "severity": "medium",
+      "status": "RESOLVED_PENDING_SECOND_REVIEW",
+      "issue": "Source identity originally omitted compile-time include_str coefficient snapshot.",
+      "fix": "Hash literal include_str/include_bytes assets resolved relative to each Rust source; build.rs was already covered.",
+      "validation": "9 hostile contracts PASS incl coefficient/build provenance; fresh campaign not yet run"
+    }
+  ],
+  "evidence_reused": [
+    "nodes/A04/evidence/admission_doc.log",
+    "nodes/A08_evidence/first_native.log",
+    "nodes/A08_evidence/fraction_check.json",
+    "nodes/A07/python_contract_tests.log",
+    "nodes/A07/python_contract_tests_final.log"
+  ],
+  "limits": [
+    "This does not promote Leja to arbitrary nonsymmetric operators or certify Krylov",
+    "Benchmark fresh native campaign pending integrated source freeze",
+    "Performance comparison needs matched achieved error and independent hardware runs; never inferred from route cost proxies"
+  ]
+}

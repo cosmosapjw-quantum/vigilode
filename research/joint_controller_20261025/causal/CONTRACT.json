@@ -1,0 +1,83 @@
+{
+  "schema": "vigilode.causal-budget-contract.v1",
+  "base_remote_commit": "4fe67602502440d76aa9dd245c6b1d67558c14bf",
+  "implementation": "crates/vigilode/src/causal_budget.rs",
+  "tests": "crates/vigilode/tests/causal_budget_contracts.rs",
+  "pilot": "crates/vigilode/examples/causal_budget_pilot.rs",
+  "evidence_reuse": [
+    {
+      "source": "crates/rodas5p-integrators/src/causal_majorant.rs",
+      "reused": "strict lower triangular finite path sum, upward scalar operations, no contraction requirement",
+      "new_contribution": "caller-buffer facade, exact target identity, original homotopy parameter, output budget and adjoint seed allowances"
+    },
+    {
+      "source": "crates/vigilode-coupled/src/causal.rs",
+      "reused": "strict causal original raw-U structure and original-space residual obligation",
+      "derivative_scope": "projected construction still uses base JVP and small LU"
+    }
+  ],
+  "hypotheses": [
+    "finite nonnegative original-target residual seeds M_i*rho_i including evaluation and rounding errors",
+    "fixed physical norm and valid Lipschitz/resolvent upper bounds over a domain containing candidate and target stages",
+    "strictly lower triangular stage coupling; exact target lambda=1",
+    "matching declared model/provider/norm/tolerance/chart/operator/state epochs and represented t/h",
+    "IEEE binary64 assumptions inherited from rodas5p_core::directed"
+  ],
+  "complexity": {
+    "scalar_operations": "O(s^2)",
+    "additional_workspace": "O(s) caller-owned values",
+    "state_jacobian_matrix": false,
+    "success_path_allocation": false,
+    "rhs_or_derivative_calls_in_budget_helper": 0
+  },
+  "new_claims": [
+    {
+      "id": "CB1",
+      "statement": "Forward recurrence bounds stage errors under supplied hypotheses even when the propagation row norm exceeds one.",
+      "basis": "reused derived proof; new conditional API integration"
+    },
+    {
+      "id": "CB2",
+      "statement": "Upward adjoint influence and downward equal-share seed allowances control exact propagated output contribution by the requested inner budget.",
+      "basis": "derived; implemented; scoped native tests requested"
+    },
+    {
+      "id": "CB3",
+      "statement": "Summed principal and embedded sensitivity weights charge both inexact-stage output perturbation and correction of the embedded estimator.",
+      "basis": "derived; pilot corrected after independent review",
+      "global_ode_error_certificate": false
+    }
+  ],
+  "pilot_contract": {
+    "model": "scalar y'=-y^3, y(0)=1",
+    "interval": [0, 1],
+    "steps": 256,
+    "tableau": "actual exported DOPRI5 coefficients",
+    "candidate": "lambda=0 uncoupled predictor followed by lambda=1 simultaneous causal-stage updates",
+    "comparison": "output-budget termination versus uniform original residual <=1e-14",
+    "inner_joint_output_budget": 1e-9,
+    "embedded_plus_inner_limit": 1e-8,
+    "reference": "native sequential DOPRI5 workspace at each current state plus analytic final ODE solution",
+    "domain_closure": "outward |y| +8*h*maxrow(abs(A))<2; all candidate stage inputs inside [-2,2]",
+    "lipschitz_bound": 12,
+    "parallel_execution": "serial emulation; no thread speedup claim",
+    "accounting": ["candidate RHS", "interval verifier RHS", "correction rounds", "separate sequential native oracle RHS"]
+  },
+  "review_corrections": [
+    {
+      "finding": "Ordinary domain row sums and rounded embedded coefficient difference were not aligned with the outward residual proof.",
+      "repair": "Directed domain accumulation and interval exact tableau difference including reconstruction roundoff.",
+      "status": "implemented"
+    },
+    {
+      "finding": "Max of principal and embedded influence weights only bounds each channel separately, not their joint budget.",
+      "repair": "Upward sum of weights and both reconstruction errors before admission.",
+      "status": "implemented"
+    }
+  ],
+  "remaining": [
+    "native result and exact source hashes are recorded by the parent execution runner",
+    "general coupled candidates require valid problem-specific resolvent, Lipschitz and physical-output bounds",
+    "stage-parallel dispatch should use charged cost evidence and prefer direct causal sweep for the cheap scalar pilot"
+  ]
+}

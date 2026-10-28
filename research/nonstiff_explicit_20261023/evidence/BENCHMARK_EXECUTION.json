@@ -1,0 +1,46 @@
+{
+  "schema": "vigilode.nonstiff-benchmark-execution.v1",
+  "source_commit": "45037fc24e8f8101605f309e1fdb3a9a4e3df56d",
+  "python": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+  "working_directory": "/workspace/scratch/0dc1e721cf82/vigilode-nonstiff",
+  "ncp_used": false,
+  "executions": [
+    {
+      "name": "main",
+      "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python research/nonstiff_explicit_20261023/run_bench.py --binary /workspace/scratch/0dc1e721cf82/task_runtime/target/measurement/examples/nonstiff_bench --out research/nonstiff_explicit_20261023/evidence/local_bench --source-commit 45037fc24e8f8101605f309e1fdb3a9a4e3df56d --external --budget-seconds 900",
+      "exit_code": 0,
+      "stdout": "local_bench_runner.stdout.log",
+      "stderr": "local_bench_runner.stderr.log",
+      "stdout_sha256": "9c98a9d59052cec4f7d94526a5553e63f2e57b0436c265975e8058c3a95d003c",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "analysis",
+      "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python research/nonstiff_explicit_20261023/analyze_bench.py research/nonstiff_explicit_20261023/evidence/local_bench",
+      "exit_code": 0,
+      "stdout": "local_bench_analysis.stdout.log",
+      "stderr": "local_bench_analysis.stderr.log",
+      "stdout_sha256": "19ea1f25db28a0dc1c96640b921ab8a0b4b594f793b02a7a1f4faa4d6e36c4ad",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "ensemble",
+      "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python research/nonstiff_explicit_20261023/run_ensemble_bench.py --binary /workspace/scratch/0dc1e721cf82/task_runtime/target/measurement/examples/nonstiff_ensemble_bench --out research/nonstiff_explicit_20261023/evidence/ensemble_bench --source-commit 45037fc24e8f8101605f309e1fdb3a9a4e3df56d --budget-seconds 180",
+      "exit_code": 0,
+      "stdout": "ensemble_bench_runner.stdout.log",
+      "stderr": "ensemble_bench_runner.stderr.log",
+      "stdout_sha256": "3e649bac4325b7608fd992df57feb730055335a27e895ebb2add7871506f233b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "ensemble_plot",
+      "command": "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python research/nonstiff_explicit_20261023/plot_ensemble.py research/nonstiff_explicit_20261023/evidence/ensemble_bench",
+      "exit_code": 0,
+      "stdout": "ensemble_plot.stdout.log",
+      "stderr": "ensemble_plot.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "postprocessing_note": "plot_ensemble.py created after measurements and reads saved SUMMARY only; no solver executions or threshold changes."
+}

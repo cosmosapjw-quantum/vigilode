@@ -1,0 +1,2383 @@
+{
+  "schema_version": "vigilode.r4.audit_bundle.v1",
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "preregistration_commit": "b2914f3e3c03eda60a8547619db6284aac8250a2",
+  "branch": "claude/jolly-wozniak-7wl15h-wu23-reaudit-r3",
+  "verdict": "REWORK",
+  "production_modified": false,
+  "new_branch_created": false,
+  "findings": [
+    {
+      "id": "R4-TIME-01",
+      "severity": "P2",
+      "title": "Fixed BDF can solve the wrong time-grid equation under a change of time units",
+      "status": "ACKNOWLEDGED_RESIDUAL_NEW_COUNTEREXAMPLE",
+      "scope": "Public fixed BDF reference implementation, scalar identity-mass constant flow on the preregistered unit grid. No new full-BDF or production-comparator promotion.",
+      "source_locations": [
+        "crates/rodas5p-integrators/src/bdf.rs:384-386",
+        "crates/rodas5p-integrators/src/bdf.rs:475-495",
+        "crates/rodas5p-integrators/src/bdf.rs:530-535"
+      ],
+      "owner_evidence": "time/FINDINGS.json",
+      "details": {
+        "id": "R4-TIME-01",
+        "severity": "P2",
+        "title": "Fixed BDF can solve the wrong time-grid equation under a change of time units",
+        "status": "CONFIRMED_ACKNOWLEDGED_RESIDUAL_WITH_NEW_COUNTEREXAMPLE",
+        "failure_class": "NUMERICAL_IMPLEMENTATION",
+        "novelty": "The absolute same_step floor is explicitly disclosed in R3 closure. The resulting2.08% wrong constant-flow endpoint and the unit-covariance counterexample are newly executed here; not classified as an undisclosed regression.",
+        "evidence_status": [
+          "derived",
+          "numerically checked",
+          "implementation-verified"
+        ],
+        "source_locations": [
+          "crates/rodas5p-integrators/src/bdf.rs:384-386",
+          "crates/rodas5p-integrators/src/bdf.rs:475-495",
+          "crates/rodas5p-integrators/src/bdf.rs:530-535"
+        ],
+        "input": {
+          "boundary_power": 0,
+          "t0": 0.9999999999999991,
+          "tf": 1.0000000000000018,
+          "nominal_h": 1.4988010832439614e-16,
+          "velocity": 375299968947541.3,
+          "initial_y": 0.0
+        },
+        "observed": {
+          "returned_Ok": true,
+          "endpoint": 0.9791691102325774,
+          "rounded_exact_binary64_input_endpoint": 1.0,
+          "max_exact_flow_error": 0.02083088976742259,
+          "unequal_steps_classified_equal": 5,
+          "exact_mixed_branch_endpoint": 0.9791691102325772,
+          "native_vs_wrong_equation_endpoint": 1.1102230246251565e-16
+        },
+        "controls": {
+          "same_dimensionless_failure_powers": [
+            -40,
+            0
+          ],
+          "same_dimensionless_passing_powers": [
+            10,
+            40
+          ],
+          "variable_public_kernel_candidate_powers": [
+            -40,
+            0,
+            10,
+            40
+          ],
+          "candidate_max_error": 1.8318679906315083e-15
+        },
+        "mechanism": "same_step compares the difference with32eps*max(|h|,|previous_h|,1). Distinct tiny represented intervals therefore select equal-step3,-4,1 coefficients. For exact linear flow their residual is v*(h-previous_h), not0. Exact rational replay identifies that wrong residual as the source of the native answer.",
+        "scope": "Public fixed BDF reference implementation, scalar identity-mass constant flow on the preregistered unit grid. No new full-BDF or production-comparator promotion.",
+        "evidence": [
+          "native_raw.jsonl:bdf_unit_boundary",
+          "EXACT_ORACLE.json",
+          "DERIVATIONS_KO.md"
+        ],
+        "remediation": [
+          "R4-TIME-DEV-01"
+        ]
+      }
+    },
+    {
+      "id": "R4-TIME-02",
+      "severity": "P2",
+      "title": "Unequal represented half steps retain an equal-half Richardson divisor",
+      "status": "CONFIRMED_OPEN",
+      "scope": "Executed on native public Radau1 kernels and adaptive observed driver. Dense driver shares the trial by source inspection, not a second native execution. Nonconstant BDF startup is only a followup risk because it also changes order/history; no unchecked transfer of the Radau1 correction.",
+      "source_locations": [
+        "crates/rodas5p-integrators/src/output.rs:212-243",
+        "crates/rodas5p-integrators/src/radau.rs:582-600",
+        "crates/rodas5p-integrators/src/adaptive.rs:397-404"
+      ],
+      "owner_evidence": "time/FINDINGS.json",
+      "details": {
+        "id": "R4-TIME-02",
+        "severity": "P2",
+        "title": "Unequal represented half steps retain an equal-half Richardson divisor",
+        "status": "CONFIRMED_UPDATED_PATH_MISMATCH",
+        "failure_class": "NUMERICAL_METHOD_IMPLEMENTATION",
+        "novelty": "Newly reproduced mismatch between unequal represented halves and the existing equal-half estimator; prior-version correctness on the identical fixture was not executed, so an introduced regression is not established.",
+        "evidence_status": [
+          "derived",
+          "numerically checked",
+          "implementation-verified"
+        ],
+        "source_locations": [
+          "crates/rodas5p-integrators/src/output.rs:212-243",
+          "crates/rodas5p-integrators/src/radau.rs:582-600",
+          "crates/rodas5p-integrators/src/adaptive.rs:397-404"
+        ],
+        "input": {
+          "t0": 1000000000000.0,
+          "span_ulps": 3,
+          "H": 0.0003662109375,
+          "h1": 0.000244140625,
+          "h2": 0.0001220703125,
+          "ode": "y'=2(t-t0)/H^2",
+          "initial_y": 0.0,
+          "method": "Radau IIA one-stage",
+          "atol": 0.5,
+          "rtol": 1e-12
+        },
+        "observed": {
+          "success": true,
+          "accepted_macro_steps": 1,
+          "endpoint": 1.5555555555555554,
+          "exact_endpoint": 1.0,
+          "native_estimator_norm": 0.8888888888861239,
+          "actual_scaled_error": 1.111111111107654,
+          "exact_fine_error": "5/9",
+          "exact_estimator_difference_magnitude": "4/9"
+        },
+        "mechanism": "The divisor2^p-1 assumes equal halves. With eta=(h1/H)^(p+1)+(h2/H)^(p+1), the leading fine-error magnitude is eta/(1-eta)*|fine-coarse|. Here p=1, eta=5/9 and the correct factor is5/4; the relation is exact for the quadratic primitive.",
+        "candidate": {
+          "ratio_factor": "5/4",
+          "candidate_abs_error": 0.5555555555555559,
+          "difference_from_exact_error": 3.3306690738754696e-16,
+          "status": "STANDALONE_CHECKED_NOT_PRODUCTION_PATCHED"
+        },
+        "scope": "Executed on native public Radau1 kernels and adaptive observed driver. Dense driver shares the trial by source inspection, not a second native execution. Nonconstant BDF startup is only a followup risk because it also changes order/history; no unchecked transfer of the Radau1 correction.",
+        "interpretation_limit": "This shows violation of the estimator's geometry assumptions; it does not assume adaptive tolerances are rigorous global error bounds for arbitrary ODEs.",
+        "evidence": [
+          "native_raw.jsonl:doubling_geometry_kernel",
+          "native_raw.jsonl:doubling_geometry_adaptive",
+          "EXACT_ORACLE.json",
+          "DERIVATIONS_KO.md"
+        ],
+        "remediation": [
+          "R4-TIME-DEV-02",
+          "R4-TIME-DEV-03"
+        ]
+      }
+    },
+    {
+      "id": "R4-ARITH-01",
+      "severity": "P2",
+      "title": "Zero exponent ordering erases subunit nilpotent norm and understates transform-error bound",
+      "status": "CONFIRMED_OPEN",
+      "scope": "Research-only public transform_bound helper; not currently called by production fused-phi integrators",
+      "source_locations": [
+        "crates/rodas5p-core/src/transform_bound.rs:298-313"
+      ],
+      "owner_evidence": "polynomial/FINDINGS.json",
+      "details": {
+        "id": "R4-ARITH-01",
+        "severity": "P2",
+        "status": "implementation-verified",
+        "layer": "NUMERICAL_IMPLEMENTATION",
+        "title": "Zero exponent ordering erases subunit nilpotent norm and understates transform-error bound",
+        "scope": "Research-only public transform_bound helper; not currently called by production fused-phi integrators",
+        "source": [
+          "crates/rodas5p-core/src/transform_bound.rs:298-313"
+        ],
+        "witness": "subunit_nilpotent_generated",
+        "inputs": {
+          "A": [
+            [
+              0,
+              0.25
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          "h": 1000.1,
+          "b0": [
+            0,
+            0
+          ],
+          "b1": [
+            0,
+            0
+          ],
+          "b2": [
+            0,
+            1
+          ],
+          "stored": "actual weight_phi_vectors output"
+        },
+        "observed_error": "1.5071782093206548331317682236877119006582919794292467838980032291353019037447977735947178701026576603632500926759235074197380302929675942428e-9",
+        "claimed_bound": "5.82076609134674072265625e-11",
+        "reason": "ZERO=(mantissa0,exponent0) wins over positive .25 exponent-1 in row/column maxima. The selected nilpotent norm becomes zero, omitting h*A amplification.",
+        "fix_task": "R4-ARITH-DEV-01",
+        "evidence": [
+          "native.jsonl",
+          "ORACLE_RESULTS.json"
+        ],
+        "production_impact_demonstrated": false
+      }
+    },
+    {
+      "id": "R4-ARITH-02",
+      "severity": "P2",
+      "title": "Binary64 factorial overflow invalidates generic high-order phi transform bounds",
+      "status": "CONFIRMED_OPEN",
+      "scope": "Research-only public helper accepts arbitrary vector order; current joint polynomial module only uses orders0..4",
+      "source_locations": [
+        "crates/rodas5p-core/src/transform_bound.rs:274-275",
+        "crates/rodas5p-core/src/transform_bound.rs:316-321",
+        "crates/rodas5p-core/src/transform_bound.rs:344-347"
+      ],
+      "owner_evidence": "polynomial/FINDINGS.json",
+      "details": {
+        "id": "R4-ARITH-02",
+        "severity": "P2",
+        "status": "implementation-verified",
+        "layer": "NUMERICAL_IMPLEMENTATION",
+        "title": "Binary64 factorial overflow invalidates generic high-order phi transform bounds",
+        "scope": "Research-only public helper accepts arbitrary vector order; current joint polynomial module only uses orders0..4",
+        "source": [
+          "crates/rodas5p-core/src/transform_bound.rs:274-275",
+          "crates/rodas5p-core/src/transform_bound.rs:316-321",
+          "crates/rodas5p-core/src/transform_bound.rs:344-347"
+        ],
+        "witnesses": [
+          "order_171",
+          "order_172"
+        ],
+        "inputs": {
+          "A": [
+            [
+              0
+            ]
+          ],
+          "h": 1.1,
+          "nonzero_input": "b_p=[1], all other b_k zero",
+          "stored": "actual weight_phi_vectors output"
+        },
+        "observed_error_p171": "2.0810186525441548770063122530685197033350982977482357772091266470150810280761203512971317104689258548542813294431714027238859791951732860151e-317",
+        "claimed_bound_p171": "2.7792123154561306599774169818722243319125484747723877216973691455126554369107455585770411525147793758418143268306666380677344338321591507366e-330",
+        "reason": "factorial171 overflows to infinity; the reciprocal operation creates a tiny subnormal coefficient rather than an upper bound for1/171!.",
+        "fix_task": "R4-ARITH-DEV-02",
+        "evidence": [
+          "native.jsonl",
+          "ORACLE_RESULTS.json"
+        ],
+        "production_impact_demonstrated": false
+      }
+    },
+    {
+      "id": "R4-ARITH-03",
+      "severity": "P3",
+      "title": "Signed stored-weight mismatch and negative tolerances do not fail closed",
+      "status": "CONFIRMED_OPEN",
+      "scope": "Public helper malformed/externally supplied input; weight_phi_vectors itself always preserves b0",
+      "source_locations": [
+        "crates/rodas5p-core/src/transform_bound.rs:230-236",
+        "crates/rodas5p-core/src/transform_bound.rs:150-161"
+      ],
+      "owner_evidence": "polynomial/FINDINGS.json",
+      "details": {
+        "id": "R4-ARITH-03",
+        "severity": "P3",
+        "status": "implementation-verified",
+        "layer": "IMPLEMENTATION_API_CONTRACT",
+        "title": "Signed stored-weight mismatch and negative tolerances do not fail closed",
+        "scope": "Public helper malformed/externally supplied input; weight_phi_vectors itself always preserves b0",
+        "source": [
+          "crates/rodas5p-core/src/transform_bound.rs:230-236",
+          "crates/rodas5p-core/src/transform_bound.rs:150-161"
+        ],
+        "witnesses": [
+          "signed_stored_order0",
+          "negative_tolerance"
+        ],
+        "observations": [
+          "A=0,h=1,b0=1,stored0=-1 returns zero error bound and admits zero tolerance, although error=2.",
+          "Error bound1 admits tolerance-10 because ExpBound::exact takes absolute value."
+        ],
+        "fix_task": "R4-ARITH-DEV-03",
+        "evidence": [
+          "native.jsonl",
+          "ORACLE_RESULTS.json"
+        ],
+        "production_impact_demonstrated": false
+      }
+    },
+    {
+      "id": "R4-HOM-01",
+      "severity": "P2",
+      "title": "잘못된 inverse witness 내용/내부 shape가 identity 검사 후 인증값으로 소비됨",
+      "status": "CONFIRMED_OPEN",
+      "scope": "public/serde witness interface; native eight-stage target; built-in constructors and published HOM06 campaign are not shown wrong",
+      "source_locations": [
+        {
+          "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+          "lines": [
+            135,
+            143
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+          "lines": [
+            435,
+            467
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+          "lines": [
+            318,
+            323
+          ]
+        }
+      ],
+      "owner_evidence": "homotopy/FINDINGS.json",
+      "details": {
+        "id": "R4-HOM-01",
+        "priority": "P2",
+        "status": "implementation-verified",
+        "classification": "IMPLEMENTATION_CERTIFICATE_INPUT_VALIDATION",
+        "title": "잘못된 inverse witness 내용/내부 shape가 identity 검사 후 인증값으로 소비됨",
+        "scope": "public/serde witness interface; native eight-stage target; built-in constructors and published HOM06 campaign are not shown wrong",
+        "source_refs": [
+          {
+            "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+            "lines": [
+              135,
+              143
+            ]
+          },
+          {
+            "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+            "lines": [
+              435,
+              467
+            ]
+          },
+          {
+            "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+            "lines": [
+              318,
+              323
+            ]
+          }
+        ],
+        "trigger": {
+          "J": [
+            [
+              -1
+            ]
+          ],
+          "y": [
+            1
+          ],
+          "h": 0.0625,
+          "q": [
+            0
+          ],
+          "candidate": "eight zero scalar stages",
+          "witness_variants": [
+            "valid identity plus upper=[[0]]",
+            "valid identity plus upper=[[]]"
+          ]
+        },
+        "observed": {
+          "returned_status": "Ok(StageCertificate)",
+          "first_stage_error_bound": 0,
+          "exact_first_stage_error": "140737488355328/2281627374017361"
+        },
+        "oracle": "exact rational first-stage solve W K_0 = -1/16",
+        "normal_constructor_control": "sound",
+        "not_demonstrated": [
+          "downstream q2 step with corrupt source witness",
+          "wrong bound produced by an unchanged built-in witness constructor",
+          "published campaign admissions invalid"
+        ],
+        "advice": "Seal validated witness fields; deserialize to unverified data; reject malformed shape; verify/rebuild inverse proof before consumption. Hash equality only binds identity."
+      }
+    },
+    {
+      "id": "R4-HOM-02",
+      "severity": "P2",
+      "title": "가변 StageTarget에 고정 3-level doubling을 적용해 9단계 이상 경로를 누락",
+      "status": "CONFIRMED_OPEN",
+      "scope": "public generic StageTarget API with s>8; native Rodas5P eight-stage path passes this control",
+      "source_locations": [
+        {
+          "path": "crates/rodas5p-integrators/src/stage_target.rs",
+          "lines": [
+            47,
+            58
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+          "lines": [
+            776,
+            786
+          ]
+        }
+      ],
+      "owner_evidence": "homotopy/FINDINGS.json",
+      "details": {
+        "id": "R4-HOM-02",
+        "priority": "P2",
+        "status": "implementation-verified",
+        "classification": "IMPLEMENTATION_GENERALIZED_STAGE_API",
+        "title": "가변 StageTarget에 고정 3-level doubling을 적용해 9단계 이상 경로를 누락",
+        "scope": "public generic StageTarget API with s>8; native Rodas5P eight-stage path passes this control",
+        "source_refs": [
+          {
+            "path": "crates/rodas5p-integrators/src/stage_target.rs",
+            "lines": [
+              47,
+              58
+            ]
+          },
+          {
+            "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+            "lines": [
+              776,
+              786
+            ]
+          }
+        ],
+        "trigger": {
+          "stages": [
+            9,
+            16
+          ],
+          "gamma": 0,
+          "J": [
+            [
+              1
+            ]
+          ],
+          "y": [
+            1
+          ],
+          "h": 1,
+          "q": [
+            0
+          ],
+          "alpha": "all zero",
+          "coupling": "unit first subdiagonal",
+          "candidate": "all zero",
+          "b": "select last stage"
+        },
+        "observed": {
+          "doubling_output_bounds": [
+            8,
+            8
+          ],
+          "exact_output_errors": [
+            9,
+            16
+          ],
+          "radius_closure": "accepted at radius 0",
+          "serial_bounds": "sound at all 1,2,4,8,9,16 fixtures"
+        },
+        "advice": "Either validate s<=8 with typed unsupported rejection, or derive ceil(log2 s) from the declared structural nilpotency upper bound."
+      }
+    },
+    {
+      "id": "R4-STAT-01",
+      "severity": "P2",
+      "title": "Failed coverage authority is not enforced by machine timing gates",
+      "status": "CONFIRMED_OPEN",
+      "scope": "The library path and published receipt replay were executed. CLI mapping was read; a full fresh CLI performance campaign was not executed. No corruption or overclaim by the prior author is alleged: prose correctly discloses the hold.",
+      "source_locations": [
+        {
+          "path": "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+          "lines": [
+            533,
+            550
+          ]
+        },
+        {
+          "path": "crates/rodas5p-cli/src/main.rs",
+          "lines": [
+            1240,
+            1275
+          ]
+        },
+        {
+          "path": "docs/REAUDIT_R3_CLOSURE_20261001.md",
+          "lines": [
+            60,
+            64
+          ]
+        }
+      ],
+      "owner_evidence": "statistics/RESULT.json",
+      "details": {
+        "id": "R4-STAT-01",
+        "severity": "P2",
+        "title": "Failed coverage authority is not enforced by machine timing gates",
+        "failure_layer": "EVIDENCE_AUTHORITY",
+        "evidence_status": [
+          "implementation-verified",
+          "derived"
+        ],
+        "status": "OPEN",
+        "novelty": "New machine-policy propagation defect; failed population coverage is already acknowledged and is not rediscovered.",
+        "source_locations": [
+          {
+            "path": "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+            "lines": [
+              533,
+              550
+            ]
+          },
+          {
+            "path": "crates/rodas5p-cli/src/main.rs",
+            "lines": [
+              1240,
+              1275
+            ]
+          },
+          {
+            "path": "docs/REAUDIT_R3_CLOSURE_20261001.md",
+            "lines": [
+              60,
+              64
+            ]
+          }
+        ],
+        "witnesses": [
+          "native.stdout.jsonl:valid_control_under_documented_authority_hold",
+          "native.stdout.jsonl:published_replay/poly03/chebyshev-warm"
+        ],
+        "observed": "The valid synthetic one-case six-session receipt and the published warm Chebyshev receipt both return Ok(Promote). The source consumer maps Promote directly to WallCriterion::Passed.",
+        "expected": "A diagnostic numeric decision may be retained, but the documented STATISTICAL_AUTHORITY_HOLD must yield NotEvaluated for a scientific/production timing gate.",
+        "scope_limit": "The library path and published receipt replay were executed. CLI mapping was read; a full fresh CLI performance campaign was not executed. No corruption or overclaim by the prior author is alleged: prose correctly discloses the hold.",
+        "next_step": "R4-STAT-DEV-01"
+      }
+    },
+    {
+      "id": "R4-STAT-02",
+      "severity": "P2",
+      "title": "Malformed later session cells pass full receipt recomputation",
+      "status": "CONFIRMED_OPEN",
+      "scope": "Synthetic malformed-record construction and current public verifier were executed; genuine recorded campaign corruption was not observed. Unauthenticated JSON provenance is a separately acknowledged limitation and is not the finding.",
+      "source_locations": [
+        {
+          "path": "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+          "lines": [
+            238,
+            269
+          ]
+        },
+        {
+          "path": "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+          "lines": [
+            453,
+            509
+          ]
+        }
+      ],
+      "owner_evidence": "statistics/RESULT.json",
+      "details": {
+        "id": "R4-STAT-02",
+        "severity": "P2",
+        "title": "Malformed later session cells pass full receipt recomputation",
+        "failure_layer": "IMPLEMENTATION",
+        "evidence_status": [
+          "implementation-verified",
+          "derived"
+        ],
+        "status": "OPEN",
+        "novelty": "New per-session admission gap after the original R3 raw-case defect was closed.",
+        "source_locations": [
+          {
+            "path": "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+            "lines": [
+              238,
+              269
+            ]
+          },
+          {
+            "path": "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+            "lines": [
+              453,
+              509
+            ]
+          }
+        ],
+        "witnesses": [
+          "native.stdout.jsonl:later_empty_warmups",
+          "native.stdout.jsonl:later_one_warmup",
+          "native.stdout.jsonl:shift_candidate_counts",
+          "native.stdout.jsonl:shift_reference_counts",
+          "native.stdout.jsonl:end_before_start"
+        ],
+        "observed": "Empty/one later-session warmup and 29/31 samples across adjacent sessions pass as Ok(Promote). A reversed timestamp also passes. Candidate/reference flattened arrays can be identical despite invalid cell lengths.",
+        "expected": "Every raw session cell must be complete before merging, with the required warmups and sample count, valid labels/order and first-session-calibrated batch identity.",
+        "cause": "Only first-session warmups survive merging. Per-record loop checks labels/order and warmup value finiteness but omits warmup count and candidate/reference lengths. Global total-length validation cannot detect the 29/31 redistribution.",
+        "scope_limit": "Synthetic malformed-record construction and current public verifier were executed; genuine recorded campaign corruption was not observed. Unauthenticated JSON provenance is a separately acknowledged limitation and is not the finding.",
+        "next_step": "R4-STAT-DEV-02"
+      }
+    }
+  ],
+  "closure": [
+    {
+      "node": "TIME-01",
+      "status": "PARTIAL_REOPENED",
+      "evidence_summary": "Original represented-clock fixtures pass; unequal-half estimator remains mismatched.",
+      "findings": [
+        "R4-TIME-02"
+      ],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "TIME-02",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCERS",
+      "evidence_summary": "Invalid singleton/uniform spans rejected; explicit endpoint controls pass.",
+      "findings": [],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "TIME-03",
+      "status": "PARTIAL_REOPENED",
+      "evidence_summary": "Indexed1000-step contract passes; acknowledged BDF step equality floor has new wrong-value witness.",
+      "findings": [
+        "R4-TIME-01"
+      ],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "ARITH-01",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCERS",
+      "evidence_summary": "Positive/negative-h lost weights no longer authoritative/converged.",
+      "findings": [],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "ARITH-02",
+      "status": "REOPENED_RESEARCH_BOUND",
+      "evidence_summary": "Valid low-order generated weights and high orders violate bounds; malformed public inputs also fail open.",
+      "findings": [
+        "R4-ARITH-01",
+        "R4-ARITH-02",
+        "R4-ARITH-03"
+      ],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "ARITH-03",
+      "status": "CLOSED_FOR_REGISTERED_CONTRACTS",
+      "evidence_summary": "Dense reference flags are propagated; current targeted native tests pass.",
+      "findings": [],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "ARITH-04",
+      "status": "CLOSED_FOR_REGISTERED_CONTRACTS",
+      "evidence_summary": "Directed budget fixture contracts pass; no universal formal proof inferred.",
+      "findings": [],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "STAT-DEV-01",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCERS",
+      "evidence_summary": "All five malformed raw case mutations reject.",
+      "findings": [],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "STAT-DEV-02",
+      "status": "PARTIAL_REOPENED",
+      "evidence_summary": "Process receipts exist; individual later-session cells are incompletely validated.",
+      "findings": [
+        "R4-STAT-02"
+      ],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "STAT-DEV-03",
+      "status": "CLOSED_WITH_CLAIM_CEILING",
+      "evidence_summary": "MC gate controls simulation error/conservatism; it does not establish population coverage.",
+      "findings": [],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "STAT-DEV-04",
+      "status": "MEASURED_FAIL_PRESERVED",
+      "evidence_summary": "Both coverage FAIL studies retained; actual hold propagation absent.",
+      "findings": [
+        "R4-STAT-01"
+      ],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "HOM-01",
+      "status": "CLOSED_WITH_CLAIM_CEILING",
+      "evidence_summary": "Explicit sequential strict-lower target exists; original structural contracts pass.",
+      "findings": [],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "HOM-02",
+      "status": "CONDITIONAL_CONSTRUCTOR_DOMAIN",
+      "evidence_summary": "Valid witness majorant structure and existing native fixtures supported; public malformed witnesses excluded from this claim.",
+      "findings": [
+        "R4-HOM-01"
+      ],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "HOM-03",
+      "status": "PARTIAL_REOPENED",
+      "evidence_summary": "Constructor controls pass; public/serde witness payload not sealed or fully checked.",
+      "findings": [
+        "R4-HOM-01"
+      ],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "HOM-04",
+      "status": "NATIVE_EIGHT_SUPPORTED_GENERIC_REOPENED",
+      "evidence_summary": "Three levels suffice for s8 but not generic s9/s16.",
+      "findings": [
+        "R4-HOM-02"
+      ],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "HOM-05",
+      "status": "CLOSED_WITH_CLAIM_CEILING",
+      "evidence_summary": "q2 seven-batch replacement contracts pass; stage certificate only, q1 operational, serial consumer.",
+      "findings": [],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "HOM-06",
+      "status": "MEASURED_FAIL_PRESERVED",
+      "evidence_summary": "All four published arms replay Block; no new timing experiment.",
+      "findings": [],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "POLY-01",
+      "status": "CLOSED_WITH_CLAIM_CEILING",
+      "evidence_summary": "Joint dense symmetric action/cache implemented and bounded new oracle corpus passes.",
+      "findings": [],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "POLY-02",
+      "status": "CLOSED_WITH_CLAIM_CEILING",
+      "evidence_summary": "32newCertified enclose numerical errors;8EstimateOnly honest; no full-domain proof from finite tests.",
+      "findings": [],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "POLY-03",
+      "status": "MEASURED_NUMERIC_PASS_UNDER_HOLD",
+      "evidence_summary": "Warm unbounded-action coefficient cache result only; certified whole-integrator speed not established.",
+      "findings": [
+        "R4-STAT-01"
+      ],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    },
+    {
+      "node": "PROCESS-01",
+      "status": "R4_PREREGISTRATION_SATISFIED",
+      "evidence_summary": "R4 inputs remotely committed before native/oracle execution; first failures and finite scope retained.",
+      "findings": [],
+      "scope": "Re-audit conclusion, not unqualified production closure."
+    }
+  ],
+  "claims": [
+    {
+      "id": "R4-POLY-C01",
+      "statement": "The original positive/negative-h R3 partial-weight-loss witnesses are correctly refused as original-target convergence.",
+      "evidence_level": [
+        "implementation-verified",
+        "numerically checked"
+      ],
+      "claim_ceiling": "Four fused/prefix reports and two dense reports; not a proof of all possible weighting behavior.",
+      "owner_record": "polynomial/CLAIMS.json",
+      "details": {
+        "id": "R4-POLY-C01",
+        "claim": "The original positive/negative-h R3 partial-weight-loss witnesses are correctly refused as original-target convergence.",
+        "status": [
+          "implementation-verified",
+          "numerically checked"
+        ],
+        "evidence": [
+          "native.jsonl"
+        ],
+        "limits": "Four fused/prefix reports and two dense reports; not a proof of all possible weighting behavior."
+      },
+      "independent_disposition": "SEE_DECISION_FINAL_REVIEW"
+    },
+    {
+      "id": "R4-POLY-C02",
+      "statement": "All40registered scalar/diagonal/symmetric toy actions satisfy the1e-10 absolute target;32Certified total bounds enclose their independent140-digit exact-input errors.",
+      "evidence_level": [
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "claim_ceiling": "No nonnormal operator certification and no global proof from the finite sweep.",
+      "owner_record": "polynomial/CLAIMS.json",
+      "details": {
+        "id": "R4-POLY-C02",
+        "claim": "All40registered scalar/diagonal/symmetric toy actions satisfy the1e-10 absolute target;32Certified total bounds enclose their independent140-digit exact-input errors.",
+        "status": [
+          "numerically checked",
+          "implementation-verified"
+        ],
+        "maximum_error": 4.73850883134441e-14,
+        "certified_count": 32,
+        "estimate_only_count": 8,
+        "evidence": [
+          "native.jsonl",
+          "ORACLE_RESULTS.json"
+        ],
+        "limits": "No nonnormal operator certification and no global proof from the finite sweep."
+      },
+      "independent_disposition": "SEE_DECISION_FINAL_REVIEW"
+    },
+    {
+      "id": "R4-POLY-C03",
+      "statement": "The source Chebyshev coefficient and residual-propagation proof, and Laguerre exact-arithmetic tail, are consistent under their stated symmetric spectral assumptions.",
+      "evidence_level": [
+        "derived",
+        "literature-supported"
+      ],
+      "claim_ceiling": "Directed-rounding runtime assumptions remain necessary; source review is not formal verification.",
+      "owner_record": "polynomial/CLAIMS.json",
+      "details": {
+        "id": "R4-POLY-C03",
+        "claim": "The source Chebyshev coefficient and residual-propagation proof, and Laguerre exact-arithmetic tail, are consistent under their stated symmetric spectral assumptions.",
+        "status": [
+          "derived",
+          "literature-supported"
+        ],
+        "evidence": [
+          "MATH_REVIEW_KO.md"
+        ],
+        "limits": "Directed-rounding runtime assumptions remain necessary; source review is not formal verification."
+      },
+      "independent_disposition": "SEE_DECISION_FINAL_REVIEW"
+    },
+    {
+      "id": "R4-POLY-C04",
+      "statement": "Standalone scaled norm bounds enclose five exact sums of squares including amplitudes1e±300 and minimum subnormal.",
+      "evidence_level": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "claim_ceiling": "Candidate only; not integrated into polynomial recurrence. A complete dynamic-range action contract remains open.",
+      "owner_record": "polynomial/CLAIMS.json",
+      "details": {
+        "id": "R4-POLY-C04",
+        "claim": "Standalone scaled norm bounds enclose five exact sums of squares including amplitudes1e±300 and minimum subnormal.",
+        "status": [
+          "derived",
+          "numerically checked",
+          "implementation-verified"
+        ],
+        "evidence": [
+          "probe/src/main.rs",
+          "ORACLE_RESULTS.json"
+        ],
+        "limits": "Candidate only; not integrated into polynomial recurrence. A complete dynamic-range action contract remains open."
+      },
+      "independent_disposition": "SEE_DECISION_FINAL_REVIEW"
+    },
+    {
+      "id": "R4-POLY-C05",
+      "statement": "Outward inverse-factorial recurrence encloses1/p! and the actual generated-weight error for p=4,30,50,170,171,172.",
+      "evidence_level": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "claim_ceiling": "Standalone candidate; full nilpotent-series implementation not changed.",
+      "owner_record": "polynomial/CLAIMS.json",
+      "details": {
+        "id": "R4-POLY-C05",
+        "claim": "Outward inverse-factorial recurrence encloses1/p! and the actual generated-weight error for p=4,30,50,170,171,172.",
+        "status": [
+          "derived",
+          "numerically checked",
+          "implementation-verified"
+        ],
+        "evidence": [
+          "probe/src/main.rs",
+          "ORACLE_RESULTS.json"
+        ],
+        "limits": "Standalone candidate; full nilpotent-series implementation not changed."
+      },
+      "independent_disposition": "SEE_DECISION_FINAL_REVIEW"
+    },
+    {
+      "id": "R4-POLY-C06",
+      "statement": "At fixed r=m+1 with2r>h*rho, Laguerre tail scale optimum is beta=rho/[2r-h*rho]; capL<=16 gives L=min(16,2r-h*rho).",
+      "evidence_level": [
+        "derived"
+      ],
+      "claim_ceiling": "Analytic-only addition; not run, not implemented, not a total-roundoff or runtime optimum.",
+      "owner_record": "polynomial/CLAIMS.json",
+      "details": {
+        "id": "R4-POLY-C06",
+        "claim": "At fixed r=m+1 with2r>h*rho, Laguerre tail scale optimum is beta=rho/[2r-h*rho]; capL<=16 gives L=min(16,2r-h*rho).",
+        "status": [
+          "derived"
+        ],
+        "evidence": [
+          "ANALYTIC_ADDENDUM_KO.md"
+        ],
+        "limits": "Analytic-only addition; not run, not implemented, not a total-roundoff or runtime optimum."
+      },
+      "independent_disposition": "SEE_DECISION_FINAL_REVIEW"
+    },
+    {
+      "id": "R4-HOM-C01",
+      "statement": "Valid inverse witness and native strict-lower target imply serial quadratic stage-error majorant by triangular induction",
+      "evidence_level": [
+        "derived"
+      ],
+      "claim_ceiling": "stage target error; not ODE truncation/global error",
+      "owner_record": "homotopy/CLAIMS.json",
+      "details": {
+        "id": "R4-HOM-C01",
+        "statement": "Valid inverse witness and native strict-lower target imply serial quadratic stage-error majorant by triangular induction",
+        "evidence_status": [
+          "derived"
+        ],
+        "evidence": [
+          "THEORY_KO.md"
+        ],
+        "ceiling": "stage target error; not ODE truncation/global error"
+      },
+      "independent_disposition": "SEE_DECISION_FINAL_REVIEW"
+    },
+    {
+      "id": "R4-HOM-C02",
+      "statement": "ceil(log2 s) exact doubling reproduces finite inverse on six exact chain fixtures",
+      "evidence_level": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "claim_ceiling": "standalone Fraction candidate; no production change or speed evidence",
+      "owner_record": "homotopy/CLAIMS.json",
+      "details": {
+        "id": "R4-HOM-C02",
+        "statement": "ceil(log2 s) exact doubling reproduces finite inverse on six exact chain fixtures",
+        "evidence_status": [
+          "derived",
+          "numerically checked",
+          "implementation-verified"
+        ],
+        "evidence": [
+          "exact_checks.py",
+          "RESULTS.json"
+        ],
+        "ceiling": "standalone Fraction candidate; no production change or speed evidence"
+      },
+      "independent_disposition": "SEE_DECISION_FINAL_REVIEW"
+    },
+    {
+      "id": "R4-HOM-C03",
+      "statement": "Diagonal J and U permit component-factorized stage majorants with O(ns²) storage and O(ns³) dense-product arithmetic; full/blocked/serial exact on three fixtures",
+      "evidence_level": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "claim_ceiling": "exact structural candidate and algebraic counts, not Rust outward integration or measured acceleration",
+      "owner_record": "homotopy/CLAIMS.json",
+      "details": {
+        "id": "R4-HOM-C03",
+        "statement": "Diagonal J and U permit component-factorized stage majorants with O(ns²) storage and O(ns³) dense-product arithmetic; full/blocked/serial exact on three fixtures",
+        "evidence_status": [
+          "derived",
+          "numerically checked",
+          "implementation-verified"
+        ],
+        "evidence": [
+          "THEORY_KO.md",
+          "RESULTS.json"
+        ],
+        "ceiling": "exact structural candidate and algebraic counts, not Rust outward integration or measured acceleration"
+      },
+      "independent_disposition": "SEE_DECISION_FINAL_REVIEW"
+    },
+    {
+      "id": "R4-HOM-C04",
+      "statement": "HOM06 published paired campaign records Block for all four worker arms",
+      "evidence_level": [
+        "established"
+      ],
+      "claim_ceiling": "no fresh timing execution; shared host measured population only",
+      "owner_record": "homotopy/CLAIMS.json",
+      "details": {
+        "id": "R4-HOM-C04",
+        "statement": "HOM06 published paired campaign records Block for all four worker arms",
+        "evidence_status": [
+          "established"
+        ],
+        "evidence_origin": "inherited published artifact; current turn source inspection only",
+        "evidence": [
+          "INHERITED_CAMPAIGN_SUMMARY.json"
+        ],
+        "ceiling": "no fresh timing execution; shared host measured population only"
+      },
+      "independent_disposition": "SEE_DECISION_FINAL_REVIEW"
+    },
+    {
+      "id": "R4-HOM-C05",
+      "statement": "No eighth q2 W batch is used in native-target mode, but certification still uses serial recurrence and q1 uses operational admission",
+      "evidence_level": [
+        "implementation-verified"
+      ],
+      "claim_ceiling": "q2 certificate branch only; full integration not globally certified",
+      "owner_record": "homotopy/CLAIMS.json",
+      "details": {
+        "id": "R4-HOM-C05",
+        "statement": "No eighth q2 W batch is used in native-target mode, but certification still uses serial recurrence and q1 uses operational admission",
+        "evidence_status": [
+          "implementation-verified"
+        ],
+        "evidence_origin": "source inspection and runtime agent targeted q2 fixture run",
+        "evidence": [
+          "crates/rodas5p-integrators/src/transactional_q1_q2.rs:793-795,938-949,984-1019",
+          "../evidence/runtime/native/suite_summary.json"
+        ],
+        "ceiling": "q2 certificate branch only; full integration not globally certified"
+      },
+      "independent_disposition": "SEE_DECISION_FINAL_REVIEW"
+    },
+    {
+      "id": "R4-STAT-MATH-01",
+      "statement": "Fixed complete corpus median of population session-cell medians is enclosed by coordinatewise exact binomial order-statistic intervals followed by median endpoints, with union-bound coverage >=1-alpha.",
+      "evidence_level": [
+        "derived",
+        "numerically checked"
+      ],
+      "claim_ceiling": [
+        "Not identical to pooled-pair estimand outside the symmetric additive law",
+        "No arbitrary missingness guarantee",
+        "No float-rounding or speed guarantee"
+      ],
+      "owner_record": "statistics/RESULT.json",
+      "details": {
+        "id": "R4-STAT-MATH-01",
+        "status": [
+          "derived",
+          "numerically checked"
+        ],
+        "claim": "Fixed complete corpus median of population session-cell medians is enclosed by coordinatewise exact binomial order-statistic intervals followed by median endpoints, with union-bound coverage >=1-alpha.",
+        "assumptions": [
+          "iid session vectors",
+          "fixed complete case corpus",
+          "specified case medians",
+          "fixed stopping and non-informative inclusion"
+        ],
+        "scope_limits": [
+          "Not identical to pooled-pair estimand outside the symmetric additive law",
+          "No arbitrary missingness guarantee",
+          "No float-rounding or speed guarantee"
+        ],
+        "evidence": [
+          "DERIVATION_KO.md",
+          "EXACT_SESSION_INTERVAL.json",
+          "exact_session_interval.py"
+        ],
+        "independent_decision": "PENDING_ROOT_REVIEWER"
+      },
+      "independent_disposition": "SEE_DECISION_FINAL_REVIEW"
+    },
+    {
+      "id": "R4-STAT-MATH-02",
+      "statement": "Five identical-response cases yield the same exact bootstrap law as one case; case count alone cannot authorize the five-case coverage domain.",
+      "evidence_level": [
+        "derived"
+      ],
+      "claim_ceiling": [
+        "No fresh simulation or numeric coverage estimate for that limit"
+      ],
+      "owner_record": "statistics/RESULT.json",
+      "details": {
+        "id": "R4-STAT-MATH-02",
+        "status": [
+          "derived"
+        ],
+        "claim": "Five identical-response cases yield the same exact bootstrap law as one case; case count alone cannot authorize the five-case coverage domain.",
+        "evidence": [
+          "DERIVATION_KO.md"
+        ],
+        "scope_limits": [
+          "No fresh simulation or numeric coverage estimate for that limit"
+        ]
+      },
+      "independent_disposition": "SEE_DECISION_FINAL_REVIEW"
+    },
+    {
+      "id": "R4-TIME-C01",
+      "statement": "Existing public variable-BDF kernel on the same recorded time list repairs the registered unit-covariance fixtures.",
+      "evidence_level": [
+        "derived",
+        "implementation-verified",
+        "numerically checked"
+      ],
+      "claim_ceiling": "Four fixed time-unit cases; no full BDF promotion.",
+      "owner_record": "time/FINDINGS.json",
+      "independent_disposition": "SEE_DECISION_FINAL_REVIEW"
+    },
+    {
+      "id": "R4-TIME-C02",
+      "statement": "Geometry factor eta/(1-eta) gives exact5/4 correction on the registered Radau1 quadratic primitive.",
+      "evidence_level": [
+        "derived",
+        "implementation-verified",
+        "numerically checked"
+      ],
+      "claim_ceiling": "Leading common LTE model generally; exact only on declared fixture family.",
+      "owner_record": "time/DERIVATIONS_KO.md",
+      "independent_disposition": "SEE_DECISION_FINAL_REVIEW"
+    }
+  ],
+  "development": [
+    {
+      "id": "R4-TIME-DEV-01",
+      "priority": "P2",
+      "title": "Use actual BDF step ratios without an absolute time-unit floor",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [],
+      "targets": [
+        "crates/rodas5p-integrators/src/bdf.rs:same_step",
+        "crates/rodas5p-integrators/src/bdf.rs:bdf_step_impl"
+      ],
+      "implementation": [
+        "Allow the constant-coefficient shortcut only when successive positive finite represented steps are exactly equal, or use variable_bdf2_coefficients unconditionally.",
+        "Keep stability restart on the actual ratio; an equality heuristic must not bypass the ratio limit.",
+        "Retain actual represented step sizes in history and preserve the indexed clock."
+      ],
+      "acceptance": [
+        "For boundary powers -40, 0, 10, 40 and the preregistered grid, constant-flow error at every stored state is at most 1e-12 against exact binary64-input rational arithmetic.",
+        "Power-of-two unit changes preserve the dimensionless solution within roundoff and do not change equal/unequal geometry classification.",
+        "An exactly equal-step control keeps its existing coefficient path; unequal steps exercise the variable coefficients; ratio above 1+sqrt(2) exercises restart.",
+        "Fixed, fixed observed, and fixed dense BDF wrappers inherit the same kernel rule."
+      ],
+      "kill_or_stop_criterion": "Do not call an unequal-step constant-coefficient solve successful merely because Newton solves that different residual.",
+      "claim_ceiling": "Time-geometry consistency for the reference BDF implementation; not production-comparator promotion.",
+      "owner_plan": "time/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-TIME-DEV-01",
+        "priority": "P2",
+        "title": "Use actual BDF step ratios without an absolute time-unit floor",
+        "depends_on": [],
+        "targets": [
+          "crates/rodas5p-integrators/src/bdf.rs:same_step",
+          "crates/rodas5p-integrators/src/bdf.rs:bdf_step_impl"
+        ],
+        "implementation": [
+          "Allow the constant-coefficient shortcut only when successive positive finite represented steps are exactly equal, or use variable_bdf2_coefficients unconditionally.",
+          "Keep stability restart on the actual ratio; an equality heuristic must not bypass the ratio limit.",
+          "Retain actual represented step sizes in history and preserve the indexed clock."
+        ],
+        "acceptance": [
+          "For boundary powers -40, 0, 10, 40 and the preregistered grid, constant-flow error at every stored state is at most 1e-12 against exact binary64-input rational arithmetic.",
+          "Power-of-two unit changes preserve the dimensionless solution within roundoff and do not change equal/unequal geometry classification.",
+          "An exactly equal-step control keeps its existing coefficient path; unequal steps exercise the variable coefficients; ratio above 1+sqrt(2) exercises restart.",
+          "Fixed, fixed observed, and fixed dense BDF wrappers inherit the same kernel rule."
+        ],
+        "candidate": "probe/src/main.rs:bdf_boundary uses public bdf_step_variable on the exact native fixed-driver time list; no production patch",
+        "oracle": "exact_oracle.py independent rational three-node differentiation",
+        "failure_policy": "Do not call an unequal-step constant-coefficient solve successful merely because Newton solves that different residual.",
+        "claim_ceiling": "Time-geometry consistency for the reference BDF implementation; not production-comparator promotion."
+      }
+    },
+    {
+      "id": "R4-TIME-DEV-02",
+      "priority": "P2",
+      "title": "Bind Richardson error estimation to represented substep geometry",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [],
+      "targets": [
+        "crates/rodas5p-integrators/src/radau.rs:adaptive_radau_trial",
+        "crates/rodas5p-integrators/src/adaptive.rs:step_doubling_wrms_error",
+        "crates/rodas5p-integrators/src/output.rs:split_clock"
+      ],
+      "implementation": [
+        "Add a geometry-aware estimator receiving h1 and h2, or reject materially unequal splits until its assumptions are satisfied.",
+        "For Radau1, use eta/(1-eta) with eta=(h1/H)^2+(h2/H)^2 under the stated smooth local-error model; record both actual intervals.",
+        "Keep no-representable-midpoint failures explicit; ensure denominator and finite arithmetic checks fail closed.",
+        "Document that the estimate is asymptotic except on declared exact families, not a rigorous ODE-error certificate."
+      ],
+      "acceptance": [
+        "The fixed 3-ULP quadratic-primitive witness has analytic fine error 5/9 and estimator-difference magnitude 4/9; the new estimate is 5/9 within binary64 roundoff.",
+        "At atol=0.5 and rtol=1e-12 the witness is rejected or explicitly fails on time resolution, rather than accepting the old 8/9 normalized estimate.",
+        "Equal halves reproduce the previous 1/(2^p-1) formula, and near-equal halves have a continuous correction.",
+        "Both clipped and dense adaptive Radau1 wrappers use the same corrected trial geometry."
+      ],
+      "kill_or_stop_criterion": "Typed invalid/unresolvable split; do not transfer equal-half estimator authority to an unequal partition.",
+      "claim_ceiling": "Radau1 local estimator geometry; global tolerance or arbitrary nonlinear-LTE certification remains out of scope.",
+      "owner_plan": "time/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-TIME-DEV-02",
+        "priority": "P2",
+        "title": "Bind Richardson error estimation to represented substep geometry",
+        "depends_on": [],
+        "targets": [
+          "crates/rodas5p-integrators/src/radau.rs:adaptive_radau_trial",
+          "crates/rodas5p-integrators/src/adaptive.rs:step_doubling_wrms_error",
+          "crates/rodas5p-integrators/src/output.rs:split_clock"
+        ],
+        "implementation": [
+          "Add a geometry-aware estimator receiving h1 and h2, or reject materially unequal splits until its assumptions are satisfied.",
+          "For Radau1, use eta/(1-eta) with eta=(h1/H)^2+(h2/H)^2 under the stated smooth local-error model; record both actual intervals.",
+          "Keep no-representable-midpoint failures explicit; ensure denominator and finite arithmetic checks fail closed.",
+          "Document that the estimate is asymptotic except on declared exact families, not a rigorous ODE-error certificate."
+        ],
+        "acceptance": [
+          "The fixed 3-ULP quadratic-primitive witness has analytic fine error 5/9 and estimator-difference magnitude 4/9; the new estimate is 5/9 within binary64 roundoff.",
+          "At atol=0.5 and rtol=1e-12 the witness is rejected or explicitly fails on time resolution, rather than accepting the old 8/9 normalized estimate.",
+          "Equal halves reproduce the previous 1/(2^p-1) formula, and near-equal halves have a continuous correction.",
+          "Both clipped and dense adaptive Radau1 wrappers use the same corrected trial geometry."
+        ],
+        "candidate": "probe/src/main.rs:doubling_geometry, scalar ratio correction; not integrated",
+        "oracle": "DERIVATIONS_KO.md section2; exact_oracle.py rational implicit-Euler calculation",
+        "failure_policy": "Typed invalid/unresolvable split; do not transfer equal-half estimator authority to an unequal partition.",
+        "claim_ceiling": "Radau1 local estimator geometry; global tolerance or arbitrary nonlinear-LTE certification remains out of scope."
+      }
+    },
+    {
+      "id": "R4-TIME-DEV-03",
+      "priority": "P2",
+      "title": "Derive BDF startup estimates for actual order and history on unequal halves",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [
+        "R4-TIME-DEV-01",
+        "R4-TIME-DEV-02"
+      ],
+      "targets": [
+        "crates/rodas5p-integrators/src/bdf.rs:adaptive_bdf_trial"
+      ],
+      "implementation": [
+        "Separate BDF1+BDF1 startup from the BDF1+BDF2 sequence used by the default order-two configuration.",
+        "Derive the coarse/fine defect relation on the actual nodes and expose the geometry/order identity in estimator metadata.",
+        "Do not copy the Radau1 correction to mixed-order BDF startup without that derivation."
+      ],
+      "acceptance": [
+        "Exact polynomial primitives of degrees one, two and three distinguish geometry, startup order and predictor effects.",
+        "Equal-step existing contracts pass; odd-ULP and power-of-two unit transformations give the declared asymptotic behavior.",
+        "Record rejected and unresolvable startup trials without advancing history."
+      ],
+      "kill_or_stop_criterion": "Keep this item unresolved until the mixed-order derivation and native tests exist.",
+      "claim_ceiling": "Source-level shared-estimator risk only in this audit; no newly executed nonconstant BDF-startup counterexample.",
+      "owner_plan": "time/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-TIME-DEV-03",
+        "priority": "P2",
+        "title": "Derive BDF startup estimates for actual order and history on unequal halves",
+        "depends_on": [
+          "R4-TIME-DEV-01",
+          "R4-TIME-DEV-02"
+        ],
+        "targets": [
+          "crates/rodas5p-integrators/src/bdf.rs:adaptive_bdf_trial"
+        ],
+        "implementation": [
+          "Separate BDF1+BDF1 startup from the BDF1+BDF2 sequence used by the default order-two configuration.",
+          "Derive the coarse/fine defect relation on the actual nodes and expose the geometry/order identity in estimator metadata.",
+          "Do not copy the Radau1 correction to mixed-order BDF startup without that derivation."
+        ],
+        "acceptance": [
+          "Exact polynomial primitives of degrees one, two and three distinguish geometry, startup order and predictor effects.",
+          "Equal-step existing contracts pass; odd-ULP and power-of-two unit transformations give the declared asymptotic behavior.",
+          "Record rejected and unresolvable startup trials without advancing history."
+        ],
+        "failure_policy": "Keep this item unresolved until the mixed-order derivation and native tests exist.",
+        "claim_ceiling": "Source-level shared-estimator risk only in this audit; no newly executed nonconstant BDF-startup counterexample."
+      }
+    },
+    {
+      "id": "R4-TIME-DEV-04",
+      "priority": "P3",
+      "title": "Make max_step semantics explicit and test the selected cap policy",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [],
+      "targets": [
+        "crates/rodas5p-integrators/src/output.rs:represent",
+        "crates/rodas5p-integrators/src/adaptive.rs:AdaptiveStepConfig",
+        "crates/rodas5p-integrators/tests/r3_represented_clock_contracts.rs"
+      ],
+      "implementation": [
+        "Choose and name StrictRepresentedCap versus AllowClockResolutionSlack; do not document the latter as a hard maximum.",
+        "Under the strict policy return a typed time-resolution failure when no represented advancing endpoint fits the cap.",
+        "Under a slack policy report the actual excess and state that a sub-ULP max_step may become a full-ULP step.",
+        "Replace the current acceptance helper with separate endpoint and cap assertions so a correct endpoint does not satisfy a cap-refusal test."
+      ],
+      "acceptance": [
+        "The 0.49,0.75,1,1.5,2 ULP cap grid records success, actual accepted h, and h/max_step.",
+        "Strict policy has no accepted h above cap; slack policy enforces its exact documented allowance.",
+        "Decimal-grid controls remain accurate; a roundoff microstep is not used to disguise policy changes."
+      ],
+      "kill_or_stop_criterion": "Treat a policy ambiguity as such, separately from a wrong state value.",
+      "claim_ceiling": "The current one-resolution slack is disclosed in closure notes; this is an API-contract recommendation.",
+      "owner_plan": "time/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-TIME-DEV-04",
+        "priority": "P3",
+        "title": "Make max_step semantics explicit and test the selected cap policy",
+        "depends_on": [],
+        "targets": [
+          "crates/rodas5p-integrators/src/output.rs:represent",
+          "crates/rodas5p-integrators/src/adaptive.rs:AdaptiveStepConfig",
+          "crates/rodas5p-integrators/tests/r3_represented_clock_contracts.rs"
+        ],
+        "implementation": [
+          "Choose and name StrictRepresentedCap versus AllowClockResolutionSlack; do not document the latter as a hard maximum.",
+          "Under the strict policy return a typed time-resolution failure when no represented advancing endpoint fits the cap.",
+          "Under a slack policy report the actual excess and state that a sub-ULP max_step may become a full-ULP step.",
+          "Replace the current acceptance helper with separate endpoint and cap assertions so a correct endpoint does not satisfy a cap-refusal test."
+        ],
+        "acceptance": [
+          "The 0.49,0.75,1,1.5,2 ULP cap grid records success, actual accepted h, and h/max_step.",
+          "Strict policy has no accepted h above cap; slack policy enforces its exact documented allowance.",
+          "Decimal-grid controls remain accurate; a roundoff microstep is not used to disguise policy changes."
+        ],
+        "failure_policy": "Treat a policy ambiguity as such, separately from a wrong state value.",
+        "claim_ceiling": "The current one-resolution slack is disclosed in closure notes; this is an API-contract recommendation."
+      }
+    },
+    {
+      "id": "R4-ARITH-DEV-01",
+      "priority": "P2",
+      "title": "Zero-aware ExpBound ordering",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [],
+      "targets": [
+        "crates/rodas5p-core/src/transform_bound.rs"
+      ],
+      "implementation": [
+        "Define one total order for nonnegative normalized ExpBound with ZERO below every positive value. Use it for row/column maxima, final norm choice, class minimization and future comparisons."
+      ],
+      "acceptance": [
+        "A=[[0,.25],[0,0]],h=1000.1,b2=[0,1] with stored=weight_phi_vectors passes exact Fraction transform-error enclosure.",
+        "Permuting rows and columns and transposing the nilpotent matrix preserves validity.",
+        "Zero, tiny positive, one, huge exponent bounds obey antisymmetry and transitivity.",
+        "Original R3 nilpotent lost-weight rejection remains unchanged."
+      ],
+      "kill_or_stop_criterion": "Exact transform counterexample closes and existing transform contracts pass; no speed claim.",
+      "claim_ceiling": "Named supported domain only; no production/speed promotion from finite fixtures.",
+      "owner_plan": "polynomial/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-ARITH-DEV-01",
+        "priority": "P2",
+        "depends_on": [],
+        "title": "Zero-aware ExpBound ordering",
+        "files": [
+          "crates/rodas5p-core/src/transform_bound.rs"
+        ],
+        "change": "Define one total order for nonnegative normalized ExpBound with ZERO below every positive value. Use it for row/column maxima, final norm choice, class minimization and future comparisons.",
+        "acceptance": [
+          "A=[[0,.25],[0,0]],h=1000.1,b2=[0,1] with stored=weight_phi_vectors passes exact Fraction transform-error enclosure.",
+          "Permuting rows and columns and transposing the nilpotent matrix preserves validity.",
+          "Zero, tiny positive, one, huge exponent bounds obey antisymmetry and transitivity.",
+          "Original R3 nilpotent lost-weight rejection remains unchanged."
+        ],
+        "stop_condition": "Exact transform counterexample closes and existing transform contracts pass; no speed claim."
+      }
+    },
+    {
+      "id": "R4-ARITH-DEV-02",
+      "priority": "P2",
+      "title": "Bound reciprocal factorial without forming factorial",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [
+        "R4-ARITH-DEV-01"
+      ],
+      "targets": [
+        "crates/rodas5p-core/src/transform_bound.rs"
+      ],
+      "implementation": [
+        "Use normalized outward reciprocal recurrence r_k=r_(k-1)/k and nilpotent series term updates. Alternatively reject unsupported orders explicitly, with a documented bound."
+      ],
+      "acceptance": [
+        "p=4,30,50,170,171,172 reciprocal bounds enclose exact 1/p!.",
+        "Generated-weight A=0,h=1.1 transform errors are enclosed at all declared supported orders.",
+        "No finite or infinite factorial denominator silently changes a certified upper bound."
+      ],
+      "kill_or_stop_criterion": "Declared order range is sound under exact-rational checks; no unbounded API promise.",
+      "claim_ceiling": "Named supported domain only; no production/speed promotion from finite fixtures.",
+      "owner_plan": "polynomial/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-ARITH-DEV-02",
+        "priority": "P2",
+        "depends_on": [
+          "R4-ARITH-DEV-01"
+        ],
+        "title": "Bound reciprocal factorial without forming factorial",
+        "files": [
+          "crates/rodas5p-core/src/transform_bound.rs"
+        ],
+        "change": "Use normalized outward reciprocal recurrence r_k=r_(k-1)/k and nilpotent series term updates. Alternatively reject unsupported orders explicitly, with a documented bound.",
+        "acceptance": [
+          "p=4,30,50,170,171,172 reciprocal bounds enclose exact 1/p!.",
+          "Generated-weight A=0,h=1.1 transform errors are enclosed at all declared supported orders.",
+          "No finite or infinite factorial denominator silently changes a certified upper bound."
+        ],
+        "stop_condition": "Declared order range is sound under exact-rational checks; no unbounded API promise."
+      }
+    },
+    {
+      "id": "R4-ARITH-DEV-03",
+      "priority": "P3",
+      "title": "Validate signed stored weights and tolerance domain",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [
+        "R4-ARITH-DEV-01"
+      ],
+      "targets": [
+        "crates/rodas5p-core/src/transform_bound.rs"
+      ],
+      "implementation": [
+        "For order zero use outward absolute signed difference or reject any stored weight inconsistent with b0. Reject negative/NaN tolerance before magnitude conversion; define positive infinity policy explicitly."
+      ],
+      "acceptance": [
+        "A=0,h=1,b0=1,stored0=-1 returns upper>=2 or typed invalid-input error.",
+        "Negative and NaN tolerances never admit a bound.",
+        "Legal zero tolerance admits exactly zero error."
+      ],
+      "kill_or_stop_criterion": "All malformed-input cases fail closed without changing valid source-produced weights.",
+      "claim_ceiling": "Named supported domain only; no production/speed promotion from finite fixtures.",
+      "owner_plan": "polynomial/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-ARITH-DEV-03",
+        "priority": "P3",
+        "depends_on": [
+          "R4-ARITH-DEV-01"
+        ],
+        "title": "Validate signed stored weights and tolerance domain",
+        "files": [
+          "crates/rodas5p-core/src/transform_bound.rs"
+        ],
+        "change": "For order zero use outward absolute signed difference or reject any stored weight inconsistent with b0. Reject negative/NaN tolerance before magnitude conversion; define positive infinity policy explicitly.",
+        "acceptance": [
+          "A=0,h=1,b0=1,stored0=-1 returns upper>=2 or typed invalid-input error.",
+          "Negative and NaN tolerances never admit a bound.",
+          "Legal zero tolerance admits exactly zero error."
+        ],
+        "stop_condition": "All malformed-input cases fail closed without changing valid source-produced weights."
+      }
+    },
+    {
+      "id": "R4-POLY-DEV-01",
+      "priority": "P2",
+      "title": "Use scaled outward norms in certified polynomial path",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [
+        "R4-ARITH-DEV-01"
+      ],
+      "targets": [
+        "crates/rodas5p-core/src/polynomial_action.rs"
+      ],
+      "implementation": [
+        "Port and independently review standalone power-of-two scaled norm candidate. Keep mantissa/exponent bounds until a justified binary64 conversion; normalize actual recurrence inputs if needed."
+      ],
+      "acceptance": [
+        "[1e300,1e300], [1e-300,1e-300], minimum subnormal, mixed-range and zero norm bounds enclose exact sum of squares.",
+        "Amplitude-scaled polynomial actions either return a valid total bound or typed range rejection, never a spurious zero certificate.",
+        "Separate norm-only improvement from full action dynamic-range support."
+      ],
+      "kill_or_stop_criterion": "Bounded dynamic-range contract passes; unsupported extremes remain explicit.",
+      "claim_ceiling": "Named supported domain only; no production/speed promotion from finite fixtures.",
+      "owner_plan": "polynomial/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-POLY-DEV-01",
+        "priority": "P2",
+        "depends_on": [
+          "R4-ARITH-DEV-01"
+        ],
+        "title": "Use scaled outward norms in certified polynomial path",
+        "files": [
+          "crates/rodas5p-core/src/polynomial_action.rs"
+        ],
+        "change": "Port and independently review standalone power-of-two scaled norm candidate. Keep mantissa/exponent bounds until a justified binary64 conversion; normalize actual recurrence inputs if needed.",
+        "acceptance": [
+          "[1e300,1e300], [1e-300,1e-300], minimum subnormal, mixed-range and zero norm bounds enclose exact sum of squares.",
+          "Amplitude-scaled polynomial actions either return a valid total bound or typed range rejection, never a spurious zero certificate.",
+          "Separate norm-only improvement from full action dynamic-range support."
+        ],
+        "stop_condition": "Bounded dynamic-range contract passes; unsupported extremes remain explicit."
+      }
+    },
+    {
+      "id": "R4-POLY-DEV-02",
+      "priority": "P2",
+      "title": "Add explicit total-error admission",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [
+        "R4-POLY-DEV-01"
+      ],
+      "targets": [
+        "crates/rodas5p-core/src/polynomial_action.rs"
+      ],
+      "implementation": [
+        "Expose an admission method that requires Certified bound<=requested absolute budget; keep truncation budget as a distinct field. EstimateOnly must not satisfy certified admission."
+      ],
+      "acceptance": [
+        "A tiny truncation budget may be met while total roundoff bound exceeds it; the admission method rejects this case.",
+        "Cancellation-heavy sums report absolute error and conditioning separately.",
+        "The timing unbounded path remains labeled separately from certified execution."
+      ],
+      "kill_or_stop_criterion": "Consumer semantics cannot confuse truncation success with total-accuracy acceptance.",
+      "claim_ceiling": "Named supported domain only; no production/speed promotion from finite fixtures.",
+      "owner_plan": "polynomial/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-POLY-DEV-02",
+        "priority": "P2",
+        "depends_on": [
+          "R4-POLY-DEV-01"
+        ],
+        "title": "Add explicit total-error admission",
+        "files": [
+          "crates/rodas5p-core/src/polynomial_action.rs"
+        ],
+        "change": "Expose an admission method that requires Certified bound<=requested absolute budget; keep truncation budget as a distinct field. EstimateOnly must not satisfy certified admission.",
+        "acceptance": [
+          "A tiny truncation budget may be met while total roundoff bound exceeds it; the admission method rejects this case.",
+          "Cancellation-heavy sums report absolute error and conditioning separately.",
+          "The timing unbounded path remains labeled separately from certified execution."
+        ],
+        "stop_condition": "Consumer semantics cannot confuse truncation success with total-accuracy acceptance."
+      }
+    },
+    {
+      "id": "R4-POLY-DEV-03",
+      "priority": "P3",
+      "title": "Bound Laguerre recurrence propagation before adding certification",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [
+        "R4-POLY-DEV-02"
+      ],
+      "targets": [
+        "crates/rodas5p-core/src/polynomial_action.rs"
+      ],
+      "implementation": [
+        "Implement the derived scalar recurrence majorant as a correctness baseline; evaluate tightness before optimizing transfer bounds. Preserve EstimateOnly until the full certificate is independently reviewed."
+      ],
+      "acceptance": [
+        "Local residual and coefficient rounding are independently enclosed for the registered symmetric domain.",
+        "Degree and scale sweeps report certificate tightness and rejection rate, not just observed error.",
+        "No transfer of symmetric bounds to nonnormal operators."
+      ],
+      "kill_or_stop_criterion": "Either useful certified region is established or looseness is documented and this candidate is rejected.",
+      "claim_ceiling": "Named supported domain only; no production/speed promotion from finite fixtures.",
+      "owner_plan": "polynomial/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-POLY-DEV-03",
+        "priority": "P3",
+        "depends_on": [
+          "R4-POLY-DEV-02"
+        ],
+        "title": "Bound Laguerre recurrence propagation before adding certification",
+        "files": [
+          "crates/rodas5p-core/src/polynomial_action.rs"
+        ],
+        "change": "Implement the derived scalar recurrence majorant as a correctness baseline; evaluate tightness before optimizing transfer bounds. Preserve EstimateOnly until the full certificate is independently reviewed.",
+        "acceptance": [
+          "Local residual and coefficient rounding are independently enclosed for the registered symmetric domain.",
+          "Degree and scale sweeps report certificate tightness and rejection rate, not just observed error.",
+          "No transfer of symmetric bounds to nonnormal operators."
+        ],
+        "stop_condition": "Either useful certified region is established or looseness is documented and this candidate is rejected."
+      }
+    },
+    {
+      "id": "R4-POLY-DEV-04",
+      "priority": "P3",
+      "title": "Benchmark separate certified and unbounded frozen-operator regimes",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [
+        "R4-POLY-DEV-02",
+        "R4-STAT-DEV-02",
+        "R4-STAT-DEV-04"
+      ],
+      "targets": [
+        "crates/rodas5p-cli/src/r3_campaigns.rs"
+      ],
+      "implementation": [
+        "Predeclare separate cached/uncached and certified/unbounded arms, identical accuracy targets, operator construction ownership and session design. Include block and vector product counts plus coefficient costs."
+      ],
+      "acceptance": [
+        "Timing is evaluated only after statistical-authority gate is resolved.",
+        "All reported speed claims name exact backend and certificate policy.",
+        "Reuse benefits are restricted to unchanged operator/enclosure/h/degree/scale cache identity."
+      ],
+      "kill_or_stop_criterion": "A preregistered study yields either bounded-population evidence or retained negative result; no general speed promotion.",
+      "claim_ceiling": "Named supported domain only; no production/speed promotion from finite fixtures.",
+      "owner_plan": "polynomial/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-POLY-DEV-04",
+        "priority": "P3",
+        "depends_on": [
+          "R4-POLY-DEV-02",
+          "R4-STAT-DEV-02",
+          "R4-STAT-DEV-04"
+        ],
+        "title": "Benchmark separate certified and unbounded frozen-operator regimes",
+        "files": [
+          "crates/rodas5p-cli/src/r3_campaigns.rs"
+        ],
+        "change": "Predeclare separate cached/uncached and certified/unbounded arms, identical accuracy targets, operator construction ownership and session design. Include block and vector product counts plus coefficient costs.",
+        "acceptance": [
+          "Timing is evaluated only after statistical-authority gate is resolved.",
+          "All reported speed claims name exact backend and certificate policy.",
+          "Reuse benefits are restricted to unchanged operator/enclosure/h/degree/scale cache identity."
+        ],
+        "stop_condition": "A preregistered study yields either bounded-population evidence or retained negative result; no general speed promotion."
+      }
+    },
+    {
+      "id": "R4-POLY-DEV-05",
+      "priority": "P3",
+      "title": "Joint Laguerre degree-scale selection under the existing scale cap",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [
+        "R4-POLY-DEV-03"
+      ],
+      "targets": [
+        "crates/rodas5p-core/src/polynomial_action.rs"
+      ],
+      "implementation": [
+        "Use the derived fixed-degree optimum beta=rho/[2(m+1)-h*rho] when positive, constrained to rho/beta<=16; compare continuous candidates with the fixed grid without relaxing error gates."
+      ],
+      "acceptance": [
+        "Analytic tail has the claimed unique minimum for 2(m+1)>h*rho.",
+        "Current exact zero branches remain separate.",
+        "A new preregistered experiment measures recurrence bounds, coefficient cost, error and degree; no unbounded cap lifting from truncation alone."
+      ],
+      "kill_or_stop_criterion": "Retain or reject the candidate based on total-error and work evidence, not degree alone.",
+      "claim_ceiling": "derived; not numerically checked or implementation-verified",
+      "owner_plan": "polynomial/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-POLY-DEV-05",
+        "priority": "P3",
+        "depends_on": [
+          "R4-POLY-DEV-03"
+        ],
+        "title": "Joint Laguerre degree-scale selection under the existing scale cap",
+        "change": "Use the derived fixed-degree optimum beta=rho/[2(m+1)-h*rho] when positive, constrained to rho/beta<=16; compare continuous candidates with the fixed grid without relaxing error gates.",
+        "acceptance": [
+          "Analytic tail has the claimed unique minimum for 2(m+1)>h*rho.",
+          "Current exact zero branches remain separate.",
+          "A new preregistered experiment measures recurrence bounds, coefficient cost, error and degree; no unbounded cap lifting from truncation alone."
+        ],
+        "evidence_status": "derived; not numerically checked or implementation-verified",
+        "stop_condition": "Retain or reject the candidate based on total-error and work evidence, not degree alone."
+      }
+    },
+    {
+      "id": "R4-HOM-DEV-01",
+      "priority": "P2",
+      "title": "InverseWitness를 검증된 값과 wire-format으로 분리",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [],
+      "targets": [
+        "crates/rodas5p-integrators/src/outward_certificate.rs"
+      ],
+      "implementation": [
+        "upper/identity를 private으로 하고 validated constructor만 제공",
+        "Deserialize는 UnverifiedWitness로 받고 shape·유한 비음수·operator identity·certificate proof를 검증한 뒤 승격",
+        "단순 digest 비교를 inverse bound proof로 취급하지 않기; 구조 witness 재생성 또는 approximate inverse V/residual witness 검증"
+      ],
+      "acceptance": [
+        "zero-upper 및 empty-row native 반례가 typed rejection 또는 재검증 경로로 닫힘",
+        "정상 diagonal/small/approximate witness와 24 fixture enclosure 유지"
+      ],
+      "kill_or_stop_criterion": "Stop after exact controls and source-bound regression pass; if authority or total-cost gate fails, retain negative result without tolerance relaxation.",
+      "claim_ceiling": "재검증 비용과 cache invalidation 비용; witness 자체를 다시 조립할 때 source operator 변경 누락 금지",
+      "owner_plan": "homotopy/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-HOM-DEV-01",
+        "priority": "P2",
+        "title": "InverseWitness를 검증된 값과 wire-format으로 분리",
+        "depends_on": [],
+        "changes": [
+          "upper/identity를 private으로 하고 validated constructor만 제공",
+          "Deserialize는 UnverifiedWitness로 받고 shape·유한 비음수·operator identity·certificate proof를 검증한 뒤 승격",
+          "단순 digest 비교를 inverse bound proof로 취급하지 않기; 구조 witness 재생성 또는 approximate inverse V/residual witness 검증"
+        ],
+        "acceptance": [
+          "zero-upper 및 empty-row native 반례가 typed rejection 또는 재검증 경로로 닫힘",
+          "정상 diagonal/small/approximate witness와 24 fixture enclosure 유지"
+        ],
+        "risk": "재검증 비용과 cache invalidation 비용; witness 자체를 다시 조립할 때 source operator 변경 누락 금지"
+      }
+    },
+    {
+      "id": "R4-HOM-DEV-02",
+      "priority": "P2",
+      "title": "StageTarget 단계수 계약과 doubling depth를 일치",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [],
+      "targets": [
+        "crates/rodas5p-integrators/src/outward_certificate.rs"
+      ],
+      "implementation": [
+        "s=8 전용이면 생성자와 certificate 진입점에서 제한",
+        "일반화한다면 strict block structure의 nilpotency 상계 s로 ceil(log2 s) 계산",
+        "zero stage·shape mismatch·부정 반지름을 typed rejection 처리"
+      ],
+      "acceptance": [
+        "s=1,2,4,8,9,16 exact chain 모두 sound 또는 unsupported rejection",
+        "native 8-stage worker-count bit identity 유지"
+      ],
+      "kill_or_stop_criterion": "Stop after exact controls and source-bound regression pass; if authority or total-cost gate fails, retain negative result without tolerance relaxation.",
+      "claim_ceiling": "API generalization probe이며 현재 native8 경로의 잘못된 출력 증거는 아님",
+      "owner_plan": "homotopy/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-HOM-DEV-02",
+        "priority": "P2",
+        "title": "StageTarget 단계수 계약과 doubling depth를 일치",
+        "depends_on": [],
+        "changes": [
+          "s=8 전용이면 생성자와 certificate 진입점에서 제한",
+          "일반화한다면 strict block structure의 nilpotency 상계 s로 ceil(log2 s) 계산",
+          "zero stage·shape mismatch·부정 반지름을 typed rejection 처리"
+        ],
+        "acceptance": [
+          "s=1,2,4,8,9,16 exact chain 모두 sound 또는 unsupported rejection",
+          "native 8-stage worker-count bit identity 유지"
+        ],
+        "risk": "API generalization probe이며 현재 native8 경로의 잘못된 출력 증거는 아님"
+      }
+    },
+    {
+      "id": "R4-HOM-DEV-03",
+      "priority": "P2",
+      "title": "모델과 certificate target의 내용 identity 결합",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [
+        "R4-HOM-DEV-01"
+      ],
+      "targets": [
+        "crates/rodas5p-integrators/src/stage_target.rs",
+        "crates/rodas5p-integrators/src/transactional_q1_q2.rs",
+        "crates/rodas5p-integrators/src/outward_certificate.rs"
+      ],
+      "implementation": [
+        "target 전체 coefficient bits와 problem y,h,J,q 및 output scale의 canonical digest 기록",
+        "quadratic model 한 타입에서 RHS/JVP/certificate source를 생성",
+        "일반 callback은 model-defect enclosure를 요구하고 sampling agreement를 proof로 승격하지 않기"
+      ],
+      "acceptance": [
+        "coefficient/scale/model parameter 변경마다 stale certificate 거절",
+        "생성된 동일 모델의 q2 replacement fixture 유지"
+      ],
+      "kill_or_stop_criterion": "Stop after exact controls and source-bound regression pass; if authority or total-cost gate fails, retain negative result without tolerance relaxation.",
+      "claim_ceiling": "identity는 수학적 enclosure의 대체가 아님",
+      "owner_plan": "homotopy/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-HOM-DEV-03",
+        "priority": "P2",
+        "title": "모델과 certificate target의 내용 identity 결합",
+        "depends_on": [
+          "R4-HOM-DEV-01"
+        ],
+        "changes": [
+          "target 전체 coefficient bits와 problem y,h,J,q 및 output scale의 canonical digest 기록",
+          "quadratic model 한 타입에서 RHS/JVP/certificate source를 생성",
+          "일반 callback은 model-defect enclosure를 요구하고 sampling agreement를 proof로 승격하지 않기"
+        ],
+        "acceptance": [
+          "coefficient/scale/model parameter 변경마다 stale certificate 거절",
+          "생성된 동일 모델의 q2 replacement fixture 유지"
+        ],
+        "risk": "identity는 수학적 enclosure의 대체가 아님"
+      }
+    },
+    {
+      "id": "R4-HOM-DEV-04",
+      "priority": "P2",
+      "title": "integration lifetime의 persistent pool과 scratch 재사용",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [],
+      "targets": [
+        "crates/rodas5p-integrators/src/transactional_q1_q2.rs",
+        "crates/rodas5p-integrators/src/outward_certificate.rs"
+      ],
+      "implementation": [
+        "ParallelExecution을 step context 외부 owner가 보관",
+        "outward upper_matmul도 per-product pool 생성을 제거",
+        "workers1은 순차 경로 유지; ordering과 accumulation 순서 고정"
+      ],
+      "acceptance": [
+        "outputs/stages/decisions bit identity 또는 사전 합의 error contract 유지",
+        "pool creation 수가 integration당 1 이하; 모든 step의 비용 포함"
+      ],
+      "kill_or_stop_criterion": "Stop after exact controls and source-bound regression pass; if authority or total-cost gate fails, retain negative result without tolerance relaxation.",
+      "claim_ceiling": "공유 scratch alias/race와 nested parallel oversubscription",
+      "owner_plan": "homotopy/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-HOM-DEV-04",
+        "priority": "P2",
+        "title": "integration lifetime의 persistent pool과 scratch 재사용",
+        "depends_on": [],
+        "changes": [
+          "ParallelExecution을 step context 외부 owner가 보관",
+          "outward upper_matmul도 per-product pool 생성을 제거",
+          "workers1은 순차 경로 유지; ordering과 accumulation 순서 고정"
+        ],
+        "acceptance": [
+          "outputs/stages/decisions bit identity 또는 사전 합의 error contract 유지",
+          "pool creation 수가 integration당 1 이하; 모든 step의 비용 포함"
+        ],
+        "risk": "공유 scratch alias/race와 nested parallel oversubscription"
+      }
+    },
+    {
+      "id": "R4-HOM-DEV-05",
+      "priority": "P2",
+      "title": "diagonal component-factorized majorant를 Rust research path로 이식",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [
+        "R4-HOM-DEV-01",
+        "R4-HOM-DEV-02",
+        "R4-HOM-DEV-04"
+      ],
+      "targets": [
+        "crates/rodas5p-integrators/src/outward_certificate.rs"
+      ],
+      "implementation": [
+        "U와 J의 verified diagonal 구조를 enum으로 표현",
+        "n개의 8x8 stage blocks를 구성하고 성분 축으로 병렬 처리",
+        "actual allocated bytes/nonzero count/directed arithmetic를 분리 계측"
+      ],
+      "acceptance": [
+        "Fraction full/blocked/serial 동일성 fixtures 통과",
+        "outward path가 serial exact oracle를 enclosure",
+        "memory가 O(ns²), 형식적 dense work가 O(ns³ log s)이며 walltime은 별도 보고"
+      ],
+      "kill_or_stop_criterion": "Stop after exact controls and source-bound regression pass; if authority or total-cost gate fails, retain negative result without tolerance relaxation.",
+      "claim_ceiling": "diagonal 이외에 구조를 조용히 적용하지 않기; fill-in 있는 banded는 별도증명 필요",
+      "owner_plan": "homotopy/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-HOM-DEV-05",
+        "priority": "P2",
+        "title": "diagonal component-factorized majorant를 Rust research path로 이식",
+        "depends_on": [
+          "R4-HOM-DEV-01",
+          "R4-HOM-DEV-02",
+          "R4-HOM-DEV-04"
+        ],
+        "changes": [
+          "U와 J의 verified diagonal 구조를 enum으로 표현",
+          "n개의 8x8 stage blocks를 구성하고 성분 축으로 병렬 처리",
+          "actual allocated bytes/nonzero count/directed arithmetic를 분리 계측"
+        ],
+        "acceptance": [
+          "Fraction full/blocked/serial 동일성 fixtures 통과",
+          "outward path가 serial exact oracle를 enclosure",
+          "memory가 O(ns²), 형식적 dense work가 O(ns³ log s)이며 walltime은 별도 보고"
+        ],
+        "risk": "diagonal 이외에 구조를 조용히 적용하지 않기; fill-in 있는 banded는 별도증명 필요"
+      }
+    },
+    {
+      "id": "R4-HOM-DEV-06",
+      "priority": "P2",
+      "title": "구조상 불가능한 witness를 speculative work 전에 판별",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [
+        "R4-HOM-DEV-03"
+      ],
+      "targets": [
+        "crates/rodas5p-integrators/src/transactional_q1_q2.rs"
+      ],
+      "implementation": [
+        "default witness가 n>2 non-diagonal에서 unavailable인 조건을 빠른 capability check로 노출",
+        "지원하지 않는 구조는 즉시 baseline을 선택하거나 검증된 approximate inverse witness를 제공",
+        "단순 dimension cutoff와 수학적 reject를 telemetry에서 구별"
+      ],
+      "acceptance": [
+        "coupled-linear-6에서 certificate unavailable을 얻기 위해 먼저 7 batches를 낭비하지 않음",
+        "기존 baseline 정확도와 failure semantics 유지"
+      ],
+      "kill_or_stop_criterion": "Stop after exact controls and source-bound regression pass; if authority or total-cost gate fails, retain negative result without tolerance relaxation.",
+      "claim_ceiling": "p1 operational fast path까지 중단할지 전략은 명시적 별도 arm으로 사전등록",
+      "owner_plan": "homotopy/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-HOM-DEV-06",
+        "priority": "P2",
+        "title": "구조상 불가능한 witness를 speculative work 전에 판별",
+        "depends_on": [
+          "R4-HOM-DEV-03"
+        ],
+        "changes": [
+          "default witness가 n>2 non-diagonal에서 unavailable인 조건을 빠른 capability check로 노출",
+          "지원하지 않는 구조는 즉시 baseline을 선택하거나 검증된 approximate inverse witness를 제공",
+          "단순 dimension cutoff와 수학적 reject를 telemetry에서 구별"
+        ],
+        "acceptance": [
+          "coupled-linear-6에서 certificate unavailable을 얻기 위해 먼저 7 batches를 낭비하지 않음",
+          "기존 baseline 정확도와 failure semantics 유지"
+        ],
+        "risk": "p1 operational fast path까지 중단할지 전략은 명시적 별도 arm으로 사전등록"
+      }
+    },
+    {
+      "id": "R4-HOM-DEV-07",
+      "priority": "P2",
+      "title": "직렬·blocked·doubling 인증의 조건부 비용 선택 및 matched campaign",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [
+        "R4-HOM-DEV-04",
+        "R4-HOM-DEV-05",
+        "R4-HOM-DEV-06",
+        "R4-STAT-DEV-02",
+        "R4-STAT-DEV-04"
+      ],
+      "targets": [
+        "crates/rodas5p-cli/src/r3_campaigns.rs",
+        "crates/rodas5p-integrators/src/transactional_q1_q2.rs"
+      ],
+      "implementation": [
+        "동일 candidate에 대해 serial/doubling 인증비용과 enclosure 폭을 분리 측정",
+        "7-batch saving과 witness/RHS/pool/fallback 전체비용을 함께 기록",
+        "새 seed·고정 corpus·host quota·thread affinity·warm/cold scope를 사전등록"
+      ],
+      "acceptance": [
+        "모든 accepted candidate가 동일 target/accuracy contract를 만족",
+        "p1,pf와 (7-p1)ceil(8/P)+8pf 예산식의 적용가정 공개",
+        "full-path paired evidence가 기준을 넘기 전 SPEEDUP_UNPROVEN 유지"
+      ],
+      "kill_or_stop_criterion": "Stop after exact controls and source-bound regression pass; if authority or total-cost gate fails, retain negative result without tolerance relaxation.",
+      "claim_ceiling": "microbenchmark 인증만 빠르다는 결과로 전체 적분 speedup을 주장하지 않기",
+      "owner_plan": "homotopy/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-HOM-DEV-07",
+        "priority": "P2",
+        "title": "직렬·blocked·doubling 인증의 조건부 비용 선택 및 matched campaign",
+        "depends_on": [
+          "R4-HOM-DEV-04",
+          "R4-HOM-DEV-05",
+          "R4-HOM-DEV-06",
+          "R4-STAT-DEV-02",
+          "R4-STAT-DEV-04"
+        ],
+        "changes": [
+          "동일 candidate에 대해 serial/doubling 인증비용과 enclosure 폭을 분리 측정",
+          "7-batch saving과 witness/RHS/pool/fallback 전체비용을 함께 기록",
+          "새 seed·고정 corpus·host quota·thread affinity·warm/cold scope를 사전등록"
+        ],
+        "acceptance": [
+          "모든 accepted candidate가 동일 target/accuracy contract를 만족",
+          "p1,pf와 (7-p1)ceil(8/P)+8pf 예산식의 적용가정 공개",
+          "full-path paired evidence가 기준을 넘기 전 SPEEDUP_UNPROVEN 유지"
+        ],
+        "risk": "microbenchmark 인증만 빠르다는 결과로 전체 적분 speedup을 주장하지 않기"
+      }
+    },
+    {
+      "id": "R4-STAT-DEV-01",
+      "priority": "P2",
+      "title": "Propagate statistical authority separately from the numeric timing decision",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [],
+      "targets": [
+        "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+        "crates/rodas5p-fair-ab/src/paired_timing.rs",
+        "crates/rodas5p-cli/src/main.rs"
+      ],
+      "implementation": [
+        "Add a typed TimingAuthority with study identity, design/estimand version, validated domain and Hold/Admissible/NotEvaluated status.",
+        "Keep diagnostic Promote/Block/Inconclusive and raw receipts immutable; expose a separate admissible_decision consumed by CLI wall_criterion.",
+        "Make absent, mismatched or failed coverage authority yield NotEvaluated and a machine-readable reason; do not erase the historical numeric POLY03 PASS."
+      ],
+      "acceptance": [
+        "Current single-case synthetic receipt retains its diagnostic Promote but cannot pass the consumer under current failed study.",
+        "Published POLY03 numeric summary remains preserved and reports effective authority hold.",
+        "Forged or unrelated authority identifiers fail; preregistered future passing domain may authorize only matching designs."
+      ],
+      "kill_or_stop_criterion": "A bool copied from user JSON without an externally selected study/domain binding is not an authority implementation.",
+      "claim_ceiling": "Named supported domain only; no production/speed promotion from finite fixtures.",
+      "owner_plan": "statistics/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-STAT-DEV-01",
+        "priority": "P2",
+        "title": "Propagate statistical authority separately from the numeric timing decision",
+        "depends_on": [],
+        "problem": "Coverage studies are FAIL and closure imposes STATISTICAL_AUTHORITY_HOLD, but verified_decision only verifies integrity and CLI maps Promote to Passed.",
+        "implementation": [
+          "Add a typed TimingAuthority with study identity, design/estimand version, validated domain and Hold/Admissible/NotEvaluated status.",
+          "Keep diagnostic Promote/Block/Inconclusive and raw receipts immutable; expose a separate admissible_decision consumed by CLI wall_criterion.",
+          "Make absent, mismatched or failed coverage authority yield NotEvaluated and a machine-readable reason; do not erase the historical numeric POLY03 PASS."
+        ],
+        "acceptance": [
+          "Current single-case synthetic receipt retains its diagnostic Promote but cannot pass the consumer under current failed study.",
+          "Published POLY03 numeric summary remains preserved and reports effective authority hold.",
+          "Forged or unrelated authority identifiers fail; preregistered future passing domain may authorize only matching designs."
+        ],
+        "kill_criterion": "A bool copied from user JSON without an externally selected study/domain binding is not an authority implementation."
+      }
+    },
+    {
+      "id": "R4-STAT-DEV-02",
+      "priority": "P2",
+      "title": "Validate every raw session cell before merging",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [],
+      "targets": [
+        "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+        "crates/rodas5p-fair-ab/src/paired_timing.rs"
+      ],
+      "implementation": [
+        "Require candidate_seconds.len == reference_seconds.len == process_blocks.len == order.len == protocol.pairs for every session cell.",
+        "Require at least protocol.warmups finite nonnegative warmup samples in every record; preserve the existing producer's 2*warmups convention explicitly.",
+        "Bind fixed batch calibration to the first calibration session/case, require each later cell's batch match it, and keep each session's own warmups. Do not demand re-calibration from each later warmup because the campaign intentionally fixes the first batch.",
+        "Check finite ordered start/finish timestamps and nonempty arm/workload identities; retain failures explicitly."
+      ],
+      "acceptance": [
+        "Empty or singleton later warmups reject before assessment.",
+        "29/31 candidate or reference samples in adjacent sessions reject even when the merged flat vector is unchanged.",
+        "Existing genuine fixed-batch campaigns and all five original R3 malformed-case rejections remain valid."
+      ],
+      "kill_or_stop_criterion": "Passing by dropping malformed cells, merging first and validating only totals, or deleting old raw receipts is forbidden.",
+      "claim_ceiling": "Named supported domain only; no production/speed promotion from finite fixtures.",
+      "owner_plan": "statistics/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-STAT-DEV-02",
+        "priority": "P2",
+        "title": "Validate every raw session cell before merging",
+        "depends_on": [],
+        "implementation": [
+          "Require candidate_seconds.len == reference_seconds.len == process_blocks.len == order.len == protocol.pairs for every session cell.",
+          "Require at least protocol.warmups finite nonnegative warmup samples in every record; preserve the existing producer's 2*warmups convention explicitly.",
+          "Bind fixed batch calibration to the first calibration session/case, require each later cell's batch match it, and keep each session's own warmups. Do not demand re-calibration from each later warmup because the campaign intentionally fixes the first batch.",
+          "Check finite ordered start/finish timestamps and nonempty arm/workload identities; retain failures explicitly."
+        ],
+        "acceptance": [
+          "Empty or singleton later warmups reject before assessment.",
+          "29/31 candidate or reference samples in adjacent sessions reject even when the merged flat vector is unchanged.",
+          "Existing genuine fixed-batch campaigns and all five original R3 malformed-case rejections remain valid."
+        ],
+        "kill_criterion": "Passing by dropping malformed cells, merging first and validating only totals, or deleting old raw receipts is forbidden."
+      }
+    },
+    {
+      "id": "R4-STAT-DEV-03",
+      "priority": "P2",
+      "title": "Decide and version the estimand before changing intervals",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [
+        "R4-STAT-DEV-01"
+      ],
+      "targets": [
+        "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+        "crates/rodas5p-fair-ab/src/paired_timing.rs",
+        "docs/TIMING_DESIGN_CONTRACT.md"
+      ],
+      "implementation": [
+        "Resolve the discrepancy between the contract ID/module description naming case-session medians and prose/code pooling pair logs.",
+        "Choose explicitly between the existing pooled-pair median target and the proposed median of population session-cell medians; state conditions for equality.",
+        "Version inputs and outputs so intervals for distinct estimands cannot be compared or substituted silently."
+      ],
+      "acceptance": [
+        "An asymmetric cell-law fixture demonstrates that the two estimands can differ.",
+        "The symmetric additive timing-design family yields the same theta by proof.",
+        "Published R3 evidence remains attached to its original estimand and algorithm."
+      ],
+      "kill_or_stop_criterion": "A new interval that changes the scientific target without a new contract is rejected.",
+      "claim_ceiling": "Named supported domain only; no production/speed promotion from finite fixtures.",
+      "owner_plan": "statistics/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-STAT-DEV-03",
+        "priority": "P2",
+        "title": "Decide and version the estimand before changing intervals",
+        "depends_on": [
+          "R4-STAT-DEV-01"
+        ],
+        "implementation": [
+          "Resolve the discrepancy between the contract ID/module description naming case-session medians and prose/code pooling pair logs.",
+          "Choose explicitly between the existing pooled-pair median target and the proposed median of population session-cell medians; state conditions for equality.",
+          "Version inputs and outputs so intervals for distinct estimands cannot be compared or substituted silently."
+        ],
+        "acceptance": [
+          "An asymmetric cell-law fixture demonstrates that the two estimands can differ.",
+          "The symmetric additive timing-design family yields the same theta by proof.",
+          "Published R3 evidence remains attached to its original estimand and algorithm."
+        ],
+        "kill_criterion": "A new interval that changes the scientific target without a new contract is rejected."
+      }
+    },
+    {
+      "id": "R4-STAT-DEV-04",
+      "priority": "P2",
+      "title": "Port the exact simultaneous session-median interval candidate and validate its domain",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [
+        "R4-STAT-DEV-02",
+        "R4-STAT-DEV-03"
+      ],
+      "targets": [
+        "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+        "crates/rodas5p-fair-ab/src/paired_timing.rs",
+        "crates/rodas5p-fair-ab/src/timing_design.rs"
+      ],
+      "implementation": [
+        "Compute binomial tails using exact integers or a rigorously bounded recurrence; avoid overflow in 2^S.",
+        "Return unbounded intervals when the chosen construction cannot meet alpha/C with a finite order statistic.",
+        "Require complete fixed case sets, unique sessions, fixed stopping and explicit iid-session assumptions; reject missing/failing cells.",
+        "Preregister a new coverage and power study at S={6,8,12,24}, C={1,5}, including case_sd=0, identical case responses, dependence, atoms and symmetric heavy tails. Use separate data/test streams and do not select seeds after seeing outcomes."
+      ],
+      "acceptance": [
+        "Reproduce all 32 exact design checks, six exhaustive sign enumerations, 12 controls and four invalid-input checks.",
+        "S6/C1 interval has per-case coverage31/32; S6/C5 is unbounded; S8/C5 simultaneous lower bound123/128.",
+        "Coverage claims apply only to the new explicit target and valid session model; power and wall-time outcomes remain separate."
+      ],
+      "kill_or_stop_criterion": "Pair multiplication or extra case labels must never substitute for independent sessions.",
+      "claim_ceiling": "Named supported domain only; no production/speed promotion from finite fixtures.",
+      "owner_plan": "statistics/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-STAT-DEV-04",
+        "priority": "P2",
+        "title": "Port the exact simultaneous session-median interval candidate and validate its domain",
+        "depends_on": [
+          "R4-STAT-DEV-02",
+          "R4-STAT-DEV-03"
+        ],
+        "implementation": [
+          "Compute binomial tails using exact integers or a rigorously bounded recurrence; avoid overflow in 2^S.",
+          "Return unbounded intervals when the chosen construction cannot meet alpha/C with a finite order statistic.",
+          "Require complete fixed case sets, unique sessions, fixed stopping and explicit iid-session assumptions; reject missing/failing cells.",
+          "Preregister a new coverage and power study at S={6,8,12,24}, C={1,5}, including case_sd=0, identical case responses, dependence, atoms and symmetric heavy tails. Use separate data/test streams and do not select seeds after seeing outcomes."
+        ],
+        "acceptance": [
+          "Reproduce all 32 exact design checks, six exhaustive sign enumerations, 12 controls and four invalid-input checks.",
+          "S6/C1 interval has per-case coverage31/32; S6/C5 is unbounded; S8/C5 simultaneous lower bound123/128.",
+          "Coverage claims apply only to the new explicit target and valid session model; power and wall-time outcomes remain separate."
+        ],
+        "kill_criterion": "Pair multiplication or extra case labels must never substitute for independent sessions."
+      }
+    },
+    {
+      "id": "R4-STAT-DEV-05",
+      "priority": "P3",
+      "title": "Separate kernel timing, certificate cost, cache setup and amortized production work",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [
+        "R4-STAT-DEV-01",
+        "R4-STAT-DEV-02",
+        "R4-STAT-DEV-04"
+      ],
+      "targets": [
+        "crates/rodas5p-cli/src/r3_campaigns.rs"
+      ],
+      "implementation": [
+        "Keep existing POLY03 as an unbounded-action kernel campaign with post-hoc independent accuracy verification.",
+        "For certified-path timing, include coefficient enclosure, recurrence propagation, cache validation and rejection/fallback costs in both timed work and counters.",
+        "For frozen symmetric operators compare warm polynomial action with an explicitly amortized cached eigensystem/Schur baseline; preregister reuse count, changing-h policy and setup allocation.",
+        "Move homotopy worker-pool construction outside the step loop before the next timing campaign, then count dispatch, RHS/JVP, certificate and fallback work separately."
+      ],
+      "acceptance": [
+        "Every timing arm's work definition matches the output verification path and declared claim.",
+        "Cold, warm, setup and full-certified costs are separately machine-readable.",
+        "No speed claim crosses the still-open statistical authority gate."
+      ],
+      "kill_or_stop_criterion": "A faster unbounded kernel cannot be used as measured evidence that the certified production path is faster.",
+      "claim_ceiling": "Named supported domain only; no production/speed promotion from finite fixtures.",
+      "owner_plan": "statistics/NEXT_STEPS.json",
+      "details": {
+        "id": "R4-STAT-DEV-05",
+        "priority": "P3",
+        "title": "Separate kernel timing, certificate cost, cache setup and amortized production work",
+        "depends_on": [
+          "R4-STAT-DEV-01",
+          "R4-STAT-DEV-02",
+          "R4-STAT-DEV-04"
+        ],
+        "implementation": [
+          "Keep existing POLY03 as an unbounded-action kernel campaign with post-hoc independent accuracy verification.",
+          "For certified-path timing, include coefficient enclosure, recurrence propagation, cache validation and rejection/fallback costs in both timed work and counters.",
+          "For frozen symmetric operators compare warm polynomial action with an explicitly amortized cached eigensystem/Schur baseline; preregister reuse count, changing-h policy and setup allocation.",
+          "Move homotopy worker-pool construction outside the step loop before the next timing campaign, then count dispatch, RHS/JVP, certificate and fallback work separately."
+        ],
+        "acceptance": [
+          "Every timing arm's work definition matches the output verification path and declared claim.",
+          "Cold, warm, setup and full-certified costs are separately machine-readable.",
+          "No speed claim crosses the still-open statistical authority gate."
+        ],
+        "kill_criterion": "A faster unbounded kernel cannot be used as measured evidence that the certified production path is faster."
+      }
+    },
+    {
+      "id": "R4-POLY-DEV-06",
+      "priority": "P3",
+      "title": "Prototype a separately versioned Leja or scaled-Taylor block-phi backend",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [
+        "R4-POLY-DEV-02"
+      ],
+      "targets": [
+        "crates/rodas5p-core/src/polynomial_action.rs",
+        "crates/rodas5p-krylov/src"
+      ],
+      "implementation": [
+        "Define block action/operator epoch/domain-witness interfaces and keep Arnoldi as reference/fallback.",
+        "Choose one initial non-Arnoldi backend; record scaling, degree, all matrix/vector products, coefficient and domain costs.",
+        "Derive a valid truncation/backward-to-forward bound for the declared operator class; do not label a two-small-terms heuristic Certified."
+      ],
+      "acceptance": [
+        "Exact-input diagonal and nilpotent cases; independently computed small nonnormal cases with explicit conditioning.",
+        "Capability rejection outside validated domain; no silent symmetry inference from eigenvalues.",
+        "Separate cold/warm/certified timings only after the statistics gates pass."
+      ],
+      "kill_or_stop_criterion": "Reject certification or stop candidate if domain bound cannot be established or total-cost improvement disappears; retain typed EstimateOnly research status.",
+      "claim_ceiling": "Literature-supported design proposal; neither implemented nor timed in R4.",
+      "owner_plan": "literature/RESEARCH_DIRECTION_KO.md"
+    },
+    {
+      "id": "R4-VERIFY-DEV-01",
+      "priority": "P2",
+      "title": "Resolve the named native tests omitted by the bounded audit",
+      "state": "PROPOSED_NOT_IMPLEMENTED",
+      "depends_on": [],
+      "targets": [
+        "evidence/runtime/LOCAL_REMAINDER_PLAN.json",
+        "crates"
+      ],
+      "implementation": [
+        "Use the exact source/toolchain and retain each first failed/timed-out record.",
+        "Run only the 20 unresolved and 40 budget-skipped named tests on a suitable host with explicit per-target budgets; handle ignored tests/doctests as separate intended gates."
+      ],
+      "acceptance": [
+        "Publish per-test status and stderr plus source/dependency identity.",
+        "Never convert timeout or absence of output to PASS; classify any assertion failure and repair only under a separate authorized source task."
+      ],
+      "kill_or_stop_criterion": "Stop once each named remainder has a clear result or explicit environmental blocker; no fresh broad audit loop.",
+      "claim_ceiling": "Complete previously bounded regression evidence only; no speed claim.",
+      "owner_plan": "evidence/runtime/LOCAL_REMAINDER_PLAN.json"
+    }
+  ],
+  "topological_order": [
+    "R4-ARITH-DEV-01",
+    "R4-HOM-DEV-01",
+    "R4-HOM-DEV-02",
+    "R4-HOM-DEV-04",
+    "R4-STAT-DEV-01",
+    "R4-STAT-DEV-02",
+    "R4-TIME-DEV-01",
+    "R4-TIME-DEV-02",
+    "R4-TIME-DEV-04",
+    "R4-VERIFY-DEV-01",
+    "R4-ARITH-DEV-02",
+    "R4-ARITH-DEV-03",
+    "R4-HOM-DEV-03",
+    "R4-HOM-DEV-05",
+    "R4-POLY-DEV-01",
+    "R4-STAT-DEV-03",
+    "R4-TIME-DEV-03",
+    "R4-HOM-DEV-06",
+    "R4-POLY-DEV-02",
+    "R4-STAT-DEV-04",
+    "R4-HOM-DEV-07",
+    "R4-POLY-DEV-03",
+    "R4-POLY-DEV-04",
+    "R4-POLY-DEV-06",
+    "R4-STAT-DEV-05",
+    "R4-POLY-DEV-05"
+  ],
+  "numeric_results": {
+    "schema": "vigilode.r4.numeric_results.v1",
+    "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+    "preregistration_commit": "b2914f3e3c03eda60a8547619db6284aac8250a2",
+    "native_rows": {
+      "time": 36,
+      "polynomial": 78,
+      "homotopy": 9,
+      "statistics": 21,
+      "total": 144
+    },
+    "findings": {
+      "P2": 8,
+      "P3": 1,
+      "total": 9
+    },
+    "source_invariant_gate": "FAIL",
+    "bounded_candidate_checks_gate": "PASS",
+    "native_regression": {
+      "PASS": 671,
+      "IGNORED_NOT_RUN": 4,
+      "UNRESOLVED_BOUNDED_TIMEOUT": 20,
+      "NOT_RUN_TOTAL_BUDGET": 40
+    },
+    "complete_workspace_pass": false,
+    "polynomial_actions": {
+      "count": 40,
+      "certified": 32,
+      "estimate_only": 8,
+      "max_observed_absolute_error": 4.73850883134441e-14,
+      "false_certified_bounds_observed": 0
+    },
+    "transform_false_bound_cases": 4,
+    "homotopy_unsound_observations": 4,
+    "statistics_later_malformed_records_admitted": 5,
+    "exact_candidate_counts": {
+      "scaled_norm": 5,
+      "inverse_factorial": 6,
+      "adaptive_doubling": 6,
+      "diagonal_factorization": 3,
+      "session_interval_designs": 32,
+      "session_interval_sign_enumerations": 6,
+      "session_interval_decision_controls": 12,
+      "session_interval_invalid_inputs": 4
+    },
+    "production_promotion": false,
+    "speed_promotion": false,
+    "new_timing_campaign": false
+  },
+  "runtime": {
+    "schema": "vigilode.r4.runtime_final.v1",
+    "recorded_utc": "2026-10-01T11:25:19.662365+00:00",
+    "audited_source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+    "execution_commit": "b2914f3e3c03eda60a8547619db6284aac8250a2",
+    "prereg_commit": "b2914f3e3c03eda60a8547619db6284aac8250a2",
+    "build_status": "PASS",
+    "build_elapsed_seconds": 230.66621457699512,
+    "native_campaign_status": "NOT_COMPLETE_BOUNDED_OR_FAILURE",
+    "inventory": {
+      "binary_count": 149,
+      "named_test_count": 735
+    },
+    "test_counts": {
+      "PASS": 671,
+      "IGNORED_NOT_RUN": 4,
+      "UNRESOLVED_BOUNDED_TIMEOUT": 20,
+      "NOT_RUN_TOTAL_BUDGET": 40
+    },
+    "binary_counts": {
+      "PASS": 139,
+      "BOUNDED_TIMEOUT": 5,
+      "NOT_RUN_TOTAL_BUDGET": 5
+    },
+    "changed_targets": {
+      "target_count": 15,
+      "all_harnesses_exit_zero_and_summary_consistent": true,
+      "test_counts": {
+        "PASS": 68,
+        "IGNORED_NOT_RUN": 1
+      }
+    },
+    "source_tracked_crates_cargo_toolchain_unchanged": true,
+    "complete_workspace_pass": false,
+    "doctests": "NOT_RUN",
+    "performance_claim": "NOT_EVALUATED",
+    "ignored_tests": "NOT_RUN",
+    "timeouts": "Audit budget termination, not assertion failure; exit_code 124 is runner timeout sentinel.",
+    "failure_classification": "No assertion failure observed",
+    "native_summary": "native/suite_summary.json",
+    "named_test_coverage": "TEST_COVERAGE.json",
+    "runtime_incidents": "runtime_incidents.json",
+    "selected_readback": "Finalizer checks each PASS harness raw summary, return status, per-test count agreement; not a second scientific execution."
+  },
+  "independent_review": "decision/FINAL_REVIEW.json",
+  "report": "REVIEW_KO.md",
+  "reproduce": "REPRODUCE.md"
+}

@@ -1,0 +1,11 @@
+case_group,case_count,dimension_or_grid,domain_marker,condition_f_min,condition_f_max,max_common_backward_error,max_state_relative_difference,nonlinear_residual_before,nonlinear_residual_after,common_w_outcome,accounting_or_invariant,verification_state
+identity_grid,12,"n=4/8/16; h=0.001/0.01/0.05/0.1",identity_mass,32.1868941892757,2686.7976507838134,4.6955771192625894e-17,4.664692226645801e-15,,,completed,"setup=1; factor=1; solves=8; correction_jvp=14; diagnostic_shifted=8; diagnostic_offdiag_jvp=14; nonlinear_diagnostic=1; independent_full_target_applies=2; counted_candidate_jvp_vectors=52",PASS_IN_FINAL_11_TEST_SUITE
+mass_nonnormal,1,n=2,"mass_det=2.7; offdiag_ratio=134.66666666666666",96.8247899149117,96.8247899149117,5.476681809776196e-17,4.510978662006756e-16,7.134184555420351e-7,9.932618999112301e-17,completed,"condition-aware backward/state criteria; nonidentity mass matvecs counted",PASS_IN_FINAL_11_TEST_SUITE
+zero_rhs,1,n=1,zero_rhs,,,0,0,,,completed,"absolute residual/correction=0; relative 0/0 represented as absent",PASS_IN_FINAL_11_TEST_SUITE
+missing_jvp,1,n=1,no_jvp_access,,,,,,,failed:JvpAccess,"full oracle retained; common-W setup/factor/solve attempts=0",PASS_IN_FINAL_11_TEST_SUITE
+failed_jvp,1,n=1,injected_jvp_failure,,,,,,,failed:CorrectionJvp,"one solve completed; first JVP attempt counted incomplete; one partial row retained",PASS_IN_FINAL_11_TEST_SUITE
+inconsistent_jvp,1,n=1,jvp_disagrees_with_explicit_jacobian,,,,,,,completed_counterexample,"independent backward error >1e-8; no oracle-equivalence PASS",PASS_IN_FINAL_11_TEST_SUITE
+singular_solve,1,n=1,singular_W,,,,,,,failed:Solve,"setup/factor attempted+completed; first solve attempted incomplete",PASS_IN_FINAL_11_TEST_SUITE
+first_solve_overflow,1,n=1,finite_tiny_W,,,,,,,failed:Solve,"setup/factor attempted+completed; first solve attempted incomplete",PASS_IN_FINAL_11_TEST_SUITE
+late_solve_overflow,1,n=1,later_rhs_overflow,,,,,,,failed:Solve,"solve attempts=2; completed=1; one zero partial row retained",PASS_IN_FINAL_11_TEST_SUITE
+nonfinite_or_shape,2,n=1,invalid_input,,,,,,,failed:InputValidation,"no algorithmic work for NaN or malformed shape",PASS_IN_FINAL_11_TEST_SUITE

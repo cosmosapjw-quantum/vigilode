@@ -1,0 +1,138 @@
+{
+  "backends": [
+    {
+      "argv": [
+        "wolframscript",
+        "-file",
+        "/home/cosmosapjw/.local/share/vigilode-worktrees/stage-certificate-20260831T141627Z/research/audit2_stage_certificate_telemetry_20260831/formal/wolfram/check_stage_certificate.wl"
+      ],
+      "backend": "wolfram-language",
+      "exit_code": 0,
+      "expected_tokens": [
+        "F02_WOLFRAM_JACOBI_SQUARE_ZERO",
+        "F03_WOLFRAM_APPROXIMATE_SOLVE_BOUND",
+        "WOLFRAM_FORMAL_PASS"
+      ],
+      "missing_tokens": [],
+      "proof_source": "research/audit2_stage_certificate_telemetry_20260831/formal/wolfram/check_stage_certificate.wl",
+      "source_sha256": "bef5a931967ff558449887c0f7e235534adea0a4d586c7a0fad81361b6373935",
+      "status": "PASS",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 87,
+      "stdout_sha256": "2c91fd869d99de22a0a85e4549b4912e2a2e531cdcf1a2f98ea6aab73a981493",
+      "version": "WolframScript 1.14.0 for Linux x86 (64-bit)"
+    },
+    {
+      "argv": [
+        "sage",
+        "/home/cosmosapjw/.local/state/vigilode/stage-certificate-telemetry/20260831T141627Z/formal-repair/full-001/compiler-products/sagemath/check_stage_majorant.sage"
+      ],
+      "backend": "sagemath",
+      "exit_code": 0,
+      "expected_tokens": [
+        "F02_SAGE_JACOBI_SQUARE_ZERO",
+        "F04_SAGE_FORWARD_MAJORANT_AND_WEIGHTED_BOUNDS",
+        "SAGE_FORMAL_PASS"
+      ],
+      "missing_tokens": [],
+      "proof_source": "research/audit2_stage_certificate_telemetry_20260831/formal/sage/check_stage_majorant.sage",
+      "source_sha256": "84d8eb2179df60d52f8b56e9b48c64e68ad6d3ead4a5b7ac9fae4d4bd9cc620a",
+      "status": "PASS",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 91,
+      "stdout_sha256": "571d0b7aebbfc633f7b2e86c30c7a7a2b8ce3a7c189169a13fded80d3139560d",
+      "version": "SageMath version 10.9, Release Date: 2026-05-04"
+    },
+    {
+      "argv": [
+        "Singular",
+        "/home/cosmosapjw/.local/share/vigilode-worktrees/stage-certificate-20260831T141627Z/research/audit2_stage_certificate_telemetry_20260831/formal/singular/check_jacobi_numerator.sing"
+      ],
+      "backend": "singular",
+      "exit_code": 0,
+      "expected_tokens": [
+        "F02_SINGULAR_NUMERATOR_PATTERN_SQUARE_ZERO",
+        "SINGULAR_FORMAL_PASS"
+      ],
+      "missing_tokens": [],
+      "proof_source": "research/audit2_stage_certificate_telemetry_20260831/formal/singular/check_jacobi_numerator.sing",
+      "source_sha256": "aeb6d6fb70a4cf0524f5f740264595deb08868b37884d72c4c212cebe8ddf8ee",
+      "status": "PASS",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 470,
+      "stdout_sha256": "017b3e47bc9e44cd792469ce459efb243f45a885deb80ce6240f52e9ae24b992",
+      "version": "Singular for x86_64-Linux version 4.3.2 (4330, 64 bit) Apr  1 2024 04:44:00"
+    },
+    {
+      "argv": [
+        "lake",
+        "env",
+        "lean",
+        "-R",
+        "/home/cosmosapjw/.local/share/vigilode-worktrees/stage-certificate-20260831T141627Z",
+        "-o",
+        "/home/cosmosapjw/.local/state/vigilode/stage-certificate-telemetry/20260831T141627Z/formal-repair/full-001/compiler-products/lean/StageCertificate.olean",
+        "/home/cosmosapjw/.local/share/vigilode-worktrees/stage-certificate-20260831T141627Z/research/audit2_stage_certificate_telemetry_20260831/formal/lean/StageCertificate.lean"
+      ],
+      "backend": "lean-mathlib",
+      "exit_code": 0,
+      "expected_tokens": [
+        "F01_LEAN_NILPOTENT_AND_FINITE_INVERSE",
+        "F03_LEAN_APPROXIMATE_SOLVE_BOUND",
+        "F04_LEAN_FORWARD_MAJORANT_AND_WEIGHTED_BOUNDS",
+        "F05_LEAN_SAFE_INTERVAL_DECISIONS",
+        "LEAN_FORMAL_PASS"
+      ],
+      "missing_tokens": [],
+      "proof_source": "research/audit2_stage_certificate_telemetry_20260831/formal/lean/StageCertificate.lean",
+      "source_sha256": "a0e1d45b44ab0a9ca92c4a38e44afa32526efacd9d17460d74f608ed6d97fd66",
+      "status": "PASS",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 835,
+      "stdout_sha256": "1c79b39036729ed2532563fdea026aa0b5316bff0d5840d4471c5d111f54771a",
+      "version": "Lean (version 4.31.0, x86_64-unknown-linux-gnu, commit 68218e876d2a38b1985b8590fff244a83c321783, Release)"
+    },
+    {
+      "argv": [
+        "coqc",
+        "-q",
+        "-noglob",
+        "-o",
+        "/home/cosmosapjw/.local/state/vigilode/stage-certificate-telemetry/20260831T141627Z/formal-repair/full-001/compiler-products/rocq/StageCertificate.vo",
+        "/home/cosmosapjw/.local/share/vigilode-worktrees/stage-certificate-20260831T141627Z/research/audit2_stage_certificate_telemetry_20260831/formal/rocq/StageCertificate.v"
+      ],
+      "backend": "rocq",
+      "exit_code": 0,
+      "expected_tokens": [
+        "F01_ROCQ_NILPOTENT_AND_FINITE_INVERSE",
+        "F03_ROCQ_APPROXIMATE_SOLVE_BOUND",
+        "F04_ROCQ_FORWARD_MAJORANT_AND_WEIGHTED_BOUNDS",
+        "F05_ROCQ_SAFE_INTERVAL_DECISIONS",
+        "ROCQ_FORMAL_PASS"
+      ],
+      "missing_tokens": [],
+      "proof_source": "research/audit2_stage_certificate_telemetry_20260831/formal/rocq/StageCertificate.v",
+      "source_sha256": "e0dd47d26d71e030e1fa6794c64380f9aa58657373316f83d783fae77189cea6",
+      "status": "PASS",
+      "stderr_bytes": 0,
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdout_bytes": 317,
+      "stdout_sha256": "4133515feaa06bff3256450a2bc812cc9f83791c496358eb91618279b2d95b45",
+      "version": "The Rocq Prover, version 9.0.1"
+    }
+  ],
+  "mathlib_project": "/home/cosmosapjw/Dropbox/bianchi/htt_base/formal_mathlib",
+  "required_backends": [
+    "wolfram-language",
+    "sagemath",
+    "singular",
+    "lean-mathlib",
+    "rocq"
+  ],
+  "schema": "vigilode-audit2-stage-certificate-formal-receipt/v1",
+  "status": "PASS"
+}

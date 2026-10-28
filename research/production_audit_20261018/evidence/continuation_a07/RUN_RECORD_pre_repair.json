@@ -1,0 +1,132 @@
+{
+  "allocator_results": [
+    {
+      "allocated_bytes": 49211,
+      "allocations": 443,
+      "arm": "native",
+      "callback_counters": {
+        "jacobian_builds": 0,
+        "jacobian_into_calls": 147,
+        "jvp_calls": 0,
+        "jvp_vectors": 0,
+        "rhs_batch_calls": 0,
+        "rhs_calls": 1190,
+        "rhs_evaluations": 1190
+      },
+      "status": "ok"
+    },
+    {
+      "allocated_bytes": 116634,
+      "allocations": 1039,
+      "arm": "diffsol",
+      "callback_counters": {
+        "jacobian_builds": 0,
+        "jacobian_into_calls": 0,
+        "jvp_calls": 15,
+        "jvp_vectors": 15,
+        "rhs_batch_calls": 0,
+        "rhs_calls": 364,
+        "rhs_evaluations": 364
+      },
+      "status": "ok"
+    }
+  ],
+  "arm_accuracy": {
+    "diffsol": {
+      "accuracy_gate": false,
+      "empirical_interval": [
+        3.301621094347222,
+        3.3037774057537246
+      ],
+      "failed_rows": 0,
+      "max_grid_wrms_distance_to_fine_radau": 3.3026992500504733,
+      "rows": 91,
+      "successful_complete_rows": 91
+    },
+    "native": {
+      "accuracy_gate": true,
+      "empirical_interval": [
+        0.3364519157913275,
+        0.33860822719783057
+      ],
+      "failed_rows": 0,
+      "max_grid_wrms_distance_to_fine_radau": 0.33753007149457903,
+      "rows": 91,
+      "successful_complete_rows": 91
+    }
+  },
+  "campaign_validation": {
+    "counts": {
+      "allocator": 2,
+      "cold": 20,
+      "warm": 160
+    },
+    "issues": [],
+    "valid": true
+  },
+  "outputs": {
+    "REPORT.md": "f51abc62b596adfa1bbd5bd1a85f7d4cccd5c5ff1373b2bace2933ac43103fa6",
+    "alloc_diffsol.jsonl": "29be8a24d3df65368adafde4b1ae7eaf39440c5d160653e147a7383c9bac2ea4",
+    "alloc_native.jsonl": "bb63b9fc54cb4922959acb98fc7add0c8389d3010c170e6c19e36b622e40f5d5",
+    "cold.jsonl": "a05b4aa6e20817c11c078f3c4e5661f1df498875d188671cef1249b0bddbdf2c",
+    "validated.json": "971817dedb6978efdc1067f0a3eebefa40ad74beb7fee568f3df3908b5c7f840",
+    "warm.jsonl": "f70e2e9f873c740c18b8b4fe53e75a92e1e64a8bc2055642d7d29f0221782b72"
+  },
+  "reference_gate": true,
+  "reference_spreads_empirical_not_certified": {
+    "fine_vs_lsoda_max_grid_wrms": 0.0010781557032515283,
+    "fine_vs_previous_radau_max_grid_wrms": 1.0253688066238993e-05
+  },
+  "schema": "vigilode-a07-execution-record-v1",
+  "source_identity": {
+    "binary_sha256": {
+      "allocator": {
+        "path": "/home/cosmosapjw/vigilode/tools/benchmarks/diffsol/a07/target/measurement/vigilode-a07-allocator",
+        "sha256": "7c487dd5cf0ecde75be860139caf55e88cd0290a617c23be699d0391a6113d64"
+      },
+      "timing": {
+        "path": "/home/cosmosapjw/vigilode/tools/benchmarks/diffsol/a07/target/measurement/vigilode-a07-timing",
+        "sha256": "f1af08047816ca91f7ae69ea2e98349c52bbf2ea59d5c74eed5cfafb8cf749ee"
+      }
+    },
+    "branch": "audit/production-readiness-20261018",
+    "git_diff_binary_sha256": "af42de17887efc5e6658f0c1ff0e042b2d303563422e17e5ac4a1f8c077047ca",
+    "grid_file_sha256": "bf420e8a45703ab382dff0ee256deac665c2d3266d0164415dc45705a3383408",
+    "head": "c3036c63da02ca9b04cd39ccf580cd67d00ccb0c",
+    "manifest_sha256": "0502ed2f1a0dc02fc5403ebd7eae6a1f6700b88d662666f095fcf7e2f6e95d4f",
+    "reference_file_sha256": "8f32b7fd1d668fd576e1da67fbfb32f6fe40af96e6d47255ec0c9dfccfbf0674",
+    "standalone_lock_sha256": "095669a81ff64533d7c15e2765fdeb754f288eb882aea8df167629c660a07d68"
+  },
+  "speed_measurement_accuracy_eligible": false,
+  "speedup_claim": "NOT_ASSERTED; wall-clock timing authority is diagnostic_only",
+  "timing": [
+    {
+      "bootstrap_95pct_interval": [
+        0.6677305256409933,
+        1.327452564133345
+      ],
+      "bootstrap_resamples": 10000,
+      "diffsol_over_native_median_ratio": 1.0112855366465705,
+      "failed_rows": 0,
+      "paired_units": 10,
+      "protocol": "single_cold_process",
+      "successful_rows": 20,
+      "timing_authority": "diagnostic_only"
+    },
+    {
+      "bootstrap_95pct_interval": [
+        1.402230958217182,
+        1.4501800614107307
+      ],
+      "bootstrap_resamples": 10000,
+      "diffsol_over_native_median_ratio": 1.425298255891888,
+      "failed_rows": 0,
+      "paired_units": 20,
+      "protocol": "warm_abba",
+      "successful_rows": 160,
+      "timing_authority": "diagnostic_only"
+    }
+  ],
+  "timing_authority": "diagnostic_only",
+  "validation_exit_code": 4
+}

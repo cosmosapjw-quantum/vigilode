@@ -1,0 +1,182 @@
+{
+  "schema_version": "1.0.0",
+  "review_date": "2026-10-04",
+  "source_commit": "826fa05cc1fdaf7b1a0cf7ac45116596b4ddff65",
+  "findings": [
+    {
+      "id": "INTAKE-NATIVE-01",
+      "severity": "P2",
+      "title": "Stage chart can report Converged for a NaN residual",
+      "classification": "IMPLEMENTATION",
+      "status": "CLOSED",
+      "path": "crates/rodas5p-integrators/src/stage_chart_candidate.rs",
+      "lines": [
+        150,
+        168,
+        171,
+        172,
+        208,
+        226
+      ],
+      "evidence": "check_shapes validates only dimensions; inf_norm folds f64::max, which ignores NaN; the convergence guard checks the resulting norm and K, not every residual entry. Identity chart, finite K and problem.q=[NaN] produce all-NaN R with computed inf_norm=0 and ChartStatus::Converged.",
+      "impact": "False convergence diagnostic for public research candidate API; the candidate carries no acceptance, so this does not establish false admission by the native certificate or default solver.",
+      "next_action": "Reject nonfinite target/problem values and every nonfinite residual/JVP before convergence; add focused regression.",
+      "rerun_reason": "New source boundary not covered by published INT-04 contract tests.",
+      "closure_evidence": [
+        "research/rvj_integration_20261004/evidence/chart_boundaries_red.log",
+        "research/rvj_integration_20261004/evidence/chart_boundaries_green.log",
+        "research/rvj_integration_20261004/evidence/chart_boundaries_final.log",
+        "crates/rodas5p-integrators/tests/rvj_integration_boundaries.rs"
+      ],
+      "status_detail": "reproduced and repaired; focused regressions pass"
+    },
+    {
+      "id": "INTAKE-NATIVE-02",
+      "severity": "P2",
+      "title": "Chart integration advances physical state without representable time progress",
+      "classification": "IMPLEMENTATION",
+      "status": "CLOSED",
+      "path": "crates/rodas5p-integrators/src/chart_transport.rs",
+      "lines": [
+        309,
+        369,
+        410,
+        418,
+        438,
+        461
+      ],
+      "evidence": "The loop computes tau=min(h,target-state.t), calls advance, and accepts/stores point.t=state.t+tau without requiring a strict representable increase. With t0=2^53, target=t0+2 and h=max_step=1, t0+1 rounds to t0. Every accepted iteration changes x,w and global enclosure at an unchanged time; no attempt cap exists.",
+      "impact": "Opt-in research chart path can return physically advanced states labelled with unchanged time, or perform a very large number of iterations. No default RODAS5P path impact inferred.",
+      "next_action": "Refuse nonprogress before advance and ensure finite times/configuration/output schedule; use bounded test x0=-1,kappa=40,eps=0,large finite tolerance,denominator_min=0.01 to limit accepted attempts.",
+      "rerun_reason": "New representable-clock boundary, not a rerun of the published small-time chart campaign.",
+      "closure_evidence": [
+        "research/rvj_integration_20261004/evidence/chart_boundaries_red.log",
+        "research/rvj_integration_20261004/evidence/chart_boundaries_green.log",
+        "research/rvj_integration_20261004/evidence/chart_boundaries_final.log",
+        "crates/rodas5p-integrators/tests/rvj_integration_boundaries.rs"
+      ],
+      "status_detail": "reproduced and repaired; focused regressions pass"
+    },
+    {
+      "id": "INTAKE-NATIVE-03",
+      "severity": "P2",
+      "title": "Published GCRODR recycle repair is not connected to the fast driver",
+      "classification": "INTEGRATION_DEBT",
+      "status": "OPEN",
+      "path": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+      "lines": [
+        390,
+        396,
+        410
+      ],
+      "related_path": "crates/rodas5p-krylov/src/gcrodr.rs",
+      "related_lines": [
+        460,
+        473,
+        648,
+        668,
+        1099
+      ],
+      "evidence": "REV-01c review states recycle updates break M^-1 A U=C and refresh repairs 85 prior failures; GcrodrSolveOptions derives Default, leaving refresh_after_update=false; solve_gcrodr_with_workspace reaches this default, and the fast driver calls it.",
+      "impact": "Opt-in recycled GCRODR fast-driver use still inherits published convergence failures and wasted work. True residual acceptance remains present; no false converged solution is alleged.",
+      "next_action": "Expose explicit safe recycle policy in the opt-in driver or select cold GMRES/GCRODR. Keep old algorithm identifier for comparison. Validate only policy wiring and charged work; do not rerun old attribution campaigns.",
+      "rerun_reason": null,
+      "status_detail": "published evidence retained; source call-site verified; no scientific rerun"
+    },
+    {
+      "id": "A-PORT-01",
+      "classification": "integration_precondition_gap",
+      "source": "code/shift_jet.py:44-60",
+      "title": "Require verified dissipativity before exposing tail/residual error bounds",
+      "published_scoped_claim_disproved": false,
+      "severity": "P1",
+      "status": "CLOSED_SCOPED_NATIVE_PORT",
+      "note": "Native sufficient Euclidean dissipativity witness and directed current-target certificate verified against exact Fraction oracle; broader H/complex domains remain outside scope.",
+      "status_detail": "CLOSED_SCOPED_NATIVE_PORT"
+    },
+    {
+      "id": "A-PORT-02",
+      "classification": "integration_certification_gap",
+      "source": "code/shift_jet.py:74-90",
+      "title": "Separate f64 numerical diagnostic from directed current-target certificate",
+      "published_scoped_claim_disproved": false,
+      "severity": "P1",
+      "status": "CLOSED_SCOPED_NATIVE_PORT",
+      "note": "Native sufficient Euclidean dissipativity witness and directed current-target certificate verified against exact Fraction oracle; broader H/complex domains remain outside scope.",
+      "status_detail": "CLOSED_SCOPED_NATIVE_PORT"
+    },
+    {
+      "id": "A-PORT-03",
+      "classification": "integration_api_boundary",
+      "source": "inputs/loop10/code/fourier_volterra.py:176-198",
+      "title": "Bind checked phase enclosure and invariant provenance in native certificate constructor",
+      "published_scoped_claim_disproved": false,
+      "severity": "P2",
+      "status": "OPEN",
+      "note": "Published assumptions retained; not a disproved historical fixture.",
+      "status_detail": "OPEN"
+    },
+    {
+      "id": "A-PORT-04",
+      "classification": "claim_ceiling",
+      "source": "RESEARCH_NOTE_KO.md:section 5",
+      "title": "Reuse counts leave serial depth and matched optimal baseline unresolved",
+      "published_scoped_claim_disproved": false,
+      "severity": "P2",
+      "status": "OPEN",
+      "note": "Published assumptions retained; not a disproved historical fixture.",
+      "status_detail": "OPEN"
+    },
+    {
+      "id": "A-PORT-05",
+      "classification": "port_regression_risk",
+      "source": "code/fft_bridge.py:16-51",
+      "title": "Preserve full convolution padding and formal polynomial-axis conjugation",
+      "published_scoped_claim_disproved": false,
+      "severity": "P2",
+      "status": "OPEN",
+      "note": "Published assumptions retained; not a disproved historical fixture.",
+      "status_detail": "OPEN"
+    },
+    {
+      "id": "INTAKE-NATIVE-O2",
+      "severity": "P2",
+      "status": "OPEN_PROOF_OBLIGATION",
+      "classification": "UNPROVEN_ENCLOSURE_COMPOSITION",
+      "title": "exp_neg_enclosure is evaluated only at mul_up(kappa,tau); because exp(-x) decreases, the exact-product upper endpoint requires the lower product endpoint. Current Taylor interval slack might cover tested inputs, but the compositional proof should pass a product interval or evaluate both directed endpoints. Do not label a false enclosure without a counterexample.",
+      "path": "crates/rodas5p-integrators/src/chart_transport.rs",
+      "evidence_scope": "source-level direction/composition risk; no observed false bound and no historical rerun",
+      "status_detail": "OPEN_PROOF_OBLIGATION"
+    },
+    {
+      "id": "INTAKE-NATIVE-O3",
+      "severity": "P2",
+      "status": "OPEN_PROOF_OBLIGATION",
+      "classification": "UNPROVEN_ENCLOSURE_COMPOSITION",
+      "title": "In stepped decay, mul_up(count,h) is then multiplied by possibly negative re_hi; direction reverses. Interval midpoint radius is based on half-width rather than distance to the actually rounded midpoint. Existing safety factors may dominate particular errors; repair local enclosures before strengthening claims. No historical numerical campaign rerun authorized by this observation alone.",
+      "path": "crates/rodas5p-core/src/nonnormal_certificate.rs",
+      "evidence_scope": "source-level direction/composition risk; no observed false bound and no historical rerun",
+      "status_detail": "OPEN_PROOF_OBLIGATION"
+    },
+    {
+      "id": "REVIEW-STORAGE-01",
+      "severity": "P2",
+      "classification": "IMPLEMENTATION_RESOURCE_ACCOUNTING",
+      "status": "CLOSED",
+      "title": "Include output gamma and certificate tolerance scalar slots in storage budget",
+      "evidence": [
+        "evidence/core.stdout",
+        "evidence/independent_decision.json"
+      ],
+      "fix": "checked 3*s slots; boundary392/391 test at64targets",
+      "status_detail": "CLOSED"
+    }
+  ],
+  "scope_warning": "Research helpers and opt-in algorithms. No evidence here of a default RODAS5P false acceptance.",
+  "status_enum": [
+    "CLOSED",
+    "CLOSED_SCOPED_NATIVE_PORT",
+    "OPEN",
+    "OPEN_PROOF_OBLIGATION"
+  ]
+}

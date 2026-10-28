@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "unit": "production-audit-20261018",
+  "date": "2026-10-18",
+  "timezone": "Asia/Seoul",
+  "baseline_commit": "2fc61b944fe431d40ba455c373579bce00b0c39a",
+  "publication_branch": "audit/production-readiness-20261018",
+  "decision": "HOLD_UNQUALIFIED_PRODUCTION",
+  "approved_use": "problem-specific validated use of existing generic RODAS5P path",
+  "production_promoted": false,
+  "global_accuracy_promoted": false,
+  "measured_speed_promoted": false,
+  "certified_packet_promoted": false,
+  "leja_total_binary64_certificate_promoted": false,
+  "patch_decision": "ACCEPT_TARGETED_CORRECTNESS_AND_AUTHORITY_REPAIRS",
+  "supersedes": [
+    {
+      "path": "research/lp10_independent_decision_20261011/INDEPENDENT_DECISION.json",
+      "scope": "certified specialized packet promotion and zero-allocation verification"
+    },
+    {
+      "path": "docs/DIFFSOL_BENCHMARK_REPORT.md",
+      "scope": "headline same-error speed, allocation and general production recommendations"
+    }
+  ],
+  "preserves": [
+    "historical result bytes and failed campaigns",
+    "prior Loop12 conditional mathematical results",
+    "existing generic solver problem-specific validation",
+    "default solver selection",
+    "Cargo.toml and Cargo.lock dependency identities"
+  ],
+  "remaining_blockers": [
+    {
+      "id": "B01",
+      "scope": "packet",
+      "obligation": "Full outward coefficient/residual/reconstruction arithmetic, exact structure binding, actual weight sum and spectral radius bounds"
+    },
+    {
+      "id": "B02",
+      "scope": "damping",
+      "obligation": "Native damped nonlinear packet and carrier/output mapping; scalar table alone is insufficient"
+    },
+    {
+      "id": "B03",
+      "scope": "leja",
+      "obligation": "Complete additive-underflow and operator-action arithmetic for public total certificate; EstimateOnly retained"
+    },
+    {
+      "id": "B04",
+      "scope": "generic_dense_output",
+      "obligation": "Whole-output continuous residual and one-sided gain; midpoint/endpoint estimator alone insufficient"
+    },
+    {
+      "id": "B05",
+      "scope": "performance",
+      "obligation": "Equivalent accuracy, output retention, setup boundaries, strongest structured baseline, measured allocations, failure preservation and generated report"
+    }
+  ],
+  "math_adoptions": [
+    "T1 weighted energy and exact logarithmic norm",
+    "T2 Bernstein continuous polynomial bound",
+    "T3 outward damped moments and beta prefix complexity",
+    "S-T1 corrected suffix propagation and incremental coefficient cost",
+    "WB1 rank-two O(N) stage solve",
+    "WB2 inverse/residual certificate under stated norm condition"
+  ],
+  "authority": "This decision states scientific scope; publication success does not imply promotion."
+}

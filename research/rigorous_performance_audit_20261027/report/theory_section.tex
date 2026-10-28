@@ -1,0 +1,468 @@
+% Body-only section for the parent's REVTeX report.
+% Requires amsmath, amssymb; no theorem package or custom macros are required.
+% Bibliography keys: TranquilliSandu2014, LiuMoursiVanderwerff2022.
+
+\section{Mathematical audit and constructive repair}
+\label{sec:theory-audit}
+
+The audit separates a mathematical premise from the numerical evidence used to
+instantiate it.  Exact carrier coordinates, polynomial resolvents, and finite
+causal stage propagation are valid constructions under their declared
+structure.  The present evidence does not establish a fundamental failure of
+these ideas.  It does identify obligations that an allocation optimization
+cannot discharge: the structure must hold on the relevant domain; a residual
+must be transported through an inverse or flow-sensitivity bound; and the
+result must refer to the original physical norm and requested outputs.
+Conversely, temporary storage before an unchanged linear solve and continued
+execution of a comparator whose cost has already lost are implementation or
+scheduling costs.  Removing them does not require changing the integration
+formula or its error threshold.
+
+The distinction is relevant to the interpretation of the existing code.
+The coupled solver explicitly labels its original-space residual as
+operational rather than certified.  The causal-majorant implementation
+contains finite triangular propagation and radius closure.  The conditioned
+polynomial path binds a declared polynomial identity, coefficient defects,
+and an original-operator residual.  These safeguards should be retained.
+Classical Rosenbrock order conditions do not license arbitrary approximate
+stage solves or an arbitrary replacement Jacobian; Rosenbrock--W and
+Rosenbrock--K methods account for these approximations through their own order
+theory.  This distinction is explicit in Sec.~1, following Eqs.~(2a)--(2b), of
+Ref.~\cite{TranquilliSandu2014}.
+
+\subsection{A partial-cost stopping theorem for the adapter}
+\label{subsec:cost-theorem}
+
+Fix an accepted checkpoint, a final time, an output contract, and an accuracy
+qualification.  Both candidates use the same original state and cost units.
+Let a completed explicit candidate satisfy this qualification at cost at most
+$E$.  Let $L_k$ be the nondecreasing cost already spent by an implicit
+comparator after its $k$th checked unit.  Every completion of that same
+comparator must have a total cost $I\geq L_k$.  The native success flag supplies
+the registered local-tolerance and output qualification; it does not by itself
+supply a rigorous physical global-error bound.  If the stronger qualification
+is required, it must be established separately.
+
+\paragraph{Theorem 1 (prefix-cost dominance).}
+For $0<\rho<1$, the condition
+\begin{equation}
+ E\leq \rho L_k
+ \label{eq:prefix-dominance}
+\end{equation}
+implies $E\leq\rho I$ for every completion of the implicit comparator.  Hence
+the explicit result may be selected, and the comparator may be stopped,
+without computing its endpoint.  If the comparator does not complete, it
+supplies no competing qualified result; the explicit result retains its
+previously established qualification.
+
+\paragraph{Proof.}
+The monotonicity premise gives
+$E\leq\rho L_k\leq\rho I$ for every comparator completion.  No state from the
+incomplete comparator enters this inequality or the explicit result.
+Numerical admissibility of the latter was established before the cost test.
+\hfill$\square$
+
+The latest baseline already uses the lower-bound argument for an incomplete
+comparator.  The implementation refinement is to stop proactively once
+Eq.~\eqref{eq:prefix-dominance} becomes decisive, use conservative scalar
+arithmetic, and record evidence distinct from a completed same-window
+comparison.  A callback-only lower bound is sufficient when all omitted
+factorization, solve, and bookkeeping costs are nonnegative.  A count of
+callbacks cannot be substituted for elapsed seconds in an inequality about
+elapsed seconds.
+
+In floating-point arithmetic, use an upper enclosure of $E$ and a lower
+enclosure of $\rho L_k$.  With serial checking after a callback of maximum
+weight $U$, a prescribed callback threshold $B$ permits charged work up to
+$B+U$, together with any separately charged structural verification.  This is
+a bound in the registered callback units, not a wall-clock bound.
+An observed fatal callback remains terminal even when an explicit candidate
+is available.  A typed cost stop must not conceal a fatal error.  Callback
+replay must satisfy the caller's purity or transaction contract, and partial
+implicit states are never committed.  The theorem compares the present
+qualified observations; it does not guarantee future optimality or a fixed
+fraction saved in the total solve, since candidate construction and discarded
+work have already been paid.
+
+\subsection{Uniformly convergent reuse of a dissipative shifted system}
+\label{subsec:cayley-theorem}
+
+Let $H$ be a finite-dimensional real or complex Hilbert space with a fixed
+positive-definite metric $M$.  All norms and adjoints in this subsection refer
+to this same metric.  A linear operator $J$ is assumed dissipative:
+\begin{equation}
+ \operatorname{Re}\langle v,Jv\rangle_M\leq0
+ \quad\hbox{for every }v\in H.
+ \label{eq:dissipativity}
+\end{equation}
+Negative real parts of eigenvalues alone are not this hypothesis.  Nor can a
+state-dependent error metric be changed silently between the cached and
+current systems.
+
+Use the native scaled stage convention
+\begin{equation}
+ \begin{gathered}
+ P=a_0^{-1}I-J,\qquad W=a^{-1}I-J,\\
+ a_0>0,\quad a=\gamma h>0.
+ \end{gathered}
+ \label{eq:native-shifts}
+\end{equation}
+The shifts $a_0,a$ have units of time; $J,P,W$ have units of inverse time.
+Set
+\begin{equation}
+ \omega_*={2a\over a+a_0},\qquad
+ q_*={|a-a_0|\over a+a_0},\qquad
+ R_0=(I-a_0J)^{-1}.
+ \label{eq:optimal-relaxation}
+\end{equation}
+
+\paragraph{Theorem 2 (minimax scalar relaxation).}
+Under Eq.~\eqref{eq:dissipativity}, both $P$ and $W$ are invertible.  The
+iteration
+\begin{equation}
+ x_{k+1}=x_k+\omega_*P^{-1}(b-Wx_k)
+ \label{eq:relaxed-richardson}
+\end{equation}
+contracts the error in the $M$ norm by at most $q_*<1$ for every positive shift
+ratio.  Moreover, $\omega_*$ minimizes the uniform worst-case norm bound over
+real scalar relaxations and all dissipative operators in this class.
+
+\paragraph{Proof.}
+If $Wv=0$, taking the real part of the inner product with $v$ gives
+$a^{-1}\|v\|_M^2=\operatorname{Re}\langle v,Jv\rangle_M\leq0$, hence $v=0$.
+Finite dimensionality implies invertibility.  The same reasoning applies to
+$P$.
+
+Write $v=(I-a_0J)u$.  Dissipativity gives
+\begin{align}
+ \|u+a_0Ju\|_M^2-\|u-a_0Ju\|_M^2
+ &=4a_0\operatorname{Re}\langle u,Ju\rangle_M\nonumber\\
+ &\leq0.
+\end{align}
+Therefore the reflected resolvent
+\begin{equation}
+ C=2R_0-I=(I+a_0J)(I-a_0J)^{-1}
+\end{equation}
+has norm at most one.  Put $s=a_0/a$.  Direct algebra yields
+\begin{align}
+ P^{-1}W
+ &=I+(s-1)R_0\nonumber\\
+ &={1+s\over2}I+{s-1\over2}C,
+\end{align}
+so the iteration matrix is exactly
+\begin{equation}
+ T_*=I-\omega_*P^{-1}W
+ ={a-a_0\over a+a_0}C.
+ \label{eq:cayley-iteration-identity}
+\end{equation}
+For $e_k=x_k-W^{-1}b$, one has $e_{k+1}=T_*e_k$, proving the contraction.
+
+For minimax sharpness, the class contains $J=0$, for which the norm of the
+iteration matrix with scalar relaxation $\omega$ is $|1-\omega s|$.  For the
+family $J=-\lambda I$, its limit as $\lambda\to\infty$ is $|1-\omega|$.
+Every uniform bound is therefore at least
+\begin{equation}
+ \max\{|1-\omega s|,|1-\omega|\}.
+\end{equation}
+Its minimum over real $\omega$ balances the two endpoint errors with opposite
+signs, giving $\omega=2/(1+s)$ and value $|1-s|/(1+s)$.  Equation
+\eqref{eq:cayley-iteration-identity} attains that uniform bound.
+\hfill$\square$
+
+The contraction of a reflected resolvent is a standard monotone-operator
+fact, not a claimed novelty of this project.  Fact~2.5 and Eq.~(14) of
+Ref.~\cite{LiuMoursiVanderwerff2022} state the corresponding equivalence; in
+that convention the monotone operator is $A=-a_0J$.  The contribution here is
+the explicit connection to the solver's scaled stage system and a bounded,
+testable reuse candidate.  The existing lagged driver already has
+Richardson, GMRES, and several staleness criteria.  Theorem~2 supplies an
+additional metric-qualified candidate; it does not establish that this
+candidate is faster than those existing choices.
+
+\paragraph{Jacobian drift.}
+Suppose the cached operator obeys
+$\operatorname{Re}\langle v,J_0v\rangle_M\leq-\alpha\|v\|_M^2$ with
+$\alpha\geq0$, while the current operator is $J=J_0+\Delta$.
+Coercivity and Cauchy--Schwarz give
+\begin{equation}
+ \|P^{-1}\|_M\leq{a_0\over1+a_0\alpha}.
+\end{equation}
+Since the perturbed iteration matrix is
+$T=T_*+\omega_*P^{-1}\Delta$,
+\begin{equation}
+ \|T\|_M\leq q_*+
+ \omega_*{a_0\|\Delta\|_M\over1+a_0\alpha}=:q.
+ \label{eq:cayley-drift}
+\end{equation}
+This derivation does not assume that $J_0$ and $\Delta$ commute.  A contraction
+claim requires $q<1$ and a valid drift bound over the declared domain.
+
+If the implemented inverse action is $\widehat R$, rather than exact
+$P^{-1}$, and
+$\|\widehat R-P^{-1}\|_M\leq\varepsilon_R$, the iteration also contains this
+action error.  If the represented relaxation differs from the mathematical
+value by at most $\varepsilon_\omega$, a sufficient additional allowance is
+\begin{equation}
+ \varepsilon_\omega\|P^{-1}W\|_M+
+ |\widehat\omega|\varepsilon_R\|W\|_M.
+ \label{eq:inverse-action-allowance}
+\end{equation}
+For fixed $J$, $\|P^{-1}W\|_M\leq\max(1,a_0/a)$.
+A favorable observed residual ratio is not itself a full-space proof of
+$\varepsilon_R$ or $q$.  Alternatively, use the iteration heuristically and
+certify its final result by an independently valid original-target residual
+bound.
+
+\paragraph{Native residual units.}
+If the actual $J$ has dissipation margin $\alpha'\geq0$, then for the original
+scaled residual $r=b-Wx$,
+\begin{equation}
+ \|x-W^{-1}b\|_M
+ \leq{a\over1+a\alpha'}\|r\|_M.
+ \label{eq:scaled-residual-bound}
+\end{equation}
+Indeed, $\|W^{-1}\|_M\leq a/(1+a\alpha')$ follows from the same coercivity
+argument.  Here $r$ has units of state per time.  The factor $a$ must not be
+omitted or mixed with the normalized equation using $I-aJ$, whose residual
+has state units.  The cached dissipation margin $\alpha$ in
+Eq.~\eqref{eq:cayley-drift} and the actual-operator margin $\alpha'$ in
+Eq.~\eqref{eq:scaled-residual-bound} are separate hypotheses.
+
+\paragraph{Computational form and scope of verification.}
+For $a\leq a_0$, compute $r=a/a_0$, then
+\begin{equation}
+ \omega_*={2r\over1+r},\qquad q_*={1-r\over1+r}.
+\end{equation}
+For $a>a_0$, compute $r=a_0/a$ and use $\omega_*=2/(1+r)$ with the same
+expression for $q_*$.  This avoids overflow in $a+a_0$ and avoids a ratio
+greater than one.  The research Rust primitive encloses the ratio, applies
+the monotone formulas with outward scalar arithmetic, includes the
+represented-$\omega$ allowance and declared drift, and refuses stale
+model/metric/domain identities.  Its scalar argument assumes correctly
+rounded basic binary64 operations, gradual underflow, and no
+fast-math reassociation.  Tags prevent an identity mismatch; they do not
+prove the truth of a caller declaration.  The primitive does not certify an
+external floating-point LU action or residual callback, and it is not wired
+into a production solver default.  Compilation with Rust 1.94.1 and all
+seven targeted primitive tests succeeded.
+
+The Python prototype used actual cached LU factors on 27 finite shifted
+systems: diagonal dissipative, damped nonnormal dissipative, and skew-adjoint
+families, with shift ratios from $0.1$ to $10$.  All 27 numerical
+operator-norm and matrix-identity checks satisfied their diagnostic
+tolerances.  The separate residual threshold $10^{-10}$ was met by
+\emph{25 of 27} relaxed runs.  Two ratio-10 cases stalled at floating
+residual floors and remain recorded as failures; the threshold was not
+relaxed.  The largest observed forward error over all 27 cases was
+$2.4181321575052657\times10^{-11}$, and the largest matrix-identity discrepancy
+was $4.719879393761364\times10^{-13}$.  Exact rational $2\times2$ Wolfram
+checks separately confirmed Eq.~\eqref{eq:cayley-iteration-identity}, the
+noncommuting drift identity, and the counterexample below.
+
+Unrelaxed iteration diverged in the diagonal ratio-$0.1$ and ratio-$0.25$
+cases, while the relaxed candidate converged.  Nevertheless, the uniform
+minimax rule generally increased iteration counts in the other families.
+The actual spectrum can be easier than the worst-case dissipative class.
+For example, for a very stiff negative scalar operator,
+$P^{-1}W$ approaches $I$.  Unrelaxed Richardson then has an iteration
+matrix approaching zero, whereas a nonunit minimax relaxation leaves
+$I-\omega_*I$.  Balancing the zero and infinitely stiff endpoints of an
+entire operator class can therefore sacrifice speed on a particular stiff
+operator.  If the fixed metric is not the physical Euclidean metric, the
+physical norm conversion must also be included; the simple bound acquires
+a factor at most $\sqrt{\kappa_2(M)}$ in its initial-error prefactor.
+Thus these results establish a larger guaranteed convergence region and an
+executable candidate; they establish no universal speedup.  A direct
+refactorization or the existing unrelaxed iteration may be cheaper.  The
+candidate must remain conditional and be selected using its total measured
+cost at the same original-state accuracy.
+
+\subsection{A causal stage bound that includes inverse-action defects}
+\label{subsec:inexact-causal-theorem}
+
+Consider finite causal stage equations
+\begin{equation}
+ W_i u_i=b_i(u_0,\ldots,u_{i-1}),\qquad i=0,\ldots,s-1,
+\end{equation}
+and candidate stages $\widehat u_i$.  All $W_i$ and approximate inverse
+actions $R_i$ are fixed square linear operators on the same finite-dimensional
+space.  In a fixed common norm, assume
+\begin{align}
+ \|I-R_iW_i\|&\leq\delta_i<1,\nonumber\\
+ \|R_i r_i\|&\leq d_i,\nonumber\\
+ \|R_i[b_i(v)-b_i(w)]\|
+ &\leq\sum_{j<i}K_{ij}\|v_j-w_j\|,
+ \label{eq:inexact-stage-premises}
+\end{align}
+where $r_i=b_i(\widehat u_{<i})-W_i\widehat u_i$ and $K_{ij}\geq0$.
+The domain of the last inequality must contain the candidate and exact
+stage states.  A validated radius-closure argument can establish this
+premise; a few samples cannot.
+
+\paragraph{Theorem 3 (defect-aware causal propagation).}
+The recurrence
+\begin{equation}
+ E_i={d_i+\sum_{j<i}K_{ij}E_j\over1-\delta_i}
+ \label{eq:inexact-causal-majorant}
+\end{equation}
+encloses every stage error:
+$\|\widehat u_i-u_i\|\leq E_i$.  For the reconstructed output
+$y^+=y+\sum_i\beta_i u_i$, its added algebraic error is bounded by
+\begin{equation}
+ \|\widehat y^+-y^+\|
+ \leq\sum_i|\beta_i|E_i+\varepsilon_{\rm reconstruction}.
+ \label{eq:stage-output-bound}
+\end{equation}
+There is no requirement that the full interstage coupling matrix be a
+contraction.
+
+\paragraph{Proof.}
+Let $D_i=I-R_iW_i$ and $e_i=\widehat u_i-u_i$.  Subtracting exact and
+candidate stage equations and multiplying by $R_i$ gives
+\begin{equation}
+ (I-D_i)e_i
+ =-R_i r_i+R_i[b_i(\widehat u_{<i})-b_i(u_{<i})].
+\end{equation}
+The Neumann series gives $\|(I-D_i)^{-1}\|\leq(1-\delta_i)^{-1}$.
+Consequently,
+\begin{equation}
+ \|e_i\|\leq
+ {d_i+\sum_{j<i}K_{ij}\|e_j\|\over1-\delta_i}.
+\end{equation}
+Induction in causal stage order proves Eq.~\eqref{eq:inexact-causal-majorant}.
+The output estimate follows by the triangle inequality.
+\hfill$\square$
+
+This formulation extends the existing finite triangular majorant by first
+absorbing each diagonal inverse-action defect.  It permits a polynomial
+inverse or cached factor without treating that action as exact.  An
+unavailable $\delta_i$ leaves an operational estimate, rather than a
+certified stage bound.  Full-space operator bounds, truthful domain
+declarations, and outward arithmetic are still required when the word
+``certified'' is used.
+
+For connection to time integration, suppose the ideal order-$p$ method
+satisfies a stability bound
+$\operatorname{Lip}(\Phi_h)\leq1+Lh$ and a uniform ideal local defect
+$Ch^{p+1}$.  If Eq.~\eqref{eq:stage-output-bound} is at most $Dh^{p+1}$,
+then, at the computed time sequence,
+\begin{equation}
+ e_{n+1}\leq(1+Lh_n)e_n+(C+D)h_n^{p+1}.
+\end{equation}
+Expanding this recurrence, using
+$\prod_n(1+Lh_n)\leq e^{LT}$ and
+$\sum_n h_n^{p+1}\leq T h_{\max}^p$, yields
+\begin{equation}
+ e_N\leq e^{LT}\bigl[e_0+(C+D)T h_{\max}^p\bigr].
+\end{equation}
+Thus the extra algebraic error preserves order $p$ under these premises.
+Stiffness-uniform order requires stiffness-uniform stability and defect
+constants; it does not follow from this recurrence alone.  An embedded pair
+is not a proof of those constants.
+
+\paragraph{Nonnormal counterexample.}
+Set
+\begin{equation}
+ J=\begin{pmatrix}-1&K\\0&-1\end{pmatrix},\quad
+ a=1,\quad b=\begin{pmatrix}0\\\epsilon\end{pmatrix},\quad
+ \widehat x=0.
+\end{equation}
+Both eigenvalues of $J$ are $-1$, and the residual in
+$(I-J)x=b$ has norm $\epsilon$.  Direct inversion gives
+\begin{equation}
+ x=\begin{pmatrix}K\epsilon/4\\\epsilon/2\end{pmatrix}.
+\end{equation}
+At $K=10^8$, $\epsilon=10^{-8}$, the residual is $10^{-8}$ but the forward
+error is approximately $1/4$.  Exact rational evaluation gives
+$(1/4,1/200000000)^T$.  The example refutes the inference from a small
+residual and negative eigenvalues to a small physical forward error.  It
+does not refute the solver or the defect-aware construction.
+
+\subsection{Transport of a structural-chart residual to physical space}
+\label{subsec:chart-theorem}
+
+Let
+\begin{equation}
+ y=S(t)z+c(t)
+\end{equation}
+with $S$ invertible and continuously differentiable throughout the interval,
+and $c$ continuously differentiable.  Define the exact transformed field
+\begin{equation}
+ g(t,z)=S^{-1}\bigl[f(t,Sz+c)-\dot S z-\dot c\bigr].
+ \label{eq:exact-chart-field}
+\end{equation}
+
+\paragraph{Theorem 4 (physical residual transport).}
+For a differentiable numerical curve $\widehat z$ and its exact
+reconstruction $\widehat y=S\widehat z+c$, define
+$d_z=\widehat z'-g(t,\widehat z)$.  Then
+\begin{equation}
+ d_y:=\widehat y'-f(t,\widehat y)=S(t)d_z.
+ \label{eq:chart-residual}
+\end{equation}
+If the implemented transformed field is $\widetilde g$, define instead
+$\widetilde d_z=\widehat z'-\widetilde g(t,\widehat z)$ and
+$\eta=\widetilde g-g$.  The corresponding identity is
+\begin{equation}
+ d_y=S(t)(\widetilde d_z+\eta).
+ \label{eq:approximate-chart-residual}
+\end{equation}
+
+\paragraph{Proof.}
+Differentiate the reconstruction:
+$\widehat y'=\dot S\widehat z+S\widehat z'+\dot c$.
+Subtract $f(t,\widehat y)$ and insert Eq.~\eqref{eq:exact-chart-field}.
+This yields Eq.~\eqref{eq:chart-residual}.  Substituting
+$\widehat z'-g=\widetilde d_z+\eta$ yields
+Eq.~\eqref{eq:approximate-chart-residual}.
+\hfill$\square$
+
+To obtain a global physical error bound, assume that both exact and numerical
+curves lie in a domain on which the vector field has a valid one-sided
+Lipschitz bound $\ell(t)$ in the fixed physical Hilbert norm.  For
+$e=\widehat y-y$, the differential norm inequality is
+\begin{equation}
+ D^+\|e\|\leq\ell(t)\|e\|+\|d_y\|.
+\end{equation}
+With $\Gamma(T,t)=\exp(\int_t^T\ell(s)\,ds)$, the comparison lemma gives
+\begin{align}
+ \|e(T)\|\leq{}&\Gamma(T,t_0)\|e(t_0)\|\nonumber\\
+ &+\int_{t_0}^{T}\Gamma(T,t)\|S(t)\|
+       \bigl(\|\widetilde d_z\|+\|\eta\|\bigr)\,dt.
+ \label{eq:chart-global-bound}
+\end{align}
+Piecewise reconstructions require the corresponding propagated jump terms.
+An approximate reconstruction also needs its own defect allowance; the
+identity for exact $S$ does not certify a floating implementation of $S$.
+
+The implication for the declared chirp and cofactor paths is precise.
+The analytic construction can remove a known carrier, but a small
+transformed residual is insufficient when the lift is large in the physical
+norm.  Whole-domain structural accuracy, phase evaluation, reconstruction,
+and flow bounds remain provider obligations.  Endpoint samples cannot replace
+these hypotheses.  The existing declared-family implementations are not
+evidence for arbitrary noncommuting carriers or arbitrary black-box vector
+fields.  Those extensions require a derived time-ordered transformation and
+a bound on its defect, rather than a change in storage or loop scheduling.
+
+\subsection{Theory-to-production admission}
+
+The four results have different implementation status.  Prefix-cost
+dominance justifies the bounded comparator optimization while preserving the
+existing numerical qualification.  The dissipative shifted-system result
+has a proved conditional convergence statement, exact finite CAS checks, a
+tested scalar Rust primitive, and finite numerical experiments; its iteration
+regressions and two residual-target failures exclude unconditional promotion.
+The defect-aware causal recurrence reuses the existing majorant structure
+but still requires original-domain inverse and coupling bounds.  The chart
+identity specifies how physical error must be transported; it does not supply
+the missing whole-domain bounds for a particular physical client.
+
+Accordingly, a production integration of the new relaxation candidate must
+retain the current target equation, bind a declared dissipative metric and
+drift domain, account for numerical inverse-action and residual-evaluation
+errors, and compare against current Richardson, GMRES, and refactorization
+paths at the same original-state accuracy.  The exact allocation optimizations
+and comparator scheduling changes are separate advances.  Their measured
+benefit must not be used to claim that an untested structural or theoretical
+candidate has already become faster.

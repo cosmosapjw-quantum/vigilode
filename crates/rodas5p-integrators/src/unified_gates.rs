@@ -7,17 +7,18 @@ use serde::Serialize;
 
 use crate::{
     BlockMethod, BlockPreconditioner, CandidateCatalog, CandidateExecution, CandidateFamily,
-    CandidateRecycleLifetime, CandidateSpec, CandidateStatus, HomotopyPathConfig,
-    HomotopyPredictor, HomotopyStepConfig, KrylovState, OdeProblem, ParallelExecution,
-    PredictorKind, SabrConfig, StageHistory, UnifiedCandidateOutcome, UnifiedNonlinearScreen,
-    UnifiedScreenProfile, homotopy_step, manufactured_vector_problem, sabr_step,
-    scalar_linear_problem, sequential_step,
+    CandidateRecycleLifetime, CandidateSpec, CandidateStatus, ComparatorFidelity,
+    HomotopyPathConfig, HomotopyPredictor, HomotopyStepConfig, KrylovState, OdeProblem,
+    ParallelExecution, PredictorKind, RelativePerformanceVerdict, SabrConfig, StageHistory,
+    UnifiedCandidateOutcome, UnifiedNonlinearScreen, UnifiedScreenProfile, homotopy_step,
+    manufactured_vector_problem, relative_performance_verdict, sabr_step, scalar_linear_problem,
+    sequential_step,
 };
 
 const GATE_ATOL: f64 = 1.0e-7;
 const GATE_RTOL: f64 = 1.0e-6;
 const HOMOTOPY_OUTPUT_BUDGET: f64 = 0.1;
-const ORDER_PASS_FLOOR: f64 = 4.5;
+const ORDER_PASS_FLOOR: f64 = 4.8;
 const STIFF_ABSOLUTE_FLOOR: f64 = 1.0e-8;
 const STIFF_REFERENCE_FACTOR: f64 = 10.0;
 
@@ -28,6 +29,27 @@ pub enum CandidateGateVerdict {
     Promote,
     Hold,
     Deferred,
+    /// Refused because the gate reference is a reference-implementation-only
+    /// comparator (audit F-052/F-056 Tier B).
+    NotEvaluated,
+}
+
+/// Final gate verdict.  A gate whose reference arm does not admit a relative
+/// reading refuses to emit Promote/Hold for any non-reference candidate.
+fn gate_verdict(
+    is_reference: bool,
+    reference_fidelity: ComparatorFidelity,
+    candidate_fidelity: ComparatorFidelity,
+    blockers_empty: bool,
+) -> CandidateGateVerdict {
+    if is_reference {
+        return CandidateGateVerdict::Reference;
+    }
+    match relative_performance_verdict(reference_fidelity, candidate_fidelity, blockers_empty) {
+        RelativePerformanceVerdict::Promote => CandidateGateVerdict::Promote,
+        RelativePerformanceVerdict::Block => CandidateGateVerdict::Hold,
+        RelativePerformanceVerdict::NotEvaluated => CandidateGateVerdict::NotEvaluated,
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -213,6 +235,7 @@ fn integrate_candidate_fixed(
         _ => None,
     };
 
+    // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
     while time < final_time - 10.0 * f64::EPSILON * final_time.abs().max(1.0) {
         let step_size = h.min(final_time - time);
         match candidate.execution() {
@@ -335,6 +358,23 @@ fn qualification_observed_order(rows: &[CandidateOrderGateRow]) -> Option<f64> {
             .flatten()
             .filter(|value| value.is_finite())
     })
+}
+
+fn all_above_roundoff_orders_pass(rows: &[CandidateOrderGateRow]) -> bool {
+    let mut relevant = 0_usize;
+    for (index, row) in rows.iter().enumerate() {
+        if index == 0 || row.above_roundoff_floor != Some(true) {
+            continue;
+        }
+        relevant += 1;
+        if !row
+            .observed_order
+            .is_some_and(|order| order.is_finite() && order >= ORDER_PASS_FLOOR)
+        {
+            return false;
+        }
+    }
+    relevant > 0
 }
 
 fn run_candidate_order_rows(
@@ -500,6 +540,7 @@ fn candidate_report(
     order_rows: &[CandidateOrderGateRow],
     stiff: &CandidateStiffGateRow,
     nonlinear: &UnifiedNonlinearScreen,
+    reference_fidelity: ComparatorFidelity,
 ) -> CandidateGateReport {
     if matches!(candidate.status(), CandidateStatus::Deferred { .. }) {
         return CandidateGateReport {
@@ -550,7 +591,7 @@ fn candidate_report(
     };
     let finest_observed_order = finest_observed_order(order_rows);
     let qualification_observed_order = qualification_observed_order(order_rows);
-    let order_pass = qualification_observed_order.is_some_and(|value| value >= ORDER_PASS_FLOOR)
+    let order_pass = all_above_roundoff_orders_pass(order_rows)
         && order_rows.iter().all(|row| row.failure.is_none());
     let order_all_fast = order_rows.iter().all(|row| row.all_fast);
     let one_step_rejections = rows
@@ -618,13 +659,15 @@ fn candidate_report(
     if !nonnormal_pass {
         blockers.push("nonnormal/noncommuting-mass output gate failed".into());
     }
-    let verdict = if candidate.id() == "sequential-direct-off" {
-        CandidateGateVerdict::Reference
-    } else if blockers.is_empty() {
-        CandidateGateVerdict::Promote
-    } else {
-        CandidateGateVerdict::Hold
-    };
+    let verdict = gate_verdict(
+        candidate.id() == "sequential-direct-off",
+        reference_fidelity,
+        candidate.comparator_fidelity(),
+        blockers.is_empty(),
+    );
+    if verdict == CandidateGateVerdict::NotEvaluated {
+        blockers.push("gate reference is a reference-implementation-only comparator".into());
+    }
     CandidateGateReport {
         candidate_id: candidate.id().to_string(),
         family: candidate.family(),
@@ -712,6 +755,7 @@ pub fn run_unified_scientific_gates(
                     failure: Some("deferred".into()),
                 },
                 nonlinear,
+                protected.comparator_fidelity(),
             ));
             continue;
         }
@@ -757,6 +801,7 @@ pub fn run_unified_scientific_gates(
             &candidate_orders,
             stiff,
             nonlinear,
+            protected.comparator_fidelity(),
         ));
     }
     candidates.sort_by(|left, right| left.candidate_id.cmp(&right.candidate_id));
@@ -810,6 +855,53 @@ mod qualification_tests {
     }
 
     #[test]
+    fn gate_against_a_reference_only_comparator_is_not_evaluated() {
+        for blockers_empty in [true, false] {
+            assert_eq!(
+                gate_verdict(
+                    false,
+                    ComparatorFidelity::ReferenceImplementationOnly,
+                    ComparatorFidelity::Production,
+                    blockers_empty,
+                ),
+                CandidateGateVerdict::NotEvaluated
+            );
+        }
+        assert_eq!(
+            gate_verdict(
+                false,
+                ComparatorFidelity::Production,
+                ComparatorFidelity::Production,
+                true,
+            ),
+            CandidateGateVerdict::Promote
+        );
+        assert_eq!(
+            gate_verdict(
+                false,
+                ComparatorFidelity::Production,
+                ComparatorFidelity::Production,
+                false,
+            ),
+            CandidateGateVerdict::Hold
+        );
+        let catalog = CandidateCatalog::research_default().unwrap();
+        for candidate in catalog.entries() {
+            let expected = if candidate.is_native_complete_integrator() {
+                ComparatorFidelity::ReferenceImplementationOnly
+            } else {
+                ComparatorFidelity::Production
+            };
+            assert_eq!(
+                candidate.comparator_fidelity(),
+                expected,
+                "{}",
+                candidate.id()
+            );
+        }
+    }
+
+    #[test]
     fn qualification_order_ignores_a_roundoff_contaminated_finest_pair() {
         let rows = vec![
             row(None, 9.0e-12, 6.0e-15),
@@ -829,6 +921,17 @@ mod qualification_tests {
             row(Some(1.5), 8.8e-5, 1.0e-14),
         ];
         assert_eq!(qualification_observed_order(&rows), Some(1.5));
+    }
+
+    #[test]
+    fn every_above_roundoff_order_must_meet_the_floor() {
+        let rows = vec![
+            row(None, 1.0e-3, 1.0e-14),
+            row(Some(4.7), 3.8e-5, 1.0e-14),
+            row(Some(5.0), 1.2e-6, 1.0e-14),
+        ];
+        assert_eq!(qualification_observed_order(&rows), Some(5.0));
+        assert!(!all_above_roundoff_orders_pass(&rows));
     }
 
     #[test]

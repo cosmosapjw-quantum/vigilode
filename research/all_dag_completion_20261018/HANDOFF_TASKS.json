@@ -1,0 +1,167 @@
+{
+  "schema_version": 1,
+  "branch": "research/all-dag-completion-20261018",
+  "intent": "local compile/minor compatibility repair/actual execution; core all-node implementation already delivered",
+  "required_original_nodes": [
+    "A01",
+    "A02",
+    "A03",
+    "A04",
+    "A05",
+    "A06",
+    "A07",
+    "A08",
+    "A09",
+    "A10",
+    "A11",
+    "A12"
+  ],
+  "global_promotion": "HOLD",
+  "source_manifest": "SOURCE_MANIFEST.json",
+  "cloud_completed_execution": "evidence/final_native/RESULT.json",
+  "commands_use_argv_arrays": true,
+  "tasks": [
+    {
+      "id": "LOCAL-01",
+      "depends_on": [],
+      "nodes": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A07",
+        "A08",
+        "A09",
+        "A10",
+        "A11",
+        "A12"
+      ],
+      "command": [
+        "python3",
+        "tools/validate_all_dag_completion.py"
+      ],
+      "acceptance": "code and 12-node coverage hashes match; do not rebuild historical campaigns",
+      "scope": "small environment differences only",
+      "status": "READY_FOR_LOCAL_EXECUTION"
+    },
+    {
+      "id": "LOCAL-02",
+      "depends_on": [
+        "LOCAL-01"
+      ],
+      "nodes": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A07",
+        "A08",
+        "A09",
+        "A10",
+        "A11",
+        "A12"
+      ],
+      "command": [
+        "python3",
+        "tools/validate_all_dag_completion.py",
+        "--execute",
+        "--output",
+        "research/all_dag_completion_20261018/local_validation_01"
+      ],
+      "acceptance": "all selected commands exit0 and before/after identity unchanged",
+      "scope": "compile and execute changed native scope only when local verification is needed",
+      "status": "READY_FOR_LOCAL_EXECUTION"
+    },
+    {
+      "id": "LOCAL-03",
+      "depends_on": [
+        "LOCAL-01"
+      ],
+      "nodes": [
+        "A01",
+        "A03",
+        "A09"
+      ],
+      "command": [
+        "cargo",
+        "run",
+        "--locked",
+        "--offline",
+        "--profile",
+        "measurement",
+        "-p",
+        "rodas5p-integrators",
+        "--example",
+        "nonlinear_homotopy_run"
+      ],
+      "acceptance": "unchanged configured model/budget; actual returned radius and retained failures recorded",
+      "scope": "This argv executes nonlinear_homotopy_run only. Other already-implemented examples and their scopes are listed separately in CODEX_HANDOFF_KO.md.",
+      "status": "READY_FOR_LOCAL_EXECUTION"
+    },
+    {
+      "id": "LOCAL-04",
+      "depends_on": [
+        "LOCAL-02"
+      ],
+      "nodes": [
+        "A06",
+        "A07",
+        "A08",
+        "A12"
+      ],
+      "command": [
+        "python3",
+        "tools/all_dag_benchmark.py",
+        "run",
+        "--modes",
+        "8",
+        "32",
+        "128",
+        "--repeats",
+        "5",
+        "--processes",
+        "5",
+        "--output",
+        "research/all_dag_completion_20261018/local_timing_01"
+      ],
+      "acceptance": "same physical error/output/cost boundary; achieved-error gate and calibrated instrumentation; retain all rows",
+      "scope": "hardware-only followup; timing report remains diagnostic without a scoped deployment decision",
+      "status": "READY_FOR_LOCAL_EXECUTION"
+    },
+    {
+      "id": "LOCAL-05",
+      "depends_on": [
+        "LOCAL-02"
+      ],
+      "nodes": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A07",
+        "A08",
+        "A09",
+        "A10",
+        "A11",
+        "A12"
+      ],
+      "command": null,
+      "acceptance": "all12 IDs remain covered, exact local source/build/config and failures preserved",
+      "scope": "produce a new local receipt; no reproof of unchanged claims and no single-node publication",
+      "status": "READY_AFTER_LOCAL_RESULTS"
+    }
+  ],
+  "constraints": [
+    "No changed physical tolerance, output mesh, equation or final lambda to manufacture success",
+    "Do not rewrite failed/historical evidence",
+    "Do not promote broad production/speed from a passing implementation test",
+    "Do not overwrite user working changes or force-push",
+    "No required reimplementation of any original A01-A12 node"
+  ]
+}

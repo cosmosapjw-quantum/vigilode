@@ -5,6 +5,7 @@ use rodas5p_core::{
 };
 use serde::{Deserialize, Serialize};
 
+use crate::adaptive::RODAS5P_ADAPTIVE_METHOD;
 use crate::{
     AdaptiveControllerState, AdaptiveStepConfig, ControllerKind, FusedOrthogonalization,
     FusedPhiKrylovConfig, FusedPhiPrefixSession, G4S5B0InnerToleranceLane,
@@ -19,7 +20,7 @@ use crate::{
     pexprb54s4_level2_prefix_resume_level1,
     pexprb54s4_level2_prefix_with_tolerance_scaled_telemetry_jvp_budget,
     pexprb54s4_level2_prefix_with_tolerance_scaled_telemetry_jvp_budget_accounted,
-    pexprb54s4_tableau, sequential_matrix_free_step,
+    pexprb54s4_tableau, sequential_matrix_free_step_with_inner_forcing,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
@@ -98,6 +99,18 @@ impl G4S5B0Profile {
         }
     }
 
+    /// Profiles whose rows are holdout evidence. No literal in the source
+    /// may be derived from their trajectories (docs/HOLDOUT_HYGIENE.md).
+    pub fn is_holdout(self) -> bool {
+        matches!(
+            self,
+            Self::Canonical
+                | Self::Holdout512
+                | Self::EnforcedBudgetHoldout320
+                | Self::StageGrowthHoldout384
+        )
+    }
+
     pub fn uses_canonical_tolerances(self) -> bool {
         matches!(
             self,
@@ -162,6 +175,29 @@ pub struct G4S5B0TrajectorySummary {
     pub explicit_jacobian_builds: u64,
     pub direct_factorizations: u64,
     pub newton_iterations: u64,
+    /// Trajectory work split by attempt outcome. The legacy atlas runner
+    /// charges every attempt, accepted, rejected by the embedded estimate, or
+    /// failed with `NonFinite`/`LinearSolve`, and rolls nothing back (audit
+    /// F-050). Runners whose work is carried per attempt row report `None`.
+    #[serde(default)]
+    pub attempt_work: Option<G4S5B0AttemptWork>,
+    /// How work is accounted: `all-attempts-charged-v1`,
+    /// `per-attempt-rows`, or, for records written before audit F-050,
+    /// `legacy-accepted-only-work`.
+    #[serde(default = "legacy_accepted_only_work")]
+    pub work_accounting: String,
+}
+
+fn legacy_accepted_only_work() -> String {
+    "legacy-accepted-only-work".into()
+}
+
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct G4S5B0AttemptWork {
+    pub total: WorkCounters,
+    pub accepted: WorkCounters,
+    pub rejected: WorkCounters,
+    pub failed: WorkCounters,
 }
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -200,16 +236,35 @@ pub struct G4S5B0AttemptTraceReport {
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "kebab-case")]
 pub enum G4S5B0PrefixProbePolicy {
-    FrozenK1Comparator,
+    /// Replays k = 1 decisions recorded on N = 128 calibration trajectories.
+    /// It reads step indices, not the observed feature, so it is not a
+    /// causal policy and is refused on holdout profiles (audit F-047).
+    #[serde(alias = "frozen-k1-comparator")]
+    ReplayedK1Table,
+    /// Causal k = 1 comparator: the K3 error-drop feature with a latch of
+    /// length one. Its decisions depend only on past accepted steps.
+    CausalK1,
     K3Development,
 }
 
 impl G4S5B0PrefixProbePolicy {
     pub fn as_str(self) -> &'static str {
         match self {
-            Self::FrozenK1Comparator => "frozen-k1-comparator",
+            Self::ReplayedK1Table => "replayed-k1-table",
+            Self::CausalK1 => "causal-k1",
             Self::K3Development => "k3-development",
         }
+    }
+
+    /// Rejects a non-causal policy on a holdout profile (audit F-047).
+    pub fn validate_for_profile(self, profile: G4S5B0Profile) -> CoreResult<()> {
+        if self == Self::ReplayedK1Table && profile.is_holdout() {
+            return Err(CoreError::InvalidInput(format!(
+                "the replayed k=1 table is calibration-only and cannot run on holdout profile {}",
+                profile.as_str()
+            )));
+        }
+        Ok(())
     }
 }
 
@@ -377,6 +432,21 @@ pub struct G4S5B0StageGrowthSafetyReport {
 /// never calibrated or retuned by the full-E shadow runner.
 pub const V36_FROZEN_ZETA34_TAU: f64 = 13.39706618860016;
 
+/// Every versioned policy constant of the atlas, for the provenance table
+/// test (docs/CONSTANTS_PROVENANCE.toml, audit F-046). Integer constants are
+/// listed as their exact f64 value.
+#[doc(hidden)]
+pub fn g4_s5b0_policy_constants() -> Vec<(&'static str, f64)> {
+    vec![
+        ("V25_ERROR_DROP_THRESHOLD", V25_ERROR_DROP_THRESHOLD),
+        ("V29_PREFIX_RESERVE_JVP", V29_PREFIX_RESERVE_JVP as f64),
+        ("V29_PREFIX_BUDGET_FRACTION", V29_PREFIX_BUDGET_FRACTION),
+        ("V29_STAGE_GROWTH_BASELINE", V29_STAGE_GROWTH_BASELINE),
+        ("V36_FROZEN_ZETA34_TAU", V36_FROZEN_ZETA34_TAU),
+        ("V37_CONTINUATION_JVP_CAP", V37_CONTINUATION_JVP_CAP as f64),
+    ]
+}
+
 pub fn frozen_full_e_shadow_recommended(
     prefix_succeeded: bool,
     budget_exhausted: bool,
@@ -466,7 +536,22 @@ pub struct G4S5B0FrozenFullEShadowRow {
     pub shadow_total_wall_seconds: f64,
     pub shadow_full_e_completed: bool,
     pub shadow_full_e_total_error: Option<f64>,
+    /// The shadow's own estimate (embedded error and Krylov estimates) at
+    /// most one tolerance unit. A self-estimate, not a safety label
+    /// (audit F-045); see `reference_local_error_wrms`.
     pub shadow_full_e_locally_admissible: bool,
+    /// WRMS distance, in tolerance units, between the shadow endpoint and
+    /// a tight-tolerance protected RODAS5P solve of the same (t, y, h).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_local_error_wrms: Option<f64>,
+    /// WRMS distance between the references at 1e-3 and 1e-4 times the case
+    /// tolerances: the reference's own uncertainty.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_uncertainty_wrms: Option<f64>,
+    /// Some(true) when error - uncertainty > 1, Some(false) when
+    /// error + uncertainty <= 1, None when the reference cannot decide.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_unsafe: Option<bool>,
     pub shadow_full_e_failure: Option<String>,
     pub continuation_work: Option<WorkCounters>,
     pub shadow_full_e_work: Option<WorkCounters>,
@@ -494,7 +579,12 @@ pub struct G4S5B0FrozenFullEShadowReport {
     pub retained_level2_resumptions: usize,
     pub shadow_full_e_completions: usize,
     pub shadow_full_e_failures: usize,
+    /// Recommended rows whose self-estimate exceeds one tolerance unit.
     pub unsafe_recommendations: usize,
+    /// Recommended rows whose reference-anchored local error exceeds one
+    /// tolerance unit (audit F-045).
+    #[serde(default)]
+    pub reference_unsafe_recommendations: usize,
     pub budget_breaches: usize,
     pub budget_exhaustions: usize,
     pub prefix_speculative_work: WorkCounters,
@@ -593,7 +683,14 @@ pub struct G4S5B0V37ContinuationTransactionRow {
     pub shadow_total_wall_seconds: f64,
     pub shadow_full_e_completed: bool,
     pub shadow_full_e_total_error: Option<f64>,
+    /// Self-estimate only (audit F-045); see `reference_unsafe`.
     pub shadow_full_e_locally_admissible: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_local_error_wrms: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_uncertainty_wrms: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub reference_unsafe: Option<bool>,
     pub shadow_full_e_failure: Option<String>,
     pub continuation_work: Option<WorkCounters>,
     pub shadow_full_e_work: Option<WorkCounters>,
@@ -623,7 +720,10 @@ pub struct G4S5B0V37ContinuationTransactionReport {
     pub shadow_full_e_completions: usize,
     pub continuation_budget_exhaustions: usize,
     pub shadow_full_e_failures: usize,
+    /// Self-estimate count; see `reference_unsafe_recommendations`.
     pub unsafe_recommendations: usize,
+    #[serde(default)]
+    pub reference_unsafe_recommendations: usize,
     pub prefix_budget_breaches: usize,
     pub prefix_budget_exhaustions: usize,
     pub continuation_budget_breaches: usize,
@@ -1021,6 +1121,15 @@ fn exact_shape_first(n: usize, t: f64) -> Vec<f64> {
         .collect()
 }
 
+fn exact_shape_second(n: usize, t: f64) -> Vec<f64> {
+    (0..n)
+        .map(|i| {
+            let k = 1.0 + (i % 7) as f64;
+            -0.4 * k * k * (k * t).sin() - 0.05 * k * k * (0.5 * k * t).cos()
+        })
+        .collect()
+}
+
 fn apply_rotating_operator(n: usize, t: f64, x: &[f64], out: &mut [f64]) {
     let (ramp, _) = smooth_ramp(t, 0.50, 0.08);
     let stiffness = 20.0 + 480.0 * ramp;
@@ -1040,6 +1149,38 @@ fn apply_rotating_operator(n: usize, t: f64, x: &[f64], out: &mut [f64]) {
     }
     for i in 2 * blocks..n {
         out[i] = -stiffness * x[i];
+    }
+}
+
+fn apply_rotating_operator_partial_t(n: usize, t: f64, x: &[f64], out: &mut [f64]) {
+    let (ramp, dramp) = smooth_ramp(t, 0.50, 0.08);
+    let stiffness = 20.0 + 480.0 * ramp;
+    let dstiffness = 480.0 * dramp;
+    let eta = 0.1 + 0.8 * ramp;
+    let deta = 0.8 * dramp;
+    let theta = 8.0 * t + 0.4 * (4.0 * t).sin();
+    let dtheta = 8.0 + 1.6 * (4.0 * t).cos();
+    let c = theta.cos();
+    let s = theta.sin();
+    let blocks = n / 2;
+    for block in 0..blocks {
+        let i = 2 * block;
+        let xr0 = c * x[i] + s * x[i + 1];
+        let xr1 = -s * x[i] + c * x[i + 1];
+        let dxr0 = dtheta * xr1;
+        let dxr1 = -dtheta * xr0;
+        let ar0 = -stiffness * xr0 + eta * stiffness * xr1;
+        let ar1 = -0.35 * stiffness * xr1;
+        let dar0 = -dstiffness * xr0 - stiffness * dxr0
+            + deta * stiffness * xr1
+            + eta * dstiffness * xr1
+            + eta * stiffness * dxr1;
+        let dar1 = -0.35 * (dstiffness * xr1 + stiffness * dxr1);
+        out[i] = c * dar0 - s * dar1 - dtheta * (s * ar0 + c * ar1);
+        out[i + 1] = s * dar0 + c * dar1 + dtheta * (c * ar0 - s * ar1);
+    }
+    for i in 2 * blocks..n {
+        out[i] = -dstiffness * x[i];
     }
 }
 
@@ -1066,25 +1207,19 @@ fn rotating_nonnormal_problem(n: usize) -> CoreResult<AtlasProblem> {
         Ok(())
     });
     let partial_t = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
-        let eps = 1.0e-6;
-        let mut plus = vec![0.0; n];
-        let mut minus = vec![0.0; n];
-        let phi_p = exact_shape(n, t + eps);
-        let dphi_p = exact_shape_first(n, t + eps);
-        let defect_p = y.iter().zip(&phi_p).map(|(a, b)| a - b).collect::<Vec<_>>();
-        apply_rotating_operator(n, t + eps, &defect_p, &mut plus);
-        let (rp, _) = smooth_ramp(t + eps, 0.60, 0.06);
+        let phi = exact_shape(n, t);
+        let dphi = exact_shape_first(n, t);
+        let ddphi = exact_shape_second(n, t);
+        let defect = y.iter().zip(&phi).map(|(a, b)| a - b).collect::<Vec<_>>();
+        apply_rotating_operator_partial_t(n, t, &defect, out);
+        let mut operator_phi_t = vec![0.0; n];
+        apply_rotating_operator(n, t, &dphi, &mut operator_phi_t);
+        let (ramp, dramp) = smooth_ramp(t, 0.60, 0.06);
+        let nonlinear = 40.0 * ramp;
+        let dnonlinear = 40.0 * dramp;
         for i in 0..n {
-            plus[i] += dphi_p[i] + 40.0 * rp * (y[i] * y[i] - phi_p[i] * phi_p[i]);
-        }
-        let phi_m = exact_shape(n, t - eps);
-        let dphi_m = exact_shape_first(n, t - eps);
-        let defect_m = y.iter().zip(&phi_m).map(|(a, b)| a - b).collect::<Vec<_>>();
-        apply_rotating_operator(n, t - eps, &defect_m, &mut minus);
-        let (rm, _) = smooth_ramp(t - eps, 0.60, 0.06);
-        for i in 0..n {
-            minus[i] += dphi_m[i] + 40.0 * rm * (y[i] * y[i] - phi_m[i] * phi_m[i]);
-            out[i] = (plus[i] - minus[i]) / (2.0 * eps);
+            out[i] += -operator_phi_t[i] + ddphi[i] + dnonlinear * (y[i] * y[i] - phi[i] * phi[i])
+                - 2.0 * nonlinear * phi[i] * dphi[i];
         }
         Ok(())
     });
@@ -1139,25 +1274,25 @@ fn nonautonomous_forcing_problem(n: usize) -> CoreResult<AtlasProblem> {
         Ok(())
     });
     let partial_t = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
-        let eps = 1.0e-6;
-        let evaluate = |time: f64, state: &[f64]| {
-            let (ramp, _) = smooth_ramp(time, 0.45, 0.07);
-            let stiffness = 30.0 + 470.0 * ramp;
-            let frequency = 2.0 + 28.0 * ramp;
-            (0..n)
-                .map(|i| {
-                    let phase = (i % 11) as f64 * 0.17;
-                    let phi = (frequency * time + phase).sin();
-                    let dphi = frequency * (frequency * time + phase).cos();
-                    let defect = state[i] - phi;
-                    -stiffness * defect + dphi + 20.0 * ramp * defect * defect
-                })
-                .collect::<Vec<_>>()
-        };
-        let plus = evaluate(t + eps, y);
-        let minus = evaluate(t - eps, y);
+        let (ramp, dramp) = smooth_ramp(t, 0.45, 0.07);
+        let stiffness = 30.0 + 470.0 * ramp;
+        let dstiffness = 470.0 * dramp;
+        let frequency = 2.0 + 28.0 * ramp;
+        let dfrequency = 28.0 * dramp;
         for i in 0..n {
-            out[i] = (plus[i] - minus[i]) / (2.0 * eps);
+            let phase = (i % 11) as f64 * 0.17;
+            let argument = frequency * t + phase;
+            let phi = argument.sin();
+            // This is the derivative of the implemented expression
+            // `frequency * cos(frequency * t + phase)`.
+            let dargument = frequency + t * dfrequency;
+            let ddphi = dfrequency * argument.cos() - frequency * argument.sin() * dargument;
+            let defect = y[i] - phi;
+            let ddefect = -dargument * argument.cos();
+            out[i] = -dstiffness * defect - stiffness * ddefect
+                + ddphi
+                + 20.0 * dramp * defect * defect
+                + 40.0 * ramp * defect * ddefect;
         }
         Ok(())
     });
@@ -1230,29 +1365,28 @@ fn semilinear_transition_problem(n: usize) -> CoreResult<AtlasProblem> {
         Ok(())
     });
     let partial_t = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
-        let eps = 1.0e-6;
-        let evaluate = |time: f64, state: &[f64]| {
-            let phi = (1..=n)
-                .map(|i| (-time).exp() * (std::f64::consts::PI * i as f64 * dx).sin())
-                .collect::<Vec<_>>();
-            let defect = state
-                .iter()
-                .zip(&phi)
-                .map(|(a, b)| a - b)
-                .collect::<Vec<_>>();
-            let mut value = vec![0.0; n];
-            apply_advection_diffusion(n, time, &defect, &mut value);
-            let (ramp, _) = smooth_ramp(time, 0.50, 0.08);
-            let nonlinear = 2.0 + 48.0 * ramp;
-            for i in 0..n {
-                value[i] += -phi[i] + nonlinear * (state[i] * state[i] - phi[i] * phi[i]);
-            }
-            value
-        };
-        let plus = evaluate(t + eps, y);
-        let minus = evaluate(t - eps, y);
+        let phi = (1..=n)
+            .map(|i| (-t).exp() * (std::f64::consts::PI * i as f64 * dx).sin())
+            .collect::<Vec<_>>();
+        let defect = y.iter().zip(&phi).map(|(a, b)| a - b).collect::<Vec<_>>();
+        let mut operator_defect_t = vec![0.0; n];
+        apply_advection_diffusion(n, t, &phi, &mut operator_defect_t);
+        let (_, dramp) = smooth_ramp(t, 0.50, 0.08);
+        let dadvection = 3.5 * dramp;
+        let mut operator_t = vec![0.0; n];
         for i in 0..n {
-            out[i] = (plus[i] - minus[i]) / (2.0 * eps);
+            let left = if i == 0 { 0.0 } else { defect[i - 1] };
+            operator_t[i] = -dadvection * (defect[i] - left) / dx;
+        }
+        let (ramp, _) = smooth_ramp(t, 0.50, 0.08);
+        let nonlinear = 2.0 + 48.0 * ramp;
+        let dnonlinear = 48.0 * dramp;
+        for i in 0..n {
+            out[i] = operator_t[i]
+                + operator_defect_t[i]
+                + phi[i]
+                + dnonlinear * (y[i] * y[i] - phi[i] * phi[i])
+                + 2.0 * nonlinear * phi[i] * phi[i];
         }
         Ok(())
     });
@@ -1277,6 +1411,80 @@ fn semilinear_transition_problem(n: usize) -> CoreResult<AtlasProblem> {
         t_span: (0.0, 1.0),
         transition,
     })
+}
+
+#[cfg(test)]
+mod analytic_partial_t_tests {
+    use super::*;
+
+    fn assert_partial_t_matches_centered_difference(problem: AtlasProblem) {
+        for &t in &[0.11, 0.47, 0.83] {
+            let y = problem
+                .y0
+                .iter()
+                .enumerate()
+                .map(|(index, value)| value + 0.07 * (index as f64 + 1.0))
+                .collect::<Vec<_>>();
+            let mut actual_work = WorkCounters::default();
+            let actual = problem
+                .problem
+                .eval_partial_t(t, &y, &mut actual_work)
+                .unwrap();
+            assert_eq!(actual_work.ft_calls, 1);
+            assert_eq!(actual_work.rhs_calls, 0);
+
+            let epsilon = 1.0e-6;
+            let mut oracle_work = WorkCounters::default();
+            let plus = problem
+                .problem
+                .eval_rhs(t + epsilon, &y, &mut oracle_work)
+                .unwrap();
+            let minus = problem
+                .problem
+                .eval_rhs(t - epsilon, &y, &mut oracle_work)
+                .unwrap();
+            for (analytic, finite_difference) in actual.iter().zip(plus.iter().zip(&minus)) {
+                let oracle = (finite_difference.0 - finite_difference.1) / (2.0 * epsilon);
+                let tolerance = 3.0e-4 + 2.0e-6 * oracle.abs();
+                assert!(
+                    (*analytic - oracle).abs() <= tolerance,
+                    "t={t:.3}, analytic={analytic:.17e}, oracle={oracle:.17e}, tolerance={tolerance:.3e}"
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn analytic_partial_t_matches_independent_centered_difference_without_rhs_calls() {
+        assert_partial_t_matches_centered_difference(rotating_nonnormal_problem(12).unwrap());
+        assert_partial_t_matches_centered_difference(nonautonomous_forcing_problem(12).unwrap());
+        assert_partial_t_matches_centered_difference(semilinear_transition_problem(12).unwrap());
+    }
+}
+
+#[cfg(test)]
+mod live_rodas_step_tests {
+    use super::*;
+    use crate::scalar_linear_problem;
+    use rodas5p_core::{LinearMethod, PreconditionerKind};
+
+    #[test]
+    fn live_atlas_step_uses_wrms_inner_forcing() {
+        let (problem, y0) = scalar_linear_problem(-2.0, 1.0);
+        let linear = LinearSolverConfig {
+            method: LinearMethod::Gmres,
+            restart: 8,
+            maxiter: 64,
+            preconditioner: PreconditionerKind::None,
+            ..LinearSolverConfig::default()
+        };
+        let mut work = WorkCounters::default();
+        let report =
+            g4_live_rodas_step(&problem, 0.0, &y0, 0.05, &linear, 1.0e-8, 1.0e-5, &mut work)
+                .unwrap();
+
+        assert!(report.method.ends_with("-WRMS-forcing-v2"));
+    }
 }
 
 fn build_problems(profile: G4S5B0Profile) -> CoreResult<Vec<AtlasProblem>> {
@@ -1306,6 +1514,7 @@ fn adaptive_config(profile: G4S5B0Profile, span: f64) -> AdaptiveStepConfig {
         max_factor: 4.0,
         reject_max_factor: 0.8,
         controller: ControllerKind::Pi,
+        max_step_policy: crate::MaxStepPolicy::AllowClockResolutionSlack,
     }
 }
 
@@ -1508,6 +1717,23 @@ fn run_exponential_shadow(
     })
 }
 
+#[allow(clippy::too_many_arguments)]
+fn g4_live_rodas_step(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    linear: &rodas5p_core::LinearSolverConfig,
+    atol: f64,
+    rtol: f64,
+    counters: &mut WorkCounters,
+) -> CoreResult<crate::StepResult> {
+    sequential_matrix_free_step_with_inner_forcing(
+        problem, t, y, h, linear, None, atol, rtol, false, counters,
+    )
+    .map(|forced| forced.step)
+}
+
 fn run_trajectory(
     problem: AtlasProblem,
     profile: G4S5B0Profile,
@@ -1520,6 +1746,7 @@ fn run_trajectory(
     let tf = problem.t_span.1;
     let mut y = problem.y0.clone();
     let mut h = adaptive.initial_step.min(tf - t);
+    // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
     let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
     let mut attempts = 0usize;
     let mut accepted = 0usize;
@@ -1527,6 +1754,7 @@ fn run_trajectory(
     let mut rows = Vec::new();
     let mut total_jacobian_builds = 0u64;
     let mut total_factorizations = 0u64;
+    let mut work = G4S5B0AttemptWork::default();
     let mut failure = None;
 
     while t < tf - tolerance && attempts < adaptive.max_attempts {
@@ -1538,16 +1766,14 @@ fn run_trajectory(
         }
         let mut step_counters = WorkCounters::default();
         let start = Instant::now();
-        let trial = sequential_matrix_free_step(
+        let trial = g4_live_rodas_step(
             &problem.problem,
             t,
             &y,
             h,
             &linear,
-            None,
             adaptive.atol,
             adaptive.rtol,
-            false,
             &mut step_counters,
         );
         let rodas_wall = start.elapsed().as_secs_f64();
@@ -1556,11 +1782,13 @@ fn run_trajectory(
         let report = match trial {
             Ok(report) => report,
             Err(CoreError::NonFinite(_) | CoreError::LinearSolve(_)) => {
+                work.failed.accumulate(step_counters);
                 rejected += 1;
                 h *= adaptive.min_factor;
                 continue;
             }
             Err(error) => {
+                work.failed.accumulate(step_counters);
                 failure = Some(error.to_string());
                 break;
             }
@@ -1571,14 +1799,21 @@ fn run_trajectory(
             && error <= 1.0
             && report.y_new.iter().all(|value| value.is_finite());
         if !step_accepted {
+            work.rejected.accumulate(step_counters);
             rejected += 1;
             let _ = controller.record_rejection(error.max(1.0e-16));
             h *= controller
-                .propose_factor(&adaptive, error.max(1.0e-16), 5, false)
+                .propose_factor(
+                    &adaptive,
+                    error.max(1.0e-16),
+                    RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                    false,
+                )
                 .unwrap_or(adaptive.min_factor);
             continue;
         }
 
+        work.accepted.accumulate(step_counters);
         let shadow = if include_exponential_shadow {
             run_exponential_shadow(
                 &problem.problem,
@@ -1635,7 +1870,12 @@ fn run_trajectory(
         accepted += 1;
         let _ = controller.record_acceptance(error);
         h *= controller
-            .propose_factor(&adaptive, error.max(1.0e-16), 5, true)
+            .propose_factor(
+                &adaptive,
+                error.max(1.0e-16),
+                RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                true,
+            )
             .unwrap_or(1.0);
     }
 
@@ -1657,6 +1897,13 @@ fn run_trajectory(
         explicit_jacobian_builds: total_jacobian_builds,
         direct_factorizations: total_factorizations,
         newton_iterations: 0,
+        attempt_work: Some({
+            work.total = work.accepted;
+            work.total.accumulate(work.rejected);
+            work.total.accumulate(work.failed);
+            work
+        }),
+        work_accounting: "all-attempts-charged-v1".into(),
     };
     (rows, summary)
 }
@@ -1740,7 +1987,10 @@ pub fn run_g4_s5b0_rjf_only_family(
 
 const V25_ERROR_DROP_THRESHOLD: f64 = 0.012790399606947056;
 
-fn frozen_k1_decision(family: &str, dimension: usize, step: usize) -> bool {
+/// Replayed k = 1 decisions, N = 128 calibration rows only. The former
+/// N = 512 rows were read off holdout trajectories and were removed
+/// (audit F-047); holdout profiles are refused before this is consulted.
+fn replayed_k1_decision(family: &str, dimension: usize, step: usize) -> bool {
     let steps: &[usize] = match (dimension, family) {
         (128, "hires-ramped") => &[8, 13],
         (128, "nonautonomous-stiff-forcing") => &[
@@ -1750,23 +2000,21 @@ fn frozen_k1_decision(family: &str, dimension: usize, step: usize) -> bool {
         (128, "rotating-nonnormal") => &[6, 20, 29, 34, 43, 68, 95],
         (128, "semilinear-advection-diffusion-ramped") => &[9, 15],
         (128, "van-der-pol-ramped") => &[11, 14, 24, 62],
-        (512, "hires-ramped") => &[8, 13],
-        (512, "nonautonomous-stiff-forcing") => &[
-            7, 10, 12, 14, 17, 33, 46, 59, 77, 88, 93, 98, 104, 110, 115, 121, 139, 159, 170,
-        ],
-        (512, "robertson-ramped") => &[5, 14, 17, 21],
-        (512, "rotating-nonnormal") => &[6, 20, 29, 34, 43, 69, 95],
-        (512, "semilinear-advection-diffusion-ramped") => &[8, 20, 27, 34],
-        (512, "van-der-pol-ramped") => &[11, 14, 24, 62],
         _ => &[],
     };
     steps.contains(&step)
+}
+
+#[doc(hidden)]
+pub fn g4_s5b0_replayed_k1_decision(family: &str, dimension: usize, step: usize) -> bool {
+    replayed_k1_decision(family, dimension, step)
 }
 
 struct PrefixPolicyState {
     policy: G4S5B0PrefixProbePolicy,
     log_errors: Vec<f64>,
     k3_latch: PersistenceLatch,
+    k1_latch: PersistenceLatch,
 }
 
 impl PrefixPolicyState {
@@ -1775,6 +2023,7 @@ impl PrefixPolicyState {
             policy,
             log_errors: Vec::new(),
             k3_latch: PersistenceLatch::new(3)?,
+            k1_latch: PersistenceLatch::new(1)?,
         })
     }
 
@@ -1792,9 +2041,12 @@ impl PrefixPolicyState {
             None
         };
         let fire = match self.policy {
-            G4S5B0PrefixProbePolicy::FrozenK1Comparator => {
-                frozen_k1_decision(family, dimension, step_index)
+            G4S5B0PrefixProbePolicy::ReplayedK1Table => {
+                replayed_k1_decision(family, dimension, step_index)
             }
+            G4S5B0PrefixProbePolicy::CausalK1 => self.k1_latch.update(
+                feature.is_some_and(|value| value.is_finite() && value >= V25_ERROR_DROP_THRESHOLD),
+            ),
             G4S5B0PrefixProbePolicy::K3Development => self.k3_latch.update(
                 feature.is_some_and(|value| value.is_finite() && value >= V25_ERROR_DROP_THRESHOLD),
             ),
@@ -1820,6 +2072,7 @@ fn run_rjf_attempt_trace_trajectory(
     let tf = problem.t_span.1;
     let mut y = problem.y0.clone();
     let mut h = adaptive.initial_step.min(tf - t);
+    // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
     let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
     let mut attempts = 0usize;
     let mut accepted = 0usize;
@@ -1843,16 +2096,14 @@ fn run_rjf_attempt_trace_trajectory(
         let h_trial = h;
         let mut step_counters = WorkCounters::default();
         let start = Instant::now();
-        let trial = sequential_matrix_free_step(
+        let trial = g4_live_rodas_step(
             &problem.problem,
             t,
             &y,
             h,
             &linear,
-            None,
             adaptive.atol,
             adaptive.rtol,
-            false,
             &mut step_counters,
         );
         let wall = start.elapsed().as_secs_f64();
@@ -1934,7 +2185,12 @@ fn run_rjf_attempt_trace_trajectory(
             rejected += 1;
             let _ = controller.record_rejection(error.max(1.0e-16));
             h *= controller
-                .propose_factor(&adaptive, error.max(1.0e-16), 5, false)
+                .propose_factor(
+                    &adaptive,
+                    error.max(1.0e-16),
+                    RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                    false,
+                )
                 .unwrap_or(adaptive.min_factor);
             continue;
         }
@@ -1969,7 +2225,12 @@ fn run_rjf_attempt_trace_trajectory(
         accepted += 1;
         let _ = controller.record_acceptance(error);
         h *= controller
-            .propose_factor(&adaptive, error.max(1.0e-16), 5, true)
+            .propose_factor(
+                &adaptive,
+                error.max(1.0e-16),
+                RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                true,
+            )
             .unwrap_or(1.0);
     }
 
@@ -1991,6 +2252,8 @@ fn run_rjf_attempt_trace_trajectory(
         explicit_jacobian_builds: total_jacobian_builds,
         direct_factorizations: total_factorizations,
         newton_iterations: 0,
+        attempt_work: None,
+        work_accounting: "per-attempt-rows".into(),
     };
     (attempt_rows, accepted_rows, summary)
 }
@@ -2121,6 +2384,7 @@ fn run_rjf_actual_level1_prefix_trajectory(
     let tf = problem.t_span.1;
     let mut y = problem.y0.clone();
     let mut h = adaptive.initial_step.min(tf - t);
+    // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
     let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
     let mut attempts = 0usize;
     let mut accepted = 0usize;
@@ -2194,16 +2458,14 @@ fn run_rjf_actual_level1_prefix_trajectory(
 
         let mut step_counters = WorkCounters::default();
         let start = Instant::now();
-        let trial = sequential_matrix_free_step(
+        let trial = g4_live_rodas_step(
             &problem.problem,
             t,
             &y,
             h,
             &linear,
-            None,
             adaptive.atol,
             adaptive.rtol,
-            false,
             &mut step_counters,
         );
         let wall = start.elapsed().as_secs_f64();
@@ -2306,7 +2568,12 @@ fn run_rjf_actual_level1_prefix_trajectory(
             rejected += 1;
             let _ = controller.record_rejection(error.max(1.0e-16));
             h *= controller
-                .propose_factor(&adaptive, error.max(1.0e-16), 5, false)
+                .propose_factor(
+                    &adaptive,
+                    error.max(1.0e-16),
+                    RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                    false,
+                )
                 .unwrap_or(adaptive.min_factor);
             continue;
         }
@@ -2349,7 +2616,12 @@ fn run_rjf_actual_level1_prefix_trajectory(
         accepted += 1;
         let _ = controller.record_acceptance(error);
         h *= controller
-            .propose_factor(&adaptive, error.max(1.0e-16), 5, true)
+            .propose_factor(
+                &adaptive,
+                error.max(1.0e-16),
+                RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                true,
+            )
             .unwrap_or(1.0);
         if let Some(feature_value) = event_feature {
             pending_probe = Some((decision_step, feature_value));
@@ -2374,6 +2646,8 @@ fn run_rjf_actual_level1_prefix_trajectory(
         explicit_jacobian_builds: total_jacobian_builds,
         direct_factorizations: total_factorizations,
         newton_iterations: 0,
+        attempt_work: None,
+        work_accounting: "per-attempt-rows".into(),
     };
     (attempt_rows, accepted_rows, prefix_rows, summary)
 }
@@ -2398,6 +2672,7 @@ fn run_rjf_actual_level2_prefix_trajectory(
     let tf = problem.t_span.1;
     let mut y = problem.y0.clone();
     let mut h = adaptive.initial_step.min(tf - t);
+    // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
     let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
     let mut attempts = 0usize;
     let mut accepted = 0usize;
@@ -2475,16 +2750,14 @@ fn run_rjf_actual_level2_prefix_trajectory(
 
         let mut step_counters = WorkCounters::default();
         let start = Instant::now();
-        let trial = sequential_matrix_free_step(
+        let trial = g4_live_rodas_step(
             &problem.problem,
             t,
             &y,
             h,
             &linear,
-            None,
             adaptive.atol,
             adaptive.rtol,
-            false,
             &mut step_counters,
         );
         let wall = start.elapsed().as_secs_f64();
@@ -2587,7 +2860,12 @@ fn run_rjf_actual_level2_prefix_trajectory(
             rejected += 1;
             let _ = controller.record_rejection(error.max(1.0e-16));
             h *= controller
-                .propose_factor(&adaptive, error.max(1.0e-16), 5, false)
+                .propose_factor(
+                    &adaptive,
+                    error.max(1.0e-16),
+                    RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                    false,
+                )
                 .unwrap_or(adaptive.min_factor);
             continue;
         }
@@ -2630,7 +2908,12 @@ fn run_rjf_actual_level2_prefix_trajectory(
         accepted += 1;
         let _ = controller.record_acceptance(error);
         h *= controller
-            .propose_factor(&adaptive, error.max(1.0e-16), 5, true)
+            .propose_factor(
+                &adaptive,
+                error.max(1.0e-16),
+                RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                true,
+            )
             .unwrap_or(1.0);
         if let Some(feature_value) = event_feature {
             pending_probe = Some((decision_step, feature_value));
@@ -2655,6 +2938,8 @@ fn run_rjf_actual_level2_prefix_trajectory(
         explicit_jacobian_builds: total_jacobian_builds,
         direct_factorizations: total_factorizations,
         newton_iterations: 0,
+        attempt_work: None,
+        work_accounting: "per-attempt-rows".into(),
     };
     (attempt_rows, accepted_rows, prefix_rows, summary)
 }
@@ -2664,6 +2949,7 @@ fn run_g4_s5b0_actual_level1_prefix_filtered(
     family: Option<G4S5B0Family>,
     policy: G4S5B0PrefixProbePolicy,
 ) -> CoreResult<G4S5B0ActualLevel1PrefixReport> {
+    policy.validate_for_profile(profile)?;
     if matches!(profile, G4S5B0Profile::Canonical) {
         return Err(CoreError::InvalidInput(
             "v2.7 prefix research requires an explicit single-dimension profile".into(),
@@ -2725,6 +3011,7 @@ fn run_g4_s5b0_actual_level2_prefix_filtered(
     family: Option<G4S5B0Family>,
     policy: G4S5B0PrefixProbePolicy,
 ) -> CoreResult<G4S5B0ActualLevel2PrefixReport> {
+    policy.validate_for_profile(profile)?;
     if matches!(profile, G4S5B0Profile::Canonical) {
         return Err(CoreError::InvalidInput(
             "v2.8 staged prefix research requires an explicit single-dimension profile".into(),
@@ -2785,7 +3072,9 @@ const V29_PREFIX_RESERVE_JVP: u64 = 80;
 const V29_PREFIX_BUDGET_FRACTION: f64 = 0.25;
 
 pub fn enforced_prefix_jvp_cap(committed_rjf_jvp: u64, speculative_jvp: u64) -> u64 {
-    let cumulative_limit = committed_rjf_jvp / 4;
+    // floor(fraction * committed): the declared 0.25 has this one source
+    // (audit F-046). Exact for committed counts below 2^53.
+    let cumulative_limit = (V29_PREFIX_BUDGET_FRACTION * committed_rjf_jvp as f64).floor() as u64;
     V29_PREFIX_RESERVE_JVP.min(cumulative_limit.saturating_sub(speculative_jvp))
 }
 
@@ -2927,6 +3216,7 @@ fn run_rjf_stage_growth_safety_trajectory(
     let tf = problem.t_span.1;
     let mut y = problem.y0.clone();
     let mut h = adaptive.initial_step.min(tf - t);
+    // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
     let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
     let mut attempts = 0usize;
     let mut accepted = 0usize;
@@ -3138,16 +3428,14 @@ fn run_rjf_stage_growth_safety_trajectory(
 
         let mut step_counters = WorkCounters::default();
         let start = Instant::now();
-        let trial = sequential_matrix_free_step(
+        let trial = g4_live_rodas_step(
             &problem.problem,
             t,
             &y,
             h,
             &linear,
-            None,
             adaptive.atol,
             adaptive.rtol,
-            false,
             &mut step_counters,
         );
         let wall = start.elapsed().as_secs_f64();
@@ -3221,7 +3509,12 @@ fn run_rjf_stage_growth_safety_trajectory(
             rejected += 1;
             let _ = controller.record_rejection(error.max(1.0e-16));
             h *= controller
-                .propose_factor(&adaptive, error.max(1.0e-16), 5, false)
+                .propose_factor(
+                    &adaptive,
+                    error.max(1.0e-16),
+                    RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                    false,
+                )
                 .unwrap_or(adaptive.min_factor);
             continue;
         }
@@ -3263,7 +3556,12 @@ fn run_rjf_stage_growth_safety_trajectory(
         accepted += 1;
         let _ = controller.record_acceptance(error);
         h *= controller
-            .propose_factor(&adaptive, error.max(1.0e-16), 5, true)
+            .propose_factor(
+                &adaptive,
+                error.max(1.0e-16),
+                RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                true,
+            )
             .unwrap_or(1.0);
         if let Some(feature_value) = event_feature {
             pending_probe = Some((decision_step, feature_value));
@@ -3288,6 +3586,8 @@ fn run_rjf_stage_growth_safety_trajectory(
         explicit_jacobian_builds: total_jacobian_builds,
         direct_factorizations: total_factorizations,
         newton_iterations: 0,
+        attempt_work: None,
+        work_accounting: "per-attempt-rows".into(),
     };
     (attempt_rows, accepted_rows, safety_rows, summary)
 }
@@ -3536,6 +3836,93 @@ fn frozen_shadow_total_error(
     Ok(time_error.max(phi_error))
 }
 
+/// Reference-anchored local error of a shadow step (audit F-045): the same
+/// (t, y, h) advanced by protected sequential RODAS5P with tight GMRES
+/// solves, compared with the shadow endpoint in the case WRMS norm. It is
+/// independent of the exponential method's own estimates, but it is the
+/// same Rosenbrock family, so it is run at two tolerances (1e-3 and 1e-4
+/// times the case tolerances) and their distance is returned as the
+/// reference's uncertainty.
+fn reference_local_error_wrms(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    candidate: &[f64],
+    adaptive: &AdaptiveStepConfig,
+) -> CoreResult<(f64, f64)> {
+    let tight = reference_endpoint(problem, t, y, h, adaptive, 1.0e-3)?;
+    let tighter = reference_endpoint(problem, t, y, h, adaptive, 1.0e-4)?;
+    Ok((
+        reference_wrms(candidate, &tighter, adaptive.atol, adaptive.rtol)?,
+        reference_wrms(&tight, &tighter, adaptive.atol, adaptive.rtol)?,
+    ))
+}
+
+fn reference_endpoint(
+    problem: &OdeProblem,
+    t: f64,
+    y: &[f64],
+    h: f64,
+    adaptive: &AdaptiveStepConfig,
+    tolerance_factor: f64,
+) -> CoreResult<Vec<f64>> {
+    let linear = rodas5p_core::LinearSolverConfig {
+        method: rodas5p_core::LinearMethod::Gmres,
+        rtol: 1.0e-13,
+        atol: 1.0e-15,
+        restart: 64,
+        maxiter: 1024,
+        preconditioner: rodas5p_core::PreconditionerKind::None,
+        x0_strategy: rodas5p_core::InitialGuess::Zero,
+        ..rodas5p_core::LinearSolverConfig::default()
+    };
+    let result = crate::integrate_adaptive(
+        problem,
+        (t, t + h),
+        y,
+        h / 16.0,
+        crate::IntegrationMethod::Sequential,
+        Some(&linear),
+        None,
+        adaptive.atol * tolerance_factor,
+        adaptive.rtol * tolerance_factor,
+        100_000,
+        h,
+    )?;
+    result
+        .y
+        .last()
+        .filter(|_| result.success)
+        .cloned()
+        .ok_or_else(|| {
+            CoreError::InvalidInput(format!("reference solve failed: {}", result.message))
+        })
+}
+
+fn reference_unsafe_label(error: f64, uncertainty: f64) -> Option<bool> {
+    if !(error.is_finite() && uncertainty.is_finite()) {
+        return None;
+    }
+    if error - uncertainty > 1.0 {
+        Some(true)
+    } else if error + uncertainty <= 1.0 {
+        Some(false)
+    } else {
+        None
+    }
+}
+
+fn reference_wrms(candidate: &[f64], reference: &[f64], atol: f64, rtol: f64) -> CoreResult<f64> {
+    let scale = error_scale(reference, reference, &[atol], rtol)?;
+    let difference = candidate
+        .iter()
+        .zip(reference)
+        .map(|(a, b)| a - b)
+        .collect::<Vec<_>>();
+    wrms(&difference, &scale)
+}
+
 fn exact_continuation_roundtrip(
     prefix: WorkCounters,
     continuation: WorkCounters,
@@ -3737,6 +4124,9 @@ fn new_frozen_shadow_row(
         shadow_full_e_completed: false,
         shadow_full_e_total_error: None,
         shadow_full_e_locally_admissible: false,
+        reference_local_error_wrms: None,
+        reference_uncertainty_wrms: None,
+        reference_unsafe: None,
         shadow_full_e_failure: None,
         continuation_work: None,
         shadow_full_e_work: None,
@@ -3838,6 +4228,9 @@ impl FrozenFullEShadowRuntimeRow {
             shadow_full_e_completed: row.shadow_full_e_completed,
             shadow_full_e_total_error: row.shadow_full_e_total_error,
             shadow_full_e_locally_admissible,
+            reference_local_error_wrms: row.reference_local_error_wrms,
+            reference_uncertainty_wrms: row.reference_uncertainty_wrms,
+            reference_unsafe: row.reference_unsafe,
             shadow_full_e_failure: row.shadow_full_e_failure,
             continuation_work: row.continuation_work,
             shadow_full_e_work: row.shadow_full_e_work,
@@ -3876,6 +4269,7 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
     let tf = problem.t_span.1;
     let mut y = problem.y0.clone();
     let mut h = adaptive.initial_step.min(tf - t);
+    // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
     let tolerance = 10.0 * f64::EPSILON * tf.abs().max(1.0);
     let mut attempts = 0usize;
     let mut accepted = 0usize;
@@ -4013,6 +4407,25 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
                                                 row.shadow_full_e_total_error = Some(total_error);
                                                 row.shadow_full_e_locally_admissible =
                                                     total_error.is_finite() && total_error <= 1.0;
+                                                if row.recommended {
+                                                    let reference = reference_local_error_wrms(
+                                                        &problem.problem,
+                                                        t_start,
+                                                        &y,
+                                                        h_trial,
+                                                        &report.y_new[..problem.problem.dimension],
+                                                        &adaptive,
+                                                    )
+                                                    .ok();
+                                                    row.reference_local_error_wrms =
+                                                        reference.map(|(error, _)| error);
+                                                    row.reference_uncertainty_wrms =
+                                                        reference.map(|(_, spread)| spread);
+                                                    row.reference_unsafe =
+                                                        reference.and_then(|(error, spread)| {
+                                                            reference_unsafe_label(error, spread)
+                                                        });
+                                                }
                                             }
                                             Err(error) => {
                                                 continuation_outcome_label = "failed";
@@ -4132,16 +4545,14 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
 
         let mut step_counters = WorkCounters::default();
         let start = Instant::now();
-        let trial = sequential_matrix_free_step(
+        let trial = g4_live_rodas_step(
             &problem.problem,
             t,
             &y,
             h,
             &linear,
-            None,
             adaptive.atol,
             adaptive.rtol,
-            false,
             &mut step_counters,
         );
         let wall = start.elapsed().as_secs_f64();
@@ -4257,7 +4668,12 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
             rejected += 1;
             let _ = controller.record_rejection(error.max(1.0e-16));
             h *= controller
-                .propose_factor(&adaptive, error.max(1.0e-16), 5, false)
+                .propose_factor(
+                    &adaptive,
+                    error.max(1.0e-16),
+                    RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                    false,
+                )
                 .unwrap_or(adaptive.min_factor);
             continue;
         }
@@ -4299,7 +4715,12 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
         accepted += 1;
         let _ = controller.record_acceptance(error);
         h *= controller
-            .propose_factor(&adaptive, error.max(1.0e-16), 5, true)
+            .propose_factor(
+                &adaptive,
+                error.max(1.0e-16),
+                RODAS5P_ADAPTIVE_METHOD.estimator.order,
+                true,
+            )
             .unwrap_or(1.0);
         if let Some(feature_value) = event_feature {
             pending_probe = Some((decision_step, feature_value));
@@ -4324,6 +4745,8 @@ fn run_rjf_frozen_full_e_shadow_trajectory(
         explicit_jacobian_builds: total_jacobian_builds,
         direct_factorizations: total_factorizations,
         newton_iterations: 0,
+        attempt_work: None,
+        work_accounting: "per-attempt-rows".into(),
     };
     (attempt_rows, accepted_rows, shadow_rows, summary)
 }
@@ -4404,6 +4827,10 @@ fn run_g4_s5b0_frozen_full_e_shadow_filtered(
         .filter(|row| {
             row.recommended && row.shadow_full_e_completed && !row.shadow_full_e_locally_admissible
         })
+        .count();
+    let reference_unsafe_recommendations = rows
+        .iter()
+        .filter(|row| row.recommended && row.reference_unsafe == Some(true))
         .count();
     let budget_breaches = rows.iter().filter(|row| row.budget_breached).count();
     let budget_exhaustions = rows.iter().filter(|row| row.budget_exhausted).count();
@@ -4526,6 +4953,7 @@ fn run_g4_s5b0_frozen_full_e_shadow_filtered(
         shadow_full_e_completions,
         shadow_full_e_failures,
         unsafe_recommendations,
+        reference_unsafe_recommendations,
         budget_breaches,
         budget_exhaustions,
         prefix_speculative_work,
@@ -4734,6 +5162,10 @@ fn run_g4_s5b0_v37_continuation_transaction_filtered(
                 && row.shadow_full_e_locally_admissible == Some(false)
         })
         .count();
+    let reference_unsafe_recommendations = rows
+        .iter()
+        .filter(|row| row.recommended && row.reference_unsafe == Some(true))
+        .count();
     let prefix_budget_breaches = rows.iter().filter(|row| row.budget_breached).count();
     let prefix_budget_exhaustions = rows.iter().filter(|row| row.budget_exhausted).count();
     let continuation_budget_breaches = rows
@@ -4891,6 +5323,7 @@ fn run_g4_s5b0_v37_continuation_transaction_filtered(
         continuation_budget_exhaustions,
         shadow_full_e_failures,
         unsafe_recommendations,
+        reference_unsafe_recommendations,
         prefix_budget_breaches,
         prefix_budget_exhaustions,
         continuation_budget_breaches,
@@ -4926,6 +5359,19 @@ pub fn run_g4_s5b0_v37_continuation_transaction_family(
         Some(family),
         V37_CONTINUATION_JVP_CAP,
     )
+}
+
+/// The same family replay with a different continuation JVP cap. A research
+/// diagnostic: a cap below a row's completing work exercises the charged
+/// abstention path deterministically, which no calibration replay reaches
+/// at the frozen cap of 80 since the time-normalized phi augmentation
+/// (audit 2026-09-30).
+pub fn run_g4_s5b0_v37_continuation_transaction_family_with_cap(
+    profile: G4S5B0Profile,
+    family: G4S5B0Family,
+    continuation_jvp_cap: u64,
+) -> CoreResult<G4S5B0V37ContinuationTransactionReport> {
+    run_g4_s5b0_v37_continuation_transaction_filtered(profile, Some(family), continuation_jvp_cap)
 }
 
 pub fn run_g4_s5b0_v37_continuation_transaction(
@@ -5464,5 +5910,158 @@ mod stage_trajectory_geometry_tests {
             &shadow_reference.rows[0],
             &wall_only_mutation
         ));
+    }
+}
+
+#[cfg(test)]
+mod trajectory_work_accounting_tests {
+    //! Audit F-050: every attempt of the legacy atlas trajectory, accepted,
+    //! rejected or failed, is charged to the trajectory total.
+    use super::*;
+    use std::sync::atomic::{AtomicU64, Ordering};
+
+    fn counted_transient() -> (AtlasProblem, Arc<AtomicU64>, Arc<AtomicU64>) {
+        let rhs_calls = Arc::new(AtomicU64::new(0));
+        let jvp_calls = Arc::new(AtomicU64::new(0));
+        let lambda = -1.0e3;
+        let (r, j) = (rhs_calls.clone(), jvp_calls.clone());
+        let rhs: crate::problem::RhsFn = Arc::new(move |t: f64, y: &[f64], out: &mut [f64]| {
+            r.fetch_add(1, Ordering::Relaxed);
+            out[0] = lambda * (y[0] - (10.0 * t).sin()) + 10.0 * (10.0 * t).cos();
+            Ok(())
+        });
+        let jvp: crate::problem::JvpFn =
+            Arc::new(move |_t: f64, _y: &[f64], v: &[f64], out: &mut [f64]| {
+                j.fetch_add(1, Ordering::Relaxed);
+                out[0] = lambda * v[0];
+                Ok(())
+            });
+        let problem = OdeProblem::new(
+            "counted-transient",
+            1,
+            rhs,
+            None,
+            None,
+            Some(jvp),
+            None,
+            false,
+            None,
+            None,
+        )
+        .unwrap();
+        (
+            AtlasProblem {
+                family: "counted-transient",
+                id: "counted-transient".into(),
+                problem,
+                // Far off the slow manifold y = sin(10 t): the first steps of
+                // length span/20 are rejected.
+                y0: vec![1.0],
+                t_span: (0.0, 1.0),
+                transition: Arc::new(|_: f64, _: &[f64]| 0.0),
+            },
+            rhs_calls,
+            jvp_calls,
+        )
+    }
+
+    #[test]
+    fn trajectory_totals_charge_every_attempt() {
+        let (problem, rhs_calls, jvp_calls) = counted_transient();
+        let (rows, summary) = run_trajectory(problem, G4S5B0Profile::Smoke, false);
+        assert!(summary.success);
+        assert!(summary.rejected_steps > 0, "the fixture must reject");
+        let work = summary
+            .attempt_work
+            .expect("legacy runner reports attempt work");
+        let accepted_rhs: u64 = rows.iter().map(|row| row.rodas_rhs_evaluations).sum();
+        assert_eq!(
+            work.total.rhs_evaluations,
+            rhs_calls.load(Ordering::Relaxed)
+        );
+        assert_eq!(work.total.jvp_calls, jvp_calls.load(Ordering::Relaxed));
+        assert_eq!(work.accepted.rhs_evaluations, accepted_rhs);
+        assert!(work.total.rhs_evaluations > accepted_rhs);
+        let mut parts = work.accepted;
+        parts.accumulate(work.rejected);
+        parts.accumulate(work.failed);
+        assert_eq!(parts, work.total);
+        assert_eq!(summary.work_accounting, "all-attempts-charged-v1");
+    }
+}
+
+#[cfg(test)]
+mod causal_k1_policy_tests {
+    use super::{G4S5B0PrefixProbePolicy, PrefixPolicyState, V25_ERROR_DROP_THRESHOLD};
+
+    fn decisions(policy: G4S5B0PrefixProbePolicy, errors: &[f64]) -> Vec<bool> {
+        let mut state = PrefixPolicyState::new(policy).unwrap();
+        errors
+            .iter()
+            .enumerate()
+            .map(|(step, &error)| {
+                state
+                    .observe_accepted("robertson-ramped", 512, step, error)
+                    .is_some()
+            })
+            .collect()
+    }
+
+    #[test]
+    fn causal_k1_comparator_fires_only_on_observed_feature() {
+        // Audit F-047. The feature at step i is -(log10 e_i - log10 e_{i-2}).
+        let drop = 10f64.powf(-2.0 * V25_ERROR_DROP_THRESHOLD);
+        let errors = [1.0, 1.0, drop, drop, 1.0, 1.0, 1.0, drop * drop, 1.0];
+        let fired = decisions(G4S5B0PrefixProbePolicy::CausalK1, &errors);
+        // Step 2 drops by 2 thresholds against step 0; step 3 keeps the drop
+        // latched; step 7 is a new excursion.
+        assert_eq!(
+            fired,
+            [false, false, true, false, false, false, false, true, false]
+        );
+        // Causality: changing a later error never changes an earlier decision.
+        for cut in 0..errors.len() {
+            let mut altered = errors;
+            for value in &mut altered[cut..] {
+                *value *= 1.0e-6;
+            }
+            let other = decisions(G4S5B0PrefixProbePolicy::CausalK1, &altered);
+            assert_eq!(other[..cut], fired[..cut], "cut at {cut}");
+        }
+        // It ignores the step index: the replay table would never fire at
+        // N = 512, the causal policy does.
+        assert!(
+            decisions(G4S5B0PrefixProbePolicy::ReplayedK1Table, &errors)
+                .iter()
+                .all(|fired| !fired)
+        );
+    }
+}
+
+#[cfg(test)]
+mod reference_safety_label_tests {
+    use super::{reference_unsafe_label, reference_wrms};
+
+    #[test]
+    fn self_estimate_and_reference_label_are_independent_fields() {
+        // Audit F-045: an embedded estimate of 0.5 says admissible; a
+        // reference difference of 3 WRMS units says unsafe. Both are kept.
+        let (atol, rtol) = (1.0e-8, 1.0e-6);
+        let reference = [1.0, -2.0, 0.5];
+        let candidate = reference
+            .iter()
+            .map(|value: &f64| value + 3.0 * (atol + rtol * value.abs()))
+            .collect::<Vec<_>>();
+        let reference_error = reference_wrms(&candidate, &reference, atol, rtol).unwrap();
+        assert!((reference_error - 3.0).abs() < 1.0e-9, "{reference_error}");
+        let self_estimate: f64 = 0.5;
+        let self_estimate_admissible = self_estimate.is_finite() && self_estimate <= 1.0;
+        assert!(self_estimate_admissible);
+        assert_eq!(reference_unsafe_label(reference_error, 0.1), Some(true));
+        assert_eq!(reference_unsafe_label(0.8, 0.1), Some(false));
+        // The reference's own uncertainty can leave the label undecided.
+        assert_eq!(reference_unsafe_label(1.05, 0.1), None);
+        assert_eq!(reference_unsafe_label(0.95, 0.1), None);
+        assert_eq!(reference_unsafe_label(f64::NAN, 0.1), None);
     }
 }

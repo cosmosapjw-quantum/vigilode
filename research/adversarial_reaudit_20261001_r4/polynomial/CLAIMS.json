@@ -1,0 +1,85 @@
+{
+  "schema": "vigilode-r4-claims-v1",
+  "claims": [
+    {
+      "id": "R4-POLY-C01",
+      "claim": "The original positive/negative-h R3 partial-weight-loss witnesses are correctly refused as original-target convergence.",
+      "status": [
+        "implementation-verified",
+        "numerically checked"
+      ],
+      "evidence": [
+        "native.jsonl"
+      ],
+      "limits": "Four fused/prefix reports and two dense reports; not a proof of all possible weighting behavior."
+    },
+    {
+      "id": "R4-POLY-C02",
+      "claim": "All40registered scalar/diagonal/symmetric toy actions satisfy the1e-10 absolute target;32Certified total bounds enclose their independent140-digit exact-input errors.",
+      "status": [
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "maximum_error": 4.73850883134441e-14,
+      "certified_count": 32,
+      "estimate_only_count": 8,
+      "evidence": [
+        "native.jsonl",
+        "ORACLE_RESULTS.json"
+      ],
+      "limits": "No nonnormal operator certification and no global proof from the finite sweep."
+    },
+    {
+      "id": "R4-POLY-C03",
+      "claim": "The source Chebyshev coefficient and residual-propagation proof, and Laguerre exact-arithmetic tail, are consistent under their stated symmetric spectral assumptions.",
+      "status": [
+        "derived",
+        "literature-supported"
+      ],
+      "evidence": [
+        "MATH_REVIEW_KO.md"
+      ],
+      "limits": "Directed-rounding runtime assumptions remain necessary; source review is not formal verification."
+    },
+    {
+      "id": "R4-POLY-C04",
+      "claim": "Standalone scaled norm bounds enclose five exact sums of squares including amplitudes1e±300 and minimum subnormal.",
+      "status": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "evidence": [
+        "probe/src/main.rs",
+        "ORACLE_RESULTS.json"
+      ],
+      "limits": "Candidate only; not integrated into polynomial recurrence. A complete dynamic-range action contract remains open."
+    },
+    {
+      "id": "R4-POLY-C05",
+      "claim": "Outward inverse-factorial recurrence encloses1/p! and the actual generated-weight error for p=4,30,50,170,171,172.",
+      "status": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "evidence": [
+        "probe/src/main.rs",
+        "ORACLE_RESULTS.json"
+      ],
+      "limits": "Standalone candidate; full nilpotent-series implementation not changed."
+    },
+    {
+      "id": "R4-POLY-C06",
+      "claim": "At fixed r=m+1 with2r>h*rho, Laguerre tail scale optimum is beta=rho/[2r-h*rho]; capL<=16 gives L=min(16,2r-h*rho).",
+      "status": [
+        "derived"
+      ],
+      "evidence": [
+        "ANALYTIC_ADDENDUM_KO.md"
+      ],
+      "limits": "Analytic-only addition; not run, not implemented, not a total-roundoff or runtime optimum."
+    }
+  ],
+  "independent_decision": "PENDING_ROOT_REVIEWER"
+}

@@ -1,0 +1,79 @@
+{
+  "continuous_order4_residuals": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "endpoint_weight_residuals": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "left_derivative_residuals": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "right_derivative_residuals": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "row_sum_residuals": [
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "all_order4_and_endpoint_checks_pass": true,
+  "fifth_moment_residual_exact": "-1/293804230*((-1 + th)^2*th^2*(-31375885 + 58760846*th))",
+  "fifth_moment_at_half_exact": "997731/2350433840",
+  "scope": "New continuous extension only; existing endpoint order-five proof not repeated.",
+  "schema": "vigilode.dopri5-dense-exact-order.v1",
+  "tool": "Wolfram Language evaluator",
+  "symbolic_arithmetic": "exact rationals, polynomial identities for arbitrary theta",
+  "source_coefficient_literal_match": {
+    "P": true,
+    "A": true,
+    "c": true
+  },
+  "source_files_at_review": {
+    "crates/rodas5p-integrators/src/dopri5_dense.rs": "c311513d155929cf817e7a4e2122afde8c0b044b720b2c6cf9846b670d3e7fa0",
+    "crates/rodas5p-integrators/src/dopri5.rs": "e446cbf4eeff9f73d612c45c5321d92b76640c55b6775d5cd29bbdfe5a9d5a92"
+  },
+  "check_code_sha256": "b1b2b92844af62401c21f1e9ff0c68fe4a9d1f577db0abca37f6752d488674ff",
+  "conditions": [
+    "b(theta).1=theta",
+    "b(theta).c=theta^2/2",
+    "b(theta).c^2=theta^3/3",
+    "b(theta).A.c=theta^3/6",
+    "b(theta).c^3=theta^4/4",
+    "b(theta).diag(c).A.c=theta^4/8",
+    "b(theta).A.c^2=theta^4/12",
+    "b(theta).A^2.c=theta^4/24"
+  ],
+  "preregistration_commit": "83c79b936efc613b73c41897b647fffa6e6d0a1d",
+  "old_endpoint_order5_reverified": false,
+  "interpretation": "quartic continuous extension order4, local interpolation error O(h^5); conditional bounded-time global O(H^5) requires an independent fifth-order nodal error bound and smooth bounded stages, not an automatic tolerance certificate",
+  "parser_development_note": "First literal matcher accidentally matched DOPRI5_ADAPTIVE_METHOD when searching DOPRI5_A; adding exact colon delimiter resolved the source-extraction error. Wolfram calculation was not rerun or changed."
+}

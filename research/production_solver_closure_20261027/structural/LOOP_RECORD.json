@@ -1,0 +1,223 @@
+{
+  "schema_version": 1,
+  "workflow_version": "1.0.0",
+  "task": "both",
+  "unit_id": "structural-production-closure-20261027",
+  "objective": "Retain failed work and reduce full original-stage verification cost without changing the target or user caps.",
+  "scope": "Immutable affine mean-field model; original raw-U8stage; represented inputs and IEEE binary64 assumptions.",
+  "status": "complete_scoped",
+  "source_sha256": "ebc43ae0ef3faada53764f0895c4b6587645d0ee51497a39bfe77d7fcd347330",
+  "correction_limit": 3,
+  "corrections_used": 3,
+  "theory_stages": [
+    {
+      "id": "R1",
+      "status": "complete",
+      "evidence": [
+        "PROTOCOL.md"
+      ],
+      "result": "Fix model/raw-U target and original physical/residual caps; baseline PR91."
+    },
+    {
+      "id": "R2",
+      "status": "complete",
+      "evidence": [
+        "control_source/structural_mean_field_pr91.rs"
+      ],
+      "result": "Reuse scalar quotient and exact projector norm, preserving original source bytes."
+    },
+    {
+      "id": "R3",
+      "status": "complete",
+      "evidence": [
+        "THEORY.md"
+      ],
+      "result": "Separate represented mean, exact mean, actual full-stage defect and exact target coefficients."
+    },
+    {
+      "id": "R4",
+      "status": "complete",
+      "evidence": [
+        "PROTOCOL.md"
+      ],
+      "result": "Compare fused direct, outward factorized and exact scalar degeneration alternatives."
+    },
+    {
+      "id": "R5",
+      "status": "complete",
+      "evidence": [
+        "THEORY.md"
+      ],
+      "result": "Derive S1-S4, rounding envelopes and exact scheduled-work identities."
+    },
+    {
+      "id": "R6",
+      "status": "complete",
+      "evidence": [
+        "../theory/STRUCTURAL_REVIEW.json"
+      ],
+      "result": "Independent source/analytic review plus Wolfram substitution; no open finding."
+    },
+    {
+      "id": "R7",
+      "status": "complete",
+      "evidence": [
+        "FINAL_EXACT_ORACLE_RESULTS.json"
+      ],
+      "result": "Full original-space Fraction oracle passes168bounds/728components across21cases."
+    },
+    {
+      "id": "R8",
+      "status": "complete",
+      "evidence": [
+        "FINAL_BENCHMARK_SUMMARY.json"
+      ],
+      "result": "Adopt charged API and opt-in enclosure; retain fused negative/noisy result and all adverse scalar evidence."
+    },
+    {
+      "id": "R9",
+      "status": "complete",
+      "evidence": [
+        "section.tex"
+      ],
+      "result": "REVTeX mathematical/code contract, public API and exact constants."
+    },
+    {
+      "id": "R10",
+      "status": "complete",
+      "evidence": [
+        "LOCAL_TASKS.json"
+      ],
+      "result": "Current scalar/affine scope closed; explicit local profile, physical certificate and adaptive-consumer PR contracts."
+    }
+  ],
+  "coding_stages": [
+    {
+      "id": "C1",
+      "status": "complete",
+      "evidence": [
+        "PROTOCOL.md"
+      ],
+      "result": "Identify source-pinned PR91 baseline and unchanged acceptance criteria."
+    },
+    {
+      "id": "C2",
+      "status": "complete",
+      "evidence": [
+        "THEORY.md"
+      ],
+      "result": "Map original target, representation error and failed-work paths to source."
+    },
+    {
+      "id": "C3",
+      "status": "complete",
+      "evidence": [
+        "THEORY.md"
+      ],
+      "result": "Specify outward bound and exact dimension1 degeneration without fitted thresholds."
+    },
+    {
+      "id": "C4",
+      "status": "complete",
+      "evidence": [
+        "LOCAL_TASKS.json"
+      ],
+      "result": "Disjoint lane ownership, serialized native timing/profile, future integration DAG."
+    },
+    {
+      "id": "C5",
+      "status": "complete",
+      "evidence": [
+        "../../../crates/vigilode-coupled/src/structural_mean_field.rs"
+      ],
+      "result": "Implement charged compatibility APIs, fused direct screen and full-space enclosure."
+    },
+    {
+      "id": "C6",
+      "status": "complete",
+      "evidence": [
+        "CORRECTION3_EXECUTION.json"
+      ],
+      "result": "Eleven distinct nativecontracts PASS; exact frozen control included insidecrate."
+    },
+    {
+      "id": "C7",
+      "status": "complete",
+      "evidence": [
+        "FINAL_EXACT_ORACLE_RESULTS.json"
+      ],
+      "result": "Independent exact raw-U oracle validates actual returned stages; closed-form physical comparisons retain original cap."
+    },
+    {
+      "id": "C8",
+      "status": "complete",
+      "evidence": [
+        "FINAL_BENCHMARK_SUMMARY.json",
+        "FINAL_EXACT_ORACLE_RESULTS.json",
+        "ENVIRONMENT.json",
+        "instruction_profile/SUMMARY.json",
+        "instruction_profile/RUNS.json"
+      ],
+      "result": "Same-binary full-trajectory pairedtiming, source-matched exactoracle and6 successful final Callgrindruns; all negative/noisy results retained."
+    },
+    {
+      "id": "C9",
+      "status": "complete",
+      "evidence": [
+        "../theory/STRUCTURAL_REVIEW.json"
+      ],
+      "result": "Separate agent independently expands mathematics and reads final source/test/oracle evidence."
+    },
+    {
+      "id": "C10",
+      "status": "complete",
+      "evidence": [
+        "README_KO.md"
+      ],
+      "result": "Typed API, full evidence, REVTeX, machine-readable future PR DAG and commands prepared for parent push."
+    }
+  ],
+  "claims": [
+    {
+      "id": "full_stage_bound",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "scope": "Full original stage residual only; temporal truncation and endpoint rounding separate.",
+      "evidence": [
+        "THEORY.md",
+        "FINAL_EXACT_ORACLE_RESULTS.json",
+        "../theory/STRUCTURAL_REVIEW.json"
+      ]
+    },
+    {
+      "id": "work_and_timing",
+      "basis": [
+        "numerically checked"
+      ],
+      "scope": "Full64-step trajectories under unchanged caps and sameworker control; timingrangesdescriptive.",
+      "evidence": [
+        "FINAL_BENCHMARK_SUMMARY.json"
+      ]
+    }
+  ],
+  "negative_evidence": [
+    "BENCH_N1_W1.json: pre-correction scalar slowdown",
+    "FINAL_BENCH_N2048_W1.json: fuseddirectnegative median",
+    "FINAL_BENCH_N2048_W2.json: noisyenclosuretime range crossing1"
+  ],
+  "profiling": {
+    "performed_by": "/root",
+    "result": "pass_scoped",
+    "evidence": [
+      "instruction_profile/PROTOCOL.json",
+      "instruction_profile/RUNS.json",
+      "instruction_profile/SUMMARY.json"
+    ],
+    "metric": "(Ir(6)-Ir(2))/4",
+    "scope": "n2048,64steps,worker1,guest instructions; separate from native wall time"
+  },
+  "publication": "parent-owned; not yet claimed by this lane",
+  "updated_utc": "2026-10-27T14:28:52.708216+00:00"
+}

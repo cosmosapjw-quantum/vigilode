@@ -1,0 +1,57 @@
+{
+  "schema_version": "vigilode.production_review.v1",
+  "as_of": "2026-10-22",
+  "base_commit": "555e71e03fe31e6c9b21961c8e2d263b1794eb6f",
+  "broad_production": "HOLD",
+  "new_ncp_execution": false,
+  "decisions": [
+    {
+      "component": "general_production_solver",
+      "classification": "hold",
+      "reason": "Public API and substantial scoped tests exist; arbitrary-callback global accuracy, full-state auditability and application coverage remain insufficient for unrestricted qualification."
+    },
+    {
+      "component": "uniform_drift_stiff_photon_transport",
+      "classification": "specialized_for_specific_cases_only",
+      "reason": "Fixed-grid LRS exact block client is integrated and 22 selected application configurations satisfy the published observable budget; full-state and spatial accuracy are separate."
+    },
+    {
+      "component": "analytic_heat_stencil",
+      "classification": "promote",
+      "scope": "opt-in exact Jacobian assembly for the tested periodic heat/advection-diffusion support; retain existing generic path",
+      "reason": "Source5fd6e459 evidence preserves identical trajectories and removes 5376 auxiliary RHS calls in the n128 fixture. Promotion is scoped implementation selection, not a universal speed claim."
+    },
+    {
+      "component": "dense_nonstiff_default",
+      "classification": "optimization_possible",
+      "reason": "Explicit Julia/diffsol arms are faster in current nonstiff cases; add measured routing, do not remove dense small-system fallback."
+    },
+    {
+      "component": "generic_low_rank_bordered_inverse",
+      "classification": "hold",
+      "reason": "New reusable core implementation; targeted validation recorded separately. No production ODE path or comparative timing measured yet."
+    },
+    {
+      "component": "affine_30_to_33_norm",
+      "classification": "hold",
+      "reason": "Standalone C99 kernel validated; not connected to step acceptance."
+    },
+    {
+      "component": "full_sphere_transport",
+      "classification": "specialized_for_specific_cases_only",
+      "reason": "Restricted unpolarized triaxial Bianchi I prototype; polarization/tilt/recoil and structured full-sphere stage solve remain outside evidence."
+    },
+    {
+      "component": "prune_solver_family",
+      "classification": "hold",
+      "reason": "No solver family is removed from present evidence. Failures are configuration- and metric-specific."
+    }
+  ],
+  "evidence_limits": [
+    "Latest campaign raw state trajectories and reference files are not in imported repository subset.",
+    "Published benchmark source identity is distinct from this modified source.",
+    "Observed ratios concern one NCP host; no universal speed guarantee.",
+    "Observable budget is not the full-state norm.",
+    "Full-repository authority-reference check fails on 14 unresolved historical Git identifiers in 27 unchanged files; this new review subset passes. See PROVENANCE_CHECK.json."
+  ]
+}

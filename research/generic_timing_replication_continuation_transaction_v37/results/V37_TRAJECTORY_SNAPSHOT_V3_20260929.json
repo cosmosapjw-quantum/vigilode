@@ -1,0 +1,35 @@
+{
+  "schema": "vigilode-trajectory-snapshot-v1",
+  "version": 3,
+  "date": "2026-09-29",
+  "finding": "F-003",
+  "supersedes": "research/generic_timing_replication_continuation_transaction_v37/results/V37_TRAJECTORY_SNAPSHOT_V2_20260929.json",
+  "family": "semilinear-advection-diffusion-ramped",
+  "profile_under_test": "stage-growth-calibration-192",
+  "provenance": {
+    "code": "integration branch claude/jolly-wozniak-7wl15h-integration at 84edcd7 (audit base e1c3a5f plus WU-1..WU-19)",
+    "cargo_profile": "dev with CARGO_PROFILE_DEV_DEBUG=0",
+    "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+    "RAYON_NUM_THREADS": 1,
+    "command": "cargo test -p rodas5p-integrators --test v37_continuation_transaction_contracts -- --ignored",
+    "values_sha256": "6322dbdfeea9b8ec5e8ad1f65be1ddcddc3e2c2442da443c0266af1dfb6d6be2",
+    "values_sha256_of": "compact sorted-key JSON of `values`"
+  },
+  "attribution": {
+    "method": "the WU-13 version of the test and V2 snapshot overlaid on first-parent integration merges, one replay per merge",
+    "ba69233 (WU-1, WU-2, WU-7 merged)": "V2 values (52, 17, 12, 132, 120)",
+    "dced5d2 (WU-3 inner-forcing merge)": "continuation 52 -> 48, report continuation 132 -> 128, report prefix 120 -> 114",
+    "83a38d2 (through WU-9)": "unchanged from dced5d2",
+    "a93c141 (WU-10 exponential-scaling merge)": "report prefix 114 -> 116",
+    "87ab6f9, 465394c, 3f9c477, 6e8e1c0, af3d84a, cd2b627, 84edcd7": "unchanged from a93c141"
+  },
+  "interpretation": "Work counts only: the error-scaled inner forcing budget (WU-3) and the balanced fused-phi augmentation (WU-10) change how many JVP vectors the prefix and the continuation spend. Both attempt indices are unchanged, so the recommendation trajectory is the same; no accuracy or speed claim follows.",
+  "values": {
+    "completed_continuation_jvp_vectors": 48,
+    "completed_target_attempt_index": 17,
+    "exhausted_target_attempt_index": 12,
+    "report_continuation_jvp_vectors": 128,
+    "report_prefix_jvp_vectors": 116
+  },
+  "note": "A numerical change that moves these values adds a V4 snapshot file; this file is never edited."
+}

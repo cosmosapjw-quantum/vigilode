@@ -1,0 +1,217 @@
+{
+  "schema_version": "1.0",
+  "candidate_author": "loop12_damping",
+  "decision": "PENDING_INDEPENDENT_REVIEW",
+  "theory_status": "derived; tiny exact algebra checked",
+  "production_status": "NOT_IMPLEMENTED",
+  "measured_speed_status": "NOT_MEASURED",
+  "old_campaigns_rerun": false,
+  "harness": {
+    "family": "GPT-6 Astra",
+    "version": "4.0.0",
+    "selection_basis": "continuation of parent-selected canonical harness",
+    "actual_model_identity": "UNKNOWN",
+    "performance": "NOT_EVALUATED",
+    "remote_state_template_inherited": false
+  },
+  "proof": "DAMPING_WINDOWS_KO.md",
+  "checks": "DAMPING_EXACT_CHECKS.json",
+  "check_program": "check_damping_exact.py",
+  "sources": [
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/loop12_input/RESEARCH_NOTE_KO.md",
+      "sha256": "e709c09c64d89252c1854ac2919b6126cd96ee73c5a9bbb482ba50988290f05d",
+      "read_scope": "full file; scientific dependencies named in proof section 1"
+    },
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/loop12_input/rvj_packet/packet.py",
+      "sha256": "2ceeed47036b2ed2b58ca8fa9a8512f6cda20a0a73b6fe10e09abade707598d4",
+      "read_scope": "full file; scientific dependencies named in proof section 1"
+    },
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/loop12_input/rvj_packet/convergence.py",
+      "sha256": "9c4f8863e87d2bff02bfdadeba76d20a709c034f496b6a43a56e18dd3d7a47b5",
+      "read_scope": "full file; scientific dependencies named in proof section 1"
+    },
+    {
+      "path": "/workspace/scratch/0dc1e721cf82/vigilode/docs/reviews/20261011_promotion_theory/GLOBAL_ACCURACY_KO.md",
+      "sha256": "036af4f517aa0a91f345bceeede77fe3dedbb698f4a999982ff0dba8e2919d2f",
+      "read_scope": "full file; scientific dependencies named in proof section 1"
+    }
+  ],
+  "claims": [
+    {
+      "id": "DW-A",
+      "title": "Exact common damping transformation and Duhamel closure",
+      "guarantee": "a=exp(-kappa*t)b converts common damping to scalar nonlinear weight exp(-2*kappa*t), preserving every initial complex amplitude and phase; no online derivative calls required by the formula.",
+      "premises": [
+        "declared known collective model DW1",
+        "positive normalized fixed weights",
+        "common real kappa >= 0, real chi, bounded real detunings"
+      ],
+      "equations": [
+        "DW1",
+        "DW2",
+        "DW3",
+        "DW4",
+        "DW5"
+      ],
+      "status": [
+        "derived"
+      ],
+      "limits": [
+        "not heterogeneous damping or arbitrary local nonlinearity",
+        "descriptor recognition not free",
+        "no existing native damped implementation claimed"
+      ]
+    },
+    {
+      "id": "DW-B",
+      "title": "Uniform-kappa nonlinear homotopy truncation in an exponential-polynomial basis",
+      "guarantee": "Under DW6 strict ball/contraction conditions, transformed mean coefficients exist uniquely and Q-order truncation has uniform error <= M eta^(-Q-1); each coefficient is finite exponential-polynomial with degree <= (3ell+1)p+ell. For fixed positive margin and bounded detuning horizon p,Q=O(log(1/epsilon)) can be chosen uniformly for every kappa>=0.",
+      "premises": [
+        "eta>1 and M<B",
+        "q_eta<1",
+        "exact descriptor",
+        "interval errors separately charged",
+        "full candidate tube verified"
+      ],
+      "equations": [
+        "DW6",
+        "DW7",
+        "DW8",
+        "DW9"
+      ],
+      "status": [
+        "derived",
+        "exact-arithmetic checked"
+      ],
+      "limits": [
+        "scalar exponential/phi bit cost may depend on kappa and conditioning",
+        "nonlinear order levels remain sequential",
+        "not a claim of lower cost than original kappa=0 polynomial candidate"
+      ],
+      "exact_example": {
+        "T_max": "1/2",
+        "abs_Delta_max": "1",
+        "abs_chi_max": "1/8",
+        "A0_max": "9/32",
+        "max_initial_amplitude": "11/32",
+        "B": "3/4",
+        "eta": "4",
+        "map_upper": "165/256",
+        "q_eta_upper": "45/64",
+        "p": 8,
+        "Q": 10,
+        "mode_error_upper": "20832297221/892274301783244800",
+        "strict_limit": "1/40000000",
+        "roundoff_status": "example bound excludes additional descriptor/evaluator/output errors"
+      }
+    },
+    {
+      "id": "DW-C",
+      "title": "Arbitrary-degree damped causal mixed-moment phi formula",
+      "guarantee": "The causal integral of (t-s)^r s^d exp(-a*s) has finite phi/confluent divided-difference representation DW10 and the correct beta limit at a=0; positive integral form supports absolute enclosures without time Taylor resolving kappa*T.",
+      "premises": [
+        "nonnegative integers r,d",
+        "a,t>=0",
+        "validated scalar exponential/interval evaluation for implementation"
+      ],
+      "equations": [
+        "DW10"
+      ],
+      "status": [
+        "derived",
+        "exact-arithmetic checked"
+      ],
+      "limits": [
+        "native scalar_phi_enclosure low-degree support is not arbitrary mixed-moment support",
+        "alternating expanded formula alone is not stable floating code",
+        "new evaluator not implemented here"
+      ]
+    },
+    {
+      "id": "DW-D",
+      "title": "All-mode error including inherited initial errors and arithmetic",
+      "guarantee": "DW11 mean and DW12 per-mode bounds include inherited component errors, detuning tail, damped nonlinear kernel tail, transformed candidate residual and separately charged descriptor/phase/output errors.",
+      "premises": [
+        "whole-window transformed candidate |uhat|<=B",
+        "true transformed mean within same B",
+        "candidate residual bound is for exact descriptor bound to computed initial vector",
+        "fixed declared parameters or separately charged parameter uncertainty",
+        "all initial amplitudes and phases retained"
+      ],
+      "equations": [
+        "DW11",
+        "DW12"
+      ],
+      "status": [
+        "derived",
+        "exact-arithmetic checked"
+      ],
+      "limits": [
+        "no endpoint-only tube check",
+        "candidate mean and weighted mean of final reconstructed modes need not coincide; residual pays the discrepancy",
+        "no global guarantee for candidates outside the certified tube"
+      ]
+    },
+    {
+      "id": "DW-E",
+      "title": "Certified multiwindow transport by diagonal plus rank-one error operators",
+      "guarantee": "DW13-DW15 propagate all initial and local errors in O(n) work per window; P^2=P permits exact closed product for fixed weights. If kappa>=3|chi|R_n^2, norm amplification is <=1 and length-weighted local budgets close the finite-horizon global budget.",
+      "premises": [
+        "R_n encloses both exact reference-start norms",
+        "fixed normalized weights for closed product",
+        "each local eta is computed with zero inherited error and includes all local arithmetic",
+        "previous component error vector retained at restart",
+        "actual accepted grid and target identity bound"
+      ],
+      "equations": [
+        "DW13",
+        "DW14",
+        "DW15"
+      ],
+      "status": [
+        "derived",
+        "exact-arithmetic checked"
+      ],
+      "limits": [
+        "the transfer matrix is an error upper-bound operator, not exact nonlinear Jacobian",
+        "single-trajectory energy decay alone does not imply nonexpansivity",
+        "moment refresh O(n(p+1)) remains charged",
+        "native multiwindow client not implemented"
+      ]
+    },
+    {
+      "id": "DW-F",
+      "title": "Same-map compilation with strict total-work sufficient condition",
+      "guarantee": "Common-damping mode aggregation commutes with every homotopy coefficient step; fixed dense coefficient schedule reduces kernel contraction count n(p+1)M_f to (p+1)M_f. Under Cconv>Cio and n>(Cconv+Cfixed)/(Cconv-Cio), all separately charged extra work is overcome.",
+      "premises": [
+        "same homotopy/discrete map and representation for comparator",
+        "nonlinear forcing generated once on both sides",
+        "common phi table costs treated symmetrically",
+        "actual upper/lower counted costs include setup, certificate, output, failures and fallback",
+        "accuracy premises DW-B/D also hold"
+      ],
+      "equations": [
+        "DW16"
+      ],
+      "status": [
+        "derived"
+      ],
+      "limits": [
+        "not against an already hoisted comparator",
+        "not wall-clock or universal bit complexity",
+        "dense zero slots cannot be charged to sparse skipping comparator"
+      ],
+      "cost_upper": "O(n(p+1) + (p+1)^2(Q+1)^6 + (p+1)^3(Q+1)^4 + R_out [n(p+1) + (p+1)(Q+1)(D+1)^2]) + C_transcendental_interval_total; D=(3Q+1)p+Q",
+      "output_cost_contract": {
+        "forcing_representation": "formed once; exponent <=3Q and time degree <=3D",
+        "shared_algebra_each_output": "O((p+1)(Q+1)(D+1)^2), charged at every output time",
+        "special_function_cost": "preprocessing plus sum over all output times, separate from ordinary shared algebra",
+        "strict_gate": "C_io and C_fixed include costs for all requested outputs",
+        "zero_order_case": "plus-one factors preserve constant forcing/output costs at p=0 or Q=0"
+      }
+    }
+  ]
+}

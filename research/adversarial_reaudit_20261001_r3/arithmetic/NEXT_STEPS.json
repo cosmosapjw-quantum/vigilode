@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "production_mutations_in_this_lane": 0,
+  "nodes": [
+    {
+      "id": "ARITH-01",
+      "priority": "P2",
+      "depends_on": [],
+      "title": "Bind weighting loss to original-target convergence",
+      "target_files": ["crates/rodas5p-core/src/binary_scaling.rs", "crates/rodas5p-integrators/src/exponential.rs", "crates/rodas5p-core/src/matrix_functions.rs"],
+      "implementation": ["Introduce weighting quality/transform-error status in action reports, including prefix and dense wrappers.", "Minimal safe behavior rejects lost>0 before successful original-target convergence unless a trusted output bound is supplied.", "Keep the work counter; do not mistake it for an acceptance bound."],
+      "acceptance": ["R3 positive and negative h nilpotent witnesses cannot report unqualified original-target convergence.", "Original PHI-R1/R2 fixtures remain within 1e-12.", "A=0 control documents conservative rejection or bounded acceptance.", "No report consumer can discard non-authoritative transform status."],
+      "expected_evidence": ["native regression stdout/exit and source hash", "exact Fraction oracle comparison", "consumer state transition test"],
+      "failure_semantics": "TRANSFORM_ERROR_UNBOUNDED, typed failure or converged=false",
+      "claim_ceiling": "Closes unsafe partial-loss success; does not implement general full-range action arithmetic."
+    },
+    {
+      "id": "ARITH-02",
+      "priority": "research",
+      "depends_on": ["ARITH-01"],
+      "title": "Propagate coefficient rounding to physical output",
+      "mathematical_contract": "e_transform=sum_k phi_k(hA) delta_wk; use verified Ck>=||phi_k(hA)|| with retained underflow magnitudes and total error budget.",
+      "implementation": ["Represent coefficient rounding/loss bounds using mantissa/exponent or interval arithmetic; never round a nonzero bound down to zero.", "Offer structural action bounds for nilpotent/triangular/dissipative cases and fail closed for unsupported general operators.", "Separate transform, projection, truncation, and roundoff error fields."],
+      "acceptance": ["Exact nilpotent Fraction fixtures with positive/negative h bound the actual first-component error.", "Normal, subnormal and near-overflow inputs exercise each bound branch.", "Cases with only a coarse logarithmic-norm bound remain rejected when too conservative; do not relax tolerance."],
+      "claim_ceiling": "Only certified operator classes and implemented rounding model; no generic matrix-free certificate."
+    },
+    {
+      "id": "ARITH-03",
+      "priority": "P2",
+      "depends_on": ["ARITH-01"],
+      "title": "Preserve dense reference amplitude/transform authority at consumers",
+      "target_files": ["crates/rodas5p-core/src/matrix_functions.rs", "crates/rodas5p-integrators/src/g3_fused_adaptive_gate.rs"],
+      "implementation": ["Use a report-returning fused dense interface carrying amplitude flags and weighting loss.", "Consumer classifies flagged reference as NotEvaluated unless an independent higher-precision/structural oracle resolves it.", "Retain raw flags in comparison records rather than only a vector."],
+      "acceptance": ["diag(700,-700) mixed-range witness is not admitted as a precision oracle silently.", "Homogeneous scalar amplitude sweep retains accuracy and authority.", "Demonstrate actual final gate behavior with injected flagged report."],
+      "claim_ceiling": "Reference authority correctness, not a claim that existing G3 campaigns are invalid."
+    },
+    {
+      "id": "ARITH-04",
+      "priority": "research",
+      "depends_on": [],
+      "title": "Separate range-safe budget evaluation from certified budget lower bound",
+      "mathematical_contract": "Admit a certified step only if error_upper <= budget_lower, retaining the minimum of separately validated components.",
+      "implementation": ["Keep current range-safe nearest-rounded budget as a diagnostic API.", "Implement explicit outward rounding or analytic error enclosure for mantissa ratio, integer power, product and subnormal conversion.", "Return an uncertainty interval and explicit certificate status."],
+      "acceptance": ["Exact represented-input rational encloses current R2-POL-01 fixture.", "Boundary cases one ULP around each branch do not falsely accept.", "Zero, underflow, overflow, minimum step and maximum supported exponent have explicit semantics."],
+      "claim_ceiling": "A verified arithmetic budget bound does not certify the numerical output-error estimate."
+    }
+  ],
+  "executed_research_candidates": [
+    {"id": "partial_loss_guard", "status": ["implementation-verified"], "result": "Three partial-loss cases explicitly rejected; safe but rejects the harmless A=0 control."},
+    {"id": "nilpotent_reordered_polynomial", "status": ["derived", "numerically checked", "implementation-verified"], "result": "Exact finite polynomial; maximum first-component relative error 6.528332571792047e-17 on +/-h and zero-A control.", "scope": "2D nilpotent structure only; not a general backend"}
+  ]
+}

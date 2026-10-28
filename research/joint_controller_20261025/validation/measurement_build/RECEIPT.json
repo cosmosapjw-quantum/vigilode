@@ -1,0 +1,48 @@
+{
+  "schema": "vigilode.recorded-command.v1",
+  "command": [
+    "cargo",
+    "build",
+    "--locked",
+    "--offline",
+    "--profile",
+    "measurement",
+    "-p",
+    "vigilode",
+    "--example",
+    "adaptive_entry_pilot",
+    "--example",
+    "joint_execution_pilot",
+    "--example",
+    "causal_budget_pilot"
+  ],
+  "cwd": "/workspace/scratch/0dc1e721cf82/vigilode-joint",
+  "started_utc": "2026-10-25T14:53:04.159046+00:00",
+  "host": "35ba76fd0ddf",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "logical_cpus": 9,
+  "git_head": "040b6764102dc3ff27a14b1b7cbd54ac57bd9f04",
+  "environment": {
+    "CARGO_HOME": "/workspace/scratch/0dc1e721cf82/cargo-home",
+    "CARGO_TARGET_DIR": "/workspace/scratch/0dc1e721cf82/target-joint",
+    "CARGO_BUILD_JOBS": "2",
+    "RUSTFLAGS": null,
+    "CARGO_PROFILE_DEV_DEBUG": null,
+    "CARGO_PROFILE_TEST_DEBUG": null,
+    "CARGO_INCREMENTAL": "0",
+    "OMP_NUM_THREADS": null,
+    "OPENBLAS_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null
+  },
+  "exit_code": 101,
+  "timeout": false,
+  "wall_seconds": 135.43098718400142,
+  "source_unchanged_during_command": false,
+  "source_changes": [
+    "crates/vigilode/src/switching.rs"
+  ],
+  "status": "failed",
+  "stdout.log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr.log_sha256": "4978a819927d5586b329e3ee1115f385df428e7002c6b2f88d64d6aceb82c672",
+  "SOURCE_INPUTS.json_sha256": "1846bbe6c30a97a4dcf9d34cdc90b4727940748218f2e50607d0c5738b7260ca"
+}

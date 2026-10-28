@@ -1,0 +1,247 @@
+{
+  "schema": "vigilode.ncp-harness-development.v1",
+  "observed_at_utc": "2026-10-21T05:02:28.469145+00:00",
+  "implementation_status": "READY_FOR_CLEAN_CHECKOUT_NCP_VERIFICATION",
+  "scientific_status": "HOLD_NO_NCP_MEASUREMENTS",
+  "source_files_sha256": {
+    "tools/run_ncp_reaudit.py": "ffa045eae0866163a8e591a0fbb02c04e6a0c75c613d64a4de2539e18e879393",
+    "tools/tests/test_run_ncp_reaudit.py": "fcdbfcc492a06dd01bbbe04856d5fbdfe377f5946b231a185c2a684740c749e7",
+    "tools/tests/test_component_benchmark_registry.py": "beb74b0e83c557df8ad6f8115fc97659ac9354509f1cdfc5931cb6777e0ebbb8",
+    "tools/tests/test_component_benchmark_campaign.py": "08b27b8eb96cde82443bd115b2da2a21299de64d1fcc8673e2b07f24552d1e72",
+    "research/production_reaudit_20261021/NCP_CONFIG.json": "4058852bce5961a0f18a58cd403d7eddc1be9bd1739777a631d561729f07cacc",
+    "research/production_reaudit_20261021/NCP_RUNBOOK.md": "80cedf29274e5509be6af1fc98f812477dff12367badbc731c5c5f16f0b99cce"
+  },
+  "scope": [
+    "source-bound sequential verification",
+    "frozen complete comparison/bound-client protocol",
+    "strict independent-reference work precision",
+    "binary and ldd-resolved runtime integrity",
+    "fail-closed resumable artifact receipts"
+  ],
+  "protocol": {
+    "native_rows": 3220,
+    "warmup_rows": 280,
+    "measurement_rows": 2940,
+    "work_precision_rows": 1,
+    "required_total_ids": 3221,
+    "warmups": 2,
+    "repetitions": 21,
+    "threads": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "comparison_cases": [
+      {
+        "suite": "polynomial",
+        "case": "p4",
+        "arms": [
+          "protected",
+          "krylov",
+          "leja",
+          "laguerre",
+          "chebyshev",
+          "router"
+        ],
+        "original_budget": 1e-07
+      },
+      {
+        "suite": "polynomial",
+        "case": "p16",
+        "arms": [
+          "protected",
+          "krylov",
+          "leja",
+          "laguerre",
+          "chebyshev",
+          "router"
+        ],
+        "original_budget": 1e-07
+      },
+      {
+        "suite": "polynomial",
+        "case": "p64",
+        "arms": [
+          "protected",
+          "krylov",
+          "leja",
+          "laguerre",
+          "chebyshev",
+          "router"
+        ],
+        "original_budget": 1e-07
+      },
+      {
+        "suite": "homotopy",
+        "case": "h3",
+        "arms": [
+          "direct",
+          "continuation"
+        ],
+        "original_budget": 2e-05
+      },
+      {
+        "suite": "homotopy",
+        "case": "h8",
+        "arms": [
+          "direct",
+          "continuation"
+        ],
+        "original_budget": 2e-05
+      },
+      {
+        "suite": "homotopy",
+        "case": "h16",
+        "arms": [
+          "direct",
+          "continuation"
+        ],
+        "original_budget": 2e-05
+      },
+      {
+        "suite": "actual-k",
+        "case": "k2",
+        "arms": [
+          "direct",
+          "continuation"
+        ],
+        "original_budget": 1e-09
+      },
+      {
+        "suite": "actual-k",
+        "case": "k4",
+        "arms": [
+          "direct",
+          "continuation"
+        ],
+        "original_budget": 1e-09
+      },
+      {
+        "suite": "bound-clients",
+        "case": "diagonal",
+        "arms": [
+          "bounded",
+          "resolvent",
+          "diagonal"
+        ],
+        "original_budget": 1e-07
+      },
+      {
+        "suite": "bound-clients",
+        "case": "global",
+        "arms": [
+          "provider",
+          "replay"
+        ],
+        "original_budget": 0.0001
+      },
+      {
+        "suite": "bound-clients",
+        "case": "allocation",
+        "arms": [
+          "uniform",
+          "optimized"
+        ],
+        "original_budget": 0.5
+      }
+    ]
+  },
+  "tests": {
+    "command": "PYTHONPATH=<pytest-runtime>:tools python3 -m pytest -q tools/tests",
+    "passed": 139,
+    "skipped": 3,
+    "failed": 0,
+    "seconds": 21.93,
+    "log": "evidence/ncp_harness/python_contracts_final.log",
+    "exit_file": "evidence/ncp_harness/python_contracts_final.exit",
+    "harness_contracts_included": 27,
+    "skip_reason": "frozen Hairer shared libraries unavailable; no skipped solver result counted as pass",
+    "prior_pre_symlink_fix_suite": {
+      "passed": 138,
+      "skipped": 3,
+      "log": "evidence/ncp_harness/python_contracts.log"
+    },
+    "actual_bound_driver_raw_shape_checks": {
+      "rows": 7,
+      "accepted_scoped_contracts": 7,
+      "reexecuted_native_driver": false
+    },
+    "scope": "Earlier agent-local139-pass snapshot; preserved historical count. Final combined checkout verification is in EXECUTION.json."
+  },
+  "dry_run": {
+    "status": "HOLD",
+    "issues": [
+      "SOURCE_NOT_CLEAN",
+      "TOOL_UNAVAILABLE:gfortran",
+      "GNU_TIME_REQUIRED_FOR_SHORT_PROCESS_RSS",
+      "MEMORY_ADMISSION_INSUFFICIENT"
+    ],
+    "summary": "evidence/ncp_harness/DRY_RUN_SUMMARY.json",
+    "preflight": "evidence/ncp_harness/DRY_RUN_PREFLIGHT.json",
+    "plan": "evidence/ncp_harness/DRY_RUN_PLAN.json",
+    "exit_code": 2,
+    "interpretation": "Expected fail-closed diagnostic at the harness-development stage on a modified cloud checkout with missing native tools/memory admission. That dry-run launched no Cargo build or NCP benchmark. Subsequent root-authorized native matrix receipts are separate under evidence/final_02 through final_04."
+  },
+  "review_fixes": [
+    {
+      "id": "NCP-R01",
+      "finding": "Build receipt did not bind executables",
+      "resolution": "Hash 3 invoked release binaries; verify before/after invocation and resume."
+    },
+    {
+      "id": "NCP-R02",
+      "finding": "Independent reference/source-root CLI flags missing",
+      "resolution": "Require strict N02 corpus/tier; pass both strict-reference and source-root flags."
+    },
+    {
+      "id": "NCP-R03",
+      "finding": "Unreceipted stale work-precision output could be inherited",
+      "resolution": "Refuse and preserve preexisting raw output/binaries without build/execution receipt."
+    },
+    {
+      "id": "NCP-R04",
+      "finding": "Runtime shared libraries could change on resume",
+      "resolution": "Bind native probe version and ldd-resolved loader/library bytes; recheck per invocation/build resume; bind loader/allocator/OpenMP environment."
+    },
+    {
+      "id": "NCP-R05",
+      "finding": "Strict symlink rejection blocked 15 legitimate historical report links",
+      "resolution": "Bind link text, resolved in-repository regular target path and bytes; reject external/broken/cyclic targets."
+    }
+  ],
+  "component_registry": {
+    "historical_rows": 246,
+    "phase1_added_modules": 8,
+    "phase2_added_modules": [
+      "rodas5p-integrators:src::global_budget",
+      "rodas5p-integrators:src::stage_target_policy"
+    ],
+    "current_rows": 256,
+    "historical_receipts_modified": false
+  },
+  "limits": [
+    "No NCP connection/provisioning/spend or actual timing campaign performed here.",
+    "No automatic scientific or production promotion; separate root gate reads receipts.",
+    "Observed RSS is not a complete process-tree memory upper bound; unknown values HOLD.",
+    "Logical CPU affinity does not certify host exclusivity.",
+    "Only declared ldd dynamic-library closure is bound; arbitrary future dlopen/data dependencies require extending the policy.",
+    "Local offline benchmark dependencies remain a host preflight obligation; locks are not relaxed."
+  ],
+  "next_command": "python3 tools/run_ncp_reaudit.py --mode benchmark --output ../vigilode-ncp-run",
+  "gate_command": "python3 tools/production_promotion_gate.py --summary ../vigilode-ncp-run/SUMMARY.json --corpus crates/vigilode-bench/protocols/n02_independent_reference_v1.json --expected-commit \"$(git rev-parse HEAD)\" --out ../vigilode-ncp-run/GATE.json",
+  "authoritative_combined_execution": "EXECUTION.json",
+  "disk_admission_note": "No fixed capacity theorem. Prepare disk for all separate targets; observed32GiB filesystem exhaustion and ENOSPC are preserved in final02. Do not clean active targets during measurements.",
+  "final_combined_validation": {
+    "receipt": "evidence/final_04/EXECUTION.json",
+    "status": "PASS_TARGETED",
+    "native_passed": 298,
+    "doctests_passed": 4,
+    "python_passed": 142,
+    "python_skipped": 3,
+    "native_ignored": 5,
+    "commands": 19,
+    "source_unchanged": true,
+    "source_manifest_sha256": "aff91d1a1c2c76f0bc7faef314c88302c9584002ac23be64e6f3ed67c2e1ab32"
+  }
+}

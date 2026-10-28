@@ -1,0 +1,351 @@
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+error[E0277]: `?` couldn't convert the error to `ContinuousResidualVerificationError`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:620:48
+    |
+620 |                 sub_down(state.lo, tube_radius)?,
+    |                 -------------------------------^ the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+    |                 |
+    |                 this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `ContinuousResidualVerificationError` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:126:1
+    |
+126 | pub enum ContinuousResidualVerificationError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:128:19
+    |
+128 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `ContinuousResidualVerificationError`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:621:46
+    |
+621 |                 add_up(state.hi, tube_radius)?,
+    |                 -----------------------------^ the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+    |                 |
+    |                 this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `ContinuousResidualVerificationError` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:126:1
+    |
+126 | pub enum ContinuousResidualVerificationError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:128:19
+    |
+128 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `ContinuousResidualVerificationError`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:622:14
+    |
+619 |               workspace.tube[i] = Interval::new(
+    |  _________________________________-
+620 | |                 sub_down(state.lo, tube_radius)?,
+621 | |                 add_up(state.hi, tube_radius)?,
+622 | |             )?;
+    | |             -^ the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+    | |_____________|
+    |               this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `ContinuousResidualVerificationError` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:126:1
+    |
+126 | pub enum ContinuousResidualVerificationError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:128:19
+    |
+128 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `ContinuousResidualVerificationError`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:625:57
+    |
+625 |         let time = Interval::new(self.t_old, self.t_new)?;
+    |                    -------------------------------------^ the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+    |                    |
+    |                    this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `ContinuousResidualVerificationError` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:126:1
+    |
+126 | pub enum ContinuousResidualVerificationError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:128:19
+    |
+128 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `ContinuousResidualVerificationError`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:628:48
+    |
+628 |         workspace.rhs.fill(Interval::point(0.0)?);
+    |                            --------------------^ the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+    |                            |
+    |                            this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `ContinuousResidualVerificationError` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:126:1
+    |
+126 | pub enum ContinuousResidualVerificationError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:128:19
+    |
+128 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `ContinuousResidualVerificationError`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:634:82
+    |
+634 |             workspace.residual[i] = workspace.derivative[i].sub(workspace.rhs[i])?;
+    |                                                             ---------------------^ the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+    |                                                             |
+    |                                                             this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `ContinuousResidualVerificationError` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:126:1
+    |
+126 | pub enum ContinuousResidualVerificationError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:128:19
+    |
+128 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `ContinuousResidualVerificationError`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:638:45
+    |
+638 |                 mul_up(magnitude, magnitude)?,
+    |                 ----------------------------^ the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+    |                 |
+    |                 this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `ContinuousResidualVerificationError` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:126:1
+    |
+126 | pub enum ContinuousResidualVerificationError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:128:19
+    |
+128 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `ContinuousResidualVerificationError`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:639:14
+    |
+636 |               residual_squared_upper = add_up(
+    |  ______________________________________-
+637 | |                 residual_squared_upper,
+638 | |                 mul_up(magnitude, magnitude)?,
+639 | |             )?;
+    | |             -^ the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+    | |_____________|
+    |               this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `ContinuousResidualVerificationError` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:126:1
+    |
+126 | pub enum ContinuousResidualVerificationError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:128:19
+    |
+128 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `ContinuousResidualVerificationError`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:642:64
+    |
+642 |         let residual_l2_upper = sqrt_up(residual_squared_upper)?;
+    |                                 -------------------------------^ the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+    |                                 |
+    |                                 this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `ContinuousResidualVerificationError` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:126:1
+    |
+126 | pub enum ContinuousResidualVerificationError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:128:19
+    |
+128 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `ContinuousResidualVerificationError`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:657:46
+    |
+657 |         let exponent = mul_up(mu.max(0.0), h)?;
+    |                        ----------------------^ the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+    |                        |
+    |                        this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `ContinuousResidualVerificationError` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:126:1
+    |
+126 | pub enum ContinuousResidualVerificationError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:128:19
+    |
+128 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `ContinuousResidualVerificationError`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:658:53
+    |
+658 |         let flow_gain_upper = exp_interval(exponent)?.hi;
+    |                               ----------------------^ the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+    |                               |
+    |                               this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `ContinuousResidualVerificationError` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:126:1
+    |
+126 | pub enum ContinuousResidualVerificationError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:128:19
+    |
+128 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `ContinuousResidualVerificationError`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:660:58
+    |
+660 |             mul_up(flow_gain_upper, initial_error_radius)?;
+    |             ---------------------------------------------^ the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+    |             |
+    |             this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `ContinuousResidualVerificationError` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:126:1
+    |
+126 | pub enum ContinuousResidualVerificationError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:128:19
+    |
+128 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `ContinuousResidualVerificationError`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:663:55
+    |
+663 |             mul_up(flow_gain_upper, residual_l2_upper)?,
+    |             ------------------------------------------^ the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+    |             |
+    |             this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `ContinuousResidualVerificationError` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:126:1
+    |
+126 | pub enum ContinuousResidualVerificationError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:128:19
+    |
+128 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `ContinuousResidualVerificationError`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:664:10
+    |
+661 |           let residual_transport_upper = mul_up(
+    |  ________________________________________-
+662 | |             h,
+663 | |             mul_up(flow_gain_upper, residual_l2_upper)?,
+664 | |         )?;
+    | |         -^ the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+    | |_________|
+    |           this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `ContinuousResidualVerificationError` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:126:1
+    |
+126 | pub enum ContinuousResidualVerificationError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:128:19
+    |
+128 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+error[E0277]: `?` couldn't convert the error to `ContinuousResidualVerificationError`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:668:10
+    |
+665 |           let error_radius_upper = add_up(
+    |  __________________________________-
+666 | |             transported_initial_radius_upper,
+667 | |             residual_transport_upper,
+668 | |         )?;
+    | |         -^ the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+    | |_________|
+    |           this can't be annotated with `?` because it has type `Result<_, CoreError>`
+    |
+note: `ContinuousResidualVerificationError` needs to implement `From<CoreError>`
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:126:1
+    |
+126 | pub enum ContinuousResidualVerificationError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    = note: the question mark operation (`?`) implicitly performs a conversion on the error value using the `From` trait
+help: the trait `From<CoreError>` is not implemented for `ContinuousResidualVerificationError`
+      but trait `From<DenseOutputError>` is implemented for it
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:128:19
+    |
+128 |     DenseOutput(#[from] DenseOutputError),
+    |                   ^^^^
+    = help: for that trait implementation, expected `DenseOutputError`, found `CoreError`
+
+For more information about this error, try `rustc --explain E0277`.
+error: could not compile `rodas5p-integrators` (lib) due to 15 previous errors
+
+EXIT_CODE=101

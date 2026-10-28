@@ -1,0 +1,326 @@
+{
+  "schema": "vigilode.frontier-pde-native-summary.v1",
+  "source_receipt": "evidence/pde_campaign_final_receipt.json",
+  "rows": 135,
+  "accuracy_passes": 135,
+  "hot_allocation_max": 0,
+  "error_metric": "relative weighted L2 against exact discrete mode at T=.1",
+  "scope": "calibrated fixed linear diffusion; setup excluded; prototype not whole solver",
+  "groups": [
+    {
+      "case": "periodic2d_n8",
+      "methods": {
+        "euler": {
+          "seconds_median": 0.001129204,
+          "seconds_min": 0.001095333,
+          "seconds_max": 0.001225438,
+          "worst_relative_error": 8.638889321682452e-06,
+          "actions": 1536,
+          "hot_allocations": 0,
+          "cells": 64,
+          "euler_over_method": 1.0
+        },
+        "rkl2": {
+          "seconds_median": 2.7281e-05,
+          "seconds_min": 2.6751e-05,
+          "seconds_max": 2.7561e-05,
+          "worst_relative_error": 3.2955420213313736e-06,
+          "actions": 64,
+          "hot_allocations": 0,
+          "cells": 64,
+          "euler_over_method": 41.39159121733074
+        },
+        "uniformization": {
+          "seconds_median": 8.092e-06,
+          "seconds_min": 7.812e-06,
+          "seconds_max": 8.223e-06,
+          "worst_relative_error": 7.252631662302595e-07,
+          "actions": 11,
+          "hot_allocations": 0,
+          "cells": 64,
+          "euler_over_method": 139.54572417202175
+        }
+      }
+    },
+    {
+      "case": "periodic2d_n16",
+      "methods": {
+        "euler": {
+          "seconds_median": 0.004962814,
+          "seconds_min": 0.004722723,
+          "seconds_max": 0.005406128,
+          "worst_relative_error": 9.887949207650591e-06,
+          "actions": 1408,
+          "hot_allocations": 0,
+          "cells": 256,
+          "euler_over_method": 1.0
+        },
+        "rkl2": {
+          "seconds_median": 0.000105819,
+          "seconds_min": 0.000104256,
+          "seconds_max": 0.000125648,
+          "worst_relative_error": 3.596922224044318e-06,
+          "actions": 64,
+          "hot_allocations": 0,
+          "cells": 256,
+          "euler_over_method": 46.899082395411035
+        },
+        "uniformization": {
+          "seconds_median": 7.4903e-05,
+          "seconds_min": 7.4432e-05,
+          "seconds_max": 9.8507e-05,
+          "worst_relative_error": 8.774885690765704e-07,
+          "actions": 25,
+          "hot_allocations": 0,
+          "cells": 256,
+          "euler_over_method": 66.25654513170367
+        }
+      }
+    },
+    {
+      "case": "periodic2d_n32",
+      "methods": {
+        "euler": {
+          "seconds_median": 0.036858884,
+          "seconds_min": 0.034793185,
+          "seconds_max": 0.04371607,
+          "worst_relative_error": 5.367857820630017e-06,
+          "actions": 2624,
+          "hot_allocations": 0,
+          "cells": 1024,
+          "euler_over_method": 1.0
+        },
+        "rkl2": {
+          "seconds_median": 0.000436254,
+          "seconds_min": 0.000421953,
+          "seconds_max": 0.000654541,
+          "worst_relative_error": 7.136656059190697e-06,
+          "actions": 64,
+          "hot_allocations": 0,
+          "cells": 1024,
+          "euler_over_method": 84.4895038211684
+        },
+        "uniformization": {
+          "seconds_median": 0.001059209,
+          "seconds_min": 0.000992829,
+          "seconds_max": 0.001213821,
+          "worst_relative_error": 6.541717788065171e-07,
+          "actions": 82,
+          "hot_allocations": 0,
+          "cells": 1024,
+          "euler_over_method": 34.79849963510507
+        }
+      }
+    },
+    {
+      "case": "periodic3d_n4",
+      "methods": {
+        "euler": {
+          "seconds_median": 0.002355623,
+          "seconds_min": 0.002204546,
+          "seconds_max": 0.002656114,
+          "worst_relative_error": 6.09077519591144e-06,
+          "actions": 2048,
+          "hot_allocations": 0,
+          "cells": 64,
+          "euler_over_method": 1.0
+        },
+        "rkl2": {
+          "seconds_median": 3.7266e-05,
+          "seconds_min": 3.6906e-05,
+          "seconds_max": 3.7647e-05,
+          "worst_relative_error": 3.986351570110314e-06,
+          "actions": 64,
+          "hot_allocations": 0,
+          "cells": 64,
+          "euler_over_method": 63.21105028712499
+        },
+        "uniformization": {
+          "seconds_median": 7.702e-06,
+          "seconds_min": 7.521e-06,
+          "seconds_max": 7.741e-06,
+          "worst_relative_error": 2.072656630146286e-07,
+          "actions": 7,
+          "hot_allocations": 0,
+          "cells": 64,
+          "euler_over_method": 305.8456245131135
+        }
+      }
+    },
+    {
+      "case": "periodic3d_n8",
+      "methods": {
+        "euler": {
+          "seconds_median": 0.019194579,
+          "seconds_min": 0.019070114,
+          "seconds_max": 0.019957985,
+          "worst_relative_error": 7.091339686399091e-06,
+          "actions": 2048,
+          "hot_allocations": 0,
+          "cells": 512,
+          "euler_over_method": 1.0
+        },
+        "rkl2": {
+          "seconds_median": 0.000308002,
+          "seconds_min": 0.000297336,
+          "seconds_max": 0.000381342,
+          "worst_relative_error": 5.45875803145243e-06,
+          "actions": 64,
+          "hot_allocations": 0,
+          "cells": 512,
+          "euler_over_method": 62.31965701521419
+        },
+        "uniformization": {
+          "seconds_median": 0.000121372,
+          "seconds_min": 0.000119359,
+          "seconds_max": 0.000138928,
+          "worst_relative_error": 2.8293677242852684e-07,
+          "actions": 14,
+          "hot_allocations": 0,
+          "cells": 512,
+          "euler_over_method": 158.14668127739512
+        }
+      }
+    },
+    {
+      "case": "periodic3d_n12",
+      "methods": {
+        "euler": {
+          "seconds_median": 0.072197628,
+          "seconds_min": 0.070871458,
+          "seconds_max": 0.074395034,
+          "worst_relative_error": 6.461102122395129e-06,
+          "actions": 2304,
+          "hot_allocations": 0,
+          "cells": 1728,
+          "euler_over_method": 1.0
+        },
+        "rkl2": {
+          "seconds_median": 0.001035083,
+          "seconds_min": 0.001001001,
+          "seconds_max": 0.001147892,
+          "worst_relative_error": 5.76327422054498e-06,
+          "actions": 64,
+          "hot_allocations": 0,
+          "cells": 1728,
+          "euler_over_method": 69.7505687949662
+        },
+        "uniformization": {
+          "seconds_median": 0.000670747,
+          "seconds_min": 0.000640561,
+          "seconds_max": 0.000703145,
+          "worst_relative_error": 7.254543778289249e-07,
+          "actions": 22,
+          "hot_allocations": 0,
+          "cells": 1728,
+          "euler_over_method": 107.63764578894875
+        }
+      }
+    },
+    {
+      "case": "sphere_6x12",
+      "methods": {
+        "euler": {
+          "seconds_median": 0.00018625,
+          "seconds_min": 0.000181352,
+          "seconds_max": 0.000251447,
+          "worst_relative_error": 8.222202446593754e-06,
+          "actions": 224,
+          "hot_allocations": 0,
+          "cells": 72,
+          "euler_over_method": 1.0
+        },
+        "rkl2": {
+          "seconds_median": 5.799e-06,
+          "seconds_min": 5.708e-06,
+          "seconds_max": 5.939e-06,
+          "worst_relative_error": 4.738144975885787e-06,
+          "actions": 12,
+          "hot_allocations": 0,
+          "cells": 72,
+          "euler_over_method": 32.11760648387653
+        },
+        "uniformization": {
+          "seconds_median": 1.5012e-05,
+          "seconds_min": 1.4782e-05,
+          "seconds_max": 1.5043e-05,
+          "worst_relative_error": 1.2501951460173996e-06,
+          "actions": 18,
+          "hot_allocations": 0,
+          "cells": 72,
+          "euler_over_method": 12.406741273647748
+        }
+      }
+    },
+    {
+      "case": "sphere_10x20",
+      "methods": {
+        "euler": {
+          "seconds_median": 0.000890205,
+          "seconds_min": 0.000803905,
+          "seconds_max": 0.001035152,
+          "worst_relative_error": 5.306307629483659e-06,
+          "actions": 352,
+          "hot_allocations": 0,
+          "cells": 200,
+          "euler_over_method": 1.0
+        },
+        "rkl2": {
+          "seconds_median": 3.7486e-05,
+          "seconds_min": 3.7005e-05,
+          "seconds_max": 3.7736e-05,
+          "worst_relative_error": 3.0545939519121225e-06,
+          "actions": 28,
+          "hot_allocations": 0,
+          "cells": 200,
+          "euler_over_method": 23.74766579523022
+        },
+        "uniformization": {
+          "seconds_median": 0.000223125,
+          "seconds_min": 0.000201953,
+          "seconds_max": 0.000336925,
+          "worst_relative_error": 4.2722266369013143e-07,
+          "actions": 86,
+          "hot_allocations": 0,
+          "cells": 200,
+          "euler_over_method": 3.989714285714286
+        }
+      }
+    },
+    {
+      "case": "sphere_16x32",
+      "methods": {
+        "euler": {
+          "seconds_median": 0.001744466,
+          "seconds_min": 0.001725919,
+          "seconds_max": 0.001837286,
+          "worst_relative_error": 6.777058874716929e-06,
+          "actions": 277,
+          "hot_allocations": 0,
+          "cells": 512,
+          "euler_over_method": 1.0
+        },
+        "rkl2": {
+          "seconds_median": 0.000254181,
+          "seconds_min": 0.000237646,
+          "seconds_max": 0.000281452,
+          "worst_relative_error": 2.7427119124065885e-06,
+          "actions": 68,
+          "hot_allocations": 0,
+          "cells": 512,
+          "euler_over_method": 6.86308575385257
+        },
+        "uniformization": {
+          "seconds_median": 0.004421261,
+          "seconds_min": 0.003310295,
+          "seconds_max": 0.006083234,
+          "worst_relative_error": 6.717774552249645e-08,
+          "actions": 522,
+          "hot_allocations": 0,
+          "cells": 512,
+          "euler_over_method": 0.394562999108173
+        }
+      }
+    }
+  ]
+}

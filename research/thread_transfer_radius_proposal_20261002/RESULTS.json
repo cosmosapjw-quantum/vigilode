@@ -1,0 +1,639 @@
+{
+  "fail_closed": [
+    {
+      "case": "nan",
+      "rejected": true
+    },
+    {
+      "case": "infinite",
+      "rejected": true
+    },
+    {
+      "case": "negative",
+      "rejected": true
+    },
+    {
+      "case": "wrong-components",
+      "rejected": true
+    },
+    {
+      "case": "wrong-stages",
+      "rejected": true
+    },
+    {
+      "case": "factor NaN",
+      "rejected": true
+    },
+    {
+      "case": "factor inf",
+      "rejected": true
+    },
+    {
+      "case": "factor -2",
+      "rejected": true
+    },
+    {
+      "case": "factor 0",
+      "rejected": true
+    },
+    {
+      "case": "overflowing proposal",
+      "rejected": true
+    },
+    {
+      "case": "zero seed proposes D = 0 and closes",
+      "holds": true
+    }
+  ],
+  "gate": {
+    "causal_box_on_r4": true,
+    "constant_box_equals_blocked": true,
+    "fail_closed": true,
+    "residual_seed_factor_2_closes_r4": true,
+    "scalar_no_go_versus_box": true
+  },
+  "inflation": 9.5367431640625e-7,
+  "r4_fixtures": [
+    {
+      "arms": [
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 1808,
+          "evaluations": 2,
+          "mode": "matrix",
+          "output_over_serial_max": 1.0000447373851025,
+          "policy": "residual-seeded-common/factor=2",
+          "preflight_b": 0.01941433456592181,
+          "radius": 0.03882866913184362,
+          "required_at_proposal": 0.01941516251290596
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 1808,
+          "evaluations": 2,
+          "mode": "matrix",
+          "output_over_serial_max": 1.0000191692465545,
+          "policy": "residual-seeded-common/factor=1.1",
+          "preflight_b": 0.01941433456592181,
+          "radius": 0.021355768022513995,
+          "required_at_proposal": 0.01941478992714697
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 904,
+          "evaluations": 1,
+          "mode": "matrix",
+          "output_over_serial_max": 1.00000000001152,
+          "policy": "causal-box/inflation=9.5367431640625e-7",
+          "radius_max": 0.019414416950038062,
+          "radius_stage_max": [
+            0.0,
+            0.00038461518838007764,
+            0.00024750131384774154,
+            0.002367393556636849,
+            0.0005368351650578423,
+            0.003579241377148711,
+            0.004963506764101091,
+            0.019414416950038062
+          ]
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 1022,
+          "evaluations": 2,
+          "mode": "action",
+          "output_over_serial_max": 1.0000447373851025,
+          "policy": "residual-seeded-common/factor=2",
+          "preflight_b": 0.01941433456592181,
+          "radius": 0.03882866913184362,
+          "required_at_proposal": 0.01941516251290596
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 1022,
+          "evaluations": 2,
+          "mode": "action",
+          "output_over_serial_max": 1.0000191692465545,
+          "policy": "residual-seeded-common/factor=1.1",
+          "preflight_b": 0.01941433456592181,
+          "radius": 0.021355768022513995,
+          "required_at_proposal": 0.019414789927146972
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 511,
+          "evaluations": 1,
+          "mode": "action",
+          "output_over_serial_max": 1.00000000001152,
+          "policy": "causal-box/inflation=9.5367431640625e-7",
+          "radius_max": 0.019414416950038062,
+          "radius_stage_max": [
+            0.0,
+            0.00038461518838007764,
+            0.00024750131384774154,
+            0.002367393556636849,
+            0.0005368351650578423,
+            0.003579241377148711,
+            0.004963506764101091,
+            0.019414416950038062
+          ]
+        }
+      ],
+      "constant_box_bit_identical_to_blocked": true,
+      "dimension": 1,
+      "extended_schedule": {
+        "directed_operations": 3616,
+        "evaluations": 4,
+        "first_closure": 4
+      },
+      "serial_directed_operations": 425,
+      "serial_encloses_exact_root": true
+    },
+    {
+      "arms": [
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 3616,
+          "evaluations": 2,
+          "mode": "matrix",
+          "output_over_serial_max": 1.0004067914903416,
+          "policy": "residual-seeded-common/factor=2",
+          "preflight_b": 0.08901443424848658,
+          "radius": 0.17802886849697316,
+          "required_at_proposal": 0.0890487867305313
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 3616,
+          "evaluations": 2,
+          "mode": "matrix",
+          "output_over_serial_max": 1.0001753086240113,
+          "policy": "residual-seeded-common/factor=1.1",
+          "preflight_b": 0.08901443424848658,
+          "radius": 0.09791587767333526,
+          "required_at_proposal": 0.0890333245496209
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 1808,
+          "evaluations": 1,
+          "mode": "matrix",
+          "output_over_serial_max": 1.0000000001025235,
+          "policy": "causal-box/inflation=9.5367431640625e-7",
+          "radius_max": 0.089017036539407,
+          "radius_stage_max": [
+            0.0,
+            0.0016959271048606168,
+            0.00109002385056469,
+            0.010445881750636434,
+            0.0023701180653946975,
+            0.01581777034006135,
+            0.02223117939688967,
+            0.089017036539407
+          ]
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 2044,
+          "evaluations": 2,
+          "mode": "action",
+          "output_over_serial_max": 1.0004067914903418,
+          "policy": "residual-seeded-common/factor=2",
+          "preflight_b": 0.0890144342484866,
+          "radius": 0.1780288684969732,
+          "required_at_proposal": 0.08904878673053132
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 2044,
+          "evaluations": 2,
+          "mode": "action",
+          "output_over_serial_max": 1.0001753086240115,
+          "policy": "residual-seeded-common/factor=1.1",
+          "preflight_b": 0.0890144342484866,
+          "radius": 0.09791587767333527,
+          "required_at_proposal": 0.0890333245496209
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 1022,
+          "evaluations": 1,
+          "mode": "action",
+          "output_over_serial_max": 1.0000000001025238,
+          "policy": "causal-box/inflation=9.5367431640625e-7",
+          "radius_max": 0.089017036539407,
+          "radius_stage_max": [
+            0.0,
+            0.0016959271048606168,
+            0.00109002385056469,
+            0.010445881750636434,
+            0.0023701180653946975,
+            0.01581777034006135,
+            0.02223117939688967,
+            0.089017036539407
+          ]
+        }
+      ],
+      "constant_box_bit_identical_to_blocked": true,
+      "dimension": 2,
+      "extended_schedule": {
+        "directed_operations": 9040,
+        "evaluations": 5,
+        "first_closure": 5
+      },
+      "serial_directed_operations": 1010,
+      "serial_encloses_exact_root": true
+    },
+    {
+      "arms": [
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 7232,
+          "evaluations": 2,
+          "mode": "matrix",
+          "output_over_serial_max": 1.0029829688110716,
+          "policy": "residual-seeded-common/factor=2",
+          "preflight_b": 0.39486944811303415,
+          "radius": 0.7897388962260683,
+          "required_at_proposal": 0.39520131446270196
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 7232,
+          "evaluations": 2,
+          "mode": "matrix",
+          "output_over_serial_max": 1.001458418098329,
+          "policy": "residual-seeded-common/factor=1.1",
+          "preflight_b": 0.39486944811303415,
+          "radius": 0.43435639292433764,
+          "required_at_proposal": 0.3950519017831729
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 3616,
+          "evaluations": 1,
+          "mode": "matrix",
+          "output_over_serial_max": 1.0000000003814897,
+          "policy": "causal-box/inflation=9.5367431640625e-7",
+          "radius_max": 0.3948923507925961,
+          "radius_stage_max": [
+            0.0,
+            0.00704415219092293,
+            0.0045317189033847695,
+            0.04381436797559681,
+            0.009916113352439518,
+            0.06646997435764126,
+            0.09527994475677481,
+            0.3948923507925961
+          ]
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 4088,
+          "evaluations": 2,
+          "mode": "action",
+          "output_over_serial_max": 1.0029829688110716,
+          "policy": "residual-seeded-common/factor=2",
+          "preflight_b": 0.39486944811303415,
+          "radius": 0.7897388962260683,
+          "required_at_proposal": 0.39520131446270207
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 4088,
+          "evaluations": 2,
+          "mode": "action",
+          "output_over_serial_max": 1.0014584180983293,
+          "policy": "residual-seeded-common/factor=1.1",
+          "preflight_b": 0.39486944811303415,
+          "radius": 0.43435639292433764,
+          "required_at_proposal": 0.3950519017831729
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 2044,
+          "evaluations": 1,
+          "mode": "action",
+          "output_over_serial_max": 1.00000000038149,
+          "policy": "causal-box/inflation=9.5367431640625e-7",
+          "radius_max": 0.3948923507925961,
+          "radius_stage_max": [
+            0.0,
+            0.00704415219092293,
+            0.0045317189033847695,
+            0.04381436797559681,
+            0.009916113352439518,
+            0.06646997435764126,
+            0.09527994475677481,
+            0.3948923507925961
+          ]
+        }
+      ],
+      "constant_box_bit_identical_to_blocked": true,
+      "dimension": 4,
+      "extended_schedule": {
+        "directed_operations": 21696,
+        "evaluations": 6,
+        "first_closure": 6
+      },
+      "serial_directed_operations": 2660,
+      "serial_encloses_exact_root": true
+    },
+    {
+      "arms": [
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 14464,
+          "evaluations": 2,
+          "mode": "matrix",
+          "output_over_serial_max": 1.019451272551027,
+          "policy": "residual-seeded-common/factor=2",
+          "preflight_b": 2.2876469168958997,
+          "radius": 4.575293833791799,
+          "required_at_proposal": 2.309111493103976
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 14464,
+          "evaluations": 2,
+          "mode": "matrix",
+          "output_over_serial_max": 1.010442477758334,
+          "policy": "residual-seeded-common/factor=1.1",
+          "preflight_b": 2.2876469168958997,
+          "radius": 2.51641160858549,
+          "required_at_proposal": 2.2994028309205343
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 7232,
+          "evaluations": 1,
+          "mode": "matrix",
+          "output_over_serial_max": 1.0000000022804065,
+          "policy": "causal-box/inflation=9.5367431640625e-7",
+          "radius_max": 2.2888812072408533,
+          "radius_stage_max": [
+            0.0,
+            0.035853770911272745,
+            0.023024084582984838,
+            0.22503399737360105,
+            0.05090482010948219,
+            0.34307195677518443,
+            0.5138032996369534,
+            2.2888812072408533
+          ]
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 8176,
+          "evaluations": 2,
+          "mode": "action",
+          "output_over_serial_max": 1.019451272551027,
+          "policy": "residual-seeded-common/factor=2",
+          "preflight_b": 2.2876469168959006,
+          "radius": 4.575293833791801,
+          "required_at_proposal": 2.309111493103976
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 8176,
+          "evaluations": 2,
+          "mode": "action",
+          "output_over_serial_max": 1.010442477758334,
+          "policy": "residual-seeded-common/factor=1.1",
+          "preflight_b": 2.2876469168959006,
+          "radius": 2.516411608585491,
+          "required_at_proposal": 2.2994028309205343
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 4088,
+          "evaluations": 1,
+          "mode": "action",
+          "output_over_serial_max": 1.000000002280407,
+          "policy": "causal-box/inflation=9.5367431640625e-7",
+          "radius_max": 2.2888812072408533,
+          "radius_stage_max": [
+            0.0,
+            0.035853770911272745,
+            0.023024084582984838,
+            0.22503399737360105,
+            0.05090482010948219,
+            0.34307195677518443,
+            0.5138032996369534,
+            2.2888812072408533
+          ]
+        }
+      ],
+      "constant_box_bit_identical_to_blocked": true,
+      "dimension": 8,
+      "extended_schedule": {
+        "directed_operations": 50624,
+        "evaluations": 7,
+        "first_closure": 7
+      },
+      "serial_directed_operations": 7880,
+      "serial_encloses_exact_root": true
+    },
+    {
+      "arms": [
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 28928,
+          "evaluations": 2,
+          "mode": "matrix",
+          "output_over_serial_max": 1.1390775400082076,
+          "policy": "residual-seeded-common/factor=2",
+          "preflight_b": 14.775725380125628,
+          "radius": 29.551450760251257,
+          "required_at_proposal": 15.196675658165216
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 28928,
+          "evaluations": 2,
+          "mode": "matrix",
+          "output_over_serial_max": 1.0729553839619284,
+          "policy": "residual-seeded-common/factor=1.1",
+          "preflight_b": 14.775725380125628,
+          "radius": 16.253297918138195,
+          "required_at_proposal": 15.00457402538128
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 14464,
+          "evaluations": 1,
+          "mode": "matrix",
+          "output_over_serial_max": 1.0000000165940999,
+          "policy": "causal-box/inflation=9.5367431640625e-7",
+          "radius_max": 14.794536791811174,
+          "radius_stage_max": [
+            0.0,
+            0.1882648321697966,
+            0.1210440484337174,
+            1.2141824906761762,
+            0.273124844385059,
+            1.8641377218031732,
+            2.9859277824391244,
+            14.794536791811174
+          ]
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 16352,
+          "evaluations": 2,
+          "mode": "action",
+          "output_over_serial_max": 1.1390775400082078,
+          "policy": "residual-seeded-common/factor=2",
+          "preflight_b": 14.775725380125628,
+          "radius": 29.551450760251257,
+          "required_at_proposal": 15.196675658165217
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 16352,
+          "evaluations": 2,
+          "mode": "action",
+          "output_over_serial_max": 1.0729553839619284,
+          "policy": "residual-seeded-common/factor=1.1",
+          "preflight_b": 14.775725380125628,
+          "radius": 16.253297918138195,
+          "required_at_proposal": 15.00457402538128
+        },
+        {
+          "certificate_encloses_exact_root": true,
+          "closes": true,
+          "directed_operations": 8176,
+          "evaluations": 1,
+          "mode": "action",
+          "output_over_serial_max": 1.0000000165940999,
+          "policy": "causal-box/inflation=9.5367431640625e-7",
+          "radius_max": 14.794536791811174,
+          "radius_stage_max": [
+            0.0,
+            0.1882648321697966,
+            0.1210440484337174,
+            1.2141824906761762,
+            0.273124844385059,
+            1.8641377218031732,
+            2.9859277824391244,
+            14.794536791811174
+          ]
+        }
+      ],
+      "constant_box_bit_identical_to_blocked": true,
+      "dimension": 16,
+      "extended_schedule": {
+        "directed_operations": 115712,
+        "evaluations": 8,
+        "first_closure": 8
+      },
+      "serial_directed_operations": 26000,
+      "serial_encloses_exact_root": true
+    }
+  ],
+  "scalar_no_go": {
+    "causal_box": {
+      "radii": [
+        [
+          0.0,
+          1.0000009536743164,
+          2.0000028610238587
+        ]
+      ]
+    },
+    "causal_box_state_radius": [
+      [
+        0.0,
+        1.0,
+        2.0000009536743164
+      ]
+    ],
+    "common_radius": [
+      {
+        "closes": false,
+        "radius": 0.0,
+        "state_radius": [
+          0.0,
+          1.0,
+          1.0
+        ]
+      },
+      {
+        "closes": false,
+        "radius": 0.0009765625,
+        "state_radius": [
+          0.0,
+          1.0,
+          1.0009765625
+        ]
+      },
+      {
+        "closes": false,
+        "radius": 1.0,
+        "state_radius": [
+          0.0,
+          1.0,
+          2.0
+        ]
+      },
+      {
+        "closes": false,
+        "radius": 2.0,
+        "state_radius": [
+          0.0,
+          1.0,
+          3.0
+        ]
+      },
+      {
+        "closes": false,
+        "radius": 1024.0,
+        "state_radius": [
+          0.0,
+          1.0,
+          1025.0
+        ]
+      },
+      {
+        "closes": false,
+        "radius": 1099511627776.0,
+        "state_radius": [
+          0.0,
+          1.0,
+          1099511627777.0
+        ]
+      }
+    ]
+  },
+  "schema": "vigilode-thread-transfer-radius-policy-v1",
+  "verdict": "PASS"
+}

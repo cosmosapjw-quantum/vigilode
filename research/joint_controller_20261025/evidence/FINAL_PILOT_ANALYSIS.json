@@ -1,0 +1,313 @@
+{
+  "schema": "vigilode.joint-controller.final-pilot-analysis.v1",
+  "input_summary_sha256": "e235fd6cf0947afba3e0926ba032645b3b47283843f5bce52bd41876bc8703db",
+  "switch_run_receipt_sha256": "348774e656979d75985e9390e056d8614675b5f7c82016baf2c3458f70d4b5f3",
+  "source_unchanged_during_switch_run": true,
+  "all_processes_completed": true,
+  "switching_processes_including_warmup": 162,
+  "switching_timed_runs": 135,
+  "all_timed_runs_accuracy_eligible": true,
+  "new_ode_runs_by_analysis": 0,
+  "execution_and_causal_reused_without_rerun": true,
+  "unchanged_reused_summary_blocks": true,
+  "comparison_counts": {
+    "new_vs_previous_policy": 45,
+    "new_vs_direct_alternative": 45,
+    "distinct_cases": 9,
+    "per_decision_false_positive_rate": null
+  },
+  "cases": [
+    {
+      "case": "case5",
+      "previous_rhs": 1887,
+      "adaptive_rhs": 1311,
+      "relative_rhs_change": -0.3052464228934817,
+      "previous_median_seconds": 0.000369166,
+      "adaptive_median_seconds": 0.000369637,
+      "ratio_of_medians": 1.0012758488051448,
+      "comparisons": [
+        {
+          "alternative": "evidence",
+          "pairs": 5,
+          "median_paired_cost_ratio": 1.0687717783465418,
+          "adaptive_more_expensive_pairs": 3,
+          "min": 0.5667062728534086,
+          "max": 1.5565588438494555
+        },
+        {
+          "alternative": "rodas",
+          "pairs": 5,
+          "median_paired_cost_ratio": 2.233267276484165,
+          "adaptive_more_expensive_pairs": 5,
+          "min": 1.3807471922988768,
+          "max": 2.9954773568147512
+        }
+      ],
+      "heldout_role": "repair or screened fixture"
+    },
+    {
+      "case": "decay",
+      "previous_rhs": 79,
+      "adaptive_rhs": 79,
+      "relative_rhs_change": 0.0,
+      "previous_median_seconds": 4.5928e-05,
+      "adaptive_median_seconds": 4.754e-05,
+      "ratio_of_medians": 1.0350984149102944,
+      "comparisons": [
+        {
+          "alternative": "evidence",
+          "pairs": 5,
+          "median_paired_cost_ratio": 1.0516070520052203,
+          "adaptive_more_expensive_pairs": 3,
+          "min": 0.5687625957275292,
+          "max": 2.9696116090482287
+        },
+        {
+          "alternative": "dopri",
+          "pairs": 5,
+          "median_paired_cost_ratio": 1.6380112324707992,
+          "adaptive_more_expensive_pairs": 5,
+          "min": 1.3832053586015356,
+          "max": 3.604259937593271
+        }
+      ],
+      "heldout_role": "repair or screened fixture"
+    },
+    {
+      "case": "relaxation",
+      "previous_rhs": 749,
+      "adaptive_rhs": 813,
+      "relative_rhs_change": 0.08544726301735639,
+      "previous_median_seconds": 0.000300274,
+      "adaptive_median_seconds": 0.000262428,
+      "ratio_of_medians": 0.8739617815728301,
+      "comparisons": [
+        {
+          "alternative": "evidence",
+          "pairs": 5,
+          "median_paired_cost_ratio": 0.9428405580001872,
+          "adaptive_more_expensive_pairs": 2,
+          "min": 0.7304254886843445,
+          "max": 1.3574576573943262
+        },
+        {
+          "alternative": "rodas",
+          "pairs": 5,
+          "median_paired_cost_ratio": 1.5514513745196572,
+          "adaptive_more_expensive_pairs": 5,
+          "min": 1.0588824118235882,
+          "max": 2.3659324921742773
+        }
+      ],
+      "heldout_role": "repair or screened fixture"
+    },
+    {
+      "case": "rotation",
+      "previous_rhs": 6395,
+      "adaptive_rhs": 5804,
+      "relative_rhs_change": -0.09241594996090696,
+      "previous_median_seconds": 0.00251449,
+      "adaptive_median_seconds": 0.001420512,
+      "ratio_of_medians": 0.564930463036242,
+      "comparisons": [
+        {
+          "alternative": "evidence",
+          "pairs": 5,
+          "median_paired_cost_ratio": 0.594354993251063,
+          "adaptive_more_expensive_pairs": 0,
+          "min": 0.49527510595547614,
+          "max": 0.8167116055970256
+        },
+        {
+          "alternative": "dopri",
+          "pairs": 5,
+          "median_paired_cost_ratio": 5.208816594735125,
+          "adaptive_more_expensive_pairs": 5,
+          "min": 4.258557654115962,
+          "max": 8.162395798983784
+        }
+      ],
+      "heldout_role": "repair or screened fixture"
+    },
+    {
+      "case": "stiff-forced",
+      "previous_rhs": 706,
+      "adaptive_rhs": 706,
+      "relative_rhs_change": 0.0,
+      "previous_median_seconds": 0.000241427,
+      "adaptive_median_seconds": 0.000272953,
+      "ratio_of_medians": 1.130581915030216,
+      "comparisons": [
+        {
+          "alternative": "evidence",
+          "pairs": 5,
+          "median_paired_cost_ratio": 1.0346398704370265,
+          "adaptive_more_expensive_pairs": 4,
+          "min": 0.9110085533629552,
+          "max": 1.4693334244948018
+        },
+        {
+          "alternative": "rodas",
+          "pairs": 5,
+          "median_paired_cost_ratio": 1.0000800736677744,
+          "adaptive_more_expensive_pairs": 3,
+          "min": 0.7431513107939409,
+          "max": 1.937224536724888
+        }
+      ],
+      "heldout_role": "repair or screened fixture"
+    },
+    {
+      "case": "transition-43",
+      "previous_rhs": 173988,
+      "adaptive_rhs": 30480,
+      "relative_rhs_change": -0.8248155045175529,
+      "previous_median_seconds": 0.026322405,
+      "adaptive_median_seconds": 0.012807808,
+      "ratio_of_medians": 0.4865743840655898,
+      "comparisons": [
+        {
+          "alternative": "evidence",
+          "pairs": 5,
+          "median_paired_cost_ratio": 0.5101803662849194,
+          "adaptive_more_expensive_pairs": 0,
+          "min": 0.4811951793048106,
+          "max": 0.5638325221422587
+        },
+        {
+          "alternative": "rodas",
+          "pairs": 5,
+          "median_paired_cost_ratio": 0.6351535438554907,
+          "adaptive_more_expensive_pairs": 0,
+          "min": 0.6045465337412165,
+          "max": 0.7333310595464655
+        }
+      ],
+      "heldout_role": "post-repair shifted location within same transition family"
+    },
+    {
+      "case": "transition-47",
+      "previous_rhs": 162308,
+      "adaptive_rhs": 31122,
+      "relative_rhs_change": -0.8082534440693003,
+      "previous_median_seconds": 0.019611755,
+      "adaptive_median_seconds": 0.011760439,
+      "ratio_of_medians": 0.5996627532824063,
+      "comparisons": [
+        {
+          "alternative": "evidence",
+          "pairs": 5,
+          "median_paired_cost_ratio": 0.5782638524701129,
+          "adaptive_more_expensive_pairs": 0,
+          "min": 0.5550220065561887,
+          "max": 0.767281408275657
+        },
+        {
+          "alternative": "rodas",
+          "pairs": 5,
+          "median_paired_cost_ratio": 0.7264237203575674,
+          "adaptive_more_expensive_pairs": 0,
+          "min": 0.6251618002416433,
+          "max": 0.8517309160929659
+        }
+      ],
+      "heldout_role": "repair or screened fixture"
+    },
+    {
+      "case": "transition-87",
+      "previous_rhs": 46270,
+      "adaptive_rhs": 30694,
+      "relative_rhs_change": -0.33663280743462287,
+      "previous_median_seconds": 0.00774087,
+      "adaptive_median_seconds": 0.006863562,
+      "ratio_of_medians": 0.8866654523328773,
+      "comparisons": [
+        {
+          "alternative": "evidence",
+          "pairs": 5,
+          "median_paired_cost_ratio": 0.87338204186238,
+          "adaptive_more_expensive_pairs": 1,
+          "min": 0.7880543815186699,
+          "max": 1.248384121459772
+        },
+        {
+          "alternative": "rodas",
+          "pairs": 5,
+          "median_paired_cost_ratio": 0.4071631110884104,
+          "adaptive_more_expensive_pairs": 0,
+          "min": 0.3226548286254416,
+          "max": 0.6320174018386209
+        }
+      ],
+      "heldout_role": "post-repair shifted location within same transition family"
+    },
+    {
+      "case": "transition-91",
+      "previous_rhs": 34749,
+      "adaptive_rhs": 30215,
+      "relative_rhs_change": -0.1304785749230194,
+      "previous_median_seconds": 0.007601947,
+      "adaptive_median_seconds": 0.006747282,
+      "ratio_of_medians": 0.8875728810000911,
+      "comparisons": [
+        {
+          "alternative": "evidence",
+          "pairs": 5,
+          "median_paired_cost_ratio": 0.8285707549220351,
+          "adaptive_more_expensive_pairs": 1,
+          "min": 0.7838708071918021,
+          "max": 1.2098501870639193
+        },
+        {
+          "alternative": "rodas",
+          "pairs": 5,
+          "median_paired_cost_ratio": 0.3943541045479221,
+          "adaptive_more_expensive_pairs": 0,
+          "min": 0.38193480918120365,
+          "max": 0.566748305171695
+        }
+      ],
+      "heldout_role": "repair or screened fixture"
+    }
+  ],
+  "preserved_case5_repair_history_rhs": {
+    "legacy": 1887,
+    "initial": 2463,
+    "symmetric_signal_only": 2763,
+    "endpoint_renewal_final": 1311
+  },
+  "remaining_cost_findings": [
+    {
+      "case": "rotation",
+      "finding": "reduced discarded probe work and lower cost than old policy; direct DOPRI still faster in all five paired runs"
+    },
+    {
+      "case": "case5",
+      "finding": "RHS reduction 30.52 percent; no observed wall-time improvement over old policy; direct RODAS faster in all five pairs"
+    },
+    {
+      "case": "relaxation",
+      "finding": "additional same-window counterfactual comparison costs 64 RHS; accepted as qualification cost awaiting optimization"
+    },
+    {
+      "case": "execution_phases",
+      "finding": "all three full adaptive phase costs exceed the best direct total; economic admission before calibration remains needed"
+    }
+  ],
+  "production_decision": "HOLD",
+  "visual_review": {
+    "path": "figures/final_native/native_selection_pilots.png",
+    "method": "view_image",
+    "result": "PASS_SCOPED",
+    "observations": [
+      "All nine cases, paired timings and outliers are visible.",
+      "Discarded probe work is distinguished from productive comparators.",
+      "All calibration and pool costs are charged in the execution panel.",
+      "Causal interval checks and candidate RHS counts are distinguished; these are not wall times."
+    ]
+  },
+  "plot_execution": {
+    "command": "python3 research/joint_controller_20261025/tools/plot_native_pilots.py --summary research/joint_controller_20261025/evidence/NATIVE_PILOT_SUMMARY_FINAL.json --outdir research/joint_controller_20261025/evidence/figures/final_native",
+    "exit_code": 0
+  }
+}
