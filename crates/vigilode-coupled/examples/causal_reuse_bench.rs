@@ -8,6 +8,8 @@ use vigilode_coupled::{
     integrate_causal_observed,
 };
 
+type ReuseSnapshot = (Vec<Vec<f64>>, Vec<(u64, u64, bool)>);
+
 fn model(n: usize, eps: f64) -> OdeProblem {
     OdeProblem::new(
         "causal-reuse-riccati",
@@ -48,9 +50,9 @@ fn target_oracle(n: usize, eps: f64, h: f64) -> Vec<f64> {
             for i in 0..8 {
                 let mut state = 0.1;
                 let mut mix = 0.0;
-                for j in 0..i {
-                    state += c.a[(i, j)] * u[j];
-                    mix += c.c_matrix[(i, j)] * u[j];
+                for (j, &previous_stage) in u.iter().take(i).enumerate() {
+                    state += c.a[(i, j)] * previous_stage;
+                    mix += c.c_matrix[(i, j)] * previous_stage;
                 }
                 u[i] = (h * c.gamma * (a * state + eps * state * state) + c.gamma * mix)
                     / (1.0 - h * c.gamma * (a + 0.2 * eps));
@@ -129,7 +131,7 @@ fn trajectories() -> Value {
             rtol: 1e-12,
             ..Default::default()
         };
-        let mut previous: Option<(Vec<Vec<f64>>, Vec<(u64, u64, bool)>)> = None;
+        let mut previous: Option<ReuseSnapshot> = None;
         for (name, mode) in [
             ("legacy", CausalSchedule::BatchedPicard),
             ("reuse", CausalSchedule::BatchedPicardReuse),

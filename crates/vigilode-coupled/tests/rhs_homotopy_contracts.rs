@@ -289,7 +289,9 @@ fn exact_model_plan_derives_the_smallest_dyadic_grid_and_positive_remainder() {
     let plan = CubicDecayAccuracyPlan::new(1.0, 0.0, 1.0, 1.0, 1e-3, 1024, 100000).unwrap();
     assert_eq!(plan.steps(), 16);
     assert_eq!(plan.step_size(), 1.0 / 16.0);
-    assert!(1.0 / (4.0 * 8.0 * 17.0) > 1e-3);
+    let coarser_steps = plan.steps() / 2;
+    let coarser_bound = 1.0 / (4.0 * coarser_steps as f64 * (2.0 * coarser_steps as f64 + 1.0));
+    assert!(coarser_bound > 1e-3);
     assert!(plan.truncation_bound() >= 1.0 / 2112.0);
     assert!(plan.truncation_bound() < 1e-3);
     assert!(plan.stage_residual_target() > 0.0);

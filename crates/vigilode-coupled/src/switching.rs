@@ -898,22 +898,21 @@ mod tests {
                 if let (Some(epsilon), Some(p)) = (
                     self.0.policy.exploration_overhead_fraction,
                     cadence_reference,
-                ) {
-                    if candidate.is_finite() {
-                        let relative = candidate / p;
-                        let required = (relative / epsilon).ceil() - 1.0;
-                        let desired = required.max(1.0);
-                        cooldown_limited_by_maximum =
-                            !desired.is_finite() || desired > self.0.policy.max_cooldown as f64;
-                        self.0.cooldown = if cooldown_limited_by_maximum {
-                            self.0.policy.max_cooldown
-                        } else {
-                            desired as usize
-                        };
-                        cooldown_rule = "priced-failed-exploration";
-                        let predicted = relative / (self.0.cooldown as f64 + 1.0);
-                        predicted_exploration_overhead = predicted.is_finite().then_some(predicted);
-                    }
+                ) && candidate.is_finite()
+                {
+                    let relative = candidate / p;
+                    let required = (relative / epsilon).ceil() - 1.0;
+                    let desired = required.max(1.0);
+                    cooldown_limited_by_maximum =
+                        !desired.is_finite() || desired > self.0.policy.max_cooldown as f64;
+                    self.0.cooldown = if cooldown_limited_by_maximum {
+                        self.0.policy.max_cooldown
+                    } else {
+                        desired as usize
+                    };
+                    cooldown_rule = "priced-failed-exploration";
+                    let predicted = relative / (self.0.cooldown as f64 + 1.0);
+                    predicted_exploration_overhead = predicted.is_finite().then_some(predicted);
                 }
                 decision = "candidate-declined-cooldown";
             } else if !r.accepted {

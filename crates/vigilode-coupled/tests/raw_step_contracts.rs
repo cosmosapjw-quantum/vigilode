@@ -61,18 +61,18 @@ fn raw_reference(rates: &[f64], y: &[f64], h: f64) -> (Vec<Vec<f64>>, Vec<f64>) 
         for k in 0..y.len() {
             let mut state = y[k];
             let mut mix = 0.0;
-            for j in 0..i {
-                state += c.a[(i, j)] * u[j][k];
-                mix += c.c_matrix[(i, j)] * u[j][k];
+            for (j, previous_stage) in u.iter().take(i).enumerate() {
+                state += c.a[(i, j)] * previous_stage[k];
+                mix += c.c_matrix[(i, j)] * previous_stage[k];
             }
             u[i][k] =
                 (h * c.gamma * rates[k] * state + c.gamma * mix) / (1.0 - h * c.gamma * rates[k]);
         }
     }
     let mut yn = y.to_vec();
-    for i in 0..8 {
+    for (i, stage) in u.iter().enumerate().take(8) {
         for k in 0..y.len() {
-            yn[k] += c.b_code[i] * u[i][k];
+            yn[k] += c.b_code[i] * stage[k];
         }
     }
     (u, yn)
@@ -208,16 +208,16 @@ fn causal_bound_dominates_deliberately_perturbed_raw_solution() {
     let c = rodas5p_coefficients().unwrap();
     let (u, _) = raw_reference(&[rate], &[0.8], h);
     let mut perturbed = u.clone();
-    for i in 0..8 {
-        perturbed[i][0] += (i + 1) as f64 * 1e-8;
+    for (i, stage) in perturbed.iter_mut().enumerate().take(8) {
+        stage[0] += (i + 1) as f64 * 1e-8;
     }
     let mut r = [0.0; 8];
     for i in 0..8 {
         let mut state = 0.8;
         let mut mix = 0.0;
-        for j in 0..i {
-            state += c.a[(i, j)] * perturbed[j][0];
-            mix += c.c_matrix[(i, j)] * perturbed[j][0];
+        for (j, previous_stage) in perturbed.iter().take(i).enumerate() {
+            state += c.a[(i, j)] * previous_stage[0];
+            mix += c.c_matrix[(i, j)] * previous_stage[0];
         }
         r[i] = ((1.0 - h * c.gamma * rate) * perturbed[i][0]
             - h * c.gamma * rate * state

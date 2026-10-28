@@ -80,10 +80,10 @@ impl Model {
         for i in 0..8 {
             let mut state = y.to_vec();
             let mut mix = vec![0.0; self.n];
-            for j in 0..i {
+            for (j, previous_stage) in u.iter().take(i).enumerate() {
                 for k in 0..self.n {
-                    state[k] += c.a[(i, j)] * u[j][k];
-                    mix[k] += c.c_matrix[(i, j)] * u[j][k];
+                    state[k] += c.a[(i, j)] * previous_stage[k];
+                    mix[k] += c.c_matrix[(i, j)] * previous_stage[k];
                 }
             }
             let f = self.rhs(&state);

@@ -236,12 +236,10 @@ fn main() -> Result<(), Box<dyn Error>> {
                     if !same_endpoint_bits(&canonical_states, &run.states) {
                         return Err("timed candidate endpoint bits changed".into());
                     }
-                    if let Some(previous) = &timed_counts[arm] {
-                        if previous != &run.counts {
-                            return Err(
-                                "deterministic work counts changed between repetitions".into()
-                            );
-                        }
+                    if let Some(previous) = &timed_counts[arm]
+                        && previous != &run.counts
+                    {
+                        return Err("deterministic work counts changed between repetitions".into());
                     }
                     timed_counts[arm] = Some(run.counts);
                     timings[arm].push(run.timing);

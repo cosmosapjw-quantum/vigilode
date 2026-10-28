@@ -246,16 +246,16 @@ impl Model {
                 .sum::<f64>(),
             "meanfield-manufactured" => self.coupling(row, col) * (y[col] - y[row]).cos(),
             "nonnormal" if row == col => {
-                if row % 2 == 0 {
+                if row.is_multiple_of(2) {
                     -1.0
                 } else {
                     -20.0
                 }
             }
-            "nonnormal" if row % 2 == 0 && col == row + 1 => 50.0,
+            "nonnormal" if row.is_multiple_of(2) && col == row + 1 => 50.0,
             "nonnormal" => 0.0,
             "oscillatory" if row == col => -0.1,
-            "oscillatory" if row % 2 == 0 && col == row + 1 => -1000.0,
+            "oscillatory" if row.is_multiple_of(2) && col == row + 1 => -1000.0,
             "oscillatory" if row % 2 == 1 && col + 1 == row => 1000.0,
             "oscillatory" => 0.0,
             "changing-rate" if row == 0 => 0.0,

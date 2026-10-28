@@ -49,9 +49,9 @@ fn reference(n: usize, eps: f64, h: f64) -> Vec<f64> {
         for k in 0..n {
             let mut state = 0.1;
             let mut mix = 0.0;
-            for j in 0..i {
-                state += c.a[(i, j)] * u[j][k];
-                mix += c.c_matrix[(i, j)] * u[j][k];
+            for (j, previous_stage) in u.iter().take(i).enumerate() {
+                state += c.a[(i, j)] * previous_stage[k];
+                mix += c.c_matrix[(i, j)] * previous_stage[k];
             }
             let a = [-1.0, -20.0, -100.0][k % 3];
             u[i][k] = (h * c.gamma * (a * state + eps * state * state) + c.gamma * mix)

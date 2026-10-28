@@ -147,17 +147,17 @@ impl Model {
         let mut u = vec![vec![0.0; n]; 8];
         for i in 0..8 {
             let mut x = y.clone();
-            for j in 0..i {
+            for (j, previous_stage) in u.iter().take(i).enumerate() {
                 for k in 0..n {
-                    x[k] += c.a[(i, j)] * u[j][k];
+                    x[k] += c.a[(i, j)] * previous_stage[k];
                 }
             }
             let mut f = vec![0.0; n];
             self.rhs(&x, &mut f);
             for k in 0..n {
                 let mut q = 0.0;
-                for j in 0..i {
-                    q += c.c_matrix[(i, j)] * u[j][k];
+                for (j, previous_stage) in u.iter().take(i).enumerate() {
+                    q += c.c_matrix[(i, j)] * previous_stage[k];
                 }
                 f[k] = hg * f[k] + c.gamma * q;
             }
@@ -170,9 +170,9 @@ impl Model {
             };
         }
         let mut out = y;
-        for i in 0..8 {
+        for (i, stage) in u.iter().enumerate().take(8) {
             for k in 0..n {
-                out[k] += c.b_code[i] * u[i][k];
+                out[k] += c.b_code[i] * stage[k];
             }
         }
         Ok((out, u))
@@ -188,6 +188,9 @@ fn linear_config() -> LinearSolverConfig {
         ..LinearSolverConfig::default()
     }
 }
+// Keep complete per-arm outcomes inline: boxing the transactional result would
+// allocate once per timed repetition and contaminate this allocation-sensitive benchmark.
+#[allow(clippy::large_enum_variant)]
 enum Run {
     Coupled(Attempt),
     Sequential(CoreResult<StepResult>, WorkCounters),

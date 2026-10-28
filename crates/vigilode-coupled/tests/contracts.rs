@@ -40,9 +40,9 @@ fn raw_reference(n: usize, eps: f64, h: f64, y: &[f64]) -> Vec<f64> {
         for k in 0..n {
             let mut state = y[k];
             let mut mix = 0.0;
-            for j in 0..i {
-                state += c.a[(i, j)] * u[j][k];
-                mix += c.c_matrix[(i, j)] * u[j][k];
+            for (j, stage) in u[..i].iter().enumerate() {
+                state += c.a[(i, j)] * stage[k];
+                mix += c.c_matrix[(i, j)] * stage[k];
             }
             let a = [-1.0, -20.0, -100.0][k % 3];
             u[i][k] = (h * c.gamma * (a * state + eps * state * state) + c.gamma * mix)
@@ -50,9 +50,9 @@ fn raw_reference(n: usize, eps: f64, h: f64, y: &[f64]) -> Vec<f64> {
         }
     }
     let mut out = y.to_vec();
-    for i in 0..8 {
+    for (i, weight) in c.b_code.iter().enumerate() {
         for k in 0..n {
-            out[k] += c.b_code[i] * u[i][k];
+            out[k] += weight * u[i][k];
         }
     }
     out

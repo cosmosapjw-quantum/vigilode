@@ -198,9 +198,9 @@ impl MeanFieldAffine {
             let mut transfer = [0.0; S];
             for i in 0..S {
                 let mut rhs = hg;
-                for j in 0..i {
-                    rhs +=
-                        (c.gamma * c.c_matrix[(i, j)] - shifted_rate * c.a[(i, j)]) * transfer[j];
+                for (j, previous_transfer) in transfer.iter().take(i).enumerate() {
+                    rhs += (c.gamma * c.c_matrix[(i, j)] - shifted_rate * c.a[(i, j)])
+                        * *previous_transfer;
                 }
                 transfer[i] = rhs / denominator;
             }
@@ -242,10 +242,10 @@ impl MeanFieldAffine {
         for i in 0..S {
             let mut state = y.to_vec();
             let mut mix = vec![0.0; n];
-            for j in 0..i {
+            for (j, previous_stage) in stages.iter().take(i).enumerate() {
                 for k in 0..n {
-                    state[k] += c.a[(i, j)] * stages[j][k];
-                    mix[k] += c.c_matrix[(i, j)] * stages[j][k];
+                    state[k] += c.a[(i, j)] * previous_stage[k];
+                    mix[k] += c.c_matrix[(i, j)] * previous_stage[k];
                 }
                 work.full_state_causal_accumulations += (2 * n) as u64;
             }
@@ -274,9 +274,9 @@ impl MeanFieldAffine {
         let hg = h * c.gamma;
         let n = y.len();
         let mut y_new = y.to_vec();
-        for i in 0..S {
+        for (i, stage) in stages.iter().enumerate().take(S) {
             for k in 0..n {
-                y_new[k] += c.b_code[i] * stages[i][k];
+                y_new[k] += c.b_code[i] * stage[k];
             }
         }
         // The raw-U eighth stage is the embedded correction in this tableau.
@@ -285,10 +285,10 @@ impl MeanFieldAffine {
         let residuals = execution.map_ordered(&(0..S).collect::<Vec<_>>(), |&i| {
             let mut state = y.to_vec();
             let mut mix = vec![0.0; n];
-            for j in 0..i {
+            for (j, previous_stage) in stages.iter().take(i).enumerate() {
                 for k in 0..n {
-                    state[k] += c.a[(i, j)] * stages[j][k];
-                    mix[k] += c.c_matrix[(i, j)] * stages[j][k];
+                    state[k] += c.a[(i, j)] * previous_stage[k];
+                    mix[k] += c.c_matrix[(i, j)] * previous_stage[k];
                 }
             }
             let mut fy = vec![0.0; n];
@@ -366,8 +366,8 @@ impl MeanFieldPlan {
             let mut w = [0.0; S];
             for j in (0..S).rev() {
                 let mut rhs = c.b_code[j];
-                for i in (j + 1)..S {
-                    rhs -= (hr * c.a[(i, j)] - c.gamma * c.c_matrix[(i, j)]) * w[i];
+                for (i, weight) in w.iter().enumerate().take(S).skip(j + 1) {
+                    rhs -= (hr * c.a[(i, j)] - c.gamma * c.c_matrix[(i, j)]) * *weight;
                 }
                 w[j] = rhs / denominator;
             }

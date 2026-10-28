@@ -14,7 +14,6 @@ import json
 import os
 from pathlib import Path
 import re
-import shutil
 import subprocess
 import sys
 import tarfile
@@ -50,6 +49,21 @@ def sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def sha256_bytes(payload: bytes) -> str:
+    return hashlib.sha256(payload).hexdigest()
+
+
+def pinned_blob(repo: Path, revision: str, relative_path: str) -> bytes:
+    result = subprocess.run(["git", "show", f"{revision}:{relative_path}"], cwd=repo,
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=False)
+    if result.returncode:
+        raise RuntimeError(
+            f"INPUT_DEPENDENCY: cannot read {relative_path} from {revision}: "
+            f"{result.stderr.decode(errors='replace').strip()}"
+        )
+    return result.stdout
+
+
 def archive_commit(repo: Path, revision: str, destination: Path, archive_path: Path) -> dict[str, object]:
     destination.mkdir(parents=True, exist_ok=False)
     with archive_path.open("xb") as archive_stream:
@@ -71,13 +85,13 @@ def archive_commit(repo: Path, revision: str, destination: Path, archive_path: P
             "archive_bytes": archive_path.stat().st_size}
 
 
-def setup_fixture(repo: Path, source_root: Path, fixture_root: Path) -> dict[str, str]:
+def setup_fixture(source_root: Path, fixture_root: Path, pinned_inputs: dict[str, bytes]) -> dict[str, str]:
     fixture_root.mkdir(parents=True, exist_ok=False)
-    template = Path(__file__).with_name("Cargo.toml.template").read_text(encoding="utf-8")
+    template = pinned_inputs["Cargo.toml.template"].decode("utf-8")
     manifest = template.replace("__VIGILODE_PATH__", str((source_root / "crates/vigilode").resolve()))
     (fixture_root / "Cargo.toml").write_text(manifest, encoding="utf-8")
     for source in FIXTURES.values():
-        shutil.copy2(Path(__file__).with_name(source), fixture_root / source)
+        (fixture_root / source).write_bytes(pinned_inputs[source])
 
     lock_source = source_root / "Cargo.lock"
     lock_text = lock_source.read_text(encoding="utf-8")
@@ -114,16 +128,32 @@ def main() -> int:
     remote_head = require_git(repo, "rev-parse", args.remote_ref)
     if actual_head != args.source_sha or remote_head != args.source_sha:
         parser.error(f"source pin mismatch: HEAD={actual_head}, {args.remote_ref}={remote_head}, expected={args.source_sha}")
-    relevant = ["Cargo.toml", "Cargo.lock", "crates/vigilode", "crates/rodas5p-core", "crates/rodas5p-integrators"]
-    if subprocess.run(["git", "diff", "--quiet", args.source_sha, "--", *relevant], cwd=repo).returncode:
-        parser.error("tracked facade/dependency source differs from the pinned published commit")
-    dirty_source = run(["git", "status", "--porcelain=v1", "--untracked-files=all", "--", *relevant], cwd=repo)
-    if dirty_source.returncode or dirty_source.stdout.strip():
-        parser.error("working tree/index has facade/dependency changes outside the pinned source commit")
+    input_paths = {
+        "run_fixtures.py": Path(__file__).resolve().relative_to(repo).as_posix(),
+        "Cargo.toml.template": (Path(__file__).resolve().parent / "Cargo.toml.template").relative_to(repo).as_posix(),
+        **{name: (Path(__file__).resolve().parent / name).relative_to(repo).as_posix() for name in FIXTURES.values()},
+    }
+    pinned_inputs: dict[str, bytes] = {}
+    input_hashes: dict[str, dict[str, str]] = {}
+    for name, relative_path in input_paths.items():
+        pinned = pinned_blob(repo, args.source_sha, relative_path)
+        local = (repo / relative_path).read_bytes()
+        pinned_hash = sha256_bytes(pinned)
+        local_hash = sha256_bytes(local)
+        if pinned_hash != local_hash:
+            parser.error(
+                f"SOURCE_IDENTITY_MISMATCH: working input {relative_path} sha256={local_hash} "
+                f"does not match {args.source_sha} blob sha256={pinned_hash}"
+            )
+        if name != "run_fixtures.py":
+            pinned_inputs[name] = pinned
+        input_hashes[name] = {"path": relative_path, "sha256": pinned_hash}
 
     output.mkdir(parents=True, exist_ok=False)
     baseline_root = output / "baseline-source"
-    archive_identity = archive_commit(repo, BASELINE, baseline_root, output / "baseline-source.tar")
+    current_root = output / "current-source"
+    baseline_archive = archive_commit(repo, BASELINE, baseline_root, output / "baseline-source.tar")
+    current_archive = archive_commit(repo, args.source_sha, current_root, output / "current-source.tar")
     evidence: dict[str, object] = {
         "schema": "vigilode.downstream-api-fixtures.v1",
         "created_utc": datetime.now(timezone.utc).isoformat(),
@@ -131,7 +161,9 @@ def main() -> int:
         "current_sha": args.source_sha,
         "remote_ref": args.remote_ref,
         "remote_ref_sha": remote_head,
-        "baseline_archive": archive_identity,
+        "baseline_archive": baseline_archive,
+        "current_archive": current_archive,
+        "pinned_fixture_inputs": input_hashes,
         "runner_status": "RUNNING",
         "commands": [],
         "legacy_json_deserialize": {
@@ -140,7 +172,7 @@ def main() -> int:
         },
         "interpretation": "Fixture runner completion is not a compatibility approval.",
     }
-    if archive_identity["status"] == "INPUT_DEPENDENCY":
+    if baseline_archive["status"] == "INPUT_DEPENDENCY" or current_archive["status"] == "INPUT_DEPENDENCY":
         evidence["runner_status"] = "INPUT_DEPENDENCY"
         evidence["compatibility_status"] = "INCONCLUSIVE_INPUT_DEPENDENCY"
         evidence["commands"] = []
@@ -150,10 +182,10 @@ def main() -> int:
 
     rust_env = os.environ.copy()
     rust_env.update({"CARGO_NET_OFFLINE": "true", "CARGO_BUILD_JOBS": "2", "RUSTUP_TOOLCHAIN": "1.94.1"})
-    for lane, source_root in (("baseline", baseline_root), ("current", repo)):
+    for lane, source_root in (("baseline", baseline_root), ("current", current_root)):
         for fixture_name in FIXTURES:
             fixture_root = output / "consumers" / lane / fixture_name
-            lock_hashes = setup_fixture(repo, source_root, fixture_root)
+            lock_hashes = setup_fixture(source_root, fixture_root, pinned_inputs)
             target = output / "targets" / lane / fixture_name
             target.mkdir(parents=True, exist_ok=False)
             env = rust_env | {"CARGO_TARGET_DIR": str(target)}

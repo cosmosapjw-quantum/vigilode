@@ -29,10 +29,10 @@ fn dense_oracle(y: &[f64], b: &[f64], d: f64, k: f64, h: f64) -> Vec<Vec<f64>> {
     for i in 0..8 {
         let mut state = y.to_vec();
         let mut mix = vec![0.0; n];
-        for j in 0..i {
+        for (j, previous_stage) in u.iter().take(i).enumerate() {
             for q in 0..n {
-                state[q] += c.a[(i, j)] * u[j][q];
-                mix[q] += c.c_matrix[(i, j)] * u[j][q];
+                state[q] += c.a[(i, j)] * previous_stage[q];
+                mix[q] += c.c_matrix[(i, j)] * previous_stage[q];
             }
         }
         let mu = state.iter().sum::<f64>() / n as f64;
