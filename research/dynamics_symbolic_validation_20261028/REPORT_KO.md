@@ -82,7 +82,7 @@ n=2 guarded case는 중앙값 회귀이고, n=4096/65536의 범위도1을 가로
 
 초기 toolchain 중복 추출의 disk exhaustion, sparse fixture 누락, example의 접근 불가능한 `Interval::constant` 호출 compile 실패를 보존했다. 부분 설치만 제거하고 현재 존재하는 Rust1.94.1을 실제 실행해 확인했다. 정확한 committed fixture를 복원했고 compile 오류는 source 게시 전에 교정했다. 새 native 결과의 실행환경은 독립된 새 target이며 기존 binary를 재사용하지 않았다. Registry cache build는 standalone vendor 검증을 의미하지 않는다.
 
-전체 authority checker는 full materialized c06 tree에서57 missing으로 실패했다. 그중 이번 node의1개는 원문 검색 응답에 있던 TU Wien URL query token을 Git SHA로 읽은 것이다. 원문 bytes는 gzip+hash로 보존하고 typed binding으로 연결했다. checker/allowlist와 genuine inherited failures는 바꾸지 않았다. 최종 metadata 관측은 `METADATA_VALIDATION.json`을 기준으로 읽는다. Q-LEDGER는 미완료다.
+전체 authority checker는 full materialized c06 tree에서57 missing으로 실패했다. 그중 이번 node의1개는 원문 검색 응답에 있던 TU Wien URL query token을 Git SHA로 읽은 것이다. 원문 bytes는 gzip+hash로 보존하고 typed binding으로 연결했다. checker/allowlist와 genuine inherited failures는 바꾸지 않았다. 최종 full checkout의 authority는 **56 missing**으로 실패했다. 이번 node의 새 citation1개는 기존 PR97에도 있는 BASS commit이며 typed cross-repository resolution이 열려 있다. 이번 변경분 기준 node/ledger는180행 모두 PASS다. 그러나 `base=main` 전체 node 검사는 기존22개 node의 preregistration/ledger coverage 누락40건으로 FAIL이다. 관측 source는2ba1c3e이며 상세 결과는 `METADATA_VALIDATION.json`에 보존했다. Q-LEDGER는 미완료다.
 
 최신 correction: R-STRUCT/R-ADAPT3/3, R-HOMO/I-PROD1/3,Q-LEDGER1/3,N03=2/3,N04=1/3,N05=2/3. N04의 owned-workspace 의무에 coupled snapshot reuse를 연결했으며 exhausted facade R-ADAPT를 다른 이름으로 다시 시작하지 않았다. N04 전체 session/FSAL/homotopy와 N05 전체 causal budget은 완료 처리하지 않는다.
 

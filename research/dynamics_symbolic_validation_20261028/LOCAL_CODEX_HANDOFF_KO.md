@@ -130,7 +130,7 @@ huge input을 거절한 경우는 범위 개선으로 기록하며 speedup ratio
    check가 full workspace/모든 지원 조합을 대체하지 않는다.
 3. **Q-LEDGER:** typed repository/object authority를 고친다. PR94 missing53,
    PR96 missing49, PR97 CI missing56, partial-clone178은 다른 source/checkout
-   관측이다. 이번 full/partial observation도 별도 기록한다. 일괄 allowlist나
+   관측이다. 이번 full checkout은 authority56 missing, main-base node checker는 기존22노드/40건 누락으로 FAIL이며, PR97-base scoped node/ledger는180행 PASS다. 이 관측들도 별도 기록한다. 일괄 allowlist나
    historical evidence 변경으로 green을 만들지 않는다. checker/ledger 통과와
    전체 authority gate를 분리한다.
 4. **물리·성능 interaction:** 10개 I-* gate에 실제 client/original equation,
