@@ -1,0 +1,114 @@
+{
+  "schema": "vigilode.chem6.mu01.results.v1",
+  "date_kst": "2026-10-29",
+  "project": "cosmosapjw-quantum/vigilode",
+  "pr": 103,
+  "source_commit": "cc602e209e7deeb511ab2a1f3b2268d55206c43c",
+  "binding_sha256": "8cb268e8de741e284cf494013f1e0748d27f03c5e77ba0c64413ae92af082d16",
+  "predecessor_pr102_head": "8357faa5b42724a8be24609d4d2f16aec8a6eb3a",
+  "unit": "VIGILODE-CHEM6-MU01",
+  "scope": "conditional source-structured chemical6 signed lognorm over declared synthetic rate box",
+  "math": {
+    "theorem": "exact sharp maximum over 24 product-simplex vertices x 6 rows x 32 sign patterns with 12 rate endpoint choices",
+    "state_vertices": 24,
+    "rows": 6,
+    "sign_patterns_per_row": 32,
+    "rate_dimensions": 12,
+    "signed_rate_coefficients": 55296,
+    "exact_sharp_mu": "378302368699121663/2305843009213693952",
+    "exact_entrywise_mu": "49/256",
+    "sharp_mu_binary64_display": 0.1640625,
+    "entrywise_binary64_display": 0.19140625,
+    "relative_reduction_approx": 0.14285714285714285,
+    "attaining_witness": {
+      "row": 4,
+      "vertex_index": 23,
+      "state": [
+        "9007199254740991/9007199254740992",
+        "0",
+        "1",
+        "0",
+        "0",
+        "1"
+      ],
+      "signs": [
+        1,
+        1,
+        1,
+        1,
+        1
+      ],
+      "rates": [
+        "1/8",
+        "1/8",
+        "1/8",
+        "1/8",
+        "1/8",
+        "1/16",
+        "1/16",
+        "1/16",
+        "1/16",
+        "1/16",
+        "1/32",
+        "1/16"
+      ]
+    }
+  },
+  "validation": {
+    "python_pytest": {
+      "passed": 8,
+      "failed": 0,
+      "scope": "independent SymPy original-flux Jacobian, four-variable direct full-corner, 300 rational samples, negatives"
+    },
+    "rust": {
+      "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25)",
+      "test_passed": 8,
+      "test_failed": 0,
+      "clippy_strict": "PASS",
+      "initial_clippy_diagnostics": 5,
+      "repair": "method renames and iterator rewrite; math unchanged"
+    },
+    "fraction_from_bits": {
+      "cases": 7,
+      "all_inclusions": true,
+      "max_excess": 8.326672684688674e-16
+    },
+    "wolfram": {
+      "initial_uppercase_symbols": "ERROR_RECURSION",
+      "corrected_generic_3x3_J_identity": "ZERO"
+    },
+    "figure": {
+      "cases": 5,
+      "saved_data_only": true,
+      "visually_inspected": true,
+      "speedup_claim": false
+    },
+    "native_repo_workspace": "NOT_RUN",
+    "actual_BASS30": "NOT_RUN",
+    "independent_author_R6_C9": "NOT_RUN"
+  },
+  "dag": {
+    "original_core": "7/23 inherited scoped; delta0",
+    "central_rei": "28/88; delta0",
+    "new_auxiliary": "0/1 pending independent review",
+    "selected_stages": "18/20 scoped"
+  },
+  "admission": "PASS_SCOPED_ALGORITHMIC_PENDING_INDEPENDENT_REVIEW",
+  "production": "HOLD",
+  "owner_accepted_rates": null,
+  "owner_accepted_capsule": null,
+  "full30_jacobian": null,
+  "physical33_norm_transport": null,
+  "actual_vector_residual": null,
+  "whole_domain_certificate": false,
+  "actual_ode_solution_enclosure": false,
+  "no_force_push": true,
+  "no_main_merge": true,
+  "negative_evidence": [
+    "first Wolfram recursion error",
+    "first strict Clippy 5 diagnostics",
+    "source callback/rates unverified",
+    "grazing event unresolved",
+    "mh>=1 rational comparison refused"
+  ]
+}
