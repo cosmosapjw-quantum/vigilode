@@ -214,7 +214,9 @@ impl FastDenseSegments {
         initial_error: f64,
     ) -> CoreResult<crate::affine_event_certificate::AffineEventCertificate> {
         crate::affine_event_certificate::AffineEventCertificate::certify(
-            self.affine_scalar_packet(k)?, spec, initial_error,
+            self.affine_scalar_packet(k)?,
+            spec,
+            initial_error,
         )
     }
 
