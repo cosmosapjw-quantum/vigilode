@@ -19,3 +19,7 @@ The frozen inherited contracts are the 23-node/34-edge original DAG, eight nativ
 Do not reset original checkouts, alter frozen PR90–94 evidence, execute NCP/SSH/cloud, relax tolerances, or run every historical campaign. Direct artifacts outside source tree are create-only. A failed command, unsupported dependency, missing reference, timeout or ignored test remains typed. Previously exhausted R-STRUCT and R-ADAPT correction budgets remain 3/3; R-HOMO and I-PROD remain 1/3. N01–N06 and Q gate correction counters begin from the frozen values in `INDEPENDENT_VALIDATION.json` and never reset through renaming.
 
 This file contains no results. The execution commit and its input hashes are fixed before new measurement receipts are added.
+
+## Results and process outcome
+
+The measured code identity was commit `5c57bf146f2f5faf69f711f133a83fcb265cee90` (tree `9633bde7dda1e9dd4748d1aecc8f22af68b5f5ac`). The preregistration-only commit `12057f5fee622c1804d0e5db8f371ca5938cc336` was remote-reachable before execution; the code commit was local when measurements began, so the remote-reachability process gate is not retroactively passed. `SUMMARY.json` records scoped passes, a reproduced scientific negative failure, authority/format failures, and remaining HOLD/NOT_RUN nodes. Broad production remains HOLD. Raw evidence remains at `/tmp/vigilode-cumulative-validation-20261028/evidence`; the compact manifest binds hashes.
