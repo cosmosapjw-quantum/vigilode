@@ -24,6 +24,13 @@ def sha(path):
             h.update(b)
     return h.hexdigest()
 
+def sidecar(dest, extension):
+    return Path(str(dest) + extension)
+
+def write_create_only(path, data):
+    with path.open("xb") as f:
+        f.write(data)
+
 def execute(cmd, dest, timeout, cpu):
     env = os.environ.copy()
     env.update({"RAYON_NUM_THREADS":"1", "OMP_NUM_THREADS":"1",
@@ -37,10 +44,11 @@ def execute(cmd, dest, timeout, cpu):
     start = time.monotonic()
     if remaining <= 0:
         record.update(exit_code=None, status="FAILED_BUDGET", elapsed_seconds=0.0)
-        dest.with_suffix(".stdout").write_bytes(b"")
-        dest.with_suffix(".stderr").write_bytes(b"cumulative 1200-second measurement budget exhausted\n")
-        dest.with_suffix(".json").write_text(json.dumps(record, indent=2)+"\n")
-        record["stdout_path"] = str(dest.with_suffix(".stdout")); record["stderr_path"] = str(dest.with_suffix(".stderr"))
+        out_path=sidecar(dest,".stdout"); err_path=sidecar(dest,".stderr")
+        write_create_only(out_path,b"")
+        write_create_only(err_path,b"cumulative 1200-second measurement budget exhausted\n")
+        record["stdout_path"] = str(out_path); record["stderr_path"] = str(err_path)
+        write_create_only(sidecar(dest,".json"),json.dumps(record,indent=2).encode()+b"\n")
         return record, None
     try:
         p = subprocess.run(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
@@ -57,16 +65,16 @@ def execute(cmd, dest, timeout, cpu):
         record.update(exit_code=None, status="LAUNCH_ERROR", error=repr(e),
                       elapsed_seconds=time.monotonic()-start)
         out, err = b"", repr(e).encode()
-    dest.with_suffix(".stdout").write_bytes(out)
-    dest.with_suffix(".stderr").write_bytes(err)
-    dest.with_suffix(".json").write_text(json.dumps(record, indent=2)+"\n")
-    record["stdout_path"] = str(dest.with_suffix(".stdout"))
-    record["stderr_path"] = str(dest.with_suffix(".stderr"))
+    out_path=sidecar(dest,".stdout"); err_path=sidecar(dest,".stderr")
+    write_create_only(out_path,out)
+    write_create_only(err_path,err)
+    record["stdout_path"] = str(out_path)
+    record["stderr_path"] = str(err_path)
     parsed = None
     if record["status"] == "EXITED" and record["exit_code"] == 0:
         try: parsed = json.loads(out)
         except Exception as e: record.update(status="INVALID_JSON", parse_error=repr(e))
-    dest.with_suffix(".json").write_text(json.dumps(record, indent=2)+"\n")
+    write_create_only(sidecar(dest,".json"),json.dumps(record,indent=2).encode()+b"\n")
     return record, parsed
 
 def comparable(v):
