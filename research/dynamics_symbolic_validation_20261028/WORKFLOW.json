@@ -1,0 +1,256 @@
+{
+  "schema_version": 1,
+  "workflow_version": "1.0.0",
+  "task": "both",
+  "unit_id": "vigilode-dynamics-symbolic-validation-20261028",
+  "objective": "Critical PR97 review, admitted theory then two native corrections, independent cumulative validation and local handoff",
+  "scope": "two coupled components; no production promotion",
+  "status": "complete_scoped",
+  "dependencies": [
+    {
+      "id": "D_BASE",
+      "identity": "87465835d9d21298d235917f036580b0b53ab645"
+    },
+    {
+      "id": "D_CODE",
+      "identity": "58ec9b053163da6b6f0906010e0422c104db72fd"
+    },
+    {
+      "id": "D_EXT",
+      "identity": "c06b1ce5f04c86cb374071dcac7e83b7a100493c"
+    },
+    {
+      "id": "D_ATTACHMENT",
+      "identity": "04727ed33a2fecd92a13e12c2230cf57a79e1a09aa90b63658d4319e9c37301b"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E_THEORY",
+      "kind": "document",
+      "locator": "theory/DYNAMICS.md; theory/ATTACHMENT.md; THEORY_ADMISSION.md",
+      "scope": "bounded theory and code contract",
+      "dependency_ids": [
+        "D_BASE",
+        "D_ATTACHMENT"
+      ]
+    },
+    {
+      "id": "E_CODE",
+      "kind": "source",
+      "locator": "SOURCE_BINDING.json",
+      "scope": "native changed sources",
+      "dependency_ids": [
+        "D_CODE"
+      ]
+    },
+    {
+      "id": "E_RUN",
+      "kind": "execution",
+      "locator": "RESULTS.json; evidence/native_evidence.tar.gz",
+      "scope": "registered native and exact audit",
+      "dependency_ids": [
+        "D_CODE",
+        "D_EXT"
+      ]
+    },
+    {
+      "id": "E_REVIEW",
+      "kind": "review",
+      "locator": "reviews/CODE_REVIEW.md; reviews/RESULTS_REVIEW.md",
+      "scope": "independent source/math/data review",
+      "dependency_ids": [
+        "D_CODE"
+      ]
+    },
+    {
+      "id": "E_HANDOFF",
+      "kind": "document",
+      "locator": "LOCAL_CODEX_HANDOFF_KO.md; PRESERVATION.json",
+      "scope": "preservation and local remaining gates",
+      "dependency_ids": [
+        "D_BASE",
+        "D_CODE"
+      ]
+    }
+  ],
+  "stages": [
+    {
+      "id": "R1",
+      "status": "complete",
+      "evidence_refs": [
+        "E_THEORY"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "R2",
+      "status": "complete",
+      "evidence_refs": [
+        "E_THEORY"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "R3",
+      "status": "complete",
+      "evidence_refs": [
+        "E_THEORY"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "R4",
+      "status": "complete",
+      "evidence_refs": [
+        "E_THEORY"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "R5",
+      "status": "complete",
+      "evidence_refs": [
+        "E_THEORY"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "R6",
+      "status": "complete",
+      "evidence_refs": [
+        "E_THEORY"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "R7",
+      "status": "complete",
+      "evidence_refs": [
+        "E_THEORY"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "R8",
+      "status": "complete",
+      "evidence_refs": [
+        "E_THEORY"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "R9",
+      "status": "complete",
+      "evidence_refs": [
+        "E_THEORY"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "R10",
+      "status": "complete",
+      "evidence_refs": [
+        "E_THEORY"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "C1",
+      "status": "complete",
+      "evidence_refs": [
+        "E_CODE"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "C2",
+      "status": "complete",
+      "evidence_refs": [
+        "E_THEORY"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "C3",
+      "status": "complete",
+      "evidence_refs": [
+        "E_THEORY"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "C4",
+      "status": "complete",
+      "evidence_refs": [
+        "E_CODE"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "C5",
+      "status": "complete",
+      "evidence_refs": [
+        "E_CODE"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "C6",
+      "status": "complete",
+      "evidence_refs": [
+        "E_RUN"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "C7",
+      "status": "complete",
+      "evidence_refs": [
+        "E_RUN"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "C8",
+      "status": "complete",
+      "evidence_refs": [
+        "E_RUN"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "C9",
+      "status": "complete",
+      "evidence_refs": [
+        "E_REVIEW"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    },
+    {
+      "id": "C10",
+      "status": "complete",
+      "evidence_refs": [
+        "E_HANDOFF"
+      ],
+      "scope": "this bounded unit; production qualification remains open"
+    }
+  ],
+  "chronology": "THEORY_ADMISSION.md",
+  "production": "HOLD",
+  "unresolved": [
+    "Q-LEDGER typed authority",
+    "Q-API full downstream contract",
+    "Q-GIVENS prior CI/profile discrepancy",
+    "Q-NEGATIVE retained scientific cost failure",
+    "ten full interaction campaigns",
+    "full N01-N06 tasks",
+    "full workspace/optional-feature/release qualification",
+    "standalone vendor graph",
+    "SUNDIALS/MPI comparator qualification",
+    "actual-client/full-model physical certificate",
+    "native trace whole-path certificate"
+  ],
+  "strong_no_go": "none asserted",
+  "policy_mapping": "Existing DAG/counters preserved; code-defining lemmas admitted before implementation, supporting report consolidation later."
+}

@@ -1,0 +1,2027 @@
+{
+  "schema": "vigilode.dynamics-symbolic-preservation.v1",
+  "created_utc": "2026-10-28T12:34:48.905179+00:00",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "execution_source_sha": "58ec9b053163da6b6f0906010e0422c104db72fd",
+  "execution_source_tree": "b859c2d34128145df5fd931e456922554a83b4d5",
+  "scope": "Read-only git-object and JSON metadata verification; no solver, original-source replay, tests or whole-authority checker run by this task",
+  "status": "PASS_SCOPED_METADATA_PRESERVATION",
+  "original_files": [
+    {
+      "path": "research/integrated_polyalgorithm_20261028/INDEPENDENT_VALIDATION.json",
+      "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "git_blob": "c5910f0dd722a9be32d99848bf19a3554992dd6d",
+      "sha256": "8719595bcf61c29317bbb3328b93678a15f43c9b48134303aad5b4af1c310005",
+      "size_bytes": 23118,
+      "delivery_sha256": "8719595bcf61c29317bbb3328b93678a15f43c9b48134303aad5b4af1c310005",
+      "unchanged_from_delivery": true
+    },
+    {
+      "path": "research/polyalgorithm_alternatives_20261028/LOCAL_DEVELOPMENT_PLAN.json",
+      "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "git_blob": "250becc81fbb3b81751d880d25354b4ef4d680ac",
+      "sha256": "8a05bdf42d999f724662d64b5fc9a36bc5bb0caa3a9f5022b7333dcc914bc3f1",
+      "size_bytes": 46619,
+      "delivery_sha256": "8a05bdf42d999f724662d64b5fc9a36bc5bb0caa3a9f5022b7333dcc914bc3f1",
+      "unchanged_from_delivery": true
+    },
+    {
+      "path": "research/integrated_polyalgorithm_20261028/validation_design/COVERAGE.json",
+      "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "git_blob": "dd20e67b68717090c57e1ead63716d281829a3ac",
+      "sha256": "464f041a79362c181b53678b9026b25a48bddd726b87b2033311772102d87afe",
+      "size_bytes": 37792,
+      "delivery_sha256": "464f041a79362c181b53678b9026b25a48bddd726b87b2033311772102d87afe",
+      "unchanged_from_delivery": true
+    },
+    {
+      "path": "research/integrated_polyalgorithm_20261028/validation_design/COMMANDS.json",
+      "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "git_blob": "e818ce5bc4bb5f1555723cc0c442fd6b85e2a801",
+      "sha256": "b868160554e75bb017c4ac0e0752846ba274fa20ab17796e0c9a92a745b6d201",
+      "size_bytes": 20886,
+      "delivery_sha256": "b868160554e75bb017c4ac0e0752846ba274fa20ab17796e0c9a92a745b6d201",
+      "unchanged_from_delivery": true
+    },
+    {
+      "path": "research/production_solver_closure_20261027/DEVELOPMENT_PLAN.json",
+      "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "git_blob": "a217de75698778efd7fbe7a3ed41c078628749fe",
+      "sha256": "af9a8b3ed5db7ab1d16db2c404464ae8b9130294160b72c55182039e033c2a73",
+      "size_bytes": 27402,
+      "delivery_sha256": "af9a8b3ed5db7ab1d16db2c404464ae8b9130294160b72c55182039e033c2a73",
+      "unchanged_from_delivery": true
+    }
+  ],
+  "original_dag": {
+    "nodes": 23,
+    "node_ids": [
+      "S-PRS",
+      "R-STRUCT",
+      "R-HOMO",
+      "R-ADAPT",
+      "I-PROD",
+      "V-CLOUD",
+      "P-PUSH",
+      "L-RELEASE",
+      "L-HARDWARE",
+      "PR-N01",
+      "PR-N02",
+      "PR-N03",
+      "PR-N04",
+      "PR-N05",
+      "PR-N06",
+      "R-QUALIFY",
+      "Q-LEDGER",
+      "Q-GIVENS",
+      "Q-FAIR-AB",
+      "Q-BENCH",
+      "Q-LINT",
+      "Q-API",
+      "Q-NEGATIVE"
+    ],
+    "edges": 34,
+    "dependency_edges": [
+      [
+        "S-PRS",
+        "R-STRUCT"
+      ],
+      [
+        "S-PRS",
+        "R-HOMO"
+      ],
+      [
+        "S-PRS",
+        "R-ADAPT"
+      ],
+      [
+        "R-STRUCT",
+        "I-PROD"
+      ],
+      [
+        "R-HOMO",
+        "I-PROD"
+      ],
+      [
+        "R-ADAPT",
+        "I-PROD"
+      ],
+      [
+        "I-PROD",
+        "V-CLOUD"
+      ],
+      [
+        "V-CLOUD",
+        "P-PUSH"
+      ],
+      [
+        "P-PUSH",
+        "L-RELEASE"
+      ],
+      [
+        "Q-GIVENS",
+        "L-RELEASE"
+      ],
+      [
+        "Q-FAIR-AB",
+        "L-RELEASE"
+      ],
+      [
+        "Q-LINT",
+        "L-RELEASE"
+      ],
+      [
+        "Q-NEGATIVE",
+        "L-RELEASE"
+      ],
+      [
+        "L-RELEASE",
+        "L-HARDWARE"
+      ],
+      [
+        "L-HARDWARE",
+        "PR-N01"
+      ],
+      [
+        "L-RELEASE",
+        "PR-N02"
+      ],
+      [
+        "L-RELEASE",
+        "PR-N03"
+      ],
+      [
+        "L-RELEASE",
+        "PR-N04"
+      ],
+      [
+        "L-HARDWARE",
+        "PR-N05"
+      ],
+      [
+        "PR-N04",
+        "PR-N05"
+      ],
+      [
+        "L-HARDWARE",
+        "PR-N06"
+      ],
+      [
+        "PR-N01",
+        "PR-N06"
+      ],
+      [
+        "L-RELEASE",
+        "R-QUALIFY"
+      ],
+      [
+        "L-HARDWARE",
+        "R-QUALIFY"
+      ],
+      [
+        "Q-LEDGER",
+        "R-QUALIFY"
+      ],
+      [
+        "Q-BENCH",
+        "R-QUALIFY"
+      ],
+      [
+        "Q-API",
+        "R-QUALIFY"
+      ],
+      [
+        "P-PUSH",
+        "Q-LEDGER"
+      ],
+      [
+        "P-PUSH",
+        "Q-GIVENS"
+      ],
+      [
+        "P-PUSH",
+        "Q-FAIR-AB"
+      ],
+      [
+        "P-PUSH",
+        "Q-BENCH"
+      ],
+      [
+        "P-PUSH",
+        "Q-LINT"
+      ],
+      [
+        "P-PUSH",
+        "Q-API"
+      ],
+      [
+        "P-PUSH",
+        "Q-NEGATIVE"
+      ]
+    ],
+    "preservation": "EXACT_ORIGINAL_PLAN_BYTES_AND_EDGES"
+  },
+  "execution_suites": {
+    "count": 8,
+    "ids": [
+      "facade-contracts",
+      "coupled-contracts",
+      "all-targets",
+      "release-contracts",
+      "docs",
+      "smoke-release",
+      "local-benchmarks",
+      "local-profiles"
+    ],
+    "canonical_sha256": "659c5e9d5d10cff026397851d19a4c3b1b3d614a1872707a70ac9d0e3fa37dfa",
+    "argv_preserved": true,
+    "execution_status": "SEE_SEPARATE_CURRENT_NATIVE_RECEIPTS_NO_PASS_INFERRED"
+  },
+  "coverage": {
+    "count": 73,
+    "git_tree_present": 73,
+    "sparse_worktree_present": 73,
+    "same_as_original_coverage_source": 66,
+    "files": [
+      {
+        "path": ".github/workflows/production.yml",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "1ae85133193ff95e8bbd2d5467df624c50fe316c",
+        "sha256": "2ff0e03b9c312a649199adca7f89e99c5e8c5e5ea44c164ff9f90bcd070b8f5c",
+        "size_bytes": 6696,
+        "original_source_sha256": "2ff0e03b9c312a649199adca7f89e99c5e8c5e5ea44c164ff9f90bcd070b8f5c",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-PRODUCTION",
+          "Q-API"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-core/examples/invariant_module_bench.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "5563682b3783056a1dab6fb13c7fd4b106fa36eb",
+        "sha256": "10cef97da5d201df468a03c62594ff4a04add4b00d342f39c12b52bb2ce31a92",
+        "size_bytes": 4970,
+        "original_source_sha256": "10cef97da5d201df468a03c62594ff4a04add4b00d342f39c12b52bb2ce31a92",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-core/examples/lu_workspace_bench.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "1950a98d4adf5034bf9e1ca104d73f7814212785",
+        "sha256": "a5757b4ae1ccad2188c74e10e270e56bf7ceaee15006bb92e6512009c9344dfa",
+        "size_bytes": 2680,
+        "original_source_sha256": "a5757b4ae1ccad2188c74e10e270e56bf7ceaee15006bb92e6512009c9344dfa",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-LU"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-core/src/lib.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "a284b35457359ed21c6787a617be9fe59d8c7bc0",
+        "sha256": "d5a19770ce1cc7d5b0444cfe27ba9a03bf1baf930d56c8f2525798424463a426",
+        "size_bytes": 4312,
+        "original_source_sha256": "d5a19770ce1cc7d5b0444cfe27ba9a03bf1baf930d56c8f2525798424463a426",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-LU"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-core/src/matrix.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "d377e7e5b97cd20c48df2c705336fcbc0932c6e5",
+        "sha256": "40a3f19200d2dda72ddaf6d14c96f726fc978f4c83f687ca2d0abcaa2a49760d",
+        "size_bytes": 12199,
+        "original_source_sha256": "40a3f19200d2dda72ddaf6d14c96f726fc978f4c83f687ca2d0abcaa2a49760d",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-LU"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-core/tests/lu_workspace_contracts.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "2a5b1bea55240c4654e4f37d760d28cfdfd788a3",
+        "sha256": "0779c07156c0d52246628bba8d92030221c3419680d81f9fff0d77f30a5df8d2",
+        "size_bytes": 3788,
+        "original_source_sha256": "0779c07156c0d52246628bba8d92030221c3419680d81f9fff0d77f30a5df8d2",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-LU"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-integrators/examples/conditional_continuation_sweep.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "2e2569029949100f13a9e5fedb5ea92cfc26ce77",
+        "sha256": "a99a0559592aa9320833c8d8f6dddf6aa0ae3a823dbc2a78a959e41da9e01216",
+        "size_bytes": 24510,
+        "original_source_sha256": "1527ebd00a96413f7b2b950b1935ec5b4cc235adf2b1439aec74c1c57b3746fd",
+        "same_bytes_as_original_coverage_source": false,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-FEATURES",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-integrators/examples/fixed_point_continuation_bench.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "2462fb1270a7308a70c6b401be5128560660dd5b",
+        "sha256": "65d0542114293518fb153fc7847a24c20c69aa93796d8be15f02efbce4f67c05",
+        "size_bytes": 6160,
+        "original_source_sha256": "65d0542114293518fb153fc7847a24c20c69aa93796d8be15f02efbce4f67c05",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-FEATURES",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-integrators/examples/frontier_long_phase.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "29dee28f1e18d55392d87f0b73b8ee67e13f6daf",
+        "sha256": "a8ed090301faa95b20f5fbc29f67c36cc5608deceb49d287b047513b5e640106",
+        "size_bytes": 6638,
+        "original_source_sha256": "a8ed090301faa95b20f5fbc29f67c36cc5608deceb49d287b047513b5e640106",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-FEATURES",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-integrators/examples/frontier_polynomial_provider.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "d9a3afa40eea080fdf667cb456640df5c9dc3e01",
+        "sha256": "a89ebb7468cc448a5f4dfda1030a066288a9a5bf1ab266a3d666909aaa6f3cc2",
+        "size_bytes": 6101,
+        "original_source_sha256": "a89ebb7468cc448a5f4dfda1030a066288a9a5bf1ab266a3d666909aaa6f3cc2",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-FEATURES",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-integrators/examples/mode_dense_trajectory_20261027.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "5b8eab773415d5a97ac4a2906139ad305db999f1",
+        "sha256": "e498bf9cd4e4c9d3e16c0e54d70013632433f1ff47303147d45907fbfd9f057f",
+        "size_bytes": 3417,
+        "original_source_sha256": "e498bf9cd4e4c9d3e16c0e54d70013632433f1ff47303147d45907fbfd9f057f",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-MODE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "df466c69b4b1cfadc1c62fb0c6ae10f3cb935767",
+        "sha256": "364640f9d91635c2dc46981233cb587d6cd671e89c138105e886060a150e9d3f",
+        "size_bytes": 18694,
+        "original_source_sha256": "eec1d00c4d964b611cd2925ca6f37b4382dd126a1de057921e8dc0f02e0972c4",
+        "same_bytes_as_original_coverage_source": false,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-FEATURES",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-integrators/src/fixed_point_continuation.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "88d90148d1a04ac9363daf6d295b453f7f3cd2af",
+        "sha256": "1968a5be2f674691b09331cb1b6a2778af77c608a9df56429ca326a4da862831",
+        "size_bytes": 20127,
+        "original_source_sha256": "6f479a98d9eb3493dafcf0476dea8a6a978dd6e273dcaa928d654a2b1c4266ae",
+        "same_bytes_as_original_coverage_source": false,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-FEATURES",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-integrators/src/lib.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "07e8003abc44290799ab5324160eca37f4d6c6a6",
+        "sha256": "82957fb0b21d96c861b64a52a5c51225312709d004586f16f46927f06eee8d16",
+        "size_bytes": 31617,
+        "original_source_sha256": "82957fb0b21d96c861b64a52a5c51225312709d004586f16f46927f06eee8d16",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-FEATURES",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "0f55b696e3f4a4d6f446b247e4f381a25528ed0d",
+        "sha256": "33d0d7831ab5fffe558df69d37adc71ef7f4ec984420a757af2185f935cdfa66",
+        "size_bytes": 115194,
+        "original_source_sha256": "33d0d7831ab5fffe558df69d37adc71ef7f4ec984420a757af2185f935cdfa66",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-MODE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-integrators/src/rodas5p_lagged.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "cce154680e0398510709caab3b3f5f8a6dd76b50",
+        "sha256": "5d454206bf3377b0e1105ea4f92a86d26f9c8ad202455be595cd98b1743b8db5",
+        "size_bytes": 58387,
+        "original_source_sha256": "5d454206bf3377b0e1105ea4f92a86d26f9c8ad202455be595cd98b1743b8db5",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-LAGGED"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "ab22731c1a13b45406336877c9cfad04b3a796a3",
+        "sha256": "642ce89b21f3ff55e03215c572af028ccd4f124128226a25cfc7c7083c720274",
+        "size_bytes": 133361,
+        "original_source_sha256": "642ce89b21f3ff55e03215c572af028ccd4f124128226a25cfc7c7083c720274",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-MODE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-integrators/tests/fixed_point_continuation_contracts.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "f697a1e88396de39dd6735c632a47e9d96994818",
+        "sha256": "0df93e2a9232599a3c73baecdf629819110473faa637364c897ae3f1137fbfdf",
+        "size_bytes": 16379,
+        "original_source_sha256": "2962425b6ada4c64ea4e67acff1647113585de6f828a7d1e3e3bf62cb834076a",
+        "same_bytes_as_original_coverage_source": false,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-FEATURES",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-integrators/tests/frontier_physical_budget.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "a27118c8dcf40baadb86033bbe5b2ea6a27d761a",
+        "sha256": "0e2962750aceaa4ace771a126c2e5d3e388947a2b1e7466f1827c24d77e70ebb",
+        "size_bytes": 22483,
+        "original_source_sha256": "006b4164b1f302f4ec880d0b9437da54078c9a338b509b04cc2b4a3a2a4ff77d",
+        "same_bytes_as_original_coverage_source": false,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-FEATURES",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-integrators/tests/frontier_polynomial_provider.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "f955a1f036bd0782f7dfdfcf9b5a42174a5460a6",
+        "sha256": "fe6342b88432be7f06263b1ed715e4d8325a807a31fd9396e20792f21c000638",
+        "size_bytes": 11659,
+        "original_source_sha256": "fe6342b88432be7f06263b1ed715e4d8325a807a31fd9396e20792f21c000638",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-FEATURES",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/rodas5p-integrators/tests/frontier_session_contracts.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "6fa978569a4ffee97b532431784fcef7fdbee1fa",
+        "sha256": "11b8353e8682a544e7bb76a9a7b8c75aceacc163ddde6fd51ed89a76f0b81617",
+        "size_bytes": 27772,
+        "original_source_sha256": "11b8353e8682a544e7bb76a9a7b8c75aceacc163ddde6fd51ed89a76f0b81617",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-FEATURES",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/examples/causal_reuse_bench.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "260adcfd8b7e267541900f0ccaefd0be350c2d16",
+        "sha256": "291ef1256d63eb9b63188c27ab5f61a0c4b5543e2c43991d4ab0421b1412090b",
+        "size_bytes": 11199,
+        "original_source_sha256": "291ef1256d63eb9b63188c27ab5f61a0c4b5543e2c43991d4ab0421b1412090b",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-CAUSAL"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/examples/cubic_accuracy_bench_20261027.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "281b2879eb0960b8d1ad1b466c1e7ff5d30f465d",
+        "sha256": "cb382d662b3b20b21fcc3011a025dbed2150952752bbf89a94e78e334ad11cbf",
+        "size_bytes": 2678,
+        "original_source_sha256": "cb382d662b3b20b21fcc3011a025dbed2150952752bbf89a94e78e334ad11cbf",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-HOMOTOPY",
+          "G92-HOMOTOPY"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/examples/cubic_production_bench.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "0cf1f672396925d25fcab864f20da76b7471f3b8",
+        "sha256": "134a34323bf27993000aaab211cc4e2e4446aaa8de16a94aa9070091988f448f",
+        "size_bytes": 5548,
+        "original_source_sha256": "134a34323bf27993000aaab211cc4e2e4446aaa8de16a94aa9070091988f448f",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-HOMOTOPY",
+          "G92-HOMOTOPY"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/examples/rhs_homotopy_bench_20261027.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "6fdf6356411486136e166fffc2bc600a74c5840e",
+        "sha256": "c748fc2ea3f1f1f554fdcf32fd3d82d9cf36467954d334ac9d55f87f32d220e7",
+        "size_bytes": 7756,
+        "original_source_sha256": "c748fc2ea3f1f1f554fdcf32fd3d82d9cf36467954d334ac9d55f87f32d220e7",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-HOMOTOPY",
+          "G92-HOMOTOPY"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/examples/structural_bound_bench_20261027.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "a07252a466f073ec1a120843a531afd38776fa15",
+        "sha256": "cab612304040be3a975ac98bc33d0a37cc94d18cc35f76d51f8dca2b94abbdae",
+        "size_bytes": 2757,
+        "original_source_sha256": "cab612304040be3a975ac98bc33d0a37cc94d18cc35f76d51f8dca2b94abbdae",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-STRUCTURAL",
+          "G92-STRUCTURAL"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/examples/structural_mean_field_bench_20261027.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "679b8597a7fe2f7733518c20ae04650a45e02384",
+        "sha256": "6662812b5fc30ad0a224e35803aa57862e611a6cb9daefab600649458d159e4f",
+        "size_bytes": 5602,
+        "original_source_sha256": "6662812b5fc30ad0a224e35803aa57862e611a6cb9daefab600649458d159e4f",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-STRUCTURAL",
+          "G92-STRUCTURAL"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/examples/structural_production_bench_20261027.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "fed4b819c777e6f21536fd97e453e55983d108cc",
+        "sha256": "6f36ea393ef1578d9d0986a7c93e0227b171a79cf5938941c2e0e937a9c875a3",
+        "size_bytes": 10080,
+        "original_source_sha256": "6f36ea393ef1578d9d0986a7c93e0227b171a79cf5938941c2e0e937a9c875a3",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-STRUCTURAL",
+          "G92-STRUCTURAL"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/examples/support/structural_mean_field_pr91.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "b00c69b585f41f6c11945c256f86bc4150695a8d",
+        "sha256": "1e70ac544c6b8a775c60fc2497566f12b08945b5148cc288c1215f5b47d1f11a",
+        "size_bytes": 17026,
+        "original_source_sha256": "1e70ac544c6b8a775c60fc2497566f12b08945b5148cc288c1215f5b47d1f11a",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-STRUCTURAL",
+          "G92-STRUCTURAL"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/src/adaptive.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "4371b05f9a015c45bfc77de0cff562853b571287",
+        "sha256": "e837e288d6c2d063f3344ce2521ae8c9c0233f2ed7ee559e112fcfb14129c028",
+        "size_bytes": 19930,
+        "original_source_sha256": "e837e288d6c2d063f3344ce2521ae8c9c0233f2ed7ee559e112fcfb14129c028",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-CAUSAL"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/src/causal.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "a83b17a067c109cbd65d92db66fb6cc09f505764",
+        "sha256": "fc297cd8b42c49f95d999078726186c3f09d15818a9355b2c369640aeef04b41",
+        "size_bytes": 15425,
+        "original_source_sha256": "fc297cd8b42c49f95d999078726186c3f09d15818a9355b2c369640aeef04b41",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-CAUSAL"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/src/lib.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "b311e4b1cb833f40528577091f4398c4ac54bdc2",
+        "sha256": "b573168ee78e89d08a80aeba21f8275d9d20c457832aecd614f5e517cdce6411",
+        "size_bytes": 12536,
+        "original_source_sha256": "7376ba9cc9ec2111cea01c801c0c0e4ce3f53b8e281bb5a5d3221e671366ba1f",
+        "same_bytes_as_original_coverage_source": false,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-CAUSAL"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/src/raw_step.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "9679f26e2c8ea73e663a234be77d2d8a74d36dce",
+        "sha256": "432281286ffb11e2383748350d16fd9fa6b5d34d97379dca5630f6feeb696ac3",
+        "size_bytes": 25098,
+        "original_source_sha256": "432281286ffb11e2383748350d16fd9fa6b5d34d97379dca5630f6feeb696ac3",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-CAUSAL"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/src/residual_first.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "837ebf8e7af33f3651cea8129b7935bf6aa35b07",
+        "sha256": "9b0d1e47741ab89ff3ed8b76ecf06da9c915032cfca4235e105be4aa4ce059b5",
+        "size_bytes": 7293,
+        "original_source_sha256": "9b0d1e47741ab89ff3ed8b76ecf06da9c915032cfca4235e105be4aa4ce059b5",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-MODE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/src/rhs_homotopy.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "18da0f946129f0f6f53536c476cedb91c5ed80e1",
+        "sha256": "167b838b2ddc90175cd66e5db38e0f5d9e4f12277efb33e1104a3c0456f9768c",
+        "size_bytes": 36928,
+        "original_source_sha256": "167b838b2ddc90175cd66e5db38e0f5d9e4f12277efb33e1104a3c0456f9768c",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-HOMOTOPY",
+          "G92-HOMOTOPY"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/src/solver.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "20a7b8b830d94d6e74f8c442e4aac18a8cbb7453",
+        "sha256": "f7da8b7421fb90e28434f7a2f68974586992f0c2fd383350ccd3465a718d138a",
+        "size_bytes": 21380,
+        "original_source_sha256": "f7da8b7421fb90e28434f7a2f68974586992f0c2fd383350ccd3465a718d138a",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-CAUSAL"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "ef776e4ff90ea9f4e3fb020bd977bdfbfcd9db9f",
+        "sha256": "ebc43ae0ef3faada53764f0895c4b6587645d0ee51497a39bfe77d7fcd347330",
+        "size_bytes": 39886,
+        "original_source_sha256": "ebc43ae0ef3faada53764f0895c4b6587645d0ee51497a39bfe77d7fcd347330",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-STRUCTURAL",
+          "G92-STRUCTURAL"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/src/switching.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "d93914690bcc533c38495358be9f5cb487595001",
+        "sha256": "619faddc275f3e2787a05ae78b3676ddb4dbee502d5886d1261fe46a38c8eddd",
+        "size_bytes": 53024,
+        "original_source_sha256": "f99e64b6c28a8ef256d5d87ec53e0604574fc74758aadc4bd18a1821c5ec1905",
+        "same_bytes_as_original_coverage_source": false,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-CAUSAL"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/tests/causal_reuse_contracts.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "7ce842f7ba813476682aa44e4d89b32df4bffa5d",
+        "sha256": "1411cc1c8a2d9662a49c1cd26bb98bf3c86d371f9399857e3a6d3cc5fe43b079",
+        "size_bytes": 8106,
+        "original_source_sha256": "1411cc1c8a2d9662a49c1cd26bb98bf3c86d371f9399857e3a6d3cc5fe43b079",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-CAUSAL"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/tests/cubic_solver_production_contracts.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "b8f2dd9fcfaf1cb065aabfcd10c6c07d17c35a46",
+        "sha256": "ceaf44b8c132815a30dafe3382e495d3282c6340ae78d221ddd4746a68497629",
+        "size_bytes": 7216,
+        "original_source_sha256": "ceaf44b8c132815a30dafe3382e495d3282c6340ae78d221ddd4746a68497629",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-HOMOTOPY",
+          "G92-HOMOTOPY"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "ac2548d11395bb2782c54a11483d34fa8b0d7c78",
+        "sha256": "1c3bc00531b59940bf6dfed0939abb0e9a96f7d46233a7b1564dcff52eb8ad9c",
+        "size_bytes": 12418,
+        "original_source_sha256": "1c3bc00531b59940bf6dfed0939abb0e9a96f7d46233a7b1564dcff52eb8ad9c",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-HOMOTOPY",
+          "G92-HOMOTOPY"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/tests/structural_mean_field_contracts.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "384308186939742ab099981f54fe2b847807b9af",
+        "sha256": "57d407b9e95703c1c2587149cd2f20ed44340bcd39b7bf081cd2ac27da27ffa7",
+        "size_bytes": 9367,
+        "original_source_sha256": "57d407b9e95703c1c2587149cd2f20ed44340bcd39b7bf081cd2ac27da27ffa7",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-STRUCTURAL",
+          "G92-STRUCTURAL"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/tests/structural_production_contracts.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "354ac17270637e788733a053d8b2e83a6e55aafe",
+        "sha256": "51cdbdcf5ca134392a043d0b657619587867217454f57599d25ff78dbfef67e0",
+        "size_bytes": 7929,
+        "original_source_sha256": "51cdbdcf5ca134392a043d0b657619587867217454f57599d25ff78dbfef67e0",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-STRUCTURAL",
+          "G92-STRUCTURAL"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode-coupled/tests/switching_contracts.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "5a45733056e8788a253c85101d7d13ac60429e06",
+        "sha256": "50d020782769c8df37a201a2a84d745ead216c315e90e161d1c13cec06e4eab4",
+        "size_bytes": 10953,
+        "original_source_sha256": "50d020782769c8df37a201a2a84d745ead216c315e90e161d1c13cec06e4eab4",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-CAUSAL"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/examples/adapter_attempt_trace.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "2480322c3796a0b995efd68cb409fcc9b64d22a2",
+        "sha256": "02d85331d805d443f4249cc333886e47f89d9ba167a2dac38ed0f20e6f2dff70",
+        "size_bytes": 5917,
+        "original_source_sha256": "02d85331d805d443f4249cc333886e47f89d9ba167a2dac38ed0f20e6f2dff70",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/examples/adapter_checkpoint_trace.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "2634f170a216ce193565a97aaf75d455dff247f3",
+        "sha256": "985c0b230d0a2cbcb098df49b536a57d4e26d8604f660b528118458a1b6ef58a",
+        "size_bytes": 35777,
+        "original_source_sha256": "985c0b230d0a2cbcb098df49b536a57d4e26d8604f660b528118458a1b6ef58a",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/examples/adapter_gyro_grid.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "f302c1e54fde4c97f257b1859aa2636d72e30f5c",
+        "sha256": "c218d095998114213e73c800b370f74f45214f8f3c76242fa83070d1883e2d91",
+        "size_bytes": 5538,
+        "original_source_sha256": "c218d095998114213e73c800b370f74f45214f8f3c76242fa83070d1883e2d91",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/examples/adapter_integration_pilot.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "093874277fc705d9126520d1fe10f1d14977ee44",
+        "sha256": "43d0002f3de4f6d7db60652fb457ca842960db3b3621bf5138bc95514c759875",
+        "size_bytes": 22846,
+        "original_source_sha256": "43d0002f3de4f6d7db60652fb457ca842960db3b3621bf5138bc95514c759875",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/examples/adapter_phase_grid.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "b58413b2f546b0a4b25d42ea6995026be98fe4fc",
+        "sha256": "7cce77ee56d62834ec21069dec3f940a840b1fcd48d2e4c4bdd01aa6dfe75333",
+        "size_bytes": 14313,
+        "original_source_sha256": "7cce77ee56d62834ec21069dec3f940a840b1fcd48d2e4c4bdd01aa6dfe75333",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/examples/adaptive_causal_bench.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "27ab5b3c839905ac4da6785477a47704c10f1682",
+        "sha256": "d8fae50873660aed420e1342af4de4df2c0586ea37f7fa59eb34f2217583a95e",
+        "size_bytes": 16690,
+        "original_source_sha256": "d8fae50873660aed420e1342af4de4df2c0586ea37f7fa59eb34f2217583a95e",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/examples/audit_adapter_20261027.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "768925a4104fb76783f91696a3d5fd2a2a968d07",
+        "sha256": "7eadc2b0028c4c7343506e2a0b8474ebcd44e519f0f86fe14c16566beee6795e",
+        "size_bytes": 8647,
+        "original_source_sha256": "7eadc2b0028c4c7343506e2a0b8474ebcd44e519f0f86fe14c16566beee6795e",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-ADAPTER"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/examples/local_bottleneck_suite.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "7a735fe9fd99b95c71bc0b4084ba3eb77324d186",
+        "sha256": "bf884a53286efeefe8c7262c9eea6299555a4f21bbf76896b6cd4212e427f2f0",
+        "size_bytes": 23899,
+        "original_source_sha256": "bf884a53286efeefe8c7262c9eea6299555a4f21bbf76896b6cd4212e427f2f0",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/examples/local_bottleneck_support/models.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "2524b0aa839a7732eb01abf63519085d9513bec9",
+        "sha256": "1bfbc7aa146ecbe0fa9a164e92e67d6bffbf7b6966ebea6bb452d4fd1c40d74e",
+        "size_bytes": 38073,
+        "original_source_sha256": "1bfbc7aa146ecbe0fa9a164e92e67d6bffbf7b6966ebea6bb452d4fd1c40d74e",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/examples/nonstiff_bench.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "d9880a96e1a32097fc55da5ed869ca1d88116bf3",
+        "sha256": "6039602762ceb21d283307fb65d39c7803246d17596c43e593c839abf0ef5c38",
+        "size_bytes": 15527,
+        "original_source_sha256": "6039602762ceb21d283307fb65d39c7803246d17596c43e593c839abf0ef5c38",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/examples/production_from_json.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "cc8919a99db6ad7d5cae957a140db858679c08d5",
+        "sha256": "d708f829ce324df67dc8478051476622bbc172fb6a3bc293a1b95ed3ea3f1cad",
+        "size_bytes": 3637,
+        "original_source_sha256": "d708f829ce324df67dc8478051476622bbc172fb6a3bc293a1b95ed3ea3f1cad",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-PRODUCTION",
+          "Q-API"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/examples/production_hardening_bench.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "ea26e5c13a08178cdea3c964083caebb16907d2a",
+        "sha256": "04255d847ea19ed115556b597bcaec311719df0914caca421910a68135f79184",
+        "size_bytes": 8393,
+        "original_source_sha256": "04255d847ea19ed115556b597bcaec311719df0914caca421910a68135f79184",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/examples/production_return_bench_20261027.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "afcf461a5fe7be25d04a20205816317ec1e49f73",
+        "sha256": "2657e4a96ef370eeb1764b19a8bd63ed6590d5a09cae9d8d7f97ddb23ef862d8",
+        "size_bytes": 2706,
+        "original_source_sha256": "2657e4a96ef370eeb1764b19a8bd63ed6590d5a09cae9d8d7f97ddb23ef862d8",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-ADAPTER",
+          "G91-ADAPTER",
+          "G92-ADAPTER"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/examples/selective_jvp_20261027.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "a65b4776a115c9e5d7e8bb224ccdf1bf1f64b98c",
+        "sha256": "56bc6e61871d468dc1bcac3c088ab0131d4a27678c68e2327324b6c4fd044976",
+        "size_bytes": 4567,
+        "original_source_sha256": "56bc6e61871d468dc1bcac3c088ab0131d4a27678c68e2327324b6c4fd044976",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-ADAPTER"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/examples/support/production_return_cases.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "847888d453950bd92a6d13af3ecb25e9a0e6df3b",
+        "sha256": "5934fdb19da9a51939c45f42a68c4a65a46718f312defbbc5c78738fa8495d59",
+        "size_bytes": 6060,
+        "original_source_sha256": "5934fdb19da9a51939c45f42a68c4a65a46718f312defbbc5c78738fa8495d59",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-ADAPTER",
+          "G91-ADAPTER",
+          "G92-ADAPTER"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/src/causal_budget.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "93df2a2da99000e6a90de171b604704bc3ab3407",
+        "sha256": "38e49c94126c0a9db6bd4ed26f950371d15f83eb3e2988c49503f20047654af7",
+        "size_bytes": 10246,
+        "original_source_sha256": "38e49c94126c0a9db6bd4ed26f950371d15f83eb3e2988c49503f20047654af7",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/src/execution_policy.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "e653855a24bb14742ef8fc480e9ecaea19b1ca6f",
+        "sha256": "bbc4d80f4c9ca5a2a14d7cbfcaf2bdf0387f10221a6329a5af7a74dfec17c4ab",
+        "size_bytes": 28219,
+        "original_source_sha256": "bbc4d80f4c9ca5a2a14d7cbfcaf2bdf0387f10221a6329a5af7a74dfec17c4ab",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/src/lawson.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "3f4c79a244b2c66808754fe7b55a9d34f5ffef87",
+        "sha256": "467320cac3ac7098b9097f8550552c7006501d014f0fe337abe07e30983d740b",
+        "size_bytes": 10666,
+        "original_source_sha256": "467320cac3ac7098b9097f8550552c7006501d014f0fe337abe07e30983d740b",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/src/lib.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "9370f4e50e454dd43472160c8d65e4fdcd030e8a",
+        "sha256": "288d14c142da8a33979db972b49fba098bc970ef80ca20f7bfb0f9af6d0b0dae",
+        "size_bytes": 10319,
+        "original_source_sha256": "288d14c142da8a33979db972b49fba098bc970ef80ca20f7bfb0f9af6d0b0dae",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-PRODUCTION",
+          "Q-API"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/src/production.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "6747a9b30460dc8bf61cb3e63bf6ec43da95d97d",
+        "sha256": "f46d917cb8205799840b38a5ae8b310b0e785969b5c482b478adfc557a89888c",
+        "size_bytes": 7587,
+        "original_source_sha256": "f46d917cb8205799840b38a5ae8b310b0e785969b5c482b478adfc557a89888c",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-PRODUCTION",
+          "Q-API"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/src/selection.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "380f156458d06aec18c577a5f28ebf3e31200513",
+        "sha256": "802d485721ddb0ec7902c3d31aa4eedcca6cb78323274d6a95e5cb170693df7f",
+        "size_bytes": 10119,
+        "original_source_sha256": "802d485721ddb0ec7902c3d31aa4eedcca6cb78323274d6a95e5cb170693df7f",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-HYGIENE"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/src/switching.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "fb12a401002c0039631a43982cc296a494c366a2",
+        "sha256": "119f2a70d5d8be82816e9c236f4b06644faffe2df545a93b824deeb6ce356bbf",
+        "size_bytes": 137600,
+        "original_source_sha256": "119f2a70d5d8be82816e9c236f4b06644faffe2df545a93b824deeb6ce356bbf",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-ADAPTER",
+          "G91-ADAPTER",
+          "G92-ADAPTER",
+          "Q-API"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/tests/comparator_dominance_contracts.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "564a96fbcc7fab40a325285f552239d204a84da0",
+        "sha256": "bce1765140085bd43d4b7da052a92f38a74f11be731b240edc2b5412059348ab",
+        "size_bytes": 4491,
+        "original_source_sha256": "bce1765140085bd43d4b7da052a92f38a74f11be731b240edc2b5412059348ab",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-ADAPTER"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/tests/entry_checkpoint_seed_contracts.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "cdbfb444d9dce9f327d796b9fd5f11e9fc63ed88",
+        "sha256": "4ba797699e180e9e0ab2cad4619ecf26356156cd19fcd39711c66ff7c35c192a",
+        "size_bytes": 8094,
+        "original_source_sha256": "4ba797699e180e9e0ab2cad4619ecf26356156cd19fcd39711c66ff7c35c192a",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G91-ADAPTER"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/tests/evidence_switch_contracts.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "94abdad73a0f354f16ef67dfe2c1f31d2ccd26f5",
+        "sha256": "9a39bf763f8e97c1c16f09a5a53cddf786cc12ef7e53d5da5f09af6b9f35a22e",
+        "size_bytes": 8394,
+        "original_source_sha256": "9a39bf763f8e97c1c16f09a5a53cddf786cc12ef7e53d5da5f09af6b9f35a22e",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-ADAPTER",
+          "G91-ADAPTER",
+          "G92-ADAPTER"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/tests/production_setup_contracts.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "244370065584da5ad9b11d97c9eda73ffb32aa30",
+        "sha256": "ec0c0607f04bd66183e3eded0145bfe6401fab42af8595f12d68f44668818a97",
+        "size_bytes": 6408,
+        "original_source_sha256": "ec0c0607f04bd66183e3eded0145bfe6401fab42af8595f12d68f44668818a97",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G92-PRODUCTION",
+          "Q-API"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/tests/return_sentinel_contracts.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "df33cd437f0de83da4acb903745906b2873dc0fa",
+        "sha256": "e653f64443597f69a27aa37bf410fb38fe87c78f27a914f19a27bb49e6133d3a",
+        "size_bytes": 12432,
+        "original_source_sha256": "e653f64443597f69a27aa37bf410fb38fe87c78f27a914f19a27bb49e6133d3a",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-ADAPTER",
+          "G91-ADAPTER",
+          "G92-ADAPTER"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/tests/strict_return_work_contracts.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "07079334e1d656fe6c944e29ea6543b12c6d5206",
+        "sha256": "e852ff7860d9b9ae4f9ae411988ae8d5b99dc3d56b63d6025b0d7842d087e585",
+        "size_bytes": 3641,
+        "original_source_sha256": "e852ff7860d9b9ae4f9ae411988ae8d5b99dc3d56b63d6025b0d7842d087e585",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-ADAPTER",
+          "G91-ADAPTER",
+          "G92-ADAPTER"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      },
+      {
+        "path": "crates/vigilode/tests/switching_persistent_explicit.rs",
+        "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+        "git_blob": "f3c330b80c2e0959226ff33bb5f056df3b4c694a",
+        "sha256": "272df88ef74f1ce01ba36cdea3f73bfece587afa07c2e528680332dd54fe3e04",
+        "size_bytes": 9669,
+        "original_source_sha256": "272df88ef74f1ce01ba36cdea3f73bfece587afa07c2e528680332dd54fe3e04",
+        "same_bytes_as_original_coverage_source": true,
+        "present_in_git_tree": true,
+        "present_in_sparse_worktree": true,
+        "original_gate_ids": [
+          "G-BUILD",
+          "G-RELEASE",
+          "G90-ADAPTER",
+          "G91-ADAPTER",
+          "G92-ADAPTER"
+        ],
+        "semantic_validation": "NOT_INFERRED_FROM_FILE_PRESENCE_OR_HASH"
+      }
+    ],
+    "meaning": "Presence/identity bookkeeping; later PR96 modifications and new bounded changes require their own semantic evidence."
+  },
+  "interactions": {
+    "count": 10,
+    "gates": [
+      {
+        "id": "I-STATE",
+        "purpose": "Complete probe-session continuation vs uninterrupted session, including rejection and registered intermediate observations.",
+        "parent_tasks": [
+          "PR-N04"
+        ],
+        "original_status": "PROSPECTIVE_NOT_RUN",
+        "current_full_gate_status": "OPEN_NOT_CLOSED_BY_BOUNDED_COMPONENT_TESTS"
+      },
+      {
+        "id": "I-EPOCH",
+        "purpose": "Warm LU/causal/polynomial plans survive identical keys and invalidate on step, chart, norm, model, provider or arithmetic epoch change.",
+        "parent_tasks": [
+          "PR-N01",
+          "PR-N03",
+          "PR-N04",
+          "PR-N05"
+        ],
+        "original_status": "PROSPECTIVE_NOT_RUN",
+        "current_full_gate_status": "OPEN_NOT_CLOSED_BY_BOUNDED_COMPONENT_TESTS"
+      },
+      {
+        "id": "I-WORK",
+        "purpose": "Original-target refusal, diagnostic residual, fatal callback failure and all joined worker work; independent physical callback counters.",
+        "parent_tasks": [
+          "Q-FAIR-AB",
+          "PR-N04",
+          "PR-N05"
+        ],
+        "original_status": "PROSPECTIVE_NOT_RUN",
+        "current_full_gate_status": "OPEN_NOT_CLOSED_BY_BOUNDED_COMPONENT_TESTS"
+      },
+      {
+        "id": "I-BUDGET",
+        "purpose": "Correct flow/discrete anchor, physical norm, no missing or double-counted edge, internal vs observation clock, same-state Pareto labels.",
+        "parent_tasks": [
+          "PR-N01",
+          "PR-N02",
+          "PR-N03",
+          "PR-N05"
+        ],
+        "original_status": "PROSPECTIVE_NOT_RUN",
+        "current_full_gate_status": "OPEN_NOT_CLOSED_BY_BOUNDED_COMPONENT_TESTS"
+      },
+      {
+        "id": "I-POLY",
+        "purpose": "Target-specific fused distinct/same-vector outputs, degree and rounded-boundary cases, quotient coefficient defects, denominator/refinement-floor refusal and fallback.",
+        "parent_tasks": [
+          "PR-N01",
+          "PR-N05"
+        ],
+        "original_status": "PROSPECTIVE_NOT_RUN",
+        "current_full_gate_status": "OPEN_NOT_CLOSED_BY_BOUNDED_COMPONENT_TESTS"
+      },
+      {
+        "id": "I-ROOT",
+        "purpose": "Old/new accuracy planner crossed with identical root backend; zero/linear/cubic, branch ambiguity, representation/update/clock floors.",
+        "parent_tasks": [
+          "PR-N02",
+          "PR-N04"
+        ],
+        "original_status": "PROSPECTIVE_NOT_RUN",
+        "current_full_gate_status": "OPEN_NOT_CLOSED_BY_BOUNDED_COMPONENT_TESTS"
+      },
+      {
+        "id": "I-STRUCTURE",
+        "purpose": "Exact and near quotient relation against original full-space stage residual; virtual and exact domain enclosure; effectful/stage-observer compatibility.",
+        "parent_tasks": [
+          "PR-N03",
+          "PR-N05"
+        ],
+        "original_status": "PROSPECTIVE_NOT_RUN",
+        "current_full_gate_status": "OPEN_NOT_CLOSED_BY_BOUNDED_COMPONENT_TESTS"
+      },
+      {
+        "id": "I-NEGATIVE",
+        "purpose": "Nonnormal spectrum trap, two-root ambiguity, unstable variable-step product, old W-filtered failure, loose upper floor vs true lower impossibility.",
+        "parent_tasks": [
+          "Q-NEGATIVE",
+          "PR-N01",
+          "PR-N06"
+        ],
+        "original_status": "PROSPECTIVE_NOT_RUN",
+        "current_full_gate_status": "OPEN_NOT_CLOSED_BY_BOUNDED_COMPONENT_TESTS"
+      },
+      {
+        "id": "I-PROFILE",
+        "purpose": "Test, measurement and actual release/LTO results on floating/branch-sensitive fixtures with executable/compiler/libm identity.",
+        "parent_tasks": [
+          "L-RELEASE",
+          "L-HARDWARE"
+        ],
+        "original_status": "PROSPECTIVE_NOT_RUN",
+        "current_full_gate_status": "OPEN_NOT_CLOSED_BY_BOUNDED_COMPONENT_TESTS"
+      },
+      {
+        "id": "I-CLIENT",
+        "purpose": "Every returned physical state/observation, independent oracle and strongest eligible persistent/structural/CG/coupled comparator, all work charged.",
+        "parent_tasks": [
+          "R-QUALIFY"
+        ],
+        "original_status": "PROSPECTIVE_NOT_RUN",
+        "current_full_gate_status": "OPEN_NOT_CLOSED_BY_BOUNDED_COMPONENT_TESTS"
+      }
+    ]
+  },
+  "ancestry": [
+    {
+      "role": "main",
+      "commit": "8d0c79184e09efb5bdadc24a6315c60a71a44264",
+      "is_ancestor_of_execution_source": true
+    },
+    {
+      "role": "PR90",
+      "commit": "68a28357d960c4c2743c299770f0a33ef63245b2",
+      "is_ancestor_of_execution_source": true
+    },
+    {
+      "role": "PR91",
+      "commit": "206298b4068d923bb47c7160b111b7439098660c",
+      "is_ancestor_of_execution_source": true
+    },
+    {
+      "role": "PR92",
+      "commit": "7eb2dd0ffda39afb2871d76700a720986ff09fe0",
+      "is_ancestor_of_execution_source": true
+    },
+    {
+      "role": "PR93",
+      "commit": "384dba091a3d9e1aac0ecddec264958298239253",
+      "is_ancestor_of_execution_source": true
+    },
+    {
+      "role": "PR94_delivery",
+      "commit": "e935878fefe795a1b7e88aba64e5e30ef7be1578",
+      "is_ancestor_of_execution_source": true
+    },
+    {
+      "role": "PR96",
+      "commit": "13f3298bd0213f121e07385903f9508c435ad6a1",
+      "is_ancestor_of_execution_source": true
+    },
+    {
+      "role": "PR97",
+      "commit": "87465835d9d21298d235917f036580b0b53ab645",
+      "is_ancestor_of_execution_source": true
+    },
+    {
+      "role": "PR95_separate",
+      "commit": "36104bfc65d1fdc695c8acea383c54b50a1c4e78",
+      "is_ancestor_of_execution_source": false
+    }
+  ],
+  "changed_crate_paths_since_pr97": [
+    {
+      "path": "crates/vigilode-coupled/examples/trace_support_campaign.rs",
+      "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "git_blob": "fcaef69fd5acbca8bcf3a0cf4dcccadaa77cc4b5",
+      "sha256": "1fa54dc766690fb678b481308037ded12c53aec05405633857f8450620f62e60",
+      "size_bytes": 14983,
+      "role": "example only",
+      "task": "PR-N05",
+      "description": "Frozen eager baseline versus support-only native public query; exact companion/multiplicity oracle, same singleton interval target, paired complete-call samples; not an ODE trajectory benchmark",
+      "interaction_links": [
+        "I-POLY",
+        "I-PROFILE"
+      ],
+      "native_status": "PENDING_SEPARATE_RECEIPT"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/switching.rs",
+      "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "git_blob": "d93914690bcc533c38495358be9f5cb487595001",
+      "sha256": "619faddc275f3e2787a05ae78b3676ddb4dbee502d5886d1261fe46a38c8eddd",
+      "size_bytes": 53024,
+      "role": "production module",
+      "task": "PR-N04",
+      "description": "Guarded protected-reference promotion transfers owned prepared snapshot; legal prepare/observe word refinement retains control/physical state and removes the redundant coordinate copy; synthetic transducer tests/benchmark",
+      "interaction_links": [
+        "I-STATE",
+        "I-EPOCH",
+        "I-WORK"
+      ],
+      "native_status": "PENDING_SEPARATE_RECEIPT"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/trace_quotient.rs",
+      "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "git_blob": "1bfed5b06093a041d1cf9d5b192cabe11b71ee2b",
+      "sha256": "b1f116d88d073ad22db6a9cca38e0ab44840f10604d57f5e401a72996a28ee43",
+      "size_bytes": 32324,
+      "role": "production module",
+      "task": "PR-N05",
+      "description": "Polynomial trace evaluates exact live support only, validating every coefficient first; same all-complex algebraic-multiplicity semantics and outward arithmetic; avoids irrelevant high-moment overflow",
+      "interaction_links": [
+        "I-POLY",
+        "I-STRUCTURE"
+      ],
+      "native_status": "PENDING_SEPARATE_RECEIPT"
+    }
+  ],
+  "budget_overlay": {
+    "rule": "Cumulative overlay only; original plan is unchanged and no task is renamed to reset an allowance. Coherent prepublication correction episodes are included. Future execution repairs must be separately charged.",
+    "evidence": [
+      "research/production_rvj_nag_20261028/CURRENT_STATE.json",
+      "research/production_rvj_nag_20261028/LOCAL_CODEX_HANDOFF_KO.md",
+      "research/dynamics_symbolic_validation_20261028/PREREGISTRATION.md"
+    ],
+    "counters": [
+      {
+        "id": "R-STRUCT",
+        "correction_loops_used": 3,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 3,
+        "remaining": 0,
+        "status": "EXHAUSTED_PRESERVED"
+      },
+      {
+        "id": "R-HOMO",
+        "correction_loops_used": 1,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 1,
+        "remaining": 2,
+        "status": "PRESERVED_CUMULATIVE"
+      },
+      {
+        "id": "R-ADAPT",
+        "correction_loops_used": 3,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 3,
+        "remaining": 0,
+        "status": "EXHAUSTED_PRESERVED"
+      },
+      {
+        "id": "I-PROD",
+        "correction_loops_used": 1,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 1,
+        "remaining": 2,
+        "status": "PRESERVED_CUMULATIVE"
+      },
+      {
+        "id": "PR-N01",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 0,
+        "remaining": 3,
+        "status": "PRESERVED_CUMULATIVE"
+      },
+      {
+        "id": "PR-N02",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 0,
+        "remaining": 3,
+        "status": "PRESERVED_CUMULATIVE"
+      },
+      {
+        "id": "PR-N03",
+        "correction_loops_used": 2,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 0,
+        "remaining": 1,
+        "status": "PRESERVED_CUMULATIVE"
+      },
+      {
+        "id": "PR-N04",
+        "correction_loops_used": 1,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 0,
+        "remaining": 2,
+        "status": "PRESERVED_CUMULATIVE"
+      },
+      {
+        "id": "PR-N05",
+        "correction_loops_used": 2,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 0,
+        "remaining": 1,
+        "status": "PRESERVED_CUMULATIVE"
+      },
+      {
+        "id": "PR-N06",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 0,
+        "remaining": 3,
+        "status": "PRESERVED_CUMULATIVE"
+      },
+      {
+        "id": "Q-LEDGER",
+        "correction_loops_used": 1,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 0,
+        "remaining": 2,
+        "status": "PRESERVED_CUMULATIVE"
+      },
+      {
+        "id": "Q-GIVENS",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 0,
+        "remaining": 3,
+        "status": "PRESERVED_CUMULATIVE"
+      },
+      {
+        "id": "Q-FAIR-AB",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 0,
+        "remaining": 3,
+        "status": "PRESERVED_CUMULATIVE"
+      },
+      {
+        "id": "Q-BENCH",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 0,
+        "remaining": 3,
+        "status": "PRESERVED_CUMULATIVE"
+      },
+      {
+        "id": "Q-LINT",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 0,
+        "remaining": 3,
+        "status": "PRESERVED_CUMULATIVE"
+      },
+      {
+        "id": "Q-API",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 0,
+        "remaining": 3,
+        "status": "PRESERVED_CUMULATIVE"
+      },
+      {
+        "id": "Q-NEGATIVE",
+        "correction_loops_used": 0,
+        "correction_loops_max": 3,
+        "historical_frozen_used": 0,
+        "remaining": 3,
+        "status": "PRESERVED_CUMULATIVE"
+      }
+    ]
+  },
+  "evidence_layers": {
+    "original_source_replay_this_turn": "NOT_RUN",
+    "source_read_and_prior_evidence_reuse": "Identity-checked PR94 frozen contracts, PR96 compact results and PR97 source/results; no assertion of recovered PR96 unavailable /tmp raw data",
+    "current_cumulative_native": "PENDING_AT_THIS_METADATA_SNAPSHOT; parent is executing source58ec9b and will attach distinct receipts",
+    "mathematical_reuse": "Completed signed logarithmic norm, original quartic Newton/companion identities and PR97 multiplicity/closure proofs retain their stated assumptions",
+    "authority_checker": "NOT_RUN_ON_SPARSE_TREE; object existence checks here do not replace full typed repository/object authority qualification"
+  },
+  "negative_evidence": {
+    "pr96_summary_identity": {
+      "path": "research/cumulative_validation_20261028/SUMMARY.json",
+      "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "git_blob": "853d3d11605badfef9be61fdcf7ec0973d5ed171",
+      "sha256": "07a24f0310d6e451347db118cdae809e2ea56aee0885fb2722158aec33f1187f",
+      "size_bytes": 15467
+    },
+    "pr96_retained": {
+      "q_negative": "REPRODUCED_SCIENTIFIC_FAIL 15/7 >1.3; Off interior 311.467",
+      "q_ledger": "FAIL missing 49 current; PR94 CI missing 53; candidate repair rejected",
+      "fmt": "FAIL inherited two coupled files; no new paths",
+      "bench_driver": "NOT_ACCEPTED_NOT_RUN after independent review",
+      "rapid_initial": "FAILED_COMMON_ERROR_CAP 1.0473060774418563e-4 >1e-4",
+      "vendor_validator": "NOT_VALIDATED: direct invocation exit 2 due required vendor_dir argument; locked offline metadata and builds passed"
+    },
+    "pr97_results_identity": {
+      "path": "research/production_rvj_nag_20261028/RESULTS.json",
+      "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "git_blob": "99e0a317d045300130d4c7d1cc51c5c54e934b02",
+      "sha256": "92e251a5188b66c197ebfb8167fc138656ce209799c829261c1860ce824a9b10",
+      "size_bytes": 6470
+    },
+    "pr97_state_identity": {
+      "path": "research/production_rvj_nag_20261028/CURRENT_STATE.json",
+      "source_commit": "58ec9b053163da6b6f0906010e0422c104db72fd",
+      "git_blob": "4a86cbb130573d561c5da04ba031e78e0fc0b4df",
+      "sha256": "659f18d2f0c86638082fe024661ea98f74cb952867456c644db0d0be5818749e",
+      "size_bytes": 1916
+    },
+    "pr97_retained": [
+      "12 cyclic nonadmitted cells and all7 timing repeats retained in source packet",
+      "Trace whole-trajectory median ratio0.91055 with overlapping ranges/shared faster4of7; no stable improvement",
+      "Trace residual certificate first passing tested grid256 versus exact-reference grid64; earlier certificate refusals are not proven physical error failures",
+      "Authority missing56 fuller CI and178 partial-checkout result remain distinct; historical PR94 missing53 and PR96 missing49 preserved",
+      "Givens historical pin failure candidate Ok3640 atscale1e14 remains source/profile-specific pending exact exported-bit audit",
+      "SUNDIALS comparator MPI header build failure remains environment/qualification gate"
+    ],
+    "pr97_ci_snapshot": {
+      "docs": "FAIL_INTRODUCED_RUSTDOC_LINKS_CORRECTED",
+      "research_process": "FAIL_AUTHORITY_MISSING56_FULLER_CI_CHECKOUT",
+      "bench": "FAIL_BUILD_SUNDIALS_MPI_HEADER_UNAVAILABLE_TO_GCC",
+      "clippy": "PASS",
+      "fmt": "PASS",
+      "other_jobs": "PENDING_AT_OBSERVATION",
+      "test": "FAIL_PRIOR_GIVENS_HISTORICAL_OUTCOME_PIN_CANDIDATE_OK_AT_SCALE1E14"
+    }
+  },
+  "pr95_conditional_source_theory": {
+    "commit": "36104bfc65d1fdc695c8acea383c54b50a1c4e78",
+    "merged_into_execution_source": false,
+    "read_method": "git show exact pinned commit; no imports or execution",
+    "read_files": [
+      {
+        "path": "research/v8_source_chemical_jacobian_remainder_20261028/theory/THEORY_KO.md",
+        "source_commit": "36104bfc65d1fdc695c8acea383c54b50a1c4e78",
+        "git_blob": "4d5a909e5b256c11f393210258f0952cf3b18399",
+        "sha256": "f0050ea5065f01cfc3d281caed6b101469830eaf5fc45dbe4cc3bb8dcd1de6c3",
+        "size_bytes": 30297
+      },
+      {
+        "path": "research/v8_source_chemical_jacobian_remainder_20261028/ADMISSION.json",
+        "source_commit": "36104bfc65d1fdc695c8acea383c54b50a1c4e78",
+        "git_blob": "0d4d2769b001603ab1667e63acda49472c38f8ee",
+        "sha256": "f270febae85fac333069b8e4356c04fdd62114ea36ba55852802e45514048701",
+        "size_bytes": 5021
+      },
+      {
+        "path": "research/v8_source_chemical_jacobian_remainder_20261028/NEXT_RESEARCH_KO.md",
+        "source_commit": "36104bfc65d1fdc695c8acea383c54b50a1c4e78",
+        "git_blob": "0a92c237d0524a341f614811ab0e5d6c2c968d80",
+        "sha256": "783a5518cc43da20d258c25cbbe524bc8ecaee8d0323c89d404638cd95d14a28",
+        "size_bytes": 3148
+      }
+    ],
+    "source_binding": {
+      "bass_commit": "cc602e209e7deeb511ab2a1f3b2268d55206c43c",
+      "binding_id": "8cb268e8de741e284cf494013f1e0748d27f03c5e77ba0c64413ae92af082d16",
+      "norm_blob": "95efe19477aba8efe378a1f5e083c09b2cdffb69",
+      "chemical_indices_reduced30": [
+        23,
+        24,
+        25,
+        26,
+        27,
+        28
+      ],
+      "REI25": "SEPARATE_BINDING",
+      "H_total": "9007199254740991/9007199254740992"
+    },
+    "equations": {
+      "field": "F(z)=b+Pz+(e^T z)Qz",
+      "Jacobian": "J(z)=P+(e^T z)Q+(Qz)e^T",
+      "Hessian": "D^2F[d,h]=(e^T d)Qh+(e^T h)Qd",
+      "remainder": "F(z+d)-F(z)-J(z)d=(e^T d)Qd",
+      "carrier_mismatch": "Gamma*rho^2 + deltaJ*rho when the carried Jacobian differs"
+    },
+    "conditions": "Frozen represented weights/totals and supplied effective rates gamma=Gamma_photo/H,kappa=n_b*alpha/H; isotope equality, n/T zero restriction, reduced30 chemical coordinates23..28 and fixed physical33 norm",
+    "scope": "Reuse conditional chemical component identities; does not furnish a general full-model contractive field or permit omitting electron-feedback outer product",
+    "original_admission": "PASS_SCOPED",
+    "open_obligations": [
+      "Actual source effective-rate enclosures across declared clock/geometry tube",
+      "Original owner-prepared scale array observation and source-manifest-body recovery; current witness is source reconstructed under RN/fsum assumptions",
+      "Callback arithmetic/evaluation and query rounding",
+      "Chemical geometry columns -Fchem*(grad log H)^T; geometry and Thomson/tau rows",
+      "Full30 Jacobian/lognorm and complete residual/initial/inherited/source bounds on linking/continuation domain",
+      "Actual accepted-step/capsule inclusion and ODE solution enclosure",
+      "Continuous-angle positivity"
+    ],
+    "ceilings": {
+      "query_rounding_bound": null,
+      "actual_query_rounding_bound": null,
+      "whole_domain_certificate": false,
+      "actual_ode_solution_enclosure": false,
+      "VerifiedModelProvider": null,
+      "V7fullrestore": "NOT_RUN",
+      "production": "HOLD",
+      "globalphysicalcompletion": null,
+      "L4": false
+    },
+    "new_scientific_execution": "NOT_RUN"
+  },
+  "production_status": "HOLD",
+  "global_completion": null,
+  "required_open_gates": [
+    "Q-LEDGER typed repository/object authority",
+    "Q-API downstream compatibility",
+    "Q-GIVENS source/profile exact-residual qualification",
+    "Q-BENCH SUNDIALS/MPI environment and physical comparator",
+    "Q-NEGATIVE retained scientific cost failure",
+    "all10 full interaction campaigns",
+    "full N01-N06 tasks",
+    "supported-feature ignored tests",
+    "standalone vendor graph and release qualification",
+    "actual physical client/rate/rounding/full-model enclosure"
+  ]
+}
