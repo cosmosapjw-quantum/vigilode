@@ -226,7 +226,6 @@ impl Rodas5p {
                     RoutingError::Structure(s) => SolveError::StructureRefused(s.to_string()),
                     RoutingError::Integration(c) => driver_error(c, &guard),
                 })?;
-                let partial = routed.partial.clone();
                 let (driver_id, attempts, accepted, rejected, driver_work) = match &routed.run {
                     RoutedRun::Banded(r) => (
                         r.fast.driver,
@@ -272,8 +271,16 @@ impl Rodas5p {
                         },
                     ),
                 };
+                // This facade consumes the routed result. Transfer its owned
+                // rows instead of cloning the complete observation table.
+                // Driver arithmetic and callback effects have already run.
+                let observed = match routed.run {
+                    RoutedRun::Banded(r) => r.fast.observed,
+                    RoutedRun::Dense(r) => r.observed,
+                    RoutedRun::MatrixFree(r) => r.observed,
+                };
                 Run {
-                    observed: routed.run.observed().clone(),
+                    observed,
                     attempts,
                     accepted_steps: accepted,
                     rejected_steps: rejected,
@@ -284,7 +291,7 @@ impl Rodas5p {
                         driver_id,
                         routing: Some(routed.routing.into()),
                     },
-                    partial,
+                    partial: routed.partial,
                     segments: None,
                 }
             }
@@ -527,6 +534,14 @@ impl Rodas5p {
             )),
         };
 
+        // Preserve the scalar stop record before transferring any accepted
+        // partial-state row into the public output.
+        let stop = run.partial.as_ref().map(|partial| StopRecord {
+            t: partial.t,
+            reason: (&partial.reason).into(),
+            last_failure: partial.last_failure.as_ref().map(Into::into),
+        });
+
         // The returned states: every accepted step under dense output;
         // otherwise the driver's samples, followed after a failure by the
         // last accepted state.
@@ -549,21 +564,16 @@ impl Rodas5p {
                 (t, y)
             }
             None => {
-                let (mut t, mut y) = (run.observed.t.clone(), run.observed.y.clone());
-                if let Some(partial) = &run.partial
+                let (mut t, mut y) = (run.observed.t, run.observed.y);
+                if let Some(partial) = run.partial
                     && t.last().is_none_or(|&last| last < partial.t)
                 {
                     t.push(partial.t);
-                    y.push(partial.y.clone());
+                    y.push(partial.y);
                 }
                 (t, y)
             }
         };
-        let stop = run.partial.as_ref().map(|partial| StopRecord {
-            t: partial.t,
-            reason: (&partial.reason).into(),
-            last_failure: partial.last_failure.as_ref().map(Into::into),
-        });
 
         let stats = Stats {
             schema: STATS_SCHEMA,

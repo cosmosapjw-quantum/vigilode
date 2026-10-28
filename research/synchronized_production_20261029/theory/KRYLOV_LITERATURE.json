@@ -1,0 +1,56 @@
+{
+  "retrieved_on": "2026-10-29",
+  "service": "Exa",
+  "scope": "Primary literature for GMRES, reorthogonalization, recycling and logarithmic norms; source-code-specific lemmas are independently derived",
+  "sources": [
+    {
+      "url": "https://www.karlin.mff.cuni.cz/~strakos/download/2006_PaRoSt.pdf",
+      "doi": "10.1137/050630416",
+      "title": "Modified Gram–Schmidt (MGS), Least Squares, and Backward Stability of MGS-GMRES",
+      "authors": "Christopher C. Paige; Miroslav Rozložník; Zdeněk Strakoš",
+      "year": 2006,
+      "retrieval": "Exa search plus author-hosted PDF fetch, first 10000 characters",
+      "relation": "contextual",
+      "use": "Distinguishes backward stability of a specific MGS-GMRES method from a blanket guarantee for changing preconditioned monitored variants. No one-pass replacement adopted."
+    },
+    {
+      "url": "https://personal.math.vt.edu/sturler/publications/SISC_KrylovRecycling_2006.pdf",
+      "doi": "10.1137/040607277",
+      "title": "Recycling Krylov Subspaces for Sequences of Linear Systems",
+      "authors": "Michael L. Parks; Eric de Sturler; Greg Mackey; Duane D. Johnson; Spandan Maiti",
+      "year": 2006,
+      "retrieval": "Exa search plus author-hosted PDF fetch, first 10000 characters",
+      "relation": "contextual",
+      "use": "Recycling changes the retained subspace and its current operator images; source-specific shifted-image defect identity is derived in K4, not attributed as a new general recycling method."
+    },
+    {
+      "url": "https://doi.org/10.1007/978-3-031-74379-5_1",
+      "title": "Why logarithmic norms?",
+      "authors": "Gustaf Söderlind",
+      "year": 2024,
+      "retrieval": "Exa search primary chapter excerpt",
+      "relation": "contextual",
+      "use": "Signed stability bounds motivate the weighted numerical-abscissa assumption. K3.3 is proved directly by the weighted inner-product coercivity argument."
+    }
+  ],
+  "symbolic_check": {
+    "service": "Wolfram Language evaluator",
+    "input": "Table[With[{p = Sum[Subscript[a,j] z^j,{j,0,d-1}]+z^d, den=Sum[If[j==d,1,Subscript[a,j]] s^(d-j),{j,0,d}], num=Sum[Sum[If[j==d,1,Subscript[a,j]] s^(d-j+k),{j,k+1,d}] z^k,{k,0,d-1}]}, Expand[(1-s z) num-den+s^d p]],{d,1,6}]",
+    "output": "Out[1]= {0, 0, 0, 0, 0, 0}",
+    "status": "completed",
+    "scope": "Coefficient identity for six symbolic degrees; general proof is K3.1 coefficient cancellation"
+  },
+  "exact_check": {
+    "runtime": "Python3 fractions.Fraction",
+    "exit_code": 0,
+    "cases": 8,
+    "matrix": [[-1,2,0],[0,-2,0],[0,0,-9]],
+    "polynomial": "z^2+3z+2",
+    "rhs": [["1","1","0"],["1","1","1/1000"]],
+    "sigmas": ["0","1/16","1/2","2"],
+    "third_residual_exact_rhs": ["0","0","0","0"],
+    "third_residual_near_rhs": ["0","7/38250","7/1500","28/1875"],
+    "status": "PASS_EXACT_RATIONAL",
+    "scope": "Original matrix residual equals sigma^2 p(J)v / D exactly; not a float performance measurement"
+  }
+}

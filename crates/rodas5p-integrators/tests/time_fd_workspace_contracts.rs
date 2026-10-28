@@ -109,7 +109,7 @@ fn output_pairs(times: &[f64], states: &[Vec<f64>]) -> Vec<(f64, Vec<f64>)> {
 }
 
 fn compare_counters_except_fallback_rhs(a: &WorkCounters, b: &WorkCounters) {
-    let mut expected = b.clone();
+    let mut expected = *b;
     expected.rhs_calls += 2 * expected.ft_calls;
     expected.rhs_evaluations += 2 * expected.ft_calls;
     assert_eq!(*a, expected);

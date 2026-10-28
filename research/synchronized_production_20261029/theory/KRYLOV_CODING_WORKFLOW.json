@@ -1,0 +1,131 @@
+{
+  "schema_version": 1,
+  "workflow_version": "1.0.0",
+  "task": "coding",
+  "unit_id": "PR-N01-live-workspace-and-directional-oracle",
+  "objective": "Implement admitted K1 basis-only storage refinement and K3 exact reference oracle",
+  "scope": "No MGS/QR arithmetic or stopping-rule change; no native quotient dispatch adoption",
+  "status": "in_progress",
+  "baseline_source": "bc5ddbe42b24b1a6364bf653c3e2d6d938ca4087",
+  "theory": "theory/KRYLOV.md",
+  "owner": "PR-N01",
+  "correction_episode": "Global episode1; root campaign ledger is authoritative",
+  "stages": [
+    {
+      "id": "C1",
+      "status": "complete",
+      "reason": "Same PR101 source and production route; resource change separated from numeric parity",
+      "evidence_refs": [
+        "theory/KRYLOV.md"
+      ]
+    },
+    {
+      "id": "C2",
+      "status": "complete",
+      "reason": "K1 basis/directions live-field analysis; K3 original residual code path",
+      "evidence_refs": [
+        "theory/KRYLOV.md"
+      ]
+    },
+    {
+      "id": "C3",
+      "status": "complete",
+      "reason": "Same arithmetic K1; exact rational algebra plus independent Gaussian oracle K3",
+      "evidence_refs": [
+        "theory/KRYLOV.md"
+      ]
+    },
+    {
+      "id": "C4",
+      "status": "complete",
+      "reason": "Root owns source publication/build; agents own disjoint edits",
+      "evidence_refs": [
+        "theory/KRYLOV.md"
+      ]
+    },
+    {
+      "id": "C5",
+      "status": "complete",
+      "reason": "Implemented K1 and4 tests; exact K3 oracle and9 tests authored",
+      "evidence_refs": [
+        "crates/rodas5p-krylov/src/workspace.rs",
+        "crates/rodas5p-krylov/src/gmres_into.rs",
+        "crates/rodas5p-krylov/tests/basis_only_workspace_contracts.rs",
+        "research/synchronized_production_20261029/code/directional_quotient.py",
+        "research/synchronized_production_20261029/code/test_directional_quotient.py"
+      ]
+    },
+    {
+      "id": "C6",
+      "status": "pending",
+      "reason": "Pending source publication and actual tests",
+      "evidence_refs": [
+        "crates/rodas5p-krylov/src/workspace.rs",
+        "crates/rodas5p-krylov/src/gmres_into.rs",
+        "crates/rodas5p-krylov/tests/basis_only_workspace_contracts.rs",
+        "research/synchronized_production_20261029/code/directional_quotient.py",
+        "research/synchronized_production_20261029/code/test_directional_quotient.py"
+      ]
+    },
+    {
+      "id": "C7",
+      "status": "pending",
+      "reason": "K3 independent residual/error bound tests pending execution",
+      "evidence_refs": [
+        "crates/rodas5p-krylov/src/workspace.rs",
+        "crates/rodas5p-krylov/src/gmres_into.rs",
+        "crates/rodas5p-krylov/tests/basis_only_workspace_contracts.rs",
+        "research/synchronized_production_20261029/code/directional_quotient.py",
+        "research/synchronized_production_20261029/code/test_directional_quotient.py"
+      ]
+    },
+    {
+      "id": "C8",
+      "status": "pending",
+      "reason": "Root paired measurement pending",
+      "evidence_refs": [
+        "crates/rodas5p-krylov/src/workspace.rs",
+        "crates/rodas5p-krylov/src/gmres_into.rs",
+        "crates/rodas5p-krylov/tests/basis_only_workspace_contracts.rs",
+        "research/synchronized_production_20261029/code/directional_quotient.py",
+        "research/synchronized_production_20261029/code/test_directional_quotient.py"
+      ]
+    },
+    {
+      "id": "C9",
+      "status": "in_progress",
+      "reason": "Independent source review ACCEPT_SCOPED_FOR_EXECUTION; missing-cap admission ambiguity corrected with test; final numeric review pending",
+      "evidence_refs": [
+        "reviews/KRYLOV_REVIEW.md"
+      ]
+    },
+    {
+      "id": "C10",
+      "status": "pending",
+      "reason": "Final receipts and outcome pending",
+      "evidence_refs": [
+        "crates/rodas5p-krylov/src/workspace.rs",
+        "crates/rodas5p-krylov/src/gmres_into.rs",
+        "crates/rodas5p-krylov/tests/basis_only_workspace_contracts.rs",
+        "research/synchronized_production_20261029/code/directional_quotient.py",
+        "research/synchronized_production_20261029/code/test_directional_quotient.py"
+      ]
+    }
+  ],
+  "files": [
+    "crates/rodas5p-krylov/src/workspace.rs",
+    "crates/rodas5p-krylov/src/gmres_into.rs",
+    "crates/rodas5p-krylov/tests/basis_only_workspace_contracts.rs",
+    "research/synchronized_production_20261029/code/directional_quotient.py",
+    "research/synchronized_production_20261029/code/test_directional_quotient.py"
+  ],
+  "executions": [],
+  "checks": [],
+  "remaining": [
+    "Final independent numerical result review after execution",
+    "Source publication",
+    "Native focused tests and matched benchmark",
+    "Exact oracle execution",
+    "Synchronized final audit and handoff"
+  ]
+}

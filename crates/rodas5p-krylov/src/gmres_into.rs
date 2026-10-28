@@ -426,7 +426,7 @@ fn begin_cycle(
     n: usize,
     steps: usize,
 ) -> CoreResult<()> {
-    arnoldi.prepare(n, steps)?;
+    arnoldi.prepare_basis_only(n, steps)?;
     arnoldi.basis[0].copy_from_slice(start);
     if normalize(&mut arnoldi.basis[0])? == 0.0 {
         return Err(CoreError::LinearSolve("zero Arnoldi residual".into()));

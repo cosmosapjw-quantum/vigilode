@@ -1,0 +1,2423 @@
+{
+  "repository_full_name": "cosmosapjw-quantum/vigilode",
+  "base": "bf308589e21b524d0ddc6e571b260f5e94a853f0",
+  "head": "bc5ddbe42b24b1a6364bf653c3e2d6d938ca4087",
+  "status": "ahead",
+  "ahead_by": 18,
+  "behind_by": 0,
+  "total_commits": 18,
+  "too_large": null,
+  "base_commit": {
+    "sha": "bf308589e21b524d0ddc6e571b260f5e94a853f0",
+    "url": "https://api.github.com/repos/cosmosapjw-quantum/vigilode/commits/bf308589e21b524d0ddc6e571b260f5e94a853f0",
+    "html_url": "https://github.com/cosmosapjw-quantum/vigilode/commit/bf308589e21b524d0ddc6e571b260f5e94a853f0"
+  },
+  "merge_base_commit": {
+    "sha": "bf308589e21b524d0ddc6e571b260f5e94a853f0",
+    "url": "https://api.github.com/repos/cosmosapjw-quantum/vigilode/commits/bf308589e21b524d0ddc6e571b260f5e94a853f0",
+    "html_url": "https://github.com/cosmosapjw-quantum/vigilode/commit/bf308589e21b524d0ddc6e571b260f5e94a853f0"
+  },
+  "files": [
+    {
+      "filename": "crates/rodas5p-integrators/src/problem.rs",
+      "status": "modified",
+      "additions": 168,
+      "deletions": 1,
+      "changes": 169,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+      "status": "modified",
+      "additions": 8,
+      "deletions": 1,
+      "changes": 9,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+      "status": "modified",
+      "additions": 8,
+      "deletions": 1,
+      "changes": 9,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/rodas5p-integrators/tests/time_fd_workspace_contracts.rs",
+      "status": "added",
+      "additions": 248,
+      "deletions": 0,
+      "changes": 248,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/examples/causal_bench.rs",
+      "status": "modified",
+      "additions": 3,
+      "deletions": 3,
+      "changes": 6,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/examples/causal_reuse_bench.rs",
+      "status": "modified",
+      "additions": 6,
+      "deletions": 4,
+      "changes": 10,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/examples/coupled_bench.rs",
+      "status": "modified",
+      "additions": 9,
+      "deletions": 6,
+      "changes": 15,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/examples/economy_bench.rs",
+      "status": "modified",
+      "additions": 9,
+      "deletions": 6,
+      "changes": 15,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/examples/reconsideration_bench.rs",
+      "status": "modified",
+      "additions": 3,
+      "deletions": 3,
+      "changes": 6,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/examples/rvj_closure_campaign.rs",
+      "status": "modified",
+      "additions": 4,
+      "deletions": 6,
+      "changes": 10,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/examples/rvj_trace_campaign.rs",
+      "status": "modified",
+      "additions": 20,
+      "deletions": 3,
+      "changes": 23,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/examples/support/structural_mean_field_pr91.rs",
+      "status": "modified",
+      "additions": 13,
+      "deletions": 13,
+      "changes": 26,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/src/algebra.rs",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1,
+      "changes": 2,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/src/cyclic_closure.rs",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 0,
+      "changes": 2,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/src/lib.rs",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/src/raw_step.rs",
+      "status": "modified",
+      "additions": 5,
+      "deletions": 5,
+      "changes": 10,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/src/residual_first.rs",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 2,
+      "changes": 4,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/src/rhs_homotopy.rs",
+      "status": "modified",
+      "additions": 83,
+      "deletions": 92,
+      "changes": 175,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/src/solver.rs",
+      "status": "modified",
+      "additions": 7,
+      "deletions": 5,
+      "changes": 12,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "status": "modified",
+      "additions": 35,
+      "deletions": 25,
+      "changes": 60,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/src/switching.rs",
+      "status": "modified",
+      "additions": 63,
+      "deletions": 65,
+      "changes": 128,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/src/trace_certificate.rs",
+      "status": "added",
+      "additions": 559,
+      "deletions": 0,
+      "changes": 559,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/tests/causal_contracts.rs",
+      "status": "modified",
+      "additions": 3,
+      "deletions": 3,
+      "changes": 6,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/tests/contracts.rs",
+      "status": "modified",
+      "additions": 5,
+      "deletions": 5,
+      "changes": 10,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/tests/raw_step_contracts.rs",
+      "status": "modified",
+      "additions": 10,
+      "deletions": 10,
+      "changes": 20,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs",
+      "status": "modified",
+      "additions": 3,
+      "deletions": 1,
+      "changes": 4,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/tests/structural_mean_field_contracts.rs",
+      "status": "modified",
+      "additions": 3,
+      "deletions": 3,
+      "changes": 6,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode-coupled/tests/trace_certificate_allocations.rs",
+      "status": "added",
+      "additions": 107,
+      "deletions": 0,
+      "changes": 107,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode/examples/rust_allocation_probe.rs",
+      "status": "added",
+      "additions": 378,
+      "deletions": 0,
+      "changes": 378,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode/src/fd.rs",
+      "status": "modified",
+      "additions": 353,
+      "deletions": 44,
+      "changes": 397,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode/src/solve.rs",
+      "status": "modified",
+      "additions": 6,
+      "deletions": 1,
+      "changes": 7,
+      "previous_filename": null
+    },
+    {
+      "filename": "crates/vigilode/tests/fd_allocation_contracts.rs",
+      "status": "added",
+      "additions": 132,
+      "deletions": 0,
+      "changes": 132,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/LEDGER.jsonl",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 0,
+      "changes": 2,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/NEXT_HANDOFF_KO.md",
+      "status": "added",
+      "additions": 144,
+      "deletions": 0,
+      "changes": 144,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/PREREGISTRATION.md",
+      "status": "added",
+      "additions": 13,
+      "deletions": 0,
+      "changes": 13,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/REPORT_KO.md",
+      "status": "added",
+      "additions": 210,
+      "deletions": 0,
+      "changes": 210,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/RUN_PLAN.md",
+      "status": "added",
+      "additions": 12,
+      "deletions": 0,
+      "changes": 12,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/SUMMARY.json",
+      "status": "added",
+      "additions": 1378,
+      "deletions": 0,
+      "changes": 1378,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/THEORY_LOCAL.md",
+      "status": "added",
+      "additions": 9,
+      "deletions": 0,
+      "changes": 9,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/api_fixture/Cargo.toml.template",
+      "status": "added",
+      "additions": 17,
+      "deletions": 0,
+      "changes": 17,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/api_fixture/README_KO.md",
+      "status": "added",
+      "additions": 29,
+      "deletions": 0,
+      "changes": 29,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/api_fixture/legacy_config_literal.rs",
+      "status": "added",
+      "additions": 33,
+      "deletions": 0,
+      "changes": 33,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/api_fixture/legacy_exhaustive_evidence_match.rs",
+      "status": "added",
+      "additions": 19,
+      "deletions": 0,
+      "changes": 19,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/api_fixture/run_fixtures.py",
+      "status": "added",
+      "additions": 370,
+      "deletions": 0,
+      "changes": 370,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/code/verify_trace_native.py",
+      "status": "added",
+      "additions": 856,
+      "deletions": 0,
+      "changes": 856,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/EXEC_SOURCE_IDENTITY.json",
+      "status": "added",
+      "additions": 15,
+      "deletions": 0,
+      "changes": 15,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/IDENTITY.json",
+      "status": "added",
+      "additions": 38,
+      "deletions": 0,
+      "changes": 38,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/INDEPENDENT_REVIEW.json",
+      "status": "added",
+      "additions": 19,
+      "deletions": 0,
+      "changes": 19,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/MANIFEST.json",
+      "status": "added",
+      "additions": 602,
+      "deletions": 0,
+      "changes": 602,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/f6-analysis/BENCHMARK_SUMMARY.json",
+      "status": "added",
+      "additions": 2368,
+      "deletions": 0,
+      "changes": 2368,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/f6-analysis/BENCHMARK_SUMMARY_KO.md",
+      "status": "added",
+      "additions": 15,
+      "deletions": 0,
+      "changes": 15,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/f6-analysis/REPORT_KO.md",
+      "status": "added",
+      "additions": 45,
+      "deletions": 0,
+      "changes": 45,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/f6-analysis/SUMMARY.json",
+      "status": "added",
+      "additions": 854,
+      "deletions": 0,
+      "changes": 854,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/final-025-clippy-retry/RECEIPT.json",
+      "status": "added",
+      "additions": 51,
+      "deletions": 0,
+      "changes": 51,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/final-025-clippy/RECEIPT.json",
+      "status": "added",
+      "additions": 42,
+      "deletions": 0,
+      "changes": 42,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/final-authority-check/RECEIPT.json",
+      "status": "added",
+      "additions": 41,
+      "deletions": 0,
+      "changes": 41,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/final-authority-check/stderr.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/final-authority-check/stdout.log",
+      "status": "added",
+      "additions": 145,
+      "deletions": 0,
+      "changes": 145,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/final-f6-native/RECEIPT.json",
+      "status": "added",
+      "additions": 52,
+      "deletions": 0,
+      "changes": 52,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/final-main-node-check/RECEIPT.json",
+      "status": "added",
+      "additions": 43,
+      "deletions": 0,
+      "changes": 43,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/final-main-node-check/stdout.log",
+      "status": "added",
+      "additions": 41,
+      "deletions": 0,
+      "changes": 41,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/final-node-check/RECEIPT.json",
+      "status": "added",
+      "additions": 43,
+      "deletions": 0,
+      "changes": 43,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/final-node-check/stdout.log",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/final2-f6-alloc/RECEIPT.json",
+      "status": "added",
+      "additions": 51,
+      "deletions": 0,
+      "changes": 51,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/fp-environment.stdout",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/givens-final-025/givens-bits/oracle-1e-14.json",
+      "status": "added",
+      "additions": 35,
+      "deletions": 0,
+      "changes": 35,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/givens-final-025/givens-bits/oracle-1e0.json",
+      "status": "added",
+      "additions": 35,
+      "deletions": 0,
+      "changes": 35,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/givens-final-025/givens-bits/oracle-1e14.json",
+      "status": "added",
+      "additions": 35,
+      "deletions": 0,
+      "changes": 35,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/givens-final-025/givens-exact/RECEIPT.json",
+      "status": "added",
+      "additions": 51,
+      "deletions": 0,
+      "changes": 51,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/givens-final-025/givens-exact/stdout.log",
+      "status": "added",
+      "additions": 10,
+      "deletions": 0,
+      "changes": 10,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/pr98_semver.log",
+      "status": "added",
+      "additions": 1119,
+      "deletions": 0,
+      "changes": 1119,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qapi-final3/SUMMARY.json",
+      "status": "added",
+      "additions": 1213,
+      "deletions": 0,
+      "changes": 1213,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/PATCH.diff",
+      "status": "added",
+      "additions": 99,
+      "deletions": 0,
+      "changes": 99,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/SUMMARY.json",
+      "status": "added",
+      "additions": 191,
+      "deletions": 0,
+      "changes": 191,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/authority-stderr.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/authority-stdout.log",
+      "status": "added",
+      "additions": 150,
+      "deletions": 0,
+      "changes": 150,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/authority.exit",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/authority.receipt.json",
+      "status": "added",
+      "additions": 17,
+      "deletions": 0,
+      "changes": 17,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/full.exit",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/full.receipt.json",
+      "status": "added",
+      "additions": 17,
+      "deletions": 0,
+      "changes": 17,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/full.stderr",
+      "status": "added",
+      "additions": 46,
+      "deletions": 0,
+      "changes": 46,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/full.stdout",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/full2.exit",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/full2.receipt.json",
+      "status": "added",
+      "additions": 17,
+      "deletions": 0,
+      "changes": 17,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/full2.stderr",
+      "status": "added",
+      "additions": 46,
+      "deletions": 0,
+      "changes": 46,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/full2.stdout",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/green.exit",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/green.receipt.json",
+      "status": "added",
+      "additions": 18,
+      "deletions": 0,
+      "changes": 18,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/green.stderr",
+      "status": "added",
+      "additions": 7,
+      "deletions": 0,
+      "changes": 7,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/green.stdout",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/green2.exit",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/green2.receipt.json",
+      "status": "added",
+      "additions": 18,
+      "deletions": 0,
+      "changes": 18,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/green2.stderr",
+      "status": "added",
+      "additions": 7,
+      "deletions": 0,
+      "changes": 7,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/green2.stdout",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/red.exit",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/red.receipt.json",
+      "status": "added",
+      "additions": 18,
+      "deletions": 0,
+      "changes": 18,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/red.stderr",
+      "status": "added",
+      "additions": 23,
+      "deletions": 0,
+      "changes": 23,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/red.stdout",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/scipy-adapter-paths.exit",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/scipy-adapter-paths.receipt.json",
+      "status": "added",
+      "additions": 43,
+      "deletions": 0,
+      "changes": 43,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/scipy-adapter-paths.stderr",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-attribution-final/scipy-adapter-paths.stdout",
+      "status": "added",
+      "additions": 70,
+      "deletions": 0,
+      "changes": 70,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-c9-authority/RECEIPT.json",
+      "status": "added",
+      "additions": 41,
+      "deletions": 0,
+      "changes": 41,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-c9-authority/stdout.log",
+      "status": "added",
+      "additions": 150,
+      "deletions": 0,
+      "changes": 150,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-c9-tests/RECEIPT.json",
+      "status": "added",
+      "additions": 43,
+      "deletions": 0,
+      "changes": 43,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-c9-tests/stderr.log",
+      "status": "added",
+      "additions": 5,
+      "deletions": 0,
+      "changes": 5,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-repair-20261029/full_authority.exit",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-repair-20261029/full_authority.stderr",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-repair-20261029/full_authority.stdout",
+      "status": "added",
+      "additions": 145,
+      "deletions": 0,
+      "changes": 145,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-repair-20261029/green.exit",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-repair-20261029/green.stderr",
+      "status": "added",
+      "additions": 5,
+      "deletions": 0,
+      "changes": 5,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-repair-20261029/green.stdout",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-repair-20261029/red.exit",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/qledger-repair-20261029/red.stderr",
+      "status": "added",
+      "additions": 44,
+      "deletions": 0,
+      "changes": 44,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/release-generated-changes/0-generated.json",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/release-generated-changes/0-original.json",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/release-generated-changes/1-generated.json",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/release-generated-changes/1-original.json",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/release-generated-changes/MANIFEST.json",
+      "status": "added",
+      "additions": 16,
+      "deletions": 0,
+      "changes": 16,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/all-targets/command_00/RECEIPT.json",
+      "status": "added",
+      "additions": 50,
+      "deletions": 0,
+      "changes": 50,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/coupled-contracts/command_00/RECEIPT.json",
+      "status": "added",
+      "additions": 51,
+      "deletions": 0,
+      "changes": 51,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/docs/command_00/RECEIPT.json",
+      "status": "added",
+      "additions": 50,
+      "deletions": 0,
+      "changes": 50,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/docs/command_01/RECEIPT.json",
+      "status": "added",
+      "additions": 50,
+      "deletions": 0,
+      "changes": 50,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/facade-contracts/command_00/RECEIPT.json",
+      "status": "added",
+      "additions": 51,
+      "deletions": 0,
+      "changes": 51,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/local-benchmarks/command_00/RECEIPT.json",
+      "status": "added",
+      "additions": 48,
+      "deletions": 0,
+      "changes": 48,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/local-benchmarks/command_01/RECEIPT.json",
+      "status": "added",
+      "additions": 50,
+      "deletions": 0,
+      "changes": 50,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/local-benchmarks/command_02/RECEIPT.json",
+      "status": "added",
+      "additions": 42,
+      "deletions": 0,
+      "changes": 42,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/local-benchmarks/command_03/RECEIPT.json",
+      "status": "added",
+      "additions": 45,
+      "deletions": 0,
+      "changes": 45,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/local-benchmarks/command_04/RECEIPT.json",
+      "status": "added",
+      "additions": 45,
+      "deletions": 0,
+      "changes": 45,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/local-benchmarks/command_05/RECEIPT.json",
+      "status": "added",
+      "additions": 45,
+      "deletions": 0,
+      "changes": 45,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/local-benchmarks/command_06/RECEIPT.json",
+      "status": "added",
+      "additions": 45,
+      "deletions": 0,
+      "changes": 45,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/local-benchmarks/command_07/RECEIPT.json",
+      "status": "added",
+      "additions": 47,
+      "deletions": 0,
+      "changes": 47,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/local-profiles/command_00/RECEIPT.json",
+      "status": "added",
+      "additions": 59,
+      "deletions": 0,
+      "changes": 59,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/local-profiles/command_01/RECEIPT.json",
+      "status": "added",
+      "additions": 61,
+      "deletions": 0,
+      "changes": 61,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/release-contracts/command_00/RECEIPT.json",
+      "status": "added",
+      "additions": 56,
+      "deletions": 0,
+      "changes": 56,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/release-contracts/command_01/RECEIPT.json",
+      "status": "added",
+      "additions": 50,
+      "deletions": 0,
+      "changes": 50,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/suites-a1/smoke-release/command_00/RECEIPT.json",
+      "status": "added",
+      "additions": 45,
+      "deletions": 0,
+      "changes": 45,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/sundials-mpi-adapters/RECEIPT.json",
+      "status": "added",
+      "additions": 49,
+      "deletions": 0,
+      "changes": 49,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/sundials-mpi-adapters/stdout.log",
+      "status": "added",
+      "additions": 12,
+      "deletions": 0,
+      "changes": 12,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/vendor-byte-check.json",
+      "status": "added",
+      "additions": 9,
+      "deletions": 0,
+      "changes": 9,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/vendor-fresh-build/RECEIPT.json",
+      "status": "added",
+      "additions": 52,
+      "deletions": 0,
+      "changes": 52,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/vendor-lock-checksums.json",
+      "status": "added",
+      "additions": 4,
+      "deletions": 0,
+      "changes": 4,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/evidence/vendor-validation.json",
+      "status": "added",
+      "additions": 606,
+      "deletions": 0,
+      "changes": 606,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/ANALYSIS_FINAL_VALIDATION.json",
+      "status": "added",
+      "additions": 97,
+      "deletions": 0,
+      "changes": 97,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/ANALYSIS_VALIDATION.json",
+      "status": "added",
+      "additions": 107,
+      "deletions": 0,
+      "changes": 107,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/CONTRACT.md",
+      "status": "added",
+      "additions": 11,
+      "deletions": 0,
+      "changes": 11,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/FINAL_CHECKS.json",
+      "status": "added",
+      "additions": 24,
+      "deletions": 0,
+      "changes": 24,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/INDEPENDENT_REVIEW.json",
+      "status": "added",
+      "additions": 41,
+      "deletions": 0,
+      "changes": 41,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/METRICS.json",
+      "status": "added",
+      "additions": 699,
+      "deletions": 0,
+      "changes": 699,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/PRESERVATION_NOTES.json",
+      "status": "added",
+      "additions": 18,
+      "deletions": 0,
+      "changes": 18,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/PROTOCOL.md",
+      "status": "added",
+      "additions": 86,
+      "deletions": 0,
+      "changes": 86,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/REPORT_KO.md",
+      "status": "added",
+      "additions": 96,
+      "deletions": 0,
+      "changes": 96,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/SUMMARY.json",
+      "status": "added",
+      "additions": 7310,
+      "deletions": 0,
+      "changes": 7310,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/analysis_replay_evidence/MANIFEST.json",
+      "status": "added",
+      "additions": 30,
+      "deletions": 0,
+      "changes": 30,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/analysis_replay_evidence/exit-code",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/analysis_replay_evidence/source-post.sha256",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/analysis_replay_evidence/source-pre.sha256",
+      "status": "added",
+      "additions": 1,
+      "deletions": 0,
+      "changes": 1,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/analysis_replay_evidence/stderr.log",
+      "status": "added",
+      "additions": 2,
+      "deletions": 0,
+      "changes": 2,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/analysis_replay_evidence/stdout.log",
+      "status": "added",
+      "additions": 7,
+      "deletions": 0,
+      "changes": 7,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/analyze_results.py",
+      "status": "added",
+      "additions": 752,
+      "deletions": 0,
+      "changes": 752,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/BINARY_INDEX.json",
+      "status": "added",
+      "additions": 30,
+      "deletions": 0,
+      "changes": 30,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/PACKET_MANIFEST.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/RAW_INDEX.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/IDENTITY.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/MEASUREMENT_IDENTITY.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/MEASUREMENT_IDENTITY_FINAL.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/MEASUREMENT_IDENTITY_R2.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/SUPPLEMENTAL_COMMANDS_R2.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/COMMANDS.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-autonomous-jvp-baseline-r12-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-autonomous-jvp-baseline-r12-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-autonomous-jvp-baseline-r4-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-autonomous-jvp-baseline-r4-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-autonomous-jvp-candidate-r12-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-autonomous-jvp-candidate-r12-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-autonomous-jvp-candidate-r4-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-autonomous-jvp-candidate-r4-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-banded-fd-baseline-r12-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-banded-fd-baseline-r12-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-banded-fd-baseline-r4-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-banded-fd-baseline-r4-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-banded-fd-candidate-r12-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-banded-fd-candidate-r12-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-banded-fd-candidate-r4-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-banded-fd-candidate-r4-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-dense-fd-baseline-r12-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-dense-fd-baseline-r12-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-dense-fd-baseline-r4-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-dense-fd-baseline-r4-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-dense-fd-candidate-r12-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-dense-fd-candidate-r12-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-dense-fd-candidate-r4-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-dense-fd-candidate-r4-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-time-jvp-baseline-r12-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-time-jvp-baseline-r12-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-time-jvp-baseline-r4-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-time-jvp-baseline-r4-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-time-jvp-candidate-r12-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-time-jvp-candidate-r12-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-time-jvp-candidate-r4-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected-r2/callgrind-time-jvp-candidate-r4-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/COMMANDS.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-autonomous-jvp-baseline-r12-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-autonomous-jvp-baseline-r12-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-autonomous-jvp-baseline-r4-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-autonomous-jvp-baseline-r4-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-autonomous-jvp-candidate-r12-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-autonomous-jvp-candidate-r12-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-autonomous-jvp-candidate-r4-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-autonomous-jvp-candidate-r4-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-banded-fd-baseline-r12-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-banded-fd-baseline-r12-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-banded-fd-baseline-r4-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-banded-fd-baseline-r4-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-banded-fd-candidate-r12-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-banded-fd-candidate-r12-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-banded-fd-candidate-r4-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-banded-fd-candidate-r4-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-dense-fd-baseline-r12-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-dense-fd-baseline-r12-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-dense-fd-baseline-r4-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-dense-fd-baseline-r4-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-dense-fd-candidate-r12-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-dense-fd-candidate-r12-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-dense-fd-candidate-r4-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-dense-fd-candidate-r4-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-time-jvp-baseline-r12-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-time-jvp-baseline-r12-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-time-jvp-baseline-r4-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-time-jvp-baseline-r4-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-time-jvp-candidate-r12-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-time-jvp-candidate-r12-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-time-jvp-candidate-r4-inclusive-no.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/annotations-corrected/callgrind-time-jvp-candidate-r4-inclusive-yes.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-baseline-final/RECEIPT.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-baseline-final/SOURCE_INPUTS.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-baseline-final/stderr.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-baseline-final/stdout.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-baseline-r1/RECEIPT.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-baseline-r1/SOURCE_INPUTS.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-baseline-r1/stderr.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-baseline-r1/stdout.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-baseline/RECEIPT.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-baseline/SOURCE_INPUTS.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-baseline/stderr.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-baseline/stdout.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-candidate-r2/RECEIPT.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-candidate-r2/SOURCE_INPUTS.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-candidate-r2/stderr.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-candidate-r2/stdout.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-candidate/RECEIPT.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-candidate/SOURCE_INPUTS.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-candidate/stderr.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/build-candidate/stdout.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/comparable-contract-assert.txt",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/existing-timefd-regression/RECEIPT.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/existing-timefd-regression/SOURCE_INPUTS.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/existing-timefd-regression/stderr.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/existing-timefd-regression/stdout.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fake-runner-regression-v1/e2e-summary.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fake-runner-regression-v1/out-nonzero/manifest.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fake-runner-regression-v1/out-success/manifest.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fake-runner-regression-v1/out-timeout/manifest.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fake-runner-regression-v2/success-v2/manifest.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fake-runner-regression-v2/success/manifest.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-facade-contracts/RECEIPT.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-facade-contracts/SOURCE_INPUTS.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-facade-contracts/stderr.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-facade-contracts/stdout.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-green/RECEIPT.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-green/SOURCE_INPUTS.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-green/stderr.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-green/stdout.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-red-with-unit-allocator.rs.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-red/RECEIPT.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-red/SOURCE_INPUTS.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-red/stderr.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-red/stdout.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-red2-compile-failure-test.rs",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-red2/RECEIPT.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-red2/SOURCE_INPUTS.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-red2/stderr.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-red2/stdout.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-red3/RECEIPT.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-red3/SOURCE_INPUTS.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-red3/stderr.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-red3/stdout.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-unit-green/RECEIPT.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-unit-green/SOURCE_INPUTS.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-unit-green/stderr.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/fd-unit-green/stdout.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/guard-fatal-regression/RECEIPT.json",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/guard-fatal-regression/SOURCE_INPUTS.json.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/guard-fatal-regression/stderr.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/guard-fatal-regression/stdout.log",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/harness-review-regression-checks.txt",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/harness-static-contract-checks-retry.txt",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/harness-static-contract-checks.txt",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/heaptrack-r2/dense-fd-allocators.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    },
+    {
+      "filename": "research/local_dynamics_qualification_20261029/rust_optimization/evidence/source/heaptrack-r2/time-jvp-allocators.txt.gz",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "previous_filename": null
+    }
+  ]
+}
+

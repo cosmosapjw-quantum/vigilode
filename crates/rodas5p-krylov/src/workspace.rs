@@ -67,8 +67,17 @@ pub(crate) struct ArnoldiWorkspace {
 
 impl ArnoldiWorkspace {
     pub fn prepare(&mut self, dimension: usize, total_columns: usize) -> CoreResult<()> {
-        ensure_pool(&mut self.basis, total_columns + 1, dimension);
+        self.prepare_basis_only(dimension, total_columns)?;
         ensure_pool(&mut self.directions, total_columns, dimension);
+        Ok(())
+    }
+
+    /// Prepare the fields used by unaugmented GMRES-into. Its operator
+    /// applications and final correction read `basis` directly, so no
+    /// direction copies are needed. Keep existing direction storage intact
+    /// for a later augmented solve; `prepare` sizes it before that use.
+    pub fn prepare_basis_only(&mut self, dimension: usize, total_columns: usize) -> CoreResult<()> {
+        ensure_pool(&mut self.basis, total_columns + 1, dimension);
         self.hessenberg
             .resize_zeros(total_columns + 1, total_columns)?;
         self.hessenberg_prefix.resize_zeros(0, 0)?;
@@ -206,5 +215,57 @@ impl GcrodrWorkspace {
     /// Retained heap bytes of this workspace.
     pub fn retained_bytes(&self) -> usize {
         self.common.retained_bytes()
+    }
+}
+
+#[cfg(test)]
+mod basis_only_tests {
+    use super::ArnoldiWorkspace;
+    use crate::gmres::arnoldi_augmented_with_workspace;
+    use rodas5p_core::{DenseMatrix, DenseOperator, IdentityPreconditioner, WorkCounters, safe_l2};
+
+    #[test]
+    fn augmented_solve_reinitializes_directions_after_basis_only_shape_changes() {
+        let mut reused = ArnoldiWorkspace::default();
+        reused.prepare(13, 4).unwrap();
+        for n in [2, 7, 3] {
+            for direction in &mut reused.directions {
+                direction.fill(f64::NAN);
+            }
+            reused.prepare_basis_only(n, 2).unwrap();
+            let mut a = DenseMatrix::zeros(n, n);
+            for i in 0..n {
+                a[(i, i)] = 2.0 + i as f64 / 8.0;
+            }
+            let op = DenseOperator::new(a).unwrap();
+            let pc = IdentityPreconditioner::new(n);
+            let start = vec![1.0; n];
+            let mut augmentation = vec![0.0; n];
+            augmentation[n - 1] = 1.0;
+            let mut fresh = ArnoldiWorkspace::default();
+            let mut counters = [WorkCounters::default(), WorkCounters::default()];
+            for (index, ws) in [&mut reused, &mut fresh].into_iter().enumerate() {
+                arnoldi_augmented_with_workspace(
+                    &op,
+                    &pc,
+                    &start,
+                    safe_l2(&start),
+                    1,
+                    &[augmentation.clone()],
+                    &[None],
+                    &mut counters[index],
+                    ws,
+                )
+                .unwrap();
+            }
+            let bits = |v: &[f64]| v.iter().map(|x| x.to_bits()).collect::<Vec<_>>();
+            assert_eq!(bits(&reused.correction), bits(&fresh.correction));
+            assert_eq!(
+                bits(reused.hessenberg_prefix.as_slice()),
+                bits(fresh.hessenberg_prefix.as_slice())
+            );
+            assert_eq!(counters[0], counters[1]);
+            assert!(reused.correction.iter().all(|x| x.is_finite()));
+        }
     }
 }
