@@ -95,7 +95,23 @@ def setup_consumer(source_root: Path, consumer_root: Path, pinned_inputs: dict[s
         (consumer_root / source).write_bytes(pinned_inputs[source])
 
     lock_source = source_root / "Cargo.lock"
-    return {"pinned_source_cargo_lock_sha256": sha256(lock_source)}
+    lock_text = lock_source.read_text(encoding="utf-8")
+    package_name = 'name = "vigilode-api-compat-consumer"'
+    if package_name in lock_text:
+        raise RuntimeError(f"fixture package entry unexpectedly exists in pinned lock {lock_source}")
+    lock_text += '''\n[[package]]
+name = "vigilode-api-compat-consumer"
+version = "0.0.0"
+dependencies = [
+ "vigilode",
+]
+'''
+    fixture_lock = consumer_root / "Cargo.lock"
+    fixture_lock.write_text(lock_text, encoding="utf-8")
+    return {
+        "pinned_source_cargo_lock_sha256": sha256(lock_source),
+        "consumer_seed_lock_sha256": sha256(fixture_lock),
+    }
 
 
 def bounded_cargo(argv: list[str], *, cwd: Path, env: dict[str, str]) -> dict[str, object]:
@@ -226,8 +242,8 @@ def main() -> int:
         target = output / "targets" / lane / "lock-generation"
         target.mkdir(parents=True, exist_ok=False)
         env = rust_env | {"CARGO_TARGET_DIR": str(target)}
-        cargo_argv = ["cargo", "generate-lockfile", "--offline", "--manifest-path",
-                      str(consumer_root / "Cargo.toml")]
+        cargo_argv = ["cargo", "metadata", "--offline", "--format-version", "1",
+                      "--manifest-path", str(consumer_root / "Cargo.toml")]
         result = bounded_cargo(cargo_argv, cwd=consumer_root, env=env)
         stem = Path("commands") / lane / "lock-generation"
         receipt_paths = save_command(output, stem, result)
@@ -238,7 +254,7 @@ def main() -> int:
             "cwd": str(consumer_root),
             "timeout_seconds": CARGO_TIMEOUT_SECONDS,
             "native_lock": NATIVE_LOCK,
-            "generated_lock_sha256": generated_hash,
+            "normalized_consumer_lock_sha256": generated_hash,
             **lock_hashes,
             **receipt_paths,
             **{key: value for key, value in result.items() if key not in ("stdout", "stderr")},
@@ -280,7 +296,7 @@ def main() -> int:
         elif lock_graph_drift:
             evidence["compatibility_status"] = "INCONCLUSIVE_DEPENDENCY_GRAPH"
         else:
-            evidence["compatibility_status"] = "INCONCLUSIVE_LOCK_GENERATION"
+            evidence["compatibility_status"] = "INCONCLUSIVE_LOCK_NORMALIZATION"
         evidence["commands"] = []
         (output / "SUMMARY.json").write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         print(json.dumps({key: evidence[key] for key in ("runner_status", "compatibility_status", "baseline_sha", "current_sha")}, sort_keys=True))
