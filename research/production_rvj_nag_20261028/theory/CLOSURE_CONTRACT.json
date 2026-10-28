@@ -1,0 +1,169 @@
+{
+  "schema": "vigilode.rvj_cyclic_theory_contract.v1",
+  "date_utc": "2026-10-28",
+  "status": "theory_derived_pending_parent_admission_and_native_validation",
+  "base_commit": "13f3298bd0213f121e07385903f9508c435ad6a1",
+  "skill": {"name": "physmath-research-loop", "version": "1.3.0", "selected_stages": ["R2", "R3", "R5", "R7", "R9"]},
+  "owned_artifacts": ["theory/CLOSURE.md", "theory/CLOSURE_CONTRACT.json"],
+  "execution_scope": {
+    "native_solver_runs": 0,
+    "old_executable_reruns": 0,
+    "symbolic_checkers_executed": 0,
+    "existing_json_read_with_python": true,
+    "scientific_execution_status": "NOT_RUN; parent preregistration required before claimed native results"
+  },
+  "source_paths": [
+    "intake/rvj/f23_native/derivation.md",
+    "intake/rvj/f23_native/native.cpp",
+    "intake/rvj/f23_native/reference.py",
+    "intake/rvj/f23_native/results.json",
+    "intake/rvj/f1_atlas/derivation.md",
+    "intake/rvj/reviews/native_secondary_review.json",
+    "research/integrated_polyalgorithm_20261028/error_contract/THEORY.md",
+    "crates/rodas5p-core/src/directed.rs"
+  ],
+  "problem": {
+    "model_id": "rvj-cyclic-quarter-square-v1",
+    "branch_id": "cyclic-small-real-zero",
+    "implemented_dimensions_initial": [4, 8, 16],
+    "analytic_dimension_scope": "integer n >= 2",
+    "indexing": "i and i+1 modulo n; i starts at zero",
+    "G_i": "q_i + q_(i+1)^2/4 - x_i",
+    "f_i": "-x_i + (q_i+q_(i+1))/16 + 1/32 + (i mod 3)/256",
+    "initial_state": "x=q=0",
+    "physical_time_interval": ["0", "1"],
+    "slow_domain": ["-1/8", "1/8"],
+    "root_domain": ["-1/4", "1/4"],
+    "physical_norm": "infinity over all slow and algebraic coordinates",
+    "physical_whole_path_cap": "1/100000000",
+    "clock_initial_scope": "h=1/N and t=k/N, N a positive power of two; exact dyadic physical clock"
+  },
+  "proved_constants": {
+    "closure_contraction": "1/8",
+    "residual_to_root": "8/7",
+    "parameter_to_root": "8/7",
+    "slow_coupling_norm": "1/8",
+    "reduced_contraction_rate": "6/7",
+    "reduced_algebraic_residual_weight": "1/7",
+    "slow_residual_endpoint_factor": "3/4",
+    "algebraic_interior_bernstein_mass": "25/32",
+    "algebraic_endpoint_complement_mass": "7/32",
+    "denominator_lower_bound": "1 - 8^(-n)",
+    "denominator_lower_bound_by_dimension": {"4": "4095/4096", "8": "16777215/16777216", "16": "281474976710655/281474976710656"},
+    "conditional_old_N32_recertification_factor": "16/49"
+  },
+  "theorems": [
+    {"id": "C1", "status": "analytically_derived_reusing_attachment", "claim": "Unique original branch in X cross Q, invariant exact slow domain, residual-to-root bound and Dini physical-error inequality", "physical_anchor": "exact flow with residual evaluated on the numerical reconstruction"},
+    {"id": "C2", "status": "analytically_derived", "claim": "Exact-slope Hermite slow residual has degree-3 Bernstein coefficients (0,r1,r2,0); Df <= 3/4 max(|r1|,|r2|)", "sharp_constant": "3/4"},
+    {"id": "C3", "status": "analytically_derived", "claim": "Algebraic residual has degree-6 Bernstein coefficients (g0,g0,beta2,beta3,beta4,g1,g1); only three interior coefficients need construction", "range_bound": "max(g,(7*g+25*m)/32)", "sharp_interior_mass": "25/32"},
+    {"id": "C4", "status": "analytically_derived", "claim": "Same endpoint bits and provider/arithmetic identity permit N+1 endpoint slope evaluations for N consecutive slabs instead of 2N", "cache_scope": "immutable prepared endpoint; streaming reuse is sufficient"},
+    {"id": "C5", "status": "analytically_derived_optional_independent_arm", "claim": "max of the two rational forcing envelopes is a valid endpoint radius; whole-slab radius is max of incoming and endpoint bounds", "counterexample_guard": "The first rational expression alone is invalid for E=0 and positive forcing"}
+  ],
+  "path_contract": {
+    "id": "exact-original-slope-hermite-v1",
+    "endpoints": "finite binary64 values interpreted as exact dyadics",
+    "slopes": "exact rational original lifted field s=(f,v), enclosed with directed interval arithmetic",
+    "circuit_identity": "(I+A)v=f, A_i,i+1=q_(i+1)/2, even when G(endpoint) is nonzero",
+    "bernstein_controls": ["Y0=y0", "Y1=y0+h*s(y0)/3", "Y2=y1-h*s(y1)/3", "Y3=y1"],
+    "whole_domain_check": "every componentwise interval control hull is contained in the fixed X or Q domain",
+    "rounded_slope_path_is_same_object": false,
+    "dense_query_requirement": "Return an enclosure of the exact certified path or add an independently bounded representation/evaluation displacement"
+  },
+  "direct_residual_kernel": {
+    "slow_derivative_controls": ["D0=f_i(y0)", "D1=3*(X2-X1)/h", "D2=f_i(y1)"],
+    "r1": "D0/3 + 2*D1/3 - f_i(Y1)",
+    "r2": "2*D1/3 + D2/3 - f_i(Y2)",
+    "Df": "(3/4)*max_i(mag(r1_i),mag(r2_i))",
+    "algebraic_definitions": {"d_j": "Q_(i,j)-X_(i,j)", "z_j": "Q_(i+1,j)", "g0": "G_i(y0)", "g1": "G_i(y1)"},
+    "E2": "(d0+3*d1+d2)/5",
+    "E3": "(d0+9*d1+9*d2+d3)/20",
+    "E4": "(d1+3*d2+d3)/5",
+    "S2": "(2*z0*z2+3*z1*z1)/5",
+    "S3": "(z0*z3+9*z1*z2)/10",
+    "S4": "(2*z1*z3+3*z2*z2)/5",
+    "beta_k": "E_k+S_k/4 for k=2,3,4",
+    "g": "max_i(mag(g0_i),mag(g1_i))",
+    "m": "max_i,k_in_2_3_4 mag(beta_k_i)",
+    "Dg": "max(g,(7*g+25*m)/32)",
+    "original_equation_residuals": ["dX/dt-f(X,Q)", "Q_i+Q_(i+1)^2/4-X_i"],
+    "endpoint_identities_are_proved_not_measured": true
+  },
+  "radius_recipes": {
+    "common": {"lambda": "6/7", "delta": "Df+Dg/7", "Qwhole": "(8/7)*(Ewhole+Dg)"},
+    "legacy_valid": {"Ewhole": "E+h*delta", "Eend": "E/(1+lambda*h)+h*delta", "initial_implementation_eligible": true},
+    "rational_two_sided": {
+      "z": "lambda*h",
+      "U1": "(E+h*delta)/(1+z)",
+      "U2": "((1-z/2)*E+h*delta)/(1+z/2)",
+      "Eend": "max(U1,U2)",
+      "Ewhole": "max(E,Eend)",
+      "proof": "e^-z <= 1/(1+z), e^-z >= (1-z/2)/(1+z/2); maximum selects the safe sign of E-delta/lambda",
+      "benchmark_policy": "independent arm, not conflated with direct Bernstein kernel or endpoint reuse"
+    },
+    "forbidden": ["Use U1 alone as a universal forcing update", "Propagate exact-flow contraction with an exact-input-only discrete truncation bound"]
+  },
+  "prepared_endpoint_identity": {
+    "required_key_components": ["every endpoint binary64 bit", "model/provider epoch", "branch/domain identity", "arithmetic contract"],
+    "nonautonomous_extension": "physical time must additionally be part of the key",
+    "fields_must_be_immutable_or_private": true,
+    "reuse_full_slopes": true,
+    "reuse_original_G": true,
+    "streaming_max_prepared_endpoints": 2,
+    "slope_evaluations_without_reuse": "2*N",
+    "slope_evaluations_with_reuse": "N+1"
+  },
+  "native_api_requirements": {
+    "placement": "fixed-model opt-in module in crates/vigilode-coupled; parent owns lib.rs export",
+    "interval_provider": "rodas5p_core::directed::Interval",
+    "logical_operations": ["prepare_endpoint", "certify_slab", "admit_unchanged_physical_cap", "stream_prepared_endpoint_reuse"],
+    "certificate_fields": ["path_definition_id", "model_epoch", "branch_id", "domain_id", "physical_norm", "exact_physical_h", "Df", "Dg", "Ewhole", "Eend", "Qwhole", "radius_recipe", "validity_status"],
+    "reject": ["NaN", "infinity", "dimension mismatch", "negative incoming radius", "nonpositive slab length", "unsupported path identity", "stale model epoch", "denominator interval containing zero", "whole control hull outside fixed domain", "arithmetic failure", "unaccounted physical clock displacement"],
+    "arithmetic_assumptions": ["IEEE binary64", "round to nearest", "gradual underflow", "no compiler transformations invalidating core error-free transforms", "finite fallible outward interval operations"],
+    "rational_constants_constructed_by_outward_integer_division": true,
+    "jacobian_callbacks": 0,
+    "jvp_callbacks": 0,
+    "ad_callbacks": 0,
+    "newton_iterations_in_certificate": 0,
+    "automatic_generic_solver_promotion": false
+  },
+  "validation_plan": {
+    "execution_status": "NOT_RUN",
+    "parent_preregistration_required": true,
+    "oracle": "Exact Fraction original-equation Hermite power coefficients, independent polynomial substitution/differentiation and power-to-Bernstein conversion",
+    "oracle_not_acceptable": "Dense sampling alone or repeating only optimized formulas",
+    "expected_dimensions": [4, 8, 16],
+    "expected_resolutions": [16, 32, 64, 128],
+    "candidate_families": ["compiled", "newton", "newton_plus_krawczyk"],
+    "coverage_goal": "all slabs in the bounded admitted fixture campaign; any lesser actual coverage must be declared",
+    "required_checks": [
+      "exact original residual coefficient identities including inconsistent endpoints",
+      "native finite interval enclosures of exact coefficients and all-state radii",
+      "whole-path domain and original branch retention",
+      "E=0 positive-forcing radius counterexample when rational_two_sided is enabled",
+      "both signs of E-delta/lambda and whole-slab maximum principle",
+      "nonfinite, out-of-domain, denominator and dimension refusal",
+      "epoch and endpoint-bit cache invalidation",
+      "exact clock ownership",
+      "dense-query representation enclosure if exposed",
+      "same endpoints for kernel timing and matched unchanged cap for end-to-end timing"
+    ],
+    "required_timing_fields": ["integration", "certificate", "total", "failed_attempt_work", "slope_evaluations", "endpoint_reuse", "first_passing_tested_grid"],
+    "revision_budget": "at most three bounded coding revisions per admitted research task; preserve failures"
+  },
+  "reused_evidence": {
+    "source": "intake/rvj/f23_native/results.json",
+    "old_n4_compiled_N64": {"median_integration_seconds": 0.000030555, "median_certificate_seconds": 0.001870575, "median_total_seconds": 0.001900971, "certificate_fraction": 0.9840102768532503},
+    "old_N32_nine_configurations": {"physical_bound_upper_coarse": "1.173e-8", "algebraic_residual_upper_coarse": "1.7e-11", "old_native_cap_result": "FAIL"},
+    "conditional_recertification": {"formula_at_T1": "Bnew <= (3/4)*Bold+(16/49)*Gold", "coarse_theoretical_upper": "8.804e-9", "new_native_result": "NOT_RUN", "caveat": "same exact path, old upper bounds valid, and new outward arithmetic envelope must be included"},
+    "old_exact_oracle_slabs": 27,
+    "old_oracle_was_exhaustive": false
+  },
+  "future_alternatives": [
+    {"id": "factored_algebraic_residual", "expression": "G-L=theta^2*(1-theta)^2*p2(theta)", "constant": "1/16", "status": "analytically_derived_deferred_until_measured_need"},
+    {"id": "alternate_slow_r1_r2_arithmetic", "source": "CLOSURE.md equation C8", "status": "exact_equivalent_formula_deferred_bounded_comparison"},
+    {"id": "generic_tube_or_subdivision", "status": "additional_cost_fallback_for_models_without_fixed_polynomial_original_residual; no universal rejection"}
+  ],
+  "remaining_theory": ["arbitrary closure families", "selected-root singularities", "stiffness-uniform accepted dynamics", "dense-output representation accounting outside the exact-path contract"],
+  "remaining_engineering": ["native finite API implementation", "immutable endpoint identity", "independent exact oracle", "complete-cost benchmark and profiling"],
+  "claims_explicitly_not_made": ["generic production solver certification", "universal compiled-versus-Newton speedup", "generic sparse compiler theorem", "selected-singularity repair by atlas switching", "new native N32 PASS", "measured speed ratio"]
+}

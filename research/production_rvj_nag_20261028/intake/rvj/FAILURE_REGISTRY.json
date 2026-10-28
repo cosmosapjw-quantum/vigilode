@@ -1,0 +1,50 @@
+{
+  "schema": "rvj-nag-failures/1.0.0",
+  "records": [
+    {
+      "class": "environment",
+      "operation": "query distribution metadata sympy",
+      "observed": "PackageNotFoundError sympy in default runtime",
+      "impact": "environment metadata command failed after source manifest verification completed",
+      "resolution": "probe import availability and alternate installed Python environments"
+    },
+    {
+      "id": "SOURCE-HORIZONTAL-OMISSION",
+      "class": "theory",
+      "status": "CONFIRMED_COUNTEREXAMPLE_AND_REPAIR_STARTED",
+      "evidence_refs": [
+        "reviews/horizontal_independent_check.json",
+        "f5_global/full_incidence_results.json"
+      ],
+      "next_action": "F5-GLOBAL-REPAIR"
+    },
+    {
+      "id": "NATIVE-COARSE-BUDGET",
+      "class": "numerics",
+      "status": "EXPECTED_REJECTION",
+      "evidence_refs": [
+        "f23_native/results.json"
+      ],
+      "next_action": "N64 meets unchanged 1e-8 budget; N16/N32 failures retained."
+    },
+    {
+      "id": "TRACE-COARSE-BUDGET",
+      "class": "numerics",
+      "status": "EXPECTED_REJECTION",
+      "evidence_refs": [
+        "f6_trace/results.json"
+      ],
+      "next_action": "N256 meets unchanged residual-only 1e-8 budget; coarser results retained."
+    },
+    {
+      "id": "F4-MATRIX-COMPARISON",
+      "class": "implementation",
+      "status": "REPAIRED",
+      "evidence_refs": [
+        "f4_degenerate/failure_matrix_comparison.log",
+        "f4_degenerate/symbolic_results.json"
+      ],
+      "next_action": "No remaining matrix-equality check issue."
+    }
+  ]
+}

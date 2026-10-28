@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "task_id": "RVJ-TRACE-20261028",
+  "phase": "theory_complete_awaiting_parent_native_admission",
+  "skill": {"name": "physmath-research-loop", "version": "1.3.0", "selected_steps": ["R2", "R3", "R5", "R7", "R9"]},
+  "base_commit": "13f3298bd0213f121e07385903f9508c435ad6a1",
+  "theory_file": "research/production_rvj_nag_20261028/theory/TRACE.md",
+  "source_identity_manifest": "research/production_rvj_nag_20261028/intake/INPUTS.json",
+  "target": {
+    "kind": "all_complex_root_polynomial_observable",
+    "multiplicity": "algebraic_local_length",
+    "original_equations": ["q1^2+q2-a=0", "q2^2+q1-b=0"],
+    "primitive_variable": "z=q1",
+    "reconstruction": "q2=a-z^2",
+    "monic_polynomial_descending_coefficients": ["1", "0", "-2*a", "1", "a^2-b"],
+    "rank": 4,
+    "rank_proof": "monic division gives a free basis [1,z,z^2,z^3] over the parameter ring and every specialization",
+    "basis": ["1", "z", "z^2", "z^3"],
+    "basis_traces": ["4", "0", "4*a", "-3"],
+    "selected_real_branch_supported": false,
+    "all_real_roots_only_supported": false,
+    "root_filter_supported": false,
+    "hidden_root_enumeration_allowed": false,
+    "jacobian_matrix_required_at_runtime": false,
+    "jvp_ad_required_at_runtime": false
+  },
+  "theorems": [
+    {"id": "T1", "status": "proved", "claim": "multiplication trace equals polynomial evaluation summed over all complex roots with algebraic multiplicity, including discriminants", "assumptions": ["monic fixed-degree polynomial", "characteristic zero", "polynomial observable", "full quotient without radicalization or unrecorded saturation"]},
+    {"id": "T2", "status": "proved", "claim": "root-free coefficient, moment and observable representation-error recurrences", "assumptions": ["explicit coefficient enclosures", "arithmetic recurrence residual bounds or outward interval operations", "finite resulting enclosures"]},
+    {"id": "T3", "status": "proved", "claim": "controlled quartic trace field has mu_infinity <= -39/64 on [1/2,1]^2", "assumptions": ["exact F6 field T12", "original unweighted infinity norm", "whole segment contained in the declared box"]},
+    {"id": "T4", "status": "proved", "claim": "whole-slab original-field defect gives an exponentially contracted physical path-error bound", "assumptions": ["absolutely continuous specified reconstruction", "uniform original-field defect bound", "incoming original-norm error", "strict first-exit tube containment"]},
+    {"id": "T4a", "status": "proved", "claim": "two rational exponential bounds and maximum of endpoint affine expressions give universally safe propagation including threshold ambiguity", "assumptions": ["lambda>0", "h>=0", "E>=0", "delta>=0", "outward evaluation of every scalar bound"]}
+  ],
+  "closed_moments": ["4", "0", "4*a", "-3", "4*a^2+4*b", "-10*a", "4*a^3+12*a*b+3"],
+  "recurrence": {"valid_for": "k>4", "formula": "S[k]=2*a*S[k-2]-S[k-3]-(a^2-b)*S[k-4]"},
+  "compiled_invariants": [
+    {"query": "Tr(q1)", "value": "0"},
+    {"query": "Tr(q2)", "value": "0"},
+    {"query": "Tr(q1^2)", "value": "4*a"},
+    {"query": "Tr(q2^2)", "value": "4*b"},
+    {"query": "Tr(q1*q2)", "value": "3"},
+    {"query": "Tr(q1^2*q2^2)", "value": "4*a*b+3"}
+  ],
+  "exact_examples": {
+    "triple_root": {"a": "3/4", "b": "3/4", "factorization": "(z-1/2)^3*(z+3/2)", "moments": "S[k]=3*(1/2)^k+(-3/2)^k", "S0": "4", "S1": "0", "distinct_root_S0_invalid": "2", "distinct_root_S1_invalid": "-1"},
+    "regular_branch_query_refusal": {"a": "2", "b": "2", "factorization": "(z-1)*(z+2)*(z^2-z-1)", "selected_branch": ["1", "1"], "determinant": "3", "selected_q1": "1", "all_root_Trace_q1": "0", "all_root_mean_q1": "0", "reason": "request identity mismatch even on a regular selected real branch"},
+    "real_only_query_refusal": {"a": "-1/4", "b": "-1/4", "factorization": "(z+1/2)^2*(z^2-z+5/4)", "real_only_sum_q1_squared": "1/2", "all_complex_sum_q1_squared": "-1"}
+  },
+  "finite_representation": {
+    "input_interpretation_required": true,
+    "point_binary64_means_exact_dyadic_input": true,
+    "nondyadic_rational_conversion_requires_enclosure": true,
+    "root_separation_required": false,
+    "root_bound": "R=1+max_j(abs(c_j)); M[k]=degree*R^k",
+    "moment_error_k_le_degree": "E[k] <= k*eta[k] + sum_{j=1}^{k-1}(abs(c_hat[j])*E[k-j]+eta[j]*M[k-j]) + epsilon[k]",
+    "moment_error_k_gt_degree": "E[k] <= sum_{j=1}^{degree}(abs(c_hat[j])*E[k-j]+eta[j]*M[k-j]) + epsilon[k]",
+    "observable_error": "sum_l(abs(h_hat[l])*E[l]+zeta[l]*M[l])+epsilon_T",
+    "quartic_domain": [["1/2", "1"], ["1/2", "1"]],
+    "quartic_representation_bounds": {"S2": "4*e_a", "S4": "8*e_a+4*e_b", "S6": "24*e_a+12*e_b", "N": "7/64*e_a+7/128*e_b"},
+    "native_arithmetic_reuse": "crates/rodas5p-core/src/directed.rs::Interval",
+    "refusal_cases": ["non-finite input", "invalid interval", "overflowed enclosure", "unsupported observable semantics", "unchecked degree or integer conversion", "work-cap exhaustion", "environment invalidates directed arithmetic"]
+  },
+  "shared_field": {
+    "N": "(4*a^3+16*a^2+12*a*b+16*b+3)/512",
+    "G1": "-7*a/8+N",
+    "G2": "-b+a/16+2*N",
+    "independent_identity": "G2-2*G1=29*a/16-b",
+    "shared_N_error_direction": ["1", "2"],
+    "shared_N_infinity_error_constant": "2",
+    "identity_is_trajectory_conservation_law": false
+  },
+  "controlled_ode": {
+    "classification": "manufactured_coupled_all_root_observable_client",
+    "physical_time": ["-1", "1"],
+    "p": "3/4+t/8+t^5/64",
+    "p_prime": "1/8+5*t^4/64",
+    "field": "F(t,y)=G(y)+p_prime(t)*(1,1)-G(p(t),p(t))",
+    "initial_state": ["39/64", "39/64"],
+    "exact_solution": ["p(t)", "p(t)"],
+    "terminal_state": ["57/64", "57/64"],
+    "triple_root_crossing_time": "0",
+    "diagonal_discriminant": "(4*a-3)^3*(4*a+1)",
+    "domain": [["1/2", "1"], ["1/2", "1"]],
+    "norm": "unweighted_infinity",
+    "lambda": "39/64",
+    "historical_valid_weaker_lambda": "1/2",
+    "row_sum_upper": ["-91/128", "-39/64"],
+    "whole_path_claim_requires": ["actual original-field whole-slab residual", "specified reconstruction", "outward arithmetic or exact-rational proof", "incoming error", "strict tube containment", "clock and interface budgets"]
+  },
+  "propagation": {
+    "exact": "exp(-lambda*h)*E+(1-exp(-lambda*h))*delta/lambda",
+    "x": "lambda*h",
+    "q_lower": "max(0,(1-x/2)/(1+x/2))",
+    "q_upper": "1/(1+x+x^2/2)",
+    "D_delta": "delta/lambda",
+    "endpoint_upper": "max(q_lower*E+(1-q_lower)*D_delta,q_upper*E+(1-q_upper)*D_delta)",
+    "whole_slab_upper": "max(E,endpoint_upper)",
+    "optional_independent_whole_upper": "E+h*delta",
+    "threshold_ambiguity_policy": "use maximum of both endpoint affine expressions; sign branching requires an outward proven comparison",
+    "rejected_universal_shortcut": "(E+h*delta)/(1+lambda*h)",
+    "shortcut_counterexample": {"E": "0", "lambda_h": "1", "incorrect_coefficient_of_delta_over_lambda": "1/2", "true_coefficient": "1-exp(-1)"},
+    "arithmetic_rule": "all bounds outward; q interval clipped to [0,1] only using proved exponential bounds"
+  },
+  "global_count_corrections": {
+    "archived_116_ordered_58_unordered": "incomplete_unqualified_claim_rejected",
+    "new_horizontal_contribution": {"ordered": 4, "unordered": 2, "reducedness": "established_in_attachment_review"},
+    "conditional_120_ordered_60_unordered": "not_promoted_requires_retained_nonhorizontal_atlas_and_all_chart_completeness",
+    "vertical_factor": "D=4*eta^3*p+27*eta^2*q+27*p*q",
+    "local_length_three_witness": {"eta": "1", "p": "-1/2", "q": "4/27", "reduced_leading_term": "2080/729*a^3"},
+    "effect_on_explicit_monic_quartic_rank": "none_rank_four_proved_directly",
+    "effect_on_future_multivariate_provider": "blocks_rank_or_multiplicity_admission_based_only_on_global_counts",
+    "general_multivariate_provider_admitted": false
+  },
+  "polyalgorithm": {
+    "same_query_routes": ["proved invariant circuit", "compiled polynomial observable circuit", "monic Newton moment recurrence"],
+    "selected_branch_is_backend_of_this_query": false,
+    "fixed_model_batch_parallelism": "independent input states only; no claim that arbitrary time loops became parallel",
+    "cached_plan_identity": ["original equations/provider", "observable coefficients", "all-complex multiplicity semantics", "parameter interpretation", "provider epoch", "arithmetic policy", "norm and domain for physical certificates"],
+    "costs_to_record": ["preparation", "candidate evaluation", "outward evaluation", "certification", "allocation", "refused attempts", "fallback", "whole call"]
+  },
+  "native_work_state": {
+    "runtime_edits_by_theory_worker": false,
+    "new_native_runs": 0,
+    "old_campaigns_replayed": false,
+    "new_performance_claim": false,
+    "production_solver_claim": false,
+    "parent_admission_required_before_coding": true,
+    "maximum_task_correction_loops": 3,
+    "proposed_first_component": "isolated explicit multiplicity-preserving quartic polynomial trace provider using existing Interval arithmetic"
+  },
+  "prospective_tests": [
+    "independent exact rational quotient/companion moments including triple and double-complex roots",
+    "regular selected-branch and real-only query refusal",
+    "enclosures at exact binary64 inputs plus rational coefficient conversion",
+    "invalid input overflow subnormal and degree/resource refusal",
+    "original field versus shared circuit and G2-2G1 identity",
+    "native manufactured ODE versus exact path including discriminant crossing",
+    "whole-slab certificate only with actual residual tube rounding clock evidence",
+    "rational propagation both regimes equality and outward threshold ambiguity",
+    "matched-target candidate/certificate/orchestration timing and profiling"
+  ],
+  "open_theory": [
+    "finite free multivariate quotient for the complete actual ideal and parameter domain",
+    "all-strata local lengths and correct group-action orbit weights",
+    "selected real branch continuation through genuine singularities",
+    "actual physical model semantics for subsets of roots",
+    "unit-denominator and represented-inverse proofs before rational observable extension"
+  ],
+  "literature": [{"authors": ["Alin Bostan", "Philippe Flajolet", "Bruno Salvy", "Eric Schost"], "title": "Fast Computation With Two Algebraic Numbers", "year": 2002, "url": "https://algo.inria.fr/flajolet/Publications/BoFlSaSc02.pdf", "sections_read": ["2", "4.1", "4.3"], "used_for": "primary-source connection between coefficient power sums and multiplicity-preserving quotient traces", "supports_native_performance_claim": false}]
+}
