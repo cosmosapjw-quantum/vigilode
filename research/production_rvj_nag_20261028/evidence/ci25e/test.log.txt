@@ -1,0 +1,1219 @@
+﻿2026-10-28T11:03:03.1800092Z Current runner version: '2.338.0'
+2026-10-28T11:03:03.1837659Z ##[group]Runner Image Provisioner
+2026-10-28T11:03:03.1838941Z Hosted Compute Agent
+2026-10-28T11:03:03.1839835Z Version: 20261021.618
+2026-10-28T11:03:03.1841075Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-28T11:03:03.1842203Z Build Date: 2026-10-21T00:45:21Z
+2026-10-28T11:03:03.1843326Z Worker ID: {662c7faa-d7fb-4eb7-accb-5c8cc65e4a7b}
+2026-10-28T11:03:03.1844776Z Region: northcentralus
+2026-10-28T11:03:03.1845730Z Cloud: Azure
+2026-10-28T11:03:03.1846820Z ##[endgroup]
+2026-10-28T11:03:03.1849880Z ##[group]Operating System
+2026-10-28T11:03:03.1850882Z Ubuntu
+2026-10-28T11:03:03.1851838Z 26.04.1
+2026-10-28T11:03:03.1852687Z LTS
+2026-10-28T11:03:03.1853837Z ##[endgroup]
+2026-10-28T11:03:03.1855033Z ##[group]Runner Image
+2026-10-28T11:03:03.1856029Z Image: ubuntu-26.04
+2026-10-28T11:03:03.1857060Z Version: 20261012.163.1
+2026-10-28T11:03:03.1859137Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261012.163/images/ubuntu/Ubuntu2604-Readme.md
+2026-10-28T11:03:03.1861876Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261012.163
+2026-10-28T11:03:03.1863551Z ##[endgroup]
+2026-10-28T11:03:03.1865652Z ##[group]GITHUB_TOKEN Permissions
+2026-10-28T11:03:03.1868717Z Contents: read
+2026-10-28T11:03:03.1869779Z Metadata: read
+2026-10-28T11:03:03.1870664Z ##[endgroup]
+2026-10-28T11:03:03.1873822Z Secret source: Actions
+2026-10-28T11:03:03.1875699Z Cache mode: write
+2026-10-28T11:03:03.1877249Z Prepare workflow directory
+2026-10-28T11:03:03.2511223Z Prepare all required actions
+2026-10-28T11:03:03.2598231Z Getting action download info
+2026-10-28T11:03:03.4988443Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-28T11:03:03.8929761Z Download action repository 'Swatinem/rust-cache@v2.7.8' (SHA:9d47c6ad4b02e050fd481d890b2ea34778fd09d6)
+2026-10-28T11:03:04.3355246Z Complete job name: test
+2026-10-28T11:03:04.4350577Z ##[group]Run actions/checkout@v4
+2026-10-28T11:03:04.4351536Z with:
+2026-10-28T11:03:04.4352012Z   repository: cosmosapjw-quantum/vigilode
+2026-10-28T11:03:04.4356167Z   token: ***
+2026-10-28T11:03:04.4356597Z   ssh-strict: true
+2026-10-28T11:03:04.4357031Z   ssh-user: git
+2026-10-28T11:03:04.4357468Z   persist-credentials: true
+2026-10-28T11:03:04.4357945Z   clean: true
+2026-10-28T11:03:04.4358395Z   sparse-checkout-cone-mode: true
+2026-10-28T11:03:04.4358906Z   fetch-depth: 1
+2026-10-28T11:03:04.4359340Z   fetch-tags: false
+2026-10-28T11:03:04.4359776Z   show-progress: true
+2026-10-28T11:03:04.4360211Z   lfs: false
+2026-10-28T11:03:04.4360616Z   submodules: false
+2026-10-28T11:03:04.4361065Z   set-safe-directory: true
+2026-10-28T11:03:04.4361578Z   allow-unsafe-pr-checkout: false
+2026-10-28T11:03:04.4362327Z env:
+2026-10-28T11:03:04.4362747Z   CARGO_TERM_COLOR: always
+2026-10-28T11:03:04.4363240Z   RUST_TOOLCHAIN: 1.94.1
+2026-10-28T11:03:04.4363703Z ##[endgroup]
+2026-10-28T11:03:04.6802292Z Syncing repository: cosmosapjw-quantum/vigilode
+2026-10-28T11:03:04.6805855Z ##[group]Getting Git version info
+2026-10-28T11:03:04.6807227Z Working directory is '/home/runner/work/vigilode/vigilode'
+2026-10-28T11:03:04.6809109Z [command]/usr/bin/git version
+2026-10-28T11:03:04.6816586Z git version 2.55.0
+2026-10-28T11:03:04.6842260Z ##[endgroup]
+2026-10-28T11:03:04.6860839Z Temporarily overriding HOME='/home/runner/work/_temp/5f2521e7-e66d-43e2-b0cf-208f60897ad5' before making global git config changes
+2026-10-28T11:03:04.6863355Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-28T11:03:04.6867494Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vigilode/vigilode
+2026-10-28T11:03:04.6927679Z Deleting the contents of '/home/runner/work/vigilode/vigilode'
+2026-10-28T11:03:04.6932884Z ##[group]Initializing the repository
+2026-10-28T11:03:04.6938519Z [command]/usr/bin/git init /home/runner/work/vigilode/vigilode
+2026-10-28T11:03:04.7056790Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-28T11:03:04.7059504Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-28T11:03:04.7064577Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-28T11:03:04.7066260Z hint: call:
+2026-10-28T11:03:04.7067194Z hint:
+2026-10-28T11:03:04.7068377Z hint: 	git config --global init.defaultBranch <name>
+2026-10-28T11:03:04.7070592Z hint:
+2026-10-28T11:03:04.7071748Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-28T11:03:04.7073447Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-28T11:03:04.7075151Z hint:
+2026-10-28T11:03:04.7075997Z hint: 	git branch -m <name>
+2026-10-28T11:03:04.7076933Z hint:
+2026-10-28T11:03:04.7078444Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-28T11:03:04.7080431Z Initialized empty Git repository in /home/runner/work/vigilode/vigilode/.git/
+2026-10-28T11:03:04.7083703Z [command]/usr/bin/git remote add origin https://github.com/cosmosapjw-quantum/vigilode
+2026-10-28T11:03:04.7120958Z ##[endgroup]
+2026-10-28T11:03:04.7122283Z ##[group]Disabling automatic garbage collection
+2026-10-28T11:03:04.7125783Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-28T11:03:04.7166162Z ##[endgroup]
+2026-10-28T11:03:04.7167495Z ##[group]Setting up auth
+2026-10-28T11:03:04.7175339Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-28T11:03:04.7215837Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-28T11:03:04.7689631Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-28T11:03:04.7769987Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-28T11:03:04.8057518Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T11:03:04.8100411Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-28T11:03:04.8384441Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-28T11:03:04.8427125Z ##[endgroup]
+2026-10-28T11:03:04.8428088Z ##[group]Fetching the repository
+2026-10-28T11:03:04.8437607Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0dabec43b15db53c3b63c2da7e2b44f4b18bebc5:refs/remotes/pull/97/merge
+2026-10-28T11:03:10.0425066Z From https://github.com/cosmosapjw-quantum/vigilode
+2026-10-28T11:03:10.0427927Z  * [new ref]         0dabec43b15db53c3b63c2da7e2b44f4b18bebc5 -> pull/97/merge
+2026-10-28T11:03:10.0434424Z ##[endgroup]
+2026-10-28T11:03:10.0436533Z ##[group]Determining the checkout info
+2026-10-28T11:03:10.0438767Z ##[endgroup]
+2026-10-28T11:03:10.0449208Z [command]/usr/bin/git sparse-checkout disable
+2026-10-28T11:03:10.0503038Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-28T11:03:10.0538567Z ##[group]Checking out the ref
+2026-10-28T11:03:10.0541953Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/97/merge
+2026-10-28T11:03:11.1009932Z Updating files:  49% (8491/17037)
+2026-10-28T11:03:11.1333063Z Updating files:  50% (8519/17037)
+2026-10-28T11:03:11.2119219Z Updating files:  51% (8689/17037)
+2026-10-28T11:03:11.2699453Z Updating files:  52% (8860/17037)
+2026-10-28T11:03:11.3001344Z Updating files:  53% (9030/17037)
+2026-10-28T11:03:11.3725722Z Updating files:  54% (9200/17037)
+2026-10-28T11:03:11.3856315Z Updating files:  55% (9371/17037)
+2026-10-28T11:03:11.3946796Z Updating files:  56% (9541/17037)
+2026-10-28T11:03:11.4111952Z Updating files:  57% (9712/17037)
+2026-10-28T11:03:11.4205389Z Updating files:  58% (9882/17037)
+2026-10-28T11:03:11.6508150Z Updating files:  59% (10052/17037)
+2026-10-28T11:03:11.6619281Z Updating files:  60% (10223/17037)
+2026-10-28T11:03:11.8771304Z Updating files:  61% (10393/17037)
+2026-10-28T11:03:11.8905794Z Updating files:  62% (10563/17037)
+2026-10-28T11:03:11.9093833Z Updating files:  63% (10734/17037)
+2026-10-28T11:03:11.9289204Z Updating files:  64% (10904/17037)
+2026-10-28T11:03:11.9462718Z Updating files:  65% (11075/17037)
+2026-10-28T11:03:11.9667235Z Updating files:  66% (11245/17037)
+2026-10-28T11:03:11.9835204Z Updating files:  67% (11415/17037)
+2026-10-28T11:03:11.9975988Z Updating files:  68% (11586/17037)
+2026-10-28T11:03:12.0141492Z Updating files:  69% (11756/17037)
+2026-10-28T11:03:12.0256725Z Updating files:  70% (11926/17037)
+2026-10-28T11:03:12.0394211Z Updating files:  71% (12097/17037)
+2026-10-28T11:03:12.0611109Z Updating files:  72% (12267/17037)
+2026-10-28T11:03:12.0732450Z Updating files:  73% (12438/17037)
+2026-10-28T11:03:12.0945235Z Updating files:  74% (12608/17037)
+2026-10-28T11:03:12.0955427Z Updating files:  75% (12778/17037)
+2026-10-28T11:03:12.1267875Z Updating files:  75% (12788/17037)
+2026-10-28T11:03:12.1505616Z Updating files:  76% (12949/17037)
+2026-10-28T11:03:12.2026413Z Updating files:  77% (13119/17037)
+2026-10-28T11:03:12.2357124Z Updating files:  78% (13289/17037)
+2026-10-28T11:03:12.2433459Z Updating files:  79% (13460/17037)
+2026-10-28T11:03:12.2507002Z Updating files:  80% (13630/17037)
+2026-10-28T11:03:12.2594100Z Updating files:  81% (13800/17037)
+2026-10-28T11:03:12.2668714Z Updating files:  82% (13971/17037)
+2026-10-28T11:03:12.2807798Z Updating files:  83% (14141/17037)
+2026-10-28T11:03:12.3022512Z Updating files:  84% (14312/17037)
+2026-10-28T11:03:12.3159570Z Updating files:  85% (14482/17037)
+2026-10-28T11:03:12.3508374Z Updating files:  86% (14652/17037)
+2026-10-28T11:03:12.3862495Z Updating files:  87% (14823/17037)
+2026-10-28T11:03:12.4139843Z Updating files:  88% (14993/17037)
+2026-10-28T11:03:12.4309037Z Updating files:  89% (15163/17037)
+2026-10-28T11:03:12.4389563Z Updating files:  90% (15334/17037)
+2026-10-28T11:03:12.4563204Z Updating files:  91% (15504/17037)
+2026-10-28T11:03:12.4890512Z Updating files:  92% (15675/17037)
+2026-10-28T11:03:12.5049536Z Updating files:  93% (15845/17037)
+2026-10-28T11:03:12.5430684Z Updating files:  94% (16015/17037)
+2026-10-28T11:03:12.5735974Z Updating files:  95% (16186/17037)
+2026-10-28T11:03:12.6822618Z Updating files:  96% (16356/17037)
+2026-10-28T11:03:12.7655041Z Updating files:  97% (16526/17037)
+2026-10-28T11:03:12.8065221Z Updating files:  98% (16697/17037)
+2026-10-28T11:03:12.8296472Z Updating files:  99% (16867/17037)
+2026-10-28T11:03:12.8297441Z Updating files: 100% (17037/17037)
+2026-10-28T11:03:12.8298617Z Updating files: 100% (17037/17037), done.
+2026-10-28T11:03:12.8478887Z Note: switching to 'refs/remotes/pull/97/merge'.
+2026-10-28T11:03:12.8479418Z 
+2026-10-28T11:03:12.8479929Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-28T11:03:12.8480969Z changes and commit them, and you can discard any commits you make in this
+2026-10-28T11:03:12.8481942Z state without impacting any branches by switching back to a branch.
+2026-10-28T11:03:12.8482530Z 
+2026-10-28T11:03:12.8482954Z If you want to create a new branch to retain commits you create, you may
+2026-10-28T11:03:12.8483810Z do so (now or later) by using -c with the switch command. Example:
+2026-10-28T11:03:12.8484548Z 
+2026-10-28T11:03:12.8484736Z   git switch -c <new-branch-name>
+2026-10-28T11:03:12.8485050Z 
+2026-10-28T11:03:12.8485224Z Or undo this operation with:
+2026-10-28T11:03:12.8485516Z 
+2026-10-28T11:03:12.8485671Z   git switch -
+2026-10-28T11:03:12.8485881Z 
+2026-10-28T11:03:12.8486263Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-28T11:03:12.8486823Z 
+2026-10-28T11:03:12.8487502Z HEAD is now at 0dabec4 Merge 25e76dd84f1ca71fd460201bdf31476d3cce9545 into 13f3298bd0213f121e07385903f9508c435ad6a1
+2026-10-28T11:03:12.8616320Z ##[endgroup]
+2026-10-28T11:03:12.8768055Z [command]/usr/bin/git log -1 --format=%H
+2026-10-28T11:03:12.8797292Z 0dabec43b15db53c3b63c2da7e2b44f4b18bebc5
+2026-10-28T11:03:12.9122317Z ##[group]Run rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+2026-10-28T11:03:12.9123001Z [36;1mrustup toolchain install "$RUST_TOOLCHAIN" --profile minimal[0m
+2026-10-28T11:03:12.9123429Z [36;1mrustup override set "$RUST_TOOLCHAIN"[0m
+2026-10-28T11:03:12.9285585Z shell: /usr/bin/bash -e {0}
+2026-10-28T11:03:12.9285915Z env:
+2026-10-28T11:03:12.9286152Z   CARGO_TERM_COLOR: always
+2026-10-28T11:03:12.9286440Z   RUST_TOOLCHAIN: 1.94.1
+2026-10-28T11:03:12.9286700Z ##[endgroup]
+2026-10-28T11:03:12.9812527Z info: syncing channel updates for 1.94.1-x86_64-unknown-linux-gnu
+2026-10-28T11:03:13.1093846Z info: latest update on 2026-03-26 for version 1.94.1 (e408947bf 2026-03-25)
+2026-10-28T11:03:13.1094893Z info: downloading 3 components
+2026-10-28T11:03:21.2294221Z 
+2026-10-28T11:03:21.2367044Z   1.94.1-x86_64-unknown-linux-gnu installed - rustc 1.94.1 (e408947bf 2026-03-25)
+2026-10-28T11:03:21.2367454Z 
+2026-10-28T11:03:21.2654912Z info: override toolchain for /home/runner/work/vigilode/vigilode set to 1.94.1-x86_64-unknown-linux-gnu
+2026-10-28T11:03:21.2759954Z ##[group]Run Swatinem/rust-cache@v2.7.8
+2026-10-28T11:03:21.2760266Z with:
+2026-10-28T11:03:21.2760468Z   shared-key: root
+2026-10-28T11:03:21.2760682Z   prefix-key: v0-rust
+2026-10-28T11:03:21.2760907Z   cache-targets: true
+2026-10-28T11:03:21.2761120Z   cache-all-crates: false
+2026-10-28T11:03:21.2761339Z   save-if: true
+2026-10-28T11:03:21.2761540Z   cache-provider: github
+2026-10-28T11:03:21.2761756Z   cache-bin: true
+2026-10-28T11:03:21.2761954Z   lookup-only: false
+2026-10-28T11:03:21.2762160Z env:
+2026-10-28T11:03:21.2762344Z   CARGO_TERM_COLOR: always
+2026-10-28T11:03:21.2762576Z   RUST_TOOLCHAIN: 1.94.1
+2026-10-28T11:03:21.2762790Z ##[endgroup]
+2026-10-28T11:03:22.6273747Z ##[group]Cache Configuration
+2026-10-28T11:03:22.6274455Z Cache Provider:
+2026-10-28T11:03:22.6274803Z     github
+2026-10-28T11:03:22.6275079Z Workspaces:
+2026-10-28T11:03:22.6275392Z     /home/runner/work/vigilode/vigilode
+2026-10-28T11:03:22.6275817Z Cache Paths:
+2026-10-28T11:03:22.6276198Z     /home/runner/.cargo/bin
+2026-10-28T11:03:22.6276568Z     /home/runner/.cargo/.crates.toml
+2026-10-28T11:03:22.6276983Z     /home/runner/.cargo/.crates2.json
+2026-10-28T11:03:22.6277394Z     /home/runner/.cargo/registry
+2026-10-28T11:03:22.6277843Z     /home/runner/.cargo/git
+2026-10-28T11:03:22.6278293Z     /home/runner/work/vigilode/vigilode/target
+2026-10-28T11:03:22.6278777Z Restore Key:
+2026-10-28T11:03:22.6279126Z     v0-rust-root-Linux-x64-49f0e1cf
+2026-10-28T11:03:22.6279593Z Cache Key:
+2026-10-28T11:03:22.6279957Z     v0-rust-root-Linux-x64-49f0e1cf-c607b1e5
+2026-10-28T11:03:22.6280352Z .. Prefix:
+2026-10-28T11:03:22.6280563Z   - v0-rust-root-Linux-x64
+2026-10-28T11:03:22.6280870Z .. Environment considered:
+2026-10-28T11:03:22.6281277Z   - Rust Version: 1.94.1 x86_64-unknown-linux-gnu (e408947bfd200af42db322daf0fadfe7e26d3bd1)
+2026-10-28T11:03:22.6281758Z   - CARGO_INCREMENTAL
+2026-10-28T11:03:22.6282129Z   - CARGO_TERM_COLOR
+2026-10-28T11:03:22.6282377Z   - RUST_TOOLCHAIN
+2026-10-28T11:03:22.6282598Z .. Lockfiles considered:
+2026-10-28T11:03:22.6282899Z   - /home/runner/work/vigilode/vigilode/.cargo/config.toml
+2026-10-28T11:03:22.6283283Z   - /home/runner/work/vigilode/vigilode/Cargo.lock
+2026-10-28T11:03:22.6283675Z   - /home/runner/work/vigilode/vigilode/crates/rodas5p-cli/Cargo.toml
+2026-10-28T11:03:22.6284413Z   - /home/runner/work/vigilode/vigilode/crates/rodas5p-core/Cargo.toml
+2026-10-28T11:03:22.6284923Z   - /home/runner/work/vigilode/vigilode/crates/rodas5p-fair-ab/Cargo.toml
+2026-10-28T11:03:22.6285436Z   - /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/Cargo.toml
+2026-10-28T11:03:22.6285932Z   - /home/runner/work/vigilode/vigilode/crates/rodas5p-krylov/Cargo.toml
+2026-10-28T11:03:22.6286405Z   - /home/runner/work/vigilode/vigilode/crates/vigilode-coupled/Cargo.toml
+2026-10-28T11:03:22.6287211Z   - /home/runner/work/vigilode/vigilode/crates/vigilode/Cargo.toml
+2026-10-28T11:03:22.6287610Z   - /home/runner/work/vigilode/vigilode/rust-toolchain.toml
+2026-10-28T11:03:22.6288341Z ##[endgroup]
+2026-10-28T11:03:22.6288470Z 
+2026-10-28T11:03:22.6288555Z ... Restoring cache ...
+2026-10-28T11:03:22.7718407Z ##[warning]Cache not found for keys: v0-rust-root-Linux-x64-49f0e1cf-c607b1e5, v0-rust-root-Linux-x64-49f0e1cf
+2026-10-28T11:03:22.7726274Z No cache found.
+2026-10-28T11:03:22.7856093Z ##[group]Run cargo test --locked -p vigilode -p rodas5p-core -p rodas5p-krylov -p vigilode-coupled
+2026-10-28T11:03:22.7856856Z [36;1mcargo test --locked -p vigilode -p rodas5p-core -p rodas5p-krylov -p vigilode-coupled[0m
+2026-10-28T11:03:22.7920873Z shell: /usr/bin/bash -e {0}
+2026-10-28T11:03:22.7921138Z env:
+2026-10-28T11:03:22.7921335Z   CARGO_TERM_COLOR: always
+2026-10-28T11:03:22.7921573Z   RUST_TOOLCHAIN: 1.94.1
+2026-10-28T11:03:22.7922658Z   CACHE_ON_FAILURE: false
+2026-10-28T11:03:22.7922918Z   CARGO_INCREMENTAL: 0
+2026-10-28T11:03:22.7923131Z ##[endgroup]
+2026-10-28T11:03:22.8365557Z [1m[92m    Updating[0m crates.io index
+2026-10-28T11:03:23.0071910Z [1m[92m Downloading[0m crates ...
+2026-10-28T11:03:23.1543770Z [1m[92m  Downloaded[0m block-buffer v0.10.4
+2026-10-28T11:03:23.1562095Z [1m[92m  Downloaded[0m crossbeam-epoch v0.9.20
+2026-10-28T11:03:23.1593076Z [1m[92m  Downloaded[0m nano-gemm-f32 v0.2.1
+2026-10-28T11:03:23.1602791Z [1m[92m  Downloaded[0m generic-array v0.14.7
+2026-10-28T11:03:23.1629977Z [1m[92m  Downloaded[0m paste v1.0.15
+2026-10-28T11:03:23.1674443Z [1m[92m  Downloaded[0m seq-macro v0.3.6
+2026-10-28T11:03:23.1698164Z [1m[92m  Downloaded[0m unicode-ident v1.0.24
+2026-10-28T11:03:23.1747207Z [1m[92m  Downloaded[0m version_check v0.9.5
+2026-10-28T11:03:23.1771628Z [1m[92m  Downloaded[0m zmij v1.0.23
+2026-10-28T11:03:23.1798032Z [1m[92m  Downloaded[0m serde_derive v1.0.229
+2026-10-28T11:03:23.1835397Z [1m[92m  Downloaded[0m serde_core v1.0.229
+2026-10-28T11:03:23.1865312Z [1m[92m  Downloaded[0m serde v1.0.229
+2026-10-28T11:03:23.1904227Z [1m[92m  Downloaded[0m raw-cpuid v11.6.0
+2026-10-28T11:03:23.1940961Z [1m[92m  Downloaded[0m zerocopy-derive v0.8.56
+2026-10-28T11:03:23.2035431Z [1m[92m  Downloaded[0m typenum v1.20.1
+2026-10-28T11:03:23.2071747Z [1m[92m  Downloaded[0m serde_json v1.0.151
+2026-10-28T11:03:23.2143771Z [1m[92m  Downloaded[0m rayon v1.12.0
+2026-10-28T11:03:23.2235619Z [1m[92m  Downloaded[0m zerocopy v0.8.56
+2026-10-28T11:03:23.2442094Z [1m[92m  Downloaded[0m libm v0.2.16
+2026-10-28T11:03:23.2547904Z [1m[92m  Downloaded[0m syn v1.0.109
+2026-10-28T11:03:23.2638144Z [1m[92m  Downloaded[0m pulp v0.22.3
+2026-10-28T11:03:23.2687198Z [1m[92m  Downloaded[0m memchr v2.8.3
+2026-10-28T11:03:23.2741193Z [1m[92m  Downloaded[0m rayon-core v1.13.0
+2026-10-28T11:03:23.2778169Z [1m[92m  Downloaded[0m syn v3.0.3
+2026-10-28T11:03:23.2879739Z [1m[92m  Downloaded[0m syn v2.0.119
+2026-10-28T11:03:23.2983218Z [1m[92m  Downloaded[0m once_cell v1.21.4
+2026-10-28T11:03:23.3006815Z [1m[92m  Downloaded[0m gemm v0.19.0
+2026-10-28T11:03:23.3019655Z [1m[92m  Downloaded[0m either v1.17.0
+2026-10-28T11:03:23.3033539Z [1m[92m  Downloaded[0m sha2 v0.10.9
+2026-10-28T11:03:23.3057972Z [1m[92m  Downloaded[0m reborrow v0.5.5
+2026-10-28T11:03:23.3064756Z [1m[92m  Downloaded[0m proc-macro2 v1.0.107
+2026-10-28T11:03:23.3093027Z [1m[92m  Downloaded[0m private-gemm-x86 v0.1.20
+2026-10-28T11:03:23.3111889Z [1m[92m  Downloaded[0m num-complex v0.4.6
+2026-10-28T11:03:23.3125780Z [1m[92m  Downloaded[0m nano-gemm-f64 v0.2.1
+2026-10-28T11:03:23.3132390Z [1m[92m  Downloaded[0m nano-gemm-codegen v0.2.1
+2026-10-28T11:03:23.3140186Z [1m[92m  Downloaded[0m nano-gemm-c64 v0.2.1
+2026-10-28T11:03:23.3147192Z [1m[92m  Downloaded[0m nano-gemm-c32 v0.2.1
+2026-10-28T11:03:23.3153758Z [1m[92m  Downloaded[0m interpol v0.2.1
+2026-10-28T11:03:23.3164863Z [1m[92m  Downloaded[0m generativity v1.2.1
+2026-10-28T11:03:23.3182991Z [1m[92m  Downloaded[0m gemm-f16 v0.19.0
+2026-10-28T11:03:23.3192412Z [1m[92m  Downloaded[0m gemm-common v0.19.0
+2026-10-28T11:03:23.3208693Z [1m[92m  Downloaded[0m gemm-c64 v0.19.0
+2026-10-28T11:03:23.3217700Z [1m[92m  Downloaded[0m equator-macro v0.6.0
+2026-10-28T11:03:23.3224916Z [1m[92m  Downloaded[0m thiserror-impl v2.0.19
+2026-10-28T11:03:23.3238872Z [1m[92m  Downloaded[0m quote v1.0.47
+2026-10-28T11:03:23.3264950Z [1m[92m  Downloaded[0m qd v0.8.0
+2026-10-28T11:03:23.3277970Z [1m[92m  Downloaded[0m pulp-wasm-simd-flag v0.1.1
+2026-10-28T11:03:23.3283703Z [1m[92m  Downloaded[0m itoa v1.0.18
+2026-10-28T11:03:23.3297674Z [1m[92m  Downloaded[0m equator v0.6.0
+2026-10-28T11:03:23.3307829Z [1m[92m  Downloaded[0m thiserror v2.0.19
+2026-10-28T11:03:23.3370869Z [1m[92m  Downloaded[0m half v2.7.1
+2026-10-28T11:03:23.3396252Z [1m[92m  Downloaded[0m gemm-f64 v0.19.0
+2026-10-28T11:03:23.3404911Z [1m[92m  Downloaded[0m num_cpus v1.17.0
+2026-10-28T11:03:23.3434537Z [1m[92m  Downloaded[0m nano-gemm v0.2.2
+2026-10-28T11:03:23.3445572Z [1m[92m  Downloaded[0m dyn-stack-macros v0.1.3
+2026-10-28T11:03:23.3453048Z [1m[92m  Downloaded[0m digest v0.10.7
+2026-10-28T11:03:23.3470618Z [1m[92m  Downloaded[0m defer v0.2.1
+2026-10-28T11:03:23.3479517Z [1m[92m  Downloaded[0m crypto-common v0.1.7
+2026-10-28T11:03:23.3488752Z [1m[92m  Downloaded[0m crossbeam-utils v0.8.22
+2026-10-28T11:03:23.3514558Z [1m[92m  Downloaded[0m libc v0.2.189
+2026-10-28T11:03:23.3922270Z [1m[92m  Downloaded[0m num-traits v0.2.19
+2026-10-28T11:03:23.3946370Z [1m[92m  Downloaded[0m nano-gemm-core v0.2.1
+2026-10-28T11:03:23.3952334Z [1m[92m  Downloaded[0m gemm-f32 v0.19.0
+2026-10-28T11:03:23.3961306Z [1m[92m  Downloaded[0m gemm-c32 v0.19.0
+2026-10-28T11:03:23.3970074Z [1m[92m  Downloaded[0m faer-traits v0.24.0
+2026-10-28T11:03:23.3978780Z [1m[92m  Downloaded[0m equator-macro v0.2.1
+2026-10-28T11:03:23.3985587Z [1m[92m  Downloaded[0m equator v0.2.2
+2026-10-28T11:03:23.3992469Z [1m[92m  Downloaded[0m dyn-stack v0.13.2
+2026-10-28T11:03:23.4008847Z [1m[92m  Downloaded[0m bytemuck_derive v1.11.0
+2026-10-28T11:03:23.4021557Z [1m[92m  Downloaded[0m bytemuck v1.25.2
+2026-10-28T11:03:23.4052780Z [1m[92m  Downloaded[0m autocfg v1.5.1
+2026-10-28T11:03:23.4069215Z [1m[92m  Downloaded[0m hex v0.4.3
+2026-10-28T11:03:23.4084125Z [1m[92m  Downloaded[0m crossbeam-deque v0.8.7
+2026-10-28T11:03:23.4098455Z [1m[92m  Downloaded[0m cpufeatures v0.2.17
+2026-10-28T11:03:23.4111509Z [1m[92m  Downloaded[0m cfg-if v1.0.4
+2026-10-28T11:03:23.4123554Z [1m[92m  Downloaded[0m bitflags v2.13.1
+2026-10-28T11:03:23.4172908Z [1m[92m  Downloaded[0m faer v0.24.4
+2026-10-28T11:03:23.5494421Z [1m[92m   Compiling[0m version_check v0.9.5
+2026-10-28T11:03:23.5495335Z [1m[92m   Compiling[0m proc-macro2 v1.0.107
+2026-10-28T11:03:23.5496260Z [1m[92m   Compiling[0m unicode-ident v1.0.24
+2026-10-28T11:03:23.5505305Z [1m[92m   Compiling[0m quote v1.0.47
+2026-10-28T11:03:23.6163006Z [1m[92m   Compiling[0m autocfg v1.5.1
+2026-10-28T11:03:23.7316339Z [1m[92m   Compiling[0m bytemuck v1.25.2
+2026-10-28T11:03:23.7976390Z [1m[92m   Compiling[0m nano-gemm-codegen v0.2.1
+2026-10-28T11:03:23.8955508Z [1m[92m   Compiling[0m libm v0.2.16
+2026-10-28T11:03:23.9745407Z [1m[92m   Compiling[0m num-traits v0.2.19
+2026-10-28T11:03:24.1000663Z [1m[92m   Compiling[0m bitflags v2.13.1
+2026-10-28T11:03:24.4595457Z [1m[92m   Compiling[0m paste v1.0.15
+2026-10-28T11:03:24.4751736Z [1m[92m   Compiling[0m raw-cpuid v11.6.0
+2026-10-28T11:03:24.4881982Z [1m[92m   Compiling[0m pulp v0.22.3
+2026-10-28T11:03:24.6260456Z [1m[92m   Compiling[0m cfg-if v1.0.4
+2026-10-28T11:03:24.9207202Z [1m[92m   Compiling[0m num-complex v0.4.6
+2026-10-28T11:03:25.0245879Z [1m[92m   Compiling[0m pulp-wasm-simd-flag v0.1.1
+2026-10-28T11:03:25.0546165Z [1m[92m   Compiling[0m reborrow v0.5.5
+2026-10-28T11:03:25.0945237Z [1m[92m   Compiling[0m dyn-stack-macros v0.1.3
+2026-10-28T11:03:25.2875656Z [1m[92m   Compiling[0m dyn-stack v0.13.2
+2026-10-28T11:03:25.3815615Z [1m[92m   Compiling[0m once_cell v1.21.4
+2026-10-28T11:03:25.5265630Z [1m[92m   Compiling[0m syn v1.0.109
+2026-10-28T11:03:25.5436084Z [1m[92m   Compiling[0m seq-macro v0.3.6
+2026-10-28T11:03:25.7185585Z [1m[92m   Compiling[0m generic-array v0.14.7
+2026-10-28T11:03:25.8194989Z [1m[92m   Compiling[0m nano-gemm-core v0.2.1
+2026-10-28T11:03:25.8870166Z [1m[92m   Compiling[0m typenum v1.20.1
+2026-10-28T11:03:26.2104621Z [1m[92m   Compiling[0m libc v0.2.189
+2026-10-28T11:03:27.0315561Z [1m[92m   Compiling[0m nano-gemm-f32 v0.2.1
+2026-10-28T11:03:27.1472355Z [1m[92m   Compiling[0m nano-gemm-c64 v0.2.1
+2026-10-28T11:03:27.2885736Z [1m[92m   Compiling[0m nano-gemm-c32 v0.2.1
+2026-10-28T11:03:27.2914954Z [1m[92m   Compiling[0m nano-gemm-f64 v0.2.1
+2026-10-28T11:03:27.3996205Z [1m[92m   Compiling[0m syn v3.0.3
+2026-10-28T11:03:27.4105463Z [1m[92m   Compiling[0m syn v2.0.119
+2026-10-28T11:03:29.8715284Z [1m[92m   Compiling[0m interpol v0.2.1
+2026-10-28T11:03:30.0506135Z [1m[92m   Compiling[0m serde_core v1.0.229
+2026-10-28T11:03:30.2325487Z [1m[92m   Compiling[0m gemm-common v0.19.0
+2026-10-28T11:03:30.2473447Z [1m[92m   Compiling[0m defer v0.2.1
+2026-10-28T11:03:30.2805907Z [1m[92m   Compiling[0m private-gemm-x86 v0.1.20
+2026-10-28T11:03:30.8145952Z [1m[92m   Compiling[0m zmij v1.0.23
+2026-10-28T11:03:31.5215397Z [1m[92m   Compiling[0m equator-macro v0.2.1
+2026-10-28T11:03:31.7885647Z [1m[92m   Compiling[0m num_cpus v1.17.0
+2026-10-28T11:03:31.9822259Z [1m[92m   Compiling[0m equator v0.2.2
+2026-10-28T11:03:32.0911785Z [1m[92m   Compiling[0m gemm-f32 v0.19.0
+2026-10-28T11:03:32.1431842Z [1m[92m   Compiling[0m gemm-c64 v0.19.0
+2026-10-28T11:03:33.5075374Z [1m[92m   Compiling[0m gemm-f64 v0.19.0
+2026-10-28T11:03:33.9725397Z [1m[92m   Compiling[0m gemm-c32 v0.19.0
+2026-10-28T11:03:45.8146132Z [1m[92m   Compiling[0m qd v0.8.0
+2026-10-28T11:03:46.0032541Z [1m[92m   Compiling[0m block-buffer v0.10.4
+2026-10-28T11:03:46.0835489Z [1m[92m   Compiling[0m crypto-common v0.1.7
+2026-10-28T11:03:46.1285511Z [1m[92m   Compiling[0m thiserror v2.0.19
+2026-10-28T11:03:46.1435514Z [1m[92m   Compiling[0m generativity v1.2.1
+2026-10-28T11:03:46.1893963Z [1m[92m   Compiling[0m serde_json v1.0.151
+2026-10-28T11:03:46.2955753Z [1m[92m   Compiling[0m equator-macro v0.6.0
+2026-10-28T11:03:46.3445351Z [1m[92m   Compiling[0m serde v1.0.229
+2026-10-28T11:03:46.5965470Z [1m[92m   Compiling[0m faer-traits v0.24.0
+2026-10-28T11:03:46.6225498Z [1m[92m   Compiling[0m equator v0.6.0
+2026-10-28T11:03:46.7465548Z [1m[92m   Compiling[0m digest v0.10.7
+2026-10-28T11:03:46.8895501Z [1m[92m   Compiling[0m gemm v0.19.0
+2026-10-28T11:03:47.1715430Z [1m[92m   Compiling[0m nano-gemm v0.2.2
+2026-10-28T11:03:47.8110427Z [1m[92m   Compiling[0m serde_derive v1.0.229
+2026-10-28T11:03:47.8656340Z [1m[92m   Compiling[0m thiserror-impl v2.0.19
+2026-10-28T11:03:49.0025967Z [1m[92m   Compiling[0m memchr v2.8.3
+2026-10-28T11:03:49.7535441Z [1m[92m   Compiling[0m itoa v1.0.18
+2026-10-28T11:03:49.7875330Z [1m[92m   Compiling[0m cpufeatures v0.2.17
+2026-10-28T11:03:49.8215481Z [1m[92m   Compiling[0m sha2 v0.10.9
+2026-10-28T11:03:50.2662702Z [1m[92m   Compiling[0m faer v0.24.4
+2026-10-28T11:03:51.4375606Z [1m[92m   Compiling[0m hex v0.4.3
+2026-10-28T11:03:51.4870148Z [1m[92m   Compiling[0m crossbeam-utils v0.8.22
+2026-10-28T11:03:51.6165556Z [1m[92m   Compiling[0m crossbeam-epoch v0.9.20
+2026-10-28T11:03:51.6678877Z [1m[92m   Compiling[0m crossbeam-deque v0.8.7
+2026-10-28T11:03:51.7529052Z [1m[92m   Compiling[0m rayon-core v1.13.0
+2026-10-28T11:03:51.8021318Z [1m[92m   Compiling[0m rodas5p-integrators v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-integrators)
+2026-10-28T11:03:51.8419056Z [1m[92m   Compiling[0m either v1.17.0
+2026-10-28T11:03:52.5525265Z [1m[92m   Compiling[0m rayon v1.12.0
+2026-10-28T11:04:09.1135626Z [1m[92m   Compiling[0m rodas5p-core v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-core)
+2026-10-28T11:04:12.6605869Z [1m[92m   Compiling[0m rodas5p-krylov v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-krylov)
+2026-10-28T11:04:38.8606162Z [1m[92m   Compiling[0m vigilode v0.1.0 (/home/runner/work/vigilode/vigilode/crates/vigilode)
+2026-10-28T11:04:39.2725328Z [1m[92m   Compiling[0m vigilode-coupled v0.1.0 (/home/runner/work/vigilode/vigilode/crates/vigilode-coupled)
+2026-10-28T11:05:23.2737014Z [1m[92m    Finished[0m `test` profile [unoptimized + debuginfo] target(s) in 2m 00s
+2026-10-28T11:05:23.3506837Z [1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/rodas5p_core-463f99a148a780fa)
+2026-10-28T11:05:23.3585774Z 
+2026-10-28T11:05:23.3586133Z running 32 tests
+2026-10-28T11:05:23.3625110Z test directed::tests::directed_results_bracket_the_exact_value ... ok
+2026-10-28T11:05:23.3626124Z test laguerre_adjoint::tests::a_constant_coefficient_gives_its_magnitude ... ok
+2026-10-28T11:05:23.3627253Z test leja_action::production_audit_suffix::certificate_norm_is_outward_at_normal_and_subnormal_scales ... ok
+2026-10-28T11:05:23.3628091Z test coefficients::tests::a_tampered_snapshot_is_rejected_before_parsing ... ok
+2026-10-28T11:05:23.3628759Z test leja_action::production_audit_suffix::coefficient_sum_and_output_replay_cover_additive_underflow ... ok
+2026-10-28T11:05:23.3629517Z test leja_action::production_audit_suffix::interval_matvec_replay_covers_underflow_and_cancellation ... ok
+2026-10-28T11:05:23.3632151Z test leja_action::production_audit_suffix::interval_replay_refuses_nonfinite_action_and_checks_normalized_boundary ... ok
+2026-10-28T11:05:23.3661376Z test coefficients::tests::the_cached_tableau_equals_a_fresh_derivation_bit_for_bit ... ok
+2026-10-28T11:05:23.3662646Z test leja_action::production_audit_suffix::recurrence_interval_replay_covers_subnormal_additive_underflow ... ok
+2026-10-28T11:05:23.3666856Z test leja_action::production_audit_suffix::refused_output_preserves_certificate_work_accounting ... ok
+2026-10-28T11:05:23.4206680Z test laguerre_adjoint::tests::envelopes_cover_the_adjoint_polynomials ... ok
+2026-10-28T11:05:24.0742194Z test leja_action::production_audit_suffix::positive_outward_support_increases_t1_exponential_factor ... ok
+2026-10-28T11:05:24.0743808Z test leja_action::production_audit_suffix::suffix_bound_covers_the_actual_suffix_not_a_prefix ... ok
+2026-10-28T11:05:24.0787873Z test leja_action::production_audit_suffix::trusted_prewarm_matches_cold_and_encloses_diagonal_exponential ... ok
+2026-10-28T11:05:24.0793314Z test leja_action::tests::cloud_taylor_lower_bounds_stay_nonnegative_under_underflow ... ok
+2026-10-28T11:05:24.0796157Z test leja_action::tests::counted_node_prefix_includes_interval_domain_construction ... ok
+2026-10-28T11:05:24.0815186Z test leja_action::tests::divided_differences_match_closed_forms ... ok
+2026-10-28T11:05:24.0816512Z test leja_action::tests::failed_counted_cache_miss_retains_historical_coefficient_setup_attempt ... ok
+2026-10-28T11:05:24.0825228Z test leja_action::production_audit_suffix::interval_matvec_overflow_refusal_preserves_workspace_work ... ok
+2026-10-28T11:05:24.0826431Z test leja_action::tests::failed_exponential_does_not_charge_unattempted_result_vectors ... ok
+2026-10-28T11:05:24.0827446Z test leja_action::tests::leja_points_start_at_the_ends_and_stay_distinct ... ok
+2026-10-28T11:05:24.0828433Z test leja_setup_work::tests::local_counted_table_initializer_records_cold_and_warm_cost_once ... ok
+2026-10-28T11:05:24.0829520Z test leja_action::tests::zero_center_scalar_phi_radii_enclose_nonbinary_factorials ... ok
+2026-10-28T11:05:24.0830482Z test leja_setup_work::tests::local_legacy_once_lock_is_partial_unattributed_without_refusal ... ok
+2026-10-28T11:05:24.0831199Z test norms::tests::zero_scale_rule ... ok
+2026-10-28T11:05:24.0832094Z test operator::terminal_application_work_tests::failed_jvp_charges_callback_once_before_shifted_mass ... ok
+2026-10-28T11:05:24.0833454Z test operator::terminal_application_work_tests::successful_shifted_work_is_unchanged_and_hook_is_additive ... ok
+2026-10-28T11:05:24.0855106Z test polynomial_action::tests::series_enclose_known_values ... ok
+2026-10-28T11:05:24.0861766Z test leja_setup_work::tests::local_once_lock_charges_only_the_initializer_winner ... ok
+2026-10-28T11:05:24.0871291Z test taylor_phi_total::tests::scalar_case_matches_the_closed_form ... ok
+2026-10-28T11:05:24.3085196Z test leja_action::tests::actual_leja_points_initializer_has_cold_and_warm_receipts ... ok
+2026-10-28T11:05:24.5567765Z test leja_action::tests::cloud_prefix_sweep_matches_separate_prefixes_bitwise ... ok
+2026-10-28T11:05:24.5568613Z 
+2026-10-28T11:05:24.5573386Z test result: ok. 32 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.20s
+2026-10-28T11:05:24.5574413Z 
+2026-10-28T11:05:24.5577250Z [1m[92m     Running[0m tests/allocation_contracts.rs (target/debug/deps/allocation_contracts-82e020e539f5bbeb)
+2026-10-28T11:05:24.5613941Z 
+2026-10-28T11:05:24.5614177Z running 1 test
+2026-10-28T11:05:24.5618307Z test shifted_operator_apply_is_allocation_free_after_construction ... ok
+2026-10-28T11:05:24.5618701Z 
+2026-10-28T11:05:24.5619014Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:05:24.5619433Z 
+2026-10-28T11:05:24.5621719Z [1m[92m     Running[0m tests/bordered_allocation_contract.rs (target/debug/deps/bordered_allocation_contract-8145a1ebe3a20674)
+2026-10-28T11:05:24.5632142Z 
+2026-10-28T11:05:24.5632298Z running 1 test
+2026-10-28T11:05:24.5635867Z test successful_refactor_and_apply_allocate_zero_for_variable_active_dimension ... ok
+2026-10-28T11:05:24.5636490Z 
+2026-10-28T11:05:24.5636938Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:05:24.5637544Z 
+2026-10-28T11:05:24.5638373Z [1m[92m     Running[0m tests/bordered_schur_contracts.rs (target/debug/deps/bordered_schur_contracts-4fba6e0ace142d02)
+2026-10-28T11:05:24.5653362Z 
+2026-10-28T11:05:24.5653546Z running 3 tests
+2026-10-28T11:05:24.5656948Z test schur_pivoting_and_failure_invalidation ... ok
+2026-10-28T11:05:24.5657442Z test shape_nonfinite_dominance_and_arithmetic_failures_are_explicit ... ok
+2026-10-28T11:05:24.5887765Z test bordered_solves_match_independent_dense_oracle_at_changing_dimensions ... ok
+2026-10-28T11:05:24.5888367Z 
+2026-10-28T11:05:24.5888787Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+2026-10-28T11:05:24.5889405Z 
+2026-10-28T11:05:24.5892316Z [1m[92m     Running[0m tests/core_contracts.rs (target/debug/deps/core_contracts-6248966877e16edc)
+2026-10-28T11:05:24.5958644Z 
+2026-10-28T11:05:24.5958821Z running 14 tests
+2026-10-28T11:05:24.6023382Z test coefficient_snapshot_bytes_match_the_digest_verified_at_load ... ok
+2026-10-28T11:05:24.6024548Z test coefficient_transform_preserves_rodas5p_structure ... ok
+2026-10-28T11:05:24.6025353Z test coefficient_snapshot_is_bit_identical_to_the_authoritative_sciml_literals ... ok
+2026-10-28T11:05:24.6026452Z test coefficient_tableau_is_parsed_and_derived_once_per_process ... ok
+2026-10-28T11:05:24.6027397Z test dense_matrix_matvec_is_row_major_and_exact_for_small_case ... ok
+2026-10-28T11:05:24.6029528Z test linear_solver_config_rejects_non_finite_tolerances ... ok
+2026-10-28T11:05:24.6030434Z test direct_solve_agrees_with_known_solution ... ok
+2026-10-28T11:05:24.6031508Z test linear_operator_default_row_application_preserves_order ... ok
+2026-10-28T11:05:24.6032863Z test linear_operator_row_application_rejects_ragged_shapes ... ok
+2026-10-28T11:05:24.6034018Z test safe_l2_handles_extreme_scale ... ok
+2026-10-28T11:05:24.6036087Z [1m[92m     Running[0m tests/damped_forcing_moment_consumer.rs (target/debug/deps/damped_forcing_moment_consumer-a5e7aee72fde7580)
+2026-10-28T11:05:24.6037370Z test wrms_stays_strict_on_a_zero_scale_and_matches_the_step_norm_otherwise ... ok
+2026-10-28T11:05:24.6038295Z test safe_l2_propagates_nan_and_infinity ... ok
+2026-10-28T11:05:24.6038955Z test wrms_matches_definition ... ok
+2026-10-28T11:05:24.6040235Z test zero_scale_follows_the_one_rule ... ok
+2026-10-28T11:05:24.6040754Z 
+2026-10-28T11:05:24.6041220Z test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-10-28T11:05:24.6041617Z 
+2026-10-28T11:05:24.6065996Z 
+2026-10-28T11:05:24.6066157Z running 8 tests
+2026-10-28T11:05:24.6072420Z test invalid_parameters_and_orders_refuse_before_kernel_and_retain_validation_work ... ok
+2026-10-28T11:05:24.6073785Z test kernel_refusal_retains_attempt_without_claiming_width_check ... ok
+2026-10-28T11:05:24.6076653Z test absolute_width_gate_refuses_narrow_limit_and_keeps_attempted_work ... ok
+2026-10-28T11:05:24.6077221Z test forcing_index_mapping_is_q_rd_to_i_dr ... ok
+2026-10-28T11:05:24.6077678Z test large_rate_width_refusal_keeps_validation_kernel_and_width_work ... ok
+2026-10-28T11:05:24.6078233Z test rounded_product_branch_boundary_matches_frozen_kernel_interval ... ok
+2026-10-28T11:05:24.6078740Z test subnormal_damping_product_is_not_treated_as_exact_zero ... ok
+2026-10-28T11:05:24.6079346Z test zero_damping_confluent_limit_is_admitted_by_the_consumer ... ok
+2026-10-28T11:05:24.6079640Z 
+2026-10-28T11:05:24.6079893Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:05:24.6080248Z 
+2026-10-28T11:05:24.6080812Z [1m[92m     Running[0m tests/damped_moment_contracts.rs (target/debug/deps/damped_moment_contracts-08ed4eedcb1a12ea)
+2026-10-28T11:05:24.6090128Z 
+2026-10-28T11:05:24.6090296Z running 7 tests
+2026-10-28T11:05:24.6124854Z test test_vg2_kappa_zero_reduces_to_exact_beta_weights ... ok
+2026-10-28T11:05:24.6154865Z test test_negative_admission_gates ... ok
+2026-10-28T11:05:24.6174498Z test test_vg3_branch_boundary_continuity_at_z_one ... ok
+2026-10-28T11:05:24.6194840Z test test_vg3_unscaled_scaling_identity ... ok
+2026-10-28T11:05:24.6205219Z test test_vg1_zero_allocation_table_lookup_contract ... ok
+2026-10-28T11:05:24.6263176Z test test_vg2_monotonic_damping_reduction ... ok
+2026-10-28T11:05:24.6373863Z test test_vg3_outward_interval_enclosure_bounds ... ok
+2026-10-28T11:05:24.6374497Z 
+2026-10-28T11:05:24.6377578Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+2026-10-28T11:05:24.6378047Z 
+2026-10-28T11:05:24.6378815Z [1m[92m     Running[0m tests/damped_moment_enclosure_regressions.rs (target/debug/deps/damped_moment_enclosure_regressions-bb58b72edfd0df34)
+2026-10-28T11:05:24.6409419Z 
+2026-10-28T11:05:24.6409696Z running 4 tests
+2026-10-28T11:05:24.6415213Z test public_config_mutations_are_revalidated ... ok
+2026-10-28T11:05:24.6415882Z test zero_damping_encloses_nonrepresentable_beta_seed ... ok
+2026-10-28T11:05:24.6416388Z test product_overflow_is_refused_and_underflow_is_enclosed ... ok
+2026-10-28T11:05:24.6418512Z test input_product_and_both_branches_enclose_independent_decimal_oracles ... ok
+2026-10-28T11:05:24.6419118Z 
+2026-10-28T11:05:24.6419573Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:05:24.6420158Z 
+2026-10-28T11:05:24.6421667Z [1m[92m     Running[0m tests/fused_normalization_contract.rs (target/debug/deps/fused_normalization_contract-f9c45548b9f31ad9)
+2026-10-28T11:05:24.6464961Z 
+2026-10-28T11:05:24.6465132Z running 9 tests
+2026-10-28T11:05:24.6470045Z test export_cases ... ignored, export PY04 cases; set PY04_CASES
+2026-10-28T11:05:24.6505108Z test test_extreme_i64_exponents_regression ... ok
+2026-10-28T11:05:24.6505884Z test test_range_refusal_l_term_overflow ... ok
+2026-10-28T11:05:24.6526030Z test test_scale_pow2_zero_allocations ... ok
+2026-10-28T11:05:24.6526770Z test test_staged_scaling_at_extreme_exponents ... ok
+2026-10-28T11:05:24.6575416Z test test_normalization_accounting_l_and_r ... ok
+2026-10-28T11:05:24.6620632Z test test_range_refusal_unsupported ... ok
+2026-10-28T11:05:24.6860942Z test test_exact_homogeneity_s7 ... ok
+2026-10-28T11:05:24.8345679Z test test_taylor_rejection_speculative_work_preserved ... ok
+2026-10-28T11:05:24.8346151Z 
+2026-10-28T11:05:24.8347063Z test result: ok. 8 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.19s
+2026-10-28T11:05:24.8347634Z 
+2026-10-28T11:05:24.8349706Z [1m[92m     Running[0m tests/fused_phi_contracts.rs (target/debug/deps/fused_phi_contracts-869e8102b347c82e)
+2026-10-28T11:05:24.8415204Z 
+2026-10-28T11:05:24.8415457Z running 2 tests
+2026-10-28T11:05:24.8460495Z test fused_dense_action_handles_only_b0 ... ok
+2026-10-28T11:05:24.8476137Z test fused_dense_action_matches_separate_phi_actions ... ok
+2026-10-28T11:05:24.8476693Z 
+2026-10-28T11:05:24.8477192Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-10-28T11:05:24.8477864Z 
+2026-10-28T11:05:24.8481186Z [1m[92m     Running[0m tests/guarded_polynomial_router.rs (target/debug/deps/guarded_polynomial_router-444e99a30a1dbe4e)
+2026-10-28T11:05:24.8527860Z 
+2026-10-28T11:05:24.8528112Z running 6 tests
+2026-10-28T11:05:24.8551149Z test declared_spectrum_abstains_and_malformed_requests_are_errors ... ok
+2026-10-28T11:05:25.6925454Z test first_admitted_stops_and_retains_owned_output_across_reuse ... ok
+2026-10-28T11:05:25.6963258Z test each_family_can_be_the_guarded_selected_backend ... ok
+2026-10-28T11:05:25.7103834Z test unsupported_laguerre_degree_skips_all_matrix_products ... ok
+2026-10-28T11:05:25.7592914Z test identical_fused_request_exact_oracle_export ... ok
+2026-10-28T11:05:25.9528587Z test tight_budget_is_not_relaxed_and_failures_keep_work ... ok
+2026-10-28T11:05:25.9529107Z 
+2026-10-28T11:05:25.9529492Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.10s
+2026-10-28T11:05:25.9530070Z 
+2026-10-28T11:05:25.9533808Z [1m[92m     Running[0m tests/int05_nonnormal_contracts.rs (target/debug/deps/int05_nonnormal_contracts-56da42ee0fd74157)
+2026-10-28T11:05:25.9546905Z 
+2026-10-28T11:05:25.9547100Z running 3 tests
+2026-10-28T11:05:25.9551431Z test a_scalar_decay_is_enclosed_from_both_sides ... ok
+2026-10-28T11:05:25.9553703Z test invalid_inputs_are_rejected ... ok
+2026-10-28T11:05:25.9554646Z test an_overflowing_growth_factor_is_unbounded_not_a_number ... ok
+2026-10-28T11:05:25.9555090Z 
+2026-10-28T11:05:25.9555506Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:05:25.9556105Z 
+2026-10-28T11:05:25.9556815Z [1m[92m     Running[0m tests/int05_nonnormal_metric_bound.rs (target/debug/deps/int05_nonnormal_metric_bound-11a216becfaa0599)
+2026-10-28T11:05:25.9600333Z 
+2026-10-28T11:05:25.9600627Z running 1 test
+2026-10-28T11:05:25.9604675Z test nonnormal_metric_bound_cases ... ignored, case generator of research/int05_nonnormal_metric_bound_20261003; release build
+2026-10-28T11:05:25.9605503Z 
+2026-10-28T11:05:25.9605913Z test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:05:25.9606316Z 
+2026-10-28T11:05:25.9607413Z [1m[92m     Running[0m tests/invariant_module_contracts.rs (target/debug/deps/invariant_module_contracts-3a7e0f2fde1609ae)
+2026-10-28T11:05:25.9670428Z 
+2026-10-28T11:05:25.9670682Z running 15 tests
+2026-10-28T11:05:25.9694791Z test invalid_targets_and_nonfinite_rhs_refuse_before_work ... ok
+2026-10-28T11:05:25.9695740Z test cached_certifier_cannot_accept_missing_or_malformed_columns ... ok
+2026-10-28T11:05:25.9696587Z test leakage_refuses_at_admission ... ok
+2026-10-28T11:05:25.9699650Z test matrix_mutation_before_admission_cannot_forge_evidence ... ok
+2026-10-28T11:05:25.9700440Z test oblique_chart_amplification_is_not_discarded ... ok
+2026-10-28T11:05:25.9713901Z test out_of_module_rhs_is_refused_by_original_residual ... ok
+2026-10-28T11:05:25.9715222Z test approximate_module_still_needs_current_residual ... ok
+2026-10-28T11:05:25.9716349Z test rank_change_refuses_at_admission ... ok
+2026-10-28T11:05:25.9718796Z test signed_zero_is_one_shift ... ok
+2026-10-28T11:05:25.9720658Z test repeated_actual_shifts_are_counted_once ... ok
+2026-10-28T11:05:25.9721616Z test stale_epoch_refuses_before_work ... ok
+2026-10-28T11:05:25.9722503Z test jordan_module_matches_direct_without_diagonalization ... ok
+2026-10-28T11:05:25.9724368Z test cached_full_space_certifier_accepts_an_independent_full_solve ... ok
+2026-10-28T11:05:25.9725264Z test unproved_full_space_inverse_is_refused ... ok
+2026-10-28T11:05:25.9725826Z test storage_and_shift_budgets_refuse_before_work ... ok
+2026-10-28T11:05:25.9726300Z 
+2026-10-28T11:05:25.9727335Z test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-10-28T11:05:25.9727962Z 
+2026-10-28T11:05:25.9731530Z [1m[92m     Running[0m tests/laguerre_adjoint_holdout.rs (target/debug/deps/laguerre_adjoint_holdout-f3c4f7cad3b570e4)
+2026-10-28T11:05:25.9797125Z 
+2026-10-28T11:05:25.9797367Z running 5 tests
+2026-10-28T11:05:25.9802155Z test plan_only ... ignored
+2026-10-28T11:05:25.9845358Z test refusal_contracts ... ok
+2026-10-28T11:05:25.9845991Z test vg1_zero_allocation_in_transform_selection_primitives ... ok
+2026-10-28T11:05:26.1415218Z test vg3_plan_local_matches_joint_phi_action_degree_and_scale_bitwise ... ok
+2026-10-28T11:05:26.8146981Z test vg2_monotone_degree_and_truncation_bound_with_tightening_budget ... ok
+2026-10-28T11:05:26.8148059Z 
+2026-10-28T11:05:26.8148678Z test result: ok. 4 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.83s
+2026-10-28T11:05:26.8149672Z 
+2026-10-28T11:05:26.8152555Z [1m[92m     Running[0m tests/laguerre_component_export.rs (target/debug/deps/laguerre_component_export-63030a0fc8eff555)
+2026-10-28T11:05:26.8199334Z 
+2026-10-28T11:05:26.8199523Z running 7 tests
+2026-10-28T11:05:26.8206712Z test export_components ... ignored
+2026-10-28T11:05:26.8213238Z test vg1_zero_allocation_in_recurrence_and_directed_primitives ... ok
+2026-10-28T11:05:26.8264851Z test refusal_on_declared_enclosure_and_degree_above_128 ... ok
+2026-10-28T11:05:26.8444973Z test identity_stamping_and_envelope_key_digest ... ok
+2026-10-28T11:05:26.9041552Z test report_and_counter_parity_with_joint_phi_action ... ok
+2026-10-28T11:05:33.4399355Z test vg2_outward_rebuild_and_nonzero_normalization_shift ... ok
+2026-10-28T11:05:45.2919492Z test vg2_degree_budget_sweep_monotone_truncation ... ok
+2026-10-28T11:05:45.2919951Z 
+2026-10-28T11:05:45.2920372Z test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 18.47s
+2026-10-28T11:05:45.2920930Z 
+2026-10-28T11:05:45.2925936Z [1m[92m     Running[0m tests/leja_enclosed_contract.rs (target/debug/deps/leja_enclosed_contract-82af199d3714e224)
+2026-10-28T11:05:45.2940013Z 
+2026-10-28T11:05:45.2940241Z running 7 tests
+2026-10-28T11:05:45.2951455Z test admission_refuses_legacy_initial_workspace_and_invalid_budgets ... ok
+2026-10-28T11:05:45.2953093Z test exact_zero_fused_action_can_be_admitted_at_zero_budget ... ok
+2026-10-28T11:05:45.2959291Z test explicit_enclosure_rejects_declared_domain_and_keeps_success_transaction ... ok
+2026-10-28T11:05:45.2967214Z test refused_overflow_attempt_does_not_change_admissible_report ... ok
+2026-10-28T11:05:46.0003161Z test admitted_fused_output_keeps_bound_budget_and_owner_together ... ok
+2026-10-28T11:05:46.0052254Z test coefficient_cache_reuse_does_not_reuse_another_operators_output ... ok
+2026-10-28T11:05:46.2207349Z test exact_spectral_fixtures_export ... ok
+2026-10-28T11:05:46.2207761Z 
+2026-10-28T11:05:46.2208180Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.93s
+2026-10-28T11:05:46.2208813Z 
+2026-10-28T11:05:46.2212585Z [1m[92m     Running[0m tests/leja_setup_work_contract.rs (target/debug/deps/leja_setup_work_contract-96e956891b621e3d)
+2026-10-28T11:05:46.2259415Z 
+2026-10-28T11:05:46.2259608Z running 5 tests
+2026-10-28T11:05:46.4233799Z test counted_cache_history_inherits_legacy_static_dependency_coverage ... ok
+2026-10-28T11:05:46.4235270Z test setup_receipt_serialization_is_versioned_and_immutable ... ok
+2026-10-28T11:05:46.4250283Z test counted_cache_cold_warm_and_refusal_retain_separate_work ... ok
+2026-10-28T11:05:46.9735213Z test counted_action_records_cold_coefficient_table_without_changing_authority ... ok
+2026-10-28T11:05:46.9738298Z test counted_and_legacy_success_preserve_report_and_work_counter_identity ... ok
+2026-10-28T11:05:46.9738821Z 
+2026-10-28T11:05:46.9739216Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.75s
+2026-10-28T11:05:46.9739773Z 
+2026-10-28T11:05:46.9743684Z [1m[92m     Running[0m tests/leja_total_contract.rs (target/debug/deps/leja_total_contract-ff0c618caa30065a)
+2026-10-28T11:05:46.9820933Z 
+2026-10-28T11:05:46.9821629Z running 19 tests
+2026-10-28T11:05:46.9839732Z test allocation_tracker_counts_each_thread_independently ... ok
+2026-10-28T11:05:46.9847420Z test test_a04_report_serialization_preserves_exact_schema_and_estimate_status ... ok
+2026-10-28T11:05:46.9848633Z test test_a04_failed_dimension_change_preserves_last_successful_report ... ok
+2026-10-28T11:05:46.9882899Z test test_a04_scalar_interval_coefficients_match_reference_at_nonzero_center ... ok
+2026-10-28T11:05:46.9888793Z test test_a04_warmed_scalar_branch_zero_allocation ... ok
+2026-10-28T11:05:46.9892248Z test test_a04_workspace_report_buffers_follow_dimension_growth_and_shrink ... ok
+2026-10-28T11:05:47.2211097Z test test_vg1_zero_allocation_node_polynomial_and_bounds ... ok
+2026-10-28T11:05:47.7575269Z test test_a04_subnormal_domain_keeps_total_authority_on_hold ... ok
+2026-10-28T11:05:47.7576120Z test test_a04_counted_warmed_certified_leja_action_zero_allocation ... ok
+2026-10-28T11:05:47.7602222Z test test_vg1_zero_allocation_warmed_certified_leja_action ... ok
+2026-10-28T11:05:47.7603009Z test cloud_scoped_enclosed_warm_call_is_allocation_free ... ok
+2026-10-28T11:05:47.7735750Z test test_vg2_monotone_truncation_bound ... ok
+2026-10-28T11:05:47.7887377Z test test_vg3_no_false_authority_unaltered_leja_report ... ok
+2026-10-28T11:05:47.7905003Z test test_vg3_refuses_declared_enclosure_and_invalid_inputs ... ok
+2026-10-28T11:05:47.7919317Z test test_vg3_speculative_work_preservation_on_budget_failure ... ok
+2026-10-28T11:05:47.7920979Z test test_vg3_work_preservation_on_all_error_paths ... ok
+2026-10-28T11:05:47.8029136Z test test_vg2_zero_slack_budget_and_enclosure_same_vector ... ok
+2026-10-28T11:05:47.8151035Z test test_vg2_zero_slack_budget_and_enclosure_distinct ... ok
+2026-10-28T11:05:47.8178059Z test test_vg2_dense_eigendecomposition_enclosure ... ok
+2026-10-28T11:05:47.8178503Z 
+2026-10-28T11:05:47.8179739Z test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.84s
+2026-10-28T11:05:47.8180267Z 
+2026-10-28T11:05:47.8186988Z [1m[92m     Running[0m tests/leja_total_holdout.rs (target/debug/deps/leja_total_holdout-0167a49e4d42ac40)
+2026-10-28T11:05:47.8233556Z 
+2026-10-28T11:05:47.8233761Z running 2 tests
+2026-10-28T11:05:47.8235584Z test export_runs ... ignored, exporter of research/py05_leja_total_certificate_20261011; set PY05_CASES and PY05_RUNS
+2026-10-28T11:05:48.6005944Z test test_leja_holdout_smoke ... ok
+2026-10-28T11:05:48.6006305Z 
+2026-10-28T11:05:48.6006708Z test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.78s
+2026-10-28T11:05:48.6007318Z 
+2026-10-28T11:05:48.6011232Z [1m[92m     Running[0m tests/low_rank_bordered_allocation.rs (target/debug/deps/low_rank_bordered_allocation-34f8a69c654f01c3)
+2026-10-28T11:05:48.6043358Z 
+2026-10-28T11:05:48.6043596Z running 1 test
+2026-10-28T11:05:48.6049180Z test refactor_and_both_apply_paths_allocate_zero_across_active_shapes ... ok
+2026-10-28T11:05:48.6049715Z 
+2026-10-28T11:05:48.6050145Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:05:48.6050607Z 
+2026-10-28T11:05:48.6052078Z [1m[92m     Running[0m tests/low_rank_bordered_contracts.rs (target/debug/deps/low_rank_bordered_contracts-bb3ac059521890f2)
+2026-10-28T11:05:48.6112423Z 
+2026-10-28T11:05:48.6112584Z running 6 tests
+2026-10-28T11:05:48.6127735Z test impossible_capacities_fail_without_arithmetic_panic ... ok
+2026-10-28T11:05:48.6128777Z test application_failures_are_atomic_and_do_not_invalidate_factors ... ok
+2026-10-28T11:05:48.6129931Z test bad_refactors_invalidate_previously_good_factors ... ok
+2026-10-28T11:05:48.6131338Z test rank_zero_is_the_existing_bordered_inverse ... ok
+2026-10-28T11:05:48.6132182Z test separate_workspaces_support_shared_parallel_factors ... ok
+2026-10-28T11:05:48.6165087Z test original_dimension_matches_independent_dense_solve_for_multiple_shapes ... ok
+2026-10-28T11:05:48.6165735Z 
+2026-10-28T11:05:48.6166348Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-10-28T11:05:48.6166794Z 
+2026-10-28T11:05:48.6168927Z [1m[92m     Running[0m tests/lu_workspace_contracts.rs (target/debug/deps/lu_workspace_contracts-c47f800ab692d549)
+2026-10-28T11:05:48.6228273Z 
+2026-10-28T11:05:48.6228438Z running 1 test
+2026-10-28T11:05:48.7133370Z test pivoted_lu_workspace_contracts ... ok
+2026-10-28T11:05:48.7133635Z 
+2026-10-28T11:05:48.7135083Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.09s
+2026-10-28T11:05:48.7135468Z 
+2026-10-28T11:05:48.7141177Z [1m[92m     Running[0m tests/matrix_function_contracts.rs (target/debug/deps/matrix_function_contracts-84778a1d2ac6b596)
+2026-10-28T11:05:48.7159723Z 
+2026-10-28T11:05:48.7159876Z running 9 tests
+2026-10-28T11:05:48.7185223Z test dense_phi_action_accepts_the_largest_finite_vectors ... ok
+2026-10-28T11:05:48.7186074Z test dense_phi_action_is_accurate_for_subnormal_and_power_of_two_vectors ... ok
+2026-10-28T11:05:48.7188048Z test dense_phi_action_is_accurate_for_a_large_vector_on_a_diagonal_matrix ... ok
+2026-10-28T11:05:48.7204318Z test dense_phi_action_reports_a_result_that_really_overflows ... ok
+2026-10-28T11:05:48.7210435Z test fused_phi_combination_is_accurate_as_the_step_shrinks ... ok
+2026-10-28T11:05:48.7211246Z test pade13_matches_scalar_exponential_across_stiff_scales ... ok
+2026-10-28T11:05:48.7223117Z test dense_phi_action_satisfies_matrix_recurrence ... ok
+2026-10-28T11:05:48.7243219Z test dense_phi_action_matches_scalar_values ... ok
+2026-10-28T11:05:48.7290097Z test dense_phi_action_is_invariant_under_the_physical_scale_of_the_vector ... ok
+2026-10-28T11:05:48.7290687Z 
+2026-10-28T11:05:48.7291094Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-10-28T11:05:48.7291668Z 
+2026-10-28T11:05:48.7295545Z [1m[92m     Running[0m tests/native_reaudit_laguerre_contracts.rs (target/debug/deps/native_reaudit_laguerre_contracts-11cf4486d5a2495d)
+2026-10-28T11:05:48.7328935Z 
+2026-10-28T11:05:48.7329148Z running 3 tests
+2026-10-28T11:05:48.7332699Z test reversed_intervals_cannot_be_widened_into_accepted_coefficients ... ok
+2026-10-28T11:05:48.7333510Z test ordered_interval_coefficients_still_work ... ok
+2026-10-28T11:05:48.7336461Z test a_failed_invalid_input_does_not_enter_the_envelope_cache ... ok
+2026-10-28T11:05:48.7337865Z [1m[92m     Running[0m tests/polynomial_single_backend_router.rs (target/debug/deps/polynomial_single_backend_router-dfaaae0a80514543)
+2026-10-28T11:05:48.7338420Z 
+2026-10-28T11:05:48.7338679Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:05:48.7339040Z 
+2026-10-28T11:05:48.7382345Z 
+2026-10-28T11:05:48.7382525Z running 8 tests
+2026-10-28T11:05:48.7387653Z test export_cases ... ignored, export PY03 cases; set PY03_CASES
+2026-10-28T11:05:48.7419352Z test test_boundary_refusals ... ok
+2026-10-28T11:05:48.7424817Z test test_cache_state_cold_vs_warm ... ok
+2026-10-28T11:05:48.7434794Z test test_accounting_route_cost_vs_work_counters ... ok
+2026-10-28T11:05:48.7435727Z test test_plan_joint_phi_zero_allocations ... ok
+2026-10-28T11:05:48.7458911Z test test_bitwise_parity_execute_joint_phi ... ok
+2026-10-28T11:05:48.7528021Z test test_monotone_degree_and_zero_slack_bounds ... ok
+2026-10-28T11:05:48.9319405Z test test_force_laguerre_first_failed_preflight_charged ... ok
+2026-10-28T11:05:48.9320039Z 
+2026-10-28T11:05:48.9320522Z test result: ok. 7 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.19s
+2026-10-28T11:05:48.9321308Z 
+2026-10-28T11:05:48.9324516Z [1m[92m     Running[0m tests/pp03_rhs_compression.rs (target/debug/deps/pp03_rhs_compression-3f4aa09f0f26c28a)
+2026-10-28T11:05:48.9342796Z 
+2026-10-28T11:05:48.9343017Z running 3 tests
+2026-10-28T11:05:48.9345684Z test export_compression_study ... ignored, recorded run of research/pp03_rhs_compression_20261004; release build
+2026-10-28T11:05:48.9346817Z test compression_keeps_every_column_coefficient ... ok
+2026-10-28T11:05:48.9347766Z test full_rank_abstains ... ok
+2026-10-28T11:05:48.9348302Z 
+2026-10-28T11:05:48.9348710Z test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:05:48.9350219Z [1m[92m     Running[0m tests/pp04_shared_shift_policy.rs (target/debug/deps/pp04_shared_shift_policy-7b16867d1de8d212)
+2026-10-28T11:05:48.9350828Z 
+2026-10-28T11:05:48.9416724Z 
+2026-10-28T11:05:48.9416862Z running 4 tests
+2026-10-28T11:05:48.9420474Z test export_policy_study ... ignored, recorded run of research/pp04_shared_shift_policy_20261004; release build
+2026-10-28T11:05:48.9435279Z test planner_abstains_typed ... ok
+2026-10-28T11:05:48.9438893Z test hessenberg_reduction_reconstructs_j ... ok
+2026-10-28T11:05:48.9526885Z test every_method_certifies_a_small_family ... ok
+2026-10-28T11:05:48.9527279Z 
+2026-10-28T11:05:48.9527694Z test result: ok. 3 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-10-28T11:05:48.9528192Z 
+2026-10-28T11:05:48.9531518Z [1m[92m     Running[0m tests/pp08_laguerre_router_contracts.rs (target/debug/deps/pp08_laguerre_router_contracts-0789eda8640ba0fa)
+2026-10-28T11:05:48.9541754Z 
+2026-10-28T11:05:48.9541896Z running 9 tests
+2026-10-28T11:05:48.9724841Z test estimate_only_totals_are_never_admitted ... ok
+2026-10-28T11:05:48.9734739Z test invalid_total_budget_step_and_input_are_errors_without_work ... ok
+2026-10-28T11:05:48.9754814Z test admitted_route_meets_the_rule_and_its_budget ... ok
+2026-10-28T11:05:48.9784680Z test ties_go_to_chebyshev_and_scalar_branch_routes ... ok
+2026-10-28T11:05:48.9814624Z test unbounded_timing_execution_is_never_admitted ... ok
+2026-10-28T11:05:48.9835217Z test declared_enclosure_is_never_admitted_even_at_zero_step ... ok
+2026-10-28T11:05:52.5943456Z test laguerre_degree_above_the_adjoint_limit_is_never_admitted ... ok
+2026-10-28T11:05:52.8282469Z test unmet_budget_ends_in_fallback ... ok
+2026-10-28T11:05:57.2173964Z test caller_counters_equal_the_sum_of_the_attempts ... ok
+2026-10-28T11:05:57.2174678Z 
+2026-10-28T11:05:57.2175145Z test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 8.26s
+2026-10-28T11:05:57.2175702Z 
+2026-10-28T11:05:57.2180814Z [1m[92m     Running[0m tests/pp08_laguerre_router_study.rs (target/debug/deps/pp08_laguerre_router_study-a083a6dc651d1f4b)
+2026-10-28T11:05:57.2191891Z 
+2026-10-28T11:05:57.2192120Z running 1 test
+2026-10-28T11:05:57.2192940Z test pp08_router_study_export ... ignored, exporter of research/pp08_laguerre_router_20261004; set PP08_CASES
+2026-10-28T11:05:57.2193647Z 
+2026-10-28T11:05:57.2194347Z test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:05:57.2194751Z 
+2026-10-28T11:05:57.2195575Z [1m[92m     Running[0m tests/pp10_leja_contracts.rs (target/debug/deps/pp10_leja_contracts-c772eae2d38522ce)
+2026-10-28T11:05:57.2212131Z 
+2026-10-28T11:05:57.2212286Z running 8 tests
+2026-10-28T11:05:57.2218741Z test invalid_inputs_are_errors_without_work ... ok
+2026-10-28T11:05:57.4365072Z test no_certified_api_admits_a_leja_result ... ok
+2026-10-28T11:05:57.4424518Z test scalar_operator_matches_the_closed_form ... ok
+2026-10-28T11:05:57.4465125Z test counters_charge_every_operator_product_and_nothing_else ... ok
+2026-10-28T11:05:57.4484746Z test zero_input_and_zero_step_charge_no_products ... ok
+2026-10-28T11:05:57.4521050Z test degree_cap_stops_without_convergence ... ok
+2026-10-28T11:05:57.4677459Z test symmetric_operator_agrees_with_the_dense_reference ... ok
+2026-10-28T11:05:57.5503261Z test diagonal_operators_meet_the_tolerance_against_closed_forms ... ok
+2026-10-28T11:05:57.5504315Z 
+2026-10-28T11:05:57.5504589Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.33s
+2026-10-28T11:05:57.5504970Z 
+2026-10-28T11:05:57.5508481Z [1m[92m     Running[0m tests/pp10_leja_study.rs (target/debug/deps/pp10_leja_study-3460c167e5292c51)
+2026-10-28T11:05:57.5551072Z 
+2026-10-28T11:05:57.5551229Z running 1 test
+2026-10-28T11:05:57.5555119Z test pp10_leja_study_export ... ignored, exporter of research/pp10_leja_candidate_20261004; set PP10_CASES
+2026-10-28T11:05:57.5555644Z 
+2026-10-28T11:05:57.5556239Z test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:05:57.5557469Z [1m[92m     Running[0m tests/pp11_taylor_fused_total_contracts.rs (target/debug/deps/pp11_taylor_fused_total_contracts-b348bd797f302f21)
+2026-10-28T11:05:57.5558096Z 
+2026-10-28T11:05:57.5589917Z 
+2026-10-28T11:05:57.5590075Z running 7 tests
+2026-10-28T11:05:57.5602181Z test invalid_inputs_are_refused ... ok
+2026-10-28T11:05:57.5656563Z test an_overflowing_term_is_unbounded_not_an_error ... ok
+2026-10-28T11:05:57.5675296Z test an_exp_certificate_is_a_different_type_from_a_fused_certificate ... ok
+2026-10-28T11:05:57.5745471Z test a_wrong_candidate_gets_a_bound_at_least_its_distance ... ok
+2026-10-28T11:05:57.5746297Z test non_power_of_two_h_has_positive_perturbation ... ok
+2026-10-28T11:05:57.5748335Z test the_taylor_output_is_certified_against_the_diagonal_reference ... ok
+2026-10-28T11:05:57.5826651Z test power_of_two_h_has_exactly_zero_perturbation ... ok
+2026-10-28T11:05:57.5826978Z 
+2026-10-28T11:05:57.5830307Z test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+2026-10-28T11:05:57.5831773Z [1m[92m     Running[0m tests/pp11_taylor_fused_total_study.rs (target/debug/deps/pp11_taylor_fused_total_study-6467d2888cfbdd73)
+2026-10-28T11:05:57.5832286Z 
+2026-10-28T11:05:57.5841401Z 
+2026-10-28T11:05:57.5841541Z running 1 test
+2026-10-28T11:05:57.5842367Z test pp11_taylor_fused_total_cases ... ignored, case exporter of research/pp11_taylor_fused_total_20261004; release build
+2026-10-28T11:05:57.5842823Z 
+2026-10-28T11:05:57.5843080Z test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:05:57.5843421Z 
+2026-10-28T11:05:57.5845225Z [1m[92m     Running[0m tests/pp12_lognorm_decay.rs (target/debug/deps/pp12_lognorm_decay-309eac7b5f34c6ea)
+2026-10-28T11:05:57.5879081Z 
+2026-10-28T11:05:57.5879243Z running 2 tests
+2026-10-28T11:05:57.5881895Z test export_lognorm_cases ... ignored, recorded run of research/pp12_lognorm_decay_20261004; release build
+2026-10-28T11:05:58.8836762Z test lognorm_is_negative_for_diffusion ... ok
+2026-10-28T11:05:58.8837176Z 
+2026-10-28T11:05:58.8837542Z test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 1.30s
+2026-10-28T11:05:58.8837920Z 
+2026-10-28T11:05:58.8841282Z [1m[92m     Running[0m tests/pp12b_chain_symmetrizer.rs (target/debug/deps/pp12b_chain_symmetrizer-eeb55a8185470bf2)
+2026-10-28T11:05:58.8853558Z 
+2026-10-28T11:05:58.8853706Z running 3 tests
+2026-10-28T11:05:58.8861250Z test export_chain_cases ... ignored, recorded run of research/pp12b_chain_symmetrizer_20261004; release build
+2026-10-28T11:05:58.8862167Z test chain_symmetrizer_makes_pairs_equal ... ok
+2026-10-28T11:05:58.8869829Z test auto3_skips_a_metric_that_cannot_be_built ... ok
+2026-10-28T11:05:58.8870249Z 
+2026-10-28T11:05:58.8870689Z test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:05:58.8872805Z [1m[92m     Running[0m tests/pp16_complex_shift_contracts.rs (target/debug/deps/pp16_complex_shift_contracts-078577284683ae65)
+2026-10-28T11:05:58.8873380Z 
+2026-10-28T11:05:58.8934522Z 
+2026-10-28T11:05:58.8934678Z running 6 tests
+2026-10-28T11:05:58.8951983Z test gain_one_would_under_bound_complex_shift ... ok
+2026-10-28T11:05:58.8952579Z test partial_fraction_contracts ... ok
+2026-10-28T11:05:58.8953287Z test scalar_hand_case_and_gain ... ok
+2026-10-28T11:05:58.8978963Z test negative_controls_fail_closed ... ok
+2026-10-28T11:05:58.8994352Z test real_gamma_reproduces_real_shift_status ... ok
+2026-10-28T11:05:58.8996681Z test complex_jet_candidates_and_work ... ok
+2026-10-28T11:05:58.8997052Z 
+2026-10-28T11:05:58.8997466Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-10-28T11:05:58.8998039Z 
+2026-10-28T11:05:58.9001585Z [1m[92m     Running[0m tests/pp16_complex_shift_study.rs (target/debug/deps/pp16_complex_shift_study-35940817b7d39f2d)
+2026-10-28T11:05:58.9063944Z 
+2026-10-28T11:05:58.9064287Z running 1 test
+2026-10-28T11:05:58.9067561Z test export_pp16_cases ... ignored, research exporter; run with PP16_PADE and PP16_CASES set
+2026-10-28T11:05:58.9068139Z 
+2026-10-28T11:05:58.9068567Z test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:05:58.9069149Z 
+2026-10-28T11:05:58.9072717Z [1m[92m     Running[0m tests/production_audit_leja_arithmetic_oracle.rs (target/debug/deps/production_audit_leja_arithmetic_oracle-c01d510885ee295d)
+2026-10-28T11:05:58.9112475Z 
+2026-10-28T11:05:58.9112618Z running 1 test
+2026-10-28T11:05:59.7046545Z test frozen_arithmetic_fixture_export ... ok
+2026-10-28T11:05:59.7047030Z 
+2026-10-28T11:05:59.7047484Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.79s
+2026-10-28T11:05:59.7048118Z 
+2026-10-28T11:05:59.7051644Z [1m[92m     Running[0m tests/production_audit_scalar_rate.rs (target/debug/deps/production_audit_scalar_rate-01df7fa48cc2d6cd)
+2026-10-28T11:05:59.7091337Z 
+2026-10-28T11:05:59.7091501Z running 1 test
+2026-10-28T11:05:59.7913475Z test frozen_s01_s10_export ... ok
+2026-10-28T11:05:59.7913738Z 
+2026-10-28T11:05:59.7914013Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+2026-10-28T11:05:59.7914681Z 
+2026-10-28T11:05:59.7917217Z [1m[92m     Running[0m tests/production_audit_sparse.rs (target/debug/deps/production_audit_sparse-cf6a3d7ec03f92e6)
+2026-10-28T11:05:59.7936297Z 
+2026-10-28T11:05:59.7936605Z running 3 tests
+2026-10-28T11:05:59.7939498Z test malformed_csc_is_rejected_without_panicking ... ok
+2026-10-28T11:05:59.7940560Z test nonfinite_rhs_is_rejected ... ok
+2026-10-28T11:05:59.7941574Z test numeric_state_is_invalidated_until_exact_pattern_refactor_succeeds ... ok
+2026-10-28T11:05:59.7942114Z 
+2026-10-28T11:05:59.7942549Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:05:59.7943128Z 
+2026-10-28T11:05:59.7946372Z [1m[92m     Running[0m tests/r3_polynomial_action_contracts.rs (target/debug/deps/r3_polynomial_action_contracts-050f31241c0e3d3d)
+2026-10-28T11:05:59.7963455Z 
+2026-10-28T11:05:59.7963616Z running 8 tests
+2026-10-28T11:05:59.8175511Z test coefficient_tables_are_reused_only_for_the_same_key ... ok
+2026-10-28T11:05:59.8295283Z test the_same_vector_path_reuses_one_recurrence ... ok
+2026-10-28T11:05:59.8785211Z test coefficient_enclosures_contain_independent_quadrature ... ok
+2026-10-28T11:05:59.8813918Z test unsupported_operators_are_explicit_failures ... ok
+2026-10-28T11:05:59.8815274Z test zero_step_zero_operator_and_scalar_matrix_use_the_scalar_branch ... ok
+2026-10-28T11:06:00.4829851Z test the_unbounded_mode_returns_the_same_values_without_a_bound ... ok
+2026-10-28T11:06:01.2998084Z test all_joint_actions_match_the_independent_oracle ... ok
+2026-10-28T11:06:25.6131420Z test the_degree_near_the_budget_never_understates_the_bound ... ok
+2026-10-28T11:06:25.6132223Z 
+2026-10-28T11:06:25.6133193Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 25.82s
+2026-10-28T11:06:25.6133604Z 
+2026-10-28T11:06:25.6139446Z [1m[92m     Running[0m tests/r4_polynomial_contracts.rs (target/debug/deps/r4_polynomial_contracts-b36c02c5e1518587)
+2026-10-28T11:06:25.6192021Z 
+2026-10-28T11:06:25.6192241Z running 8 tests
+2026-10-28T11:06:25.6235479Z test an_out_of_range_result_or_budget_is_a_typed_rejection ... ok
+2026-10-28T11:06:25.6272592Z test cancellation_reports_absolute_and_relative_accuracy_separately ... ok
+2026-10-28T11:06:25.6273770Z test laguerre_scales_outside_the_cap_are_rejected ... ok
+2026-10-28T11:06:25.6274928Z test scaled_norms_enclose_the_exact_norm_across_the_range ... ok
+2026-10-28T11:06:25.6275821Z test the_continuous_laguerre_scale_minimizes_the_analytic_tail ... ok
+2026-10-28T11:06:25.6276666Z test truncation_success_is_not_total_error_admission ... ok
+2026-10-28T11:06:25.6319617Z test estimates_and_the_timing_path_never_admit ... ok
+2026-10-28T11:06:26.0860979Z test amplitude_scaled_actions_are_enclosed_or_rejected_never_zero ... ok
+2026-10-28T11:06:26.0861767Z 
+2026-10-28T11:06:26.0862168Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.47s
+2026-10-28T11:06:26.0862918Z 
+2026-10-28T11:06:26.0865475Z [1m[92m     Running[0m tests/r4_taylor_phi_contracts.rs (target/debug/deps/r4_taylor_phi_contracts-8d8e23212cf9512f)
+2026-10-28T11:06:26.0906160Z 
+2026-10-28T11:06:26.0906432Z running 4 tests
+2026-10-28T11:06:26.0918268Z test outside_the_validated_domain_is_a_typed_rejection ... ok
+2026-10-28T11:06:26.0918921Z test nilpotent_is_exact_in_two_terms ... ok
+2026-10-28T11:06:26.0919389Z test nonnormal_matches_the_divided_difference_and_reports_conditioning ... ok
+2026-10-28T11:06:26.0925945Z test diagonal_matches_the_scalar_enclosures ... ok
+2026-10-28T11:06:26.0926214Z 
+2026-10-28T11:06:26.0927732Z test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:06:26.0928458Z 
+2026-10-28T11:06:26.0931842Z [1m[92m     Running[0m tests/r4_transform_bound_contracts.rs (target/debug/deps/r4_transform_bound_contracts-121d41b356200769)
+2026-10-28T11:06:26.0978102Z 
+2026-10-28T11:06:26.0978436Z running 6 tests
+2026-10-28T11:06:26.0985074Z test signed_stored_weights_and_the_tolerance_domain_fail_closed ... ok
+2026-10-28T11:06:26.0988467Z test the_order_is_total_and_puts_zero_first ... ok
+2026-10-28T11:06:26.0989534Z test the_subunit_nilpotent_witness_keeps_its_norm ... ok
+2026-10-28T11:06:26.1021621Z test reciprocal_factorials_enclose_exactly_and_tightly ... ok
+2026-10-28T11:06:26.1081841Z test every_oracle_case_is_enclosed_including_permutations_and_transposes ... ok
+2026-10-28T11:06:26.4410218Z test every_supported_order_of_the_zero_operator_is_enclosed ... ok
+2026-10-28T11:06:26.4410724Z 
+2026-10-28T11:06:26.4411186Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.34s
+2026-10-28T11:06:26.4411855Z 
+2026-10-28T11:06:26.4414824Z [1m[92m     Running[0m tests/residual_gain_contract.rs (target/debug/deps/residual_gain_contract-e972d74c9e2af41c)
+2026-10-28T11:06:26.4504307Z 
+2026-10-28T11:06:26.4504597Z running 7 tests
+2026-10-28T11:06:26.4510153Z test export_runs ... ignored
+2026-10-28T11:06:26.4541041Z test test_case_d_positives ... ok
+2026-10-28T11:06:26.4541585Z test test_assembly_uncertainty_validation ... ok
+2026-10-28T11:06:26.4543528Z test test_transport_two_sided_gain_scaling ... ok
+2026-10-28T11:06:26.4553399Z test test_vg1_zero_allocation_hot_path ... ok
+2026-10-28T11:06:26.4568371Z test test_case_c_negatives ... ok
+2026-10-28T11:06:26.4570700Z test test_case_a_retained_oracle_and_parity ... ok
+2026-10-28T11:06:26.4571091Z 
+2026-10-28T11:06:26.4571497Z test result: ok. 6 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-10-28T11:06:26.4571869Z 
+2026-10-28T11:06:26.4576688Z [1m[92m     Running[0m tests/rev02_nonnormal_contracts.rs (target/debug/deps/rev02_nonnormal_contracts-4570ef2f17799b3f)
+2026-10-28T11:06:26.4636455Z 
+2026-10-28T11:06:26.4636636Z running 3 tests
+2026-10-28T11:06:26.4642908Z test osborne_balances_the_vig_a02_matrix ... ok
+2026-10-28T11:06:26.4691306Z test the_stepped_certificate_encloses_a_scalar_decay_and_rejects_bad_input ... ok
+2026-10-28T11:06:26.4937748Z test the_directed_exponential_brackets_the_libm_value_tightly ... ok
+2026-10-28T11:06:26.4938258Z 
+2026-10-28T11:06:26.4938566Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.03s
+2026-10-28T11:06:26.4941993Z [1m[92m     Running[0m tests/rev02_nonnormal_stepping.rs (target/debug/deps/rev02_nonnormal_stepping-bc0bb813ef87b2fa)
+2026-10-28T11:06:26.4942652Z 
+2026-10-28T11:06:26.4983791Z 
+2026-10-28T11:06:26.4983954Z running 1 test
+2026-10-28T11:06:26.4985136Z test nonnormal_stepping_cases ... ignored, case generator of research/rev02_nonnormal_stepping_20261003; release build
+2026-10-28T11:06:26.4986210Z 
+2026-10-28T11:06:26.4986605Z test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:06:26.4987125Z 
+2026-10-28T11:06:26.4987926Z [1m[92m     Running[0m tests/rnext04_laguerre_admission.rs (target/debug/deps/rnext04_laguerre_admission-8284e05ff33e63ab)
+2026-10-28T11:06:26.5029440Z 
+2026-10-28T11:06:26.5029631Z running 1 test
+2026-10-28T11:07:08.8441794Z test laguerre_admission_cases ... ok
+2026-10-28T11:07:08.8443423Z 
+2026-10-28T11:07:08.8443922Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 42.34s
+2026-10-28T11:07:08.8444848Z 
+2026-10-28T11:07:08.8448042Z [1m[92m     Running[0m tests/safe_enclosure_exp_floor.rs (target/debug/deps/safe_enclosure_exp_floor-331554ba443761de)
+2026-10-28T11:07:08.8460662Z 
+2026-10-28T11:07:08.8460820Z running 2 tests
+2026-10-28T11:07:08.8462268Z test export_exp_floor ... ignored, export of research/safe_enclosure_exp_floor_20261004
+2026-10-28T11:07:08.8463174Z test floor_window_is_enclosed ... ok
+2026-10-28T11:07:08.8463503Z 
+2026-10-28T11:07:08.8463915Z test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:07:08.8464660Z 
+2026-10-28T11:07:08.8466494Z [1m[92m     Running[0m tests/safe_enclosure_probes.rs (target/debug/deps/safe_enclosure_probes-a7058e73c122e98c)
+2026-10-28T11:07:08.8500714Z 
+2026-10-28T11:07:08.8500859Z running 3 tests
+2026-10-28T11:07:08.8502754Z test export_probes ... ignored, export of research/safe_enclosure_composition_20261004
+2026-10-28T11:07:08.8503755Z test repaired_midpoint_radius_covers_rounded_midpoint ... ok
+2026-10-28T11:07:08.9326464Z test repaired_decay_uses_lower_time_for_negative_rate ... ok
+2026-10-28T11:07:08.9327058Z 
+2026-10-28T11:07:08.9327580Z test result: ok. 2 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.08s
+2026-10-28T11:07:08.9328287Z 
+2026-10-28T11:07:08.9330758Z [1m[92m     Running[0m tests/shared_shift_jet_contracts.rs (target/debug/deps/shared_shift_jet_contracts-7cb5793e066cd8ad)
+2026-10-28T11:07:08.9400270Z 
+2026-10-28T11:07:08.9400714Z running 6 tests
+2026-10-28T11:07:08.9418830Z test exact_current_target_certificate_rejects_wrong_candidate ... ok
+2026-10-28T11:07:08.9419701Z test invalid_inputs_unsupported_operators_and_budgets_are_errors ... ok
+2026-10-28T11:07:08.9447959Z test large_target_set_budget_includes_coordinate_gamma_and_tolerance_slots ... ok
+2026-10-28T11:07:08.9448784Z test under_resolution_and_too_small_tolerance_fail_closed ... ok
+2026-10-28T11:07:08.9449274Z test independent_columns_and_executed_work_are_preserved ... ok
+2026-10-28T11:07:08.9454632Z test identity_limits_and_extreme_center_scaling ... ok
+2026-10-28T11:07:08.9455033Z 
+2026-10-28T11:07:08.9456282Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-10-28T11:07:08.9456856Z 
+2026-10-28T11:07:08.9461384Z [1m[92m     Running[0m tests/shifted_operator_nonfinite.rs (target/debug/deps/shifted_operator_nonfinite-fdcad11a077659b1)
+2026-10-28T11:07:08.9491597Z 
+2026-10-28T11:07:08.9491812Z running 2 tests
+2026-10-28T11:07:08.9496049Z test finite_shift_is_unchanged ... ok
+2026-10-28T11:07:08.9496621Z test overflowing_shift_is_a_non_finite_error ... ok
+2026-10-28T11:07:08.9496999Z 
+2026-10-28T11:07:08.9497468Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:07:08.9498040Z 
+2026-10-28T11:07:08.9500858Z [1m[92m     Running[0m tests/sparse_direct_contract.rs (target/debug/deps/sparse_direct_contract-9adcf9b2a217bb16)
+2026-10-28T11:07:08.9567445Z 
+2026-10-28T11:07:08.9567777Z running 2 tests
+2026-10-28T11:07:08.9688426Z test test_brusselator_1d_agreement_with_dense_lu ... ok
+2026-10-28T11:07:15.4973515Z test test_seeded_sparse_matrices_backward_error ... ok
+2026-10-28T11:07:15.4974315Z 
+2026-10-28T11:07:15.4975120Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 6.54s
+2026-10-28T11:07:15.4975848Z 
+2026-10-28T11:07:15.4983091Z [1m[92m     Running[0m tests/storage_runtime.rs (target/debug/deps/storage_runtime-0ae9806587870b12)
+2026-10-28T11:07:15.5050417Z 
+2026-10-28T11:07:15.5050645Z running 1 test
+2026-10-28T11:07:15.5055045Z test export_storage_sweep ... ignored, recorded run of research/storage_runtime_20261004; one test thread
+2026-10-28T11:07:15.5055856Z 
+2026-10-28T11:07:15.5056173Z test result: ok. 0 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:07:15.5056626Z 
+2026-10-28T11:07:15.5058657Z [1m[92m     Running[0m tests/thread_transfer_laguerre_adjoint.rs (target/debug/deps/thread_transfer_laguerre_adjoint-277f2378e72b4fa7)
+2026-10-28T11:07:15.5070141Z 
+2026-10-28T11:07:15.5070341Z running 2 tests
+2026-10-28T11:07:15.5071919Z test write_laguerre_cases ... ignored, writes fixtures/thread_transfer_laguerre_cases.json
+2026-10-28T11:07:16.3741700Z test laguerre_adjoint_contract ... ok
+2026-10-28T11:07:16.3742076Z 
+2026-10-28T11:07:16.3742506Z test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 0.87s
+2026-10-28T11:07:16.3743272Z 
+2026-10-28T11:07:16.3745200Z [1m[92m     Running[0m tests/thread_transfer_laguerre_cache.rs (target/debug/deps/thread_transfer_laguerre_cache-57a639b3b6857f27)
+2026-10-28T11:07:16.3758772Z 
+2026-10-28T11:07:16.3758976Z running 2 tests
+2026-10-28T11:07:16.3760867Z test write_laguerre_cache_cases ... ignored, writes fixtures/thread_transfer_laguerre_cache_cases.json
+2026-10-28T11:07:19.1277082Z test laguerre_envelope_cache_and_cost ... ok
+2026-10-28T11:07:19.1277775Z 
+2026-10-28T11:07:19.1279763Z test result: ok. 1 passed; 0 failed; 1 ignored; 0 measured; 0 filtered out; finished in 2.75s
+2026-10-28T11:07:19.1280583Z 
+2026-10-28T11:07:19.1283779Z [1m[92m     Running[0m tests/transform_bound_contracts.rs (target/debug/deps/transform_bound_contracts-b8a7396d67fd969a)
+2026-10-28T11:07:19.1296275Z 
+2026-10-28T11:07:19.1296596Z running 3 tests
+2026-10-28T11:07:19.1300155Z test every_branch_is_exercised_and_unverified_operators_fail_closed ... ok
+2026-10-28T11:07:19.1301113Z test the_nilpotent_witness_is_bounded_and_rejected_for_both_signs_of_h ... ok
+2026-10-28T11:07:19.1301850Z test the_zero_operator_control_is_bounded_nonzero_and_admitted ... ok
+2026-10-28T11:07:19.1302160Z 
+2026-10-28T11:07:19.1302534Z test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:07:19.1303125Z 
+2026-10-28T11:07:19.1303961Z [1m[92m     Running[0m tests/work_counter_contracts.rs (target/debug/deps/work_counter_contracts-766fe407895d773c)
+2026-10-28T11:07:19.1350981Z 
+2026-10-28T11:07:19.1351141Z running 5 tests
+2026-10-28T11:07:19.1357017Z test checked_delta_rejects_any_negative_component_and_round_trips_exactly ... ok
+2026-10-28T11:07:19.1357848Z test counted_shifted_applications_charge_jvp_mass_and_refresh_at_the_apply_site ... ok
+2026-10-28T11:07:19.1358614Z test shifted_and_total_operator_application_helpers_count_vectors_without_block_call_duplication ... ok
+2026-10-28T11:07:19.1359333Z test shifted_exact_identity_uses_jacobian_mass_and_exact_h_gamma_bits ... ok
+2026-10-28T11:07:19.1359886Z test work_counters_accumulate_componentwise_and_saturate ... ok
+2026-10-28T11:07:19.1360215Z 
+2026-10-28T11:07:19.1361756Z test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:07:19.1362364Z 
+2026-10-28T11:07:19.1364843Z [1m[92m     Running[0m tests/work_unit_contracts.rs (target/debug/deps/work_unit_contracts-728b4cd6dab69467)
+2026-10-28T11:07:19.1410084Z 
+2026-10-28T11:07:19.1410741Z running 2 tests
+2026-10-28T11:07:19.1417261Z test cross_lane_operator_work_is_counted_in_state_vectors ... ok
+2026-10-28T11:07:19.1423680Z test unknown_vector_coverage_survives_aggregation ... ok
+2026-10-28T11:07:19.1424267Z 
+2026-10-28T11:07:19.1424644Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+2026-10-28T11:07:19.1425029Z 
+2026-10-28T11:07:19.1427291Z [1m[92m     Running[0m unittests src/lib.rs (target/debug/deps/rodas5p_krylov-c1fb40f7fbb56b2f)
+2026-10-28T11:07:19.1449627Z 
+2026-10-28T11:07:19.1449790Z running 16 tests
+2026-10-28T11:07:19.1453823Z test gmres_givens::tests::stable_real_givens_zeroes_the_second_component ... ok
+2026-10-28T11:07:19.1455493Z test gmres_givens::tests::triangular_backsolve_reconstructs_the_rotated_system ... ok
+2026-10-28T11:07:19.1456990Z test gmres_givens::tests::triangular_backsolve_rejects_an_identically_zero_factor ... ok
+2026-10-28T11:07:19.1471858Z test gmres_givens::tests::uniformly_scaled_identity_preserves_solution_and_convergence ... ok
+2026-10-28T11:07:19.1472934Z test gmres_givens::tests::incremental_projected_residual_matches_full_qr_oracle ... ok
+2026-10-28T11:07:19.1473872Z test gmres_staged::tests::converges_in_cycle_and_charges_like_production ... ok
+2026-10-28T11:07:19.1506393Z test gmres_staged::tests::fallback_sees_the_iterate_and_its_true_residual ... ok
+2026-10-28T11:07:19.1507343Z test gmres_staged::tests::nu_guard_tightens_the_threshold_on_a_nonnormal_system ... ok
+2026-10-28T11:07:19.1615273Z test gmres_staged::tests::failed_confirmations_continue_the_cycle_with_doubling_gaps ... ok
+2026-10-28T11:07:19.1639135Z test gmres_staged::tests::stall_rule_accepts_the_attainable_floor ... ok
+2026-10-28T11:07:19.1640207Z test gmres_staged::tests::zero_right_hand_side_needs_no_work ... ok
+2026-10-28T11:07:19.1641242Z test small::generalized_eigen_tests::a_complex_pair_of_a_small_pencil_does_not_panic ... ok
+2026-10-28T11:07:19.1642350Z test small::generalized_eigen_tests::real_and_complex_spectra_are_eigenpairs ... ok
+2026-10-28T11:07:19.1646915Z test gmres_staged::tests::guard_aborts_a_stagnating_solve_and_classifies_it ... ok
+2026-10-28T11:07:19.1647471Z test gmres_staged::tests::restarted_solve_reaches_the_threshold ... ok
+2026-10-28T11:07:20.1591152Z test gmres_staged::tests::shadow_classification_is_the_guard_free_outcome ... ok
+2026-10-28T11:07:20.1591750Z 
+2026-10-28T11:07:20.1592171Z test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 1.01s
+2026-10-28T11:07:20.1592785Z 
+2026-10-28T11:07:20.1599070Z [1m[92m     Running[0m tests/alg04_alg06_staged_contracts.rs (target/debug/deps/alg04_alg06_staged_contracts-4602aab585933a46)
+2026-10-28T11:07:20.1668871Z 
+2026-10-28T11:07:20.1669116Z running 8 tests
+2026-10-28T11:07:20.1794788Z test exhaustion_keeps_the_alg01_nu_rule ... ok
+2026-10-28T11:07:20.1824888Z test effective_cycle_length_removes_the_small_system_overrun ... ok
+2026-10-28T11:07:20.1844687Z test exhaustion_runs_a_small_system_to_the_end_of_its_krylov_space ... ok
+2026-10-28T11:07:20.1854850Z test exhaustion_is_inactive_above_the_restart_length ... ok
+2026-10-28T11:07:20.1864923Z test guard_test_uses_the_given_cycle_length ... ok
+2026-10-28T11:07:20.1865677Z test classifying_accepted_guard_aborts_changes_nothing_but_the_label ... ok
+2026-10-28T11:07:20.1894341Z test floor_is_inert_where_the_threshold_is_met ... ok
+2026-10-28T11:07:20.1902177Z test floor_accepts_at_a_confirmation_without_a_slow_cycle ... ok
+2026-10-28T11:07:20.1902619Z 
+2026-10-28T11:07:20.1903038Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+2026-10-28T11:07:20.1903586Z 
+2026-10-28T11:07:20.1909104Z [1m[92m     Running[0m tests/alg04_dup_fix_contracts.rs (target/debug/deps/alg04_dup_fix_contracts-a52e3a09c8e7e0c3)
+2026-10-28T11:07:20.2000263Z 
+2026-10-28T11:07:20.2000434Z running 2 tests
+2026-10-28T11:07:20.2034261Z test a_right_hand_side_already_within_the_threshold_needs_no_operator ... ok
+2026-10-28T11:07:20.4157540Z test skipping_the_final_residual_changes_only_the_diagnostic_counters ... ok
+2026-10-28T11:07:20.4158283Z 
+2026-10-28T11:07:20.4171331Z test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s
+2026-10-28T11:07:20.4171714Z 
+2026-10-28T11:07:20.4178194Z [1m[92m     Running[0m tests/block_gmres_contracts.rs (target/debug/deps/block_gmres_contracts-3a1c5c0be6345828)
+2026-10-28T11:07:20.4247775Z 
+2026-10-28T11:07:20.4248024Z running 8 tests
+2026-10-28T11:07:20.4283652Z test block_gmres_rejects_ragged_rhs_without_counting_a_solve ... ok
+2026-10-28T11:07:20.4312389Z test block_gmres_does_not_false_converge_on_small_nonzero_rhs ... ok
+2026-10-28T11:07:20.4320381Z test exhausted_block_gmres_retains_attempted_work_counters ... ok
+2026-10-28T11:07:20.4321174Z test block_gmres_deflates_linearly_dependent_rhs ... ok
+2026-10-28T11:07:20.4321923Z test block_gmres_solves_multiple_rhs_through_block_operator_calls ... ok
+2026-10-28T11:07:20.4326812Z test block_arnoldi_rank_is_uniformly_operator_scale_invariant ... ok
+2026-10-28T11:07:20.4327655Z test seeded_arnoldi_rank_is_uniformly_operator_scale_invariant ... ok
+2026-10-28T11:07:20.4357694Z test seeded_shared_basis_refines_all_rhs_to_the_same_true_residual_contract ... ok
+2026-10-28T11:07:20.4358267Z 
+2026-10-28T11:07:20.4358682Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-10-28T11:07:20.4359261Z 
+2026-10-28T11:07:20.4363096Z [1m[92m     Running[0m tests/bordered_preconditioner_contracts.rs (target/debug/deps/bordered_preconditioner_contracts-907e3b2f92e83ca0)
+2026-10-28T11:07:20.4442734Z 
+2026-10-28T11:07:20.4442930Z running 1 test
+2026-10-28T11:07:20.4539390Z test bordered_right_preconditioner_reaches_true_residual_on_exact_and_perturbed_operator ... ok
+2026-10-28T11:07:20.4540096Z 
+2026-10-28T11:07:20.4540516Z test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+2026-10-28T11:07:20.4541113Z 
+2026-10-28T11:07:20.4546547Z [1m[92m     Running[0m tests/dupfix_promotion_contract.rs (target/debug/deps/dupfix_promotion_contract-d0c16b5a96dea452)
+2026-10-28T11:07:20.4615065Z 
+2026-10-28T11:07:20.4615347Z running 10 tests
+2026-10-28T11:07:20.4712140Z test a_confirmed_happy_breakdown_reuses_the_residual ... ok
+2026-10-28T11:07:20.4719388Z test accounting_identifiers_are_versioned ... ok
+2026-10-28T11:07:20.4965319Z test budget_exhaustion_fails_identically ... ok
+2026-10-28T11:07:20.4984901Z test a_happy_breakdown_without_confirmation_fails_identically ... ok
+2026-10-28T11:07:20.5255101Z test the_entry_points_without_accounting_use_the_default ... ok
+2026-10-28T11:07:20.5286688Z test jacobi_left_preconditioning ... ok
+2026-10-28T11:07:20.5287935Z test zero_right_hand_side_keeps_the_recomputation ... ok
+2026-10-28T11:07:20.5668565Z test a_nonzero_start_within_the_threshold_keeps_the_recomputation ... ok
+2026-10-28T11:07:20.6633271Z test a_restart_smaller_than_the_iteration_count ... ok
+2026-10-28T11:07:20.8446739Z test wrms_residual_scale ... ok
+2026-10-28T11:07:20.8447196Z 
+2026-10-28T11:07:20.8447822Z test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.38s
+2026-10-28T11:07:20.8448598Z 
+2026-10-28T11:07:20.8454791Z [1m[92m     Running[0m tests/gcrodr_state_validity_contracts.rs (target/debug/deps/gcrodr_state_validity_contracts-045d58c0ceea61f5)
+2026-10-28T11:07:20.8547321Z 
+2026-10-28T11:07:20.8547479Z running 6 tests
+2026-10-28T11:07:20.9845185Z test gcrodr_same_system_keeps_the_warm_start ... ok
+2026-10-28T11:07:21.0765372Z test gcrodr_wrong_length_warm_start_under_matching_identity_is_a_typed_error ... ok
+2026-10-28T11:07:21.1065232Z test gcrodr_state_reused_across_a_dimension_change_returns_without_panicking ... ok
+2026-10-28T11:07:21.1273232Z test lgmres_state_reused_across_a_dimension_change_returns_without_panicking ... ok
+2026-10-28T11:07:21.1736397Z test gcrodr_operator_identity_change_clears_the_stale_warm_start ... ok
+2026-10-28T11:07:21.4175459Z test gcrodr_recycle_rank_above_one_keeps_its_invariant_across_system_changes ... ok
+2026-10-28T11:07:21.4176236Z 
+2026-10-28T11:07:21.4176489Z test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s
+2026-10-28T11:07:21.4176844Z 
+2026-10-28T11:07:21.4185191Z [1m[92m     Running[0m tests/givens_gmres_contracts.rs (target/debug/deps/givens_gmres_contracts-2eb22d9366950164)
+2026-10-28T11:07:21.4255864Z 
+2026-10-28T11:07:21.4256063Z running 8 tests
+2026-10-28T11:07:21.4285114Z test candidate_rejects_non_finite_tolerances_before_operator_work ... ok
+2026-10-28T11:07:21.4289231Z test happy_breakdown_rejection_is_fail_closed_without_rebuilding_candidate ... ok
+2026-10-28T11:07:21.4290261Z test candidate_preserves_the_jacobi_preconditioner_contract ... ok
+2026-10-28T11:07:21.4291442Z test projected_residual_trigger_cannot_bypass_true_residual_certification ... ok
+2026-10-28T11:07:21.4293566Z test candidate_resets_incremental_state_across_restart_cycles ... ok
+2026-10-28T11:07:21.4294827Z test rejected_projected_triggers_back_off_diagnostics_but_stay_certified ... ok
+2026-10-28T11:07:21.4316285Z test nearly_dependent_nonidentity_system_keeps_uniform_scale_parity ... ok
+2026-10-28T11:07:21.4999946Z test candidate_stops_inside_restart_and_preserves_true_residual_authority ... ok
+2026-10-28T11:07:21.5000500Z 
+2026-10-28T11:07:21.5000774Z test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.07s
+2026-10-28T11:07:21.5001127Z 
+2026-10-28T11:07:21.5008195Z [1m[92m     Running[0m tests/givens_production_differential_contracts.rs (target/debug/deps/givens_production_differential_contracts-effede9a2fb2cfc0)
+2026-10-28T11:07:21.5080534Z 
+2026-10-28T11:07:21.5080726Z running 2 tests
+2026-10-28T11:07:21.5101151Z test a_corrupted_ok_solution_cannot_certify_itself_with_its_reported_residual - should panic ... ok
+2026-10-28T11:08:21.5085650Z test candidate_and_production_outcomes_are_pinned_on_the_e05_nonnormal_jacobi_rows has been running for over 60 seconds
+2026-10-28T11:08:29.7963403Z test candidate_and_production_outcomes_are_pinned_on_the_e05_nonnormal_jacobi_rows ... FAILED
+2026-10-28T11:08:29.7964582Z 
+2026-10-28T11:08:29.7964783Z failures:
+2026-10-28T11:08:29.7965010Z 
+2026-10-28T11:08:29.7965564Z ---- candidate_and_production_outcomes_are_pinned_on_the_e05_nonnormal_jacobi_rows stdout ----
+2026-10-28T11:08:29.7966346Z 
+2026-10-28T11:08:29.7967579Z thread 'candidate_and_production_outcomes_are_pinned_on_the_e05_nonnormal_jacobi_rows' (7658) panicked at crates/rodas5p-krylov/tests/givens_production_differential_contracts.rs:244:13:
+2026-10-28T11:08:29.7969636Z assertion `left == right` failed: gmres-givens-candidate at RHS scale 1e14: Ok(3640)
+2026-10-28T11:08:29.7970382Z   left: true
+2026-10-28T11:08:29.7970636Z  right: false
+2026-10-28T11:08:29.7970805Z 
+2026-10-28T11:08:29.7970809Z 
+2026-10-28T11:08:29.7970922Z failures:
+2026-10-28T11:08:29.7971385Z     candidate_and_production_outcomes_are_pinned_on_the_e05_nonnormal_jacobi_rows
+2026-10-28T11:08:29.7971771Z 
+2026-10-28T11:08:29.7972088Z test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 68.29s
+2026-10-28T11:08:29.7972531Z 
+2026-10-28T11:08:29.7974403Z [1m[91merror[0m: test failed, to rerun pass `-p rodas5p-krylov --test givens_production_differential_contracts`
+2026-10-28T11:08:29.8504007Z ##[error]Process completed with exit code 101.
+2026-10-28T11:08:29.9390921Z Post job cleanup.
+2026-10-28T11:08:30.1834930Z [command]/usr/bin/git version
+2026-10-28T11:08:30.1896407Z git version 2.55.0
+2026-10-28T11:08:30.1945479Z Temporarily overriding HOME='/home/runner/work/_temp/f0ee15dc-6c4c-45f7-90ed-b8015dfe585c' before making global git config changes
+2026-10-28T11:08:30.1946303Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-28T11:08:30.1951634Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vigilode/vigilode
+2026-10-28T11:08:30.2010177Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-28T11:08:30.2057975Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-28T11:08:30.2507146Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-28T11:08:30.2560209Z http.https://github.com/.extraheader
+2026-10-28T11:08:30.2606321Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-28T11:08:30.2639924Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-28T11:08:30.3106667Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T11:08:30.3163316Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-28T11:08:30.3860451Z Cleaning up orphan processes
+2026-10-28T11:08:30.4799512Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, Swatinem/rust-cache@v2.7.8. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+

@@ -1,0 +1,449 @@
+﻿2026-10-28T11:03:02.7925020Z Current runner version: '2.338.0'
+2026-10-28T11:03:02.7944429Z ##[group]Runner Image Provisioner
+2026-10-28T11:03:02.7945078Z Hosted Compute Agent
+2026-10-28T11:03:02.7945439Z Version: 20261021.618
+2026-10-28T11:03:02.7945848Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+2026-10-28T11:03:02.7946363Z Build Date: 2026-10-21T00:45:21Z
+2026-10-28T11:03:02.7946766Z Worker ID: {07017eab-c687-41ef-b743-f79a922399b1}
+2026-10-28T11:03:02.7947240Z Region: southcentralus
+2026-10-28T11:03:02.7947590Z Cloud: Azure
+2026-10-28T11:03:02.7947949Z ##[endgroup]
+2026-10-28T11:03:02.7948810Z ##[group]Operating System
+2026-10-28T11:03:02.7949177Z Ubuntu
+2026-10-28T11:03:02.7949548Z 26.04.1
+2026-10-28T11:03:02.7949867Z LTS
+2026-10-28T11:03:02.7950175Z ##[endgroup]
+2026-10-28T11:03:02.7950587Z ##[group]Runner Image
+2026-10-28T11:03:02.7951203Z Image: ubuntu-26.04
+2026-10-28T11:03:02.7951585Z Version: 20261012.163.1
+2026-10-28T11:03:02.7952373Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261012.163/images/ubuntu/Ubuntu2604-Readme.md
+2026-10-28T11:03:02.7953364Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261012.163
+2026-10-28T11:03:02.7953931Z ##[endgroup]
+2026-10-28T11:03:02.7954618Z ##[group]GITHUB_TOKEN Permissions
+2026-10-28T11:03:02.7955880Z Contents: read
+2026-10-28T11:03:02.7956323Z Metadata: read
+2026-10-28T11:03:02.7956666Z ##[endgroup]
+2026-10-28T11:03:02.7958059Z Secret source: Actions
+2026-10-28T11:03:02.7958682Z Cache mode: write
+2026-10-28T11:03:02.7959146Z Prepare workflow directory
+2026-10-28T11:03:02.8225500Z Prepare all required actions
+2026-10-28T11:03:02.8258366Z Getting action download info
+2026-10-28T11:03:03.0448911Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-10-28T11:03:03.1200606Z Download action repository 'Swatinem/rust-cache@v2.7.8' (SHA:9d47c6ad4b02e050fd481d890b2ea34778fd09d6)
+2026-10-28T11:03:03.5985243Z Complete job name: docs
+2026-10-28T11:03:03.6620124Z ##[group]Run actions/checkout@v4
+2026-10-28T11:03:03.6620579Z with:
+2026-10-28T11:03:03.6620974Z   repository: cosmosapjw-quantum/vigilode
+2026-10-28T11:03:03.6623079Z   token: ***
+2026-10-28T11:03:03.6623318Z   ssh-strict: true
+2026-10-28T11:03:03.6623564Z   ssh-user: git
+2026-10-28T11:03:03.6623822Z   persist-credentials: true
+2026-10-28T11:03:03.6624090Z   clean: true
+2026-10-28T11:03:03.6624348Z   sparse-checkout-cone-mode: true
+2026-10-28T11:03:03.6624638Z   fetch-depth: 1
+2026-10-28T11:03:03.6624879Z   fetch-tags: false
+2026-10-28T11:03:03.6625126Z   show-progress: true
+2026-10-28T11:03:03.6625377Z   lfs: false
+2026-10-28T11:03:03.6625607Z   submodules: false
+2026-10-28T11:03:03.6625872Z   set-safe-directory: true
+2026-10-28T11:03:03.6626159Z   allow-unsafe-pr-checkout: false
+2026-10-28T11:03:03.6626518Z env:
+2026-10-28T11:03:03.6626753Z   CARGO_TERM_COLOR: always
+2026-10-28T11:03:03.6627025Z   RUST_TOOLCHAIN: 1.94.1
+2026-10-28T11:03:03.6627285Z ##[endgroup]
+2026-10-28T11:03:03.8664249Z Syncing repository: cosmosapjw-quantum/vigilode
+2026-10-28T11:03:03.8665918Z ##[group]Getting Git version info
+2026-10-28T11:03:03.8666528Z Working directory is '/home/runner/work/vigilode/vigilode'
+2026-10-28T11:03:03.8667440Z [command]/usr/bin/git version
+2026-10-28T11:03:03.8675767Z git version 2.55.0
+2026-10-28T11:03:03.8702628Z ##[endgroup]
+2026-10-28T11:03:03.8711966Z Temporarily overriding HOME='/home/runner/work/_temp/320a4333-f72e-4152-be63-baae50c7904c' before making global git config changes
+2026-10-28T11:03:03.8713627Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-28T11:03:03.8715945Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vigilode/vigilode
+2026-10-28T11:03:03.8782065Z Deleting the contents of '/home/runner/work/vigilode/vigilode'
+2026-10-28T11:03:03.8792973Z ##[group]Initializing the repository
+2026-10-28T11:03:03.8806590Z [command]/usr/bin/git init /home/runner/work/vigilode/vigilode
+2026-10-28T11:03:03.8891311Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-10-28T11:03:03.8892936Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-10-28T11:03:03.8894045Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-10-28T11:03:03.8894846Z hint: call:
+2026-10-28T11:03:03.8895329Z hint:
+2026-10-28T11:03:03.8895928Z hint: 	git config --global init.defaultBranch <name>
+2026-10-28T11:03:03.8896598Z hint:
+2026-10-28T11:03:03.8897236Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-10-28T11:03:03.8898198Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-10-28T11:03:03.8898984Z hint:
+2026-10-28T11:03:03.8899459Z hint: 	git branch -m <name>
+2026-10-28T11:03:03.8899996Z hint:
+2026-10-28T11:03:03.8900666Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-10-28T11:03:03.8901979Z Initialized empty Git repository in /home/runner/work/vigilode/vigilode/.git/
+2026-10-28T11:03:03.8908075Z [command]/usr/bin/git remote add origin https://github.com/cosmosapjw-quantum/vigilode
+2026-10-28T11:03:03.9917032Z ##[endgroup]
+2026-10-28T11:03:03.9918053Z ##[group]Disabling automatic garbage collection
+2026-10-28T11:03:03.9925616Z [command]/usr/bin/git config --local gc.auto 0
+2026-10-28T11:03:04.0526972Z ##[endgroup]
+2026-10-28T11:03:04.0528082Z ##[group]Setting up auth
+2026-10-28T11:03:04.0537125Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-28T11:03:04.0576207Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-28T11:03:04.0918884Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-28T11:03:04.0949753Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-28T11:03:04.1178531Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T11:03:04.1209726Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-28T11:03:04.1450875Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-10-28T11:03:04.1936321Z ##[endgroup]
+2026-10-28T11:03:04.1937567Z ##[group]Fetching the repository
+2026-10-28T11:03:04.1939872Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0dabec43b15db53c3b63c2da7e2b44f4b18bebc5:refs/remotes/pull/97/merge
+2026-10-28T11:03:09.5180031Z From https://github.com/cosmosapjw-quantum/vigilode
+2026-10-28T11:03:09.5181004Z  * [new ref]         0dabec43b15db53c3b63c2da7e2b44f4b18bebc5 -> pull/97/merge
+2026-10-28T11:03:09.5184090Z ##[endgroup]
+2026-10-28T11:03:09.5186237Z ##[group]Determining the checkout info
+2026-10-28T11:03:09.5186735Z ##[endgroup]
+2026-10-28T11:03:09.5196850Z [command]/usr/bin/git sparse-checkout disable
+2026-10-28T11:03:09.5244017Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-10-28T11:03:09.5272150Z ##[group]Checking out the ref
+2026-10-28T11:03:09.5272490Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/97/merge
+2026-10-28T11:03:10.6958241Z Updating files:  59% (10215/17037)
+2026-10-28T11:03:10.7036244Z Updating files:  60% (10223/17037)
+2026-10-28T11:03:10.8737970Z Updating files:  61% (10393/17037)
+2026-10-28T11:03:10.8838759Z Updating files:  62% (10563/17037)
+2026-10-28T11:03:10.8982528Z Updating files:  63% (10734/17037)
+2026-10-28T11:03:10.9147628Z Updating files:  64% (10904/17037)
+2026-10-28T11:03:10.9277672Z Updating files:  65% (11075/17037)
+2026-10-28T11:03:10.9427441Z Updating files:  66% (11245/17037)
+2026-10-28T11:03:10.9567040Z Updating files:  67% (11415/17037)
+2026-10-28T11:03:10.9679233Z Updating files:  68% (11586/17037)
+2026-10-28T11:03:10.9815665Z Updating files:  69% (11756/17037)
+2026-10-28T11:03:10.9883206Z Updating files:  70% (11926/17037)
+2026-10-28T11:03:10.9982507Z Updating files:  71% (12097/17037)
+2026-10-28T11:03:11.0149429Z Updating files:  72% (12267/17037)
+2026-10-28T11:03:11.0248077Z Updating files:  73% (12438/17037)
+2026-10-28T11:03:11.0435115Z Updating files:  74% (12608/17037)
+2026-10-28T11:03:11.0659169Z Updating files:  75% (12778/17037)
+2026-10-28T11:03:11.0838351Z Updating files:  76% (12949/17037)
+2026-10-28T11:03:11.1194458Z Updating files:  77% (13119/17037)
+2026-10-28T11:03:11.1448460Z Updating files:  78% (13289/17037)
+2026-10-28T11:03:11.1504771Z Updating files:  79% (13460/17037)
+2026-10-28T11:03:11.1557061Z Updating files:  80% (13630/17037)
+2026-10-28T11:03:11.1618490Z Updating files:  81% (13800/17037)
+2026-10-28T11:03:11.1672280Z Updating files:  82% (13971/17037)
+2026-10-28T11:03:11.1774442Z Updating files:  83% (14141/17037)
+2026-10-28T11:03:11.1935324Z Updating files:  84% (14312/17037)
+2026-10-28T11:03:11.2036479Z Updating files:  85% (14482/17037)
+2026-10-28T11:03:11.2297042Z Updating files:  86% (14652/17037)
+2026-10-28T11:03:11.2566103Z Updating files:  87% (14823/17037)
+2026-10-28T11:03:11.2776515Z Updating files:  88% (14993/17037)
+2026-10-28T11:03:11.2908242Z Updating files:  89% (15163/17037)
+2026-10-28T11:03:11.2966558Z Updating files:  90% (15334/17037)
+2026-10-28T11:03:11.3098167Z Updating files:  91% (15504/17037)
+2026-10-28T11:03:11.3346759Z Updating files:  92% (15675/17037)
+2026-10-28T11:03:11.3476930Z Updating files:  93% (15845/17037)
+2026-10-28T11:03:11.3764594Z Updating files:  94% (16015/17037)
+2026-10-28T11:03:11.3998801Z Updating files:  95% (16186/17037)
+2026-10-28T11:03:11.4858241Z Updating files:  96% (16356/17037)
+2026-10-28T11:03:11.5393971Z Updating files:  97% (16526/17037)
+2026-10-28T11:03:11.5433676Z Updating files:  97% (16660/17037)
+2026-10-28T11:03:11.5723558Z Updating files:  98% (16697/17037)
+2026-10-28T11:03:11.5883173Z Updating files:  99% (16867/17037)
+2026-10-28T11:03:11.5884334Z Updating files: 100% (17037/17037)
+2026-10-28T11:03:11.5884682Z Updating files: 100% (17037/17037), done.
+2026-10-28T11:03:11.5993698Z Note: switching to 'refs/remotes/pull/97/merge'.
+2026-10-28T11:03:11.5994339Z 
+2026-10-28T11:03:11.5994877Z You are in 'detached HEAD' state. You can look around, make experimental
+2026-10-28T11:03:11.5995484Z changes and commit them, and you can discard any commits you make in this
+2026-10-28T11:03:11.5995943Z state without impacting any branches by switching back to a branch.
+2026-10-28T11:03:11.5996273Z 
+2026-10-28T11:03:11.5996475Z If you want to create a new branch to retain commits you create, you may
+2026-10-28T11:03:11.5996994Z do so (now or later) by using -c with the switch command. Example:
+2026-10-28T11:03:11.5997287Z 
+2026-10-28T11:03:11.5997461Z   git switch -c <new-branch-name>
+2026-10-28T11:03:11.5997653Z 
+2026-10-28T11:03:11.5997843Z Or undo this operation with:
+2026-10-28T11:03:11.5998017Z 
+2026-10-28T11:03:11.5998101Z   git switch -
+2026-10-28T11:03:11.5998218Z 
+2026-10-28T11:03:11.5998411Z Turn off this advice by setting config variable advice.detachedHead to false
+2026-10-28T11:03:11.5998699Z 
+2026-10-28T11:03:11.5999028Z HEAD is now at 0dabec4 Merge 25e76dd84f1ca71fd460201bdf31476d3cce9545 into 13f3298bd0213f121e07385903f9508c435ad6a1
+2026-10-28T11:03:11.6198681Z ##[endgroup]
+2026-10-28T11:03:11.6201212Z [command]/usr/bin/git log -1 --format=%H
+2026-10-28T11:03:11.6213030Z 0dabec43b15db53c3b63c2da7e2b44f4b18bebc5
+2026-10-28T11:03:11.6401919Z ##[group]Run rustup toolchain install "$RUST_TOOLCHAIN" --profile minimal
+2026-10-28T11:03:11.6402320Z [36;1mrustup toolchain install "$RUST_TOOLCHAIN" --profile minimal[0m
+2026-10-28T11:03:11.6402557Z [36;1mrustup override set "$RUST_TOOLCHAIN"[0m
+2026-10-28T11:03:11.6538936Z shell: /usr/bin/bash -e {0}
+2026-10-28T11:03:11.6539143Z env:
+2026-10-28T11:03:11.6539307Z   CARGO_TERM_COLOR: always
+2026-10-28T11:03:11.6539467Z   RUST_TOOLCHAIN: 1.94.1
+2026-10-28T11:03:11.6539863Z ##[endgroup]
+2026-10-28T11:03:11.6989604Z info: syncing channel updates for 1.94.1-x86_64-unknown-linux-gnu
+2026-10-28T11:03:11.9436108Z info: latest update on 2026-03-26 for version 1.94.1 (e408947bf 2026-03-25)
+2026-10-28T11:03:11.9436683Z info: downloading 3 components
+2026-10-28T11:03:18.9744454Z 
+2026-10-28T11:03:18.9811610Z   1.94.1-x86_64-unknown-linux-gnu installed - rustc 1.94.1 (e408947bf 2026-03-25)
+2026-10-28T11:03:18.9811870Z 
+2026-10-28T11:03:19.0087780Z info: override toolchain for /home/runner/work/vigilode/vigilode set to 1.94.1-x86_64-unknown-linux-gnu
+2026-10-28T11:03:19.0354768Z ##[group]Run Swatinem/rust-cache@v2.7.8
+2026-10-28T11:03:19.0354945Z with:
+2026-10-28T11:03:19.0355070Z   shared-key: root
+2026-10-28T11:03:19.0355197Z   prefix-key: v0-rust
+2026-10-28T11:03:19.0355326Z   cache-targets: true
+2026-10-28T11:03:19.0355463Z   cache-all-crates: false
+2026-10-28T11:03:19.0355603Z   save-if: true
+2026-10-28T11:03:19.0355729Z   cache-provider: github
+2026-10-28T11:03:19.0355881Z   cache-bin: true
+2026-10-28T11:03:19.0356004Z   lookup-only: false
+2026-10-28T11:03:19.0356131Z env:
+2026-10-28T11:03:19.0356251Z   CARGO_TERM_COLOR: always
+2026-10-28T11:03:19.0356391Z   RUST_TOOLCHAIN: 1.94.1
+2026-10-28T11:03:19.0356529Z ##[endgroup]
+2026-10-28T11:03:19.8276282Z ##[group]Cache Configuration
+2026-10-28T11:03:19.8276915Z Cache Provider:
+2026-10-28T11:03:19.8277298Z     github
+2026-10-28T11:03:19.8277720Z Workspaces:
+2026-10-28T11:03:19.8278074Z     /home/runner/work/vigilode/vigilode
+2026-10-28T11:03:19.8278503Z Cache Paths:
+2026-10-28T11:03:19.8278946Z     /home/runner/.cargo/bin
+2026-10-28T11:03:19.8279355Z     /home/runner/.cargo/.crates.toml
+2026-10-28T11:03:19.8279767Z     /home/runner/.cargo/.crates2.json
+2026-10-28T11:03:19.8280397Z     /home/runner/.cargo/registry
+2026-10-28T11:03:19.8280684Z     /home/runner/.cargo/git
+2026-10-28T11:03:19.8281156Z     /home/runner/work/vigilode/vigilode/target
+2026-10-28T11:03:19.8281435Z Restore Key:
+2026-10-28T11:03:19.8281696Z     v0-rust-root-Linux-x64-49f0e1cf
+2026-10-28T11:03:19.8281946Z Cache Key:
+2026-10-28T11:03:19.8282163Z     v0-rust-root-Linux-x64-49f0e1cf-c607b1e5
+2026-10-28T11:03:19.8282439Z .. Prefix:
+2026-10-28T11:03:19.8282647Z   - v0-rust-root-Linux-x64
+2026-10-28T11:03:19.8282951Z .. Environment considered:
+2026-10-28T11:03:19.8283347Z   - Rust Version: 1.94.1 x86_64-unknown-linux-gnu (e408947bfd200af42db322daf0fadfe7e26d3bd1)
+2026-10-28T11:03:19.8283763Z   - CARGO_INCREMENTAL
+2026-10-28T11:03:19.8283975Z   - CARGO_TERM_COLOR
+2026-10-28T11:03:19.8284181Z   - RUST_TOOLCHAIN
+2026-10-28T11:03:19.8284391Z .. Lockfiles considered:
+2026-10-28T11:03:19.8284672Z   - /home/runner/work/vigilode/vigilode/.cargo/config.toml
+2026-10-28T11:03:19.8285017Z   - /home/runner/work/vigilode/vigilode/Cargo.lock
+2026-10-28T11:03:19.8285390Z   - /home/runner/work/vigilode/vigilode/crates/rodas5p-cli/Cargo.toml
+2026-10-28T11:03:19.8285835Z   - /home/runner/work/vigilode/vigilode/crates/rodas5p-core/Cargo.toml
+2026-10-28T11:03:19.8286280Z   - /home/runner/work/vigilode/vigilode/crates/rodas5p-fair-ab/Cargo.toml
+2026-10-28T11:03:19.8286745Z   - /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/Cargo.toml
+2026-10-28T11:03:19.8287185Z   - /home/runner/work/vigilode/vigilode/crates/rodas5p-krylov/Cargo.toml
+2026-10-28T11:03:19.8287621Z   - /home/runner/work/vigilode/vigilode/crates/vigilode-coupled/Cargo.toml
+2026-10-28T11:03:19.8288042Z   - /home/runner/work/vigilode/vigilode/crates/vigilode/Cargo.toml
+2026-10-28T11:03:19.8288631Z   - /home/runner/work/vigilode/vigilode/rust-toolchain.toml
+2026-10-28T11:03:19.8289161Z ##[endgroup]
+2026-10-28T11:03:19.8289239Z 
+2026-10-28T11:03:19.8289295Z ... Restoring cache ...
+2026-10-28T11:03:19.9879168Z ##[warning]Cache not found for keys: v0-rust-root-Linux-x64-49f0e1cf-c607b1e5, v0-rust-root-Linux-x64-49f0e1cf
+2026-10-28T11:03:19.9886560Z No cache found.
+2026-10-28T11:03:20.0017577Z ##[group]Run cargo doc -p vigilode -p vigilode-coupled --no-deps --locked
+2026-10-28T11:03:20.0018072Z [36;1mcargo doc -p vigilode -p vigilode-coupled --no-deps --locked[0m
+2026-10-28T11:03:20.0081258Z shell: /usr/bin/bash -e {0}
+2026-10-28T11:03:20.0081424Z env:
+2026-10-28T11:03:20.0081558Z   CARGO_TERM_COLOR: always
+2026-10-28T11:03:20.0081702Z   RUST_TOOLCHAIN: 1.94.1
+2026-10-28T11:03:20.0081844Z   CACHE_ON_FAILURE: false
+2026-10-28T11:03:20.0081983Z   CARGO_INCREMENTAL: 0
+2026-10-28T11:03:20.0082153Z   RUSTDOCFLAGS: -D warnings
+2026-10-28T11:03:20.0082303Z ##[endgroup]
+2026-10-28T11:03:20.0461924Z [1m[92m    Updating[0m crates.io index
+2026-10-28T11:03:20.4206958Z [1m[92m Downloading[0m crates ...
+2026-10-28T11:03:20.5559815Z [1m[92m  Downloaded[0m autocfg v1.5.1
+2026-10-28T11:03:20.5661193Z [1m[92m  Downloaded[0m cfg-if v1.0.4
+2026-10-28T11:03:20.5723628Z [1m[92m  Downloaded[0m block-buffer v0.10.4
+2026-10-28T11:03:20.5792880Z [1m[92m  Downloaded[0m crossbeam-deque v0.8.7
+2026-10-28T11:03:20.5820459Z [1m[92m  Downloaded[0m bytemuck v1.25.2
+2026-10-28T11:03:20.5845660Z [1m[92m  Downloaded[0m pulp-wasm-simd-flag v0.1.1
+2026-10-28T11:03:20.5851354Z [1m[92m  Downloaded[0m equator-macro v0.6.0
+2026-10-28T11:03:20.5856804Z [1m[92m  Downloaded[0m cpufeatures v0.2.17
+2026-10-28T11:03:20.5867577Z [1m[92m  Downloaded[0m interpol v0.2.1
+2026-10-28T11:03:20.5876176Z [1m[92m  Downloaded[0m equator v0.2.2
+2026-10-28T11:03:20.5884172Z [1m[92m  Downloaded[0m crypto-common v0.1.7
+2026-10-28T11:03:20.5892999Z [1m[92m  Downloaded[0m bitflags v2.13.1
+2026-10-28T11:03:20.5934925Z [1m[92m  Downloaded[0m nano-gemm-core v0.2.1
+2026-10-28T11:03:20.5940466Z [1m[92m  Downloaded[0m bytemuck_derive v1.11.0
+2026-10-28T11:03:20.5951157Z [1m[92m  Downloaded[0m reborrow v0.5.5
+2026-10-28T11:03:20.5959589Z [1m[92m  Downloaded[0m version_check v0.9.5
+2026-10-28T11:03:20.5969183Z [1m[92m  Downloaded[0m itoa v1.0.18
+2026-10-28T11:03:20.5981059Z [1m[92m  Downloaded[0m num_cpus v1.17.0
+2026-10-28T11:03:20.6004458Z [1m[92m  Downloaded[0m generic-array v0.14.7
+2026-10-28T11:03:20.6015003Z [1m[92m  Downloaded[0m hex v0.4.3
+2026-10-28T11:03:20.6027056Z [1m[92m  Downloaded[0m gemm-f32 v0.19.0
+2026-10-28T11:03:20.6034379Z [1m[92m  Downloaded[0m gemm-c64 v0.19.0
+2026-10-28T11:03:20.6041041Z [1m[92m  Downloaded[0m dyn-stack-macros v0.1.3
+2026-10-28T11:03:20.6047831Z [1m[92m  Downloaded[0m equator-macro v0.2.1
+2026-10-28T11:03:20.6053932Z [1m[92m  Downloaded[0m nano-gemm-codegen v0.2.1
+2026-10-28T11:03:20.6060699Z [1m[92m  Downloaded[0m nano-gemm-c64 v0.2.1
+2026-10-28T11:03:20.6065863Z [1m[92m  Downloaded[0m gemm-f64 v0.19.0
+2026-10-28T11:03:20.6073604Z [1m[92m  Downloaded[0m qd v0.8.0
+2026-10-28T11:03:20.6084844Z [1m[92m  Downloaded[0m gemm-c32 v0.19.0
+2026-10-28T11:03:20.6093840Z [1m[92m  Downloaded[0m seq-macro v0.3.6
+2026-10-28T11:03:20.6107644Z [1m[92m  Downloaded[0m num-complex v0.4.6
+2026-10-28T11:03:20.6118586Z [1m[92m  Downloaded[0m nano-gemm-f32 v0.2.1
+2026-10-28T11:03:20.6123805Z [1m[92m  Downloaded[0m gemm-f16 v0.19.0
+2026-10-28T11:03:20.6132053Z [1m[92m  Downloaded[0m zmij v1.0.23
+2026-10-28T11:03:20.6145949Z [1m[92m  Downloaded[0m nano-gemm v0.2.2
+2026-10-28T11:03:20.6154429Z [1m[92m  Downloaded[0m thiserror-impl v2.0.19
+2026-10-28T11:03:20.6164659Z [1m[92m  Downloaded[0m sha2 v0.10.9
+2026-10-28T11:03:20.6187089Z [1m[92m  Downloaded[0m paste v1.0.15
+2026-10-28T11:03:20.6215231Z [1m[92m  Downloaded[0m thiserror v2.0.19
+2026-10-28T11:03:20.6266232Z [1m[92m  Downloaded[0m unicode-ident v1.0.24
+2026-10-28T11:03:20.6289132Z [1m[92m  Downloaded[0m rayon-core v1.13.0
+2026-10-28T11:03:20.6319690Z [1m[92m  Downloaded[0m typenum v1.20.1
+2026-10-28T11:03:20.6355178Z [1m[92m  Downloaded[0m zerocopy-derive v0.8.56
+2026-10-28T11:03:20.6431662Z [1m[92m  Downloaded[0m raw-cpuid v11.6.0
+2026-10-28T11:03:20.6455999Z [1m[92m  Downloaded[0m pulp v0.22.3
+2026-10-28T11:03:20.6493856Z [1m[92m  Downloaded[0m libm v0.2.16
+2026-10-28T11:03:20.6570596Z [1m[92m  Downloaded[0m serde_json v1.0.151
+2026-10-28T11:03:20.6622697Z [1m[92m  Downloaded[0m rayon v1.12.0
+2026-10-28T11:03:20.6691197Z [1m[92m  Downloaded[0m memchr v2.8.3
+2026-10-28T11:03:20.6730160Z [1m[92m  Downloaded[0m serde v1.0.229
+2026-10-28T11:03:20.6754964Z [1m[92m  Downloaded[0m proc-macro2 v1.0.107
+2026-10-28T11:03:20.6776048Z [1m[92m  Downloaded[0m zerocopy v0.8.56
+2026-10-28T11:03:20.6928434Z [1m[92m  Downloaded[0m syn v2.0.119
+2026-10-28T11:03:20.7003884Z [1m[92m  Downloaded[0m syn v3.0.3
+2026-10-28T11:03:20.7087918Z [1m[92m  Downloaded[0m syn v1.0.109
+2026-10-28T11:03:20.7166633Z [1m[92m  Downloaded[0m num-traits v0.2.19
+2026-10-28T11:03:20.7190998Z [1m[92m  Downloaded[0m half v2.7.1
+2026-10-28T11:03:20.7216412Z [1m[92m  Downloaded[0m serde_derive v1.0.229
+2026-10-28T11:03:20.7244973Z [1m[92m  Downloaded[0m serde_core v1.0.229
+2026-10-28T11:03:20.7270301Z [1m[92m  Downloaded[0m gemm-common v0.19.0
+2026-10-28T11:03:20.7282084Z [1m[92m  Downloaded[0m dyn-stack v0.13.2
+2026-10-28T11:03:20.7292724Z [1m[92m  Downloaded[0m crossbeam-utils v0.8.22
+2026-10-28T11:03:20.7312078Z [1m[92m  Downloaded[0m quote v1.0.47
+2026-10-28T11:03:20.7331236Z [1m[92m  Downloaded[0m private-gemm-x86 v0.1.20
+2026-10-28T11:03:20.7343116Z [1m[92m  Downloaded[0m gemm v0.19.0
+2026-10-28T11:03:20.7353273Z [1m[92m  Downloaded[0m either v1.17.0
+2026-10-28T11:03:20.7363748Z [1m[92m  Downloaded[0m crossbeam-epoch v0.9.20
+2026-10-28T11:03:20.7381385Z [1m[92m  Downloaded[0m once_cell v1.21.4
+2026-10-28T11:03:20.7401349Z [1m[92m  Downloaded[0m generativity v1.2.1
+2026-10-28T11:03:20.7415113Z [1m[92m  Downloaded[0m digest v0.10.7
+2026-10-28T11:03:20.7427536Z [1m[92m  Downloaded[0m nano-gemm-f64 v0.2.1
+2026-10-28T11:03:20.7432437Z [1m[92m  Downloaded[0m faer-traits v0.24.0
+2026-10-28T11:03:20.7439056Z [1m[92m  Downloaded[0m equator v0.6.0
+2026-10-28T11:03:20.7445279Z [1m[92m  Downloaded[0m nano-gemm-c32 v0.2.1
+2026-10-28T11:03:20.7450141Z [1m[92m  Downloaded[0m defer v0.2.1
+2026-10-28T11:03:20.7456883Z [1m[92m  Downloaded[0m libc v0.2.189
+2026-10-28T11:03:20.7777274Z [1m[92m  Downloaded[0m faer v0.24.4
+2026-10-28T11:03:20.9074385Z [1m[92m   Compiling[0m version_check v0.9.5
+2026-10-28T11:03:20.9075027Z [1m[92m   Compiling[0m proc-macro2 v1.0.107
+2026-10-28T11:03:20.9075583Z [1m[92m   Compiling[0m autocfg v1.5.1
+2026-10-28T11:03:20.9076021Z [1m[92m   Compiling[0m unicode-ident v1.0.24
+2026-10-28T11:03:20.9916923Z [1m[92m   Compiling[0m quote v1.0.47
+2026-10-28T11:03:21.1251061Z [1m[92m    Checking[0m bytemuck v1.25.2
+2026-10-28T11:03:21.1455242Z [1m[92m   Compiling[0m nano-gemm-codegen v0.2.1
+2026-10-28T11:03:21.1948576Z [1m[92m   Compiling[0m num-traits v0.2.19
+2026-10-28T11:03:21.2512932Z [1m[92m   Compiling[0m libm v0.2.16
+2026-10-28T11:03:21.4542312Z [1m[92m    Checking[0m bitflags v2.13.1
+2026-10-28T11:03:21.5227981Z [1m[92m   Compiling[0m paste v1.0.15
+2026-10-28T11:03:21.6781921Z [1m[92m    Checking[0m raw-cpuid v11.6.0
+2026-10-28T11:03:21.7662118Z [1m[92m   Compiling[0m pulp v0.22.3
+2026-10-28T11:03:21.8400177Z [1m[92m    Checking[0m num-complex v0.4.6
+2026-10-28T11:03:21.8509538Z [1m[92m    Checking[0m cfg-if v1.0.4
+2026-10-28T11:03:22.0932126Z [1m[92m    Checking[0m pulp-wasm-simd-flag v0.1.1
+2026-10-28T11:03:22.1132042Z [1m[92m    Checking[0m reborrow v0.5.5
+2026-10-28T11:03:22.1362105Z [1m[92m   Compiling[0m dyn-stack-macros v0.1.3
+2026-10-28T11:03:22.2339725Z [1m[92m   Compiling[0m syn v1.0.109
+2026-10-28T11:03:22.2972279Z [1m[92m    Checking[0m dyn-stack v0.13.2
+2026-10-28T11:03:22.4402389Z [1m[92m    Checking[0m once_cell v1.21.4
+2026-10-28T11:03:22.4448664Z [1m[92m   Compiling[0m seq-macro v0.3.6
+2026-10-28T11:03:22.5632364Z [1m[92m   Compiling[0m generic-array v0.14.7
+2026-10-28T11:03:22.5782396Z [1m[92m    Checking[0m nano-gemm-core v0.2.1
+2026-10-28T11:03:22.6742472Z [1m[92m    Checking[0m typenum v1.20.1
+2026-10-28T11:03:22.8252602Z [1m[92m   Compiling[0m libc v0.2.189
+2026-10-28T11:03:23.1166486Z [1m[92m   Compiling[0m syn v3.0.3
+2026-10-28T11:03:23.6552259Z [1m[92m   Compiling[0m syn v2.0.119
+2026-10-28T11:03:24.7612222Z [1m[92m   Compiling[0m nano-gemm-c32 v0.2.1
+2026-10-28T11:03:24.8562581Z [1m[92m   Compiling[0m nano-gemm-f32 v0.2.1
+2026-10-28T11:03:24.9582191Z [1m[92m   Compiling[0m nano-gemm-f64 v0.2.1
+2026-10-28T11:03:25.0527316Z [1m[92m   Compiling[0m nano-gemm-c64 v0.2.1
+2026-10-28T11:03:25.1572161Z [1m[92m   Compiling[0m crossbeam-utils v0.8.22
+2026-10-28T11:03:25.2082744Z [1m[92m    Checking[0m gemm-common v0.19.0
+2026-10-28T11:03:25.2109118Z [1m[92m   Compiling[0m interpol v0.2.1
+2026-10-28T11:03:25.3002894Z [1m[92m   Compiling[0m defer v0.2.1
+2026-10-28T11:03:25.3329318Z [1m[92m   Compiling[0m serde_core v1.0.229
+2026-10-28T11:03:25.5029262Z [1m[92m   Compiling[0m private-gemm-x86 v0.1.20
+2026-10-28T11:03:25.5499534Z [1m[92m   Compiling[0m zmij v1.0.23
+2026-10-28T11:03:25.6792308Z [1m[92m   Compiling[0m crossbeam-epoch v0.9.20
+2026-10-28T11:03:26.2482330Z [1m[92m    Checking[0m num_cpus v1.17.0
+2026-10-28T11:03:26.3572193Z [1m[92m   Compiling[0m equator-macro v0.2.1
+2026-10-28T11:03:26.6867908Z [1m[92m    Checking[0m equator v0.2.2
+2026-10-28T11:03:31.1362588Z [1m[92m    Checking[0m gemm-f32 v0.19.0
+2026-10-28T11:03:31.4062331Z [1m[92m    Checking[0m gemm-c64 v0.19.0
+2026-10-28T11:03:31.5371367Z [1m[92m    Checking[0m gemm-f64 v0.19.0
+2026-10-28T11:03:31.8324738Z [1m[92m    Checking[0m gemm-c32 v0.19.0
+2026-10-28T11:03:31.8542250Z [1m[92m    Checking[0m qd v0.8.0
+2026-10-28T11:03:31.9319249Z [1m[92m    Checking[0m block-buffer v0.10.4
+2026-10-28T11:03:31.9842152Z [1m[92m    Checking[0m crypto-common v0.1.7
+2026-10-28T11:03:32.0162208Z [1m[92m   Compiling[0m equator-macro v0.6.0
+2026-10-28T11:03:32.0282372Z [1m[92m    Checking[0m generativity v1.2.1
+2026-10-28T11:03:32.0552218Z [1m[92m   Compiling[0m thiserror v2.0.19
+2026-10-28T11:03:32.2092416Z [1m[92m   Compiling[0m serde v1.0.229
+2026-10-28T11:03:32.2452620Z [1m[92m   Compiling[0m serde_json v1.0.151
+2026-10-28T11:03:32.3142108Z [1m[92m   Compiling[0m crossbeam-deque v0.8.7
+2026-10-28T11:03:32.3595000Z [1m[92m    Checking[0m equator v0.6.0
+2026-10-28T11:03:32.3798318Z [1m[92m    Checking[0m nano-gemm v0.2.2
+2026-10-28T11:03:32.4290154Z [1m[92m    Checking[0m gemm v0.19.0
+2026-10-28T11:03:32.4291443Z [1m[92m    Checking[0m faer-traits v0.24.0
+2026-10-28T11:03:32.4612148Z [1m[92m    Checking[0m digest v0.10.7
+2026-10-28T11:03:32.5852439Z [1m[92m   Compiling[0m serde_derive v1.0.229
+2026-10-28T11:03:32.6968442Z [1m[92m   Compiling[0m thiserror-impl v2.0.19
+2026-10-28T11:03:33.0902261Z [1m[92m    Checking[0m itoa v1.0.18
+2026-10-28T11:03:33.1297580Z [1m[92m   Compiling[0m rayon-core v1.13.0
+2026-10-28T11:03:33.1487410Z [1m[92m    Checking[0m cpufeatures v0.2.17
+2026-10-28T11:03:33.1721204Z [1m[92m    Checking[0m memchr v2.8.3
+2026-10-28T11:03:33.2021107Z [1m[92m    Checking[0m sha2 v0.10.9
+2026-10-28T11:03:33.3551314Z [1m[92m    Checking[0m faer v0.24.4
+2026-10-28T11:03:33.6818751Z [1m[92m    Checking[0m hex v0.4.3
+2026-10-28T11:03:34.0362751Z [1m[92m   Compiling[0m rodas5p-integrators v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-integrators)
+2026-10-28T11:03:34.0742830Z [1m[92m    Checking[0m either v1.17.0
+2026-10-28T11:03:34.1612208Z [1m[92m    Checking[0m rayon v1.12.0
+2026-10-28T11:03:45.7286686Z [1m[92m    Checking[0m rodas5p-core v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-core)
+2026-10-28T11:03:47.5277873Z [1m[92m    Checking[0m rodas5p-krylov v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-krylov)
+2026-10-28T11:03:55.4793327Z [1m[92m Documenting[0m vigilode-coupled v0.1.0 (/home/runner/work/vigilode/vigilode/crates/vigilode-coupled)
+2026-10-28T11:03:55.4794144Z [1m[92m Documenting[0m vigilode v0.1.0 (/home/runner/work/vigilode/vigilode/crates/vigilode)
+2026-10-28T11:03:56.3903789Z [1m[91merror[0m[1m: unresolved link to `0,1`[0m
+2026-10-28T11:03:56.3904600Z   [1m[94m--> [0mcrates/vigilode-coupled/src/cyclic_closure.rs:12:75
+2026-10-28T11:03:56.3905570Z    [1m[94m|[0m
+2026-10-28T11:03:56.3906422Z [1m[94m12[0m [1m[94m|[0m //! [`integrate_rk4`] generates the fixed zero-initial-data candidate on [0,1].
+2026-10-28T11:03:56.3907176Z    [1m[94m|[0m                                                                           [1m[91m^^^[0m [1m[91mno item named `0,1` in scope[0m
+2026-10-28T11:03:56.3907604Z    [1m[94m|[0m
+2026-10-28T11:03:56.3908046Z    [1m[94m= [0m[1mhelp[0m: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+2026-10-28T11:03:56.3914860Z    [1m[94m= [0m[1mnote[0m: `-D rustdoc::broken-intra-doc-links` implied by `-D warnings`
+2026-10-28T11:03:56.3915669Z    [1m[94m= [0m[1mhelp[0m: to override `-D warnings` add `#[allow(rustdoc::broken_intra_doc_links)]`
+2026-10-28T11:03:56.3916024Z 
+2026-10-28T11:03:56.3916240Z [1m[91merror[0m[1m: unresolved link to `0,1`[0m
+2026-10-28T11:03:56.3916734Z    [1m[94m--> [0mcrates/vigilode-coupled/src/cyclic_closure.rs:394:64
+2026-10-28T11:03:56.3917129Z     [1m[94m|[0m
+2026-10-28T11:03:56.3917577Z [1m[94m394[0m [1m[94m|[0m /// Fixed dyadic RK4 candidate, x(0)=q(0)=0 and physical t in [0,1].
+2026-10-28T11:03:56.3918287Z     [1m[94m|[0m                                                                [1m[91m^^^[0m [1m[91mno item named `0,1` in scope[0m
+2026-10-28T11:03:56.3918740Z     [1m[94m|[0m
+2026-10-28T11:03:56.3919179Z     [1m[94m= [0m[1mhelp[0m: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+2026-10-28T11:03:56.3919533Z 
+2026-10-28T11:03:56.3919702Z [1m[91merror[0m[1m: unresolved link to `0,1`[0m
+2026-10-28T11:03:56.3920149Z    [1m[94m--> [0mcrates/vigilode-coupled/src/cyclic_closure.rs:515:72
+2026-10-28T11:03:56.3920534Z     [1m[94m|[0m
+2026-10-28T11:03:56.3921193Z [1m[94m515[0m [1m[94m|[0m /// Enclose the exact certified Hermite curve at represented theta in [0,1].
+2026-10-28T11:03:56.3921949Z     [1m[94m|[0m                                                                        [1m[91m^^^[0m [1m[91mno item named `0,1` in scope[0m
+2026-10-28T11:03:56.3922403Z     [1m[94m|[0m
+2026-10-28T11:03:56.3922831Z     [1m[94m= [0m[1mhelp[0m: to escape `[` and `]` characters, add '\' before them like `\[` or `\]`
+2026-10-28T11:03:56.3923172Z 
+2026-10-28T11:03:56.4465653Z [1m[91merror[0m: could not document `vigilode-coupled`
+2026-10-28T11:03:56.4466015Z [1m[33mwarning[0m: build failed, waiting for other jobs to finish...
+2026-10-28T11:03:56.7042540Z ##[error]Process completed with exit code 101.
+2026-10-28T11:03:56.7205927Z Post job cleanup.
+2026-10-28T11:03:56.7851121Z [command]/usr/bin/git version
+2026-10-28T11:03:56.7892028Z git version 2.55.0
+2026-10-28T11:03:56.7920449Z Temporarily overriding HOME='/home/runner/work/_temp/d8887d3f-6cd9-420a-bec5-d21cb8e0a918' before making global git config changes
+2026-10-28T11:03:56.7921319Z Adding repository directory to the temporary git global config as a safe directory
+2026-10-28T11:03:56.7924864Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/vigilode/vigilode
+2026-10-28T11:03:56.7965361Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-10-28T11:03:56.8006639Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-10-28T11:03:56.8294494Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-10-28T11:03:56.8323227Z http.https://github.com/.extraheader
+2026-10-28T11:03:56.8332426Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-10-28T11:03:56.8368655Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-10-28T11:03:56.8640681Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-10-28T11:03:56.8673389Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-10-28T11:03:56.9066326Z Cleaning up orphan processes
+2026-10-28T11:03:56.9349262Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, Swatinem/rust-cache@v2.7.8. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+

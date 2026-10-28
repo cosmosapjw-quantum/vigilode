@@ -225,3 +225,13 @@ REVTeX 본문은 `report/rvj_production.tex`, PDF는 `report/rvj_production.pdf`
 ### 최종 metadata 검사 결과
 
 연구 node/append-only ledger 검사는 PASS였다. 전체 authority 검사는 partial-clone의 자동 object 조회 중 120초 timeout을 먼저 기록했다. 같은 checker를 수정 없이 `GIT_NO_LAZY_FETCH=1`로 실행한 cached-object 감사는 FAIL이며, 813개 distinct SHA 중 missing 178개, allowlisted missing 27개, non-commit 186개, reachable 422개를 기록했다(실패 citation 919개). 이는 더 완전한 이전 checkout에서의 missing49와 직접 비교할 수 없다. 현재 missing에는 아직 보유하지 않은 blob도 포함될 수 있다. 이번 node의 실패 citation 3개는 byte-preserved PR95 입력의 외부 BASS commit/blob을 저장소 구별 없이 VigilODE authority로 해석한 항목이다. 원본·allowlist·checker를 고쳐 성공으로 꾸미지 않았다. Typed repository/object authority 정리가 local Q-LEDGER의 실제 후속 의무다. `FINAL_CHECKS.json`과 `evidence/metadata/`에 모든 완료 출력과 timeout 경위를 보존했다. 전체 whitespace diff의 두 경고는 원본 native stdout의 마지막 빈 줄이며, 이를 제외한 source/documentation 검사에는 오류가 없다.
+
+### 게시 후 CI 보완
+
+[PR97](https://github.com/cosmosapjw-quantum/vigilode/pull/97)의 initial results delivery25e76dd84f1ca71fd460201bdf31476d3cce9545에서 rustdoc interval literal 세 곳이 broken link로 판정됐다. 같은 종류의 네 주석을 code span으로 수정했고 실행 Rust 코드·상수·oracle는 변하지 않았다. 문서 build-only 확인은 별도 receipt로 남기며 새로운 성능 측정으로 세지 않는다. N03 수정 예산은 현재2/3, N05는1/3이다. `FINAL_SOURCE_BINDING.json`은 이 문서 수정 전의 역사적 snapshot이다. CI에는 authority missing56과 기존 CVODE/SUNDIALS comparator의 `mpi.h` include 실패가 남아 있다. `CI_ADDENDUM_KO.md`와 `CURRENT_STATE.json`이 최신 delivery 상태를 정한다.
+
+### 기존 Givens outcome pin의 새 CI 실패
+
+CI `test` job도 기존 `givens_production_differential_contracts`에서 실패했다. RHS scale1e14에서 candidate가 `Ok(3640)`을 반환했지만 역사적 outcome table은 Err를 기대했다. 이 테스트는 반환 해의 별도 binary64 true-residual 검사를 status assertion보다 먼저 수행하므로 해당 검사는 통과한 뒤 outcome pin에서 중단됐다. 그러나 이 CI 관측을 exact Fraction oracle 성공으로 승격하지 않는다. 테스트 및 Krylov runtime 파일은 PR96에서 바뀌지 않았다. Runtime 생성 행렬의 정확한 A/b bits, debug/release 및 platform/libm 차이, 실제 returned x의 exact residual을 먼저 비교해야 한다. 역사적 성공/실패 표를 universal correctness theorem처럼 취급하거나 단순히 expected flag를 뒤집어 CI를 통과시키지 않는다. 필요하면 source/profile별 관측 pin과 보편적인 returned-residual 계약을 분리하되 negative control과 exact oracle를 유지하는 후속 수정으로 등록한다. 현재 Q-GIVENS는 이전 scoped PASS와 새 cross-environment HOLD를 함께 보존한다.
+
+실패 job: https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40676899171/job/122777508533. 전체 decoded log는 `evidence/ci25e/test.log.txt`이다.

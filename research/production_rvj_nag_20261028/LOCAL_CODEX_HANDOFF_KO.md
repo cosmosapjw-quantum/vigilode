@@ -46,7 +46,7 @@ PR90–93의 원래 full SHA와 original-source replay 제한은 `research/integ
 - Trace 두 방식은 N=256에서 처음 공통 whole-path cap을 통과했으며, 외부 residual certificate 상한은 약 `5.316525230098761e-9`였다. N=16,32,64,128의 실패를 삭제하지 않는다.
 - Trace의 whole-path certificate는 현재 **외부 exact Fraction 구현**이다. Native module 자체의 interval 인증은 point/parameter-box observable 및 field 범위이다. Trace native integration-only 시간을 완전한 인증 trajectory 시간으로 부르지 않는다.
 
-최신 사후 집계 `analysis/BENCHMARK_ANALYSIS.{md,json}`도 반드시 읽는다. Cyclic의 같은 `direct_bernstein_tight` first-passing arm은 기존 대비 8.7206/9.3338/9.1984배의 native whole-call 중앙값 개선을 보였다. 반면 trace N=128 궤적 16개 block의 7-sample 중앙값은 direct **607.695 μs**, shared **667.394 μs**, direct/shared **0.91055**였다. 반복 범위가 겹치며 shared가 빠른 반복은 4/7회이므로 안정적인 개선이나 보편적 regression을 확정하지 않는다. Field-only 개선과 구별한다. Route별 외부 whole-path 인증 timing과 native root-enumeration baseline이 없어 전체 workflow speedup은 미측정이다. N=64·128 residual-gate 미통과는 실제 오차 위반의 증명이 아니며 exact-reference whole-path bound는 N=64부터 cap 이하이다. 공식 gate를 사후 변경하지 않는다.
+최신 delivery 상태는 `CURRENT_STATE.json`과 `CI_ADDENDUM_KO.md`를 먼저 읽는다. `FINAL_SOURCE_BINDING.json`은 initial results delivery의 역사적 성공 snapshot이며, 뒤의 rustdoc-only 4줄 수정은 별도 receipt로 구별한다. 최신 사후 집계 `analysis/BENCHMARK_ANALYSIS.{md,json}`도 반드시 읽는다. Cyclic의 같은 `direct_bernstein_tight` first-passing arm은 기존 대비 8.7206/9.3338/9.1984배의 native whole-call 중앙값 개선을 보였다. 반면 trace N=128 궤적 16개 block의 7-sample 중앙값은 direct **607.695 μs**, shared **667.394 μs**, direct/shared **0.91055**였다. 반복 범위가 겹치며 shared가 빠른 반복은 4/7회이므로 안정적인 개선이나 보편적 regression을 확정하지 않는다. Field-only 개선과 구별한다. Route별 외부 whole-path 인증 timing과 native root-enumeration baseline이 없어 전체 workflow speedup은 미측정이다. N=64·128 residual-gate 미통과는 실제 오차 위반의 증명이 아니며 exact-reference whole-path bound는 N=64부터 cap 이하이다. 공식 gate를 사후 변경하지 않는다.
 
 원래 cloud run directory는 `/tmp/vigilode-rvj-registered-01`이었다. Local에서 그 절대 경로가 존재할 것이라고 가정하지 않는다. Delivery의 `research/production_rvj_nag_20261028/evidence/`에 보존된 receipt, raw JSON의 압축본, manifest를 사용하고 **압축 전 원본 byte hash**와도 대조하라. 핵심 원본 hash는 다음과 같다.
 
@@ -82,7 +82,7 @@ PR96 compact evidence는 감사 당시 24/24 manifest hash가 일치했고 선�
 | R-HOMO | 1/3 | 기존 counter 유지 |
 | I-PROD | 1/3 | 기존 counter 유지 |
 | Q-LEDGER | 1/3 | PR96에서 거절된 authority repair 포함 |
-| PR-N03 | 1/3 | 이번 C9 prepublication coherent repair episode 포함 |
+| PR-N03 | 2/3 | 초기 C9 1회 + 게시 후 rustdoc-only CI 수정 1회; 수치 경로 불변 |
 | PR-N05 | 1/3 | 같은 C9 episode와 bounded trace repair 포함 |
 | PR-N01, N02, N04, N06 | 각각 0/3 | 전체 과제는 pending |
 | 나머지 Q counters | 기존 각 0/3 | scoped PASS와 correction 사용량은 별도 |
@@ -368,3 +368,13 @@ PR 본문은 필요한 문제, 변경한 동작, 검증된 범위, 실제 total 
 연구 node/append-only ledger 검사는 PASS였다. 전체 authority 검사는 partial-clone의 자동 object 조회 중 120초 timeout을 먼저 기록했다. 같은 checker를 수정 없이 `GIT_NO_LAZY_FETCH=1`로 실행한 cached-object 감사는 FAIL이며, 813개 distinct SHA 중 missing 178개, allowlisted missing 27개, non-commit 186개, reachable 422개를 기록했다(실패 citation 919개). 이는 더 완전한 이전 checkout에서의 missing49와 직접 비교할 수 없다. 현재 missing에는 아직 보유하지 않은 blob도 포함될 수 있다. 이번 node의 실패 citation 3개는 byte-preserved PR95 입력의 외부 BASS commit/blob을 저장소 구별 없이 VigilODE authority로 해석한 항목이다. 원본·allowlist·checker를 고쳐 성공으로 꾸미지 않았다. Typed repository/object authority 정리가 local Q-LEDGER의 실제 후속 의무다. `FINAL_CHECKS.json`과 `evidence/metadata/`에 모든 완료 출력과 timeout 경위를 보존했다. 전체 whitespace diff의 두 경고는 원본 native stdout의 마지막 빈 줄이며, 이를 제외한 source/documentation 검사에는 오류가 없다.
 
 Local에서는 정상적인 필요한 Git history/object 확보 후 authority를 다시 판정하라. 외부 repository commit/blob과 VigilODE commit의 type을 증거로 구별하며 blanket allowlist를 추가하지 않는다. 현재 cached-object counts를 이전 missing49와 같은 환경의 regression count로 사용하지 않는다.
+
+### 게시 후 CI에서 확인한 local 작업
+
+PR97 initial results delivery25e76dd84f1ca71fd460201bdf31476d3cce9545의 rustdoc broken-link 오류는 interval literal을 code span으로 감싸 수정했다. N03의 누적 예산은 현재2/3, N05는1/3이다. 수치 실행 source64004의 결과를 새 source에서 다시 실행했다고 주장하지 않는다. 정상적인 최신 source publication 후 local validation을 수행한다. CI의 comparator build는 SUNDIALS header의 `mpi.h`를 hard-coded `gcc`가 찾지 못해 중단됐다. `.github/workflows/production.yml`, `crates/vigilode-bench/build.rs` 및 CVODE bridge는 PR96에서 바뀌지 않았음을 확인했다. 설치된 SUNDIALS의 MPI/serial 구성, 실제 C compiler 및 include/link 계약을 먼저 진단하고 작은 bridge build를 통과시킨 뒤 외부 comparator cohort를 실행하라. 검증하지 않은 CC 환경 변수 하나로 해결됐다고 가정하지 않는다. CI authority의 missing56과 partial-clone offline missing178은 서로 다른 object availability를 반영하므로 직접 regression count로 비교하지 않는다. 상세 logs/commands는 `evidence/ci25e/`에 있다.
+
+### 기존 Givens outcome pin의 새 CI 실패
+
+CI `test` job도 기존 `givens_production_differential_contracts`에서 실패했다. RHS scale1e14에서 candidate가 `Ok(3640)`을 반환했지만 역사적 outcome table은 Err를 기대했다. 이 테스트는 반환 해의 별도 binary64 true-residual 검사를 status assertion보다 먼저 수행하므로 해당 검사는 통과한 뒤 outcome pin에서 중단됐다. 그러나 이 CI 관측을 exact Fraction oracle 성공으로 승격하지 않는다. 테스트 및 Krylov runtime 파일은 PR96에서 바뀌지 않았다. Runtime 생성 행렬의 정확한 A/b bits, debug/release 및 platform/libm 차이, 실제 returned x의 exact residual을 먼저 비교해야 한다. 역사적 성공/실패 표를 universal correctness theorem처럼 취급하거나 단순히 expected flag를 뒤집어 CI를 통과시키지 않는다. 필요하면 source/profile별 관측 pin과 보편적인 returned-residual 계약을 분리하되 negative control과 exact oracle를 유지하는 후속 수정으로 등록한다. 현재 Q-GIVENS는 이전 scoped PASS와 새 cross-environment HOLD를 함께 보존한다.
+
+실패 job: https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40676899171/job/122777508533. 전체 decoded log는 `evidence/ci25e/test.log.txt`이다.

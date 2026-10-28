@@ -24,3 +24,5 @@ The final source-bound RESULTS.json, Korean/REVTeX report, local DAG and standal
 LOCAL_CODEX_HANDOFF_KO.md are delivery artifacts. SOURCE_PUBLICATION.json is the
 historical pre-execution snapshot (its false flag refers to that timestamp).
 Overall production HOLD persists. No fourth repair or renamed budget was used.
+
+Postpublication CI follow-up: PR97 created. Initial delivery25e76dd84f1ca71fd460201bdf31476d3cce9545 had introduced rustdoc links in four comment literals. These comments are fixed without executable/oracle changes. N03 is conservatively charged episode2/3; N05 remains1/3. CURRENT_STATE.json and CI_ADDENDUM_KO.md supersede the earlier current-state wording; immutable numerical results remain at64004. CI authority and SUNDIALS/MPI comparator setup remain HOLD.
