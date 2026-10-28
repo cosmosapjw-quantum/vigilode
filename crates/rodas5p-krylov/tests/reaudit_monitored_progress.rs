@@ -105,9 +105,9 @@ fn second_column_operator_and_preconditioner_errors_retain_first_column() {
         assert_eq!(p.least_squares_attempts, 1);
         assert_eq!(p.completed_least_squares_solves, 1);
         assert_eq!(counts.linear_iterations, 1);
-        // Core counters declare successful applications; the progress
-        // record additionally exposes the failed attempted column/product.
-        assert_eq!(counts.linear_matvecs, 1);
+        // Core counters count operator entries, including the application
+        // whose following preconditioner attempt fails.
+        assert_eq!(counts.linear_matvecs, 2);
         assert_eq!(counts.preconditioner_apps, if fail_pc == 0 { 3 } else { 2 });
         assert_eq!(counts.linear_solves, 0);
     }
