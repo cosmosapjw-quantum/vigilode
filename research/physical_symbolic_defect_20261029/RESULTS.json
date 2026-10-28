@@ -1,0 +1,14 @@
+{
+  "schema":"vigilode.physical-symbolic-defect-results.v1",
+  "unit":"VIGILODE-SYM-01",
+  "date_kst":"2026-10-29",
+  "source":"GitHub PR98 bf308589e21b524d0ddc6e571b260f5e94a853f0",
+  "claimed_scope":"exact-rational scalar affine ODE research oracle only",
+  "equation":"dy/dt=-lambda*y+b, lambda>0",
+  "event":"g(y)=y-threshold",
+  "example":{"lambda":"1/1","b":"0/1","h":"1/8","initial_y":"1/1","p_power":["1/1","-1/1","1/2"],"threshold":"15/16","residual":"t^2/2","defect_upper":"1/128","endpoint_error_upper":"1/1088","whole_slab_error_upper":"1/1088","event_sign_1_16":"POS","event_sign_1_15":"NEG","event_sign_33_512":"UNRESOLVED","event_status":"UNIQUE_CROSSING"},
+  "execution":{"language":"Python3.13.5","unit_tests_passed":8,"unit_tests_failed":0,"decimal_precision_digits":70,"diagnostic_sampled_checks":918,"diagnostic_sampled_mismatches":0,"wolfram_algebraic_identity":"ZERO","native_rust_execution":"NOT_RUN","external_physical_client":"NOT_RUN","production":"HOLD"},
+  "adversarial":{"unsafe_U1_single_envelope":"REJECTED","incorrect_endpoint_only_global_error":"REJECTED","threshold_equality":"UNRESOLVED","float_input_silent_rationalization":"REJECTED","mixed_residual_error_plot":"REJECTED_ARCHIVED"},
+  "plot_status":{"visually_read":"YES","figures":["event_certificate.png","residual_only.png","state_error_only.png"],"diagnostic_error_max":0.0003155974154045449,"plot_not_certificate":true},
+  "claim_gate":{"new_auxiliary_unit":"PASS_SCOPED","original_core_nodes_unchanged":true,"rust_integration":"NOT_RUN","rounding_enclosure":"ABSENT","symbolic_bisimulation":"NOT_CLAIMED","production":"HOLD"}
+}
