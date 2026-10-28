@@ -78,3 +78,7 @@ python3 research/local_dynamics_qualification_20261029/rust_optimization/run_lig
 
 No build or benchmark command is run by this preparation task. The controller
 must serialize Cargo/build and benchmark execution under its shared lock.
+
+## Registered unchanged reentrant control
+
+Use the existing `production_return_bench_20261027` fixed `reentrant-nonlinear` case and the two existing `rhs-only` / `observed-strict-sentinel` policies at each fixed binary. One warmup and five alternating ABBA/BAAB blocks, 32 solves per process, separate Callgrind4/12. Canonical full output excluding only elapsed `seconds` must match between source versions for each policy. This unchanged autonomous JVP control is separate from FD timing and is not a tuning input. Cap90s/child,600s supplemental total; all measured work remains within the original1200s combined measurement cap. Self/inclusive profile tables use threshold99.9 (the first threshold0 tables were empty and were regenerated from unchanged raw profiles without rerunning the solver). Full raw source/cost identities remain distinct.
