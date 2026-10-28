@@ -1,5 +1,16 @@
 # VigilODE
 
+> **2026-10-28 polyalgorithm theory update:** The latest
+> [research supplement](research/polyalgorithm_alternatives_20261028/REPORT_KO.md)
+> reuses prior polynomial, causal and homotopy results and supplies 17 concrete
+> alternatives, proved constants and registered exact-rational checks. Start
+> local work with the updated
+> [handoff](research/polyalgorithm_alternatives_20261028/LOCAL_CODEX_HANDOFF_KO.md)
+> and [development DAG](research/polyalgorithm_alternatives_20261028/LOCAL_DEVELOPMENT_PLAN.json).
+> This supplement changes no runtime backend or default; PR92 CI and deployment
+> qualification remain open. Operation-count and grid reductions are distinct
+> from measured solver speedups.
+
 > **2026-10-24 general ODE selection:** The ordinary entry point `GeneralOde`
 > selects RHS-only DOPRI5 for unknown/nonstiff problems, or RODAS5P for declared
 > stiff problems with explicit derivative permission. It performs no timing

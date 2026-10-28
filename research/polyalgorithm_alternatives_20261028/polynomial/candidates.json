@@ -1,0 +1,311 @@
+{
+  "schema": "vigilode-polyalgorithm-candidates-v1",
+  "scope": "PR-N01 R2 literature-reuse and R4 concrete alternatives; no runtime change",
+  "baseline_sha": "7eb2dd0ffda39afb2871d76700a720986ff09fe0",
+  "evidence_status": "derived_theory_and_exploratory_symbolic_checks_only",
+  "all_speed_claims_new": false,
+  "native_solver_experiments_executed": [],
+  "skill_context_used": {
+    "name": "physmath-research-loop",
+    "version": "1.3.0",
+    "resource": "c38/physmath-research-loop/references/THEORY_LOOP.md",
+    "steps": [
+      "R2",
+      "R4"
+    ],
+    "recursive_delegation": false,
+    "full_ten_step_loop_claimed": false
+  },
+  "preserved_results": [
+    {
+      "source": "PR68 POLY-03",
+      "finding": "Warm Chebyshev 3.17x historical measured population only; statistical authority held; cold Chebyshev inconclusive, cold Laguerre blocked",
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/68"
+    },
+    {
+      "source": "PR69 POLY-DEV-03",
+      "finding": "Positive recurrence majorant sometimes up to 3.5e65x loose; this is not the latest signed-adjoint path",
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/69"
+    },
+    {
+      "source": "PR69 POLY-DEV-05",
+      "finding": "Continuous Laguerre scale reduced degree at 0/22 points; failed candidate",
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/pull/69"
+    },
+    {
+      "source": "crates/rodas5p-core/src/laguerre_adjoint.rs",
+      "finding": "Signed output-adjoint Bernstein enclosure already implemented; degree 128 and subdivision depth 3 are resource policies"
+    },
+    {
+      "source": "crates/rodas5p-core/src/polynomial_router.rs",
+      "finding": "Guarded first-admitted three-backend routing already implemented on immutable dense symmetric operators; Krylov is not certified fallback for fused-action token"
+    }
+  ],
+  "candidates": [
+    {
+      "id": "N01-P-FUSE",
+      "priority": 1,
+      "status": "derived_not_implemented",
+      "target": "fused-only joint phi action",
+      "construction": "Backward vector-coefficient Clenshaw, d_k=sum_j c_kj w_j",
+      "novelty_boundary": "Evaluation direction and fusion of five distinct vectors; forward signed-adjoint bound and router already exist",
+      "theorem_refs": [
+        "THEORY.md Theorem P1",
+        "THEORY.md Theorem P2"
+      ],
+      "domain": [
+        "fixed immutable linear operator",
+        "current first implementation: verified dense symmetric nonpositive generator",
+        "exact represented chart and unchanged absolute fused 2-norm budget"
+      ],
+      "formulas": {
+        "laguerre": "b_k=d_k+((2k+1)I-X)/(k+1)b_(k+1)-(k+1)/(k+2)b_(k+2)",
+        "laguerre_error": "e=sum_k L_k(X)delta_k; ||e||<=exp(L/2)sum_k||delta_k|| for sigma(X) subset [0,L]",
+        "chebyshev": "b_k=d_k+2Xb_(k+1)-b_(k+2), k>=1; F=d_0+Xb_1-b_2",
+        "chebyshev_error": "e=sum_k T_k(X)delta_k; ||e||<=sum_k||delta_k|| for self-adjoint spectrum subset [-1,1]",
+        "products": "5m -> m for five Distinct inputs and fused-only degree-m output; SameVector remains m"
+      },
+      "reuse": [
+        "crates/rodas5p-core/src/polynomial_action.rs",
+        "crates/rodas5p-core/src/laguerre_adjoint.rs",
+        "crates/rodas5p-core/src/polynomial_router.rs",
+        "crates/rodas5p-core/src/directed.rs"
+      ],
+      "proof_obligations_remaining": [
+        "complete local defects of new backward execution",
+        "source combination and coefficient enclosure",
+        "normalization/subnormal losses",
+        "new fused-only admitted token",
+        "provider action-error enclosures before matrix-free port"
+      ],
+      "forbidden_inferences": [
+        "factor-five wall speedup",
+        "new bound applied to old forward defects",
+        "automatic degree128-cap removal",
+        "symmetric dense authority inherited by opaque callback"
+      ],
+      "experiments": [
+        "Distinct/SameVector paired",
+        "fused-only/column-return semantics",
+        "cold/warm caches",
+        "degrees below/above128",
+        "cancellation and range stresses",
+        "current forward signed-adjoint comparator"
+      ],
+      "maximum_correction_loops": 3,
+      "correction_budget_owners": [
+        "PR-N01"
+      ]
+    },
+    {
+      "id": "N01-P-RES",
+      "priority": 2,
+      "status": "derived_not_implemented",
+      "target": "A x=f, A=I-h gamma J",
+      "domain": [
+        "known self-adjoint positive definite operator in explicit norm",
+        "verified spectrum [a,b], 0<a<=b",
+        "immutable provider identity including h gamma bits and epochs"
+      ],
+      "formulas": {
+        "residual": "p_m(z)=T_m((c-z)/d)/T_m(c/d), c=(a+b)/2,d=(b-a)/2",
+        "inverse_polynomial": "q_(m-1)(z)=(1-p_m(z))/z",
+        "factor": "delta_m=2q^m/(1+q^(2m)), q=(sqrt(b/a)-1)/(sqrt(b/a)+1)",
+        "degree": "ceil(acosh(1/epsilon)/acosh((a+b)/(b-a))) with outward integer verification",
+        "example": "[a,b]=[1,9], epsilon=1/100000000, minimal degree28"
+      },
+      "reuse": [
+        "crates/rodas5p-integrators/src/conditioned_polynomial.rs identity/work/residual lifecycle",
+        "crates/rodas5p-integrators/src/polynomial_resolvent.rs specialized direct relation baseline",
+        "crates/vigilode-coupled/src/algebra.rs shared basis/factor baseline"
+      ],
+      "proof_obligations_remaining": [
+        "weighted norm conversion or new norm tag",
+        "stable stored coefficients and action local error",
+        "same-accuracy original-space residual acceptance"
+      ],
+      "comparators": [
+        "existing exact relation/direct provider",
+        "CG where SPD admissible",
+        "small GMRES",
+        "existing eight-stage shared projected basis"
+      ],
+      "maximum_correction_loops": 3,
+      "correction_budget_owners": [
+        "PR-N01"
+      ]
+    },
+    {
+      "id": "N01-P-HYB",
+      "priority": 3,
+      "status": "derived_not_implemented",
+      "target": "near-structure resolvent",
+      "formulas": {
+        "defect": "D=I-A P",
+        "condition": "||D||<=theta<1",
+        "polynomial": "Q_r=P sum_(j=0)^(r-1) D^j",
+        "exact_residual": "I-AQ_r=D^r",
+        "perturbation": "A=A0+E -> theta<=||I-A0P||+||E||||P||"
+      },
+      "domain": [
+        "full-space bound, not probe-fitted contraction",
+        "P fixed linear action within one standard Krylov solve"
+      ],
+      "reuse": [
+        "declared exchange/minimal-polynomial/conditioned-chart provider",
+        "original-space residual and failure accounting"
+      ],
+      "alternatives": [
+        "standalone right correction",
+        "fixed polynomial preconditioner",
+        "polynomial warm start then target-admissible Krylov",
+        "flexible Krylov if plan changes"
+      ],
+      "proof_obligations_remaining": [
+        "model perturbation witness",
+        "finite precision total",
+        "full fallback accounting"
+      ],
+      "maximum_correction_loops": 3,
+      "correction_budget_owners": [
+        "PR-N01"
+      ]
+    },
+    {
+      "id": "N01-P-NONNORMAL",
+      "priority": 4,
+      "status": "exploratory_with_derived_conditional_bound",
+      "target": "nonnormal resolvent/action",
+      "formulas": {
+        "numerical_range": "||g(A)||_M <= (1+sqrt(2)) sup_(W_M(A)) |g|",
+        "ellipse": "W_M((cI-A)/d) subset E_R, 1<=R<zeta=xi+sqrt(xi^2-1), xi=c/d",
+        "residual": "||(p_m(A))||_M <= (1+sqrt(2)) (R^m+R^(-m))/(zeta^m+zeta^(-m))",
+        "counterexample": "A=I+K N,N^2=0,p(z)=1-z -> ||p(A)||_2=|K| although p(1)=0",
+        "structural_escape": "A^(-1)=I-K N under declared nilpotent relation"
+      },
+      "reuse": [
+        "operator declaration lifecycle",
+        "existing Leja action as construction reference, not inherited general-domain certificate"
+      ],
+      "proof_obligations_remaining": [
+        "verified numerical range/contour witness",
+        "scalar approximation on actual enclosing domain",
+        "local recurrence/action error",
+        "weighted norm authority"
+      ],
+      "source_urls": [
+        "https://arxiv.org/pdf/1702.00668",
+        "https://iris.univr.it/retrieve/e14ff6e5-9f54-0209-e053-6605fe0ad24c/CKOR16_pre.pdf"
+      ],
+      "maximum_correction_loops": 3,
+      "correction_budget_owners": [
+        "PR-N01"
+      ]
+    }
+  ],
+  "cost_contract": {
+    "adapter": [
+      "provider/domain/norm validation",
+      "coefficient setup/cache",
+      "envelope setup/cache",
+      "normalization",
+      "routing and refusal"
+    ],
+    "mode": [
+      "operator and RHS actions",
+      "vector assembly",
+      "local-defect enclosure",
+      "reductions",
+      "original residual",
+      "orthogonalization/factorization",
+      "output commit"
+    ],
+    "separate_estimands": [
+      "cold",
+      "warm",
+      "same-vector",
+      "distinct-vector",
+      "fused-only",
+      "columns-required"
+    ],
+    "failure_costs_included": true,
+    "incompatible_counter_units_summed": false,
+    "speed_promotion_requires": "existing project timing authority and matched accuracy hardware evidence"
+  },
+  "sources": [
+    {
+      "id": "GV1961",
+      "url": "https://www.math.kent.edu/~varga/pub/paper_17.pdf",
+      "role": "established Chebyshev SPD iteration"
+    },
+    {
+      "id": "WR2008",
+      "url": "https://www.cs.ox.ac.uk/files/1540/NA-08-14.pdf",
+      "role": "fixed linear polynomial preconditioner"
+    },
+    {
+      "id": "SSS2010",
+      "url": "https://etna.ricam.oeaw.ac.at/vol.37.2010/pp147-165.dir/pp147-165.pdf",
+      "role": "Laguerre/FCR construction and limitations"
+    },
+    {
+      "id": "DLMF18.14.8",
+      "url": "https://dlmf.nist.gov/18.14.E8",
+      "role": "Laguerre norm bound"
+    },
+    {
+      "id": "DLMF18.12.13",
+      "url": "https://dlmf.nist.gov/18.12.E13",
+      "role": "Laguerre generating function"
+    },
+    {
+      "id": "CP2017",
+      "url": "https://arxiv.org/pdf/1702.00668",
+      "role": "numerical range spectral-set constant"
+    },
+    {
+      "id": "AH2010",
+      "url": "https://eprints.maths.manchester.ac.uk/1536/3/paper16.pdf",
+      "role": "scaled polynomial action alternative"
+    },
+    {
+      "id": "CKOR2016",
+      "url": "https://iris.univr.it/retrieve/e14ff6e5-9f54-0209-e053-6605fe0ad24c/CKOR16_pre.pdf",
+      "role": "primary excerpts read; Leja parameter/numerical-range construction"
+    }
+  ],
+  "exploratory_verification": {
+    "tool": "Wolfram Language stateless evaluator",
+    "preregistration_status": "exploratory_before_registration",
+    "context_call": "internal error",
+    "evaluator_call": "succeeded",
+    "outputs": {
+      "ChebyshevIdentityResiduals": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "LaguerreClenshawPerturbationResidual": 0,
+      "LaguerreDerivativeIdentitiesAllZero": true
+    },
+    "limits": [
+      "finite-degree symbolic identities",
+      "not compiled rounding",
+      "not solver test",
+      "not performance evidence"
+    ]
+  },
+  "prospective_check": {
+    "path": "polynomial/CHECK.py",
+    "execution_status_at_authoring": "not_run",
+    "needs_registration_before_execution": true,
+    "scope": "exact rational algebra checks only"
+  },
+  "correction_budget_rule": "All candidates share the remaining budget of their parent PR-N task; alternative names do not reset or multiply it. The global LOCAL_DEVELOPMENT_PLAN.json is authoritative."
+}

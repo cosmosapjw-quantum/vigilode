@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "supporting_source_commit": "866668348f840bd43558859d2795576e292b6ca7",
+  "all_three_supporting_lanes_pass": true,
+  "ledger_ids": [
+    "L-0174",
+    "L-0175",
+    "L-0176"
+  ],
+  "prior_ledger_row_count": 170,
+  "prior_ledger_bytes": 471454,
+  "prior_ledger_prefix_sha256": "cc323c0bf83b50d7a1602bba6b4538c2b72257f67e25e5a933a9ba10bc131925",
+  "prefix_preserved": true,
+  "runtime_source_modified": false,
+  "native_solver_tests": "NOT_RUN",
+  "native_benchmarks": "NOT_RUN",
+  "profiling": "NOT_RUN",
+  "operation_count_result": {
+    "scope": "five distinct inputs, degree-m fused-only output; not wall-time",
+    "forward_operator_products": "5m",
+    "backward_operator_products": "m",
+    "same_vector_already_uses": "m"
+  },
+  "grid_result": {
+    "fixture": {
+      "T": "1",
+      "Y": "1",
+      "epsilon": "1/100000",
+      "g": "1/2",
+      "k": "1"
+    },
+    "interpretation": "mathematical planning bound; not measured runtime",
+    "minimum_admitted_dyadic_n": {
+      "constant_1over12": 512,
+      "inherited_1over8": 512,
+      "rational_decay_1over12": 256
+    },
+    "rows": [
+      {
+        "bounds": {
+          "constant_1over12": {
+            "decimal_diagnostic": "0.00018925629844961240310077519379844961",
+            "strictly_below_epsilon_exact": false
+          },
+          "inherited_1over8": {
+            "decimal_diagnostic": "0.00028388444767441860465116279069767442",
+            "strictly_below_epsilon_exact": false
+          },
+          "rational_decay_1over12": {
+            "decimal_diagnostic": "0.000055149056615441908764397364645943273",
+            "strictly_below_epsilon_exact": false
+          }
+        },
+        "n": 64,
+        "q_B_lt_one_exact": true
+      },
+      {
+        "bounds": {
+          "constant_1over12": {
+            "decimal_diagnostic": "0.000047498176070038910505836575875486381",
+            "strictly_below_epsilon_exact": false
+          },
+          "inherited_1over8": {
+            "decimal_diagnostic": "0.000071247264105058365758754863813229572",
+            "strictly_below_epsilon_exact": false
+          },
+          "rational_decay_1over12": {
+            "decimal_diagnostic": "0.000013623174035749258018271291285556898",
+            "strictly_below_epsilon_exact": false
+          }
+        },
+        "n": 128,
+        "q_B_lt_one_exact": true
+      },
+      {
+        "bounds": {
+          "constant_1over12": {
+            "decimal_diagnostic": "0.000011897691276803118908382066276803119",
+            "strictly_below_epsilon_exact": false
+          },
+          "inherited_1over8": {
+            "decimal_diagnostic": "0.000017846536915204678362573099415204678",
+            "strictly_below_epsilon_exact": false
+          },
+          "rational_decay_1over12": {
+            "decimal_diagnostic": "0.0000033853071298603769816986144817435447",
+            "strictly_below_epsilon_exact": true
+          }
+        },
+        "n": 256,
+        "q_B_lt_one_exact": true
+      },
+      {
+        "bounds": {
+          "constant_1over12": {
+            "decimal_diagnostic": "0.0000029773246951219512195121951219512195",
+            "strictly_below_epsilon_exact": true
+          },
+          "inherited_1over8": {
+            "decimal_diagnostic": "0.0000044659870426829268292682926829268293",
+            "strictly_below_epsilon_exact": true
+          },
+          "rational_decay_1over12": {
+            "decimal_diagnostic": "8.4376762648173890318585494423668502E-7",
+            "strictly_below_epsilon_exact": true
+          }
+        },
+        "n": 512,
+        "q_B_lt_one_exact": true
+      }
+    ],
+    "status": "PASS"
+  },
+  "review_corrections": [
+    "missing plus in displayed block norm fixed before registered source",
+    "L=0 residence prose clarified after run; equations and checker bytes unchanged"
+  ]
+}
