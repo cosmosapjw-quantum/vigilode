@@ -17,6 +17,7 @@ import re
 import subprocess
 import sys
 import tarfile
+import tomllib
 from datetime import datetime, timezone
 
 
@@ -85,28 +86,61 @@ def archive_commit(repo: Path, revision: str, destination: Path, archive_path: P
             "archive_bytes": archive_path.stat().st_size}
 
 
-def setup_fixture(source_root: Path, fixture_root: Path, pinned_inputs: dict[str, bytes]) -> dict[str, str]:
-    fixture_root.mkdir(parents=True, exist_ok=False)
+def setup_consumer(source_root: Path, consumer_root: Path, pinned_inputs: dict[str, bytes]) -> dict[str, str]:
+    consumer_root.mkdir(parents=True, exist_ok=False)
     template = pinned_inputs["Cargo.toml.template"].decode("utf-8")
     manifest = template.replace("__VIGILODE_PATH__", str((source_root / "crates/vigilode").resolve()))
-    (fixture_root / "Cargo.toml").write_text(manifest, encoding="utf-8")
+    (consumer_root / "Cargo.toml").write_text(manifest, encoding="utf-8")
     for source in FIXTURES.values():
-        (fixture_root / source).write_bytes(pinned_inputs[source])
+        (consumer_root / source).write_bytes(pinned_inputs[source])
 
     lock_source = source_root / "Cargo.lock"
-    lock_text = lock_source.read_text(encoding="utf-8")
-    package_name = 'name = "vigilode-api-compat-consumer"'
-    if package_name in lock_text:
-        raise RuntimeError(f"fixture lock entry already exists in {lock_source}")
-    lock_text += '''\n[[package]]
-name = "vigilode-api-compat-consumer"
-version = "0.0.0"
-dependencies = [
- "vigilode",
-]
-'''
-    (fixture_root / "Cargo.lock").write_text(lock_text, encoding="utf-8")
-    return {"cargo_lock_sha256": sha256(lock_source), "fixture_lock_sha256": sha256(fixture_root / "Cargo.lock")}
+    return {"pinned_source_cargo_lock_sha256": sha256(lock_source)}
+
+
+def bounded_cargo(argv: list[str], *, cwd: Path, env: dict[str, str]) -> dict[str, object]:
+    wrapped = ["flock", "-x", NATIVE_LOCK, "timeout", "--verbose", "--signal=TERM",
+               "--kill-after=10s", f"{CARGO_TIMEOUT_SECONDS}s", *argv]
+    try:
+        result = run(wrapped, cwd=cwd, env=env)
+        timed_out = result.returncode == 124 or "timeout: sending signal TERM" in result.stderr
+        status = "TIMEOUT" if timed_out else ("COMPLETED" if result.returncode == 0 else "COMMAND_FAILED")
+        return {"argv": wrapped, "cargo_argv": argv, "status": status,
+                "exit_code": result.returncode, "stdout": result.stdout, "stderr": result.stderr}
+    except OSError as error:
+        return {"argv": wrapped, "cargo_argv": argv, "status": "ENVIRONMENT_FAILURE",
+                "exit_code": None, "stdout": "", "stderr": f"{type(error).__name__}: {error}\n"}
+
+
+def save_command(output: Path, stem: Path, result: dict[str, object]) -> dict[str, object]:
+    stdout_path = output / stem.with_suffix(".stdout")
+    stderr_path = output / stem.with_suffix(".stderr")
+    exit_path = output / stem.with_suffix(".exit")
+    stdout_path.parent.mkdir(parents=True, exist_ok=True)
+    stdout_path.write_text(str(result["stdout"]), encoding="utf-8")
+    stderr_path.write_text(str(result["stderr"]), encoding="utf-8")
+    exit_path.write_text("UNAVAILABLE\n" if result["exit_code"] is None else f"{result['exit_code']}\n", encoding="ascii")
+    return {
+        "stdout": str(stdout_path.relative_to(output)),
+        "stderr": str(stderr_path.relative_to(output)),
+        "exit_receipt": str(exit_path.relative_to(output)),
+    }
+
+
+def registry_identity(lock_path: Path) -> tuple[set[tuple[str, str, str]], list[str]]:
+    document = tomllib.loads(lock_path.read_text(encoding="utf-8"))
+    packages = [
+        package
+        for package in document.get("package", [])
+        if str(package.get("source", "")).startswith("registry+")
+    ]
+    missing_checksums = [f"{package.get('name')}@{package.get('version')}" for package in packages
+                         if not package.get("checksum")]
+    identities = {
+        (package["name"], package["version"], package.get("checksum", "<MISSING_CHECKSUM>"))
+        for package in packages
+    }
+    return identities, missing_checksums
 
 
 def main() -> int:
@@ -182,50 +216,98 @@ def main() -> int:
 
     rust_env = os.environ.copy()
     rust_env.update({"CARGO_NET_OFFLINE": "true", "CARGO_BUILD_JOBS": "2", "RUSTUP_TOOLCHAIN": "1.94.1"})
+    lane_roots = {"baseline": baseline_root, "current": current_root}
+    consumers: dict[str, Path] = {}
+    lock_generation: list[dict[str, object]] = []
     for lane, source_root in (("baseline", baseline_root), ("current", current_root)):
+        consumer_root = output / "consumers" / lane
+        lock_hashes = setup_consumer(source_root, consumer_root, pinned_inputs)
+        consumers[lane] = consumer_root
+        target = output / "targets" / lane / "lock-generation"
+        target.mkdir(parents=True, exist_ok=False)
+        env = rust_env | {"CARGO_TARGET_DIR": str(target)}
+        cargo_argv = ["cargo", "generate-lockfile", "--offline", "--manifest-path",
+                      str(consumer_root / "Cargo.toml")]
+        result = bounded_cargo(cargo_argv, cwd=consumer_root, env=env)
+        stem = Path("commands") / lane / "lock-generation"
+        receipt_paths = save_command(output, stem, result)
+        generated_lock = consumer_root / "Cargo.lock"
+        generated_hash = sha256(generated_lock) if generated_lock.is_file() else None
+        identities: dict[str, object] = {
+            "lane": lane,
+            "cwd": str(consumer_root),
+            "timeout_seconds": CARGO_TIMEOUT_SECONDS,
+            "native_lock": NATIVE_LOCK,
+            "generated_lock_sha256": generated_hash,
+            **lock_hashes,
+            **receipt_paths,
+            **{key: value for key, value in result.items() if key not in ("stdout", "stderr")},
+        }
+        if result["status"] == "COMPLETED" and not generated_hash:
+            identities.update({"status": "LOCKFILE_NOT_CREATED", "registry_relation": "NOT_CHECKED"})
+        elif result["status"] == "COMPLETED":
+            try:
+                pinned, pinned_missing = registry_identity(source_root / "Cargo.lock")
+                generated, generated_missing = registry_identity(generated_lock)
+                unmatched = sorted(generated - pinned)
+                graph_matches = bool(generated) and not unmatched and not generated_missing
+                identities.update({
+                    "registry_relation": "generated_is_subset_of_pinned_source_lock" if graph_matches else "DRIFT",
+                    "generated_registry_packages": [list(item) for item in sorted(generated)],
+                    "unmatched_registry_packages": [list(item) for item in unmatched],
+                    "generated_missing_checksums": generated_missing,
+                    "pinned_source_missing_checksums": pinned_missing,
+                    "pinned_source_registry_package_count": len(pinned),
+                })
+            except (OSError, tomllib.TOMLDecodeError, KeyError) as error:
+                identities.update({"status": "LOCKFILE_INVALID", "registry_relation": "NOT_CHECKED",
+                                   "lockfile_parse_error": f"{type(error).__name__}: {error}"})
+        else:
+            identities["registry_relation"] = "NOT_CHECKED"
+        lock_generation.append(identities)
+
+    evidence["lock_generation"] = lock_generation
+    lock_timeouts = any(item["status"] == "TIMEOUT" for item in lock_generation)
+    lock_environment_failures = any(item["status"] == "ENVIRONMENT_FAILURE" for item in lock_generation)
+    lock_command_failures = any(item["status"] != "COMPLETED" for item in lock_generation)
+    lock_graph_drift = any(item.get("registry_relation") == "DRIFT" for item in lock_generation)
+    if lock_command_failures or lock_graph_drift:
+        evidence["runner_status"] = "LOCK_SETUP_INCOMPLETE"
+        if lock_timeouts:
+            evidence["compatibility_status"] = "INCONCLUSIVE_TIMEOUT"
+        elif lock_environment_failures:
+            evidence["compatibility_status"] = "INCONCLUSIVE_ENVIRONMENT_FAILURE"
+        elif lock_graph_drift:
+            evidence["compatibility_status"] = "INCONCLUSIVE_DEPENDENCY_GRAPH"
+        else:
+            evidence["compatibility_status"] = "INCONCLUSIVE_LOCK_GENERATION"
+        evidence["commands"] = []
+        (output / "SUMMARY.json").write_text(json.dumps(evidence, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        print(json.dumps({key: evidence[key] for key in ("runner_status", "compatibility_status", "baseline_sha", "current_sha")}, sort_keys=True))
+        return 2
+
+    for lane in ("baseline", "current"):
+        consumer_root = consumers[lane]
         for fixture_name in FIXTURES:
-            fixture_root = output / "consumers" / lane / fixture_name
-            lock_hashes = setup_fixture(source_root, fixture_root, pinned_inputs)
             target = output / "targets" / lane / fixture_name
             target.mkdir(parents=True, exist_ok=False)
             env = rust_env | {"CARGO_TARGET_DIR": str(target)}
             cargo_argv = ["cargo", "check", "--locked", "--offline", "--manifest-path",
-                          str(fixture_root / "Cargo.toml"), "--bin", fixture_name]
-            argv = ["flock", "-x", NATIVE_LOCK, "timeout", "--verbose", "--signal=TERM",
-                    "--kill-after=10s", f"{CARGO_TIMEOUT_SECONDS}s", *cargo_argv]
-            try:
-                result = run(argv, cwd=fixture_root, env=env)
-                exit_code: int | None = result.returncode
-                stdout, stderr = result.stdout, result.stderr
-                timed_out = result.returncode == 124 or "timeout: sending signal TERM" in result.stderr
-                status = "TIMEOUT" if timed_out else ("COMPLETED" if result.returncode == 0 else "COMMAND_FAILED")
-            except OSError as error:
-                exit_code = None
-                stdout = ""
-                stderr = f"{type(error).__name__}: {error}\n"
-                status = "ENVIRONMENT_FAILURE"
-            stem = output / "commands" / lane / fixture_name
-            stem.parent.mkdir(parents=True, exist_ok=True)
-            (stem.with_suffix(".stdout")).write_text(stdout, encoding="utf-8")
-            (stem.with_suffix(".stderr")).write_text(stderr, encoding="utf-8")
-            (stem.with_suffix(".exit")).write_text(
-                "UNAVAILABLE\n" if exit_code is None else f"{exit_code}\n", encoding="ascii"
-            )
+                          str(consumer_root / "Cargo.toml"), "--bin", fixture_name]
+            result = bounded_cargo(cargo_argv, cwd=consumer_root, env=env)
+            stem = Path("commands") / lane / fixture_name
+            receipt_paths = save_command(output, stem, result)
             evidence["commands"].append({
                 "lane": lane,
                 "fixture": fixture_name,
-                "argv": argv,
-                "cargo_argv": cargo_argv,
-                "cwd": str(fixture_root),
-                "status": status,
-                "exit_code": exit_code,
+                "cwd": str(consumer_root),
                 "timeout_seconds": CARGO_TIMEOUT_SECONDS,
                 "native_lock": NATIVE_LOCK,
-                "stdout": str(stem.with_suffix(".stdout").relative_to(output)),
-                "stderr": str(stem.with_suffix(".stderr").relative_to(output)),
-                "exit_receipt": str(stem.with_suffix(".exit").relative_to(output)),
+                "fixture_lock_sha256": sha256(consumer_root / "Cargo.lock"),
+                "pinned_source_cargo_lock_sha256": sha256(lane_roots[lane] / "Cargo.lock"),
+                **receipt_paths,
+                **{key: value for key, value in result.items() if key not in ("stdout", "stderr")},
                 "targeted_diagnostic_observed": False,
-                **lock_hashes,
             })
 
     outcomes = {(row["lane"], row["fixture"]): row["exit_code"] for row in evidence["commands"]}
