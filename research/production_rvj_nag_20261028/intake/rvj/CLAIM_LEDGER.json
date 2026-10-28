@@ -1,0 +1,295 @@
+{
+  "schema": "rvj-nag-claims/1.0.0",
+  "claims": [
+    {
+      "id": "NEW-ATLAS",
+      "node": "F1",
+      "statement_ko": "유일한 contraction branch에 원래 residual로 연결한 u/v chart 전환과 전체 구간 오차 인증을 구현했다.",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "assumptions": [
+        "a,b in [-1/8,1/8], u,v in [-1/4,1/4] for coupled main client",
+        "exact initial state zero; original-residual certificate on every slab",
+        "transition preserves slow coordinates bitwise"
+      ],
+      "equations": [
+        "G=(u**2+v-a,v**2+u-b)",
+        "d=4*u*v-1",
+        "chart_u: v=a-u**2",
+        "chart_v: u=b-v**2",
+        "E_q <= 2*E_x+2*D_g"
+      ],
+      "evidence": [
+        "f1_atlas/derivation.md",
+        "f1_atlas/formulas.json",
+        "f1_atlas/results.json",
+        "reviews/review.json"
+      ],
+      "scope": "Both primitive charts have the same determinant coverage; separate prescribed-path control crosses unrelated-root discriminant."
+    },
+    {
+      "id": "NEW-CYCLE",
+      "node": "F2",
+      "statement_ko": "4·8·16변수 희소 cyclic closure에 O(n) 유리식 회로를 구성하고 전처리 크기와 비용을 측정했다.",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "assumptions": [
+        "cyclic q_i+q_(i+1)**2/4=x_i",
+        "X=[-1/8,1/8]^n,Q=[-1/4,1/4]^n",
+        "initial x=q=0"
+      ],
+      "equations": [
+        "||T(q)-T(r)||_inf <= (1/8)*||q-r||_inf",
+        "||q-Q(x)||_inf <= (8/7)*||G(x,q)||_inf",
+        "delta=D_f+D_g/7"
+      ],
+      "evidence": [
+        "f23_native/derivation.md",
+        "f23_native/generate.py",
+        "f23_native/circuits.hpp",
+        "f23_native/results.json"
+      ],
+      "scope": "Structured cyclic family; Newton uses the same structured linear solve, Krawczyk is post-Newton inclusion."
+    },
+    {
+      "id": "NEW-NATIVE",
+      "node": "F3",
+      "statement_ko": "Native outward interval 잔차와 radius 누적을 구현했다. 인증비용이 지배적이어서 반복 근찾기 제거가 전체 실행시간 우위로 일률적으로 이어지지는 않았다.",
+      "basis": [
+        "derived",
+        "implementation-verified",
+        "numerically checked"
+      ],
+      "assumptions": [
+        "IEEE binary64 RN",
+        " no FTZ/DAZ, no fast-math, FMA disabled",
+        " finite bounded input domain"
+      ],
+      "equations": [
+        "E_end <= E0/(1+(6/7)*h)+h*(D_f+D_g/7)",
+        "E_q_whole <= (8/7)*(E_x_whole+D_g)"
+      ],
+      "evidence": [
+        "f23_native/native.cpp",
+        "f23_native/reference.py",
+        "f23_native/results.json",
+        "f23_native/tests.log",
+        "reviews/native_secondary_review.json"
+      ],
+      "scope": "Measured n=4,8,16 and dyadic steps; all-component whole-path budget 1e-8, offline cost reported separately."
+    },
+    {
+      "id": "NEW-BUTTERFLY",
+      "node": "F4",
+      "statement_ko": "A>0, B=-A²/6에서 extended wall germ은 cuspidal butterfly이다. 특이 edge는 두 번째 foot으로 analytic하게 매개화되며 epsilon에 대해 분수 지수 이동을 갖는다.",
+      "basis": [
+        "derived",
+        "literature-supported",
+        "numerically checked"
+      ],
+      "assumptions": [
+        "fixed A>0",
+        "positive square-root branches near opposite feet",
+        "sufficiently small real neighborhood, extended incidence closure"
+      ],
+      "symbols": {
+        "x": "sqrt(A)*t",
+        "e": "epsilon/A**(3/2)",
+        "m": "A*r-1/3",
+        "y": "sqrt(A)*Y",
+        "eta_null": "partial_x"
+      },
+      "equations": [
+        "m=-e*x-5*x**4/36+O_w(6)",
+        "y=3*e*x**2/4+x**5/6+O_w(7)",
+        "e_c=-5*x**3/9+O(x**5)",
+        "m_c=5*x**4/12+O(x**6)",
+        "y_c=-x**5/4+O(x**7)",
+        "lambda_e=-1",
+        "eta_null(lambda)=eta_null**2(lambda)=0",
+        "eta_null**3(lambda)=-10/3"
+      ],
+      "evidence": [
+        "f4_degenerate/derivation.md",
+        "f4_degenerate/symbolic_results.json",
+        "f4_degenerate/probe_results.json",
+        "LITERATURE.json",
+        "reviews/review.json"
+      ],
+      "scope": "Smooth right-left germ equivalence; central physical epsilon=0 slice has Puiseux characteristic (4,5); punctured edge is regular, center is closure boundary."
+    },
+    {
+      "id": "NEW-TRANSVERSALITY",
+      "node": "F5",
+      "statement_ko": "Weierstrass 수직 packet의 정칙성과 횡단성은 서로 다른 조건이며 추가 인자 D가 단순성을 결정한다.",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "assumptions": [
+        "smooth y²=x³+p*x+q",
+        "eta>0",
+        "H>0,c>0,(eta²+3p)*(4eta²+3p)!=0"
+      ],
+      "equations": [
+        "H=-p-eta**2/3",
+        "c=4*q-8*eta*p/3-32*eta**3/27",
+        "D=4*eta**3*p+27*eta**2*q+27*p*q",
+        "det(J_vertical) = 8388608/10460353203*(eta**2+3*p)*(4*eta**2+3*p)*(8*eta**3+18*eta*p-27*q)**6*D"
+      ],
+      "counterexample": {
+        "eta": "1",
+        "p": "-1/2",
+        "q": "4/27",
+        "H": "1/6",
+        "c": "20/27",
+        "normal_product": "-5/9",
+        "curve_smoothness": "5/54",
+        "D": "0"
+      },
+      "evidence": [
+        "f5_global/symbolic_results.json",
+        "f5_global/derivation.md",
+        "reviews/review.json"
+      ],
+      "scope": "D!=0 proves simple vertical quotient point; D=0 stratification remains separate."
+    },
+    {
+      "id": "NEW-HORIZONTAL",
+      "node": "F5",
+      "statement_ko": "원문에서 누락된 수평 same-abscissa collision을 원래 incidence에서 구성하고 기준 cubic의 해가 reduced isolated point임을 확인했다.",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "assumptions": [
+        "eta>0",
+        "a**2=-4*p-4*eta**2/3 > 0",
+        "y**2=c/4 > 0",
+        "smooth curve",
+        "D!=0 for transversality"
+      ],
+      "equations": [
+        "x=eta/3-a/2",
+        "witness_1=((x,y),(x+a,y))",
+        "witness_2=((x,-y),(x+a,-y))",
+        "lambda=-1/(2*eta), mu=1/(2*eta)",
+        "det(n1,n2)=4*eta**2*a*y",
+        "P=(x+f_prime(x)/(2*eta),0)",
+        "Q=P+(2*a,0)",
+        "det(J_full_incidence)=(1024/3)*eta*H**2*c**2*D"
+      ],
+      "baseline_exact": {
+        "p": "-1",
+        "q": "1",
+        "eta": "1",
+        "a_squared": "8/3",
+        "y_squared": "37/27",
+        "P": "(1-a,0)",
+        "Q": "(1+a,0)",
+        "incidence_determinant": "-358875136/19683",
+        "new_ordered_points": 4,
+        "new_unordered_pairs": 2,
+        "double_quotient_orbits": 2,
+        "ordered_lifts_per_orbit": 2
+      },
+      "evidence": [
+        "f5_global/full_incidence.py",
+        "f5_global/full_incidence_results.json",
+        "f5_global/derivation.md",
+        "reviews/horizontal_independent_check.json"
+      ],
+      "scope": "Concrete omitted stratum and its multiplicity; complete global count requires corrected atlas coverage."
+    },
+    {
+      "id": "NEW-TRACE",
+      "node": "F6",
+      "statement_ko": "중복도를 포함한 모든 복소근의 polynomial trace를 사용하는 실제 결합 ODE를 구현하고 triple-root 통과를 전체 구간 residual로 인증했다.",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "assumptions": [
+        "aggregate of all complex roots with algebraic multiplicity",
+        "manufactured controlled coupled polynomial ODE on [-1,1]",
+        "D=[1/2,1]^2 and full tube/domain checks"
+      ],
+      "equations": [
+        "P(z)=z**4-2*a*z**2+z+a**2-b",
+        "S0=4,S1=0,S2=4*a,S3=-3",
+        "S4=4*a**2+4*b",
+        "S5=-10*a",
+        "S6=4*a**3+12*a*b+3",
+        "a_exact=b_exact=3/4+t/8+t**5/64",
+        "P(z)|a=b=3/4=(z-1/2)**3*(z+3/2)"
+      ],
+      "evidence": [
+        "f6_trace/derivation.md",
+        "f6_trace/symbolic_results.json",
+        "f6_trace/results.json",
+        "f6_trace/tests.log",
+        "reviews/review.json"
+      ],
+      "scope": "Polynomial all-root observables; branch-selected and real-only queries are rejected by contract."
+    },
+    {
+      "id": "NEW-D-LOCAL-LENGTH",
+      "node": "F5",
+      "statement_ko": "횡단성 wall의 명시적 점에서 수직 quotient 국소 대수 길이는 3이다.",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "assumptions": [
+        "eta=1,p=-1/2,q=4/27",
+        "a=0,m=1/3,H=1/6,c=20/27",
+        "local analytic quotient with c*H!=0"
+      ],
+      "equations": [
+        "det(implicit_minor)=12800000/1594323",
+        "m=1/3-a/2+(3/40)*a**2+O(a**3)",
+        "H=1/6-(9/20)*a**2+O(a**3)",
+        "c=20/27-(7/4)*a**2+O(a**3)",
+        "G_y_reduced=(2080/729)*a**3+O(a**4)"
+      ],
+      "evidence": [
+        "f5_global/wall_local.py",
+        "f5_global/wall_local_results.json",
+        "reviews/review.json"
+      ],
+      "scope": "One exact point on D=0; general D=0 stratum classification remains open."
+    }
+  ],
+  "corrections": [
+    {
+      "id": "CORR-HORIZONTAL",
+      "affected_source": "v13 sections14.3,14.5 and parent global116/58 references",
+      "old_statement": "horizontal chart has no regular collision; both involutions have free joint action giving uniform4 lifts",
+      "new_statement": "same-starting-x opposite-y horizontal witnesses produce regular collisions; joint stabilizer gives2 ordered lifts per horizontal quotient point",
+      "direct_consequence": "Existing global116/58 cannot be accepted as complete intrinsic counts.",
+      "conditional_total": {
+        "ordered": 120,
+        "unordered": 60,
+        "status": "CONDITIONAL_NOT_PROMOTED",
+        "premise": "Archived c!=0 contribution116/58 remains complete and no further charts contribute; new b=0 stratum contributes4/2."
+      },
+      "evidence": [
+        "reviews/horizontal_independent_check.json",
+        "f5_global/full_incidence_results.json"
+      ]
+    },
+    {
+      "id": "CORR-TRANSVERSE",
+      "old_scope": "H,c,normal-product conditions establish four vertical lifts",
+      "new_scope": "These remain sufficient for that geometric statement; simplicity/transversality additionally requires D!=0.",
+      "evidence": [
+        "f5_global/symbolic_results.json"
+      ]
+    }
+  ],
+  "review": "reviews/review.json"
+}

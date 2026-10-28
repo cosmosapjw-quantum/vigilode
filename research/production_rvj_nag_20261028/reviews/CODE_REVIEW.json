@@ -1,0 +1,99 @@
+{
+  "schema": "vigilode-rvj-new-native-code-review-v1",
+  "date_utc": "2026-10-28",
+  "reviewer_task": "/root/rvj_pr_audit",
+  "review_kind": "ONE_REQUESTED_C9_NEW_RUNTIME_SOURCE_REVIEW_WITH_TARGETED_REPAIR_READBACK",
+  "review_of_previous_review": false,
+  "source_review_passes": 1,
+  "native_scientific_executions_by_reviewer": 0,
+  "decision": "ADMIT_REGISTERED_BOUNDED_EXECUTION_AFTER_SOURCE_PUBLICATION",
+  "production_status": "HOLD",
+  "numerical_validation_status": "NOT_RUN_BY_THIS_REVIEWER",
+  "oracle_preparation_status": "PYTHON_SYNTAX_COMPILATION_PASS_ONLY",
+  "source_hashes_at_review_record": {
+    "crates/vigilode-coupled/src/cyclic_closure.rs": "2ff8c6a76bfda7422d6340887e0b95e43375c29e3dfb79fd9bbcf3dea98adcc0",
+    "crates/vigilode-coupled/examples/rvj_closure_campaign.rs": "7d052e30fb914e6821c0a6520005cebd8bb7c4d597c6e63ce785546610219bd1",
+    "crates/vigilode-coupled/src/trace_quotient.rs": "d73b2ce47f0838dcce8d491eec308b22d9e2aa31d9c4135d74d1a721e6d30072",
+    "crates/vigilode-coupled/examples/rvj_trace_campaign.rs": "726640dff0ef222c49f2610719ae5ce8b0f99656ea0098f395246221d495d736",
+    "research/production_rvj_nag_20261028/code/verify_native.py": "8c58f348d00300210d3983eb8e9ebd52c1ae30a2d20ad7db1e731d374c9974d6"
+  },
+  "findings": [
+    {
+      "id": "C9-01",
+      "severity": "MEASUREMENT_CORRECTNESS",
+      "blocking_for_bounded_execution": false,
+      "status": "FIXED_BEFORE_PUBLICATION_TARGETED_READBACK_CONFIRMED",
+      "path": "crates/vigilode-coupled/examples/rvj_closure_campaign.rs",
+      "function": "run_once",
+      "finding": "private prepared workspace destruction was outside total timer",
+      "repair": "explicit drop(prepared) before total snapshot; returned output lifetime declared separately"
+    },
+    {
+      "id": "C9-02",
+      "severity": "FAILED_WORK_EVIDENCE",
+      "blocking_for_bounded_execution": false,
+      "status": "FIXED_BEFORE_PUBLICATION_TARGETED_READBACK_CONFIRMED",
+      "path": "crates/vigilode-coupled/examples/rvj_closure_campaign.rs",
+      "function": "run_once",
+      "finding": "fallible wrapper discarded caller-owned partial counter record on numerical error",
+      "repair": "counts/phase outside fallible closure; structured stderr failure receipt retains actual partial work and attempt time"
+    },
+    {
+      "id": "C9-03",
+      "severity": "NONBLOCKING_UNNECESSARY_SAFE_REFUSAL",
+      "blocking_for_bounded_execution": false,
+      "status": "FIXED_BEFORE_PUBLICATION_TARGETED_READBACK_CONFIRMED",
+      "path": "crates/vigilode-coupled/src/trace_quotient.rs",
+      "function": "quartic_polynomial_trace",
+      "finding": "degree-zero/one query computes unused high moments and can reject finite constant target at huge finite parameter",
+      "example": {
+        "a": "f64::MAX",
+        "b": 0,
+        "coefficients": [
+          1
+        ],
+        "exact_trace": 4
+      },
+      "repair": "validate every coefficient first; empty->0; len<=2->outward4*c0; larger requests unchanged; staged huge-finite-parameter constant/linear and malformed-unused-coefficient test",
+      "does_not_produce_false_certificate": true,
+      "scientific_execution_for_readback": false,
+      "counter_schema_changed": false,
+      "native_test_staged": "constant_and_linear_traces_do_not_evaluate_unused_huge_moments"
+    }
+  ],
+  "checked_properties": [
+    "private exact-endpoint identity and model epoch binding",
+    "exact-original-slope Hermite reconstruction rather than rounded integration slopes",
+    "direct Bernstein coefficients and endpoint identities",
+    "outward original residual and both admitted radius formulas",
+    "full candidate hull domain plus inherited invariant-domain proof",
+    "private dyadic clocks and all clock labels",
+    "same-endpoint same-language fair reference and real work counts",
+    "explicit full-complex-root algebraic multiplicity semantics",
+    "parameter interval revalidation and nonfinite/overflow rejection",
+    "target-specific shared trace field versus eligible direct moment baseline",
+    "trace candidate/native point enclosure versus external whole-path certificate separation",
+    "partial-work failure paths and actual timer scope"
+  ],
+  "pending_execution": {
+    "native_tests": "STAGED_NOT_EXECUTED_BY_REVIEWER",
+    "closure_distinct_slabs_expected": 720,
+    "closure_arm_slabs_expected": 2160,
+    "closure_coefficient_intervals_expected": 383040,
+    "trace_slabs_expected": 992,
+    "all_slab_exact_oracle": "SOURCE_READY_NOT_EXECUTED"
+  },
+  "counter_claim_limit": "external JSON consistency and source-loop inspection are not independent native callback instrumentation",
+  "budget_policy": "parent controls inherited N03/N05 counters; no new allowance; code owners report one coherent prepublication repair episode",
+  "no_generic_production_promotion": true,
+  "source_hashes_at_initial_review_record": {
+    "crates/vigilode-coupled/src/cyclic_closure.rs": "2ff8c6a76bfda7422d6340887e0b95e43375c29e3dfb79fd9bbcf3dea98adcc0",
+    "crates/vigilode-coupled/examples/rvj_closure_campaign.rs": "7d052e30fb914e6821c0a6520005cebd8bb7c4d597c6e63ce785546610219bd1",
+    "crates/vigilode-coupled/src/trace_quotient.rs": "c1eeeacd60f58e984f3088eac1a6ef0d4d72aa67dba22106f897e184b3757d7a",
+    "crates/vigilode-coupled/examples/rvj_trace_campaign.rs": "160b7d3c5e8f843b769229ad68e6bfc3bdfdf2420413a4024efb4a5b35330aab",
+    "research/production_rvj_nag_20261028/code/verify_native.py": "8c58f348d00300210d3983eb8e9ebd52c1ae30a2d20ad7db1e731d374c9974d6"
+  },
+  "all_reported_findings_addressed_before_scientific_execution": true,
+  "source_frozen_for_parent_publication": true,
+  "targeted_final_readback": "degree<=1 trace branch and one staged test; example unused import; no oracle execution or new full review"
+}
