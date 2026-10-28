@@ -65,3 +65,15 @@ The preregistration currently says parent admission precedes native implementati
 
 Native tests, exact exported-bit Givens oracle, performance execution, final-tree identity and independent evidence replay remain parent-owned. Preserve Q-LEDGER and missing-authority history, original 23-node/34-edge DAG, 8 suites, 73 paths, 10 interactions and cumulative correction counters. This C9 review does not grant a new retry budget, close N04/N05/N06 or establish general production readiness.
 
+## Finding closure: prospective source corrections inspected
+
+The same reviewer inspected only the changed finding locations after parent correction, before the scientific campaign:
+
+- C9-01 CLOSED: case() now requires support_singleton, and for each timed baseline-required input also baseline_pass and baseline_singleton. Each arm records singleton_equals_exact. The report names the exact-singleton companion-trace gate. All timed workloads reuse these validated inputs; huge recovery cases remain separate.
+- C9-02 CLOSED: required_sixth_moment_overflow_is_rejected_and_charged calls the changed polynomial API with coefficient[6]=1 and a=f64::MAX. It checks attempted/rejected/completed counts, query/moment charges and positive arithmetic work. This closes the source-level test omission; test execution is still pending at this review boundary.
+- C9-03 CLOSED WITH DISCLOSURE: eager_polynomial_trace and support_polynomial_trace wrappers are inline(never). The candidate wrapper keeps the public cross-crate call, and campaign metadata explicitly discloses this. The measured comparison retains complete public-call overhead; it is not claimed as a pure arithmetic instruction benchmark.
+
+Final source-read hashes for this review: trace_quotient.rs b1f116d88d073ad22db6a9cca38e0ab44840f10604d57f5e401a72996a28ee43; switching.rs 619faddc275f3e2787a05ae78b3676ddb4dbee502d5886d1261fe46a38c8eddd; trace_support_campaign.rs ecfc8c6f27424015d37fd6a5aa121608cfb13e1661342bf417239068fe4405b8.
+
+Final C9 decision: ACCEPT_SCOPED_FOR_NATIVE_VALIDATION. No open source/mathematics/campaign-design blocker remains within this diff. Scientific execution results must still be assessed against the recorded criteria; an unexpected native failure cannot be reclassified as passing by this review.
+
