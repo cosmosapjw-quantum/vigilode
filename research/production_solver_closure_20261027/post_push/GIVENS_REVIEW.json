@@ -1,0 +1,355 @@
+{
+  "schema_version": 1,
+  "review_date_local": "2026-10-28",
+  "timezone": "Asia/Seoul",
+  "review_kind": "read-only post-push CI qualification diagnosis",
+  "source_head": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+  "comparison_base": "206298b4068d923bb47c7160b111b7439098660c",
+  "native_builds_or_tests_run": false,
+  "numerical_or_runtime_edits": false,
+  "correction_loops_added": 0,
+  "status": "OPEN_DIAGNOSTIC_QUALIFICATION",
+  "root_cause_status": "NOT_ISOLATED",
+  "observation": "Both CI jobs reject unexpected candidate success at RHS scale 1e14 after 3640 Arnoldi vectors because a historical failure outcome is pinned.",
+  "classification": {
+    "fixture_and_named_solver_sources": "inherited byte-for-byte from PR91",
+    "current_environment_pr91_pass": "not established",
+    "false_convergence": "not demonstrated by this failure",
+    "environment_profile_sensitivity": "plausible, unisolated",
+    "candidate_production_promotion": "not justified"
+  },
+  "ci_logs": [
+    {
+      "job_id": 122293695979,
+      "run_id": 40533866504,
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40533866504/job/122293695979",
+      "decoded_log_sha256": "41cd71bfea93924894597e3f390a428c5585ee960841308ae4601151d3c2e945",
+      "decoded_log_bytes": 96723,
+      "evidence_lines": [
+        1201,
+        1204
+      ],
+      "observation": "Expected is_ok=false; actual Ok(3640); original true-residual assertion not reached for offending candidate"
+    },
+    {
+      "job_id": 122293694635,
+      "run_id": 40533866519,
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40533866519/job/122293694635",
+      "decoded_log_sha256": "f2aecf7eb2490cdc5f2857375654b0b33d4d95fca61c530adfe64ef6d878bd34",
+      "decoded_log_bytes": 38848,
+      "evidence_lines": [
+        486,
+        489
+      ],
+      "observation": "Expected is_ok=false; actual Ok(3640); original true-residual assertion not reached for offending candidate"
+    }
+  ],
+  "identical_source_files": [
+    {
+      "path": "crates/rodas5p-krylov/tests/givens_production_differential_contracts.rs",
+      "base_sha256": "1ea9e9c1e90bb3208bdc914b39a81b8d1474818818ee3c6bb82021ffe05ac007",
+      "head_sha256": "1ea9e9c1e90bb3208bdc914b39a81b8d1474818818ee3c6bb82021ffe05ac007",
+      "identical": true
+    },
+    {
+      "path": "crates/rodas5p-krylov/src/gmres_givens.rs",
+      "base_sha256": "b8afd9796f5663951413a1ced085be627f58e2a29ceb377a63759faa6ae6b130",
+      "head_sha256": "b8afd9796f5663951413a1ced085be627f58e2a29ceb377a63759faa6ae6b130",
+      "identical": true
+    },
+    {
+      "path": "crates/rodas5p-krylov/src/gmres.rs",
+      "base_sha256": "254f421a3e6325e5492c71597053bb8787a5e3153d5e1563f0b745b73889905e",
+      "head_sha256": "254f421a3e6325e5492c71597053bb8787a5e3153d5e1563f0b745b73889905e",
+      "identical": true
+    },
+    {
+      "path": "crates/rodas5p-krylov/src/common.rs",
+      "base_sha256": "b8a03ade17035487c9e92734d3e4c31dd6b94b43f0d16809fb5178a5e26238a8",
+      "head_sha256": "b8a03ade17035487c9e92734d3e4c31dd6b94b43f0d16809fb5178a5e26238a8",
+      "identical": true
+    },
+    {
+      "path": "crates/rodas5p-core/src/operator.rs",
+      "base_sha256": "989a2d3953c1f6b83138cb93a51072aa829e311c00bc76ee488ea85d125bff0a",
+      "head_sha256": "989a2d3953c1f6b83138cb93a51072aa829e311c00bc76ee488ea85d125bff0a",
+      "identical": true
+    },
+    {
+      "path": "crates/rodas5p-core/src/matrix.rs",
+      "base_sha256": "40a3f19200d2dda72ddaf6d14c96f726fc978f4c83f687ca2d0abcaa2a49760d",
+      "head_sha256": "40a3f19200d2dda72ddaf6d14c96f726fc978f4c83f687ca2d0abcaa2a49760d",
+      "identical": true
+    },
+    {
+      "path": "crates/rodas5p-core/src/norms.rs",
+      "base_sha256": "d9855786d8ab94e1def28e3525fa40e5a44914a3ecf5f1d318e41421f8cfd604",
+      "head_sha256": "d9855786d8ab94e1def28e3525fa40e5a44914a3ecf5f1d318e41421f8cfd604",
+      "identical": true
+    },
+    {
+      "path": "Cargo.toml",
+      "base_sha256": "716ff1b052b1333e0ee5867f266426f6ecbec11578444f2e2b9c02baa03b037e",
+      "head_sha256": "716ff1b052b1333e0ee5867f266426f6ecbec11578444f2e2b9c02baa03b037e",
+      "identical": true
+    },
+    {
+      "path": "Cargo.lock",
+      "base_sha256": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351",
+      "head_sha256": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351",
+      "identical": true
+    },
+    {
+      "path": "rust-toolchain.toml",
+      "base_sha256": "f53198ae4fdecfd87da36fe431c771b54c51e975d01c0e99f653bc14d5d48211",
+      "head_sha256": "f53198ae4fdecfd87da36fe431c771b54c51e975d01c0e99f653bc14d5d48211",
+      "identical": true
+    }
+  ],
+  "historical_e05": {
+    "path": "research/adversarial_audit_20260927/experiments/E-05/e05_raw.json",
+    "sha256": "fa5d9163a45de3a7f889d1e6fa1ecfac3022a1114cd8a16651a9d9f7f6d45d01",
+    "profile": "measurement",
+    "RAYON_NUM_THREADS": 1,
+    "rows": [
+      {
+        "diagnostic_matvecs": 1,
+        "error": null,
+        "iterations": 3200,
+        "linear_matvecs": 3280,
+        "matrix": "s1",
+        "matvecs": 3280,
+        "n_scale": 1.0,
+        "ok": true,
+        "preconditioner": "jacobi",
+        "preconditioner_apps": 3280,
+        "ratio_reported_over_recomputed": 1.0000000000000004,
+        "recomputed_relative_residual_f64": 7.613126964732989e-11,
+        "recycle_refresh_matvecs": 0,
+        "reported_converged": true,
+        "reported_relative_residual": 7.613126964732991e-11,
+        "reported_residual_norm": 7.613126964732991e-25,
+        "rhs_scale": 1e-14,
+        "solver": "gmres",
+        "within_threshold_true": true,
+        "x_norm": 4.178523663594567e-15
+      },
+      {
+        "diagnostic_matvecs": 4,
+        "error": "linear solve failed: GMRES-Givens exhausted 4000 Arnoldi vectors",
+        "iterations": null,
+        "linear_matvecs": 4100,
+        "matrix": "s1",
+        "matvecs": null,
+        "n_scale": 1.0,
+        "ok": false,
+        "preconditioner": "jacobi",
+        "preconditioner_apps": null,
+        "ratio_reported_over_recomputed": null,
+        "recomputed_relative_residual_f64": null,
+        "recycle_refresh_matvecs": 0,
+        "reported_converged": null,
+        "reported_relative_residual": null,
+        "reported_residual_norm": null,
+        "rhs_scale": 1e-14,
+        "solver": "gmres_givens",
+        "within_threshold_true": null,
+        "x_norm": null
+      },
+      {
+        "diagnostic_matvecs": 0,
+        "error": "linear solve failed: GMRES exhausted 4000 Arnoldi vectors",
+        "iterations": null,
+        "linear_matvecs": 4100,
+        "matrix": "s1",
+        "matvecs": null,
+        "n_scale": 1.0,
+        "ok": false,
+        "preconditioner": "jacobi",
+        "preconditioner_apps": null,
+        "ratio_reported_over_recomputed": null,
+        "recomputed_relative_residual_f64": null,
+        "recycle_refresh_matvecs": 0,
+        "reported_converged": null,
+        "reported_relative_residual": null,
+        "reported_residual_norm": null,
+        "rhs_scale": 1.0,
+        "solver": "gmres",
+        "within_threshold_true": null,
+        "x_norm": null
+      },
+      {
+        "diagnostic_matvecs": 2,
+        "error": null,
+        "iterations": 3739,
+        "linear_matvecs": 3832,
+        "matrix": "s1",
+        "matvecs": 3832,
+        "n_scale": 1.0,
+        "ok": true,
+        "preconditioner": "jacobi",
+        "preconditioner_apps": 3833,
+        "ratio_reported_over_recomputed": 1.0000000000000002,
+        "recomputed_relative_residual_f64": 9.724576419792205e-11,
+        "recycle_refresh_matvecs": 0,
+        "reported_converged": true,
+        "reported_relative_residual": 9.724576419792206e-11,
+        "reported_residual_norm": 9.724576419792206e-11,
+        "rhs_scale": 1.0,
+        "solver": "gmres_givens",
+        "within_threshold_true": true,
+        "x_norm": 0.4178523663461081
+      },
+      {
+        "diagnostic_matvecs": 1,
+        "error": null,
+        "iterations": 3440,
+        "linear_matvecs": 3526,
+        "matrix": "s1",
+        "matvecs": 3526,
+        "n_scale": 1.0,
+        "ok": true,
+        "preconditioner": "jacobi",
+        "preconditioner_apps": 3526,
+        "ratio_reported_over_recomputed": 1.0000000000000004,
+        "recomputed_relative_residual_f64": 9.425953905406227e-11,
+        "recycle_refresh_matvecs": 0,
+        "reported_converged": true,
+        "reported_relative_residual": 9.425953905406232e-11,
+        "reported_residual_norm": 9425.953905406232,
+        "rhs_scale": 100000000000000.0,
+        "solver": "gmres",
+        "within_threshold_true": true,
+        "x_norm": 41785236634405.5
+      },
+      {
+        "diagnostic_matvecs": 0,
+        "error": "linear solve failed: GMRES-Givens exhausted 4000 Arnoldi vectors",
+        "iterations": null,
+        "linear_matvecs": 4100,
+        "matrix": "s1",
+        "matvecs": null,
+        "n_scale": 1.0,
+        "ok": false,
+        "preconditioner": "jacobi",
+        "preconditioner_apps": null,
+        "ratio_reported_over_recomputed": null,
+        "recomputed_relative_residual_f64": null,
+        "recycle_refresh_matvecs": 0,
+        "reported_converged": null,
+        "reported_relative_residual": null,
+        "reported_residual_norm": null,
+        "rhs_scale": 100000000000000.0,
+        "solver": "gmres_givens",
+        "within_threshold_true": null,
+        "x_norm": null
+      }
+    ],
+    "historical_commit_named_by_test": "b3e8165",
+    "historical_commit_available_locally": false,
+    "full_matrix_fixture_tracked": false,
+    "matrix_file_named_in_readme": "e05_matrices.json",
+    "scope": "historical observed outcomes; no mathematical certificate of universal failure"
+  },
+  "current_fixture": {
+    "path": "crates/rodas5p-krylov/tests/givens_production_differential_contracts.rs",
+    "dimension": 256,
+    "restart": 40,
+    "max_arnoldi": 4000,
+    "rtol": 1e-10,
+    "atol": 0,
+    "rhs_scales": [
+      1e-14,
+      1,
+      100000000000000.0
+    ],
+    "generator": "LCG + Householder + powf/log10 + manual matrix products",
+    "bit_pins": "three entries of b_unit only",
+    "oracle_order": [
+      "historical is_ok equality",
+      "report.converged",
+      "external binary64 true_residual <= rtol * safe_l2(b)"
+    ]
+  },
+  "source_contract": {
+    "path": "crates/rodas5p-krylov/src/gmres_givens.rs",
+    "range": [
+      479,
+      505
+    ],
+    "claim": "Every returned Ok in the inspected path follows an explicit finite recomputed binary64 b-Ax residual norm <= implemented threshold check. This is not an exact-real interval certificate.",
+    "assumptions": [
+      "operator deterministic and behaving according to its contract",
+      "inspected source corresponds to executed binary"
+    ],
+    "actual_ci_external_residual": "not available because earlier outcome assertion panicked"
+  },
+  "known_environment_difference": {
+    "historical": "measurement profile, RAYON_NUM_THREADS=1",
+    "current_ci": "default cargo test profile, pinned Rust 1.94.1, ubuntu-latest",
+    "causal_attribution": "not established"
+  },
+  "local_followup": {
+    "id": "Q-GIVENS-FIXTURE",
+    "links_to_existing_dag": [
+      "L-RELEASE",
+      "N01"
+    ],
+    "purpose": "Isolate generated-fixture/profile/binary sensitivity and restore a meaningful portable test contract without weakening residual correctness.",
+    "maximum_numerical_corrections": 3,
+    "frozen_current_lanes_unchanged": true,
+    "steps": [
+      {
+        "id": "G1",
+        "type": "diagnostic-only",
+        "action": "Check and emit independent residual, threshold, signed margin, iterations, reported residual, actual error/outcome before historical-outcome assertion; retain both requirements."
+      },
+      {
+        "id": "G2",
+        "type": "bounded reproduction",
+        "action": "Compare PR91 and PR92 default test/dev and measurement profiles with pinned toolchain and identical numerical settings; export exact binary64 A, b, Jacobi diagonal bits and hashes, executable/toolchain/CPU/libc/OS identities."
+      },
+      {
+        "id": "G3",
+        "type": "fixture separation",
+        "action": "Consume the same serialized matrix/RHS across profiles to separate generator changes from solver arithmetic; no tolerance, budget, or constant change."
+      },
+      {
+        "id": "G4",
+        "type": "independent correctness",
+        "action": "For every Ok compute a higher-precision or outward-bounded residual for the serialized binary64 inputs; distinguish this from the binary64 production oracle."
+      },
+      {
+        "id": "G5",
+        "type": "conditional trace",
+        "action": "If unresolved, trace restart-boundary residual margins and acceptance/breakdown branch at fixed settings; stop when cause isolated or report bounded uncertainty."
+      },
+      {
+        "id": "G6",
+        "type": "reviewed test policy",
+        "action": "Only after evidence, separate portable residual-safety invariant from environment-qualified historical outcome pin, preserving archived E05 observations; no unconditional Givens promotion."
+      }
+    ],
+    "acceptance": [
+      "Every observed Ok independently checked",
+      "Historical E05 table preserved with environment scope",
+      "Baseline/current and profile fixture/binary identities explicit",
+      "Cause isolated or uncertainty stated",
+      "Test-contract change reviewed explicitly"
+    ],
+    "forbidden_shortcuts": [
+      "blindly flip expected_ok false to true",
+      "ignore/delete failing test for green CI",
+      "raise max_arnoldi or loosen rtol",
+      "label Ok(3640) false convergence without residual evidence",
+      "attribute to BLAS threading without evidence",
+      "promote Givens candidate from this result alone"
+    ],
+    "unrelated_retests_required": false
+  },
+  "notes": [
+    "No solve_gmres_givens reference found in integrator, vigilode, or coupled src directories; external callers remain possible.",
+    "No numerical correction to frozen adapter/structural/homotopy lanes was performed.",
+    "CI decoded log hashes identify local text, not original GitHub compressed artifact bytes."
+  ]
+}

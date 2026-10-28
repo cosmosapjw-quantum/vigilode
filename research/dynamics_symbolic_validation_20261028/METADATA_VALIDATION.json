@@ -1,0 +1,66 @@
+{
+  "schema": "vigilode.dynamics-metadata-validation.v1",
+  "checked_source": "2ba1c3ebe73003aa931c6bfb5a8960ea68cb6d7f",
+  "checkout": "full materialized worktree with complete cloned objects and remote branch refs",
+  "checks": [
+    {
+      "id": "node",
+      "argv": [
+        "python3",
+        "tools/check-research-node.py",
+        "--base",
+        "origin/main"
+      ],
+      "exit_code": 1,
+      "wall_seconds": 6.848625661004917,
+      "source_unchanged": true,
+      "summary": "check-research-node: FAIL (180 ledger rows, base=origin/main, new nodes=['adapter_checkpoint_followup_20261027', 'adapter_integration_20261027', 'adapter_research_20261025', 'adapter_switcher_economy_20261026', 'adaptive_causal_20261023', 'adversarial_reaudit_20260930_r2', 'adversarial_reaudit_20261001_r3', 'adversarial_reaudit_20261001_r4', 'alg01_coupled_stage_target_20261008', 'alg02_predictive_controller_20261008', 'alg03_stage_budget_guard_20261008', 'alg04_coupled_target_v2_20261010', 'alg05_predictive_controller_v2_20261010', 'alg06_guard_v2_20261010', 'all_dag_completion_20261018', 'as04_stage_residual_telemetry_20261011', 'as05_residual_gain_core_20261011', 'b1c_staleness_20261021', 'bassrei_ncp_wp_c1_20261022', 'bassrei_p02_fixed_grid_20261021', 'bassrei_p02b_fixed_grid_20261022', 'bassrei_p03_block_lowrank_schur_20261022', 'bassrei_p04_source_exchange_stress_20261022', 'bassrei_p05_accepted_remap_20261022', 'bassrei_p06_full_sphere_scoped_20261022', 'bench_wave2_20261021', 'bench_wave3_20261021', 'branch_integration_20261021', 'candidate_reconsideration_20261024', 'cloud_completion_20261018', 'component_benchmark_20261018', 'component_triage_20261019', 'coupled_economy_20261020', 'coupled_native_20261020', 'coupled_stage_adoption_20261022', 'ct01_controller_grid_holdout_20261010', 'cumulative_20261020', 'cumulative_validation_20261028', 'derivative_free_causal_homotopy_20261027', 'dynamics_symbolic_validation_20261028', 'ex01_pexprb_own_step_20261011', 'general_ode_selection_20261024', 'ht01_homotopy_client_contract_20261011', 'ht02_homotopy_parallel_pilot_20261011', 'hybrid_20261020', 'int01_gcrodr_verified_reuse_20261003', 'int02_structural_certificate_20261003', 'int03_banded_fast_20261003', 'int04_stage_chart_20261003', 'int05_nonnormal_metric_bound_20261003', 'integrated_polyalgorithm_20261028', 'joint_controller_20261025', 'lifted_error_norm_20261022', 'local_frontier_20261024', 'local_frontier_native_diffsol_20261024', 'lp01_collective_model_20261011', 'lp02_packet_window_20261011', 'lp03_damped_moments_20261011', 'lp04_packet_trajectory_20261011', 'lp09_packet_benchmark_20261011', 'lp10_independent_decision_20261011', 'me01_full_cost_judgement_20261011', 'ncp_followup_20261021', 'nonstiff_explicit_20261023', 'nonstiff_external_adapters_20261023', 'pc01_right_preconditioner_20261011', 'polyalgorithm_alternatives_20261028', 'pp03_rhs_compression_20261004', 'pp04_shared_shift_policy_20261004', 'pp05_fourier_client_20261004', 'pp06_fourier_fft_candidate_20261004', 'pp07_fourier_shared_action_20261004', 'pp08_laguerre_router_20261004', 'pp09_laguerre_envelope_20261004', 'pp10_leja_candidate_20261004', 'pp11_taylor_fused_total_20261004', 'pp12_lognorm_decay_20261004', 'pp12b_chain_symmetrizer_20261004', 'pp15_fourier_comparator_20261004', 'pp16_complex_shift_gain_20261004', 'production_audit_20261018', 'production_audit_20261018_a07_gate_correction', 'production_audit_20261018_followup', 'production_frontier_20261023', 'production_frontier_followup_20261023', 'production_hardening_20261023', 'production_reaudit_20261021', 'production_review_20261022', 'production_rvj_nag_20261028', 'production_solver_closure_20261027', 'production_theory_20261021', 'promotion_loop12_20261011', 'promotion_theory_20261011', 'py01_laguerre_component_export_20261011', 'py02_laguerre_adjoint_bound_20261011', 'py03_single_backend_router_20261011', 'py04_fused_normalization_20261011', 'py05_leja_total_certificate_20261011', 'r3_matched_accuracy_hom06_20261001', 'r3_matched_accuracy_poly03_20261001', 'r3_timing_coverage_study_20261001', 'r3_timing_coverage_study_v2_20261001', 'r4_homotopy_certificate_cost_20261001', 'r4_laguerre_majorant_scale_20261001', 'r4_polynomial_regimes_20261001', 'r4_runtime_remainder_20261001', 'r4_session_median_coverage_20261001', 'reaudit_accuracy_speed_20261010', 'rev01_gcrodr_start_projection_20261003', 'rev01b_gcrodr_recycle_reorthogonalization_20261003', 'rev01c_gcrodr_refreshed_update_20261003', 'rev02_nonnormal_stepping_20261003', 'rev03_one_sided_acceptance_20261003', 'rev04_lgmres_into_20261003', 'rigorous_performance_audit_20261027', 'rnext01_residual_output_20261003', 'rnext02_gmres_into_20261003', 'rnext03_gcrodr_attribution_20261003', 'rnext04_laguerre_admission_20261003', 'rnext05_chart_provider_20261003', 'rnext06_homotopy_net_cost_20261003', 'rnext07_model_epoch_20261003', 'rnext08_perturbation_stability_20261003', 'rvj_integration_20261004', 'safe_enclosure_composition_20261004', 'safe_enclosure_exp_floor_20261004', 'safe_recycle_policy_20261004', 'sp01_dupfix_adoption_20261010', 'sp02_krylov_workspace_caller_20261011', 'sp03_declared_structure_routing_20261010', 'sp04_zero_start_recycling_20261011', 'spd01_fast_driver_overhead_20261005', 'spd02_lu_column_extents_20261005', 'spd03_banded_arm_instructions_20261005', 'spd04_ls_workspace_20261007', 'spd05_lgmres_ls_once_20261007', 'spd06_small_static_stages_20261007', 'spd07_mf_step_warm_start_20261007', 'spd08_small_ensemble_lanes_20261007', 'spd09_colext_threshold_20261007', 'spherical_information_20261023', 'stiff_bdf_radau_benchmark_20261001', 'stiff_native_benchmark_20261001', 'stiff_rodas5p_fast_20261002', 'stiff_rodas5p_fast_v2_20261002', 'stiff_rodas5p_profile_20261002', 'storage_runtime_20261004', 'thread_transfer_chart_contract_20261002', 'thread_transfer_laguerre_adjoint_20261002', 'thread_transfer_laguerre_cache_20261002', 'thread_transfer_mf_target_20261002', 'thread_transfer_mf_workspace_20261002', 'thread_transfer_negative_controls_20261002', 'thread_transfer_path_action_20261002', 'thread_transfer_radius_proposal_20261002', 'thread_transfer_radius_replay_20261002', 'thread_transfer_smalln_cost_20261002', 'v1_portable_norm_20261024'])",
+      "raw_stdout": "evidence/metadata-node.stdout.log.gz",
+      "receipt": "evidence/metadata-node.receipt.json"
+    },
+    {
+      "id": "node-scoped",
+      "argv": [
+        "python3",
+        "tools/check-research-node.py",
+        "--base",
+        "87465835d9d21298d235917f036580b0b53ab645"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 2.0054697950035916,
+      "source_unchanged": true,
+      "summary": "check-research-node: PASS (180 ledger rows, base=87465835d9d21298d235917f036580b0b53ab645, new nodes=['dynamics_symbolic_validation_20261028'])",
+      "raw_stdout": "evidence/metadata-node-scoped.stdout.log.gz",
+      "receipt": "evidence/metadata-node-scoped.receipt.json"
+    },
+    {
+      "id": "authority",
+      "argv": [
+        "python3",
+        "tools/check-authority-refs.py"
+      ],
+      "exit_code": 1,
+      "wall_seconds": 21.14952909900603,
+      "source_unchanged": true,
+      "summary": "check-authority-refs: FAIL (10510 citations, 822 distinct SHAs: missing=56, missing+allowlisted=27, non-commit=229, reachable=510)",
+      "raw_stdout": "evidence/metadata-authority.stdout.log.gz",
+      "receipt": "evidence/metadata-authority.receipt.json"
+    }
+  ],
+  "production": "HOLD",
+  "checker_or_allowlist_changes": false,
+  "full_main_node_failure": {
+    "diagnostic_lines": 40,
+    "affected_inherited_nodes": 22,
+    "new_node_failure_lines": 0,
+    "meaning": "Inherited nodes become new relative to old main; missing preregistration and/or numeric ledger coverage. No fabricated retrospective preregistration was added."
+  },
+  "authority": {
+    "unallowlisted_missing_objects": 56,
+    "new_distinct_missing_objects": 0,
+    "new_node_missing_citations": 1,
+    "new_node_citation_kind": "BASS source commit cc602e209e7deeb511ab2a1f3b2268d55206c43c already cited by PR97; typed cross-repository resolution remains open",
+    "prior_full_pre_results_missing": 57,
+    "extra_prior_token": "public TU Wien URL query token in raw Exa response; complete raw response preserved in gzip plus SHA256 binding"
+  }
+}

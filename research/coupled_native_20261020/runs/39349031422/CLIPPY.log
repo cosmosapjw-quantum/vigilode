@@ -1,0 +1,244 @@
+    Checking bytemuck v1.25.2
+    Checking num-traits v0.2.19
+    Checking bitflags v2.13.1
+    Checking raw-cpuid v11.6.0
+    Checking num-complex v0.4.6
+    Checking cfg-if v1.0.4
+    Checking libm v0.2.16
+    Checking reborrow v0.5.5
+    Checking pulp-wasm-simd-flag v0.1.1
+    Checking dyn-stack v0.13.2
+    Checking pulp v0.22.3
+    Checking once_cell v1.21.4
+    Checking nano-gemm-core v0.2.1
+    Checking typenum v1.20.1
+    Checking generic-array v0.14.7
+    Checking libc v0.2.189
+    Checking num_cpus v1.17.0
+    Checking nano-gemm-f64 v0.2.1
+    Checking gemm-common v0.19.0
+    Checking gemm-c64 v0.19.0
+    Checking gemm-f64 v0.19.0
+    Checking gemm-c32 v0.19.0
+    Checking gemm-f32 v0.19.0
+    Checking qd v0.8.0
+    Checking nano-gemm-c32 v0.2.1
+    Checking nano-gemm-c64 v0.2.1
+    Checking nano-gemm-f32 v0.2.1
+    Checking equator v0.2.2
+    Checking crossbeam-utils v0.8.22
+    Checking serde_core v1.0.229
+    Checking crypto-common v0.1.7
+    Checking block-buffer v0.10.4
+    Checking generativity v1.2.1
+    Checking equator v0.6.0
+    Checking faer-traits v0.24.0
+    Checking digest v0.10.7
+    Checking private-gemm-x86 v0.1.20
+    Checking crossbeam-epoch v0.9.20
+    Checking gemm v0.19.0
+    Checking zmij v1.0.23
+    Checking memchr v2.8.3
+    Checking cpufeatures v0.2.17
+    Checking itoa v1.0.18
+    Checking serde_json v1.0.151
+    Checking nano-gemm v0.2.2
+    Checking faer v0.24.4
+    Checking sha2 v0.10.9
+    Checking thiserror v2.0.19
+    Checking serde v1.0.229
+    Checking crossbeam-deque v0.8.7
+    Checking hex v0.4.3
+    Checking rayon-core v1.13.0
+    Checking either v1.17.0
+    Checking rayon v1.12.0
+    Checking rodas5p-core v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-krylov)
+    Checking rodas5p-integrators v0.1.0 (/home/runner/work/vigilode/vigilode/crates/rodas5p-integrators)
+warning: fields `prepared_centers`, `prepared_radii`, `prepared_times`, `prepared_count`, `radii`, and `prepared_valid` are never read
+   --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/src/output.rs:706:5
+    |
+698 | pub(crate) struct OutputCollector {
+    |                   --------------- fields in this struct
+...
+706 |     prepared_centers: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^^^
+707 |     prepared_radii: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^
+708 |     prepared_times: Vec<f64>,
+    |     ^^^^^^^^^^^^^^
+709 |     prepared_count: usize,
+    |     ^^^^^^^^^^^^^^
+710 |     radii: Vec<Vec<f64>>,
+    |     ^^^^^
+711 |     prepared_valid: bool,
+    |     ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: variant `EndpointAdmission` is never constructed
+    --> /home/runner/work/vigilode/vigilode/crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+
+warning: `rodas5p-integrators` (lib) generated 4 warnings
+    Checking vigilode-coupled v0.1.0 (/home/runner/work/vigilode/vigilode/crates/vigilode-coupled)
+warning: the loop variable `i` is used to index `u`
+   --> src/solver.rs:306:14
+    |
+306 |     for i in 0..S {
+    |              ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+    = note: `-W clippy::needless-range-loop` implied by `-W clippy::all`
+    = help: to override `-W clippy::all` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+    |
+306 -     for i in 0..S {
+306 +     for (i, <item>) in u.iter().enumerate().take(S) {
+    |
+
+warning: the loop variable `j` is used to index `u`
+   --> src/solver.rs:337:26
+    |
+337 |                 for j in 0..i {
+    |                          ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+337 -                 for j in 0..i {
+337 +                 for (j, <item>) in u.iter().enumerate().take(i) {
+    |
+
+warning: `vigilode-coupled` (lib test) generated 2 warnings
+warning: `vigilode-coupled` (lib) generated 2 warnings (2 duplicates)
+warning: the loop variable `j` is used to index `u`
+  --> tests/contracts.rs:43:22
+   |
+43 |             for j in 0..i {
+   |                      ^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+   = note: `-W clippy::needless-range-loop` implied by `-W clippy::all`
+   = help: to override `-W clippy::all` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+   |
+43 -             for j in 0..i {
+43 +             for (j, <item>) in u.iter().enumerate().take(i) {
+   |
+
+warning: the loop variable `i` is used to index `u`
+  --> tests/contracts.rs:53:14
+   |
+53 |     for i in 0..8 {
+   |              ^^^^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+   |
+53 -     for i in 0..8 {
+53 +     for (i, <item>) in u.iter().enumerate().take(8) {
+   |
+
+warning: `vigilode-coupled` (test "contracts") generated 2 warnings
+warning: the loop variable `j` is used to index `u`
+   --> examples/coupled_bench.rs:150:22
+    |
+150 |             for j in 0..i {
+    |                      ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+    = note: `-W clippy::needless-range-loop` implied by `-W clippy::all`
+    = help: to override `-W clippy::all` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+    |
+150 -             for j in 0..i {
+150 +             for (j, <item>) in u.iter().enumerate().take(i) {
+    |
+
+warning: the loop variable `j` is used to index `u`
+   --> examples/coupled_bench.rs:159:26
+    |
+159 |                 for j in 0..i {
+    |                          ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+159 -                 for j in 0..i {
+159 +                 for (j, <item>) in u.iter().enumerate().take(i) {
+    |
+
+warning: the loop variable `i` is used to index `u`
+   --> examples/coupled_bench.rs:173:18
+    |
+173 |         for i in 0..8 {
+    |                  ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+173 -         for i in 0..8 {
+173 +         for (i, <item>) in u.iter().enumerate().take(8) {
+    |
+
+warning: large size difference between variants
+   --> examples/coupled_bench.rs:191:1
+    |
+191 | / enum Run {
+192 | |     Coupled(Attempt),
+193 | |     Sequential(CoreResult<StepResult>, WorkCounters),
+    | |     ------------------------------------------------ the second-largest variant contains at least 1248 bytes
+194 | |     Transactional(SelectedStep),
+    | |     --------------------------- the largest variant contains at least 1504 bytes
+195 | | }
+    | |_^ the entire enum is at least 1504 bytes
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#large_enum_variant
+    = note: `-W clippy::large-enum-variant` implied by `-W clippy::all`
+    = help: to override `-W clippy::all` add `#[allow(clippy::large_enum_variant)]`
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+    |
+194 -     Transactional(SelectedStep),
+194 +     Transactional(Box<SelectedStep>),
+    |
+
+warning: `vigilode-coupled` (example "coupled_bench") generated 4 warnings
+    Finished `dev` profile [unoptimized] target(s) in 27.08s

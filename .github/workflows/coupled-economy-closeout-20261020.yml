@@ -1,0 +1,47 @@
+name: Coupled economy frozen closeout
+on:
+  push:
+    branches: [research/coupled-economy-20261020]
+    paths:
+      - '.github/workflows/coupled-economy-closeout-20261020.yml'
+      - 'research/coupled_economy_20261020/closeout.py'
+permissions:
+  contents: write
+jobs:
+  closeout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Verify frozen files and source
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="research/coupled_economy_20261020/closeout/${GITHUB_RUN_ID}"
+          mkdir -p "$OUT"
+          git fetch --depth=1 origin f08d152a35fb2db748692570969cb1723c287c26
+          git fetch --depth=1 origin 15c43ce76734d0a560fcec5909ac49f1e6f2d347
+          python3 research/coupled_economy_20261020/closeout.py "$OUT" 2>&1 | tee "$OUT/check.log"
+      - name: Preserve closeout result
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="research/coupled_economy_20261020/closeout/${GITHUB_RUN_ID}"
+          [[ -d "$OUT" ]] || exit 0
+          (cd "$OUT"; find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 -r sha256sum > SHA256SUMS)
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f -- "$OUT"
+          if ! git diff --cached --quiet; then
+            git commit -m "research: preserve coupled economy closeout ${GITHUB_RUN_ID} [skip ci]"
+            git fetch origin research/coupled-economy-20261020
+            git rebase origin/research/coupled-economy-20261020
+            git push origin HEAD:refs/heads/research/coupled-economy-20261020
+          fi

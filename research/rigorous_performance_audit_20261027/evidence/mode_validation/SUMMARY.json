@@ -1,0 +1,44 @@
+{
+  "mode_implementation": "COMPLETE",
+  "targeted_tests": {
+    "status": "PASS",
+    "passed": 32,
+    "failed": 0,
+    "groups": {
+      "core": 1,
+      "integrators": 16,
+      "coupled": 14,
+      "nonautonomous_mf": 1
+    }
+  },
+  "candidate_builds": {
+    "status": "PASS",
+    "binaries": [
+      {
+        "name": "lu_workspace_bench",
+        "sha256": "03188f4c4fdea8348baa290acba23387b3670098e977542f7ff801eb9a204ed9"
+      },
+      {
+        "name": "mode_dense_trajectory_20261027",
+        "sha256": "b6abdeb2dc92c1eb89d5d852428dca54095ff9ba4b92b3cb871573c99113204b"
+      }
+    ]
+  },
+  "recovered_build_failure": {
+    "receipt": "build_lu.receipt.json",
+    "exit": 101,
+    "reason": "stale shared-target baseline core artifact",
+    "repair": "package-local cargo clean, dependency cache preserved",
+    "successful_retry": "build_lu_retry.receipt.json"
+  },
+  "command_elapsed_seconds_including_compile": 532.4389576750036,
+  "performance_timing": "NOT_RUN_BY_MODE_LANE; parent serial timing owns benchmark evidence",
+  "production_source_changed": [
+    "crates/rodas5p-core/src/lib.rs",
+    "crates/rodas5p-core/src/matrix.rs",
+    "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+    "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+    "crates/vigilode-coupled/src/residual_first.rs"
+  ],
+  "complementary_adapter_review": "CLOSED; conservative displayed prefix-ratio issue repaired and re-read; no remaining concrete defect found"
+}

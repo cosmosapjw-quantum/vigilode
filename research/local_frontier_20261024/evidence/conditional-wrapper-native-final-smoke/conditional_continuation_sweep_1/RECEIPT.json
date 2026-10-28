@@ -1,0 +1,1382 @@
+{
+  "schema_version": 1,
+  "started_utc": "2026-10-24T01:20:25.189429+00:00",
+  "command": [
+    "/workspace/scratch/0dc1e721cf82/runtime1024/target/measurement/examples/conditional_continuation_sweep",
+    "--repeats",
+    "1"
+  ],
+  "wrapped_command": [
+    "/workspace/scratch/0dc1e721cf82/runtime1024/target/measurement/examples/conditional_continuation_sweep",
+    "--repeats",
+    "1"
+  ],
+  "timeout_seconds": 30,
+  "address_space_limit_gib": 16,
+  "cpus": [
+    0
+  ],
+  "thread_environment": {
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "finished_utc": "2026-10-24T01:20:25.199034+00:00",
+  "elapsed_process_seconds": 0.008845263990224339,
+  "exit_code": 0,
+  "timed_out": false,
+  "spawn_error": null,
+  "execution_status": "COMPLETED",
+  "parse_errors": [],
+  "result": null,
+  "stdout_sha256": "258152a171ca5df46ca987d79a811c2a88c638222951aaf0838ec1c95a4335df",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "task": {
+    "example": "conditional_continuation_sweep",
+    "process_repeat": 1,
+    "threads": 1,
+    "parallel_layer": "serial-conditional-kernel"
+  },
+  "source": {
+    "commit": "2f87ac31f52ac031bdd29ce7cbb67728cb01ef6a",
+    "tree": "c59ac6aa34482b9042897fda21145175c0c553d1",
+    "status_porcelain": "M Cargo.lock\n M crates/rodas5p-core/src/lib.rs\n M crates/rodas5p-core/src/shared_shift_jet.rs\n M crates/rodas5p-integrators/src/lib.rs\n M crates/vigilode-coupled/examples/reconsideration_bench.rs\n M crates/vigilode-coupled/src/adaptive.rs\n M crates/vigilode-coupled/src/lib.rs\n M crates/vigilode-coupled/src/switching.rs\n M crates/vigilode-coupled/tests/switching_contracts.rs\n M crates/vigilode/Cargo.toml\n?? crates/rodas5p-core/examples/invariant_module_bench.rs\n?? crates/rodas5p-core/examples/structured_residual_sweep.rs\n?? crates/rodas5p-core/src/invariant_module.rs\n?? crates/rodas5p-core/tests/invariant_module_contracts.rs\n?? crates/rodas5p-integrators/examples/conditional_chart_sweep.rs\n?? crates/rodas5p-integrators/examples/conditional_continuation_sweep.rs\n?? crates/rodas5p-integrators/examples/conditioned_chart_bench.rs\n?? crates/rodas5p-integrators/examples/fixed_point_continuation_bench.rs\n?? crates/rodas5p-integrators/src/conditioned_polynomial.rs\n?? crates/rodas5p-integrators/src/fixed_point_continuation.rs\n?? crates/rodas5p-integrators/tests/conditioned_polynomial_contracts.rs\n?? crates/rodas5p-integrators/tests/fixed_point_continuation_contracts.rs\n?? crates/vigilode/examples/local_bottleneck_suite.rs\n?? crates/vigilode/examples/local_bottleneck_support/models.rs\n?? crates/vigilode/tests/local_bottleneck_models.rs\n?? external_audits/vigilode_ncp_intensive_120m_v1_20261021/.TOLERANCE_RESULTS.jsonl.TEjl65\n?? research/bassrei_p04_source_exchange_stress_20261022/raw/.C1_probe_sources.json.dVgK52\n?? research/coupled_native_20261020/runs/39349031422/.REFERENCES.json.part0000.cMoeh2\n?? research/local_frontier_20261024/DECISIONS.json\n?? research/local_frontier_20261024/DEVELOPMENT_STATUS.json\n?? research/local_frontier_20261024/NEXT_STEPS.json\n?? research/local_frontier_20261024/REPORT_KO.md\n?? research/local_frontier_20261024/RESEARCH_RECORD.json\n?? research/local_frontier_20261024/SOURCE_IDENTITY.json\n?? research/local_frontier_20261024/VALIDATION.json\n?? research/local_frontier_20261024/analysis/ATTACHMENT_AUDIT_KO.md\n?? research/local_frontier_20261024/analysis/BENCHMARK_INDEPENDENT_REVIEW.md\n?? research/local_frontier_20261024/analysis/BENCHMARK_MODELS.json\n?? research/local_frontier_20261024/analysis/BENCHMARK_MODELS.md\n?? research/local_frontier_20261024/analysis/CONDITIONAL_BUDGET.json\n?? research/local_frontier_20261024/analysis/CONDITIONAL_BUDGET_REVIEW.json\n?? research/local_frontier_20261024/analysis/CONDITIONAL_BUDGET_REVIEW.md\n?? research/local_frontier_20261024/analysis/CONDITIONAL_CHART.json\n?? research/local_frontier_20261024/analysis/CONDITIONAL_CHART.md\n?? research/local_frontier_20261024/analysis/CONDITIONAL_CHART_INDEPENDENT_REVIEW.md\n?? research/local_frontier_20261024/analysis/CONDITIONAL_CONTINUATION.json\n?? research/local_frontier_20261024/analysis/CONDITIONAL_CONTINUATION.md\n?? research/local_frontier_20261024/analysis/CONDITIONAL_POLICY_KO.md\n?? research/local_frontier_20261024/analysis/CONDITIONED_CHART_BENCHMARK.json\n?? research/local_frontier_20261024/analysis/GEOMETRY_EXACT_CHECKS.json\n?? research/local_frontier_20261024/analysis/GEOMETRY_TRANSFER.json\n?? research/local_frontier_20261024/analysis/GEOMETRY_TRANSFER.md\n?? research/local_frontier_20261024/analysis/LOCAL_CAMPAIGN.json\n?? research/local_frontier_20261024/analysis/LOCAL_CAMPAIGN.md\n?? research/local_frontier_20261024/analysis/LOCAL_RUNNER_INDEPENDENT_REVIEW.md\n?? research/local_frontier_20261024/analysis/N1_N2.json\n?? research/local_frontier_20261024/analysis/N1_N2.md\n?? research/local_frontier_20261024/analysis/N3_INDEPENDENT_REVIEW.md\n?? research/local_frontier_20261024/analysis/N3_N5_TIMING_TABLES.md\n?? research/local_frontier_20261024/analysis/N3_REGIME_COST.json\n?? research/local_frontier_20261024/analysis/N3_REGIME_COST.md\n?? research/local_frontier_20261024/analysis/N4_FIXED_P.json\n?? research/local_frontier_20261024/analysis/N4_FIXED_P.md\n?? research/local_frontier_20261024/analysis/N5_PARALLEL_CALLBACKS.json\n?? research/local_frontier_20261024/analysis/N5_PARALLEL_CALLBACKS.md\n?? research/local_frontier_20261024/analysis/N6_BENCHMARK_SUMMARY.json\n?? research/local_frontier_20261024/analysis/N6_INDEPENDENT_REVIEW.md\n?? research/local_frontier_20261024/analysis/N8_DISCRIMINATION_COVERAGE.json\n?? research/local_frontier_20261024/analysis/STRUCTURED_CERTIFICATION_SUMMARY.json\n?? research/local_frontier_20261024/analysis/conditional_chart_tradeoff.png\n?? research/local_frontier_20261024/analysis/conditional_chart_tradeoff.svg\n?? research/local_frontier_20261024/analysis/conditioned_chart_comparison.png\n?? research/local_frontier_20261024/analysis/conditioned_chart_comparison.svg\n?? research/local_frontier_20261024/analysis/n3_n5_local_discrimination.png\n?? research/local_frontier_20261024/analysis/n3_n5_local_discrimination.svg\n?? research/local_frontier_20261024/evidence/GEOMETRY_SOURCES.json\n?? research/local_frontier_20261024/evidence/LOCAL_BENCHMARK_REQUEST.txt\n?? research/local_frontier_20261024/evidence/N6_microbenchmark.json\n?? research/local_frontier_20261024/evidence/N6_microbenchmark.jsonl\n?? research/local_frontier_20261024/evidence/N6_microbenchmark.stderr\n?? research/local_frontier_20261024/evidence/N6_record_structure_validation.json\n?? research/local_frontier_20261024/evidence/N6_tests_round1.json\n?? research/local_frontier_20261024/evidence/N6_tests_round1.stderr\n?? research/local_frontier_20261024/evidence/N6_tests_round1.stdout\n?? research/local_frontier_20261024/evidence/N6_tests_round2.json\n?? research/local_frontier_20261024/evidence/N6_tests_round2.stderr\n?? research/local_frontier_20261024/evidence/N6_tests_round2.stdout\n?? research/local_frontier_20261024/evidence/N6_tests_round3.json\n?? research/local_frontier_20261024/evidence/N6_tests_round3.stderr\n?? research/local_frontier_20261024/evidence/N6_tests_round3.stdout\n?? research/local_frontier_20261024/evidence/STRUCTURED_CERTIFICATION.0.stderr\n?? research/local_frontier_20261024/evidence/STRUCTURED_CERTIFICATION.1.stderr\n?? research/local_frontier_20261024/evidence/STRUCTURED_CERTIFICATION.jsonl\n?? research/local_frontier_20261024/evidence/STRUCTURED_CERTIFICATION.receipt.json\n?? research/local_frontier_20261024/evidence/STRUCTURED_CERTIFICATION.tests.stdout\n?? research/local_frontier_20261024/evidence/WOLFRAM_ATTACHMENT_CHECK.json\n?? research/local_frontier_20261024/evidence/conditional-budget-tests.log\n?? research/local_frontier_20261024/evidence/conditional-campaign-tests-final.exit\n?? research/local_frontier_20261024/evidence/conditional-campaign-tests-final.log\n?? research/local_frontier_20261024/evidence/conditional-campaign-tests.exit\n?? research/local_frontier_20261024/evidence/conditional-campaign-tests.log\n?? research/local_frontier_20261024/evidence/conditional-campaign-verification.json\n?? research/local_frontier_20261024/evidence/conditional-continuation/round1-build.exit\n?? research/local_frontier_20261024/evidence/conditional-continuation/round1-build.stderr\n?? research/local_frontier_20261024/evidence/conditional-continuation/round1-build.stdout\n?? research/local_frontier_20261024/evidence/conditional-continuation/round1-sweep.exit\n?? research/local_frontier_20261024/evidence/conditional-continuation/round1-sweep.jsonl\n?? research/local_frontier_20261024/evidence/conditional-continuation/round1-sweep.receipt.json\n?? research/local_frontier_20261024/evidence/conditional-continuation/round1-sweep.stderr\n?? research/local_frontier_20261024/evidence/conditional-continuation/round1-tests.exit\n?? research/local_frontier_20261024/evidence/conditional-continuation/round1-tests.stderr\n?? research/local_frontier_20261024/evidence/conditional-continuation/round1-tests.stdout\n?? research/local_frontier_20261024/evidence/conditional-continuation/round1_source.rs\n?? research/local_frontier_20261024/evidence/conditional-continuation/round2-build.exit\n?? research/local_frontier_20261024/evidence/conditional-continuation/round2-build.stderr\n?? research/local_frontier_20261024/evidence/conditional-continuation/round2-build.stdout\n?? research/local_frontier_20261024/evidence/conditional-continuation/round2-sweep.exit\n?? research/local_frontier_20261024/evidence/conditional-continuation/round2-sweep.jsonl\n?? research/local_frontier_20261024/evidence/conditional-continuation/round2-sweep.receipt.json\n?? research/local_frontier_20261024/evidence/conditional-continuation/round2-sweep.stderr\n?? research/local_frontier_20261024/evidence/conditional-continuation/round2-tests.exit\n?? research/local_frontier_20261024/evidence/conditional-continuation/round2-tests.stderr\n?? research/local_frontier_20261024/evidence/conditional-continuation/round2-tests.stdout\n?? research/local_frontier_20261024/evidence/conditional-continuation/round2_source.rs\n?? research/local_frontier_20261024/evidence/conditional-continuation/round3-build.exit\n?? research/local_frontier_20261024/evidence/conditional-continuation/round3-build.stderr\n?? research/local_frontier_20261024/evidence/conditional-continuation/round3-build.stdout\n?? research/local_frontier_20261024/evidence/conditional-continuation/round3-sweep.exit\n?? research/local_frontier_20261024/evidence/conditional-continuation/round3-sweep.jsonl\n?? research/local_frontier_20261024/evidence/conditional-continuation/round3-sweep.receipt.json\n?? research/local_frontier_20261024/evidence/conditional-continuation/round3-sweep.stderr\n?? research/local_frontier_20261024/evidence/conditional-continuation/round3-tests.exit\n?? research/local_frontier_20261024/evidence/conditional-continuation/round3-tests.stderr\n?? research/local_frontier_20261024/evidence/conditional-continuation/round3-tests.stdout\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/SUMMARY.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_chart_sweep_0/RECEIPT.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_chart_sweep_0/START.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_chart_sweep_0/stderr.log\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_chart_sweep_0/stdout.jsonl\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_chart_sweep_1/RECEIPT.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_chart_sweep_1/START.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_chart_sweep_1/stderr.log\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_chart_sweep_1/stdout.jsonl\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_chart_sweep_2/RECEIPT.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_chart_sweep_2/START.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_chart_sweep_2/stderr.log\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_chart_sweep_2/stdout.jsonl\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_continuation_sweep_0/RECEIPT.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_continuation_sweep_0/START.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_continuation_sweep_0/stderr.log\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_continuation_sweep_0/stdout.jsonl\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_continuation_sweep_1/RECEIPT.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_continuation_sweep_1/START.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_continuation_sweep_1/stderr.log\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_continuation_sweep_1/stdout.jsonl\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_continuation_sweep_2/RECEIPT.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_continuation_sweep_2/START.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_continuation_sweep_2/stderr.log\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/conditional_continuation_sweep_2/stdout.jsonl\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/invariant_module_bench_0/RECEIPT.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/invariant_module_bench_0/START.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/invariant_module_bench_0/stderr.log\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/invariant_module_bench_0/stdout.jsonl\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/invariant_module_bench_1/RECEIPT.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/invariant_module_bench_1/START.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/invariant_module_bench_1/stderr.log\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/invariant_module_bench_1/stdout.jsonl\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/invariant_module_bench_2/RECEIPT.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/invariant_module_bench_2/START.json\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/invariant_module_bench_2/stderr.log\n?? research/local_frontier_20261024/evidence/conditional-wrapper-native-smoke/invariant_module_bench_2/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/ANALYSIS_1792803484656121271.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/ANALYSIS_1792803484656121271.md\n?? research/local_frontier_20261024/evidence/local-controller-smoke/CAMPAIGN_IDENTITY.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/CONFIG.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/EXECUTION_1792803484573235840.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/PLAN.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/29d0c748a3f73e90/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/29d0c748a3f73e90/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/29d0c748a3f73e90/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/29d0c748a3f73e90/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/40fc7474dad6dc89/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/40fc7474dad6dc89/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/40fc7474dad6dc89/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/40fc7474dad6dc89/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/4202ff778f886009/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/4202ff778f886009/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/4202ff778f886009/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/4202ff778f886009/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/453cb04cdafa98fe/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/453cb04cdafa98fe/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/453cb04cdafa98fe/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/453cb04cdafa98fe/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/67298cbbb37b58e6/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/67298cbbb37b58e6/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/67298cbbb37b58e6/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/67298cbbb37b58e6/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/9a2f9558bef4b9c2/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/9a2f9558bef4b9c2/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/9a2f9558bef4b9c2/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/9a2f9558bef4b9c2/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/ab37767ac4d028f1/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/ab37767ac4d028f1/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/ab37767ac4d028f1/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/ab37767ac4d028f1/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/b1abbd05d8e96a81/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/b1abbd05d8e96a81/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/b1abbd05d8e96a81/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/b1abbd05d8e96a81/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/d590d542e3886e9e/attempt_001/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/d590d542e3886e9e/attempt_001/START.json\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/d590d542e3886e9e/attempt_001/stderr.log\n?? research/local_frontier_20261024/evidence/local-controller-smoke/runs/d590d542e3886e9e/attempt_001/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/IDENTITY.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/SUMMARY_1792803491577082907.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/model_1.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/model_10.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_dopri5/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_dopri5/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_dopri5/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_dopri5/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_rodas5p-mf/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_rodas5p-mf/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_rodas5p-mf/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_rodas5p-mf/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_switching/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_switching/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_switching/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_switching/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_vode-adams/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_vode-adams/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_vode-adams/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_vode-adams/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_vode-bdf/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_vode-bdf/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_vode-bdf/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/10_0_vode-bdf/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_dopri5/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_dopri5/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_dopri5/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_dopri5/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_rodas5p-mf/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_rodas5p-mf/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_rodas5p-mf/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_rodas5p-mf/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_switching/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_switching/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_switching/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_switching/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_vode-adams/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_vode-adams/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_vode-adams/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_vode-adams/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_vode-bdf/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_vode-bdf/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_vode-bdf/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke-extra/runs/1_0_vode-bdf/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/IDENTITY.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/SUMMARY_1792803452852923387.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/model_15.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/model_16.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_dopri5/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_dopri5/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_dopri5/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_dopri5/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_rodas5p-mf/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_rodas5p-mf/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_rodas5p-mf/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_rodas5p-mf/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_switching/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_switching/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_switching/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_switching/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_vode-adams/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_vode-adams/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_vode-adams/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_vode-adams/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_vode-bdf/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_vode-bdf/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_vode-bdf/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/15_0_vode-bdf/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_dopri5/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_dopri5/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_dopri5/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_dopri5/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_rodas5p-mf/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_rodas5p-mf/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_rodas5p-mf/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_rodas5p-mf/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_switching/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_switching/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_switching/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_switching/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_vode-adams/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_vode-adams/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_vode-adams/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_vode-adams/stdout.jsonl\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_vode-bdf/RECEIPT.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_vode-bdf/START.json\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_vode-bdf/stderr.log\n?? research/local_frontier_20261024/evidence/local-external-smoke/runs/16_0_vode-bdf/stdout.jsonl\n?? research/local_frontier_20261024/evidence/model-build.exit\n?? research/local_frontier_20261024/evidence/model-build.log\n?? research/local_frontier_20261024/evidence/model-catalog.json\n?? research/local_frontier_20261024/evidence/model-contract-1-smoke.json\n?? research/local_frontier_20261024/evidence/model-contract-15-smoke.json\n?? research/local_frontier_20261024/evidence/model-executable-smoke-receipts-round2.json\n?? research/local_frontier_20261024/evidence/model-executable-smoke-receipts.json\n?? research/local_frontier_20261024/evidence/model-executable-smoke-round2.jsonl\n?? research/local_frontier_20261024/evidence/model-executable-smoke.jsonl\n?? research/local_frontier_20261024/evidence/model-final-verification.exit\n?? research/local_frontier_20261024/evidence/model-final-verification.log\n?? research/local_frontier_20261024/evidence/model-source-identity.json\n?? research/local_frontier_20261024/evidence/model-tests-round2.exit\n?? research/local_frontier_20261024/evidence/model-tests-round2.log\n?? research/local_frontier_20261024/evidence/n1n2-benchmark-build.receipt.json\n?? research/local_frontier_20261024/evidence/n1n2-benchmark-build.stderr\n?? research/local_frontier_20261024/evidence/n1n2-benchmark-build.stdout\n?? research/local_frontier_20261024/evidence/n1n2-chart-benchmark.receipt.json\n?? research/local_frontier_20261024/evidence/n1n2-chart-benchmark.stderr\n?? research/local_frontier_20261024/evidence/n1n2-chart-benchmark.stdout\n?? research/local_frontier_20261024/evidence/n1n2-independent-review.json\n?? research/local_frontier_20261024/evidence/n1n2-round1-tests.receipt.json\n?? research/local_frontier_20261024/evidence/n1n2-round1-tests.stderr\n?? research/local_frontier_20261024/evidence/n1n2-round1-tests.stdout\n?? research/local_frontier_20261024/evidence/n1n2-round2-tests.receipt.json\n?? research/local_frontier_20261024/evidence/n1n2-round2-tests.stderr\n?? research/local_frontier_20261024/evidence/n1n2-round2-tests.stdout\n?? research/local_frontier_20261024/evidence/n3_round1_source/reconsideration_bench.rs\n?? research/local_frontier_20261024/evidence/n3_round2_source/reconsideration_bench.rs\n?? research/local_frontier_20261024/evidence/n4-benchmark-build.exit\n?? research/local_frontier_20261024/evidence/n4-benchmark-build.receipt.json\n?? research/local_frontier_20261024/evidence/n4-benchmark-build.stderr\n?? research/local_frontier_20261024/evidence/n4-benchmark-build.stdout\n?? research/local_frontier_20261024/evidence/n4-benchmark.exit\n?? research/local_frontier_20261024/evidence/n4-benchmark.receipt.json\n?? research/local_frontier_20261024/evidence/n4-benchmark.stderr\n?? research/local_frontier_20261024/evidence/n4-benchmark.stdout\n?? research/local_frontier_20261024/evidence/n4-round1-tests.exit\n?? research/local_frontier_20261024/evidence/n4-round1-tests.receipt.json\n?? research/local_frontier_20261024/evidence/n4-round1-tests.stderr\n?? research/local_frontier_20261024/evidence/n4-round1-tests.stdout\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark-build.exit\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark-build.receipt.json\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark-build.stderr\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark-build.stdout\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark.exit\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark.receipt.json\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark.stderr\n?? research/local_frontier_20261024/evidence/n4-round2-benchmark.stdout\n?? research/local_frontier_20261024/evidence/n4-round2-tests.exit\n?? research/local_frontier_20261024/evidence/n4-round2-tests.receipt.json\n?? research/local_frontier_20261024/evidence/n4-round2-tests.stderr\n?? research/local_frontier_20261024/evidence/n4-round2-tests.stdout\n?? research/local_frontier_20261024/evidence/n4_round1_source/fixed_point_continuation.rs\n?? research/local_frontier_20261024/evidence/n4_round1_source/fixed_point_continuation_contracts.rs\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round1-tests.receipt.json\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round1-tests.stderr\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round1-tests.stdout\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round2-build.receipt.json\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round2-build.stderr\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round2-build.stdout\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round2-sweep.receipt.json\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round2-sweep.stderr\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round2-sweep.stdout\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round2-tests.receipt.json\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round2-tests.stderr\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round2-tests.stdout\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round3-build.receipt.json\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round3-build.stderr\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round3-build.stdout\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round3-sweep.receipt.json\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round3-sweep.stderr\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round3-sweep.stdout\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round3-tests.receipt.json\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round3-tests.stderr\n?? research/local_frontier_20261024/evidence/runs/conditional-chart-round3-tests.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-broad.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-broad.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-broad.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-build.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-build.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-build.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-changing-rate.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-changing-rate.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-changing-rate.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-expensive-few-mode.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-expensive-few-mode.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-expensive-few-mode.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode-basis1.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode-basis1.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode-basis1.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-few-mode.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-model-tests.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-model-tests.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-model-tests.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-changing-rank.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-changing-rank.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-changing-rank.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-step-regime.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-step-regime.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonlinear-step-regime.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonnormal.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonnormal.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-nonnormal.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-oscillatory.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-oscillatory.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-oscillatory.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-final-riccati.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-final-riccati.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-final-riccati.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-round1-build.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-round1-build.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-round1-build.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-round1-tests.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-round1-tests.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-round1-tests.stdout\n?? research/local_frontier_20261024/evidence/runs/n3-round2-tests.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n3-round2-tests.stderr\n?? research/local_frontier_20261024/evidence/runs/n3-round2-tests.stdout\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-1.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-1.stderr\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-1.stdout\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-2.receipt.json\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-2.stderr\n?? research/local_frontier_20261024/evidence/runs/n5-final-meanfield-2.stdout\n?? research/local_frontier_20261024/local/.gitignore\n?? research/local_frontier_20261024/local/CATALOG.json\n?? research/local_frontier_20261024/local/CONDITIONAL_CAMPAIGN_KO.md\n?? research/local_frontier_20261024/local/HANDOFF_TEMPLATE_KO.md\n?? research/local_frontier_20261024/local/README_KO.md\n?? research/local_frontier_20261024/local/accuracy.json\n?? research/local_frontier_20261024/local/build_local.py\n?? research/local_frontier_20261024/local/campaign.py\n?? research/local_frontier_20261024/local/conditional_campaign.py\n?? research/local_frontier_20261024/local/external_compare.py\n?? research/local_frontier_20261024/local/external_models.py\n?? research/local_frontier_20261024/local/julia_adapter.jl\n?? research/local_frontier_20261024/local/plot_campaign.py\n?? research/local_frontier_20261024/local/prepare_worktree.sh\n?? research/local_frontier_20261024/local/smoke.json\n?? research/local_frontier_20261024/local/stage_campaign.py\n?? research/local_frontier_20261024/local/standard.json\n?? research/local_frontier_20261024/local/test_campaign.py\n?? research/local_frontier_20261024/local/test_conditional_campaign.py\n?? research/local_frontier_20261024/local/test_external_models.py\n?? research/local_frontier_20261024/local/vode_adapter.py\n?? research/local_frontier_20261024/src/analyze_conditional_chart.py\n?? research/local_frontier_20261024/src/analyze_conditioned_chart.py\n?? research/local_frontier_20261024/src/analyze_n3_n5.py\n?? research/local_frontier_20261024/src/check_geometry_transfer.py\n?? research/local_frontier_20261024/src/conditional_budget.py\n?? research/local_frontier_20261024/src/plot_n3_n5.py\n?? research/local_frontier_20261024/src/review_conditional_budget.py\n?? research/local_frontier_20261024/src/run_n3_benchmarks.py\n?? research/local_frontier_20261024/src/run_receipt.py\n?? research/local_frontier_20261024/src/test_conditional_budget.py\n?? research/local_frontier_20261024/src/verify_package.py\n?? research/rev01c_gcrodr_refreshed_update_20261003/.RESULTS.json.uPuy2Q",
+    "clean": false,
+    "exploratory_dirty_run": true
+  },
+  "binary_sha256": "5c4bb4ff4ccb43759c8bbc20ad818e8c45da853261799dba93d2910a204f99b0",
+  "source_file": "crates/rodas5p-integrators/examples/conditional_continuation_sweep.rs",
+  "source_file_sha256": "d31c7d20296d33906ca0098cb92d67a9af1aafebb1026b4ce5708689eeeb0f06",
+  "source_file_unchanged": true,
+  "binary_unchanged": true,
+  "conditional_rows": [
+    {
+      "default_dispatch_changed": false,
+      "evaluation_error": "biased callbacks use a declared enclosure; true model residual and independent tight bisection are diagnostic checks",
+      "kind": "header",
+      "repeats": 1,
+      "schema_version": 1,
+      "scope": "root continuation only, not ODE trajectory accuracy; bisection is final-target-only with known monotone separable structure",
+      "study": "conditional_fixed_p_continuation",
+      "threads": 1,
+      "timing": "all solve allocations and policy guards included; immutable model/atlas construction, tight reference, diagnostic comparisons and JSON construction excluded"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 8.59367439431935e-08,
+        "f_calls": 16,
+        "residual_upper": 8.816401630973241e-08,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.5590142671854734,
+      "case_id": "n1_p1_tol0.000001",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.0846974696221423e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.1128101706780946e-07,
+        "root_bound": 1.1675385397278371e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.112810064096692e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 7,
+          "residual_calls": 7,
+          "state_updates": 5
+        }
+      },
+      "conditional_over_raw_time": 0.32614213197969544,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "n1_p1_tol0.000001",
+        "iterations": 768,
+        "n": 1,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.7705327186153317e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.687538997430238e-14,
+        "iterations_planning_upper": 7,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 4.695697382840826e-14,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.0846974696221423e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.1128101706780946e-07,
+        "root_bound": 1.1675385397278371e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.112810064096692e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 7,
+          "residual_calls": 7,
+          "state_updates": 5
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 4.31e-07,
+        "conditional": 7.71e-07,
+        "raw": 2.364e-06
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 2.2236434915612335e-11,
+        "f_calls": 32,
+        "residual_upper": 2.2824742096361044e-11,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.9750328515111695,
+      "case_id": "n1_p1_tol0.0000000001",
+      "conditional": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": 7.285938519174806e-11,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 7.475964292069595e-11,
+        "root_bound": 7.843634667089412e-11,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 7.474898477966008e-11,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 11,
+          "residual_calls": 11,
+          "state_updates": 9
+        }
+      },
+      "conditional_over_raw_time": 0.6663747810858144,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "n1_p1_tol0.0000000001",
+        "iterations": 768,
+        "n": 1,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-10
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.7705327186153317e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.687538997430238e-14,
+        "iterations_planning_upper": 10,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 4.695697382840826e-14,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": 7.285938519174806e-11,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 7.475964292069595e-11,
+        "root_bound": 7.843634667089412e-11,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 7.474898477966008e-11,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 11,
+          "residual_calls": 11,
+          "state_updates": 9
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 7.42e-07,
+        "conditional": 7.61e-07,
+        "raw": 1.142e-06
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 8.59367439431935e-08,
+        "f_calls": 16,
+        "residual_upper": 8.816401630973241e-08,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.024482233838417255,
+      "case_id": "n1_p0.0625_tol0.000001",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 9.404553533709503e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 9.648295333786127e-07,
+        "root_bound": 9.64829533378613e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 9.648295227204784e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 286,
+          "residual_calls": 286,
+          "state_updates": 284
+        }
+      },
+      "conditional_over_raw_time": 0.7429821542697016,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "n1_p0.0625_tol0.000001",
+        "iterations": 768,
+        "n": 1,
+        "p": 0.0625,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 3.019806626980426e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.1102230246251565e-16,
+        "iterate_perturbation_upper": 1.887379141862766e-15,
+        "iterations_planning_upper": 270,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.9375,
+        "self_map_margin": 0.014374999999999999,
+        "sufficient_acceptance_floor": 9.64561763794336e-13,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 9.404553533709503e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 9.648295333786127e-07,
+        "root_bound": 9.64829533378613e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 9.648295227204784e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 286,
+          "residual_calls": 286,
+          "state_updates": 284
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 3.7e-07,
+        "conditional": 1.5113e-05,
+        "raw": 2.0341e-05
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 2.2236434915612335e-11,
+        "f_calls": 32,
+        "residual_upper": 2.2824742096361044e-11,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.0168399677904982,
+      "case_id": "n1_p0.0625_tol0.0000000001",
+      "conditional": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": 9.396072808698364e-11,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 9.640788167786173e-11,
+        "root_bound": 9.640788167786177e-11,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 9.6397223536826e-11,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 568,
+          "residual_calls": 568,
+          "state_updates": 566
+        }
+      },
+      "conditional_over_raw_time": 0.7430927727769395,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "n1_p0.0625_tol0.0000000001",
+        "iterations": 768,
+        "n": 1,
+        "p": 0.0625,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-10
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 3.019806626980426e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.1102230246251565e-16,
+        "iterate_perturbation_upper": 1.887379141862766e-15,
+        "iterations_planning_upper": 413,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.9375,
+        "self_map_margin": 0.014374999999999999,
+        "sufficient_acceptance_floor": 9.64561763794336e-13,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": 9.396072808698364e-11,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 9.640788167786173e-11,
+        "root_bound": 9.640788167786177e-11,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 9.6397223536826e-11,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 568,
+          "residual_calls": 568,
+          "state_updates": 566
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 4.81e-07,
+        "conditional": 2.8563e-05,
+        "raw": 3.8438e-05
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 9.509136571494992e-07,
+        "f_calls": 20,
+        "residual_upper": 9.75578672068012e-07,
+        "success": true
+      },
+      "bisection_over_conditional_time": 1.4105237924008152,
+      "case_id": "n128_p1_tol0.000001",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.1852130565870311e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.2165581242309152e-07,
+        "root_bound": 1.276388851652108e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.216558016547964e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 8,
+          "residual_calls": 8,
+          "state_updates": 6
+        }
+      },
+      "conditional_over_raw_time": 0.9307228915662651,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "n128_p1_tol0.000001",
+        "iterations": 768,
+        "n": 128,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.7705327186153317e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.687538997430238e-14,
+        "iterations_planning_upper": 7,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 4.695697382840826e-14,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.1852130565870311e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.2165581242309152e-07,
+        "root_bound": 1.276388851652108e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.216558016547964e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 8,
+          "residual_calls": 8,
+          "state_updates": 6
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 1.1768e-05,
+        "conditional": 8.343e-06,
+        "raw": 8.964e-06
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 5.796074731279077e-11,
+        "f_calls": 34,
+        "residual_upper": 5.947964256541845e-11,
+        "success": true
+      },
+      "bisection_over_conditional_time": 1.6411905199338601,
+      "case_id": "n128_p1_tol0.0000000001",
+      "conditional": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": 8.289657849047671e-11,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 8.510014828239039e-11,
+        "root_bound": 8.928540147660632e-11,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 8.508937998641386e-11,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 12,
+          "residual_calls": 12,
+          "state_updates": 10
+        }
+      },
+      "conditional_over_raw_time": 0.9610664783261235,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "n128_p1_tol0.0000000001",
+        "iterations": 768,
+        "n": 128,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-10
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.7705327186153317e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.687538997430238e-14,
+        "iterations_planning_upper": 10,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 4.695697382840826e-14,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": 8.289657849047671e-11,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 8.510014828239039e-11,
+        "root_bound": 8.928540147660632e-11,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 8.508937998641386e-11,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 12,
+          "residual_calls": 12,
+          "state_updates": 10
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 1.7866e-05,
+        "conditional": 1.0886e-05,
+        "raw": 1.1327e-05
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 9.509136571494992e-07,
+        "f_calls": 20,
+        "residual_upper": 9.75578672068012e-07,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.0273046945050147,
+      "case_id": "n128_p0.0625_tol0.000001",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 9.404572098858921e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 9.648314363000095e-07,
+        "root_bound": 9.6483143630001e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 9.648314255317203e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 339,
+          "residual_calls": 339,
+          "state_updates": 337
+        }
+      },
+      "conditional_over_raw_time": 1.0770361205661052,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "n128_p0.0625_tol0.000001",
+        "iterations": 768,
+        "n": 128,
+        "p": 0.0625,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 3.019806626980426e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.1102230246251565e-16,
+        "iterate_perturbation_upper": 1.887379141862766e-15,
+        "iterations_planning_upper": 270,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.9375,
+        "self_map_margin": 0.014374999999999999,
+        "sufficient_acceptance_floor": 9.64561763794336e-13,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 9.404572098858921e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 9.648314363000095e-07,
+        "root_bound": 9.6483143630001e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 9.648314255317203e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 339,
+          "residual_calls": 339,
+          "state_updates": 337
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 1.0506e-05,
+        "conditional": 0.000384769,
+        "raw": 0.000357248
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 5.796074731279077e-11,
+        "f_calls": 34,
+        "residual_upper": 5.947964256541845e-11,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.027129131353624263,
+      "case_id": "n128_p0.0625_tol0.0000000001",
+      "conditional": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": 9.396250444382304e-11,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 9.640799183280246e-11,
+        "root_bound": 9.64079918328025e-11,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 9.6397223536826e-11,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 621,
+          "residual_calls": 621,
+          "state_updates": 619
+        }
+      },
+      "conditional_over_raw_time": 0.8877881022197119,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "n128_p0.0625_tol0.0000000001",
+        "iterations": 768,
+        "n": 128,
+        "p": 0.0625,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-10
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 3.019806626980426e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.1102230246251565e-16,
+        "iterate_perturbation_upper": 1.887379141862766e-15,
+        "iterations_planning_upper": 413,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.9375,
+        "self_map_margin": 0.014374999999999999,
+        "sufficient_acceptance_floor": 9.64561763794336e-13,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": 9.396250444382304e-11,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 9.640799183280246e-11,
+        "root_bound": 9.64079918328025e-11,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 9.6397223536826e-11,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 621,
+          "residual_calls": 621,
+          "state_updates": 619
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 1.8678e-05,
+        "conditional": 0.000688485,
+        "raw": 0.000775506
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 8.59367439431935e-08,
+        "f_calls": 16,
+        "residual_upper": 8.816401630973241e-08,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.23718791064388964,
+      "case_id": "near_contraction_iteration_cap",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": null,
+        "output_unchanged_on_failure": true,
+        "residual_upper": null,
+        "root_bound": null,
+        "seed_policy": "supplied",
+        "status": "ITERATION_CAP",
+        "true_residual_max": null,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 0,
+          "inverse_calls": 17,
+          "residual_calls": 17,
+          "state_updates": 16
+        }
+      },
+      "conditional_over_raw_time": 0.7560854446100348,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "near_contraction_iteration_cap",
+        "iterations": 16,
+        "n": 1,
+        "p": 0.0625,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 3.019806626980426e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.1102230246251565e-16,
+        "iterate_perturbation_upper": 1.887379141862766e-15,
+        "iterations_planning_upper": 270,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.9375,
+        "self_map_margin": 0.014374999999999999,
+        "sufficient_acceptance_floor": 9.64561763794336e-13,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": null,
+        "output_unchanged_on_failure": true,
+        "residual_upper": null,
+        "root_bound": null,
+        "seed_policy": "supplied",
+        "status": "ITERATION_CAP",
+        "true_residual_max": null,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 0,
+          "inverse_calls": 17,
+          "residual_calls": 17,
+          "state_updates": 16
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 3.61e-07,
+        "conditional": 1.522e-06,
+        "raw": 2.013e-06
+      },
+      "speed_comparison_eligible": false,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 0.11857613574143144,
+        "f_calls": 3,
+        "residual_upper": 0.1211853027343848,
+        "success": false
+      },
+      "bisection_over_conditional_time": 0.43478260869565216,
+      "case_id": "finite_cumulative_work_cap",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": null,
+        "output_unchanged_on_failure": true,
+        "residual_upper": null,
+        "root_bound": null,
+        "seed_policy": "supplied",
+        "status": "WORK_CAP",
+        "true_residual_max": null,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 0,
+          "inverse_calls": 3,
+          "residual_calls": 3,
+          "state_updates": 3
+        }
+      },
+      "conditional_over_raw_time": 0.609984399375975,
+      "config": {
+        "calls": 3,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "finite_cumulative_work_cap",
+        "iterations": 768,
+        "n": 1,
+        "p": 0.0625,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 3.019806626980426e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.1102230246251565e-16,
+        "iterate_perturbation_upper": 1.887379141862766e-15,
+        "iterations_planning_upper": 270,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.9375,
+        "self_map_margin": 0.014374999999999999,
+        "sufficient_acceptance_floor": 9.64561763794336e-13,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": null,
+        "output_unchanged_on_failure": true,
+        "residual_upper": null,
+        "root_bound": null,
+        "seed_policy": "supplied",
+        "status": "WORK_CAP",
+        "true_residual_max": null,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 0,
+          "inverse_calls": 3,
+          "residual_calls": 3,
+          "state_updates": 3
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 1.7e-07,
+        "conditional": 3.91e-07,
+        "raw": 6.41e-07
+      },
+      "speed_comparison_eligible": false,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 9.509136571494992e-07,
+        "f_calls": 20,
+        "residual_upper": 9.75578672068012e-07,
+        "success": true
+      },
+      "bisection_over_conditional_time": 1.1198288159771754,
+      "case_id": "outside_seed_center_fallback",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.1852130255007864e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.2165580920344475e-07,
+        "root_bound": 1.2763888178722074e-07,
+        "seed_policy": "declared_patch_center_fallback",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.2165579843514962e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 9,
+          "residual_calls": 9,
+          "state_updates": 7
+        }
+      },
+      "conditional_over_raw_time": 8.830426356589149,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "outside_seed_center_fallback",
+        "iterations": 768,
+        "n": 128,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 2.0,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.7705327186153317e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.687538997430238e-14,
+        "iterations_planning_upper": 7,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 4.695697382840826e-14,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": null,
+        "output_unchanged_on_failure": true,
+        "residual_upper": null,
+        "root_bound": null,
+        "seed_policy": "supplied",
+        "status": "OUTSIDE_PATCH",
+        "true_residual_max": null,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 0,
+          "inverse_calls": 0,
+          "residual_calls": 0,
+          "state_updates": 0
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 1.0205e-05,
+        "conditional": 9.113e-06,
+        "raw": 1.032e-06
+      },
+      "speed_comparison_eligible": false,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 9.509136571494992e-07,
+        "f_calls": 20,
+        "residual_upper": 9.75578672068012e-07,
+        "success": true
+      },
+      "bisection_over_conditional_time": 1.192486539402839,
+      "case_id": "center_initial_iterate",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.1852130255007864e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.2165580920344475e-07,
+        "root_bound": 1.2763888178722074e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.2165579843514962e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 9,
+          "residual_calls": 9,
+          "state_updates": 7
+        }
+      },
+      "conditional_over_raw_time": 0.9599436156466582,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "center_initial_iterate",
+        "iterations": 768,
+        "n": 128,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 0.5,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.7705327186153317e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.687538997430238e-14,
+        "iterations_planning_upper": 7,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 4.695697382840826e-14,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.1852130255007864e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.2165580920344475e-07,
+        "root_bound": 1.2763888178722074e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.2165579843514962e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 9,
+          "residual_calls": 9,
+          "state_updates": 7
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 9.745e-06,
+        "conditional": 8.172e-06,
+        "raw": 8.513e-06
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 9.228619237688918e-07,
+        "f_calls": 20,
+        "residual_upper": 9.518797355074672e-07,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.9584748961872406,
+      "case_id": "uncertain_evaluation_feasible",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.233924725729807e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.3165580550932145e-07,
+        "root_bound": 1.3813068119010777e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.2665579474102628e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 8,
+          "residual_calls": 8,
+          "state_updates": 6
+        }
+      },
+      "conditional_over_raw_time": 0.9289033049881652,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 1e-08,
+        "id": "uncertain_evaluation_feasible",
+        "iterations": 768,
+        "n": 128,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.049182098401571e-08,
+        "evaluation_error_upper": 1.0000014210854715e-08,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.0000016875389975e-08,
+        "iterations_planning_upper": 7,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 3.098365351435088e-08,
+        "unavoidable_reported_error_floor": 1e-08,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 1.233924725729807e-07,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.3165580550932145e-07,
+        "root_bound": 1.3813068119010777e-07,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 1.2665579474102628e-07,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 8,
+          "residual_calls": 8,
+          "state_updates": 6
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 1.0156e-05,
+        "conditional": 1.0596e-05,
+        "raw": 1.1407e-05
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 1.453367737269673e-08,
+        "f_calls": 128,
+        "residual_upper": 1.9960676646369272e-08,
+        "success": false
+      },
+      "bisection_over_conditional_time": 704.9444444444445,
+      "case_id": "uncertain_evaluation_impossible",
+      "conditional": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": null,
+        "output_unchanged_on_failure": true,
+        "residual_upper": null,
+        "root_bound": null,
+        "seed_policy": "supplied",
+        "status": "REFUSED_EVALUATION_FLOOR",
+        "true_residual_max": null,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 0,
+          "inverse_calls": 0,
+          "residual_calls": 0,
+          "state_updates": 0
+        }
+      },
+      "conditional_over_raw_time": 0.0030597674576732167,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 1e-08,
+        "id": "uncertain_evaluation_impossible",
+        "iterations": 32,
+        "n": 128,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-10
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.049182098401571e-08,
+        "evaluation_error_upper": 1.0000014210854715e-08,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.0000016875389975e-08,
+        "iterations_planning_upper": null,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 3.098365351435088e-08,
+        "unavoidable_reported_error_floor": 1e-08,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-10,
+        "error_to_reference": null,
+        "output_unchanged_on_failure": true,
+        "residual_upper": null,
+        "root_bound": null,
+        "seed_policy": "supplied",
+        "status": "ITERATION_CAP",
+        "true_residual_max": null,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 0,
+          "inverse_calls": 33,
+          "residual_calls": 33,
+          "state_updates": 32
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 6.3445e-05,
+        "conditional": 9e-08,
+        "raw": 2.9414e-05
+      },
+      "speed_comparison_eligible": false,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 9.509136571494992e-07,
+        "f_calls": 20,
+        "residual_upper": 9.75578672068012e-07,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.8158162400406849,
+      "case_id": "root_budget_refinement",
+      "conditional": {
+        "effective_tolerance": 4.765625e-11,
+        "error_to_reference": 2.1928014959371467e-12,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 2.2611903668923345e-12,
+        "root_bound": 2.3723964505099906e-12,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 2.2504220709151923e-12,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 13,
+          "residual_calls": 13,
+          "state_updates": 11
+        }
+      },
+      "conditional_over_raw_time": 1.5219298245614035,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "root_budget_refinement",
+        "iterations": 768,
+        "n": 128,
+        "p": 1.0,
+        "root_tolerance": 1e-10,
+        "seed": 0.25,
+        "split_patch": false,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.7705327186153317e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.687538997430238e-14,
+        "iterations_planning_upper": 7,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.046875,
+        "self_map_margin": 0.20656249999999998,
+        "sufficient_acceptance_floor": 4.695697382840826e-14,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": null,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 1.2165581242309152e-07,
+        "root_bound": 1.276388851652108e-07,
+        "seed_policy": "supplied",
+        "status": "ROOT_BUDGET_NOT_MET",
+        "true_residual_max": null,
+        "work": {
+          "branch_overlap_checks": 0,
+          "completed_stations": 2,
+          "inverse_calls": 8,
+          "residual_calls": 8,
+          "state_updates": 6
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 9.625e-06,
+        "conditional": 1.1798e-05,
+        "raw": 7.752e-06
+      },
+      "speed_comparison_eligible": false,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "accuracy_contract_pass": true,
+      "bisection_final_only": {
+        "error_to_reference": 9.509136571494992e-07,
+        "f_calls": 20,
+        "residual_upper": 9.75578672068012e-07,
+        "success": true
+      },
+      "bisection_over_conditional_time": 0.6193155794019499,
+      "case_id": "two_regular_patches",
+      "conditional": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 8.560807207569354e-08,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 8.787213301355367e-08,
+        "root_bound": 9.219371332569566e-08,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 8.787212224525831e-08,
+        "work": {
+          "branch_overlap_checks": 1,
+          "completed_stations": 3,
+          "inverse_calls": 12,
+          "residual_calls": 12,
+          "state_updates": 9
+        }
+      },
+      "conditional_over_raw_time": 1.1490977443609023,
+      "config": {
+        "calls": 2048,
+        "coefficient": 0.015625,
+        "evaluation_uncertainty": 0.0,
+        "id": "two_regular_patches",
+        "iterations": 768,
+        "n": 128,
+        "p": 1.0,
+        "root_tolerance": null,
+        "seed": 0.25,
+        "split_patch": true,
+        "tolerance": 1e-06
+      },
+      "kind": "result",
+      "planning": {
+        "asymptotic_root_error_sufficient_bound": 1.7332396523255403e-14,
+        "evaluation_error_upper": 1.4210854715202004e-14,
+        "inverse_error_upper": 1.7763568394002505e-15,
+        "iterate_perturbation_upper": 1.687538997430238e-14,
+        "iterations_planning_upper": 6,
+        "planning_only": "floating logarithms, generous roundoff constants; not an admission certificate or impossibility test",
+        "q_upper": 0.0263671875,
+        "self_map_margin": 0.1851123046875,
+        "sufficient_acceptance_floor": 4.6211112502612434e-14,
+        "unavoidable_reported_error_floor": 0.0,
+        "update_rounding_upper": 8.881784197001252e-16
+      },
+      "raw": {
+        "effective_tolerance": 1e-06,
+        "error_to_reference": 8.560807207569354e-08,
+        "output_unchanged_on_failure": true,
+        "residual_upper": 8.787213301355367e-08,
+        "root_bound": 9.219371332569566e-08,
+        "seed_policy": "supplied",
+        "status": "PASS_SCOPED",
+        "true_residual_max": 8.787212224525831e-08,
+        "work": {
+          "branch_overlap_checks": 1,
+          "completed_stations": 3,
+          "inverse_calls": 12,
+          "residual_calls": 12,
+          "state_updates": 9
+        }
+      },
+      "schema_version": 1,
+      "seconds_median": {
+        "bisection_final_only": 9.465e-06,
+        "conditional": 1.5283e-05,
+        "raw": 1.33e-05
+      },
+      "speed_comparison_eligible": true,
+      "warning": "short in-process timings are descriptive; refusals and changed root-error requirements are not speedups"
+    },
+    {
+      "case_id": "disjoint_branch_refusal",
+      "expected_refusal": true,
+      "guard_pass": true,
+      "kind": "guard",
+      "output_unchanged": true,
+      "status": "fixed-P continuation cannot transport the previous root enclosure into patch 2",
+      "work": {
+        "branch_overlap_checks": 1,
+        "completed_stations": 2,
+        "inverse_calls": 10,
+        "residual_calls": 10,
+        "state_updates": 8
+      }
+    }
+  ],
+  "conditional_parse_errors": [],
+  "exploratory_dirty_source": true,
+  "clean_source_campaign": false,
+  "whole_ode_ranking_eligible": false,
+  "note": "Bounded developer smoke of owner-validated final binaries; strict clean source/build receipt local campaign remains separate."
+}

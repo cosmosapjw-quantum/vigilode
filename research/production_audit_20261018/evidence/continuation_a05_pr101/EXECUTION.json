@@ -1,0 +1,29 @@
+{
+  "node": "A05",
+  "scope": "sealed PR101 local continuous-output provider and quartic-segment enclosures",
+  "branch": "audit/production-readiness-20261018",
+  "source_head": "d087dab9a8dacff0b195566c4a649273acdb476c",
+  "worktree_state": "dirty overlays present; identities listed by SHA-256 below; no unrelated changes staged",
+  "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_pr101_provider -- --nocapture",
+  "test_exit_code": 0,
+  "test_result": "8 passed; 0 failed",
+  "allocator_positive_control": "CollectiveModel clone observed 3 allocations in both warmed-operation tests",
+  "oracle_command": "python3 crates/rodas5p-integrators/tests/pr101_fraction_oracle.py research/production_audit_20261018/evidence/continuation_a05_pr101/targeted_test.log",
+  "oracle_exit_code": 0,
+  "oracle_result": "49 exact Fraction coefficient enclosures, RHS and returned output enclosures, residual upper and cancellation control passed",
+  "oracle_residual_upper": 112.549537181082414,
+  "source_files": {
+    "crates/rodas5p-integrators/src/bound_pr101.rs": "c7a80e6d9984bcd92ce3063e2895f8d6ebdcc30341e482402567e8e4244ab8ee",
+    "crates/rodas5p-integrators/src/dense_output_v2.rs": "ffae5416d4dbe3e026665e25e32c64d2ce7a61cb5a731ab2f50f21b93fc22be3",
+    "crates/rodas5p-integrators/src/lib.rs": "9e736f1e23270d534891f6d7c45998677416b821ffb183ff68fdfffd8f6fc18c",
+    "crates/rodas5p-integrators/tests/production_audit_pr101_provider.rs": "ba1f78b386168306821fec7bf1aebf13c0052c812a742ba575d65addc4e94597",
+    "crates/rodas5p-integrators/tests/pr101_fraction_oracle.py": "6085e648fd9cd0c898fe000e1c6aff017f0999577a8a8ffa99a67e6369b18d50"
+  },
+  "environment": {
+    "rustc": "see rustc_version.txt",
+    "cargo": "see cargo_version.txt",
+    "offline": true,
+    "locked": true
+  },
+  "claim_ceiling": "This is a bounded sealed-model output-provider result only. It does not establish generic ODE global-output certification, trajectory integration, or zero allocation beyond the warmed operations named by tests. Overall A05 remains pending independent review and prior findings on deterministic work accounting."
+}

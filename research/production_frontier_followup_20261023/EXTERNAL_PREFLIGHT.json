@@ -1,0 +1,20 @@
+{
+  "schema": "vigilode.production-frontier-external-preflight.v1",
+  "observed_utc": "2026-10-23T09:28:26.154624+00:00",
+  "comparators": {
+    "VODE/DVODE": {
+      "status": "AVAILABLE_INTERFACE_NOT_RUN",
+      "interface": "SciPy 1.17.0 scipy.integrate.ode VODE; exact Fortran DVODE build identity and frozen output/norm/RHS contract pending"
+    },
+    "diffsol": {
+      "status": "NOT_RUN_UNVERIFIED_INSTALLATION",
+      "evidence": "No Python diffsol module or executable found in minimal local preflight; Cargo/provider scan pending PB01"
+    },
+    "Julia": {
+      "status": "AVAILABLE_BINARY_NOT_RUN",
+      "version": "1.12.7",
+      "packages_and_build": "NOT_CHECKED"
+    }
+  },
+  "reason_not_run": "PB01 dependencies and common observation/error contract incomplete; no timing comparison or speed ratio"
+}

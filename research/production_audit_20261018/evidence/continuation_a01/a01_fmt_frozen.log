@@ -1,0 +1,11 @@
+Diff in /home/cosmosapjw/vigilode/crates/rodas5p-integrators/tests/production_audit_packet.rs:37:
+         &mut work,
+     )
+     .unwrap();
+-    eprintln!("A01_COUNTER_RECEIPT setup={after_setup:?} candidate={after_candidate:?} outward={work:?}");
++    eprintln!(
++        "A01_COUNTER_RECEIPT setup={after_setup:?} candidate={after_candidate:?} outward={work:?}"
++    );
+     assert_eq!(out.modes.len(), 2);
+     for i in 0..2 {
+         assert!(out.mode_radii[i].is_finite() && out.mode_radii[i] >= 0.0);

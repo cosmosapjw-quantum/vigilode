@@ -1,0 +1,17 @@
+{
+  "schema": "vigilode.gate.mutation-replay.v1",
+  "scope": "controlled guard-removal replay, not a historical native run",
+  "removed_guards": [
+    "frozen corpus hash equality",
+    "comparison command executable equality"
+  ],
+  "expected_failed_regressions": 2,
+  "observed_failed_regressions": 2,
+  "errors": 0,
+  "final_gate_sha256": "6855f3a8f852de8a8fdbc345f5a3245c13ca37423f0767ba21f8bc7b5ecd5892",
+  "mutant_sha256": "9fce578e2ba3a34002e461532431f4265339d6ef07fa5ce38f0f137713e56426",
+  "tests": [
+    "test_self_consistent_corpus_replacement_cannot_override_frozen_config_lock",
+    "test_valid_other_build_binary_cannot_be_rebound_to_comparison_command"
+  ]
+}

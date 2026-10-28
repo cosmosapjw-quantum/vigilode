@@ -1,0 +1,178 @@
+{
+  "schema": "vigilode-r4-statistics-result-v1",
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "preregistration_commit": "b2914f3e3c03eda60a8547619db6284aac8250a2",
+  "verdict": "REWORK",
+  "findings": [
+    {
+      "id": "R4-STAT-01",
+      "severity": "P2",
+      "title": "Failed coverage authority is not enforced by machine timing gates",
+      "failure_layer": "EVIDENCE_AUTHORITY",
+      "evidence_status": [
+        "implementation-verified",
+        "derived"
+      ],
+      "status": "OPEN",
+      "novelty": "New machine-policy propagation defect; failed population coverage is already acknowledged and is not rediscovered.",
+      "source_locations": [
+        {
+          "path": "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+          "lines": [
+            533,
+            550
+          ]
+        },
+        {
+          "path": "crates/rodas5p-cli/src/main.rs",
+          "lines": [
+            1240,
+            1275
+          ]
+        },
+        {
+          "path": "docs/REAUDIT_R3_CLOSURE_20261001.md",
+          "lines": [
+            60,
+            64
+          ]
+        }
+      ],
+      "witnesses": [
+        "native.stdout.jsonl:valid_control_under_documented_authority_hold",
+        "native.stdout.jsonl:published_replay/poly03/chebyshev-warm"
+      ],
+      "observed": "The valid synthetic one-case six-session receipt and the published warm Chebyshev receipt both return Ok(Promote). The source consumer maps Promote directly to WallCriterion::Passed.",
+      "expected": "A diagnostic numeric decision may be retained, but the documented STATISTICAL_AUTHORITY_HOLD must yield NotEvaluated for a scientific/production timing gate.",
+      "scope_limit": "The library path and published receipt replay were executed. CLI mapping was read; a full fresh CLI performance campaign was not executed. No corruption or overclaim by the prior author is alleged: prose correctly discloses the hold.",
+      "next_step": "R4-STAT-DEV-01"
+    },
+    {
+      "id": "R4-STAT-02",
+      "severity": "P2",
+      "title": "Malformed later session cells pass full receipt recomputation",
+      "failure_layer": "IMPLEMENTATION",
+      "evidence_status": [
+        "implementation-verified",
+        "derived"
+      ],
+      "status": "OPEN",
+      "novelty": "New per-session admission gap after the original R3 raw-case defect was closed.",
+      "source_locations": [
+        {
+          "path": "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+          "lines": [
+            238,
+            269
+          ]
+        },
+        {
+          "path": "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+          "lines": [
+            453,
+            509
+          ]
+        }
+      ],
+      "witnesses": [
+        "native.stdout.jsonl:later_empty_warmups",
+        "native.stdout.jsonl:later_one_warmup",
+        "native.stdout.jsonl:shift_candidate_counts",
+        "native.stdout.jsonl:shift_reference_counts",
+        "native.stdout.jsonl:end_before_start"
+      ],
+      "observed": "Empty/one later-session warmup and 29/31 samples across adjacent sessions pass as Ok(Promote). A reversed timestamp also passes. Candidate/reference flattened arrays can be identical despite invalid cell lengths.",
+      "expected": "Every raw session cell must be complete before merging, with the required warmups and sample count, valid labels/order and first-session-calibrated batch identity.",
+      "cause": "Only first-session warmups survive merging. Per-record loop checks labels/order and warmup value finiteness but omits warmup count and candidate/reference lengths. Global total-length validation cannot detect the 29/31 redistribution.",
+      "scope_limit": "Synthetic malformed-record construction and current public verifier were executed; genuine recorded campaign corruption was not observed. Unauthenticated JSON provenance is a separately acknowledged limitation and is not the finding.",
+      "next_step": "R4-STAT-DEV-02"
+    }
+  ],
+  "prior_closure": [
+    {
+      "node": "STAT-DEV-01",
+      "status": "ORIGINAL_COUNTEREXAMPLES_CLOSED",
+      "evidence": "Five original malformed-case mutations rejected in this native probe; runtime r3_raw_protocol_admission_contracts 3 tests pass."
+    },
+    {
+      "node": "STAT-DEV-02",
+      "status": "PARTIAL_REOPENED",
+      "finding": "R4-STAT-02",
+      "evidence": "Real subprocess/session receipt implementation exists and original CLI campaign contract passes; malformed later records still bypass per-cell admission."
+    },
+    {
+      "node": "STAT-DEV-03",
+      "status": "CLOSED_WITH_DECLARED_CLAIM_CEILING",
+      "evidence": "Fixed-B Hoeffding MC gate is implemented, original two contracts pass. It does not establish population coverage."
+    },
+    {
+      "node": "STAT-DEV-04",
+      "status": "MEASURED_FAIL_PRESERVED",
+      "finding": "R4-STAT-01",
+      "evidence": "Both published studies FAIL with18/36primaryscenarios failing; no timing study rerun. Machine hold propagation remains absent."
+    },
+    {
+      "node": "POLY-03",
+      "status": "MEASURED_NUMERIC_PASS_UNDER_HOLD",
+      "evidence": "Published8-arm replay verifies warmChebyshev Promote; accuracy/kernel-time scope unchanged. No certified-action or general speedup promotion."
+    },
+    {
+      "node": "HOM-06",
+      "status": "MEASURED_FAIL_PRESERVED",
+      "evidence": "Publishedallfourarmsreplay Block; complete-cost negative result acknowledged and preserved."
+    }
+  ],
+  "claims": [
+    {
+      "id": "R4-STAT-MATH-01",
+      "status": [
+        "derived",
+        "numerically checked"
+      ],
+      "claim": "Fixed complete corpus median of population session-cell medians is enclosed by coordinatewise exact binomial order-statistic intervals followed by median endpoints, with union-bound coverage >=1-alpha.",
+      "assumptions": [
+        "iid session vectors",
+        "fixed complete case corpus",
+        "specified case medians",
+        "fixed stopping and non-informative inclusion"
+      ],
+      "scope_limits": [
+        "Not identical to pooled-pair estimand outside the symmetric additive law",
+        "No arbitrary missingness guarantee",
+        "No float-rounding or speed guarantee"
+      ],
+      "evidence": [
+        "DERIVATION_KO.md",
+        "EXACT_SESSION_INTERVAL.json",
+        "exact_session_interval.py"
+      ],
+      "independent_decision": "PENDING_ROOT_REVIEWER"
+    },
+    {
+      "id": "R4-STAT-MATH-02",
+      "status": [
+        "derived"
+      ],
+      "claim": "Five identical-response cases yield the same exact bootstrap law as one case; case count alone cannot authorize the five-case coverage domain.",
+      "evidence": [
+        "DERIVATION_KO.md"
+      ],
+      "scope_limits": [
+        "No fresh simulation or numeric coverage estimate for that limit"
+      ]
+    }
+  ],
+  "counts": {
+    "native_rows": 21,
+    "original_malformed_cases_rejected": 5,
+    "malformed_later_records_accepted": 5,
+    "published_arms_replayed": 8,
+    "exact_design_checks": 32,
+    "exact_sign_enumerations": 6,
+    "exact_decision_controls": 12,
+    "invalid_candidate_inputs_rejected": 4
+  },
+  "new_timing_campaign": false,
+  "production_source_modified": false,
+  "development_steps": "NEXT_STEPS.json"
+}

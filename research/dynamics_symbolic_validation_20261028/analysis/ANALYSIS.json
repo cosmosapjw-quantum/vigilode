@@ -1,0 +1,407 @@
+{
+  "schema": "vigilode.dynamics-analysis.v1",
+  "exact_companion_audit": {
+    "queries": 84,
+    "accepted_intervals": 164,
+    "exact_singletons": 164,
+    "preserved_refusals": 4
+  },
+  "trace": [
+    {
+      "family": "square",
+      "paired_ratios": [
+        2.900454469076173,
+        2.882913451826862,
+        2.960078067416752,
+        3.0381128841868295,
+        2.6935067739240424,
+        2.883492542752284,
+        3.2501695033351288
+      ],
+      "median_ratio": 2.900454469076173,
+      "minimum_ratio": 2.6935067739240424,
+      "maximum_ratio": 3.2501695033351288,
+      "new_faster_pairs": 7,
+      "pairs": 7,
+      "operations_per_call": {
+        "pr97_eager": {
+          "interval_additions": 6.0,
+          "interval_multiplications": 11.0
+        },
+        "requested_support": {
+          "interval_additions": 0.0,
+          "interval_multiplications": 2.0
+        }
+      }
+    },
+    {
+      "family": "cubic_padded",
+      "paired_ratios": [
+        3.7899201652059817,
+        3.8776323262193784,
+        4.076529113711066,
+        3.9391359988981556,
+        4.118178435587894,
+        4.067645570514027,
+        3.977076350862987
+      ],
+      "median_ratio": 3.977076350862987,
+      "minimum_ratio": 3.7899201652059817,
+      "maximum_ratio": 4.118178435587894,
+      "new_faster_pairs": 7,
+      "pairs": 7,
+      "operations_per_call": {
+        "requested_support": {
+          "interval_additions": 0.0,
+          "interval_multiplications": 1.0
+        },
+        "pr97_eager": {
+          "interval_additions": 10.0,
+          "interval_multiplications": 15.0
+        }
+      }
+    },
+    {
+      "family": "fifth_padded",
+      "paired_ratios": [
+        3.2735676584375666,
+        3.197167850287797,
+        3.4450077286937923,
+        3.397478026884039,
+        3.1602363704372234,
+        3.1819209647894904,
+        3.983030990917085
+      ],
+      "median_ratio": 3.2735676584375666,
+      "minimum_ratio": 3.1602363704372234,
+      "maximum_ratio": 3.983030990917085,
+      "new_faster_pairs": 7,
+      "pairs": 7,
+      "operations_per_call": {
+        "requested_support": {
+          "interval_additions": 0.0,
+          "interval_multiplications": 2.0
+        },
+        "pr97_eager": {
+          "interval_additions": 10.0,
+          "interval_multiplications": 15.0
+        }
+      }
+    },
+    {
+      "family": "dense_six",
+      "paired_ratios": [
+        1.0737722330915431,
+        1.0857340047544797,
+        1.0754530350663056,
+        1.0794699715125122,
+        1.054198780502753,
+        1.164708183145465,
+        0.9895939755109927
+      ],
+      "median_ratio": 1.0754530350663056,
+      "minimum_ratio": 0.9895939755109927,
+      "maximum_ratio": 1.164708183145465,
+      "new_faster_pairs": 6,
+      "pairs": 7,
+      "operations_per_call": {
+        "requested_support": {
+          "interval_additions": 8.0,
+          "interval_multiplications": 14.0
+        },
+        "pr97_eager": {
+          "interval_additions": 10.0,
+          "interval_multiplications": 15.0
+        }
+      }
+    },
+    {
+      "family": "mixed_six",
+      "paired_ratios": [
+        1.1828928589851608,
+        1.2211541635990872,
+        1.3538759122053734,
+        1.3611441743827337,
+        1.2941219534195825,
+        1.314124560568097,
+        1.2946370365407562
+      ],
+      "median_ratio": 1.2946370365407562,
+      "minimum_ratio": 1.1828928589851608,
+      "maximum_ratio": 1.3611441743827337,
+      "new_faster_pairs": 7,
+      "pairs": 7,
+      "operations_per_call": {
+        "pr97_eager": {
+          "interval_additions": 10.0,
+          "interval_multiplications": 15.0
+        },
+        "requested_support": {
+          "interval_additions": 5.0,
+          "interval_multiplications": 10.0
+        }
+      }
+    }
+  ],
+  "switch": [
+    {
+      "dimension": 2,
+      "scenario": "candidate_only",
+      "paired_ratios": [
+        1.0210504120468802,
+        1.0604973948994874,
+        2.1548792210126524,
+        0.770632917187122,
+        0.9780445060943725,
+        0.8386717982051421,
+        0.7688763753231193
+      ],
+      "median_ratio": 0.9780445060943725,
+      "minimum_ratio": 0.7688763753231193,
+      "maximum_ratio": 2.1548792210126524,
+      "new_faster_pairs": 3,
+      "pairs": 7,
+      "copies_saved_per_pair": 2,
+      "legacy_copies": 20002,
+      "new_copies": 20000
+    },
+    {
+      "dimension": 2,
+      "scenario": "guarded_protected",
+      "paired_ratios": [
+        1.0576735372190431,
+        1.1433709294212204,
+        0.6628650924913488,
+        0.918551637823141,
+        1.1388187315639804,
+        0.9807074878671947,
+        0.8958877868737474
+      ],
+      "median_ratio": 0.9807074878671947,
+      "minimum_ratio": 0.6628650924913488,
+      "maximum_ratio": 1.1433709294212204,
+      "new_faster_pairs": 3,
+      "pairs": 7,
+      "copies_saved_per_pair": 20000,
+      "legacy_copies": 40000,
+      "new_copies": 20000
+    },
+    {
+      "dimension": 2,
+      "scenario": "unguarded_protected",
+      "paired_ratios": [
+        0.8304516894610529,
+        1.0331271517251464,
+        0.8219449726271623,
+        1.1083347286801737,
+        1.0162225360688733,
+        1.0306476676088283,
+        0.8409865106327502
+      ],
+      "median_ratio": 1.0162225360688733,
+      "minimum_ratio": 0.8219449726271623,
+      "maximum_ratio": 1.1083347286801737,
+      "new_faster_pairs": 4,
+      "pairs": 7,
+      "copies_saved_per_pair": 0,
+      "legacy_copies": 0,
+      "new_copies": 0
+    },
+    {
+      "dimension": 32,
+      "scenario": "candidate_only",
+      "paired_ratios": [
+        0.9241782839110367,
+        1.0618602870942289,
+        0.9985869525207869,
+        1.0489146626941903,
+        0.9456747016243479,
+        1.0487441264831336,
+        0.9956046932143061
+      ],
+      "median_ratio": 0.9985869525207869,
+      "minimum_ratio": 0.9241782839110367,
+      "maximum_ratio": 1.0618602870942289,
+      "new_faster_pairs": 3,
+      "pairs": 7,
+      "copies_saved_per_pair": 32,
+      "legacy_copies": 160032,
+      "new_copies": 160000
+    },
+    {
+      "dimension": 32,
+      "scenario": "guarded_protected",
+      "paired_ratios": [
+        1.1058618789282983,
+        1.160714390923606,
+        1.1511620078100866,
+        1.0261842743352294,
+        1.006735927247067,
+        1.0214141414141413,
+        1.0406558739633904
+      ],
+      "median_ratio": 1.0406558739633904,
+      "minimum_ratio": 1.006735927247067,
+      "maximum_ratio": 1.160714390923606,
+      "new_faster_pairs": 7,
+      "pairs": 7,
+      "copies_saved_per_pair": 160000,
+      "legacy_copies": 320000,
+      "new_copies": 160000
+    },
+    {
+      "dimension": 32,
+      "scenario": "unguarded_protected",
+      "paired_ratios": [
+        0.9385564311069712,
+        0.9896970200405687,
+        1.0452652339572552,
+        0.9890026890648269,
+        0.9931419494276049,
+        1.0507311154241596,
+        1.0418805135001272
+      ],
+      "median_ratio": 0.9931419494276049,
+      "minimum_ratio": 0.9385564311069712,
+      "maximum_ratio": 1.0507311154241596,
+      "new_faster_pairs": 3,
+      "pairs": 7,
+      "copies_saved_per_pair": 0,
+      "legacy_copies": 0,
+      "new_copies": 0
+    },
+    {
+      "dimension": 4096,
+      "scenario": "candidate_only",
+      "paired_ratios": [
+        0.8365442923652955,
+        0.9981989827926051,
+        1.0575645482550011,
+        1.0515944940139301,
+        0.9499415347637042,
+        1.0662009941359702,
+        1.0176220500057698
+      ],
+      "median_ratio": 1.0176220500057698,
+      "minimum_ratio": 0.8365442923652955,
+      "maximum_ratio": 1.0662009941359702,
+      "new_faster_pairs": 4,
+      "pairs": 7,
+      "copies_saved_per_pair": 4096,
+      "legacy_copies": 1052672,
+      "new_copies": 1048576
+    },
+    {
+      "dimension": 4096,
+      "scenario": "guarded_protected",
+      "paired_ratios": [
+        1.0501236560827896,
+        0.907395155920879,
+        1.0609889189571153,
+        1.0343122265351927,
+        1.1804193119273305,
+        1.0419268741206746,
+        1.1983885682938933
+      ],
+      "median_ratio": 1.0501236560827896,
+      "minimum_ratio": 0.907395155920879,
+      "maximum_ratio": 1.1983885682938933,
+      "new_faster_pairs": 6,
+      "pairs": 7,
+      "copies_saved_per_pair": 1048576,
+      "legacy_copies": 2097152,
+      "new_copies": 1048576
+    },
+    {
+      "dimension": 4096,
+      "scenario": "unguarded_protected",
+      "paired_ratios": [
+        0.995572147942351,
+        0.9888379337198235,
+        0.9854020903515591,
+        0.9861555767067578,
+        0.9877689104788341,
+        0.9929614181438998,
+        0.9974885251580498
+      ],
+      "median_ratio": 0.9888379337198235,
+      "minimum_ratio": 0.9854020903515591,
+      "maximum_ratio": 0.9974885251580498,
+      "new_faster_pairs": 0,
+      "pairs": 7,
+      "copies_saved_per_pair": 0,
+      "legacy_copies": 0,
+      "new_copies": 0
+    },
+    {
+      "dimension": 65536,
+      "scenario": "candidate_only",
+      "paired_ratios": [
+        1.0463219538827853,
+        1.0733772636200827,
+        0.9846229331658121,
+        1.0744365372755105,
+        1.0318820582452397,
+        0.9526235631287,
+        1.0984215278855098
+      ],
+      "median_ratio": 1.0463219538827853,
+      "minimum_ratio": 0.9526235631287,
+      "maximum_ratio": 1.0984215278855098,
+      "new_faster_pairs": 5,
+      "pairs": 7,
+      "copies_saved_per_pair": 65536,
+      "legacy_copies": 2162688,
+      "new_copies": 2097152
+    },
+    {
+      "dimension": 65536,
+      "scenario": "guarded_protected",
+      "paired_ratios": [
+        1.087971812758189,
+        1.0571885889730952,
+        0.9157141755842938,
+        1.2507487752304123,
+        1.126628344540896,
+        1.1460365018328704,
+        1.1588100726934458
+      ],
+      "median_ratio": 1.126628344540896,
+      "minimum_ratio": 0.9157141755842938,
+      "maximum_ratio": 1.2507487752304123,
+      "new_faster_pairs": 6,
+      "pairs": 7,
+      "copies_saved_per_pair": 2097152,
+      "legacy_copies": 4194304,
+      "new_copies": 2097152
+    },
+    {
+      "dimension": 65536,
+      "scenario": "unguarded_protected",
+      "paired_ratios": [
+        1.0457474226804124,
+        0.9226225634967514,
+        0.9031870114251352,
+        0.8235709244883557,
+        0.9123831775700935,
+        0.916267942583732,
+        0.8483540205072854
+      ],
+      "median_ratio": 0.9123831775700935,
+      "minimum_ratio": 0.8235709244883557,
+      "maximum_ratio": 1.0457474226804124,
+      "new_faster_pairs": 1,
+      "pairs": 7,
+      "copies_saved_per_pair": 0,
+      "legacy_copies": 0,
+      "new_copies": 0
+    }
+  ],
+  "ratio_definition": "legacy seconds / new seconds; trace sums both ABBA arm blocks within each repeat before pairing",
+  "scope": "native component full-call measurements; controller uses synthetic work receipts; not whole ODE trajectory speedup",
+  "inputs": {
+    "/workspace/scratch/f9615df1ce94/native-run01/trace-support/stdout.log": "5a2eb5fdce3033732b7b3da834f1902a42fd4cf1cfedb5fce35d23bd65bf99fe",
+    "/workspace/scratch/f9615df1ce94/native-run01/switch-timing.json": "3a064a95a04e3fba03f2fdd5601a24a54b416a8222f65dab295c0d232317d198"
+  },
+  "analysis_source_sha256": "77bec80064017b9c5b86af323e4db1980952989c5e1a13b5c5d5086013b45d47"
+}

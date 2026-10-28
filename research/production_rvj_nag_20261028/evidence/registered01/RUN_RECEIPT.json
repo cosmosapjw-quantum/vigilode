@@ -1,0 +1,230 @@
+{
+  "schema": "vigilode.rvj.native-run.v1",
+  "source_sha": "64004e23042f2cf076da5378be724f50c3856f4c",
+  "remote_ref": "origin/research/production-rvj-nag-20261028",
+  "remote_sha": "64004e23042f2cf076da5378be724f50c3856f4c",
+  "source_tree": "67564b455011252fdc1fb811c09baeea9f2bd31f",
+  "inputs_sha256": {
+    "Cargo.toml": "716ff1b052b1333e0ee5867f266426f6ecbec11578444f2e2b9c02baa03b037e",
+    "Cargo.lock": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351",
+    "crates/rodas5p-core/src/directed.rs": "2adadb6a5d77073e0a7d3d60aedfbf37e124d15a586a880d7d5a8c8d5307a814",
+    "crates/vigilode-coupled/src/lib.rs": "b573168ee78e89d08a80aeba21f8275d9d20c457832aecd614f5e517cdce6411",
+    "crates/vigilode-coupled/src/cyclic_closure.rs": "2ff8c6a76bfda7422d6340887e0b95e43375c29e3dfb79fd9bbcf3dea98adcc0",
+    "crates/vigilode-coupled/src/trace_quotient.rs": "d73b2ce47f0838dcce8d491eec308b22d9e2aa31d9c4135d74d1a721e6d30072",
+    "crates/vigilode-coupled/examples/rvj_closure_campaign.rs": "7d052e30fb914e6821c0a6520005cebd8bb7c4d597c6e63ce785546610219bd1",
+    "crates/vigilode-coupled/examples/rvj_trace_campaign.rs": "726640dff0ef222c49f2610719ae5ce8b0f99656ea0098f395246221d495d736",
+    "research/production_rvj_nag_20261028/PREREGISTRATION.md": "a4069a16c32b9168f4d74150a0a3c9fe0edca42cfd3ba94a676762dbaab5a2e9",
+    "research/production_rvj_nag_20261028/code/run_registered.py": "a219a9ab8f75d31a37e33f86b381fd9a0db782f86d241e381b9833d15bfba693",
+    "research/production_rvj_nag_20261028/code/verify_native.py": "8c58f348d00300210d3983eb8e9ebd52c1ae30a2d20ad7db1e731d374c9974d6",
+    "research/production_rvj_nag_20261028/code/SYMBOLIC_CHECKS.wl": "0ed0ca9f394dbb685704e85cab4c9b0b2373f28aee3d01c75e57c5e898094d9a",
+    "research/production_rvj_nag_20261028/theory/CLOSURE.md": "8601f15fad974195d4c4b6068f59b2731376c53e19a7c7eec36b12da7c20d73c",
+    "research/production_rvj_nag_20261028/theory/CLOSURE_CONTRACT.json": "ef25ad8553361bb9984952a1e93dfb69756da279ef0dc795df761956db9e72dc",
+    "research/production_rvj_nag_20261028/theory/INTEGRATION_SCOPE.md": "722d349ae3e2f2c1cee715bb30d50f9115f19f7dcb450f4b77367a7fb52f1a57",
+    "research/production_rvj_nag_20261028/theory/PR96_AUDIT.md": "90f3bb6eb6b52a40d3d5e35f91b7c367dcea1154633215283192d511dd735d00",
+    "research/production_rvj_nag_20261028/theory/PRODUCTION_GATES.json": "4be372b6cc3ba5e5ca80349d8b3b987df224d1f3b5982699b35e2674b6ea724c",
+    "research/production_rvj_nag_20261028/theory/TRACE.md": "f22804969ac4c8135efc8bdc14e5bc8b1e4e365ca30619accf73837a45438979",
+    "research/production_rvj_nag_20261028/theory/TRACE_CONTRACT.json": "a9bc4bc979270f0965710a81c53841c0ff413968c703ca2537f0670d7cf1d015"
+  },
+  "started_utc": "2026-10-28T10:37:24.358207+00:00",
+  "started_kst": "2026-10-28T19:37:24.358489+09:00",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "python": "3.12.14 (main, Aug 25 2026, 14:00:49) [Clang 22.1.3 ]",
+  "environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_TARGET_DIR": "/tmp/vigilode-rvj-target",
+    "RUSTFLAGS": null,
+    "RUSTC": "/tmp/vigilode-rvj-rust/bin/rustc",
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1"
+  },
+  "commands": [
+    {
+      "id": "cargo-version",
+      "argv": [
+        "/tmp/vigilode-rvj-rust/bin/cargo",
+        "-V"
+      ],
+      "timeout_seconds": 30,
+      "started_utc": "2026-10-28T10:37:24.360774+00:00",
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 0.007809572998667136,
+      "stdout_file": "cargo-version.stdout.txt",
+      "stderr_file": "cargo-version.stderr.txt",
+      "stdout_sha256": "f53c9c2502e421a5a8d0c7948809c3de6e6d41a0189ddc23dfe4c661b11f7806",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "rustc-version",
+      "argv": [
+        "/tmp/vigilode-rvj-rust/bin/rustc",
+        "-Vv"
+      ],
+      "timeout_seconds": 30,
+      "started_utc": "2026-10-28T10:37:24.369027+00:00",
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 0.01633642899832921,
+      "stdout_file": "rustc-version.stdout.txt",
+      "stderr_file": "rustc-version.stderr.txt",
+      "stdout_sha256": "a834181975ab3494d51a1a01e4a9d4321fecd674a52e3db3cf93b3b84b6fc2c1",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "test-cyclic_closure",
+      "argv": [
+        "/tmp/vigilode-rvj-rust/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "--profile",
+        "measurement",
+        "-p",
+        "vigilode-coupled",
+        "--lib",
+        "cyclic_closure::",
+        "--",
+        "--nocapture"
+      ],
+      "timeout_seconds": 900,
+      "started_utc": "2026-10-28T10:37:24.386181+00:00",
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 2.3248252750054235,
+      "stdout_file": "test-cyclic_closure.stdout.txt",
+      "stderr_file": "test-cyclic_closure.stderr.txt",
+      "stdout_sha256": "99cedf24422974310b795a8ed0abb3ca490ac8bfcc77b77e4a333bc22a14e949",
+      "stderr_sha256": "5ee8d4c8695c85fc00827dbd3afd97c5ba09ab63cbedbf0c3cbb82730017201f"
+    },
+    {
+      "id": "test-trace_quotient",
+      "argv": [
+        "/tmp/vigilode-rvj-rust/bin/cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "--profile",
+        "measurement",
+        "-p",
+        "vigilode-coupled",
+        "--lib",
+        "trace_quotient::",
+        "--",
+        "--nocapture"
+      ],
+      "timeout_seconds": 900,
+      "started_utc": "2026-10-28T10:37:26.711823+00:00",
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 0.0642734449938871,
+      "stdout_file": "test-trace_quotient.stdout.txt",
+      "stderr_file": "test-trace_quotient.stderr.txt",
+      "stdout_sha256": "9e685af5f6d2347f762e9af6e8b2da1321614c31bfe216ab613beee9adf29113",
+      "stderr_sha256": "2775a2996a8fd89585aaba187634e7bd2e58cb88a8c9e20d727c61bafca16c4c"
+    },
+    {
+      "id": "build-examples",
+      "argv": [
+        "/tmp/vigilode-rvj-rust/bin/cargo",
+        "build",
+        "--locked",
+        "--offline",
+        "--profile",
+        "measurement",
+        "-p",
+        "vigilode-coupled",
+        "--example",
+        "rvj_closure_campaign",
+        "--example",
+        "rvj_trace_campaign"
+      ],
+      "timeout_seconds": 900,
+      "started_utc": "2026-10-28T10:37:26.777189+00:00",
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 6.186232129002747,
+      "stdout_file": "build-examples.stdout.txt",
+      "stderr_file": "build-examples.stderr.txt",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "406b2a973bb13c32a656ccf669f0107e1440ecdba465376f1d57ddca17658fea"
+    },
+    {
+      "id": "native-closure",
+      "argv": [
+        "/tmp/vigilode-rvj-target/measurement/examples/rvj_closure_campaign"
+      ],
+      "timeout_seconds": 180,
+      "started_utc": "2026-10-28T10:37:32.965400+00:00",
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 1.3181226770029753,
+      "stdout_file": "closure.json",
+      "stderr_file": "native-closure.stderr.txt",
+      "stdout_sha256": "54efb925d608083d29dc219636899be8b7120cd12bf01146407fc5f6cd464d3d",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "native-trace",
+      "argv": [
+        "/tmp/vigilode-rvj-target/measurement/examples/rvj_trace_campaign"
+      ],
+      "timeout_seconds": 180,
+      "started_utc": "2026-10-28T10:37:34.306160+00:00",
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 0.06448039499809965,
+      "stdout_file": "trace.json",
+      "stderr_file": "native-trace.stderr.txt",
+      "stdout_sha256": "d331510f849d985119142daed7ff87ac6351a8f3c283a06321bb4687bb6451c6",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "id": "exact-oracle",
+      "argv": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/06cfffc081e2/vigilode/research/production_rvj_nag_20261028/code/verify_native.py",
+        "--closure",
+        "/tmp/vigilode-rvj-registered-01/closure.json",
+        "--trace",
+        "/tmp/vigilode-rvj-registered-01/trace.json",
+        "--output",
+        "/tmp/vigilode-rvj-registered-01/ORACLE_RESULTS.json"
+      ],
+      "timeout_seconds": 900,
+      "started_utc": "2026-10-28T10:37:34.371924+00:00",
+      "exit_code": 0,
+      "timeout": false,
+      "elapsed_seconds": 13.466613229000359,
+      "stdout_file": "exact-oracle.stdout.txt",
+      "stderr_file": "exact-oracle.stderr.txt",
+      "stdout_sha256": "ba026863848cd93f3d8e23eabe51c2c8f31eae3cd0d9e5c2db899d087b432e5b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "status": "PASS",
+  "binaries_sha256": {
+    "/tmp/vigilode-rvj-target/measurement/examples/rvj_closure_campaign": "8f79a4eef42ec6d7ca6ab4172886b6741bf31ad084e9c739bad366b86aca3369",
+    "/tmp/vigilode-rvj-target/measurement/examples/rvj_trace_campaign": "bd918b4706885c27721211333bd358073d1b67eec6f7d174301b99630a623c5a"
+  },
+  "finished_utc": "2026-10-28T10:37:47.842945+00:00",
+  "finished_kst": "2026-10-28T19:37:47.842964+09:00",
+  "outputs_sha256": {
+    "ORACLE_RESULTS.json": "19bf376383b816cb6189271839f4b9fd77e74d1c4fb868f0e4aad307243b0381",
+    "build-examples.stderr.txt": "406b2a973bb13c32a656ccf669f0107e1440ecdba465376f1d57ddca17658fea",
+    "build-examples.stdout.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "cargo-version.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "cargo-version.stdout.txt": "f53c9c2502e421a5a8d0c7948809c3de6e6d41a0189ddc23dfe4c661b11f7806",
+    "closure.json": "54efb925d608083d29dc219636899be8b7120cd12bf01146407fc5f6cd464d3d",
+    "exact-oracle.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "exact-oracle.stdout.txt": "ba026863848cd93f3d8e23eabe51c2c8f31eae3cd0d9e5c2db899d087b432e5b",
+    "native-closure.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "native-trace.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "rustc-version.stderr.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "rustc-version.stdout.txt": "a834181975ab3494d51a1a01e4a9d4321fecd674a52e3db3cf93b3b84b6fc2c1",
+    "test-cyclic_closure.stderr.txt": "5ee8d4c8695c85fc00827dbd3afd97c5ba09ab63cbedbf0c3cbb82730017201f",
+    "test-cyclic_closure.stdout.txt": "99cedf24422974310b795a8ed0abb3ca490ac8bfcc77b77e4a333bc22a14e949",
+    "test-trace_quotient.stderr.txt": "2775a2996a8fd89585aaba187634e7bd2e58cb88a8c9e20d727c61bafca16c4c",
+    "test-trace_quotient.stdout.txt": "9e685af5f6d2347f762e9af6e8b2da1321614c31bfe216ab613beee9adf29113",
+    "trace.json": "d331510f849d985119142daed7ff87ac6351a8f3c283a06321bb4687bb6451c6"
+  }
+}

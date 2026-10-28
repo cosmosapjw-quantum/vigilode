@@ -1,0 +1,99 @@
+{
+  "schema": "vigilode.production-reaudit.benchmark.v1",
+  "date": "2026-10-21",
+  "baseline_commit": "33e60cf387be58b9cfa341f2d6143a7a28457f42",
+  "integrated_baseline_commit": "f2f20c1d8cd606e70ddbd8409c0f3b4529e928a1",
+  "decision": "RETAIN_HISTORICAL_INCONCLUSIVE_NO_BROAD_PRODUCTION_OR_SPEED_PROMOTION",
+  "historical_evidence_modified": false,
+  "retained_replay": "evidence/benchmark/retained_replay.json",
+  "production_scope": {
+    "local_estimator_solver": "baseline_empirical_evidence_reused",
+    "global_requested_tolerance_guarantee": "NOT_ESTABLISHED_BY_E1B",
+    "generic_speed_superiority": "NOT_ESTABLISHED_DIAGNOSTIC_HOST_ONLY"
+  },
+  "findings": [
+    {
+      "id": "B-F01",
+      "status": "FIXED_TARGETED_TESTS_PASS",
+      "summary": "WRMS overflow/invalid scaling can create false zero error"
+    },
+    {
+      "id": "B-F02",
+      "status": "FIXED_PURE_POLICY_TESTS_PASS_INTEGRATION_PENDING",
+      "summary": "Unchecked reference policy and duplicate corpus identities"
+    },
+    {
+      "id": "B-F03",
+      "status": "IMPLEMENTED_FULL_NATIVE_TEST_PENDING",
+      "summary": "Later repetition failure status/work discarded"
+    },
+    {
+      "id": "B-F04",
+      "status": "FIXED_REPORT_SEMANTICS_INTEGRATION_PENDING",
+      "summary": "Global grid observation confused with local acceptance"
+    },
+    {
+      "id": "B-F05",
+      "status": "OPEN",
+      "summary": "Runtime HEAD and crate-only dirty flag do not bind compiled dependency source"
+    },
+    {
+      "id": "B-F06",
+      "status": "OPEN_NEW_TIER_ONLY",
+      "summary": "Independent strict reference tier remains open; original E1B unchanged"
+    }
+  ],
+  "tests": {
+    "standalone_native_unit_tests": 9,
+    "standalone_native_passed": 9,
+    "replayed_rows": 132,
+    "replayed_matched_records": 750,
+    "full_bench_test": "BLOCKED_ENVIRONMENT",
+    "initial_blocker": "offline vendor lacks diffsol0.16.1; restoration attempted separately",
+    "native_blockers": [
+      "gfortran compiler absent",
+      "SUNDIALS development headers/libraries absent"
+    ],
+    "full_test_command": "cargo test --manifest-path crates/vigilode-bench/Cargo.toml --locked --offline -- --test-threads=1",
+    "after_vendor_restore": "29 exact packages restored; 41 locked versions still missing incl diffsol-la/nl 0.1.1",
+    "full_rust_integration_typecheck": "NOT_EXECUTED_DEPENDENCY_RESOLUTION_BLOCKED",
+    "missing_locked_versions_receipt": "evidence/benchmark/vendor_restore.json"
+  },
+  "next_tasks": [
+    {
+      "id": "B-N01",
+      "title": "Build-time dependency and binary source identity",
+      "acceptance": "Out-of-crate source edits and stale executable are refused; complete source/corpus/binary hashes retained"
+    },
+    {
+      "id": "B-N02",
+      "title": "Independent strict reference tier",
+      "acceptance": "New preregistered independent-code refinement policy and explicit metric; enclosure where claimed"
+    },
+    {
+      "id": "B-N03",
+      "title": "Separate local endpoint/interior defects from global propagation",
+      "acceptance": "Per-step independent restart experiments at original tolerances plus propagated budget analysis"
+    },
+    {
+      "id": "B-N04",
+      "title": "Matched-accuracy process-paired timing",
+      "acceptance": "Controlled disclosed host, successful original accuracy gate, failed costs retained, confidence intervals"
+    },
+    {
+      "id": "B-N05",
+      "title": "Full native bench integration validation",
+      "acceptance": "Updated bench cargo tests pass with real Fortran/SUNDIALS/Diffsol; no stubs"
+    }
+  ],
+  "changed_source_sha256": {
+    "crates/vigilode-bench/src/arms.rs": "9002d09de168c5240ae7aef75a4820305b7ef3b28d5a04bb067ca63f38d763b6",
+    "crates/vigilode-bench/src/corpus.rs": "1059e8efc9f18fcbb3fed3854669c3b7ef34e7dbf120313ca911a2e9eaa643dd",
+    "crates/vigilode-bench/src/harness.rs": "409020f299c1f9aee3731d8d21c0d82f7c9314ad9d412153f5e1cf1c709dfd86",
+    "crates/vigilode-bench/src/lib.rs": "cbd4dcc543d22861ca2ec869b70aa131527f0581a7c2ef99a57f86b03ede2591",
+    "crates/vigilode-bench/src/metrics.rs": "8a83704a15938d4095f1e89483efd16bc222dbcf8171964f8659a5a46722fe0c",
+    "crates/vigilode-bench/src/reference_policy.rs": "d64d70808b070c0a4d9f57e2f3ebf3e0fe1199b0e4249f74120a3b8d8240edec",
+    "crates/vigilode-bench/src/report.rs": "d4efea386320f0e5e32ed74fb7fb95e5499358b14fa6f72af847263323d4bf71",
+    "crates/vigilode-bench/tests/report.rs": "48545cde89b09e691f85c7a6cdaab810ceb94c6bcc98de68c91d2faae5caaa0c"
+  }
+}

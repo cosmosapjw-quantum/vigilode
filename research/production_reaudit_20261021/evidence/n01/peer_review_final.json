@@ -1,0 +1,21 @@
+{
+  "schema": "vigilode.peer-source-review.v1",
+  "reviewer": "/root/dense_transaction_audit",
+  "status": "PASS",
+  "mode": "source review of corrected source without Cargo",
+  "supersedes": "evidence/n01/peer_review.json",
+  "initial_review_miss": "Initial source review failed to notice missing field-level serde zero-suppression attributes. Native tests exposed the defect; failure logs retained.",
+  "findings": [
+    "All12 skip_serializing_if=is_zero attributes now match exactly the source fields; helper predicate is identical",
+    "Five standalone source serde(default) attributes affect Deserialize only; facade mirrors derive Serialize only",
+    "Extracted source bodies for other six struct mirrors and two payload enums show no omitted field-level serde serialization attributes",
+    "Direct all61-nonzero fixture plus all-zero equality closes the default serialized-key discovery blind spot",
+    "Previous field completeness, recursive public field ownership, route/refusal precedence and owned Vec move findings remain valid"
+  ],
+  "source_sha256": {
+    "crates/vigilode/src/records.rs": "b5787538970283d62e2d74347f835ef9fcbc51942154dc8794c2951d8f9d2138",
+    "crates/vigilode/src/capabilities.rs": "415a6a0ec2893431fba147697ed7c0c4ccb021fd3c9ed2a0cc351e5f034d7dd5",
+    "crates/vigilode/src/solution.rs": "d879c9eb6155a0a73b3adda8445d8bcf30d4830863a97b02930290bbddb3d761",
+    "crates/vigilode/src/solve.rs": "d05233df298e206bb096b7e763c280a9248e1ecb8da8cd0c8748b66af2d9f53d"
+  }
+}

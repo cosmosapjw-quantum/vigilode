@@ -1,0 +1,1765 @@
+{
+  "schema": "vigilode.adaptive-causal-campaign.v1",
+  "source_commit": "548526add83a38a996875b3bd2f3cd3357465ed6",
+  "source_tree": "54dc12388cb7a891140ac061d29eff66e4e6f8ae",
+  "binary": "/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/measurement/examples/adaptive_causal_bench",
+  "binary_sha256": "c13249a6beef7941552053fb7b30acd71856d5e5b4251c82744246a007ed8e73",
+  "benchmark_source_sha256": "2ab27dbbce06a264405f946e66edef5e39de00686f5760d618a44002eae87771",
+  "orchestrator_sha256": "da1c627ead07175b699d24697a2b6a2953cad7c9b4f11539945dd5d92305d279",
+  "analyzer_sha256": "6b1d0f5b66c9022878c28eb1030d5e2b0711983b1b29ae087a6e53623a44bfdf",
+  "profile": "measurement",
+  "compiler_flags": "opt-level=3,lto=false,codegen-units=16",
+  "host": "b0ab32d68884",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "affinity": [
+    0
+  ],
+  "thread_settings": {
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "budget_seconds": 900.0,
+  "timeout_seconds": 30,
+  "warmups": 1,
+  "repeats": 3,
+  "configurations": [
+    {
+      "id": 0,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "dopri5",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 1,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "rodas-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 2,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "rodas-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 3,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "switch-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 4,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "switch-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 5,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "dopri-whole",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 6,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "dopri-whole-dense",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 7,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "rodas-whole-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 8,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "dopri5",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 9,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "rodas-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 10,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "rodas-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 11,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "switch-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 12,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "switch-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 13,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "dopri-whole",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 14,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 15,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 16,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "dopri5",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 17,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "rodas-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 18,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "rodas-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 19,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "switch-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 20,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "switch-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 21,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "dopri-whole",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 22,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 23,
+      "case": "decay",
+      "dimension": 1,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 24,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "dopri5",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 25,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "rodas-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 26,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "rodas-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 27,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "switch-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 28,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "switch-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 29,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "dopri-whole",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 30,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "dopri-whole-dense",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 31,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "rodas-whole-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 32,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "dopri5",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 33,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "rodas-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 34,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "rodas-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 35,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "switch-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 36,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "switch-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 37,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "dopri-whole",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 38,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 39,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 40,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "dopri5",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 41,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "rodas-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 42,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "rodas-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 43,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "switch-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 44,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "switch-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 45,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "dopri-whole",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 46,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 47,
+      "case": "logistic",
+      "dimension": 1,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 48,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "dopri5",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 49,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "rodas-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 50,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "rodas-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 51,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "switch-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 52,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "switch-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 53,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "dopri-whole",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 54,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "dopri-whole-dense",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 55,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "rodas-whole-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 56,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "dopri5",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 57,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "rodas-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 58,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "rodas-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 59,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "switch-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 60,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "switch-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 61,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "dopri-whole",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 62,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 63,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 64,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "dopri5",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 65,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "rodas-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 66,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "rodas-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 67,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "switch-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 68,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "switch-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 69,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "dopri-whole",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 70,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 71,
+      "case": "prothero",
+      "dimension": 1,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 72,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "dopri5",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 73,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "rodas-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 74,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "rodas-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 75,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "switch-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 76,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "switch-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 77,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "dopri-whole",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 78,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "dopri-whole-dense",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 79,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "rodas-whole-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 80,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "dopri5",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 81,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "rodas-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 82,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "rodas-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 83,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "switch-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 84,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "switch-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 85,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "dopri-whole",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 86,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 87,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 88,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "dopri5",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 89,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "rodas-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 90,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "rodas-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 91,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "switch-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 92,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "switch-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 93,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "dopri-whole",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 94,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 95,
+      "case": "robertson",
+      "dimension": 3,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 96,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "dopri5",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 97,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "rodas-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 98,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "rodas-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 99,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "switch-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 100,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "switch-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 101,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "dopri-whole",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 102,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "dopri-whole-dense",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 103,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "rodas-whole-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 104,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "dopri5",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 105,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "rodas-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 106,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "rodas-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 107,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "switch-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 108,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "switch-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 109,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "dopri-whole",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 110,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 111,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 112,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "dopri5",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 113,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "rodas-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 114,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "rodas-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 115,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "switch-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 116,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "switch-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 117,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "dopri-whole",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 118,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 119,
+      "case": "rapid",
+      "dimension": 2,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 120,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "dopri5",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 121,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "rodas-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 122,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "rodas-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 123,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "switch-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 124,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "switch-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 125,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "dopri-whole",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 126,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "dopri-whole-dense",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 127,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "rodas-whole-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 128,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "dopri5",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 129,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "rodas-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 130,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "rodas-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 131,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "switch-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 132,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "switch-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 133,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "dopri-whole",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 134,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 135,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 136,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "dopri5",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 137,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "rodas-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 138,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "rodas-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 139,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "switch-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 140,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "switch-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 141,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "dopri-whole",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 142,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 143,
+      "case": "damped",
+      "dimension": 2,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 144,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "dopri5",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 145,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "rodas-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 146,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "rodas-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 147,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "switch-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 148,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "switch-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 149,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "dopri-whole",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 150,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "dopri-whole-dense",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 151,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "rodas-whole-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 152,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "dopri5",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 153,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "rodas-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 154,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "rodas-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 155,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "switch-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 156,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "switch-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 157,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "dopri-whole",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 158,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 159,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 160,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "dopri5",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 161,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "rodas-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 162,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "rodas-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 163,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "switch-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 164,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "switch-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 165,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "dopri-whole",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 166,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 167,
+      "case": "nonnormal",
+      "dimension": 2,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 168,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "dopri5",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 169,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "rodas-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 170,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "rodas-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 171,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "switch-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 172,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "switch-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 173,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "dopri-whole",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 174,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "dopri-whole-dense",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 175,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "rodas-whole-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 176,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "dopri5",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 177,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "rodas-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 178,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "rodas-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 179,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "switch-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 180,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "switch-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 181,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "dopri-whole",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 182,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 183,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 184,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "dopri5",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 185,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "rodas-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 186,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "rodas-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 187,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "switch-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 188,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "switch-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 189,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "dopri-whole",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 190,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 191,
+      "case": "transition",
+      "dimension": 1,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 192,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "dopri5",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 193,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "rodas-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 194,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "rodas-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 195,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "switch-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 196,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "switch-jvp",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 197,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "dopri-whole",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 198,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "dopri-whole-dense",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 199,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "rodas-whole-fd",
+      "rtol": 0.0001,
+      "windows": 16
+    },
+    {
+      "id": 200,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "dopri5",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 201,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "rodas-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 202,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "rodas-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 203,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "switch-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 204,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "switch-jvp",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 205,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "dopri-whole",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 206,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 207,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-06,
+      "windows": 16
+    },
+    {
+      "id": 208,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "dopri5",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 209,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "rodas-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 210,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "rodas-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 211,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "switch-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 212,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "switch-jvp",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 213,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "dopri-whole",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 214,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "dopri-whole-dense",
+      "rtol": 1e-08,
+      "windows": 16
+    },
+    {
+      "id": 215,
+      "case": "vector",
+      "dimension": 256,
+      "mode": "rodas-whole-fd",
+      "rtol": 1e-08,
+      "windows": 16
+    }
+  ],
+  "ncp_used": false,
+  "output_contract": "17 common observation times. Five window modes restart; dopri-whole uses retainedworkspace landing, dopri-whole-dense quartic observations, rodas-whole-fd retaineddenseoutput WFilteredEnforce. Switching can add partialaccepted endpoints",
+  "comparison": "same binary, host, thread affinity, observation contract and common achieved-error caps; no old timing pooled",
+  "accuracy_caps": [
+    0.0001,
+    1e-06,
+    1e-08
+  ]
+}

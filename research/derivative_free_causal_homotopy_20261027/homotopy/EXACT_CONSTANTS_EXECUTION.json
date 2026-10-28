@@ -1,0 +1,56 @@
+{
+  "started_utc": "2026-10-27T13:03:40.926449+00:00",
+  "source": {
+    "crates/vigilode-coupled/src/rhs_homotopy.rs": "543b2dd3f8a8e3ffd39bf6b47fda5e7ae74ae32bae34f45c2b2b52bff19caf1e",
+    "crates/vigilode-coupled/tests/rhs_homotopy_contracts.rs": "792eaf853e0de3697ebffa8237e3c6d9ad3957984f5d08743de7e69f01a56eaf",
+    "crates/vigilode-coupled/examples/cubic_accuracy_bench_20261027.rs": "cb382d662b3b20b21fcc3011a025dbed2150952752bbf89a94e78e334ad11cbf"
+  },
+  "commands": [
+    {
+      "name": "exact_constants_contracts",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "vigilode-coupled",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "--test",
+        "rhs_homotopy_contracts",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.6963763120002113
+    },
+    {
+      "name": "exact_constants_build",
+      "command": [
+        "cargo",
+        "build",
+        "-p",
+        "vigilode-coupled",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "--example",
+        "cubic_accuracy_bench_20261027"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 1.3554259120064671
+    },
+    {
+      "name": "exact_constants_experiment",
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_accuracy_bench_20261027"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.03314510700147366
+    }
+  ],
+  "binary_sha256": "4d68672e65d3aad8065a96e28ee9c94828925d98796b78906c1d8210bd703c67",
+  "finished_utc": "2026-10-27T13:03:44.106102+00:00"
+}

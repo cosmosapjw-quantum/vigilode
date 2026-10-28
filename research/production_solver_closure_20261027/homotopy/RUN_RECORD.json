@@ -1,0 +1,691 @@
+{
+  "schema_version": 1,
+  "workflow_version": "1.0.0",
+  "task": "both",
+  "unit_id": "vigilode-homotopy-production-20261027",
+  "objective": "Reduce RHS-only scalar consumer overhead and test algebraic alternatives without changing the physical-error certificate.",
+  "scope": "Sealed cubic-decay model, exact PR91 dyadic accuracy plan; additive scalar/algebraic/rational stage implementations; original generic homotopy retained.",
+  "status": "complete",
+  "dependencies": [
+    {
+      "id": "base",
+      "identity": "206298b4068d923bb47c7160b111b7439098660c",
+      "description": "PR91 baseline and inherited cubic certificate"
+    },
+    {
+      "id": "code",
+      "identity": "167b838b2ddc90175cd66e5db38e0f5d9e4f12277efb33e1104a3c0456f9768c",
+      "description": "Final rhs_homotopy.rs SHA256"
+    },
+    {
+      "id": "runtime",
+      "identity": "Rust1.94.1 measurement locked offline, binary c2d651fd8087097117677205396de8530e9a113a69fa5eb01875e4a81b9dac3f",
+      "description": "Same binary for all compared implementations"
+    }
+  ],
+  "evidence": [
+    {
+      "id": "protocol",
+      "kind": "decision",
+      "locator": "PROTOCOL.md",
+      "scope": "Frozen initial comparisons and correction limit",
+      "dependency_ids": [
+        "base"
+      ]
+    },
+    {
+      "id": "inherited",
+      "kind": "derivation",
+      "locator": "research/derivative_free_causal_homotopy_20261027/homotopy/EXACT_CONSTANTS.md",
+      "scope": "Reused physical certificate and plan",
+      "dependency_ids": [
+        "base"
+      ]
+    },
+    {
+      "id": "theory",
+      "kind": "derivation",
+      "locator": "THEORY.md",
+      "scope": "H1-H4 proofs and source-to-code contracts",
+      "dependency_ids": [
+        "base",
+        "code"
+      ]
+    },
+    {
+      "id": "source",
+      "kind": "implementation",
+      "locator": "crates/vigilode-coupled/src/rhs_homotopy.rs",
+      "scope": "Three additive solver paths",
+      "dependency_ids": [
+        "code"
+      ]
+    },
+    {
+      "id": "native",
+      "kind": "artifact",
+      "locator": "PASS1_EXECUTION.json",
+      "scope": "23 distinct contract tests and build",
+      "dependency_ids": [
+        "code",
+        "runtime"
+      ]
+    },
+    {
+      "id": "audit",
+      "kind": "calculation",
+      "locator": "PASS1_AUDIT_RESULTS.json",
+      "scope": "24 matched physical-accuracy arms",
+      "dependency_ids": [
+        "code",
+        "runtime"
+      ]
+    },
+    {
+      "id": "analysis",
+      "kind": "calculation",
+      "locator": "ANALYSIS.json",
+      "scope": "Independent Decimal80 and exact Fraction checks",
+      "dependency_ids": [
+        "code"
+      ]
+    },
+    {
+      "id": "symbolic",
+      "kind": "calculation",
+      "locator": "WOLFRAM_RATIONAL_RECEIPT.json",
+      "scope": "Independent symbolic rational defect",
+      "dependency_ids": [
+        "code"
+      ]
+    },
+    {
+      "id": "timing",
+      "kind": "calculation",
+      "locator": "PASS1_TIMING_RESULTS.json",
+      "scope": "Same-binary paired wall-time comparisons",
+      "dependency_ids": [
+        "code",
+        "runtime"
+      ]
+    },
+    {
+      "id": "profile",
+      "kind": "calculation",
+      "locator": "instruction_profile_r1/SUMMARY.json",
+      "scope": "Startup-subtracted Callgrind Ir slopes",
+      "dependency_ids": [
+        "code",
+        "runtime"
+      ]
+    },
+    {
+      "id": "profile_runs",
+      "kind": "artifact",
+      "locator": "instruction_profile_r1/RUNS.json",
+      "scope": "Eight successful actual profiles",
+      "dependency_ids": [
+        "code",
+        "runtime"
+      ]
+    },
+    {
+      "id": "diagnosis",
+      "kind": "decision",
+      "locator": "PASS1_DIAGNOSIS.md",
+      "scope": "Adverse cbrt cost and rational correction",
+      "dependency_ids": [
+        "code"
+      ]
+    },
+    {
+      "id": "report",
+      "kind": "artifact",
+      "locator": "REPORT_KO.md",
+      "scope": "Results, interpretation, scoped deployment and local PR purposes",
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ]
+    },
+    {
+      "id": "independent_review",
+      "kind": "review",
+      "locator": "research/production_solver_closure_20261027/theory/HOMOTOPY_REVIEW.json",
+      "scope": "Complementary parent derivation and source review H1-H4, same final source",
+      "dependency_ids": [
+        "code"
+      ]
+    }
+  ],
+  "stages": [
+    {
+      "id": "R1",
+      "status": "complete",
+      "evidence_refs": [
+        "protocol"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Initial task and acceptance scope locked",
+      "reuse": null
+    },
+    {
+      "id": "R2",
+      "status": "reused",
+      "evidence_refs": [
+        "inherited"
+      ],
+      "dependency_ids": [
+        "base"
+      ],
+      "reason": "Reused unchanged plan/certificate",
+      "reuse": {
+        "dependency_identities": {
+          "base": "206298b4068d923bb47c7160b111b7439098660c"
+        }
+      }
+    },
+    {
+      "id": "R3",
+      "status": "complete",
+      "evidence_refs": [
+        "theory"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Sealed model and generic distinctions stated",
+      "reuse": null
+    },
+    {
+      "id": "R4",
+      "status": "complete",
+      "evidence_refs": [
+        "protocol",
+        "diagnosis"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Three initial alternatives and one rational correction",
+      "reuse": null
+    },
+    {
+      "id": "R5",
+      "status": "complete",
+      "evidence_refs": [
+        "theory"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Complete H1-H4 derivations",
+      "reuse": null
+    },
+    {
+      "id": "R6",
+      "status": "complete",
+      "evidence_refs": [
+        "symbolic",
+        "analysis"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Independent CAS and exact arithmetic checks",
+      "reuse": null
+    },
+    {
+      "id": "R7",
+      "status": "complete",
+      "evidence_refs": [
+        "native",
+        "audit",
+        "analysis"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Discriminating accuracy/bit-parity/resource tests",
+      "reuse": null
+    },
+    {
+      "id": "R8",
+      "status": "complete",
+      "evidence_refs": [
+        "report",
+        "profile"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Adopt scalar, retain certified rational alternative; preserve negatives",
+      "reuse": null
+    },
+    {
+      "id": "R9",
+      "status": "complete",
+      "evidence_refs": [
+        "theory",
+        "source"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Explicit equations mapped to native API and verifier",
+      "reuse": null
+    },
+    {
+      "id": "R10",
+      "status": "complete",
+      "evidence_refs": [
+        "report"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Local continuation objectives and evidence preserved",
+      "reuse": null
+    },
+    {
+      "id": "C1",
+      "status": "complete",
+      "evidence_refs": [
+        "protocol"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "PR91 baseline and fixed tolerances",
+      "reuse": null
+    },
+    {
+      "id": "C2",
+      "status": "complete",
+      "evidence_refs": [
+        "source",
+        "diagnosis"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Allocation and transcendental costs isolated",
+      "reuse": null
+    },
+    {
+      "id": "C3",
+      "status": "complete",
+      "evidence_refs": [
+        "theory"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Same certificate, stack operations and rational inverse",
+      "reuse": null
+    },
+    {
+      "id": "C4",
+      "status": "complete",
+      "evidence_refs": [
+        "protocol",
+        "native"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Shared execution lock and source-scoped parallel lanes",
+      "reuse": null
+    },
+    {
+      "id": "C5",
+      "status": "complete",
+      "evidence_refs": [
+        "source"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Additive complete API",
+      "reuse": null
+    },
+    {
+      "id": "C6",
+      "status": "complete",
+      "evidence_refs": [
+        "native"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Native contracts actual exit0",
+      "reuse": null
+    },
+    {
+      "id": "C7",
+      "status": "complete",
+      "evidence_refs": [
+        "audit",
+        "analysis"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Every returned physical gridpoint checked",
+      "reuse": null
+    },
+    {
+      "id": "C8",
+      "status": "complete",
+      "evidence_refs": [
+        "timing",
+        "profile",
+        "profile_runs"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Benchmarks and actual profiles completed",
+      "reuse": null
+    },
+    {
+      "id": "C9",
+      "status": "complete",
+      "evidence_refs": [
+        "independent_review",
+        "native"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Parent native agent complementary proof/source review; not blinded, source hash matches.",
+      "reuse": null
+    },
+    {
+      "id": "C10",
+      "status": "complete",
+      "evidence_refs": [
+        "report",
+        "independent_review",
+        "native",
+        "profile"
+      ],
+      "dependency_ids": [
+        "base",
+        "code",
+        "runtime"
+      ],
+      "reason": "Scoped lane code, theory, checks, profiles, reproducibility and local continuation contracts handed to parent. Publication is tracked separately by parent.",
+      "reuse": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "formula",
+      "statement": "H1 and H4 give exact algebraic inverse and rational defect identities; H2 preserves the inherited physical certificate for any admitted candidate.",
+      "scope": "a>0,b>=0 and the stated cubic plan; candidate accuracy itself is not trusted.",
+      "basis": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "evidence_refs": [
+        "theory",
+        "symbolic",
+        "analysis",
+        "native"
+      ],
+      "obligations": []
+    },
+    {
+      "id": "work",
+      "statement": "For the 1e-5 fixture, rational polynomial evaluations decrease 1659 to1024 and Callgrind Ir slope decreases39.01% versus generic.",
+      "scope": "Same plan, full trajectory, same measured binary and hardware environment.",
+      "basis": [
+        "implementation-verified",
+        "numerically checked"
+      ],
+      "evidence_refs": [
+        "audit",
+        "analysis",
+        "profile"
+      ],
+      "obligations": [
+        "Local hardware wall-time selection between strong scalar and rational remains model/machine dependent."
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "native_contracts",
+      "domain": "implementation",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "native"
+      ],
+      "reason": "23 distinct native tests pass; repeated passes are not added.",
+      "execution_ref": "native_run"
+    },
+    {
+      "id": "physical_points",
+      "domain": "numerics",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "audit",
+        "analysis"
+      ],
+      "reason": "24 final arms and5404 observations checked with Decimal80.",
+      "execution_ref": "analysis_run"
+    },
+    {
+      "id": "profile_identity",
+      "domain": "numerics",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "profile",
+        "profile_runs"
+      ],
+      "reason": "All eight runs exit0, unchanged source/binary, startup-subtracted slopes.",
+      "execution_ref": "profile_run"
+    },
+    {
+      "id": "independent_math_review",
+      "domain": "math",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "independent_review"
+      ],
+      "reason": "H1-H4 reviewed with complementary symbolic/analytic checks; no open findings in this scope.",
+      "execution_ref": null
+    }
+  ],
+  "executions": [
+    {
+      "id": "native_run",
+      "status": "completed",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "vigilode-coupled",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "--test",
+        "rhs_homotopy_contracts",
+        "--test",
+        "cubic_solver_production_contracts"
+      ],
+      "environment": {
+        "rust": "1.94.1",
+        "profile": "measurement",
+        "locked": true,
+        "offline": true
+      },
+      "evidence_refs": [
+        "native"
+      ],
+      "exit_code": 0,
+      "reason": ""
+    },
+    {
+      "id": "audit_run",
+      "status": "completed",
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench"
+      ],
+      "environment": {
+        "binary_sha256": "c2d651fd8087097117677205396de8530e9a113a69fa5eb01875e4a81b9dac3f"
+      },
+      "evidence_refs": [
+        "native",
+        "audit"
+      ],
+      "exit_code": 0,
+      "reason": ""
+    },
+    {
+      "id": "analysis_run",
+      "status": "completed",
+      "command": [
+        "python3",
+        "research/production_solver_closure_20261027/homotopy/analyze.py"
+      ],
+      "environment": {
+        "decimal_precision": 80,
+        "rational": "fractions.Fraction"
+      },
+      "evidence_refs": [
+        "analysis"
+      ],
+      "exit_code": 0,
+      "reason": ""
+    },
+    {
+      "id": "timing_run",
+      "status": "completed",
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench",
+        "--bench",
+        "128"
+      ],
+      "environment": {
+        "binary_sha256": "c2d651fd8087097117677205396de8530e9a113a69fa5eb01875e4a81b9dac3f",
+        "repetitions_per_sample": 128,
+        "paired_blocks": 5
+      },
+      "evidence_refs": [
+        "native",
+        "timing"
+      ],
+      "exit_code": 0,
+      "reason": ""
+    },
+    {
+      "id": "profile_run",
+      "status": "completed",
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/valgrind_local/usr/bin/valgrind.bin",
+        "--tool=callgrind",
+        "--cache-sim=no",
+        "--branch-sim=no",
+        "--callgrind-out-file=/workspace/scratch/06cfffc081e2/vigilode/research/production_solver_closure_20261027/homotopy/instruction_profile_r1/generic_20.callgrind",
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/cubic_production_bench",
+        "--arm",
+        "generic",
+        "20"
+      ],
+      "environment": {
+        "actual_command_receipt": "instruction_profile_r1/RUNS.json",
+        "tool": "Callgrind3.22.0",
+        "repetitions": [
+          20,
+          40
+        ]
+      },
+      "evidence_refs": [
+        "profile",
+        "profile_runs"
+      ],
+      "exit_code": 0,
+      "reason": "Eight actual commands and results are enumerated in RUNS.json."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "correction_budget",
+      "description": "Initial pass0 plus one diagnosed correction pass1; two correction passes remain unused.",
+      "evidence_refs": [
+        "protocol",
+        "diagnosis"
+      ]
+    },
+    {
+      "id": "deployment",
+      "description": "Expose Scalar Picard as conservative compatibility choice and RationalPredictor as verified model-specific alternative; retain both generic and expensive algebraic controls.",
+      "evidence_refs": [
+        "report",
+        "profile",
+        "timing"
+      ]
+    }
+  ],
+  "overrides": [],
+  "failures": [],
+  "next_actions": [
+    {
+      "id": "local_hardware",
+      "description": "Execute exact production fixture/hardware protocol and choose explicit scalar or rational configuration."
+    },
+    {
+      "id": "planner_theory",
+      "description": "Derive a finite-step decay-envelope truncation bound and outward implementation before reducing N."
+    }
+  ],
+  "correction_loops": {
+    "maximum": 3,
+    "used": 1,
+    "remaining": 2
+  },
+  "publication_status": "Parent integration and authorized push are separate from this completed scoped lane."
+}

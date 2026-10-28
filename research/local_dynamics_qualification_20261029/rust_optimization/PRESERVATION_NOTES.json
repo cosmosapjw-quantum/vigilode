@@ -1,0 +1,18 @@
+{
+  "schema": "vigilode.rust-optimization-preservation.v1",
+  "original_checkout": "Preserved; no reset/clean/stash/branch change",
+  "runtime_raw_and_binary": "Baseline, R1 and R2 are separate immutable directories and binaries; no result pooling",
+  "historical_test_patch_packaging": {
+    "classification": "PACKAGING_REPRODUCIBILITY_LIMITATION",
+    "artifact": "timefd-test-only.patch",
+    "finding": "This derived test-only diff file was overwritten during early fixture preparation. Its present bytes are not asserted to be the original patch bytes.",
+    "current_patch_sha256": "688211fa8b9a5c367bc945e7f8711adbc5c143158348cce0f31cecac4e0ea3b2",
+    "retained_actual_failing_source": "timefd-initial-compile-failure-test.rs",
+    "actual_source_sha256": "31cb2830a836acd9833302eefe317d1ed7d775c5712c949927b2e2dd37bf5822",
+    "receipt": "timefd-red/SOURCE_INPUTS.json",
+    "verification": "The retained .rs SHA256 exactly matches the actual failing command input snapshot; first compile failure stdout/stderr and receipt are preserved. No solver outcome is reclassified."
+  },
+  "packet_v1": "Original generated packet and original package-receipt.json retained under local raw root; final packet and row supplement have independent manifests",
+  "budget_limit": "Known measured main runner and R2 supplemental time reported; missing R1 supplemental elapsed time remains UNKNOWN",
+  "scientific_claim_ceiling": "Scoped software equivalence and allocation reductions; not all-solver zero allocation, full trajectory, mathematical bottleneck proof, or broad production admission"
+}

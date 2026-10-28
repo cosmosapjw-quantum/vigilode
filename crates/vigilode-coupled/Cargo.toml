@@ -1,0 +1,15 @@
+[package]
+name = "vigilode-coupled"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.94.1"
+license = "MIT"
+description = "Opt-in research coupled matrix-free Rosenbrock stage solver"
+
+[dependencies]
+rodas5p-core = { path = "../rodas5p-core" }
+rodas5p-integrators = { path = "../rodas5p-integrators" }
+serde.workspace = true
+
+[dev-dependencies]
+serde_json.workspace = true

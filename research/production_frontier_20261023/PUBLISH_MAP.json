@@ -1,0 +1,46 @@
+{
+  "schema": "vigilode.frontier.publication-map.v1",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "branch": "research/production-frontier-20261023",
+  "base_commit": "9b210c76dffb8909902f733e80d6cfa32405006e",
+  "source_equivalence": [
+    {
+      "cohorts": [
+        "switching",
+        "causal_threads1",
+        "causal_threads2",
+        "affine"
+      ],
+      "local_commit": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+      "github_commit": "df5c6c56da0eb93b58147d6630a0f094cf4af212",
+      "whole_tree": "5430c642253cfc9f4b05f9531a6dccafce8eb6c8",
+      "verification": "whole Git tree equality before publishing"
+    },
+    {
+      "cohorts": [
+        "final_native_pde"
+      ],
+      "local_commit": "50d3052843d7bbce75bba55a104725c4cfcf6292",
+      "github_commit": "37817308c12384f33ecb9b8ff64509f971eb3b2b",
+      "whole_tree": "16ecbbb225a2b9d8f2bb706f38d4b35eaabfc9af",
+      "verification": "whole Git tree equality before publishing",
+      "change": "PDE zero-generator/zero-time identity fix, including extreme finite state regressions"
+    }
+  ],
+  "metadata_difference": "Native receipts record local commit metadata; GitHub connector commits have different metadata but identical source trees. Do not substitute commit identity without this mapping.",
+  "final_package_identity": "Read the containing Git commit/tree; this file deliberately does not contain a circular self-commit claim.",
+  "branch_policy": {
+    "new_isolated_branch": true,
+    "force_push": false,
+    "merge_to_default": false,
+    "ncp": false
+  },
+  "development_artifacts": [
+    {
+      "path": "results/polynomial_campaign.json",
+      "status": "prefreeze_deterministic_development_artifact",
+      "provenance_limit": "12-row action-count artifact has no independent source-commit/binary receipt; do not treat it as a pinned timing cohort. Final source-frozen polynomial regression tests8PASS are recorded in evidence/native_integrator_tests_final.log.",
+      "timing_claim": false
+    }
+  ]
+}

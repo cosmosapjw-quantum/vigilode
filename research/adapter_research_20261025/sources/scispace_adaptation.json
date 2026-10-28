@@ -1,0 +1,684 @@
+{
+  "content": [
+    {
+      "type": "text",
+      "text": "Found 10 relevant papers on 'How can adaptive ODE solvers distinguish stability-limited small accepted time steps from accuracy-limited steps and use work-based switching between explicit and implicit methods without Jacobians?'.\n\n\n1. Adaptive explicit-implicit switching solver for stiff ODEs\n   ID: 51f4j0r9p5\n   2017 · Artur I. Karimov, Denis N. Butusov, Aleksandra V. Tutueva\n   DOI: 10.1109/EICONRUS.2017.7910586\n   Abstract: Computer simulation of stiff dynamical systems usually requires researchers and engineers to apply implicit numerical quadrature formulae. The most efficient of stiff ODE solvers use adaptive timestep technique, which reduces computational costs by varying integration step size according to the local truncation error estimation. Due to their stability, the implicit methods can handle large step sizes in “slow” solution segments and thus speed up computations. However, in “fast” solution segments, small integration steps are still needed to meet the accuracy requirements. These small steps can be calculated via explicit integration method without loss of the solution stability for many practical problems. This adaptive method switching technique allows reducing computational costs while solving stiff ODEs. In this paper, variable time step and numerical quadrature formula ODE solver is proposed. Numerical tests show its superior performance, up to ten times higher than traditional solvers performance.\n\n2. The Effective Stability of Adaptive Timestepping ODE Solvers\n   ID: 1j40pbx4fr\n   2005 · Harbir Lamba · SIAM Journal on Numerical Analysis\n   DOI: 10.1137/S0036142903435648\n   Abstract: We consider the behavior of certain adaptive timestepping methods, based upon embedded explicit Runge--Kutta pairs, when applied to dissipative ODEs. It has been observed numerically that the standard local error controls can impart desirable stability properties, but this has been rigorously verified only for very special, low-order, Runge--Kutta pairs.\r\nThe rooted-tree expansion of a certain quadratic form, central to the stability theory of Runge--Kutta methods, is derived. This, together with key assumptions on the sequence of accepted time-steps and the local error estimate, provides a general explanation for the observed stability of such algorithms on dissipative problems. Under these assumptions, which are expected to hold for \"typical\" numerical trajectories, two different results are proved. First, for a large class of embedded Runge--Kutta pairs of order $(1,2)$, controlled on an error-per-unit-step basis, all such numerical trajectories will eventually enter a particular bounded set. This occurs for sufficiently small tolerances independent of the initial conditions. Second, for pairs of arbitrary orders $(p-1,p)$, operating under either error-per-step or error-per-unit-step control, similar results are obtained when an additional structural assumption (that should be valid for many cases of interest) is imposed on the dissipative vector field. Numerical results support both the analysis and the assumptions made.\n\n3. Adaptive Time-Step Semi-Implicit One-Step Taylor Scheme for Stiff Ordinary Differential Equations\n   ID: 6hz3lo04ey26\n   2024 · Sebastiano Boscarino, E. Macca · arXiv.org\n   DOI: 10.48550/arxiv.2409.11990\n   Abstract: In this study, we propose high-order implicit and semi-implicit schemes for solving ordinary differential equations (ODEs) based on Taylor series expansion. These methods are designed to handle stiff and non-stiff components within a unified framework, ensuring stability and accuracy. The schemes are derived and analyzed for their consistency and stability properties, showcasing their effectiveness in practical computational scenarios.\n\n4. Implicit second derivative hybrid methods with adaptive step-size control for stiff and stiff oscillatory ordinary differential equations\n   ID: kmmilnq3hsv0\n   S. E. Ekoro, N. Ogbonna, J. I. Oahimire · Global Journal of Pure and Applied Sciences\n   DOI: 10.4314/gjpas.v31i5.14\n   Abstract: This paper presents a novel class of implicit, second derivative hybrid methods (ISDHMs) with adaptive step-size control for solving stiff and stiff oscillatory ordinary differential equations (ODEs). The family of methods was derived using collocation and interpolation techniques and analysed to establish that it exhibits zero-stability, A-stability for high step numbers, and small error constants for each step number. The exceptional performance of the methods was illustrated by applying it to solve three stiff ODE problems of practical significance. The results show that the derived ISDHMs outperformed known second derivative linear multistep Methods (SDLMMs) and standard MATLAB ODE15s in terms of stability region, error constants and accuracy. The combination of implicit formulation, hybrid approach, and adaptive step-size control makes the proposed method well-suited for solving challenging stiff and stiff oscillatory ODEs in scientific and engineering applications.\n\n5. Adaptive Stepsize Control for Extrapolation Semi-Implicit Multistep ODE Solvers\n   ID: 3naskb3z71\n   2021 · Denis N. Butusov\n   DOI: 10.3390/MATH9090950\n   Abstract: Developing new and efficient numerical integration techniques is of great importance in applied mathematics and computer science. Among the variety of available methods, multistep ODE solvers are broadly used in simulation software. Recently, semi-implicit integration proved to be an efficient compromise between implicit and explicit ODE solvers, and multiple high-performance semi-implicit methods were proposed. However, the computational efficiency of any ODE solver can be significantly increased through the introduction of an adaptive integration stepsize, but it requires the estimation of local truncation error. It is known that recently proposed extrapolation semi-implicit multistep methods (ESIMM) cannot operate with existing local truncation error (LTE) estimators, e.g., embedded methods approach, due to their specific right-hand side calculation algorithm. In this paper, we propose two different techniques for local truncation error estimation and study the performance of ESIMM methods with adaptive stepsize control. The first considered approach is based on two parallel semi-implicit solutions with different commutation orders. The second estimator, called the “double extrapolation” method, is a modification of the embedded method approach. The introduction of the double extrapolation LTE estimator allowed us to additionally increase the precision of the ESIMM solver. Using several known nonlinear systems, including stiff van der Pol oscillator, as the testbench, we explicitly show that ESIMM solvers can outperform both implicit and explicit linear multistep methods when implemented with an adaptive stepsize.\n\n6. Design of Stable Adaptive Step Size Controller for ODE Numerical Solutions Based on Condition Number Optimization\n   ID: 8zju558fhqgb\n   2026 · Jia Dong · International journal of education and social development.\n   DOI: 10.54097/678fjv81\n   Abstract: A numerical method to solve ordinary differential equations (ODEs) is used in computational science for many kinds of complex dynamic systems in all fields of engineering and science. Conventional adaptive step-size controllers are mainly concerned with bounding the local truncation error to maintain solution accuracy. However, for stiff systems, implicit numerical methods need to solve non-linear algebraic equations at each step and usually employ Newton-Raphson iterations. Therefore, at this time, the condition number of the iteration matrix affects both the stability and speed of convergence in practice. A new adaptive step-size controller that considers the condition number optimisation in the control loop is proposed in this paper. Continuously monitor and bound the condition number of the Jacobian-derived iteration matrix to adjust the step size dynamically in the proposed dual-loop controller, thus avoiding divergence of Newton iteration and reducing the amplification of floating-point errors. Based on the above theoretical analysis and control system construction, it has been shown that adding condition number constraints can enhance both the stability and efficiency of numerical integration for stiff ODEs. The above results provide an all-encompassing system for the development of high-accuracy and algebraically stable numerical solvers. \n\n7. Adaptive Diagonally Implicit Runge-Kutta Methods Devoid of Order Reduction for Semilinear ODEs\n   ID: zilfr91pja3z\n   2026 · Steven Byram Roberts, Abhijit Biswas, David Shirokoff\n   DOI: 10.48550/arxiv.2609.11069\n   Abstract: Diagonally implicit Runge-Kutta (DIRK) methods are a prominent class of numerical methods for solving stiff systems of ordinary differential equations (ODEs). Stiffness does not only impose stability challenges on Runge-Kutta methods; it can also degrade the order of convergence. This so-called order reduction phenomenon occurs when assumptions used for classical convergence analysis, e.g., an asymptotically small step size, fail to hold. In a prior paper by the authors, sharp order conditions and global error bounds for Runge-Kutta methods were developed, which hold uniformly with respect to stiffness when applied to a wide class of semilinear ODEs. In this work, those conditions are leveraged to construct the first DIRK methods of order four and five which satisfy these conditions and thus do not exhibit order reduction. Numerical results demonstrate that for a broad class of relevant nonlinear test problems, these new methods successfully mitigate order reduction, accurately estimate local error via an embedding for adaptive step size control, and can outperform classical DIRK methods. \n\n8. On theoretical upper limits for valid timesteps of implicit ODE methods\n   ID: 18cekjxh7m\n   2019 · Kevin R. Green, George W. Patrick, Raymond J. Spiteri · arXiv: Numerical Analysis\n   Abstract: Implicit methods for the numerical solution of initial-value problems may admit multiple solutions at any given time step. Accordingly, their nonlinear solvers may converge to any of these solutions. Below a critical timestep, exactly one of the solutions (the consistent solution) occurs on a solution branch (the principal branch) that can be continuously and monotonically continued back to zero timestep. \r\nStandard step-size control can promote convergence to consistent solutions by adjusting the timestep to maintain an error estimate below a given tolerance. However, simulations for symplectic systems or large physical systems are often run with constant timesteps and are thus more susceptible to convergence to inconsistent solutions. Because simulations cannot be reliably continued from inconsistent solutions, the critical timestep is a theoretical upper bound for valid timesteps.\n\n9. On theoretical upper limits for valid timesteps of implicit ODE methods\n   ID: 1p9e18e10g\n   2019 · Kevin R. Green, George W. Patrick, Raymond J. Spiteri\n   DOI: 10.3934/MATH.2019.6.1841\n   Abstract: Implicit methods for the numerical solution of initial-value problems may admit multiple solutions at any given time step. Accordingly, their nonlinear solvers may converge to any of these solutions. Below a critical timestep, exactly one of the solutions (the consistent solution) occurs on a solution branch (the principal branch) that can be continuously and monotonically continued back to zero timestep.\nStandard step-size control can promote convergence to consistent solutions by adjusting the timestep to maintain an error estimate below a given tolerance. However, simulations for symplectic systems or large physical systems are often run with constant timesteps and are thus more susceptible to convergence to inconsistent solutions. Because simulations cannot be reliably continued from inconsistent solutions, the critical timestep is a theoretical upper bound for valid timesteps.\n\n10. Projective Integration Methods in the Runge-Kutta Framework and the Extension to Adaptivity in Time\n   ID: 1i3tojqe\n   2022 · Julian Koellermeier, Giovanni Samaey · arXiv.org\n   DOI: 10.48550/arXiv.2210.08302\n   Abstract: Projective Integration methods are explicit time integration schemes for stiﬀ ODEs with large spectral gaps. In this paper, we show that all existing Projective Integration methods can be written as Runge-Kutta methods with an extended Butcher tableau including many stages. We prove consistency and order conditions of the Projective Integration methods using the Runge-Kutta framework. Spatially adaptive Projective Integration methods are included via partitioned Runge-Kutta methods. New time adaptive Projective Integration schemes are derived via embedded Runge-Kutta methods and step size variation while their stability, convergence, and error estimators are investigated numerically."
+    }
+  ],
+  "structuredContent": {
+    "searchTerm": "How can adaptive ODE solvers distinguish stability-limited small accepted time steps from accuracy-limited steps and use work-based switching between explicit and implicit methods without Jacobians?",
+    "papers": [
+      {
+        "id": 2610204610,
+        "title": "Adaptive explicit-implicit switching solver for stiff ODEs",
+        "is_archived": false,
+        "full_slug": "adaptive-explicit-implicit-switching-solver-for-stiff-odes-51f4j0r9p5",
+        "journal": null,
+        "conference_series": {
+          "display_name": "IEEE Conference of Russian Young Researchers in Electrical and Electronic Engineering",
+          "id": 2754885367,
+          "slug": "ieee-conference-of-russian-young-researchers-in-electrical",
+          "unique_id": "tvl343yd",
+          "full_slug": "ieee-conference-of-russian-young-researchers-in-electrical-tvl343yd"
+        },
+        "date": "2017-01-01T00:00:00Z",
+        "is_oa": false,
+        "publication_type": "Proceedings Article",
+        "doi": "10.1109/EICONRUS.2017.7910586",
+        "unique_id": "51f4j0r9p5",
+        "abstract": "Computer simulation of stiff dynamical systems usually requires researchers and engineers to apply implicit numerical quadrature formulae. The most efficient of stiff ODE solvers use adaptive timestep technique, which reduces computational costs by varying integration step size according to the local truncation error estimation. Due to their stability, the implicit methods can handle large step sizes in “slow” solution segments and thus speed up computations. However, in “fast” solution segments, small integration steps are still needed to meet the accuracy requirements. These small steps can be calculated via explicit integration method without loss of the solution stability for many practical problems. This adaptive method switching technique allows reducing computational costs while solving stiff ODEs. In this paper, variable time step and numerical quadrature formula ODE solver is proposed. Numerical tests show its superior performance, up to ten times higher than traditional solvers performance.",
+        "authors": {
+          "total": 3,
+          "data": [
+            {
+              "display_name": "Artur I. Karimov",
+              "id": 2684105743,
+              "slug": "artur-i-karimov",
+              "unique_id": "3fdy6a3ahx",
+              "full_slug": "artur-i-karimov-3fdy6a3ahx",
+              "affiliation_full_slug": "saint-petersburg-state-electrotechnical-university-2mtyhose"
+            },
+            {
+              "display_name": "Denis N. Butusov",
+              "id": 2722521747,
+              "slug": "denis-n-butusov",
+              "unique_id": "v0v4takfrl",
+              "full_slug": "denis-n-butusov-v0v4takfrl",
+              "affiliation_full_slug": "saint-petersburg-state-electrotechnical-university-2mtyhose"
+            },
+            {
+              "display_name": "Aleksandra V. Tutueva",
+              "id": 2667434656,
+              "slug": "aleksandra-v-tutueva",
+              "unique_id": "1yt9ea3h4i",
+              "full_slug": "aleksandra-v-tutueva-1yt9ea3h4i",
+              "affiliation_full_slug": "saint-petersburg-state-electrotechnical-university-2mtyhose"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "Saint Petersburg State Electrotechnical University",
+              "city": "Saint Petersburg",
+              "region": null,
+              "country": "Russia",
+              "id": 41518628,
+              "slug": "saint-petersburg-state-electrotechnical-university",
+              "unique_id": "2mtyhose",
+              "full_slug": "saint-petersburg-state-electrotechnical-university-2mtyhose"
+            }
+          ]
+        },
+        "fulltext_url": null,
+        "fulltext_url_no_follow": true,
+        "paper_urls": {
+          "order": [
+            "Html"
+          ],
+          "data": {
+            "Html": [
+              "https://ieeexplore.ieee.org/document/7910586/"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": 8
+          }
+        },
+        "tldr": "In this article, variable time step and numerical quadrature formula ODE solver is proposed to reduce computational costs while solving stiff ODEs, which can handle large step sizes in slow and fast solution segments.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 2031471323,
+        "title": "The Effective Stability of Adaptive Timestepping ODE Solvers",
+        "is_archived": false,
+        "full_slug": "the-effective-stability-of-adaptive-timestepping-ode-solvers-1j40pbx4fr",
+        "journal": {
+          "display_name": "SIAM Journal on Numerical Analysis",
+          "official_page": "http://www.siam.org/journals/sinum.php",
+          "issn": "0036-1429",
+          "alias": [
+            "Society for Industrial and Applied Mathematics journal on numerical analysis"
+          ],
+          "id": 203348814,
+          "slug": "siam-journal-on-numerical-analysis",
+          "unique_id": "g0w7fct8",
+          "full_slug": "siam-journal-on-numerical-analysis-g0w7fct8"
+        },
+        "conference_series": null,
+        "date": "2005-05-01T00:00:00Z",
+        "is_oa": true,
+        "publication_type": "Journal Article",
+        "doi": "10.1137/S0036142903435648",
+        "unique_id": "1j40pbx4fr",
+        "abstract": "We consider the behavior of certain adaptive timestepping methods, based upon embedded explicit Runge--Kutta pairs, when applied to dissipative ODEs. It has been observed numerically that the standard local error controls can impart desirable stability properties, but this has been rigorously verified only for very special, low-order, Runge--Kutta pairs.\r\nThe rooted-tree expansion of a certain quadratic form, central to the stability theory of Runge--Kutta methods, is derived. This, together with key assumptions on the sequence of accepted time-steps and the local error estimate, provides a general explanation for the observed stability of such algorithms on dissipative problems. Under these assumptions, which are expected to hold for \"typical\" numerical trajectories, two different results are proved. First, for a large class of embedded Runge--Kutta pairs of order $(1,2)$, controlled on an error-per-unit-step basis, all such numerical trajectories will eventually enter a particular bounded set. This occurs for sufficiently small tolerances independent of the initial conditions. Second, for pairs of arbitrary orders $(p-1,p)$, operating under either error-per-step or error-per-unit-step control, similar results are obtained when an additional structural assumption (that should be valid for many cases of interest) is imposed on the dissipative vector field. Numerical results support both the analysis and the assumptions made.",
+        "authors": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "Harbir Lamba",
+              "id": 2086463923,
+              "slug": "harbir-lamba",
+              "unique_id": "3t49i35n37",
+              "full_slug": "harbir-lamba-3t49i35n37"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "fulltext_url": "/pdf/the-effective-stability-of-adaptive-timestepping-ode-solvers-1j40pbx4fr.pdf",
+        "fulltext_url_no_follow": false,
+        "paper_urls": {
+          "order": [
+            "Html"
+          ],
+          "data": {
+            "Html": [
+              "https://dialnet.unirioja.es/servlet/articulo?codigo=1379439",
+              "https://dblp.uni-trier.de/db/journals/siamnum/siamnum43.html#Lamba05"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": 4
+          }
+        },
+        "tldr": "The rooted-tree expansion of a certain quadratic form, central to the stability theory of Runge--Kutta methods, is derived and provides a general explanation for the observed stability of such algorithms on dissipative problems.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 4048744436,
+        "title": "Adaptive Time-Step Semi-Implicit One-Step Taylor Scheme for Stiff Ordinary Differential Equations",
+        "is_archived": false,
+        "full_slug": "adaptive-time-step-semi-implicit-one-step-taylor-scheme-for-6hz3lo04ey26",
+        "journal": {
+          "display_name": "arXiv.org",
+          "official_page": null,
+          "issn": "2331-8422",
+          "alias": [
+            "ArXiv"
+          ],
+          "id": 4000147193,
+          "slug": "arxiv-org",
+          "unique_id": "bl5k1ptr",
+          "full_slug": "arxiv-org-bl5k1ptr"
+        },
+        "conference_series": null,
+        "date": "2024-09-18T00:00:00Z",
+        "is_oa": null,
+        "publication_type": "Journal Article",
+        "doi": "10.48550/arxiv.2409.11990",
+        "unique_id": "6hz3lo04ey26",
+        "abstract": "In this study, we propose high-order implicit and semi-implicit schemes for solving ordinary differential equations (ODEs) based on Taylor series expansion. These methods are designed to handle stiff and non-stiff components within a unified framework, ensuring stability and accuracy. The schemes are derived and analyzed for their consistency and stability properties, showcasing their effectiveness in practical computational scenarios.",
+        "authors": {
+          "total": 2,
+          "data": [
+            {
+              "display_name": "Sebastiano Boscarino",
+              "id": 2015974976,
+              "slug": "sebastiano-boscarino",
+              "unique_id": "2ngu522iwf",
+              "full_slug": "sebastiano-boscarino-2ngu522iwf",
+              "affiliation_full_slug": "university-of-catania-jxinksja"
+            },
+            {
+              "display_name": "E. Macca",
+              "full_slug": null
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "University of Catania",
+              "city": "Catania",
+              "region": null,
+              "country": "Italy",
+              "id": 39063666,
+              "slug": "university-of-catania",
+              "unique_id": "jxinksja",
+              "full_slug": "university-of-catania-jxinksja"
+            }
+          ]
+        },
+        "metrics": {
+          "citations": {
+            "total": null
+          }
+        },
+        "tldr": "This study proposes high-order implicit and semi-implicit schemes for solving stiff and non-stiff ODEs using Taylor series expansion, ensuring stability and accuracy within a unified framework, and analyzes their consistency and stability properties.",
+        "podcast": null,
+        "podcast_generation_allowed": false,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 4128477718,
+        "title": "Implicit second derivative hybrid methods with adaptive step-size control for stiff and stiff oscillatory ordinary differential equations",
+        "is_archived": false,
+        "full_slug": "implicit-second-derivative-hybrid-methods-with-adaptive-step-kmmilnq3hsv0",
+        "journal": {
+          "display_name": "Global Journal of Pure and Applied Sciences",
+          "official_page": null,
+          "issn": "1118-0579",
+          "alias": null,
+          "id": 2765025936,
+          "slug": "global-journal-of-pure-and-applied-sciences",
+          "unique_id": "33shh99t",
+          "full_slug": "global-journal-of-pure-and-applied-sciences-33shh99t"
+        },
+        "conference_series": null,
+        "date": null,
+        "is_oa": null,
+        "publication_type": "Journal Article",
+        "doi": "10.4314/gjpas.v31i5.14",
+        "unique_id": "kmmilnq3hsv0",
+        "abstract": "This paper presents a novel class of implicit, second derivative hybrid methods (ISDHMs) with adaptive step-size control for solving stiff and stiff oscillatory ordinary differential equations (ODEs). The family of methods was derived using collocation and interpolation techniques and analysed to establish that it exhibits zero-stability, A-stability for high step numbers, and small error constants for each step number. The exceptional performance of the methods was illustrated by applying it to solve three stiff ODE problems of practical significance. The results show that the derived ISDHMs outperformed known second derivative linear multistep Methods (SDLMMs) and standard MATLAB ODE15s in terms of stability region, error constants and accuracy. The combination of implicit formulation, hybrid approach, and adaptive step-size control makes the proposed method well-suited for solving challenging stiff and stiff oscillatory ODEs in scientific and engineering applications.",
+        "authors": {
+          "total": 3,
+          "data": [
+            {
+              "display_name": "S. E. Ekoro",
+              "full_slug": null
+            },
+            {
+              "display_name": "N. Ogbonna",
+              "full_slug": null
+            },
+            {
+              "display_name": "J. I. Oahimire",
+              "full_slug": null
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "metrics": {
+          "citations": {
+            "total": null
+          }
+        },
+        "tldr": null,
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 3161962943,
+        "title": "Adaptive Stepsize Control for Extrapolation Semi-Implicit Multistep ODE Solvers",
+        "is_archived": false,
+        "full_slug": "adaptive-stepsize-control-for-extrapolation-semi-implicit-3naskb3z71",
+        "journal": null,
+        "conference_series": null,
+        "date": "2021-01-01T00:00:00Z",
+        "is_oa": true,
+        "publication_type": "Journal Article",
+        "doi": "10.3390/MATH9090950",
+        "unique_id": "3naskb3z71",
+        "abstract": "Developing new and efficient numerical integration techniques is of great importance in applied mathematics and computer science. Among the variety of available methods, multistep ODE solvers are broadly used in simulation software. Recently, semi-implicit integration proved to be an efficient compromise between implicit and explicit ODE solvers, and multiple high-performance semi-implicit methods were proposed. However, the computational efficiency of any ODE solver can be significantly increased through the introduction of an adaptive integration stepsize, but it requires the estimation of local truncation error. It is known that recently proposed extrapolation semi-implicit multistep methods (ESIMM) cannot operate with existing local truncation error (LTE) estimators, e.g., embedded methods approach, due to their specific right-hand side calculation algorithm. In this paper, we propose two different techniques for local truncation error estimation and study the performance of ESIMM methods with adaptive stepsize control. The first considered approach is based on two parallel semi-implicit solutions with different commutation orders. The second estimator, called the “double extrapolation” method, is a modification of the embedded method approach. The introduction of the double extrapolation LTE estimator allowed us to additionally increase the precision of the ESIMM solver. Using several known nonlinear systems, including stiff van der Pol oscillator, as the testbench, we explicitly show that ESIMM solvers can outperform both implicit and explicit linear multistep methods when implemented with an adaptive stepsize.",
+        "authors": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "Denis N. Butusov",
+              "id": 2722521747,
+              "slug": "denis-n-butusov",
+              "unique_id": "v0v4takfrl",
+              "full_slug": "denis-n-butusov-v0v4takfrl"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "fulltext_url": null,
+        "fulltext_url_no_follow": true,
+        "paper_urls": {
+          "order": [
+            "Html",
+            "Others"
+          ],
+          "data": {
+            "Html": [
+              "https://www.mdpi.com/2227-7390/9/9/950"
+            ],
+            "Others": [
+              "https://www.mdpi.com/2227-7390/9/9/950/pdf"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": 4
+          }
+        },
+        "tldr": "Two different techniques for local truncation error estimation are proposed and it is explicitly shown that ESIMM solvers can outperform both implicit and explicit linear multistep methods when implemented with an adaptive stepsize.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 4131119080,
+        "title": "Design of Stable Adaptive Step Size Controller for ODE Numerical Solutions Based on Condition Number Optimization",
+        "is_archived": false,
+        "full_slug": "design-of-stable-adaptive-step-size-controller-for-ode-8zju558fhqgb",
+        "journal": {
+          "display_name": "International journal of education and social development.",
+          "official_page": "https://www.paperoa.com/IJESD.pdf",
+          "issn": "3078-2287",
+          "alias": [
+            "International journal of education and social development"
+          ],
+          "id": 4000229988,
+          "slug": "international-journal-of-education-and-social-development",
+          "unique_id": "7h9mp6lucaub",
+          "full_slug": "international-journal-of-education-and-social-development-7h9mp6lucaub"
+        },
+        "conference_series": null,
+        "date": "2026-09-20T00:00:00Z",
+        "is_oa": null,
+        "publication_type": "Journal Article",
+        "doi": "10.54097/678fjv81",
+        "unique_id": "8zju558fhqgb",
+        "abstract": "A numerical method to solve ordinary differential equations (ODEs) is used in computational science for many kinds of complex dynamic systems in all fields of engineering and science. Conventional adaptive step-size controllers are mainly concerned with bounding the local truncation error to maintain solution accuracy. However, for stiff systems, implicit numerical methods need to solve non-linear algebraic equations at each step and usually employ Newton-Raphson iterations. Therefore, at this time, the condition number of the iteration matrix affects both the stability and speed of convergence in practice. A new adaptive step-size controller that considers the condition number optimisation in the control loop is proposed in this paper. Continuously monitor and bound the condition number of the Jacobian-derived iteration matrix to adjust the step size dynamically in the proposed dual-loop controller, thus avoiding divergence of Newton iteration and reducing the amplification of floating-point errors. Based on the above theoretical analysis and control system construction, it has been shown that adding condition number constraints can enhance both the stability and efficiency of numerical integration for stiff ODEs. The above results provide an all-encompassing system for the development of high-accuracy and algebraically stable numerical solvers. ",
+        "authors": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "Jia Dong",
+              "full_slug": null
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "fulltext_url": "pdf/design-of-stable-adaptive-step-size-controller-for-ode-8zju558fhqgb.pdf",
+        "fulltext_url_no_follow": false,
+        "paper_urls": {
+          "order": [
+            "Pdf"
+          ],
+          "data": {
+            "Pdf": [
+              "https://ijesd.com/index.php/ijesd/article/download/436/426"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": null
+          }
+        },
+        "tldr": null,
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 4131641502,
+        "title": "Adaptive Diagonally Implicit Runge-Kutta Methods Devoid of Order Reduction for Semilinear ODEs",
+        "is_archived": false,
+        "full_slug": "adaptive-diagonally-implicit-runge-kutta-methods-devoid-of-zilfr91pja3z",
+        "journal": null,
+        "conference_series": null,
+        "date": "2026-09-10T00:00:00Z",
+        "is_oa": null,
+        "publication_type": "Journal Article",
+        "doi": "10.48550/arxiv.2609.11069",
+        "unique_id": "zilfr91pja3z",
+        "abstract": "Diagonally implicit Runge-Kutta (DIRK) methods are a prominent class of numerical methods for solving stiff systems of ordinary differential equations (ODEs). Stiffness does not only impose stability challenges on Runge-Kutta methods; it can also degrade the order of convergence. This so-called order reduction phenomenon occurs when assumptions used for classical convergence analysis, e.g., an asymptotically small step size, fail to hold. In a prior paper by the authors, sharp order conditions and global error bounds for Runge-Kutta methods were developed, which hold uniformly with respect to stiffness when applied to a wide class of semilinear ODEs. In this work, those conditions are leveraged to construct the first DIRK methods of order four and five which satisfy these conditions and thus do not exhibit order reduction. Numerical results demonstrate that for a broad class of relevant nonlinear test problems, these new methods successfully mitigate order reduction, accurately estimate local error via an embedding for adaptive step size control, and can outperform classical DIRK methods. ",
+        "authors": {
+          "total": 4,
+          "data": [
+            {
+              "display_name": "Steven Byram Roberts",
+              "full_slug": null
+            },
+            {
+              "display_name": "Abhijit Biswas",
+              "full_slug": null
+            },
+            {
+              "display_name": "David Shirokoff",
+              "full_slug": null
+            },
+            {
+              "display_name": "Benjamin Seibold",
+              "full_slug": null
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "fulltext_url": "pdf/adaptive-diagonally-implicit-runge-kutta-methods-devoid-of-zilfr91pja3z.pdf",
+        "fulltext_url_no_follow": false,
+        "paper_urls": {
+          "order": [
+            "Pdf"
+          ],
+          "data": {
+            "Pdf": [
+              "https://arxiv.org/pdf/2609.11069"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": null
+          }
+        },
+        "tldr": null,
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 2994707286,
+        "title": "On theoretical upper limits for valid timesteps of implicit ODE methods",
+        "is_archived": false,
+        "full_slug": "on-theoretical-upper-limits-for-valid-timesteps-of-implicit-18cekjxh7m",
+        "journal": {
+          "display_name": "arXiv: Numerical Analysis",
+          "official_page": null,
+          "issn": null,
+          "alias": null,
+          "id": 2595313807,
+          "slug": "arxiv-numerical-analysis",
+          "unique_id": "36dm9vah",
+          "full_slug": "arxiv-numerical-analysis-36dm9vah"
+        },
+        "conference_series": null,
+        "date": "2019-12-18T00:00:00Z",
+        "is_oa": true,
+        "publication_type": "Posted Content",
+        "doi": null,
+        "unique_id": "18cekjxh7m",
+        "abstract": "Implicit methods for the numerical solution of initial-value problems may admit multiple solutions at any given time step. Accordingly, their nonlinear solvers may converge to any of these solutions. Below a critical timestep, exactly one of the solutions (the consistent solution) occurs on a solution branch (the principal branch) that can be continuously and monotonically continued back to zero timestep. \r\nStandard step-size control can promote convergence to consistent solutions by adjusting the timestep to maintain an error estimate below a given tolerance. However, simulations for symplectic systems or large physical systems are often run with constant timesteps and are thus more susceptible to convergence to inconsistent solutions. Because simulations cannot be reliably continued from inconsistent solutions, the critical timestep is a theoretical upper bound for valid timesteps.",
+        "authors": {
+          "total": 3,
+          "data": [
+            {
+              "display_name": "Kevin R. Green",
+              "id": 2913356388,
+              "slug": "kevin-r-green",
+              "unique_id": "173j2awf6l",
+              "full_slug": "kevin-r-green-173j2awf6l"
+            },
+            {
+              "display_name": "George W. Patrick",
+              "id": 2146890938,
+              "slug": "george-w-patrick",
+              "unique_id": "2a7z1kn5gb",
+              "full_slug": "george-w-patrick-2a7z1kn5gb"
+            },
+            {
+              "display_name": "Raymond J. Spiteri",
+              "id": 717783442,
+              "slug": "raymond-j-spiteri",
+              "unique_id": "44a9wwnm8f",
+              "full_slug": "raymond-j-spiteri-44a9wwnm8f",
+              "affiliation_full_slug": "university-of-saskatchewan-ep82959d"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "University of Saskatchewan",
+              "city": "Saskatoon",
+              "region": "Saskatchewan",
+              "country": "Canada",
+              "id": 32625721,
+              "slug": "university-of-saskatchewan",
+              "unique_id": "ep82959d",
+              "full_slug": "university-of-saskatchewan-ep82959d"
+            }
+          ]
+        },
+        "fulltext_url": "https://arxiv.org/pdf/1912.08900",
+        "fulltext_url_no_follow": true,
+        "paper_urls": {
+          "order": [
+            "Html"
+          ],
+          "data": {
+            "Html": [
+              "https://arxiv.org/abs/1912.08900",
+              "http://ui.adsabs.harvard.edu/abs/2019arXiv191208900G/abstract"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": null
+          }
+        },
+        "tldr": "The critical timestep is a theoretical upper bound for valid timesteps of implicit methods for the numerical solution of initial-value problems that cannot be reliably continued from inconsistent solutions.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 3007105651,
+        "title": "On theoretical upper limits for valid timesteps of implicit ODE methods",
+        "is_archived": false,
+        "full_slug": "on-theoretical-upper-limits-for-valid-timesteps-of-implicit-1p9e18e10g",
+        "journal": null,
+        "conference_series": null,
+        "date": "2019-01-01T00:00:00Z",
+        "is_oa": true,
+        "publication_type": "Journal Article",
+        "doi": "10.3934/MATH.2019.6.1841",
+        "unique_id": "1p9e18e10g",
+        "abstract": "Implicit methods for the numerical solution of initial-value problems may admit multiple solutions at any given time step. Accordingly, their nonlinear solvers may converge to any of these solutions. Below a critical timestep, exactly one of the solutions (the consistent solution) occurs on a solution branch (the principal branch) that can be continuously and monotonically continued back to zero timestep.\nStandard step-size control can promote convergence to consistent solutions by adjusting the timestep to maintain an error estimate below a given tolerance. However, simulations for symplectic systems or large physical systems are often run with constant timesteps and are thus more susceptible to convergence to inconsistent solutions. Because simulations cannot be reliably continued from inconsistent solutions, the critical timestep is a theoretical upper bound for valid timesteps.",
+        "authors": {
+          "total": 3,
+          "data": [
+            {
+              "display_name": "Kevin R. Green",
+              "id": 2913356388,
+              "slug": "kevin-r-green",
+              "unique_id": "173j2awf6l",
+              "full_slug": "kevin-r-green-173j2awf6l"
+            },
+            {
+              "display_name": "George W. Patrick",
+              "id": 2146890938,
+              "slug": "george-w-patrick",
+              "unique_id": "2a7z1kn5gb",
+              "full_slug": "george-w-patrick-2a7z1kn5gb"
+            },
+            {
+              "display_name": "Raymond J. Spiteri",
+              "id": 717783442,
+              "slug": "raymond-j-spiteri",
+              "unique_id": "44a9wwnm8f",
+              "full_slug": "raymond-j-spiteri-44a9wwnm8f",
+              "affiliation_full_slug": "university-of-saskatchewan-ep82959d"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 1,
+          "data": [
+            {
+              "display_name": "University of Saskatchewan",
+              "city": "Saskatoon",
+              "region": "Saskatchewan",
+              "country": "Canada",
+              "id": 32625721,
+              "slug": "university-of-saskatchewan",
+              "unique_id": "ep82959d",
+              "full_slug": "university-of-saskatchewan-ep82959d"
+            }
+          ]
+        },
+        "fulltext_url": "https://arxiv.org/pdf/1912.08900.pdf",
+        "fulltext_url_no_follow": true,
+        "paper_urls": {
+          "order": [
+            "Html"
+          ],
+          "data": {
+            "Html": [
+              "https://www.aimspress.com/article/doi/10.3934/math.2019.6.1841?viewType=HTML",
+              "https://dblp.uni-trier.de/db/journals/corr/corr1912.html#abs-1912-08900"
+            ]
+          },
+          "is_show": true
+        },
+        "metrics": {
+          "citations": {
+            "total": 2
+          }
+        },
+        "tldr": "The critical timestep is a theoretical upper bound for valid timesteps as mentioned in this paper, and it is defined as the point at which all the solutions converge to the same solution branch (the principal branch).",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      },
+      {
+        "id": 4005463550,
+        "title": "Projective Integration Methods in the Runge-Kutta Framework and the Extension to Adaptivity in Time",
+        "is_archived": false,
+        "full_slug": "projective-integration-methods-in-the-runge-kutta-framework-1i3tojqe",
+        "journal": {
+          "display_name": "arXiv.org",
+          "official_page": null,
+          "issn": "2331-8422",
+          "alias": [
+            "ArXiv"
+          ],
+          "id": 4000147193,
+          "slug": "arxiv-org",
+          "unique_id": "bl5k1ptr",
+          "full_slug": "arxiv-org-bl5k1ptr"
+        },
+        "conference_series": null,
+        "date": "2022-10-15T00:00:00Z",
+        "is_oa": false,
+        "publication_type": "Journal Article",
+        "doi": "10.48550/arXiv.2210.08302",
+        "unique_id": "1i3tojqe",
+        "abstract": "Projective Integration methods are explicit time integration schemes for stiﬀ ODEs with large spectral gaps. In this paper, we show that all existing Projective Integration methods can be written as Runge-Kutta methods with an extended Butcher tableau including many stages. We prove consistency and order conditions of the Projective Integration methods using the Runge-Kutta framework. Spatially adaptive Projective Integration methods are included via partitioned Runge-Kutta methods. New time adaptive Projective Integration schemes are derived via embedded Runge-Kutta methods and step size variation while their stability, convergence, and error estimators are investigated numerically.",
+        "authors": {
+          "total": 2,
+          "data": [
+            {
+              "display_name": "Julian Koellermeier",
+              "id": 2046624178,
+              "slug": "julian-koellermeier",
+              "unique_id": "4v8h95f071",
+              "full_slug": "julian-koellermeier-4v8h95f071"
+            },
+            {
+              "display_name": "Giovanni Samaey",
+              "id": 2035204029,
+              "slug": "giovanni-samaey",
+              "unique_id": "29rko8l082",
+              "full_slug": "giovanni-samaey-29rko8l082"
+            }
+          ]
+        },
+        "affiliations": {
+          "total": 0,
+          "data": []
+        },
+        "metrics": {
+          "citations": {
+            "total": null
+          }
+        },
+        "tldr": "It is shown that all existing Projective Integration methods can be written as Runge-Kutta methods with an extended Butcher tableau including many stages and consistency and order conditions are proved.",
+        "podcast": null,
+        "podcast_generation_allowed": true,
+        "entity_type": "PAPER"
+      }
+    ]
+  },
+  "isError": false
+}

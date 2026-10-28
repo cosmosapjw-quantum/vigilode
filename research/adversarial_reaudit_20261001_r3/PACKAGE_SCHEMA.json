@@ -1,0 +1,226 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/cosmosapjw-quantum/vigilode/research/adversarial_reaudit_20261001_r3/PACKAGE_SCHEMA.json",
+  "$defs": {
+    "status": {
+      "allOf": [
+        {
+          "type": "object",
+          "required": [
+            "schema_version",
+            "source_commit",
+            "source_tree"
+          ],
+          "properties": {
+            "schema_version": {
+              "const": "1.0"
+            },
+            "source_commit": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "source_tree": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "verdict",
+            "research_ledger_verdict",
+            "runtime_summary"
+          ],
+          "properties": {
+            "verdict": {
+              "const": "REWORK"
+            },
+            "research_ledger_verdict": {
+              "const": "INCONCLUSIVE"
+            },
+            "production_modified": {
+              "const": false
+            },
+            "actual_speedup_measured": {
+              "const": false
+            }
+          }
+        }
+      ]
+    },
+    "findings": {
+      "allOf": [
+        {
+          "type": "object",
+          "required": [
+            "schema_version",
+            "source_commit",
+            "source_tree"
+          ],
+          "properties": {
+            "schema_version": {
+              "const": "1.0"
+            },
+            "source_commit": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "source_tree": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "findings",
+            "prior_closures",
+            "counts"
+          ],
+          "properties": {
+            "findings": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "severity",
+                  "status",
+                  "evidence",
+                  "new_counterexample",
+                  "introduced_regression_demonstrated",
+                  "detail_file"
+                ]
+              }
+            },
+            "prior_closures": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "prior_id",
+                  "status"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    },
+    "claims": {
+      "allOf": [
+        {
+          "type": "object",
+          "required": [
+            "schema_version",
+            "source_commit",
+            "source_tree"
+          ],
+          "properties": {
+            "schema_version": {
+              "const": "1.0"
+            },
+            "source_commit": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "source_tree": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "claims",
+            "research_process_verdict"
+          ],
+          "properties": {
+            "claims": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "claim_ceiling",
+                  "independent_decision_file"
+                ]
+              }
+            },
+            "research_process_verdict": {
+              "const": "INCONCLUSIVE"
+            }
+          }
+        }
+      ]
+    },
+    "dag": {
+      "allOf": [
+        {
+          "type": "object",
+          "required": [
+            "schema_version",
+            "source_commit",
+            "source_tree"
+          ],
+          "properties": {
+            "schema_version": {
+              "const": "1.0"
+            },
+            "source_commit": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            },
+            "source_tree": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{40}$"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "node_count",
+            "nodes",
+            "topological_order",
+            "execution_waves"
+          ],
+          "properties": {
+            "node_count": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "nodes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "id",
+                  "priority",
+                  "title",
+                  "depends_on",
+                  "targets",
+                  "implementation",
+                  "acceptance",
+                  "failure_status",
+                  "deliverables",
+                  "status"
+                ]
+              }
+            },
+            "topological_order": {
+              "type": "array",
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,45 @@
+   Compiling rodas5p-fair-ab v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-fair-ab)
+    Checking rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+    Checking rodas5p-krylov v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-krylov)
+    Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+error: the loop variable `j` is used to index `weights`
+   --> crates/rodas5p-integrators/src/collective_direct.rs:116:18
+    |
+116 |         for j in 0..n {
+    |                  ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+    = note: `-D clippy::needless-range-loop` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::needless_range_loop)]`
+help: consider using an iterator and enumerate()
+    |
+116 -         for j in 0..n {
+116 +         for (j, <item>) in weights.iter().enumerate().take(n) {
+    |
+
+error: the use of negated comparison operators on partially ordered types produces code that is hard to read and refactor, please consider using the `partial_cmp` method instead, to make it clear that the two values could be incomparable
+   --> crates/rodas5p-integrators/src/collective_direct.rs:163:12
+    |
+163 |         if !(sl < ai.lo) {
+    |            ^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#neg_cmp_op_on_partial_ord
+    = note: `-D clippy::neg-cmp-op-on-partial-ord` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::neg_cmp_op_on_partial_ord)]`
+
+error: the loop variable `j` is used to index `weights`
+   --> crates/rodas5p-integrators/src/collective_direct.rs:394:14
+    |
+394 |     for j in 0..n {
+    |              ^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_range_loop
+help: consider using an iterator and enumerate()
+    |
+394 -     for j in 0..n {
+394 +     for (j, <item>) in weights.iter().enumerate().take(n) {
+    |
+
+error: could not compile `rodas5p-integrators` (lib) due to 3 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rodas5p-integrators` (lib test) due to 3 previous errors

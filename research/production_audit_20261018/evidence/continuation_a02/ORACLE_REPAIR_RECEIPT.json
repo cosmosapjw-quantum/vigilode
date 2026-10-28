@@ -1,0 +1,59 @@
+{
+  "unit": "A02_LINEAR_ORACLE_REPAIR",
+  "cwd": "/home/cosmosapjw/vigilode",
+  "branch": "audit/production-readiness-20261018",
+  "head": "c3036c63da02ca9b04cd39ccf580cd67d00ccb0c",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+  "sources_and_inputs": {
+    "crates/rodas5p-integrators/src/packet_trajectory.rs": "1bf3552d5aaf9a9df0f03a85ca34c1ac055e449b92826a9f8199cffdea57c5e9",
+    "crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs": "8615cc94a95349dccc6b734ef1b8c7ae683be4a29f42b3668c6f16e60919f03f",
+    "crates/rodas5p-integrators/src/packet_window.rs": "c1c174400a9cff9207af4a361dba2bb550f35f1c87f25518bc0de3ad22641f00",
+    "research/production_audit_20261018/evidence/continuation_a02/linear_oracle_mpmath.py": "b7da06f9a544c0b750691bb9546a16d5b95febdf4159b1c7b664c652ad23eab0",
+    "research/production_audit_20261018/evidence/continuation_a02/linear_oracle_mpmath.json": "aa98e27d25020e351991a0df273a160c75e69304d99b86d3380d7b683873895c"
+  },
+  "logs": [
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02/oracle_generation.log",
+      "sha256": "22eff6ef71a4b13d7cc483aa790ba7d53cb4c1b9c83448f3dce5424a5bfd1527",
+      "command": "python3 research/production_audit_20261018/evidence/continuation_a02/linear_oracle_mpmath.py",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a02_oracle_generation.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02/oracle_first.log",
+      "sha256": "a6eba1a44bfffa6e7ec9706331ab3f4fa1fb21246d72df067e5a3004fd317cd0",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test packet_trajectory_contracts linear_outward_fixed_grid_encloses_independent_exact_modes_and_mean",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a02_oracle_first.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02/oracle_suite_frozen.log",
+      "sha256": "9d1b6912959dfc8164f9165593229a3db2b5aa4aac3ee4e3cd6995008367ab4d",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test packet_trajectory_contracts",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a02_oracle_suite_frozen.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02/oracle_clippy_frozen.log",
+      "sha256": "11e35c5f50d9fe55776d810dde5ff75744a478876313653a26c07c94593a7963",
+      "command": "cargo clippy --locked --offline -p rodas5p-integrators --lib --test packet_trajectory_contracts -- -D warnings",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a02_oracle_clippy_frozen.log"
+    },
+    {
+      "path": "research/production_audit_20261018/evidence/continuation_a02/oracle_fmt_frozen.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0,
+      "copied_exactly_from": "/tmp/vigilode_a02_oracle_fmt_frozen.log"
+    }
+  ],
+  "decision": "LINEAR_SUBSCOPE_REVIEW_PENDING; FULL_A02_HOLD",
+  "limits": [
+    "point docs explicitly provisional and roundoff_enclosed=false",
+    "oracle uses mpmath 120 dps analytic linear solution at exact binary64 rational inputs; adjacent binary64 brackets are high precision diagnostic, not formal transcendental interval proof",
+    "nonlinear continuous reconstructed residual and verified T1 global tube absent",
+    "VG-1 zero hot allocations and CausalWeights setup work remain open"
+  ]
+}

@@ -1,0 +1,338 @@
+{
+  "all-targets": {
+    "suite": "all-targets",
+    "commands": [
+      {
+        "command": [
+          "cargo",
+          "check",
+          "--profile",
+          "measurement",
+          "--locked",
+          "--offline",
+          "-p",
+          "vigilode",
+          "-p",
+          "vigilode-coupled",
+          "--all-targets"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/all-targets/command_00/RECEIPT.json"
+      }
+    ]
+  },
+  "coupled-contracts": {
+    "suite": "coupled-contracts",
+    "commands": [
+      {
+        "command": [
+          "cargo",
+          "test",
+          "--profile",
+          "measurement",
+          "--locked",
+          "--offline",
+          "-p",
+          "vigilode-coupled",
+          "--lib",
+          "--tests",
+          "--",
+          "--test-threads=1"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/coupled-contracts/command_00/RECEIPT.json"
+      }
+    ]
+  },
+  "docs": {
+    "suite": "docs",
+    "commands": [
+      {
+        "command": [
+          "cargo",
+          "doc",
+          "--profile",
+          "measurement",
+          "--locked",
+          "--offline",
+          "-p",
+          "vigilode",
+          "-p",
+          "vigilode-coupled",
+          "--no-deps"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/docs/command_00/RECEIPT.json"
+      },
+      {
+        "command": [
+          "cargo",
+          "test",
+          "--profile",
+          "measurement",
+          "--locked",
+          "--offline",
+          "-p",
+          "vigilode",
+          "-p",
+          "vigilode-coupled",
+          "--doc"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/docs/command_01/RECEIPT.json"
+      }
+    ]
+  },
+  "facade-contracts": {
+    "suite": "facade-contracts",
+    "commands": [
+      {
+        "command": [
+          "cargo",
+          "test",
+          "--profile",
+          "measurement",
+          "--locked",
+          "--offline",
+          "-p",
+          "vigilode",
+          "--lib",
+          "--tests",
+          "--",
+          "--test-threads=1"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/facade-contracts/command_00/RECEIPT.json"
+      }
+    ]
+  },
+  "local-benchmarks": {
+    "suite": "local-benchmarks",
+    "commands": [
+      {
+        "command": [
+          "cargo",
+          "build",
+          "--release",
+          "--locked",
+          "--offline",
+          "-p",
+          "vigilode",
+          "--example",
+          "production_return_bench_20261027"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/local-benchmarks/command_00/RECEIPT.json"
+      },
+      {
+        "command": [
+          "cargo",
+          "build",
+          "--release",
+          "--locked",
+          "--offline",
+          "-p",
+          "vigilode-coupled",
+          "--example",
+          "cubic_production_bench",
+          "--example",
+          "structural_production_bench_20261027"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/local-benchmarks/command_01/RECEIPT.json"
+      },
+      {
+        "command": [
+          "/tmp/vigilode-cumulative-validation-20261028/target-candidate/release/examples/cubic_production_bench",
+          "--bench",
+          "128"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/local-benchmarks/command_02/RECEIPT.json"
+      },
+      {
+        "command": [
+          "/tmp/vigilode-cumulative-validation-20261028/target-candidate/release/examples/structural_production_bench_20261027",
+          "bench",
+          "1",
+          "64",
+          "5",
+          "1"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/local-benchmarks/command_03/RECEIPT.json"
+      },
+      {
+        "command": [
+          "/tmp/vigilode-cumulative-validation-20261028/target-candidate/release/examples/structural_production_bench_20261027",
+          "bench",
+          "64",
+          "64",
+          "5",
+          "1"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/local-benchmarks/command_04/RECEIPT.json"
+      },
+      {
+        "command": [
+          "/tmp/vigilode-cumulative-validation-20261028/target-candidate/release/examples/structural_production_bench_20261027",
+          "bench",
+          "2048",
+          "64",
+          "5",
+          "1"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/local-benchmarks/command_05/RECEIPT.json"
+      },
+      {
+        "command": [
+          "/tmp/vigilode-cumulative-validation-20261028/target-candidate/release/examples/structural_production_bench_20261027",
+          "bench",
+          "2048",
+          "64",
+          "5",
+          "2"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/local-benchmarks/command_06/RECEIPT.json"
+      },
+      {
+        "command": [
+          "python3",
+          "research/production_solver_closure_20261027/adapter/run_performance.py",
+          "--binary",
+          "/tmp/vigilode-cumulative-validation-20261028/target-candidate/release/examples/production_return_bench_20261027",
+          "--valgrind",
+          "/usr/bin/valgrind",
+          "--output",
+          "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/local-benchmarks/adapter/raw/performance"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/local-benchmarks/command_07/RECEIPT.json"
+      }
+    ]
+  },
+  "local-profiles": {
+    "suite": "local-profiles",
+    "commands": [
+      {
+        "command": [
+          "python3",
+          "research/production_solver_closure_20261027/run_instruction_profile.py",
+          "--binary",
+          "/tmp/vigilode-cumulative-validation-20261028/target-candidate/release/examples/cubic_production_bench",
+          "--output",
+          "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/local-profiles/cubic",
+          "--arms",
+          "generic",
+          "scalar",
+          "algebraic",
+          "rational",
+          "--repetitions",
+          "20",
+          "40",
+          "--valgrind",
+          "/usr/bin/valgrind",
+          "--",
+          "--arm",
+          "{arm}",
+          "{repetitions}"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/local-profiles/command_00/RECEIPT.json"
+      },
+      {
+        "command": [
+          "python3",
+          "research/production_solver_closure_20261027/run_instruction_profile.py",
+          "--binary",
+          "/tmp/vigilode-cumulative-validation-20261028/target-candidate/release/examples/structural_production_bench_20261027",
+          "--output",
+          "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/local-profiles/structural",
+          "--arms",
+          "pr91",
+          "fused",
+          "enclosed",
+          "--repetitions",
+          "2",
+          "6",
+          "--valgrind",
+          "/usr/bin/valgrind",
+          "--",
+          "profile",
+          "2048",
+          "64",
+          "{arm}",
+          "{repetitions}",
+          "1"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/local-profiles/command_01/RECEIPT.json"
+      }
+    ]
+  },
+  "release-contracts": {
+    "suite": "release-contracts",
+    "commands": [
+      {
+        "command": [
+          "cargo",
+          "test",
+          "--release",
+          "--locked",
+          "--offline",
+          "-p",
+          "vigilode",
+          "-p",
+          "vigilode-coupled",
+          "-p",
+          "rodas5p-core",
+          "-p",
+          "rodas5p-krylov",
+          "--lib",
+          "--tests",
+          "--",
+          "--test-threads=1"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/release-contracts/command_00/RECEIPT.json"
+      },
+      {
+        "command": [
+          "cargo",
+          "test",
+          "--release",
+          "--locked",
+          "--offline",
+          "-p",
+          "rodas5p-integrators",
+          "--lib",
+          "--tests",
+          "--",
+          "--test-threads=1"
+        ],
+        "exit_code": 124,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/release-contracts/command_01/RECEIPT.json"
+      }
+    ]
+  },
+  "smoke-release": {
+    "suite": "smoke-release",
+    "commands": [
+      {
+        "command": [
+          "python3",
+          "research/production_solver_closure_20261027/run_smoke.py",
+          "--profile",
+          "release",
+          "--output",
+          "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/smoke-release/smoke-release"
+        ],
+        "exit_code": 0,
+        "receipt": "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/smoke-release/command_00/RECEIPT.json"
+      }
+    ]
+  }
+}

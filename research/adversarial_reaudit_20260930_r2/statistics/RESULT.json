@@ -1,0 +1,291 @@
+{
+  "schema": "vigilode.reaudit.statistics.v1",
+  "date": "2026-09-30",
+  "source": {
+    "commit": "7708ef90554fc3986478d4602de6a01c7266b14f",
+    "tree": "23ffcacb8e4afcd72734e162c0e83536d565ba6c",
+    "benchmark_update_commit": "882c8b0fbee3b0b291a0d7076a6c35aa40b4d778",
+    "production_source_mutation": false,
+    "file_sha256": {
+      "crates/rodas5p-core/src/work.rs": "4c677f501287d81c3a3a48d8eced69363085ca7c824069307103ef9cb289efe5",
+      "crates/rodas5p-fair-ab/src/paired_timing.rs": "ae83b560218f03649c6595f4ebd2e9957ce1a320b8b9c4c4fa79f27bf4783c4e",
+      "crates/rodas5p-fair-ab/src/global_error.rs": "fb9c04a0387df34473e76a78c2dec5396f4b813120d62dd26b7e8278eccf667f",
+      "crates/rodas5p-cli/src/main.rs": "78ecf2092a7a73f65af0536a074f32424cd9afb53adcea239f3fff49062719c5"
+    }
+  },
+  "overall_decision": "HOLD_GENERAL_PERFORMANCE_CLAIMS",
+  "original_closure": [
+    {
+      "id": "B-01",
+      "status": "PARTIALLY_CLOSED"
+    },
+    {
+      "id": "B-02",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCER"
+    },
+    {
+      "id": "B-03",
+      "status": "CLOSED_FOR_ORIGINAL_REPRODUCER"
+    }
+  ],
+  "findings": [
+    {
+      "id": "R2-STAT-01",
+      "severity": "P2",
+      "kind": [
+        "STATISTICAL_METHOD",
+        "EVIDENCE_AUTHORITY"
+      ],
+      "status": "implementation-verified",
+      "previous": "B-01",
+      "classification": "residual_and_newly_identified_path",
+      "title": "Missing identity becomes independent session; A/A sessions unbound",
+      "evidence": [
+        "R2STAT_SESSION_DEFAULT",
+        "R2STAT_AA_UNMATCHED_SESSIONS"
+      ],
+      "source": [
+        "crates/rodas5p-fair-ab/src/paired_timing.rs:224-228",
+        "crates/rodas5p-fair-ab/src/paired_timing.rs:362-369",
+        "crates/rodas5p-fair-ab/src/paired_timing.rs:693-700"
+      ],
+      "claim_ceiling": "Synthetic clock in one actual PID, public producer and assessment. No real speedup claim."
+    },
+    {
+      "id": "R2-STAT-02",
+      "severity": "P2",
+      "kind": [
+        "IMPLEMENTATION"
+      ],
+      "status": "implementation-verified",
+      "previous": "B-02",
+      "classification": "followup_aggregation_gap",
+      "title": "Unknown legacy vector coverage disappears under aggregation",
+      "evidence": [
+        "R2STAT_PARETO_AND_MIXED"
+      ],
+      "source": [
+        "crates/rodas5p-core/src/work.rs:113-120",
+        "crates/rodas5p-core/src/work.rs:191-250",
+        "crates/rodas5p-fair-ab/src/global_error.rs:941-943"
+      ],
+      "claim_ceiling": "Original serde + checked_accumulate + Pareto cost executed. No actual campaign mixing demonstrated."
+    },
+    {
+      "id": "R2-STAT-03",
+      "severity": "P2",
+      "kind": [
+        "STATISTICAL_METHOD"
+      ],
+      "status": "implementation-verified",
+      "previous": null,
+      "classification": "newly_identified_preexisting_public_protocol_gap",
+      "title": "One bootstrap resample can produce authoritative promotion",
+      "evidence": [
+        "R2STAT_SINGLE_RESAMPLE",
+        "exact_bootstrap_oracle.json"
+      ],
+      "source": [
+        "crates/rodas5p-fair-ab/src/paired_timing.rs:90-98"
+      ],
+      "claim_ceiling": "Default B=10000 avoids this input; configurable public protocol and assessment tested."
+    }
+  ],
+  "executions": [
+    {
+      "id": "native-probe",
+      "command": "cargo run --manifest-path reaudit/statistics/probe/Cargo.toml --offline",
+      "log": "probe.log",
+      "exit_code": 0,
+      "scope": "5 JSON scenario records including coding candidate",
+      "env": "runtime_r2/env.sh; CARGO_TARGET_DIR=target-stat; CARGO_BUILD_JOBS=1"
+    },
+    {
+      "id": "cli-consumer",
+      "command": "cargo test --manifest-path vigilode/Cargo.toml --locked --offline -p rodas5p-cli --bin rodas5p tier_l_wall_decisions_come_only_from_a_paired_assessment",
+      "log": "cli_gate.log",
+      "exit_code": 0,
+      "scope": "1 passed;7 filtered",
+      "env": "runtime_r2/env.sh; CARGO_TARGET_DIR=target-stat; CARGO_BUILD_JOBS=1"
+    },
+    {
+      "id": "paired-contracts",
+      "command": "cargo test --manifest-path vigilode/Cargo.toml --locked --offline -p rodas5p-fair-ab --test paired_timing_contracts",
+      "log": "paired_contracts.log",
+      "exit_code": 0,
+      "scope": "13 passed;0 failed",
+      "env": "runtime_r2/env.sh; CARGO_TARGET_DIR=target-stat; CARGO_BUILD_JOBS=1"
+    },
+    {
+      "id": "independent-bootstrap-oracle",
+      "command": "python3 reaudit/statistics/exact_bootstrap_oracle.py",
+      "log": "exact_bootstrap_oracle.log",
+      "exit_code": 0,
+      "scope": "Exact 46656 inner draws; two independent 20000-dataset Monte Carlo coverage checks",
+      "env": "runtime_r2/env.sh; CARGO_TARGET_DIR=target-stat; CARGO_BUILD_JOBS=1"
+    },
+    {
+      "id": "portable-wrapper-syntax",
+      "command": "python3 -m py_compile reaudit/statistics/run_probe.py",
+      "log": null,
+      "exit_code": 0,
+      "scope": "Syntax only; wrapper not executed end-to-end",
+      "env": "runtime_r2/env.sh; CARGO_TARGET_DIR=target-stat; CARGO_BUILD_JOBS=1"
+    }
+  ],
+  "research_results": {
+    "evidence": "numerically checked exact finite empirical bootstrap distribution; coverage Monte Carlo, not a theorem for all populations",
+    "seed": 20260930,
+    "coverage": [
+      {
+        "family": "uniform",
+        "independent_sessions": 6,
+        "trials": 20000,
+        "exact_bootstrap_replicates": 46656,
+        "nominal_coverage": 0.95,
+        "coverage": 0.93845,
+        "outer_binomial_standard_error": 0.001699435163517573,
+        "false_lower_excludes_truth": 0.02975,
+        "false_upper_excludes_truth": 0.0318
+      },
+      {
+        "family": "gaussian",
+        "independent_sessions": 6,
+        "trials": 20000,
+        "exact_bootstrap_replicates": 46656,
+        "nominal_coverage": 0.95,
+        "coverage": 0.93575,
+        "outer_binomial_standard_error": 0.0017338099304710424,
+        "false_lower_excludes_truth": 0.03265,
+        "false_upper_excludes_truth": 0.0316
+      }
+    ],
+    "native_fixture_exact_bootstrap": {
+      "point": 1.0488088481701516,
+      "lower": 0.848528137423857,
+      "upper": 1.449137674618944
+    },
+    "method": "enumerate all 6^6 ordered session bootstrap samples, no pseudo-random inner bootstrap"
+  },
+  "candidate": {
+    "path": "probe/src/candidate.rs",
+    "status": "implementation-verified",
+    "scope": "balanced complete design admission and absorbing unknown ledger only",
+    "production_patch": false,
+    "independent_promotion": "NOT_REQUESTED_SUBTASK_OUTPUT"
+  },
+  "next_steps": [
+    {
+      "id": "STAT-R1",
+      "depends_on": [],
+      "findings": [
+        "R2-STAT-01"
+      ],
+      "objective": "Require runner-generated campaign/session identity and join A/A sessions",
+      "acceptance": [
+        "Missing identity cannot create authority at 1,6,60 cases",
+        "Disjoint candidate and A/A sessions reject",
+        "Six actual process launches preserve shared case session identity"
+      ],
+      "status": "PROPOSED"
+    },
+    {
+      "id": "STAT-R2",
+      "depends_on": [],
+      "findings": [
+        "R2-STAT-02"
+      ],
+      "objective": "Preserve vector coverage under serde and aggregation",
+      "acceptance": [
+        "Unknown plus known stays unknown in both orders",
+        "Known16 plus known24 equals40",
+        "Pareto consumer omits unknown cost"
+      ],
+      "status": "PROPOSED"
+    },
+    {
+      "id": "STAT-R3",
+      "depends_on": [],
+      "findings": [
+        "R2-STAT-03"
+      ],
+      "objective": "Separate exploratory bootstrap from authoritative policy",
+      "acceptance": [
+        "B1 fixture is nonauthoritative",
+        "B10000 fixture is inconclusive",
+        "Confidence and required speedup match consumer policy"
+      ],
+      "status": "PROPOSED"
+    },
+    {
+      "id": "STAT-R4",
+      "depends_on": [
+        "STAT-R1",
+        "STAT-R3"
+      ],
+      "findings": [],
+      "objective": "Preregister estimand and coverage/power study",
+      "acceptance": [
+        "Fixed corpus vs sampled cases declared",
+        "Session count, imbalance, missingness, skew varied",
+        "Failed coverage retained without posthoc target change"
+      ],
+      "status": "PROPOSED"
+    },
+    {
+      "id": "STAT-R5",
+      "depends_on": [
+        "STAT-R1",
+        "STAT-R2",
+        "STAT-R3",
+        "STAT-R4"
+      ],
+      "findings": [],
+      "objective": "Wire actual paired process runner to CLI",
+      "acceptance": [
+        "Accuracy admissibility required",
+        "Invalid/missing evidence remains NotEvaluated",
+        "Raw pairs and assessment linked to same build and campaign"
+      ],
+      "status": "PROPOSED"
+    },
+    {
+      "id": "STAT-R6",
+      "depends_on": [
+        "STAT-R5"
+      ],
+      "findings": [],
+      "objective": "Measure real methods with failure/setup accounting",
+      "acceptance": [
+        "Match attained accuracy",
+        "Count diagnostics and fallback",
+        "Regime-specific claims only"
+      ],
+      "status": "PROPOSED"
+    }
+  ],
+  "limitations": [
+    "No measured solver speedup",
+    "No whole-workspace PASS assertion",
+    "Original CLI runner still supplies no paired assessment: correct NotEvaluated",
+    "Coverage simulation is not a theorem for all populations",
+    "Source files not mutated"
+  ],
+  "literature": [
+    {
+      "url": "https://arxiv.org/abs/0712.1111",
+      "read_scope": "author abstract",
+      "relation": "contextual and limits"
+    },
+    {
+      "url": "https://arxiv.org/abs/1106.2125",
+      "read_scope": "author abstract v3",
+      "relation": "contextual and limits"
+    },
+    {
+      "url": "https://kar.kent.ac.uk/33611/",
+      "read_scope": "author institutional abstract and corrected-version notice",
+      "relation": "supports multi-level repetition design"
+    }
+  ]
+}

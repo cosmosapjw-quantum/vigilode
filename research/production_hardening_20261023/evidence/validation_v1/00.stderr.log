@@ -1,0 +1,20 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-reaudit-1023/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized] target(s) in 3.92s
+     Running tests/affine_error_contracts.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/affine_error_contracts-dc2501cdb63d2ff0)
+     Running tests/dopri5_allocation.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/dopri5_allocation-29292f67c960e96f)
+     Running tests/dopri5_contracts.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/dopri5_contracts-b207284ed0c4864f)
+     Running tests/dopri5_dense_contracts.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/dopri5_dense_contracts-4d2d8a42c2cb9c10)
+     Running tests/dopri5_extreme_contracts.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/debug/deps/dopri5_extreme_contracts-8af9506b7ee2c155)

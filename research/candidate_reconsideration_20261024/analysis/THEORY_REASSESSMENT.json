@@ -1,0 +1,190 @@
+{
+  "schema_version": 1,
+  "date": "2026-10-24",
+  "title": "Constructive algebraic and causal reassessment",
+  "source_identity": {
+    "published_base": "14171ed0c4f7dc453f47870cf6c1399f41afc4f2",
+    "reviewed_polynomial_source_sha256": "6c479a18abe4725e3658398519442248f0a25cb5838fcc73504c46f56214851e"
+  },
+  "claims": [
+    {
+      "id": "Q1",
+      "statement": "MP=PM=I-q(B)/q(1); quotient degree <= d-1",
+      "basis": [
+        "derived",
+        "literature-supported",
+        "numerically checked"
+      ],
+      "implementation": "existing DeclaredPolynomialResolvent",
+      "scope": "fixed finite-dimensional linear B, q(1)!=0"
+    },
+    {
+      "id": "Q2",
+      "statement": "Residual correction contracts by eta=||q(B)/q(1)||<1 and inverse norm <=||P||/(1-eta)",
+      "basis": [
+        "derived",
+        "numerically checked"
+      ],
+      "implementation": "apply_refined_checked; new bounded refinement of existing kernel",
+      "scope": "truthful full-space witness, exact arithmetic theorem; binary64 bound conditional"
+    },
+    {
+      "id": "Q3",
+      "statement": "Each candidate or correction plus true residual costs d operator calls; workspace is four n-vectors",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "implementation": "PolynomialRefinementWorkspace and action budget",
+      "scope": "successful full iteration; failed callback attempts remain charged"
+    },
+    {
+      "id": "Q4",
+      "statement": "Measured residual obeys rhat_next=D rhat + delta_r_next-delta_r-M u",
+      "basis": [
+        "derived"
+      ],
+      "implementation": "contract for arithmetic allowances",
+      "scope": "operator/coefficient/correction errors included in u; not auto-certified"
+    },
+    {
+      "id": "L1",
+      "statement": "Shifted nilpotent inverse terminates at degree d-1; local coordinates avoid expanded coefficients",
+      "basis": [
+        "derived",
+        "numerically checked"
+      ],
+      "implementation": "dedicated shifted-Horner provider remains next step",
+      "scope": "B=aI+N; a!=1; N^d=0 or bounded defect"
+    },
+    {
+      "id": "H1",
+      "statement": "Current right defect <= old right defect + ||DeltaM P|| permits reuse across parameter cell",
+      "basis": [
+        "derived",
+        "numerically checked"
+      ],
+      "implementation": "existing A1 theory, not newly integrated",
+      "scope": "same metric, fixed P, current operator epoch/bounds"
+    },
+    {
+      "id": "H3",
+      "statement": "Uniform fixed-preconditioner contraction and ball-invariance yield unique nonlinear homotopy root with Newton-free iteration",
+      "basis": [
+        "derived",
+        "literature-supported"
+      ],
+      "implementation": "future typed bound provider",
+      "scope": "C1 F, derivative bound prepared offline or otherwise verified, complete ball and lambda interval"
+    },
+    {
+      "id": "I1",
+      "statement": "Lie-ideal invariance plus projectability yields exact reduced ODE; transverse information retained for full reconstruction",
+      "basis": [
+        "derived"
+      ],
+      "implementation": "prior collective and moment design reused",
+      "scope": "full-domain identities and valid initial constraints"
+    },
+    {
+      "id": "C1",
+      "statement": "Strict causal prefix is exact after k synchronous updates, hence s-1 after exact first stage",
+      "basis": [
+        "derived",
+        "numerically checked"
+      ],
+      "implementation": "existing causal Picard",
+      "scope": "exact arithmetic; wall time crossover requires measurements"
+    },
+    {
+      "id": "H4",
+      "statement": "Monotone scalar bracketing is derivative-free online, with bisection error width/2^(k+1); continuation bracket inflation uses epsilon+(Llambda/m)|Delta lambda|",
+      "basis": [
+        "derived"
+      ],
+      "implementation": "next-step declared-model root policy, not currently implemented",
+      "scope": "continuous scalar F, certified bracket; m>0 derivative lower bound and Llambda established over patch when continuation bound used"
+    }
+  ],
+  "reused_theory": [
+    "docs/reviews/20261011_promotion_theory/POLYNOMIAL_KO.md P1/P2/P3 and primary decomposition",
+    "docs/reviews/20261011_promotion_theory/CERTIFICATE_ATLAS_KO.md A1/A2",
+    "research/rvj_integration_20261004/inputs/loop11_RESEARCH_NOTE_KO.md",
+    "research/promotion_loop12_20261011/input/RESEARCH_NOTE_KO.md"
+  ],
+  "new_contribution": "Concrete bounded residual-refinement/fallback implementation and same-target acceptance; not a claimed discovery of polynomial preconditioning or continuation",
+  "tests": {
+    "command": "python3 research/candidate_reconsideration_20261024/src/check_theory.py",
+    "exit_code": 0,
+    "result": "pass_scoped",
+    "evidence": "analysis/THEORY_EXACT_CHECKS.json",
+    "count": 6
+  },
+  "independent_review": {
+    "reviewer": "/root/rescue_theory",
+    "target": "polynomial_resolvent.rs appended refinement API",
+    "blocking_findings": [],
+    "minor_findings": [
+      {
+        "id": "T-R1",
+        "issue": "max_operator_actions documentation should specify polynomial attempt, excluding extra fallback validation call",
+        "owner": "algebraic_rescue",
+        "resolution": "Owner clarified budget applies to polynomial attempt; protected verifier is separate.",
+        "status": "closed_source_review"
+      },
+      {
+        "id": "T-R2",
+        "issue": "Add degree2 Horner callback failure and partial fallback output tests",
+        "owner": "algebraic_rescue",
+        "resolution": "Owner added horner_failure_and_fallback_partial_write_preserve_caller_output test covering both errors/partialwrites; execution recorded by root.",
+        "status": "closed_source_review_pending_root_execution_receipt"
+      }
+    ],
+    "reviewed": [
+      "exact residual recurrence",
+      "per-iteration action reservation",
+      "output transactionality",
+      "fatal callback propagation",
+      "fallback residual uses same target",
+      "conditional inverse estimate scope"
+    ],
+    "external_document": {
+      "path": "docs/general_ode_design_20261024/DISTINCTIVE_ALGORITHMS_KO.md",
+      "reviewed": [
+        "C1 common-factor causal uniqueness",
+        "C2 finite propagation",
+        "C3 homotopy triangular Jacobian determinant and local regularity",
+        "C4 quotient inverse",
+        "C5 residual contraction",
+        "C6 original-space residual amplification",
+        "CRT projectors"
+      ],
+      "finding": "C5 cost model used k updates as k RHS batches; actual code needs k+1 projected residual batches",
+      "resolution": "Owner corrected cost text and formula to b=k+1; source proof otherwise sound",
+      "status": "pass_scoped"
+    },
+    "accepted_clock_bound": {
+      "path": "analysis/CAUSAL_SWITCH.md",
+      "status": "pass_scoped",
+      "scope": "CS2 persistentdecline probes require at least c acceptedprotectedsteps between probes; no fulltrajectory regret claim"
+    }
+  },
+  "strong_no_go": {
+    "admitted": [],
+    "reason": "No new exclusion theorem needed; previous local losses reopen under changed structural conditions."
+  },
+  "literature_limits": [
+    "SciSpace discovery is not proof",
+    "SIAM Joubert1994 abstract only",
+    "AMS direct PDF inaccessible; Pan original-article mirror read",
+    "No worldwide novelty clearance"
+  ],
+  "remaining": [
+    "outward arithmetic for automatic error certificates",
+    "typed general operator identity/witness binding",
+    "shifted-Horner provider",
+    "parameter-cell reuse integration",
+    "nonlinear provider for H3",
+    "whole-trajectory comparative evidence"
+  ]
+}

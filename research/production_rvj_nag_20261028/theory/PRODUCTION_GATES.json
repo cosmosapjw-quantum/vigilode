@@ -1,0 +1,619 @@
+{
+  "schema": "vigilode-production-rvj-gates-v1",
+  "date_utc": "2026-10-28",
+  "owner_task": "/root/rvj_pr_audit",
+  "phase": "THEORY_AUDIT_READ_ONLY",
+  "selected_skill_stages": [
+    "R3",
+    "R6",
+    "R9",
+    "C2_READ_ONLY_MAPPING"
+  ],
+  "audit_passes": 1,
+  "native_executions_by_this_audit": 0,
+  "runtime_mutations_by_this_audit": 0,
+  "production_status": "HOLD",
+  "bounded_coding_admission": "RECOMMENDED_PENDING_PARENT_THEORY_INTEGRATION",
+  "sources": {
+    "latest_pr": 96,
+    "latest_commit": "13f3298bd0213f121e07385903f9508c435ad6a1",
+    "comparison_pr": 94,
+    "comparison_commit": "e935878fefe795a1b7e88aba64e5e30ef7be1578",
+    "recorded_execution_commit": "5c57bf146f2f5faf69f711f133a83fcb265cee90",
+    "recorded_execution_tree": "9633bde7dda1e9dd4748d1aecc8f22af68b5f5ac",
+    "runtime_tool_diff_execution_to_pr96": "EMPTY_FOR_crates_tools_Cargo.toml_Cargo.lock",
+    "manifest_compact_files_verified": 24,
+    "manifest_compact_mismatches": 0,
+    "selected_source_hashes_verified": 5,
+    "raw_receipt_paths_checked_absent": [
+      "/tmp/vigilode-cumulative-validation-20261028/evidence/final-suites/release-integrators-extension/stdout.log",
+      "/tmp/vigilode-cumulative-validation-20261028/evidence/rapid-matched-tight/RAW_RUNS.jsonl.gz",
+      "/tmp/vigilode-q-numeric-evidence-20261028/oracle-final-debug.json"
+    ],
+    "historical_remote_before_execution": "NOT_MET_DISCLOSED_IN_PR96",
+    "attachment_identity_manifest": "intake/INPUTS.json",
+    "related_pr95": {
+      "commit": "36104bfc65d1fdc695c8acea383c54b50a1c4e78",
+      "this_auditor_read_coverage": "FULL_PARENT_RETRIEVED_PINNED_THEORY_DOCUMENT; NO_NATIVE_REPLAY_OR_FULL_PR_CODE_REVIEW",
+      "merged": false,
+      "preserved_theory": "intake/PR95_THEORY_KO.md"
+    }
+  },
+  "closed_scoped_gates": [
+    {
+      "id": "Q-GIVENS",
+      "status": "INHERITED_PASS_SCOPED",
+      "evidence": "exact represented binary64 Fraction squared residual + corrupted solution rejection",
+      "replay_note": "exact oracle optional env path; ordinary cargo success is insufficient for this claim"
+    },
+    {
+      "id": "Q-FAIR-AB",
+      "status": "INHERITED_PASS_SCOPED",
+      "evidence": "A=E+R; E=C+F; E<=B with independent callback observations",
+      "limit": "not complete I-WORK"
+    },
+    {
+      "id": "Q-LINT",
+      "status": "INHERITED_PASS_SCOPED",
+      "evidence": "recorded Clippy exit0;202pass/1ignored; inspected source-order preserving edits",
+      "limit": "not speed or global correctness"
+    },
+    {
+      "id": "Q-BENCH",
+      "status": "INHERITED_PASS_SCOPED",
+      "evidence": "adapter7 only",
+      "limit": "not real-client/external-solver qualification"
+    }
+  ],
+  "inherited_open_gates": [
+    {
+      "id": "Q-LEDGER",
+      "status": "HOLD",
+      "classification": "CURRENT_QUALIFICATION_BLOCKER",
+      "current_missing": 49,
+      "PR94_CI_missing": 53,
+      "rejected_repair_retained": true
+    },
+    {
+      "id": "Q-API",
+      "status": "HOLD",
+      "classification": "CURRENT_QUALIFICATION_BLOCKER",
+      "reason": "downstream compatibility receipt absent"
+    },
+    {
+      "id": "Q-NEGATIVE",
+      "status": "REPRODUCED_SCIENTIFIC_FAIL",
+      "classification": "NEGATIVE_SCIENTIFIC_EVIDENCE",
+      "historical_cost_ratio": "15/7",
+      "gate": "1.3",
+      "off_interior_error_recorded": 311.467
+    },
+    {
+      "id": "RELEASE-IGNORED",
+      "status": "PARTIAL",
+      "classification": "SCOPE_SPECIFIC_RELEASE_HARDENING",
+      "integrators_extension_passed": 1196,
+      "integrators_extension_ignored": 54,
+      "initial_integrators_passed_before_timeout": 917,
+      "do_not_sum_overlapping_attempt_pass_counts": true,
+      "separate_first_release_command_passed": 830,
+      "separate_first_release_command_ignored": 21
+    },
+    {
+      "id": "FMT",
+      "status": "FAIL_INHERITED",
+      "classification": "NONNUMERICAL_HARDENING",
+      "same_coupled_files": 2
+    },
+    {
+      "id": "VENDOR",
+      "status": "NOT_VALIDATED",
+      "classification": "DEPLOYMENT_GATE",
+      "reason": "standalone validator omitted required vendor_dir; offline builds are different evidence"
+    },
+    {
+      "id": "CUBIC-DRIVER",
+      "status": "NOT_ACCEPTED_NOT_RUN",
+      "classification": "MEASUREMENT_HARNESS_BLOCKER",
+      "failure_paths": [
+        "missing initial output",
+        "conflicting duplicate rows",
+        "Decimal error arithmetic outside declared precision context"
+      ]
+    }
+  ],
+  "native_task_status": [
+    {
+      "id": "PR-N01",
+      "status": "NOT_RUN",
+      "direct_receipt": false
+    },
+    {
+      "id": "PR-N02",
+      "status": "NOT_RUN",
+      "direct_receipt": false
+    },
+    {
+      "id": "PR-N03",
+      "status": "NOT_RUN",
+      "direct_receipt": false
+    },
+    {
+      "id": "PR-N04",
+      "status": "NOT_RUN",
+      "direct_receipt": false
+    },
+    {
+      "id": "PR-N05",
+      "status": "NOT_RUN",
+      "direct_receipt": false
+    },
+    {
+      "id": "PR-N06",
+      "status": "NOT_RUN",
+      "direct_receipt": false
+    }
+  ],
+  "interaction_gates": [
+    {
+      "id": "I-STATE",
+      "purpose": "Complete probe-session continuation vs uninterrupted session, including rejection and registered intermediate observations.",
+      "parent_tasks": [
+        "PR-N04"
+      ],
+      "current_status": "NOT_RUN",
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::interactions",
+      "admission_rule": "requires its own direct receipt; similarly named tests and attached prototypes do not close this gate"
+    },
+    {
+      "id": "I-EPOCH",
+      "purpose": "Warm LU/causal/polynomial plans survive identical keys and invalidate on step, chart, norm, model, provider or arithmetic epoch change.",
+      "parent_tasks": [
+        "PR-N01",
+        "PR-N03",
+        "PR-N04",
+        "PR-N05"
+      ],
+      "current_status": "NOT_RUN",
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::interactions",
+      "admission_rule": "requires its own direct receipt; similarly named tests and attached prototypes do not close this gate"
+    },
+    {
+      "id": "I-WORK",
+      "purpose": "Original-target refusal, diagnostic residual, fatal callback failure and all joined worker work; independent physical callback counters.",
+      "parent_tasks": [
+        "Q-FAIR-AB",
+        "PR-N04",
+        "PR-N05"
+      ],
+      "current_status": "NOT_RUN",
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::interactions",
+      "admission_rule": "requires its own direct receipt; similarly named tests and attached prototypes do not close this gate"
+    },
+    {
+      "id": "I-BUDGET",
+      "purpose": "Correct flow/discrete anchor, physical norm, no missing or double-counted edge, internal vs observation clock, same-state Pareto labels.",
+      "parent_tasks": [
+        "PR-N01",
+        "PR-N02",
+        "PR-N03",
+        "PR-N05"
+      ],
+      "current_status": "NOT_RUN",
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::interactions",
+      "admission_rule": "requires its own direct receipt; similarly named tests and attached prototypes do not close this gate"
+    },
+    {
+      "id": "I-POLY",
+      "purpose": "Target-specific fused distinct/same-vector outputs, degree and rounded-boundary cases, quotient coefficient defects, denominator/refinement-floor refusal and fallback.",
+      "parent_tasks": [
+        "PR-N01",
+        "PR-N05"
+      ],
+      "current_status": "NOT_RUN",
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::interactions",
+      "admission_rule": "requires its own direct receipt; similarly named tests and attached prototypes do not close this gate"
+    },
+    {
+      "id": "I-ROOT",
+      "purpose": "Old/new accuracy planner crossed with identical root backend; zero/linear/cubic, branch ambiguity, representation/update/clock floors.",
+      "parent_tasks": [
+        "PR-N02",
+        "PR-N04"
+      ],
+      "current_status": "NOT_RUN",
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::interactions",
+      "admission_rule": "requires its own direct receipt; similarly named tests and attached prototypes do not close this gate"
+    },
+    {
+      "id": "I-STRUCTURE",
+      "purpose": "Exact and near quotient relation against original full-space stage residual; virtual and exact domain enclosure; effectful/stage-observer compatibility.",
+      "parent_tasks": [
+        "PR-N03",
+        "PR-N05"
+      ],
+      "current_status": "NOT_RUN",
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::interactions",
+      "admission_rule": "requires its own direct receipt; similarly named tests and attached prototypes do not close this gate"
+    },
+    {
+      "id": "I-NEGATIVE",
+      "purpose": "Nonnormal spectrum trap, two-root ambiguity, unstable variable-step product, old W-filtered failure, loose upper floor vs true lower impossibility.",
+      "parent_tasks": [
+        "Q-NEGATIVE",
+        "PR-N01",
+        "PR-N06"
+      ],
+      "current_status": "NOT_RUN",
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::interactions",
+      "admission_rule": "requires its own direct receipt; similarly named tests and attached prototypes do not close this gate"
+    },
+    {
+      "id": "I-PROFILE",
+      "purpose": "Test, measurement and actual release/LTO results on floating/branch-sensitive fixtures with executable/compiler/libm identity.",
+      "parent_tasks": [
+        "L-RELEASE",
+        "L-HARDWARE"
+      ],
+      "current_status": "NOT_RUN",
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::interactions",
+      "admission_rule": "requires its own direct receipt; similarly named tests and attached prototypes do not close this gate"
+    },
+    {
+      "id": "I-CLIENT",
+      "purpose": "Every returned physical state/observation, independent oracle and strongest eligible persistent/structural/CG/coupled comparator, all work charged.",
+      "parent_tasks": [
+        "R-QUALIFY"
+      ],
+      "current_status": "NOT_RUN",
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::interactions",
+      "admission_rule": "requires its own direct receipt; similarly named tests and attached prototypes do not close this gate"
+    }
+  ],
+  "new_and_local_gates": [
+    {
+      "id": "RVJ-THEORY-ADMISSION",
+      "kind": "new_bounded_work",
+      "status": "PENDING_PARENT_INTEGRATION",
+      "purpose": "Integrate closure and trace mathematical results before native edits",
+      "required": [
+        "exact model/domain/norm/clock and initial condition",
+        "derived physical constants with outward implementation contract",
+        "separate selected-branch and all-complex-root multiplicity trace semantics"
+      ],
+      "blocking_for": "new native runtime implementation"
+    },
+    {
+      "id": "RVJ-NATIVE-CLOSURE",
+      "kind": "new_bounded_work",
+      "status": "NOT_RUN",
+      "purpose": "Native finite cyclic closure circuit with original whole-slab physical certificate",
+      "candidate_paths": [
+        "crates/rodas5p-integrators/src/cyclic_closure.rs",
+        "crates/rodas5p-integrators/tests/cyclic_closure_contracts.rs"
+      ],
+      "existing_task_mapping": [
+        "PR-N03",
+        "PR-N05"
+      ],
+      "required": [
+        "input finite and supported domain validation",
+        "original G and slow ODE residual enclosures across closed slabs",
+        "incoming slow error and root sensitivity propagation",
+        "no Jacobian/matrix/Newton/JVP callback in compiled route",
+        "independent exact represented-value residual oracle",
+        "reject wrong branch/domain/nonfinite and corrupted coefficients"
+      ],
+      "claim_ceiling": "bounded model-specific client; no generic stiff solver or automatic routing qualification"
+    },
+    {
+      "id": "RVJ-TRACE-SEMANTICS",
+      "kind": "new_bounded_work",
+      "status": "NOT_RUN",
+      "purpose": "Admitted polynomial full quotient trace without branch substitution",
+      "existing_task_mapping": [
+        "PR-N01",
+        "PR-N03"
+      ],
+      "required": [
+        "all complex roots with algebraic multiplicity",
+        "independent exact companion trace and triple-root tests",
+        "reject selected real branch and real-only queries",
+        "physical dense-path residual and domain tube for manufactured ODE"
+      ],
+      "claim_ceiling": "specified aggregate observable client; not physical selected-root recovery"
+    },
+    {
+      "id": "RVJ-CERTIFICATE-COST",
+      "kind": "new_bounded_work",
+      "status": "NOT_RUN",
+      "purpose": "Reduce total cost of fixed-degree residual/Bernstein certification",
+      "existing_task_mapping": [
+        "PR-N03",
+        "PR-N05"
+      ],
+      "hypotheses": [
+        "precomputed exact outward binomial/Bernstein weights",
+        "fixed-size low-degree polynomial workspaces",
+        "reuse identical interval endpoint slope across adjacent slabs"
+      ],
+      "required": [
+        "same original equations and whole-path cap",
+        "before/after independent exact residual check",
+        "all samples and phase plus total wall time",
+        "count certificate work, rejected work and allocations",
+        "avoid comparing phase-only root speed with certified total"
+      ],
+      "claim_ceiling": "descriptive bounded measured result; no universal speedup"
+    },
+    {
+      "id": "RVJ-ARITHMETIC-SCOPE",
+      "kind": "new_bounded_work",
+      "status": "NOT_RUN",
+      "purpose": "Enforce finite outward arithmetic and actual supported build assumptions",
+      "required": [
+        "validate public input boundaries",
+        "outward enclosure of every rounded operation and coefficient",
+        "nonzero denominator proof on whole admitted domain",
+        "preserve finite model range; reject overflow or unsupported case",
+        "record compiler/profile/architecture for executed result"
+      ],
+      "claim_ceiling": "bounded supported arithmetic scope; no verified compiler claim"
+    },
+    {
+      "id": "RVJ-COMPLETE-SESSION",
+      "kind": "later_local_work",
+      "status": "NOT_RUN",
+      "purpose": "Bridge admitted mode to persistent adapter/switcher with unchanged physical output schedule",
+      "existing_task_mapping": [
+        "PR-N04",
+        "PR-N06"
+      ],
+      "required": [
+        "complete session continuation versus uninterrupted oracle",
+        "same target/model/norm/arithmetic epochs for reuse",
+        "independent attempted/admitted/refused and joined-worker work",
+        "physical observation contract and all failures retained"
+      ],
+      "claim_ceiling": "only validated provider/output/model combinations"
+    },
+    {
+      "id": "RVJ-RELEASE-PROFILE",
+      "kind": "later_local_work",
+      "status": "NOT_RUN",
+      "purpose": "Validate native implementation in actual intended release/LTO environment",
+      "existing_task_mapping": [
+        "L-RELEASE",
+        "L-HARDWARE"
+      ],
+      "required": [
+        "record source and binary identity",
+        "independent physical oracle in supported release profile",
+        "classify relevant ignored tests",
+        "exact Givens replay explicitly invokes optional Fraction oracle if claimed",
+        "correct real vendor validator invocation if vendor claim made"
+      ],
+      "claim_ceiling": "specific local deployment; broad production remains blocked by inherited gates"
+    }
+  ],
+  "representation_boundaries": [
+    {
+      "id": "ATLAS",
+      "supported": "same selected unique root on checked regular box",
+      "unsupported_inference": "u/v chart switching cures selected d=0 or enlarges determinant coverage"
+    },
+    {
+      "id": "TRACE",
+      "supported": "all complex roots counted with algebraic multiplicity",
+      "unsupported_inference": "selected real physical branch or arbitrary branch-dependent amplitude"
+    },
+    {
+      "id": "GLOBAL-NAG",
+      "supported": "scoped finite local claims only",
+      "open": "global stratum completeness, conditional120/60, full D=0 stratification",
+      "blocks_local_contractive_or_trace_client": false
+    },
+    {
+      "id": "PR95-CHEMICAL-REMAINDER",
+      "supported": "F=b+Pz+(e^T z)Qz and R(d)=(e^T d)Qd for matching frozen coefficients/source/clock/norm; scalar entry extrema on declared product family",
+      "unsupported_inference": "whole-model Jacobian, rate-clock enclosure, simultaneous entry attainment, uniform varying-Q remainder, full model provider",
+      "production_status": "HOLD",
+      "native_execution_by_this_audit": false
+    }
+  ],
+  "attachment_f23": {
+    "status": "INHERITED_SCOPED_NATIVE_EVIDENCE",
+    "runtime_language": "C++ standalone; not current Rust frontend",
+    "exact_constants": {
+      "contraction": "1/8",
+      "root_sensitivity": "8/7",
+      "reduced_dissipation": "6/7",
+      "algebraic_to_reduced_defect": "1/7"
+    },
+    "candidate_policy_not_derived_constants": {
+      "newton_residual": 2e-16,
+      "newton_max_iterations": 12,
+      "krawczyk_radius": "2^-42"
+    },
+    "distinct_configurations": 36,
+    "timed_integrations": 252,
+    "distinct_slabs": 2160,
+    "timed_slabs": 15120,
+    "independent_fraction_reference_slabs": 27,
+    "matched_budget": 1e-08,
+    "matched_first_tested_steps": 64,
+    "compiled_certificate_fraction_of_total_n4_n8_n16": [
+      0.9840102768532503,
+      0.9910292138402427,
+      0.9933520934783143
+    ],
+    "full_total_already_includes_certificate": true,
+    "ranking_reversal_passing_cases": [
+      [
+        4,
+        128
+      ],
+      [
+        16,
+        128
+      ]
+    ],
+    "performance_claim_ceiling": "fixed-order small-family diagnostic timings; no generic or robust speedup"
+  },
+  "correction_budgets": [
+    {
+      "id": "R-STRUCT",
+      "correction_loops_used": 3,
+      "correction_loops_max": 3,
+      "effective_cumulative_used": 3,
+      "remaining": 0,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    },
+    {
+      "id": "R-HOMO",
+      "correction_loops_used": 1,
+      "correction_loops_max": 3,
+      "effective_cumulative_used": 1,
+      "remaining": 2,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    },
+    {
+      "id": "R-ADAPT",
+      "correction_loops_used": 3,
+      "correction_loops_max": 3,
+      "effective_cumulative_used": 3,
+      "remaining": 0,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    },
+    {
+      "id": "I-PROD",
+      "correction_loops_used": 1,
+      "correction_loops_max": 3,
+      "effective_cumulative_used": 1,
+      "remaining": 2,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    },
+    {
+      "id": "PR-N01",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "effective_cumulative_used": 0,
+      "remaining": 3,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    },
+    {
+      "id": "PR-N02",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "effective_cumulative_used": 0,
+      "remaining": 3,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    },
+    {
+      "id": "PR-N03",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "effective_cumulative_used": 0,
+      "remaining": 3,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    },
+    {
+      "id": "PR-N04",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "effective_cumulative_used": 0,
+      "remaining": 3,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    },
+    {
+      "id": "PR-N05",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "effective_cumulative_used": 0,
+      "remaining": 3,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    },
+    {
+      "id": "PR-N06",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "effective_cumulative_used": 0,
+      "remaining": 3,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    },
+    {
+      "id": "Q-LEDGER",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "post_delivery_correction_loops_used": 1,
+      "cumulative_correction_loops_used": 1,
+      "effective_cumulative_used": 1,
+      "remaining": 2,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    },
+    {
+      "id": "Q-GIVENS",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "effective_cumulative_used": 0,
+      "remaining": 3,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    },
+    {
+      "id": "Q-FAIR-AB",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "effective_cumulative_used": 0,
+      "remaining": 3,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    },
+    {
+      "id": "Q-BENCH",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "effective_cumulative_used": 0,
+      "remaining": 3,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    },
+    {
+      "id": "Q-LINT",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "effective_cumulative_used": 0,
+      "remaining": 3,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    },
+    {
+      "id": "Q-API",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "effective_cumulative_used": 0,
+      "remaining": 3,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    },
+    {
+      "id": "Q-NEGATIVE",
+      "correction_loops_used": 0,
+      "correction_loops_max": 3,
+      "effective_cumulative_used": 0,
+      "remaining": 3,
+      "source": "research/cumulative_validation_20261028/SUMMARY.json::correction_budgets"
+    }
+  ],
+  "budget_policy": {
+    "maximum_per_existing_task": 3,
+    "no_reset_under_new_name": true,
+    "controlling_task_must_be_recorded_before_correction": true,
+    "mapping_does_not_create_additional_allowance": true,
+    "new_scientific_target_requires_parent_scope_decision": true,
+    "this_audit_consumed_correction_loops": 0
+  },
+  "local_handoff_required": [
+    "source/binary/environment/argv/raw receipts",
+    "explicit direct status for every N and interaction actually executed",
+    "preserved negative/ignored/timeout records",
+    "independent original physical residual and branch/observable checks",
+    "complete certified cost rather than candidate-only timing",
+    "stop after admitted finite checks; expand only for concrete unresolved risk"
+  ]
+}

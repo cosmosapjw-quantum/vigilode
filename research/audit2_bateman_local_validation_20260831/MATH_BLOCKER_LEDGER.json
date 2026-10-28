@@ -1,0 +1,170 @@
+{
+  "generated_at_kst": "2026-08-31",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "latest_scientific_pr": {
+    "number": 39,
+    "title": "research: construct Bateman real-client authority",
+    "base_branch": "research/audit2-reusable-preconditioner-transactional-step-20260830",
+    "head_branch": "research/audit2-real-client-authority-construction-20260830",
+    "head_sha": "6b00a886c4eb38d3fe199e3d77852cc1eb35eb39",
+    "status_at_inspection": "OPEN_DRAFT_UNMERGED",
+    "checked_in_authority_state": "AUTHORITY_CONSTRUCTION_VERIFIED",
+    "candidate_executions": 0,
+    "example_state": "COMPILED_ONLY_NOT_EXECUTED",
+    "local_scientific_result": "PENDING"
+  },
+  "preceding_pr": {
+    "number": 38,
+    "head_sha": "f954e39130e5141256731d0745666a872c0267ea",
+    "scope": "reusable preconditioner and transactional prepared-step substrate"
+  },
+  "overall_math_verdict": "COMPLETE_WITH_CLIENT_DEPENDENT_CONSTANTS",
+  "direct_pr39_blocker_type": "NON_MATHEMATICAL_LOCAL_SCIENTIFIC_EXECUTION_AND_RECEIPT",
+  "blockers": [
+    {
+      "id": "M01",
+      "title": "Bateman exact solution",
+      "priority": "P3",
+      "math_status": "CLOSED",
+      "remaining_evidence": []
+    },
+    {
+      "id": "M02",
+      "title": "Bateman invariants and positivity",
+      "priority": "P2",
+      "math_status": "CLOSED",
+      "remaining_evidence": ["finite-precision runtime receipt"]
+    },
+    {
+      "id": "M03",
+      "title": "Bateman Jacobi-preconditioned Krylov degree",
+      "priority": "P1",
+      "math_status": "CLOSED",
+      "theorem": "(P^{-1}W-I)^2=0 and (WP^{-1}-I)^2=0; exact unrestarted GMRES <= 2 iterations",
+      "remaining_evidence": ["actual GMRES telemetry", "operator/path identity"]
+    },
+    {
+      "id": "M04",
+      "title": "Inexact stage residual propagation",
+      "priority": "P0",
+      "math_status": "CLOSED_CONDITIONAL",
+      "theorem": "e=-(I-L)^(-1)(I⊗W^-1)r, L^s=0",
+      "remaining_evidence": ["client-specific T_ij and q_i bounds"]
+    },
+    {
+      "id": "M05",
+      "title": "Endpoint state contamination",
+      "priority": "P0",
+      "math_status": "CLOSED_CONDITIONAL",
+      "theorem": "||delta y|| <= |m|^T(I-T)^(-1)q",
+      "remaining_evidence": ["physical scaled norm", "runtime amplification bounds"]
+    },
+    {
+      "id": "M06",
+      "title": "Embedded-estimator contamination",
+      "priority": "P0",
+      "math_status": "CLOSED_CONDITIONAL",
+      "theorem": "|E-Ehat|<=Theta; safe accept Ehat+Theta<=1; safe reject Ehat-Theta>1",
+      "remaining_evidence": ["runtime Theta", "candidate-scale drift bound"]
+    },
+    {
+      "id": "M07",
+      "title": "Fifth-order algebraic tolerance scaling",
+      "priority": "P0",
+      "math_status": "CLOSED_CONDITIONAL",
+      "theorem": "sum a_i q_i=O(h^6); if RHS=O(h), relative residual O(h^5)",
+      "remaining_evidence": ["fixed-h refinement", "uniform amplification window"]
+    },
+    {
+      "id": "M08",
+      "title": "Cross-step/retry reuse and refresh",
+      "priority": "P1",
+      "math_status": "CLOSED_CONDITIONAL",
+      "theorem": "DeltaW=DeltaM-gamma[(h+-h)J+h+(J+-J)]; reuse certificate epsilon+delta<1",
+      "remaining_evidence": ["DeltaW proxy", "preconditioner defect", "rollback receipt"]
+    },
+    {
+      "id": "M09",
+      "title": "Approximate/stale Jacobian order",
+      "priority": "P0",
+      "math_status": "NOT_GENERICALLY_CLOSED",
+      "reason": "Rodas5P ROW construction is not a generic fifth-order arbitrary-Jacobian W theorem",
+      "remaining_evidence": ["method-specific W-order proof or perturbation/order campaign"]
+    },
+    {
+      "id": "M10",
+      "title": "Nonlinear correction to root-distance certificate",
+      "priority": "P1",
+      "math_status": "CLOSED_CONDITIONAL",
+      "theorem": "Z(r)<1 and Y+Z(r)r<=r imply unique root and distance <=Y/(1-Z)",
+      "remaining_evidence": ["B", "Hessian/Lipschitz bound", "Y and Z"]
+    },
+    {
+      "id": "M11",
+      "title": "Nonnormal GMRES convergence",
+      "priority": "P0",
+      "math_status": "NO_UNIVERSAL_FAST_CONVERGENCE_THEOREM",
+      "remaining_evidence": ["FOV or pseudospectral probe", "true residual history", "fallback"]
+    },
+    {
+      "id": "M12",
+      "title": "State-to-observable/invariant budget",
+      "priority": "P0",
+      "math_status": "CLOSED_CONDITIONAL",
+      "theorem": "||delta O||<=L_O||delta y||; invariant Taylor bound",
+      "remaining_evidence": ["observable Lipschitz/derivative bounds", "positivity margins"]
+    },
+    {
+      "id": "X01",
+      "title": "Real-client scientific execution",
+      "priority": "P0",
+      "math_status": "NON_MATHEMATICAL",
+      "remaining_evidence": [
+        "exact checked-in wrapper/runner",
+        "linked binary and host/toolchain identity",
+        "six-case candidate run",
+        "preserved compact receipt"
+      ]
+    },
+    {
+      "id": "X02",
+      "title": "Performance and amortization",
+      "priority": "P1",
+      "math_status": "NON_MATHEMATICAL",
+      "remaining_evidence": ["same-physics paired timing", "setup and diagnostics included"]
+    }
+  ],
+  "bateman_oracle": {
+    "lambda_fast": 1000.0,
+    "lambda_slow": 1.0,
+    "gamma": 0.21193756319429014,
+    "initial_state": [0.5, 0.0, 0.5, 0.0],
+    "reference_h_1e_3": [
+      0.18393972058572117,
+      0.31606027941427883,
+      0.4995002499166875,
+      0.0004997500833125
+    ],
+    "reference_h_5e_4": [
+      0.3032653298563167,
+      0.1967346701436833,
+      0.49975006248958465,
+      0.0002499375104153596
+    ],
+    "exact_unrestarted_jacobi_gmres_iteration_upper_bound": 2
+  },
+  "required_runtime_step_receipt": [
+    "q_i_upper",
+    "endpoint_weight_a_i",
+    "estimator_weight_c_i",
+    "state_contamination_bound",
+    "estimator_contamination_bound",
+    "computed_embedded_norm",
+    "safe_accept_upper",
+    "safe_reject_lower",
+    "operator_identity",
+    "preconditioner_identity",
+    "operator_drift_bound",
+    "fallback_used"
+  ]
+}

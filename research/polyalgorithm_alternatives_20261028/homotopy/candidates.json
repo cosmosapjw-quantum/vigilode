@@ -1,0 +1,419 @@
+{
+  "schema": "vigilode.polyalgorithm.homotopy-candidates.v1",
+  "date_utc": "2026-10-28",
+  "baseline_commit": "7eb2dd0ffda39afb2871d76700a720986ff09fe0",
+  "skill_context_used": {
+    "name": "physmath-research-loop",
+    "version": "1.3.0",
+    "selected_stages": [
+      "R2",
+      "R4"
+    ],
+    "supporting_work": "stage-local derivations and bounded exact checks",
+    "full_ten_stage_campaign": false
+  },
+  "runtime_changes": false,
+  "native_tests": "NOT_RUN",
+  "native_benchmarks": "NOT_RUN",
+  "native_profiles": "NOT_RUN",
+  "proof_file": "homotopy/THEORY.md",
+  "supporting_check": "homotopy/CHECK.py",
+  "supporting_check_execution_owner": "root campaign after source commit; not run by lane",
+  "sources": [
+    {
+      "id": "PR92-H",
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/7eb2dd0ffda39afb2871d76700a720986ff09fe0/research/production_solver_closure_20261027/homotopy/THEORY.md",
+      "use": "inherited exact stage residual, 1/8 defect planner, scalar/rational candidates and adverse evidence"
+    },
+    {
+      "id": "PR92-A",
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/blob/7eb2dd0ffda39afb2871d76700a720986ff09fe0/research/production_solver_closure_20261027/adapter/THEORY.md",
+      "use": "same-window integer comparison, productive sentinel, continuation ownership limitation"
+    },
+    {
+      "id": "RNAG",
+      "url": "https://arxiv.org/pdf/2403.18749",
+      "use": "parameter uncertainty and exceptional strata; parameter regularization changes target",
+      "derivative_free_implementation_source": false
+    },
+    {
+      "id": "NNA",
+      "url": "https://arxiv.org/html/2302.08585v2",
+      "sections": [
+        "2.2",
+        "2.4",
+        "5"
+      ],
+      "use": "regular path assumptions, branch distinction, derivative-based certification limitations",
+      "derivative_free_implementation_source": false
+    }
+  ],
+  "candidates": [
+    {
+      "id": "N02-C12-DECAY",
+      "pr": "PR-N02",
+      "status": "derived; production implementation planned",
+      "priority": "first native coding candidate in this lane",
+      "reuse": [
+        "PR91 physical error transport",
+        "PR92 scalar/rational original-residual certificate",
+        "existing directed basic arithmetic"
+      ],
+      "assumptions": [
+        "sealed y'=-k*y-g*y^3",
+        "k>0",
+        "g>=0",
+        "Y>=0",
+        "h>0",
+        "same original model and physical error target"
+      ],
+      "theorem_ids": [
+        "N02.1",
+        "N02.2",
+        "N02.3"
+      ],
+      "exact_constants": {
+        "local_residual": "L(u)^2*phi(u)/12",
+        "strong_monotonicity": "D_h=1+h*k/2",
+        "positive_polynomial": "L(u)^2-3*g*u*phi(u)=k^2+3*k*g*u^2+6*g^2*u^4",
+        "rational_decay": "q=1/(1+k*h)",
+        "geometric_doubling": "(p,s)->(p^2,s*(1+p))"
+      },
+      "bound": "T_n=h^3/(12*D_h)*(k^3*Y*S_n(q)+7*k^2*g*Y^3*S_n(q^3)+15*k*g^2*Y^5*S_n(q^5)+9*g^3*Y^7*S_n(q^7))",
+      "exact_trajectory_separated_from_numerical_state": true,
+      "derivative_policy": "runtime polynomial values only; analytical derivatives used solely in proof",
+      "backend_gate": "retain q_B=h*(k+3*g*(Y+epsilon)^2)/2<1 for existing Picard fallback",
+      "code_targets": [
+        "crates/vigilode-coupled/src/rhs_homotopy.rs:CubicDecayAccuracyPlan::new",
+        "crates/vigilode-coupled/src/rhs_homotopy.rs:cubic_integrate"
+      ],
+      "implementation_contract": [
+        "outward planner sum",
+        "prefix envelope replaces n*constant_local",
+        "unchanged original residual and update-rounding verification",
+        "unchanged physical tolerance, time-label correction and resource accounting"
+      ],
+      "expected_gain": "lower certified step count on some decay problems; elapsed gain unmeasured",
+      "exploratory_exact_fixture": {
+        "k": "1",
+        "g": "1/2",
+        "Y": "1",
+        "T": "1",
+        "epsilon": "1/100000",
+        "old_min_dyadic_steps": 512,
+        "new_min_dyadic_steps": 256,
+        "constant_only_min_dyadic_steps": 512,
+        "interpretation": "exact mathematical planner fixture; not production run or speedup"
+      },
+      "negative_controls": [
+        "constant-only bound may select same grid",
+        "g=0",
+        "Y=0",
+        "overflow and subnormal budget",
+        "strict threshold boundary",
+        "rational predictor failure"
+      ],
+      "next_experiment": [
+        "same root backend old/new planner",
+        "exact-oracle physical error",
+        "map and interval counts",
+        "planner cost",
+        "native elapsed distribution and allocation profile"
+      ],
+      "correction_loop_budget": "inherit remaining per-task budget; do not reset",
+      "correction_budget_owners": [
+        "PR-N02"
+      ]
+    },
+    {
+      "id": "N02-CONTRACTIVE-PREFIX",
+      "pr": "PR-N02",
+      "status": "derived conditional alternative; implementation planned",
+      "assumptions": [
+        "certified |x|<=B invariant region",
+        "h*(k+3*g*B^2)/2<1",
+        "all prefixes retain physical-error enclosure"
+      ],
+      "exact_constants": {
+        "transport": "rho=(1-h*k/2)/(1+h*k/2)"
+      },
+      "code_contract": "E_next<=rho*E_current+local_defect+algebraic_update_error; every prefix must pass",
+      "risks": [
+        "domain induction",
+        "final-only bound does not certify intermediate outputs"
+      ],
+      "derivative_policy": "analytic model bounds; no runtime JVP",
+      "native_status": "NOT_RUN",
+      "correction_budget_owners": [
+        "PR-N02"
+      ]
+    },
+    {
+      "id": "N04-MONOTONE-BRANCH",
+      "pr": "PR-N04",
+      "status": "derived; existing scalar foundation retained",
+      "theorem_ids": [
+        "N04.1"
+      ],
+      "exact_constants": {
+        "cubic_bracket": [
+          "0",
+          "-2*y"
+        ],
+        "residual_to_increment": "1/(1+h*k/2)"
+      },
+      "code_contract": "candidate is untrusted until original interval residual passes; preserve signs, branch enclosure, work and finite fallback budget",
+      "counterexample": "F(x;p)=x^2-p has two zero-residual branches when p>0",
+      "alternatives": [
+        "monotone bisection/inverse backend with backend-specific q_B admission",
+        "sealed exact-flow mode with validated transcendental enclosures"
+      ],
+      "blockers": [
+        "removing q_B requires decoupling Picard fallback",
+        "numerical positivity and L-stability are separate properties"
+      ],
+      "native_status": "NOT_RUN",
+      "correction_budget_owners": [
+        "PR-N04"
+      ]
+    },
+    {
+      "id": "N04-CERTIFIED-STATIONS",
+      "pr": "PR-N04",
+      "status": "derived conditional alternative; model certificate provider open",
+      "theorem_ids": [
+        "N04.2"
+      ],
+      "homotopy": "G_lambda(x)=(1-lambda)*anchor+lambda*G(x)",
+      "certificate_inputs": [
+        "closed ball(center,radius)",
+        "q-Lipschitz bound on ball",
+        "e>=norm(G_lambda(center)-center)",
+        "b>=norm(G(center)-anchor)",
+        "map and norm identity"
+      ],
+      "exact_station": "delta_max=((1-lambda*q)*r-e)/(q*r+b)",
+      "admission": [
+        "delta>=0",
+        "lambda+delta<=1",
+        "(lambda+delta)*q<1",
+        "invariance inequality outward certified",
+        "zero denominator handled separately"
+      ],
+      "code_contract": [
+        "reuse capacity",
+        "reset Anderson/secant residual history on lambda/map/base-state/time/h change",
+        "charge every proposed station"
+      ],
+      "failure_semantics": "certificate expiration preserves accepted prefix; no silent target perturbation or derivative fallback",
+      "alternatives": [
+        "direct lambda=1 when common invariant contraction already certified",
+        "selective derivative provider only under separately measured derivative-free disadvantage"
+      ],
+      "negative_controls": [
+        "branch collision",
+        "q>=1 endpoint not certified",
+        "e exhausts radius margin",
+        "intermediate stations cost more than direct solve"
+      ],
+      "native_status": "NOT_RUN",
+      "correction_budget_owners": [
+        "PR-N04"
+      ]
+    },
+    {
+      "id": "N04-WINNING-SESSION",
+      "pr": "PR-N04",
+      "status": "derived deterministic-transition contract; implementation planned",
+      "theorem_ids": [
+        "N04.3"
+      ],
+      "preferred_architecture": "retain productive winning session inside existing with_session continuation and registered full schedule",
+      "required_identity": [
+        "accepted t/y",
+        "method/dimension",
+        "model/provider/norm/tolerance epochs",
+        "FSAL derivative validity",
+        "controller history",
+        "stage workspace",
+        "output schedule/cursor",
+        "global budget",
+        "telemetry and failure state"
+      ],
+      "forbidden_substitution": "SessionSnapshot or t/y/h alone is not full continuation state",
+      "code_targets": [
+        "crates/vigilode/src/session.rs",
+        "crates/vigilode/src/switching.rs"
+      ],
+      "expected_gain": "conditional removal of reconstruction allocation/startup RHS when FSAL valid",
+      "test_contract": [
+        "uninterrupted versus retained-session exact trace",
+        "epoch refusal before callback",
+        "same observation schedule",
+        "fatal callback priority",
+        "cumulative budget not reset",
+        "allocator and startup RHS counts"
+      ],
+      "native_status": "NOT_RUN",
+      "correction_budget_owners": [
+        "PR-N04"
+      ]
+    },
+    {
+      "id": "N06-DISCRETE-RESIDENCE",
+      "pr": "PR-N06",
+      "status": "derived conditional theorem; production cost-variation certificate open",
+      "theorem_ids": [
+        "N06.1",
+        "N06.2"
+      ],
+      "assumptions": [
+        "explicit same-start/window/tolerance counterfactual protocol",
+        "session initialization fixed",
+        "certified full future route cost-difference variation",
+        "single cost unit",
+        "certificate identity/lifetime valid"
+      ],
+      "exact_constants": {
+        "gap_lower": "d-j*V",
+        "saving_lower": "m*d-V*m*(m+1)/2",
+        "strict_residence": "m*V<d",
+        "payback": "m*d-V*m*(m+1)/2>S",
+        "zero_variation_payback": "floor(S/d)+1",
+        "continuous_saving": "d*H-L*H^2/2",
+        "continuous_sufficient_bound_feasibility": "d^2>2*L*S"
+      },
+      "certificate_fields": [
+        "cost_unit",
+        "cost_protocol",
+        "state_domain",
+        "model_epoch",
+        "provider_epoch",
+        "norm_epoch",
+        "tolerance_epoch",
+        "valid_until",
+        "gap_lower",
+        "variation_upper",
+        "overhead_upper",
+        "provenance",
+        "evidence_kind"
+      ],
+      "evidence_kind_enum": [
+        "deterministic_bound",
+        "statistical_statement",
+        "estimate"
+      ],
+      "default_without_certificate": "retain existing same-window productive comparator; no future-regret label",
+      "open_research": [
+        "trace-margin certificates across state/model neighborhoods",
+        "propagation of counterfactual route states",
+        "cost of obtaining variation certificate"
+      ],
+      "negative_controls": [
+        "smooth RHS with discontinuous adaptive work",
+        "cheap-current expensive-future route",
+        "mixed work/time units",
+        "stale epoch",
+        "overhead exceeding guaranteed savings"
+      ],
+      "native_status": "NOT_RUN",
+      "correction_budget_owners": [
+        "PR-N06"
+      ]
+    }
+  ],
+  "exploratory_checks": {
+    "chronology": "performed before local supporting protocol/source commit; not preregistered",
+    "wolfram": [
+      "cubic chord identity zero",
+      "dominance polynomial k^2+3*k*g*u^2+6*g^2*u^4",
+      "chord-kernel integral h^3/12",
+      "exact solution satisfies ODE",
+      "geometric identity"
+    ],
+    "warning": "earlier Clear of protected symbol N emitted warning; returned identities were not used as sole proof",
+    "bigint_rational_grid": {
+      "fixture": "k=1,g=1/2,Y=T=1,epsilon=1/100000",
+      "arithmetic": "JavaScript BigInt reduced rational; no floats in pass/fail",
+      "results": [
+        {
+          "n": 64,
+          "qB_lt_1_exact": true,
+          "original_1over8": {
+            "value": 0.0002838844476744186,
+            "passes_exact": false
+          },
+          "constant_1over12": {
+            "value": 0.00018925629844961241,
+            "passes_exact": false
+          },
+          "rational_decay_1over12": {
+            "value": 5.514905661544183e-05,
+            "passes_exact": false
+          }
+        },
+        {
+          "n": 128,
+          "qB_lt_1_exact": true,
+          "original_1over8": {
+            "value": 7.124726410505837e-05,
+            "passes_exact": false
+          },
+          "constant_1over12": {
+            "value": 4.749817607003891e-05,
+            "passes_exact": false
+          },
+          "rational_decay_1over12": {
+            "value": 1.362317403574928e-05,
+            "passes_exact": false
+          }
+        },
+        {
+          "n": 256,
+          "qB_lt_1_exact": true,
+          "original_1over8": {
+            "value": 1.7846536915204677e-05,
+            "passes_exact": false
+          },
+          "constant_1over12": {
+            "value": 1.1897691276803118e-05,
+            "passes_exact": false
+          },
+          "rational_decay_1over12": {
+            "value": 3.3853071298603906e-06,
+            "passes_exact": true
+          }
+        },
+        {
+          "n": 512,
+          "qB_lt_1_exact": true,
+          "original_1over8": {
+            "value": 4.4659870426829266e-06,
+            "passes_exact": true
+          },
+          "constant_1over12": {
+            "value": 2.9773246951219513e-06,
+            "passes_exact": true
+          },
+          "rational_decay_1over12": {
+            "value": 8.437676264817364e-07,
+            "passes_exact": true
+          }
+        }
+      ]
+    }
+  },
+  "qualification": {
+    "strong_no_go_claim": false,
+    "novelty_claim": false,
+    "general_production_solver_ready": false,
+    "native_runtime_gain_claim": false,
+    "dependencies": [
+      "directed bound implementation",
+      "original residual checker preservation",
+      "identity-safe session continuation",
+      "optional temporal-certificate provider"
+    ]
+  },
+  "correction_budget_rule": "All candidates share the remaining budget of their parent PR-N task; alternative names do not reset or multiply it. The global LOCAL_DEVELOPMENT_PLAN.json is authoritative."
+}

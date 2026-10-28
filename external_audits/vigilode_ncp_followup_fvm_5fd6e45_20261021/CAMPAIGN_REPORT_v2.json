@@ -1,0 +1,1887 @@
+{
+ "schema": "ncpf-20261021 campaign report v1",
+ "date_kst": "2026-10-21",
+ "identity": {
+  "expected_commit": "5fd6e459a3f67cee90e002821b9b4b740c47475b",
+  "tree": "1df97f74d0e32e8192ba10b21337b588997f0784",
+  "branch": "research/ncp-followup-fvm-20261021",
+  "tip_followed_after_fetch": false,
+  "local_worktree": "/home/cosmosapjw/vigilode-ncpf-5fd6e45 (detached, clean)",
+  "manifest": {
+   "files": 102,
+   "mismatched": 0,
+   "git_blob_equal": true,
+   "diff_vs_base_extra": [
+    "research/LEDGER.jsonl",
+    "research/ncp_followup_20261021/ARTIFACT_MANIFEST.json"
+   ]
+  },
+  "ncp_source": {
+   "transfer": "git archive tar.gz",
+   "tar_sha256": "2bdc76823a2258aaae549a9ed04813effb2e639956528dcc46b7719afd6eda46",
+   "tar_commit_id": "5fd6e459a3f67cee90e002821b9b4b740c47475b",
+   "ncp_write_tree": "1df97f74d0e32e8192ba10b21337b588997f0784"
+  },
+  "toolchain": "rustc 1.94.1 (e408947bf 2026-03-25), cargo 1.94.1 via RUSTUP_TOOLCHAIN=1.94.1 (NCP default is 1.99.0, not used)",
+  "binaries": {
+   "component_benchmark_native": "47f0ecbe46fa79defc790c39be772d2376af399e2d14a6d2b40ea137bef5467a",
+   "bordered_probe": "d4e80f17ec01e87f72f57e07003aa7ce91428bb94749677d921df63ac25a4d3d",
+   "diffsol-adapter-v2 (archived, hash == archived DIFFSOL_SHA256SUMS)": "8042284844ef5ea6ca512290ef0ca0926555820c3f5a03b5af728acc1eddd220"
+  },
+  "requests": {
+   "requests/diffsol-heat-BDF.json": "de197723f4216e9ab437e58f2d09b689db3ed2d0ee93396b0d02486c973cd490",
+   "requests/HEAT_BASELINE_REQUEST.json": "56d6cc8e0c019e8f24810def0f3176feff8ddb636eec20735cc9a6fe31a5d43e",
+   "requests/HEAT_STENCIL_REQUEST.json": "b55d6cb488606aeaa3af736b203e811790bc2eec74eef6087b23c143b47e2e88",
+   "requests/julia-heat-Rodas5P.json": "8d65df222ff10a5ba1f367ec9ff9a450783f6206ab84ffe8e1d8c959be7efc12"
+  },
+  "harness": {
+   "harness/analyze.py": "71376a7598e5d124e3f87a95c10ce103a4e2ecd2c6056214984cc233fea3f286",
+   "harness/common.py": "b66d2206d225ee1ff535dd9dfde38ddef366481968c935998d9d72df1a43b82c",
+   "harness/run_bordered.py": "4721b8f4a14d6fe12ef091392f23e93f55b8d27aa3cf496d1e492b76a7036759",
+   "harness/run_comparators.py": "d80d5c79de8ea55ea78619709683588a330dae44c3f3d5838a55f17a2add4c97",
+   "harness/run_pairs.py": "97e3b34601aa0b4b62f5f2eac9aa87cd45a311be9f69a30f74f60193db5f06d9",
+   "harness/smoke.py": "b51ed5956aa69f79817b963f7461732bc395626e3329f8d216098b0527af9539",
+   "harness/telemetry.py": "b04377aba53a2704d200437288c576772b408c1c35d3252ddb95743fc6755c15",
+   "harness/vode_worker.py": "dbe9c1044626c3eb0b5929304a405fb14faae95cde9fa3a9bcaa0e053dc1e576",
+   "harness/julia_solver_v3.jl": "ff632e6dfebfdf3fa887fbf24dd14b3c07fc4de6c449ed8f555998cc43074b53"
+  }
+ },
+ "local_validation": {
+  "command": "CARGO_TARGET_DIR=/home/cosmosapjw/vigilode-ncpf-target-local python3 research/ncp_followup_20261021/run_followup_checks.py --output /home/cosmosapjw/vigilode-campaign/ncpf-20261021-5fd6e45/local/followup_checks",
+  "summary": {
+   "status": "PASS_SCOPED",
+   "commands_planned": 9,
+   "commands_executed": 9,
+   "source_unchanged": true,
+   "source_files": 484,
+   "broad_production": "HOLD",
+   "ncp_execution": "NOT_RUN",
+   "scope": "Changed-dependency contracts, manufactured linear solve, formula oracle and preserved NCP endpoint analysis"
+  },
+  "rust_tests": {
+   "core": 4,
+   "krylov": 1,
+   "adapter": 6,
+   "remap": 8
+  },
+  "python_tests": {
+   "physics": 12,
+   "rotation": 3
+  },
+  "source_snapshot_equals_committed_final_03": true
+ },
+ "ncp": {
+  "host": "s1a0e5abed09, KVM guest (NAVERCloud), Intel Xeon Gold 5220 guest-visible 64 vCPU, 1 thread/core & 1 NUMA AS SEEN BY GUEST (host SMT/overcommit unknown); cpuset 0-63; cgroup cpu.max/memory.max files absent -> limits unknown; RAM 135.05 GB, MemAvailable 83.5-86.5 GB during campaign; / available 54.46 GB at start, 46.91 GB at end (external activity), 73.41 GB at post-hoc 11:06Z; /dev/shm 22.9 GB free, used READ-ONLY for prior Julia depot",
+  "campaign_dir": "/root/vigilode-ncpf-20261021T1031Z-5fd6e45",
+  "start_utc": "2026-10-21T10:31:00Z",
+  "end_utc": "2026-10-21T10:47:51Z",
+  "duration_min": 16.85,
+  "cores": {
+   "reserved_untouched": "0-5,7 (others/system)",
+   "telemetry": 6,
+   "A0": 8,
+   "A": "16-31",
+   "B": {
+    "VODE_MF20": 40,
+    "VODE_MF21": 41,
+    "VODE_MF22": 42,
+    "JULIA_RODAS5P": 43,
+    "DIFFSOL_BDF": 44
+   },
+   "C": 48
+  },
+  "thread_policy": "independent single-core jobs: worker taskset affinity [core] inherited by children (affinity recorded for A0/A/B rows; not recorded for C rows and Julia preflight); child cpu/wall<=1.0 for all rows; BLAS/OMP/MKL/RAYON/JULIA threads env=1; per-process OS thread count not recorded. 16-core Phase A = 16 independent 1-thread workers, NOT multi-thread scaling.",
+  "telemetry": {
+   "samples": 365,
+   "utc_range": [
+    "2026-10-21T10:41:41Z",
+    "2026-10-21T10:47:49Z"
+   ],
+   "loadavg1": {
+    "n": 365,
+    "min": 0.16,
+    "q1": 0.74,
+    "median": 1.04,
+    "q3": 1.41,
+    "max": 2.91
+   },
+   "busy_total": {
+    "n": 365,
+    "min": 0.0,
+    "q1": 0.0036,
+    "median": 0.0187,
+    "q3": 0.02265,
+    "max": 0.2368
+   },
+   "busy_reserved_cpus_0_7_max": 0.3069,
+   "mem_available_kb": {
+    "n": 365,
+    "min": 83542844,
+    "q1": 83893252.0,
+    "median": 84248884,
+    "q3": 84429946.0,
+    "max": 84477020
+   }
+  }
+ },
+ "summary": {
+  "heat_paired": {
+   "A": {
+    "arms": {
+     "BASE": {
+      "runs_total": 512,
+      "runs_confirmation": 480,
+      "exit0": 512,
+      "status_OK": 512,
+      "valid_full_trajectory": 512,
+      "application_pass": 512,
+      "max_scaled_error_max": 1.212903651056658e-07,
+      "endpoint_scaled_error_max": 1.1313986350064285e-07,
+      "max_abs_error_max": 3.219646771412954e-15,
+      "distinct_times_states_digests": 1,
+      "times_states_digest": [
+       "15d75d22a1d9d5fab335cf394402a3ba0986c483c525d19164712de8b3926f7a"
+      ],
+      "counters_distinct": 1,
+      "counters": {
+       "accepted_steps": 42,
+       "block_linear_iterations": 0,
+       "block_linear_solves": 0,
+       "block_matvecs": 0,
+       "block_preconditioner_apps": 0,
+       "diagnostic_matvecs": 0,
+       "direct_factorizations": 42,
+       "direct_solve_calls": 336,
+       "fallback_steps": 0,
+       "fast_accepts": 0,
+       "fast_attempts": 0,
+       "forced_stage_solves": 0,
+       "ft_calls": 0,
+       "harmonic_ritz_solves": 0,
+       "jacobian_builds": 42,
+       "jvp_calls": 0,
+       "jvp_vectors": 0,
+       "linear_iterations": 0,
+       "linear_matvecs": 0,
+       "linear_solve_failures": 0,
+       "linear_solves": 336,
+       "local_error_failures": 0,
+       "mass_matvecs": 0,
+       "nonfinite_step_failures": 0,
+       "nonlinear_failures": 0,
+       "nonlinear_iterations": 0,
+       "nonlinear_jacobian_evaluations": 0,
+       "nonlinear_residual_evaluations": 0,
+       "nonlinear_solve_failures": 0,
+       "nonlinear_solves": 0,
+       "orthogonalization_inner_products": 0,
+       "orthogonalization_vector_updates": 0,
+       "phi_actions": 0,
+       "phi_dense_oracle_calls": 0,
+       "phi_krylov_vectors": 0,
+       "phi_projected_exponentials": 0,
+       "phi_restarts": 0,
+       "preconditioner_apps": 0,
+       "recycle_cross_operator_refreshes": 0,
+       "recycle_dropped_vectors": 0,
+       "recycle_projection_calls": 0,
+       "recycle_refresh_matvecs": 0,
+       "recycle_same_operator_uses": 0,
+       "recycle_updates": 0,
+       "recycle_vectors_selected": 0,
+       "rejected_steps": 0,
+       "rhs_batch_calls": 0,
+       "rhs_calls": 336,
+       "rhs_evaluations": 336
+      },
+      "derivative_extra_rhs_calls": [
+       5376
+      ],
+      "analytic_stencil_jacobian_builds": [
+       0
+      ],
+      "derivative_policy": [
+       "\"analytic_jvp_columns\""
+      ],
+      "warmed_elapsed_ns": {
+       "n": 480,
+       "min": 14327327,
+       "q1": 14434357.0,
+       "median": 14527196.5,
+       "q3": 14651586.75,
+       "max": 21340586
+      },
+      "in_process_warmup_s": {
+       "n": 480,
+       "min": 0.014707697,
+       "q1": 0.01500586425,
+       "median": 0.015099759,
+       "q3": 0.0152843765,
+       "max": 0.022153256000000003
+      },
+      "child_cpu_s": {
+       "n": 480,
+       "min": 0.031001,
+       "q1": 0.03133025,
+       "median": 0.031547,
+       "q3": 0.03187275,
+       "max": 0.046273999999999996
+      },
+      "child_maxrss_kb": {
+       "n": 480,
+       "min": 16896,
+       "q1": 17408.0,
+       "median": 17408.0,
+       "q3": 17408.0,
+       "max": 17920
+      },
+      "cores": [
+       16,
+       17,
+       18,
+       19,
+       20,
+       21,
+       22,
+       23,
+       24,
+       25,
+       26,
+       27,
+       28,
+       29,
+       30,
+       31
+      ],
+      "rhs_total_including_derivative": 5712,
+      "process_wall_ns_startup_plus_1warm_plus_1timed": {
+       "n": 480,
+       "min": 31344457,
+       "q1": 31705623.75,
+       "median": 31977650.5,
+       "q3": 32367182.0,
+       "max": 46839576
+      }
+     },
+     "STEN": {
+      "runs_total": 512,
+      "runs_confirmation": 480,
+      "exit0": 512,
+      "status_OK": 512,
+      "valid_full_trajectory": 512,
+      "application_pass": 512,
+      "max_scaled_error_max": 1.212903651056658e-07,
+      "endpoint_scaled_error_max": 1.1313986350064285e-07,
+      "max_abs_error_max": 3.219646771412954e-15,
+      "distinct_times_states_digests": 1,
+      "times_states_digest": [
+       "15d75d22a1d9d5fab335cf394402a3ba0986c483c525d19164712de8b3926f7a"
+      ],
+      "counters_distinct": 1,
+      "counters": {
+       "accepted_steps": 42,
+       "block_linear_iterations": 0,
+       "block_linear_solves": 0,
+       "block_matvecs": 0,
+       "block_preconditioner_apps": 0,
+       "diagnostic_matvecs": 0,
+       "direct_factorizations": 42,
+       "direct_solve_calls": 336,
+       "fallback_steps": 0,
+       "fast_accepts": 0,
+       "fast_attempts": 0,
+       "forced_stage_solves": 0,
+       "ft_calls": 0,
+       "harmonic_ritz_solves": 0,
+       "jacobian_builds": 42,
+       "jvp_calls": 0,
+       "jvp_vectors": 0,
+       "linear_iterations": 0,
+       "linear_matvecs": 0,
+       "linear_solve_failures": 0,
+       "linear_solves": 336,
+       "local_error_failures": 0,
+       "mass_matvecs": 0,
+       "nonfinite_step_failures": 0,
+       "nonlinear_failures": 0,
+       "nonlinear_iterations": 0,
+       "nonlinear_jacobian_evaluations": 0,
+       "nonlinear_residual_evaluations": 0,
+       "nonlinear_solve_failures": 0,
+       "nonlinear_solves": 0,
+       "orthogonalization_inner_products": 0,
+       "orthogonalization_vector_updates": 0,
+       "phi_actions": 0,
+       "phi_dense_oracle_calls": 0,
+       "phi_krylov_vectors": 0,
+       "phi_projected_exponentials": 0,
+       "phi_restarts": 0,
+       "preconditioner_apps": 0,
+       "recycle_cross_operator_refreshes": 0,
+       "recycle_dropped_vectors": 0,
+       "recycle_projection_calls": 0,
+       "recycle_refresh_matvecs": 0,
+       "recycle_same_operator_uses": 0,
+       "recycle_updates": 0,
+       "recycle_vectors_selected": 0,
+       "rejected_steps": 0,
+       "rhs_batch_calls": 0,
+       "rhs_calls": 336,
+       "rhs_evaluations": 336
+      },
+      "derivative_extra_rhs_calls": [
+       0
+      ],
+      "analytic_stencil_jacobian_builds": [
+       42
+      ],
+      "derivative_policy": [
+       "\"analytic_jvp_with_opt_in_stencil_dense_assembly\""
+      ],
+      "warmed_elapsed_ns": {
+       "n": 480,
+       "min": 8392810,
+       "q1": 8466533.75,
+       "median": 8508559.0,
+       "q3": 8575295.25,
+       "max": 11219692
+      },
+      "in_process_warmup_s": {
+       "n": 480,
+       "min": 0.008731021,
+       "q1": 0.008989499500000001,
+       "median": 0.009036971000000001,
+       "q3": 0.0091170925,
+       "max": 0.012135162000000001
+      },
+      "child_cpu_s": {
+       "n": 480,
+       "min": 0.018987999999999998,
+       "q1": 0.019301999999999996,
+       "median": 0.0194225,
+       "q3": 0.01961575,
+       "max": 0.026476
+      },
+      "child_maxrss_kb": {
+       "n": 480,
+       "min": 16896,
+       "q1": 17408.0,
+       "median": 17408.0,
+       "q3": 17408.0,
+       "max": 17920
+      },
+      "cores": [
+       16,
+       17,
+       18,
+       19,
+       20,
+       21,
+       22,
+       23,
+       24,
+       25,
+       26,
+       27,
+       28,
+       29,
+       30,
+       31
+      ],
+      "rhs_total_including_derivative": 336,
+      "process_wall_ns_startup_plus_1warm_plus_1timed": {
+       "n": 480,
+       "min": 19387356,
+       "q1": 19685736.5,
+       "median": 19863154.5,
+       "q3": 20085464.5,
+       "max": 27041195
+      }
+     }
+    },
+    "paired": {
+     "blocks": 480,
+     "block_ids_first_last": [
+      "A-c16-b02",
+      "A-c31-b31"
+     ],
+     "ratio_STEN_over_BASE": {
+      "warmed_elapsed": {
+       "n": 480,
+       "min": 0.41338973241168986,
+       "q1": 0.5819233253848906,
+       "median": 0.5856871084237358,
+       "q3": 0.589844960510977,
+       "max": 0.7442342793259176
+      },
+      "cold_process_wall": {
+       "n": 480,
+       "min": 0.44733189742435436,
+       "q1": 0.6139887645715869,
+       "median": 0.6201773471056392,
+       "q3": 0.6265161100394092,
+       "max": 0.7781919408286492
+      },
+      "child_cpu": {
+       "n": 480,
+       "min": 0.4485199188491331,
+       "q1": 0.6107608748774611,
+       "median": 0.6155703859571973,
+       "q3": 0.6200392717948182,
+       "max": 0.7736453588817338
+      }
+     },
+     "STEN_faster_blocks": {
+      "warmed_elapsed": 480,
+      "cold_process_wall": 480
+     },
+     "warmed_ratio_by_order": {
+      "BS": {
+       "n": 240,
+       "min": 0.41338973241168986,
+       "q1": 0.581832191721369,
+       "median": 0.585645632470541,
+       "q3": 0.5897289552421457,
+       "max": 0.7080881893843146
+      },
+      "SB": {
+       "n": 240,
+       "min": 0.4189301852935894,
+       "q1": 0.5823825109592391,
+       "median": 0.5857024155094457,
+       "q3": 0.5902867967123069,
+       "max": 0.7442342793259176
+      }
+     },
+     "timing_authority": "diagnostic_only",
+     "p_values_NON_AUTHORITATIVE_within_host_non_independent": {
+      "sign": {
+       "warmed_elapsed": 6.406665904585923e-145,
+       "cold_process_wall": 6.406665904585923e-145
+      },
+      "wilcoxon_normal_approx": {
+       "warmed_elapsed": 2.3335269088003413e-80,
+       "cold_process_wall": 2.33353260973354e-80
+      }
+     }
+    },
+    "utc_range": [
+     "2026-10-21T10:41:43Z",
+     "2026-10-21T10:41:45Z"
+    ],
+    "loadavg1_range": [
+     0.1630859375,
+     1.671875
+    ]
+   },
+   "A0": {
+    "arms": {
+     "BASE": {
+      "runs_total": 11,
+      "runs_confirmation": 9,
+      "exit0": 11,
+      "status_OK": 11,
+      "valid_full_trajectory": 11,
+      "application_pass": 11,
+      "max_scaled_error_max": 1.212903651056658e-07,
+      "endpoint_scaled_error_max": 1.1313986350064285e-07,
+      "max_abs_error_max": 3.219646771412954e-15,
+      "distinct_times_states_digests": 1,
+      "times_states_digest": [
+       "15d75d22a1d9d5fab335cf394402a3ba0986c483c525d19164712de8b3926f7a"
+      ],
+      "counters_distinct": 1,
+      "counters": {
+       "accepted_steps": 42,
+       "block_linear_iterations": 0,
+       "block_linear_solves": 0,
+       "block_matvecs": 0,
+       "block_preconditioner_apps": 0,
+       "diagnostic_matvecs": 0,
+       "direct_factorizations": 42,
+       "direct_solve_calls": 336,
+       "fallback_steps": 0,
+       "fast_accepts": 0,
+       "fast_attempts": 0,
+       "forced_stage_solves": 0,
+       "ft_calls": 0,
+       "harmonic_ritz_solves": 0,
+       "jacobian_builds": 42,
+       "jvp_calls": 0,
+       "jvp_vectors": 0,
+       "linear_iterations": 0,
+       "linear_matvecs": 0,
+       "linear_solve_failures": 0,
+       "linear_solves": 336,
+       "local_error_failures": 0,
+       "mass_matvecs": 0,
+       "nonfinite_step_failures": 0,
+       "nonlinear_failures": 0,
+       "nonlinear_iterations": 0,
+       "nonlinear_jacobian_evaluations": 0,
+       "nonlinear_residual_evaluations": 0,
+       "nonlinear_solve_failures": 0,
+       "nonlinear_solves": 0,
+       "orthogonalization_inner_products": 0,
+       "orthogonalization_vector_updates": 0,
+       "phi_actions": 0,
+       "phi_dense_oracle_calls": 0,
+       "phi_krylov_vectors": 0,
+       "phi_projected_exponentials": 0,
+       "phi_restarts": 0,
+       "preconditioner_apps": 0,
+       "recycle_cross_operator_refreshes": 0,
+       "recycle_dropped_vectors": 0,
+       "recycle_projection_calls": 0,
+       "recycle_refresh_matvecs": 0,
+       "recycle_same_operator_uses": 0,
+       "recycle_updates": 0,
+       "recycle_vectors_selected": 0,
+       "rejected_steps": 0,
+       "rhs_batch_calls": 0,
+       "rhs_calls": 336,
+       "rhs_evaluations": 336
+      },
+      "derivative_extra_rhs_calls": [
+       5376
+      ],
+      "analytic_stencil_jacobian_builds": [
+       0
+      ],
+      "derivative_policy": [
+       "\"analytic_jvp_columns\""
+      ],
+      "warmed_elapsed_ns": {
+       "n": 9,
+       "min": 14324555,
+       "q1": 14344664.5,
+       "median": 14356966,
+       "q3": 14418417.0,
+       "max": 16988779
+      },
+      "in_process_warmup_s": {
+       "n": 9,
+       "min": 0.014829135,
+       "q1": 0.014900380000000001,
+       "median": 0.014978942,
+       "q3": 0.015022450000000001,
+       "max": 0.015186232000000001
+      },
+      "child_cpu_s": {
+       "n": 9,
+       "min": 0.030962999999999997,
+       "q1": 0.031142,
+       "median": 0.031218,
+       "q3": 0.031398999999999996,
+       "max": 0.034186
+      },
+      "child_maxrss_kb": {
+       "n": 9,
+       "min": 16896,
+       "q1": 16896.0,
+       "median": 16896,
+       "q3": 17408.0,
+       "max": 17408
+      },
+      "cores": [
+       8
+      ],
+      "rhs_total_including_derivative": 5712,
+      "process_wall_ns_startup_plus_1warm_plus_1timed": {
+       "n": 9,
+       "min": 31273360,
+       "q1": 31474963.0,
+       "median": 31559091,
+       "q3": 31782010.5,
+       "max": 34556462
+      }
+     },
+     "STEN": {
+      "runs_total": 11,
+      "runs_confirmation": 9,
+      "exit0": 11,
+      "status_OK": 11,
+      "valid_full_trajectory": 11,
+      "application_pass": 11,
+      "max_scaled_error_max": 1.212903651056658e-07,
+      "endpoint_scaled_error_max": 1.1313986350064285e-07,
+      "max_abs_error_max": 3.219646771412954e-15,
+      "distinct_times_states_digests": 1,
+      "times_states_digest": [
+       "15d75d22a1d9d5fab335cf394402a3ba0986c483c525d19164712de8b3926f7a"
+      ],
+      "counters_distinct": 1,
+      "counters": {
+       "accepted_steps": 42,
+       "block_linear_iterations": 0,
+       "block_linear_solves": 0,
+       "block_matvecs": 0,
+       "block_preconditioner_apps": 0,
+       "diagnostic_matvecs": 0,
+       "direct_factorizations": 42,
+       "direct_solve_calls": 336,
+       "fallback_steps": 0,
+       "fast_accepts": 0,
+       "fast_attempts": 0,
+       "forced_stage_solves": 0,
+       "ft_calls": 0,
+       "harmonic_ritz_solves": 0,
+       "jacobian_builds": 42,
+       "jvp_calls": 0,
+       "jvp_vectors": 0,
+       "linear_iterations": 0,
+       "linear_matvecs": 0,
+       "linear_solve_failures": 0,
+       "linear_solves": 336,
+       "local_error_failures": 0,
+       "mass_matvecs": 0,
+       "nonfinite_step_failures": 0,
+       "nonlinear_failures": 0,
+       "nonlinear_iterations": 0,
+       "nonlinear_jacobian_evaluations": 0,
+       "nonlinear_residual_evaluations": 0,
+       "nonlinear_solve_failures": 0,
+       "nonlinear_solves": 0,
+       "orthogonalization_inner_products": 0,
+       "orthogonalization_vector_updates": 0,
+       "phi_actions": 0,
+       "phi_dense_oracle_calls": 0,
+       "phi_krylov_vectors": 0,
+       "phi_projected_exponentials": 0,
+       "phi_restarts": 0,
+       "preconditioner_apps": 0,
+       "recycle_cross_operator_refreshes": 0,
+       "recycle_dropped_vectors": 0,
+       "recycle_projection_calls": 0,
+       "recycle_refresh_matvecs": 0,
+       "recycle_same_operator_uses": 0,
+       "recycle_updates": 0,
+       "recycle_vectors_selected": 0,
+       "rejected_steps": 0,
+       "rhs_batch_calls": 0,
+       "rhs_calls": 336,
+       "rhs_evaluations": 336
+      },
+      "derivative_extra_rhs_calls": [
+       0
+      ],
+      "analytic_stencil_jacobian_builds": [
+       42
+      ],
+      "derivative_policy": [
+       "\"analytic_jvp_with_opt_in_stencil_dense_assembly\""
+      ],
+      "warmed_elapsed_ns": {
+       "n": 9,
+       "min": 8402314,
+       "q1": 8410688.0,
+       "median": 8463069,
+       "q3": 8483222.5,
+       "max": 8552958
+      },
+      "in_process_warmup_s": {
+       "n": 9,
+       "min": 0.008932210000000001,
+       "q1": 0.0089443775,
+       "median": 0.00896887,
+       "q3": 0.0090237635,
+       "max": 0.011142192
+      },
+      "child_cpu_s": {
+       "n": 9,
+       "min": 0.019133,
+       "q1": 0.0191775,
+       "median": 0.019351999999999998,
+       "q3": 0.019458499999999997,
+       "max": 0.021872
+      },
+      "child_maxrss_kb": {
+       "n": 9,
+       "min": 16896,
+       "q1": 16896.0,
+       "median": 16896,
+       "q3": 17408.0,
+       "max": 17408
+      },
+      "cores": [
+       8
+      ],
+      "rhs_total_including_derivative": 336,
+      "process_wall_ns_startup_plus_1warm_plus_1timed": {
+       "n": 9,
+       "min": 19443541,
+       "q1": 19502846.5,
+       "median": 19691137,
+       "q3": 19800779.5,
+       "max": 22302657
+      }
+     }
+    },
+    "paired": {
+     "blocks": 9,
+     "block_ids_first_last": [
+      "A0-c08-b02",
+      "A0-c08-b10"
+     ],
+     "ratio_STEN_over_BASE": {
+      "warmed_elapsed": {
+       "n": 9,
+       "min": 0.4989932472486693,
+       "q1": 0.5829727945896284,
+       "median": 0.5874232194927286,
+       "q3": 0.5913852458318165,
+       "max": 0.5953648602838247
+      },
+      "cold_process_wall": {
+       "n": 9,
+       "min": 0.5741976131700056,
+       "q1": 0.6143880902501558,
+       "median": 0.6221069865415325,
+       "q3": 0.6271544697416218,
+       "max": 0.7081027947519641
+      },
+      "child_cpu": {
+       "n": 9,
+       "min": 0.5702334288890188,
+       "q1": 0.6114182969632813,
+       "median": 0.6182330706643603,
+       "q3": 0.6228628251599676,
+       "max": 0.702083266459089
+      }
+     },
+     "STEN_faster_blocks": {
+      "warmed_elapsed": 9,
+      "cold_process_wall": 9
+     },
+     "warmed_ratio_by_order": {
+      "BS": {
+       "n": 5,
+       "min": 0.4989932472486693,
+       "q1": 0.5420898902493376,
+       "median": 0.5873005479053276,
+       "q3": 0.5893329550390067,
+       "max": 0.591242690585285
+      },
+      "SB": {
+       "n": 4,
+       "min": 0.5807590559292509,
+       "q1": 0.5829379804288918,
+       "median": 0.5905012775030813,
+       "q3": 0.5944055954824556,
+       "max": 0.5953648602838247
+      }
+     },
+     "timing_authority": "diagnostic_only",
+     "p_values_NON_AUTHORITATIVE_within_host_non_independent": {
+      "sign": {
+       "warmed_elapsed": 0.00390625,
+       "cold_process_wall": 0.00390625
+      },
+      "wilcoxon_normal_approx": {
+       "warmed_elapsed": 0.00390625,
+       "cold_process_wall": 0.00390625
+      }
+     }
+    },
+    "utc_range": [
+     "2026-10-21T10:41:42Z",
+     "2026-10-21T10:41:43Z"
+    ],
+    "loadavg1_range": [
+     0.1630859375,
+     0.1630859375
+    ]
+   }
+  },
+  "comparators": {
+   "DIFFSOL_BDF": {
+    "core": 44,
+    "x_processes": 9,
+    "x_confirmation_processes": 7,
+    "x_exit0": 9,
+    "x_status_OK": 9,
+    "x_valid_all_reps": 9,
+    "x_application_pass_all_reps": 9,
+    "measured_reps_total": 63,
+    "reps_application_pass": 63,
+    "max_scaled_error": {
+     "n": 63,
+     "min": 0.005486546909306088,
+     "q1": 0.005486546909306088,
+     "median": 0.005486546909306088,
+     "q3": 0.005486546909306088,
+     "max": 0.005486546909306088
+    },
+    "endpoint_scaled_error": {
+     "n": 63,
+     "min": 0.005486546909306088,
+     "q1": 0.005486546909306088,
+     "median": 0.005486546909306088,
+     "q3": 0.005486546909306088,
+     "max": 0.005486546909306088
+    },
+    "times_supplied_by_solver": [
+     false
+    ],
+    "counters_distinct": 1,
+    "counters": null,
+    "inprocess_elapsed_ns_all_reps": {
+     "n": 49,
+     "min": 4042226,
+     "q1": 4167934.0,
+     "median": 4214478,
+     "q3": 4324166.5,
+     "max": 6343322
+    },
+    "child_cpu_s": {
+     "n": 7,
+     "min": 0.046886,
+     "q1": 0.047113999999999996,
+     "median": 0.048195,
+     "q3": 0.048834,
+     "max": 0.053951
+    },
+    "child_maxrss_kb": {
+     "n": 7,
+     "min": 21368,
+     "q1": 21368.0,
+     "median": 21368,
+     "q3": 21368.0,
+     "max": 21368
+    },
+    "meta": {
+     "algorithm": "BDF",
+     "diffsol_version": "0.17.1",
+     "jacobian": "analytic Jv closure",
+     "linear_solver": "NalgebraLU<f64> dense",
+     "solver_counters": null,
+     "status": "OK",
+     "timing_scope": "solve_dense only; builder (setup_seconds) and output conversion outside timer"
+    },
+    "sten_in_blocks": {
+     "runs": 9,
+     "application_pass": 9,
+     "warmed_elapsed_ns": {
+      "n": 7,
+      "min": 8458801,
+      "q1": 8478650.0,
+      "median": 8507393,
+      "q3": 8542891.0,
+      "max": 8633612
+     },
+     "cold_process_wall_ns": {
+      "n": 7,
+      "min": 19737032,
+      "q1": 19979785.0,
+      "median": 19993140,
+      "q3": 20128968.0,
+      "max": 20191327
+     }
+    },
+    "paired_blocks": 7,
+    "ratio_X_over_STEN": {
+     "inprocess": {
+      "n": 7,
+      "min": 0.49046424601893157,
+      "q1": 0.4915722689303129,
+      "median": 0.4942981488798335,
+      "q3": 0.5008135864888339,
+      "max": 0.6236292932054482
+     }
+    },
+    "timing_scope_note": "X in-process = solver-specific timer (see meta.timing_scope); STEN = adapter warmed solve incl. setup/output; cross-solver ratios are diagnostic_only",
+    "utc_range": [
+     "2026-10-21T10:44:32Z",
+     "2026-10-21T10:44:33Z"
+    ],
+    "process_wall_ns_harness_invocation_cost_not_solver_speed": {
+     "n": 7,
+     "min": 47300877,
+     "q1": 47510463.0,
+     "median": 48659223,
+     "q3": 49262558.0,
+     "max": 54332879
+    }
+   },
+   "JULIA_RODAS5P": {
+    "core": 43,
+    "x_processes": 10,
+    "x_confirmation_processes": 7,
+    "x_exit0": 10,
+    "x_status_OK": 10,
+    "x_valid_all_reps": 10,
+    "x_application_pass_all_reps": 10,
+    "measured_reps_total": 70,
+    "reps_application_pass": 70,
+    "max_scaled_error": {
+     "n": 70,
+     "min": 0.0013017284779529583,
+     "q1": 0.0013017284779529583,
+     "median": 0.0013017284779529583,
+     "q3": 0.0013017284779529583,
+     "max": 0.0013017284779529583
+    },
+    "endpoint_scaled_error": {
+     "n": 70,
+     "min": 5.899736973445921e-06,
+     "q1": 5.899736973445921e-06,
+     "median": 5.899736973445921e-06,
+     "q3": 5.899736973445921e-06,
+     "max": 5.899736973445921e-06
+    },
+    "times_supplied_by_solver": [
+     true
+    ],
+    "counters_distinct": 1,
+    "counters": {
+     "nw_factorizations": 5,
+     "nreject": 0,
+     "nf": 687,
+     "njacs": 5,
+     "nsolve_linear_solves": 40,
+     "nnonliniter": 0,
+     "naccept": 5
+    },
+    "inprocess_elapsed_ns_all_reps": {
+     "n": 49,
+     "min": 5830002,
+     "q1": 6070382.5,
+     "median": 8994640,
+     "q3": 9371399.0,
+     "max": 54897153
+    },
+    "child_cpu_s": {
+     "n": 7,
+     "min": 16.123853,
+     "q1": 16.182084,
+     "median": 16.293257,
+     "q3": 17.182277000000003,
+     "max": 17.366352
+    },
+    "child_maxrss_kb": {
+     "n": 7,
+     "min": 1001176,
+     "q1": 1001492.0,
+     "median": 1005728,
+     "q3": 1009228.0,
+     "max": 1013540
+    },
+    "meta": {
+     "julia_version": "1.12.7",
+     "status": "OK",
+     "algorithm": "Rodas5P",
+     "timing_scope": "in-process solve() call; ODEProblem built before timer",
+     "adapter": "julia_solver_v3 (v2 + sol.t + separately named stats)",
+     "warmup_seconds": [
+      6.01543202,
+      0.006086739000000001
+     ]
+    },
+    "sten_in_blocks": {
+     "runs": 9,
+     "application_pass": 9,
+     "warmed_elapsed_ns": {
+      "n": 7,
+      "min": 8448766,
+      "q1": 8457898.0,
+      "median": 8692434,
+      "q3": 9030272.0,
+      "max": 9260352
+     },
+     "cold_process_wall_ns": {
+      "n": 7,
+      "min": 19932561,
+      "q1": 20032676.0,
+      "median": 20214480,
+      "q3": 21166980.0,
+      "max": 21194060
+     }
+    },
+    "paired_blocks": 7,
+    "ratio_X_over_STEN": {
+     "inprocess": {
+      "n": 7,
+      "min": 0.9793875533317269,
+      "q1": 0.9803540945311798,
+      "median": 1.0421560865460697,
+      "q3": 1.0767936667006388,
+      "max": 1.1388221664560245
+     }
+    },
+    "timing_scope_note": "X in-process = solver-specific timer (see meta.timing_scope); STEN = adapter warmed solve incl. setup/output; cross-solver ratios are diagnostic_only",
+    "utc_range": [
+     "2026-10-21T10:44:32Z",
+     "2026-10-21T10:47:05Z"
+    ],
+    "process_wall_ns_harness_invocation_cost_not_solver_speed": {
+     "n": 7,
+     "min": 16126224691,
+     "q1": 16184166873.0,
+     "median": 16296155027,
+     "q3": 17185571285.0,
+     "max": 17369269488
+    },
+    "inprocess_rep_stats_ns": {
+     "min": 5830002,
+     "median": 8994640,
+     "mean": 13819033,
+     "max": 54897153,
+     "pattern": "~6,9,9,9,47-55(GC),6,6 ms per process"
+    }
+   },
+   "VODE_MF20": {
+    "core": 40,
+    "x_processes": 9,
+    "x_confirmation_processes": 7,
+    "x_exit0": 9,
+    "x_status_OK": 9,
+    "x_valid_all_reps": 9,
+    "x_application_pass_all_reps": 9,
+    "measured_reps_total": 63,
+    "reps_application_pass": 63,
+    "max_scaled_error": {
+     "n": 63,
+     "min": 0.9897677472981857,
+     "q1": 0.9897677472981857,
+     "median": 0.9897677472981857,
+     "q3": 0.9897677472981857,
+     "max": 0.9897677472981857
+    },
+    "endpoint_scaled_error": {
+     "n": 63,
+     "min": 0.8833166182390381,
+     "q1": 0.8833166182390381,
+     "median": 0.8833166182390381,
+     "q3": 0.8833166182390381,
+     "max": 0.8833166182390381
+    },
+    "times_supplied_by_solver": [
+     true
+    ],
+    "counters_distinct": 1,
+    "counters": {
+     "NST": 1060,
+     "NFE": 2115,
+     "NJE": 0,
+     "NLU": 0,
+     "NNI": 0,
+     "NCFN": 349,
+     "NETF": 1,
+     "python_rhs_calls": 2115,
+     "python_jac_calls": 0
+    },
+    "inprocess_elapsed_ns_all_reps": {
+     "n": 49,
+     "min": 65378925,
+     "q1": 68004273.0,
+     "median": 71450743,
+     "q3": 76621149.5,
+     "max": 101613778
+    },
+    "child_cpu_s": {
+     "n": 7,
+     "min": 0.975317,
+     "q1": 0.987707,
+     "median": 1.0128249999999999,
+     "q3": 1.054347,
+     "max": 1.071796
+    },
+    "child_maxrss_kb": {
+     "n": 7,
+     "min": 67072,
+     "q1": 67072.0,
+     "median": 67072,
+     "q3": 67072.0,
+     "max": 67072
+    },
+    "meta": {
+     "status": "OK",
+     "solver": "scipy.integrate.ode vode (DVODE)",
+     "scipy_version": "1.11.4",
+     "numpy_version": "1.26.4",
+     "mf_requested": 20,
+     "mf_used": [
+      20
+     ],
+     "internal_rtol": 1e-06,
+     "internal_atol_scalar": 1e-09,
+     "timing_scope": "in-process ode construction + integrate over output grid",
+     "warmup_elapsed_ns": [
+      72222781,
+      73358745
+     ]
+    },
+    "sten_in_blocks": {
+     "runs": 9,
+     "application_pass": 9,
+     "warmed_elapsed_ns": {
+      "n": 7,
+      "min": 8403862,
+      "q1": 8415751.0,
+      "median": 8435911,
+      "q3": 8489658.0,
+      "max": 10827902
+     },
+     "cold_process_wall_ns": {
+      "n": 7,
+      "min": 19698740,
+      "q1": 19806636.0,
+      "median": 19958503,
+      "q3": 20097628.0,
+      "max": 25825108
+     }
+    },
+    "paired_blocks": 7,
+    "ratio_X_over_STEN": {
+     "inprocess": {
+      "n": 7,
+      "min": 6.118553067805749,
+      "q1": 8.02991475039395,
+      "median": 8.416413591845624,
+      "q3": 9.14178294961436,
+      "max": 9.364775147426267
+     }
+    },
+    "timing_scope_note": "X in-process = solver-specific timer (see meta.timing_scope); STEN = adapter warmed solve incl. setup/output; cross-solver ratios are diagnostic_only",
+    "utc_range": [
+     "2026-10-21T10:44:32Z",
+     "2026-10-21T10:44:40Z"
+    ],
+    "process_wall_ns_harness_invocation_cost_not_solver_speed": {
+     "n": 7,
+     "min": 976041955,
+     "q1": 988307557.0,
+     "median": 1013415525,
+     "q3": 1055033853.0,
+     "max": 1072684781
+    }
+   },
+   "VODE_MF21": {
+    "core": 41,
+    "x_processes": 9,
+    "x_confirmation_processes": 7,
+    "x_exit0": 9,
+    "x_status_OK": 9,
+    "x_valid_all_reps": 9,
+    "x_application_pass_all_reps": 0,
+    "measured_reps_total": 63,
+    "reps_application_pass": 0,
+    "max_scaled_error": {
+     "n": 63,
+     "min": 4.7181983673434855,
+     "q1": 4.7181983673434855,
+     "median": 4.7181983673434855,
+     "q3": 4.7181983673434855,
+     "max": 4.7181983673434855
+    },
+    "endpoint_scaled_error": {
+     "n": 63,
+     "min": 2.1883953511024754,
+     "q1": 2.1883953511024754,
+     "median": 2.1883953511024754,
+     "q3": 2.1883953511024754,
+     "max": 2.1883953511024754
+    },
+    "times_supplied_by_solver": [
+     true
+    ],
+    "counters_distinct": 1,
+    "counters": {
+     "NST": 23,
+     "NFE": 40,
+     "NJE": 1,
+     "NLU": 12,
+     "NNI": 37,
+     "NCFN": 0,
+     "NETF": 3,
+     "python_rhs_calls": 40,
+     "python_jac_calls": 1
+    },
+    "inprocess_elapsed_ns_all_reps": {
+     "n": 49,
+     "min": 5055218,
+     "q1": 5143813.5,
+     "median": 5267685,
+     "q3": 5365149.0,
+     "max": 6105391
+    },
+    "child_cpu_s": {
+     "n": 7,
+     "min": 0.412599,
+     "q1": 0.413467,
+     "median": 0.421647,
+     "q3": 0.43239399999999995,
+     "max": 0.43836299999999995
+    },
+    "child_maxrss_kb": {
+     "n": 7,
+     "min": 67072,
+     "q1": 67072.0,
+     "median": 67072,
+     "q3": 67072.0,
+     "max": 67584
+    },
+    "meta": {
+     "status": "OK",
+     "solver": "scipy.integrate.ode vode (DVODE)",
+     "scipy_version": "1.11.4",
+     "numpy_version": "1.26.4",
+     "mf_requested": 21,
+     "mf_used": [
+      21
+     ],
+     "internal_rtol": 1e-06,
+     "internal_atol_scalar": 1e-09,
+     "timing_scope": "in-process ode construction + integrate over output grid",
+     "warmup_elapsed_ns": [
+      6265179,
+      5635212
+     ]
+    },
+    "sten_in_blocks": {
+     "runs": 9,
+     "application_pass": 9,
+     "warmed_elapsed_ns": {
+      "n": 7,
+      "min": 8437509,
+      "q1": 8452738.0,
+      "median": 8519379,
+      "q3": 8884274.0,
+      "max": 9280262
+     },
+     "cold_process_wall_ns": {
+      "n": 7,
+      "min": 19805925,
+      "q1": 19895673.0,
+      "median": 20204210,
+      "q3": 20679229.0,
+      "max": 20784054
+     }
+    },
+    "paired_blocks": 7,
+    "ratio_X_over_STEN": {
+     "SUPPRESSED": "arm fails application budget; no timing inference at unequal accuracy"
+    },
+    "timing_scope_note": "X in-process = solver-specific timer (see meta.timing_scope); STEN = adapter warmed solve incl. setup/output; cross-solver ratios are diagnostic_only",
+    "utc_range": [
+     "2026-10-21T10:44:32Z",
+     "2026-10-21T10:44:35Z"
+    ],
+    "process_wall_ns_harness_invocation_cost_not_solver_speed": {
+     "n": 7,
+     "min": 413204693,
+     "q1": 414064411.0,
+     "median": 422437152,
+     "q3": 432937416.0,
+     "max": 439073205
+    }
+   },
+   "VODE_MF22": {
+    "core": 42,
+    "x_processes": 9,
+    "x_confirmation_processes": 7,
+    "x_exit0": 9,
+    "x_status_OK": 9,
+    "x_valid_all_reps": 9,
+    "x_application_pass_all_reps": 0,
+    "measured_reps_total": 63,
+    "reps_application_pass": 0,
+    "max_scaled_error": {
+     "n": 63,
+     "min": 14.649145494986675,
+     "q1": 14.649145494986675,
+     "median": 14.649145494986675,
+     "q3": 14.649145494986675,
+     "max": 14.649145494986675
+    },
+    "endpoint_scaled_error": {
+     "n": 63,
+     "min": 1.3670598896416462,
+     "q1": 1.3670598896416462,
+     "median": 1.3670598896416462,
+     "q3": 1.3670598896416462,
+     "max": 1.3670598896416462
+    },
+    "times_supplied_by_solver": [
+     true
+    ],
+    "counters_distinct": 1,
+    "counters": {
+     "NST": 28,
+     "NFE": 307,
+     "NJE": 2,
+     "NLU": 13,
+     "NNI": 48,
+     "NCFN": 0,
+     "NETF": 3,
+     "python_rhs_calls": 307,
+     "python_jac_calls": 0
+    },
+    "inprocess_elapsed_ns_all_reps": {
+     "n": 49,
+     "min": 13483644,
+     "q1": 13725970.0,
+     "median": 13891856,
+     "q3": 14480661.0,
+     "max": 15450955
+    },
+    "child_cpu_s": {
+     "n": 7,
+     "min": 0.49628599999999995,
+     "q1": 0.496405,
+     "median": 0.498341,
+     "q3": 0.513993,
+     "max": 0.5159009999999999
+    },
+    "child_maxrss_kb": {
+     "n": 7,
+     "min": 67072,
+     "q1": 67072.0,
+     "median": 67072,
+     "q3": 67072.0,
+     "max": 67584
+    },
+    "meta": {
+     "status": "OK",
+     "solver": "scipy.integrate.ode vode (DVODE)",
+     "scipy_version": "1.11.4",
+     "numpy_version": "1.26.4",
+     "mf_requested": 22,
+     "mf_used": [
+      22
+     ],
+     "internal_rtol": 1e-06,
+     "internal_atol_scalar": 1e-09,
+     "timing_scope": "in-process ode construction + integrate over output grid",
+     "warmup_elapsed_ns": [
+      14714092,
+      13852992
+     ]
+    },
+    "sten_in_blocks": {
+     "runs": 9,
+     "application_pass": 9,
+     "warmed_elapsed_ns": {
+      "n": 7,
+      "min": 8412044,
+      "q1": 8431018.0,
+      "median": 8458498,
+      "q3": 8555931.0,
+      "max": 9373599
+     },
+     "cold_process_wall_ns": {
+      "n": 7,
+      "min": 19729198,
+      "q1": 19764648.0,
+      "median": 20092022,
+      "q3": 20254220.0,
+      "max": 20847171
+     }
+    },
+    "paired_blocks": 7,
+    "ratio_X_over_STEN": {
+     "SUPPRESSED": "arm fails application budget; no timing inference at unequal accuracy"
+    },
+    "timing_scope_note": "X in-process = solver-specific timer (see meta.timing_scope); STEN = adapter warmed solve incl. setup/output; cross-solver ratios are diagnostic_only",
+    "utc_range": [
+     "2026-10-21T10:44:32Z",
+     "2026-10-21T10:44:36Z"
+    ],
+    "process_wall_ns_harness_invocation_cost_not_solver_speed": {
+     "n": 7,
+     "min": 497001398,
+     "q1": 497008008.0,
+     "median": 498951675,
+     "q3": 514611836.0,
+     "max": 516649634
+    }
+   }
+  },
+  "bordered_probe": {
+   "16": {
+    "runs": 9,
+    "success_runs": 9,
+    "residual_inf_max": 6.661338147750939e-16,
+    "max_solution_error_max": 3.3306690738754696e-16,
+    "allocated_f64_slots": [
+     132
+    ],
+    "expected_slots": 132,
+    "factor_ns": {
+     "n": 7,
+     "min": 2789,
+     "q1": 2848.0,
+     "median": 3308,
+     "q3": 3587.0,
+     "max": 5280
+    },
+    "apply_ns_per_call": {
+     "n": 7,
+     "min": 389.13,
+     "q1": 389.54,
+     "median": 390.54,
+     "q3": 394.31,
+     "max": 558.18
+    },
+    "exit_codes": [
+     0
+    ],
+    "storage_matches_formula": true
+   },
+   "64": {
+    "runs": 9,
+    "success_runs": 9,
+    "residual_inf_max": 1.1102230246251565e-15,
+    "max_solution_error_max": 5.551115123125783e-16,
+    "allocated_f64_slots": [
+     516
+    ],
+    "expected_slots": 516,
+    "factor_ns": {
+     "n": 7,
+     "min": 6405,
+     "q1": 6476.0,
+     "median": 6603,
+     "q3": 6644.0,
+     "max": 10960
+    },
+    "apply_ns_per_call": {
+     "n": 7,
+     "min": 1513.12,
+     "q1": 1513.16,
+     "median": 1513.58,
+     "q3": 1565.29,
+     "max": 2143.9
+    },
+    "exit_codes": [
+     0
+    ],
+    "storage_matches_formula": true
+   },
+   "256": {
+    "runs": 9,
+    "success_runs": 9,
+    "residual_inf_max": 8.881784197001252e-16,
+    "max_solution_error_max": 4.440892098500626e-16,
+    "allocated_f64_slots": [
+     2052
+    ],
+    "expected_slots": 2052,
+    "factor_ns": {
+     "n": 7,
+     "min": 23978,
+     "q1": 24129.0,
+     "median": 24408,
+     "q3": 35981.0,
+     "max": 54855
+    },
+    "apply_ns_per_call": {
+     "n": 7,
+     "min": 6211.96,
+     "q1": 6322.28,
+     "median": 6537.91,
+     "q3": 7029.52,
+     "max": 8419.86
+    },
+    "exit_codes": [
+     0
+    ],
+    "storage_matches_formula": true
+   },
+   "1600": {
+    "runs": 9,
+    "success_runs": 9,
+    "residual_inf_max": 1.1080025785759062e-13,
+    "max_solution_error_max": 5.88418203051333e-14,
+    "allocated_f64_slots": [
+     12804
+    ],
+    "expected_slots": 12804,
+    "factor_ns": {
+     "n": 7,
+     "min": 145223,
+     "q1": 145265.0,
+     "median": 146768,
+     "q3": 156542.0,
+     "max": 156838
+    },
+    "apply_ns_per_call": {
+     "n": 7,
+     "min": 39932.96,
+     "q1": 40103.18,
+     "median": 40345.2,
+     "q3": 40782.54,
+     "max": 40857.64
+    },
+    "exit_codes": [
+     0
+    ],
+    "storage_matches_formula": true
+   },
+   "4096": {
+    "runs": 9,
+    "success_runs": 9,
+    "residual_inf_max": 8.881784197001252e-16,
+    "max_solution_error_max": 4.440892098500626e-16,
+    "allocated_f64_slots": [
+     32772
+    ],
+    "expected_slots": 32772,
+    "factor_ns": {
+     "n": 7,
+     "min": 370780,
+     "q1": 381914.0,
+     "median": 385313,
+     "q3": 396299.0,
+     "max": 400550
+    },
+    "apply_ns_per_call": {
+     "n": 7,
+     "min": 101062.82,
+     "q1": 101132.13,
+     "median": 101294.58,
+     "q3": 101337.58,
+     "max": 103611.82
+    },
+    "exit_codes": [
+     0
+    ],
+    "storage_matches_formula": true
+   }
+  },
+  "telemetry": {
+   "samples": 365,
+   "utc_range": [
+    "2026-10-21T10:41:41Z",
+    "2026-10-21T10:47:49Z"
+   ],
+   "loadavg1": {
+    "n": 365,
+    "min": 0.16,
+    "q1": 0.74,
+    "median": 1.04,
+    "q3": 1.41,
+    "max": 2.91
+   },
+   "busy_total": {
+    "n": 365,
+    "min": 0.0,
+    "q1": 0.0036,
+    "median": 0.0187,
+    "q3": 0.02265,
+    "max": 0.2368
+   },
+   "busy_reserved_cpus_0_7_max": 0.3069,
+   "mem_available_kb": {
+    "n": 365,
+    "min": 83542844,
+    "q1": 83893252.0,
+    "median": 84248884,
+    "q3": 84429946.0,
+    "max": 84477020
+   }
+  }
+ },
+ "report_version": 2,
+ "supersedes": "CAMPAIGN_REPORT.json v1 draft (kept unmodified as CAMPAIGN_REPORT.json)",
+ "governance": {
+  "timing_authority": "diagnostic_only",
+  "statistical_authority": "STATISTICAL_AUTHORITY_HOLD (single case, single host, concurrent streams)",
+  "hard_evidence": "deterministic counters + full-trajectory accuracy",
+  "broad_production": "HOLD"
+ },
+ "timing_scopes": {
+  "VIGILODE (BASE/STEN)": "timing.elapsed_ns = 2nd in-process invoke(): problem construction + integration + serde output Value (scope warmed_solver_setup_integration_output_certificate); process = startup + 1 warm + 1 timed solve + JSON print",
+  "VODE_*": "perf_counter around ode() construction + integrate over 40 outputs (+tolist), Python RHS callbacks; t0 state injected by harness (t0_injected_by_harness=true); process = python import + 2 warm + 7 measured",
+  "JULIA_RODAS5P": "time_ns around solve() only (ODEProblem outside, GC inside); process = package load + JIT (~6 s first solve) + 2 warm + 7 measured",
+  "DIFFSOL_BDF": "Instant around solve_dense only; builder and Vec conversion outside; times not returned (requested grid assumed, times_supplied_by_solver=false); counters unavailable; process = 2 warm + 7 measured",
+  "cross_solver_statement_limit": "STEN has the broadest timer scope (bias against STEN). Defensible: VODE_MF20 ~8x slower per solve; diffsol faster per solve (magnitude scope-biased, ~0.49x); Julia same order of magnitude. Process-wall ratios across solvers are NOT solver speed."
+ },
+ "accuracy_detail": {
+  "metric": "max over all 41 times (incl t=0) and 128 components of |y-ref|/(1e-9+1e-6|ref|)",
+  "reference": "mpmath dps40 real DFT; independently re-derived by verifier via mp Taylor exp(Ah) dps60 (bitwise equal 5247/5248, one 2.45e-42 residue at t0 comp0)",
+  "by_arm_all_components_vs_significant_|ref|>1e-3": {
+   "VIGILODE_BASE=STEN": [
+    1.2129e-07,
+    "~6.7e-09"
+   ],
+   "VODE_MF20": [
+    0.98977,
+    0.98977,
+    "margin 1% at t=0.025 (startup)"
+   ],
+   "VODE_MF21": [
+    4.7182,
+    4.7182
+   ],
+   "VODE_MF22": [
+    14.64915,
+    5.96693,
+    "14.65 from near-zero comp 64"
+   ],
+   "JULIA_RODAS5P": [
+    0.0013017,
+    0.0013017
+   ],
+   "DIFFSOL_BDF": [
+    0.0054865,
+    0.0054865
+   ]
+  },
+  "vode_fail_attribution": "solver behavior: verifier reproduced MF21 4.7182 locally; tightening rtol converges (0.408@1e-7, 0.053@1e-8); solve_ivp BDF also fails (1.70), Radau passes (0.12)",
+  "internal_vs_application": "internal tolerances = application budget for every arm (rtol 1e-6, atol 1e-9); no tightened internal arm run"
+ },
+ "work_counters": {
+  "VIGILODE_BASE": {
+   "accepted": 42,
+   "rejected": 0,
+   "rhs": 336,
+   "derivative_extra_rhs": 5376,
+   "rhs_incl_derivative": 5712,
+   "jacobian_builds": 42,
+   "LU": 42,
+   "linear_solves": 336,
+   "jvp_calls": 0
+  },
+  "VIGILODE_STEN": {
+   "accepted": 42,
+   "rejected": 0,
+   "rhs": 336,
+   "derivative_extra_rhs": 0,
+   "rhs_incl_derivative": 336,
+   "stencil_jacobian_builds": 42,
+   "LU": 42,
+   "linear_solves": 336,
+   "jvp_calls": 0
+  },
+  "VODE_MF20": {
+   "NST": 1060,
+   "NFE": 2115,
+   "NJE": 0,
+   "NLU": 0,
+   "NNI": 0,
+   "NCFN": 349,
+   "NETF": 1
+  },
+  "VODE_MF21": {
+   "NST": 23,
+   "NFE": 40,
+   "NJE": 1,
+   "NLU": 12,
+   "NNI": 37,
+   "NCFN": 0,
+   "NETF": 3
+  },
+  "VODE_MF22": {
+   "NST": 28,
+   "NFE": 307,
+   "NJE": 2,
+   "NLU": 13,
+   "NNI": 48,
+   "NCFN": 0,
+   "NETF": 3
+  },
+  "JULIA_RODAS5P": {
+   "naccept": 5,
+   "nreject": 0,
+   "nf": 687,
+   "njacs": 5,
+   "nw_factorizations": 5,
+   "nsolve_linear_solves": 40
+  },
+  "DIFFSOL_BDF": "NOT_AVAILABLE (archived adapter returns null)",
+  "note": "VigilODE 42 steps for 40 output intervals: fast driver land() shortens steps to each output target (source rodas5p_fast/output.rs); inference, not isolated"
+ },
+ "paired_block_ids": {
+  "A0": "A0-c08-b02..b10 (9; b00-b01 warmup)",
+  "A": "A-c16..c31-b02..b31 (480; b00-b01 warmup per core)",
+  "B": "B-<ARM>-c40..c44-b02..b08 (7 per arm; b00-b01 warmup; Julia +1 unpaired preflight)",
+  "order": "even block BASE/STEN-first, odd reversed"
+ },
+ "commands": [
+  {
+   "id": "b1",
+   "cmd": "cargo build --profile measurement -p rodas5p-integrators --example component_benchmark_native --locked --offline -j 4",
+   "env": "RUSTUP_TOOLCHAIN=1.94.1 CARGO_TARGET_DIR=<camp>/target",
+   "exit": 0,
+   "wall": "2:13.11",
+   "maxrss_kb": 1318692
+  },
+  {
+   "id": "b2",
+   "cmd": "cargo build --profile measurement -p rodas5p-core --example bordered_probe --locked --offline -j 4",
+   "exit": 0,
+   "wall": "0:00.40"
+  },
+  {
+   "id": "P0",
+   "cmd": "\"$CARGO_TARGET_DIR/measurement/examples/component_benchmark_native\" --request research/ncp_followup_20261021/accuracy/HEAT_{BASELINE,STENCIL}_REQUEST.json --measurement-mode timing (cwd src)",
+   "exit": [
+    0,
+    0
+   ],
+   "status": [
+    "OK",
+    "OK"
+   ]
+  },
+  {
+   "id": "A0",
+   "cmd": "taskset -c 8 python3 harness/run_pairs.py <camp> A0 8 2 9",
+   "exit": 0
+  },
+  {
+   "id": "A",
+   "cmd": "for c in 16..31: taskset -c $c python3 harness/run_pairs.py <camp> A $c 2 30 &; wait",
+   "exit": "16/16 WORKER_COMPLETED (per-PID exit not captured)"
+  },
+  {
+   "id": "B",
+   "cmd": "logs/phaseB.sh: taskset -c 40..44 python3 harness/run_comparators.py <camp> <ARM> <core> 2 7",
+   "exit": "5/5 WORKER_COMPLETED; all X/STEN child exits 0"
+  },
+  {
+   "id": "C",
+   "cmd": "taskset -c 48 python3 harness/run_bordered.py <camp> 48 2 7",
+   "exit": 0
+  },
+  {
+   "id": "local",
+   "cmd": "CARGO_TARGET_DIR=/home/cosmosapjw/vigilode-ncpf-target-local python3 research/ncp_followup_20261021/run_followup_checks.py --output /home/cosmosapjw/vigilode-campaign/ncpf-20261021-5fd6e45/local/followup_checks",
+   "exit": 0,
+   "result": "PASS_SCOPED 9/9 (fresh run on 5fd6e45; source snapshot equal to committed final_03 inputs; no committed receipt reused or overwritten)"
+  }
+ ],
+ "coverage": {
+  "handoff_1_builds": "EXECUTED (2/2 exit 0, offline, locked, Cargo.lock unchanged)",
+  "handoff_2_requests": "EXECUTED (status OK, 41 exact times, full states valid, application pass)",
+  "handoff_3_alternating_pairs": "EXECUTED (A0 9 + A 480 confirmation blocks; full raw times/states every run)",
+  "handoff_4_bordered_probe": "EXECUTED (default n16/64/256, n1600, n4096; 9 runs each)",
+  "handoff_5_comparators": "EXECUTED VODE_MF20, VODE_MF21, VODE_MF22, JULIA_RODAS5P, DIFFSOL_BDF (7 paired confirmation each)",
+  "NOT_RUN": [
+   "VG-1 allocation mode (--measurement-mode allocation) for BASE/STEN",
+   "heat n32/512/1600/4096 (P02 grid)",
+   "VigilODE banded and true matrix-free heat arms (P02)",
+   "tightened-internal-tolerance arms (P01 separation) for any solver",
+   "VODE banded MF24/25 (periodic wrap not banded)",
+   "diffsol counters / times (archived adapter API lacks them)",
+   "other Julia algorithms",
+   "rotation full-trajectory rerun (not in first-run list)",
+   "endpoint-only output run to isolate output-landing step policy",
+   "P01 evaluator adoption in tools/"
+  ],
+  "P02_status": "PARTIAL / pending (only n128; P01 dependency pending)"
+ },
+ "deviations": [
+  {
+   "id": "D1",
+   "severity": "MINOR",
+   "what": "Julia load touched mtime/ctime/atime of 3 compiled cache files in prior campaign depot (READ path via JULIA_DEPOT_PATH second entry)",
+   "paths": [
+    "/dev/shm/vigilode_ncp_intensive_120m_v1_20261021T062109Z/julia-depot/compiled/v1.12/OrdinaryDiffEqFIRK/G4r6g_u1eRr.ji (240445 B)",
+    ".../compiled/v1.12/OrdinaryDiffEq/DlSvy_u1eRr.ji (15528 B)",
+    ".../compiled/v1.12/JSON3/1p699_u1eRr.ji (91195 B)"
+   ],
+   "new_mtime": "2026-10-21 19:45:38-44 KST",
+   "sizes": "unchanged; pre-change sha256/mtime NOT captured (content change cannot be excluded by evidence, expected none: Julia cache LRU touch)",
+   "logs_dir": "unchanged (15:37 KST)",
+   "overlay_depot": "stayed empty (4 KB)",
+   "remediation": "next time cp -a depot into own campaign dir"
+  },
+  {
+   "id": "D2",
+   "severity": "MINOR",
+   "what": "harness authored during campaign; freeze points: common.py+smoke.py 10:40:13Z (before any measurement, evaluator frozen), run_pairs/telemetry before A (10:41:41Z), comparator workers 10:44:14Z (after A rows), run_bordered/analyze 10:47:29Z (after B rows); no file changed after use (phase sha snapshots equal)"
+  },
+  {
+   "id": "D3",
+   "severity": "MINOR",
+   "what": "external non-campaign job /root/NCP_BACKUP_CLEANUP_20261021T072600Z/verify_secondary_backup.py (PID 1383164, ~92% CPU, cpu63) from ~10:46:39Z to >=10:47:51Z; overlapped Julia blocks b06(tail)-b08 and Phase C; no campaign core overlap; Julia X wall 17.13/17.37 s in b07/b08 (b02 17.19 s predates it); STEN in-block comparisons share the window; timings flagged host-contaminated diagnostic; / free space changed 54.46->46.91->73.41 GB by external activity"
+  },
+  {
+   "id": "D4",
+   "severity": "INFO",
+   "what": "editor tooling created research/ncp_followup_20261021/.mypy_cache (gitignored, 8.3 MB, no .py) in own detached worktree at 10:26Z; not in hashed source set; removed 11:0xZ; worktree clean"
+  },
+  {
+   "id": "D5",
+   "severity": "INFO",
+   "what": "local re-analysis rewrote ncp/copy/results/ANALYSIS_SUMMARY.json with byte-identical content (OUTPUT_SHA256SUMS check passes)"
+  },
+  {
+   "id": "D6",
+   "severity": "INFO",
+   "what": "ps start/end snapshots truncated to top-40; full ps captured post-hoc (ncp/posthoc/ps_posthoc_full.txt); persistent codex/htop/sshd sessions present start and end; campaign never signalled foreign processes"
+  }
+ ],
+ "posthoc_identity": [
+  "posthoc_utc 2026-10-21T11:06:02Z",
+  "2bdc76823a2258aaae549a9ed04813effb2e639956528dcc46b7719afd6eda46  src-5fd6e45.tar.gz",
+  "5fd6e459a3f67cee90e002821b9b4b740c47475b",
+  "tree_after_build=1df97f74d0e32e8192ba10b21337b588997f0784",
+  "7e8aaa25db5faa21a3a6af96c2ba41027cdb1543f456bcccc8cabce6037b2b96  ncpf-20261021T1031Z-results.tar.gz",
+  "f0b98102885b20a438784a0d64eb4dc9e6c41c1d73749ae7ea9fbd778284a909  OUTPUT_SHA256SUMS.txt",
+  "582718c20c563d824b88a08e2a9d0afcf5015b3053f425697cecc79ec4e9ea36  /root/VIGILODE_COMPONENT_20261018T134235Z/env/julia-1.12.7+0.x64.linux.gnu/bin/julia",
+  "1643dacd9feaedc58f3cc581e4d22577dfe25c09b10282936186ccf0f2e61118  /usr/bin/python3.12",
+  "5df3106bce68233cec43e84208135d8f18fb6e07d2770fbc157fce32bab28c50  /usr/lib/python3/dist-packages/scipy/__init__.py",
+  "22cd1535fa14d74ef6f457cca149ffdc80875f460be313b8f895273f78bc402e  /usr/lib/python3/dist-packages/numpy/__init__.py",
+  "46cd24a875e8dd00fb47c6a5cf28fd06878d4dfe7562446b8d23ca69ca65b413  /usr/lib/python3/dist-packages/mpmath/__init__.py",
+  "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "/dev/vda2      105557581824 27732013056 73406791680  28% /",
+  "tmpfs           67525263360 44607963136 22917300224  67% /dev/shm",
+  "1178855223\t/root/vigilode-ncpf-20261021T1031Z-5fd6e45",
+  "ls: cannot access '/root/ncpf*': No such file or directory"
+ ],
+ "verdicts": [
+  {
+   "item": "analytic_stencil Jacobian (opt-in, periodic_heat n128)",
+   "verdict": "optimization_possible -> CONFIRMED scoped; specialized_for_specific_cases_only (periodic_heat/advection_diffusion)",
+   "promote": "HOLD (VG-1 allocation not measured; single n; STATISTICAL_AUTHORITY_HOLD; P01 pending)",
+   "basis": "deterministic: bit-identical times/states across all 1046 runs and arms, identical solver counters, RHS incl. derivative 5712->336 (-94.1%); diagnostic: warmed elapsed STEN/BASE median 0.586 (IQR 0.582-0.590), process 0.620, CPU 0.616, 489/489 blocks STEN faster, RSS equal ~17 MB"
+  },
+  {
+   "item": "basis-JVP default path",
+   "verdict": "keep as default (general callbacks); no prune"
+  },
+  {
+   "item": "BorderedBandedPreconditioner (manufactured probe)",
+   "verdict": "specialized_for_specific_cases_only",
+   "promote": "HOLD (no ODE driver factory; not a BASS benchmark)",
+   "basis": "n1600 residual 1.108e-13 / error 5.88e-14; n4096 8.9e-16 / 4.4e-16; Vec lengths = design 8n+4 (12804, 32772; circular check, not allocator evidence); factor median 147 us (1600) / 385 us (4096), apply 40.3 / 101.3 us (diagnostic ~linear in n); non-power-of-2 n shows ~n*eps growth"
+  },
+  {
+   "item": "VODE MF20 archived functional-iteration BDF",
+   "verdict": "hold as archived reference arm; not representative stiff baseline",
+   "basis": "pass with 1% margin (0.990 at t=0.025); NST 1060, NCFN 349; ~8x slower per solve than STEN (scope-biased against STEN)"
+  },
+  {
+   "item": "VODE MF21/MF22 Jacobian chord BDF",
+   "verdict": "hold (fails application budget at internal=application: 4.72 / 5.97 significant); no prune of VODE; needs P01 internal-tolerance arm",
+   "basis": "reproduced; converges when internal rtol tightened (verifier local)"
+  },
+  {
+   "item": "Julia Rodas5P",
+   "verdict": "hold (comparator ready; passes 1.3e-3 with 5 steps); no parity/superiority claim",
+   "basis": "per-solve 5.8-9.1 ms + GC rep 47-55 ms; process 16-17 s is JIT/package load"
+  },
+  {
+   "item": "diffsol BDF",
+   "verdict": "hold (passes 5.5e-3 states-only; times inferred; counters unavailable)",
+   "basis": "per-solve ~4.2 ms narrower scope; faster per solve than STEN on this case at lower accuracy, magnitude scope-biased"
+  },
+  {
+   "item": "VigilODE output-landing step policy",
+   "verdict": "optimization_possible (hypothesis)",
+   "basis": "42 steps for 40 output intervals vs Julia 5 interpolated steps; requires endpoint-only/internal_steps experiment and dense-output accuracy contract"
+  },
+  {
+   "item": "rotation correction 7/140, 7/7 at internal 1e-10",
+   "verdict": "unchanged archived evidence; NOT re-run with full trajectory in this pass"
+  },
+  {
+   "item": "broad production",
+   "verdict": "HOLD"
+  }
+ ]
+}

@@ -1,0 +1,1386 @@
+{
+  "protocol": "vigilode_ncp_intensive_120m_v1",
+  "broad_production": "HOLD",
+  "decision_count": 35,
+  "verdict_counts": {
+    "promote": 0,
+    "prune": 17,
+    "hold": 18,
+    "optimization_possible": 0,
+    "specialized_for_specific_cases_only": 0
+  },
+  "decisions": [
+    {
+      "solver": "vigilode",
+      "backend": "native-rodas5p-fast",
+      "scope": {
+        "case_id": "A-decay-n8",
+        "description": "A nonstiff smooth; n=8, rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 8
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.000161126,
+      "latency_iqr_seconds": [
+        0.0001580795,
+        0.0001675865
+      ],
+      "median_peak_rss_kib": 13312.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "scipy_vode_adams",
+      "backend": "VODE Adams",
+      "scope": {
+        "case_id": "A-decay-n8",
+        "description": "A nonstiff smooth; n=8, rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 8
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.0004311869852244854,
+      "latency_iqr_seconds": [
+        0.0004280010180082172,
+        0.0004410430265124887
+      ],
+      "median_peak_rss_kib": 62976.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "scipy_vode_bdf",
+      "backend": "VODE BDF",
+      "scope": {
+        "case_id": "A-decay-n8",
+        "description": "A nonstiff smooth; n=8, rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 8
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.00048463698476552963,
+      "latency_iqr_seconds": [
+        0.00047646198072470725,
+        0.0004942789964843541
+      ],
+      "median_peak_rss_kib": 62976.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "backend": "Tsit5",
+      "scope": {
+        "case_id": "A-decay-n8",
+        "description": "A nonstiff smooth; n=8, rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 8
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 3.1103000000000004e-05,
+      "latency_iqr_seconds": [
+        2.5356e-05,
+        3.9984e-05
+      ],
+      "median_peak_rss_kib": 982880.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "diffsol",
+      "backend": "Tsit45",
+      "scope": {
+        "case_id": "A-decay-n8",
+        "description": "A nonstiff smooth; n=8, rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 8
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 1.0118e-05,
+      "latency_iqr_seconds": [
+        1.0073500000000001e-05,
+        1.0167e-05
+      ],
+      "median_peak_rss_kib": null,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "vigilode",
+      "backend": "native-rodas5p-fast",
+      "scope": {
+        "case_id": "B-stiffdiag-n32-L1000",
+        "description": "B diagonal stiff; n=32, spectral ratio about 1000, rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 32
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.001023896,
+      "latency_iqr_seconds": [
+        0.0010075219999999998,
+        0.0010637455
+      ],
+      "median_peak_rss_kib": 13312.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "scipy_vode_adams",
+      "backend": "VODE Adams",
+      "scope": {
+        "case_id": "B-stiffdiag-n32-L1000",
+        "description": "B diagonal stiff; n=32, spectral ratio about 1000, rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 32
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.040353475022129714,
+      "latency_iqr_seconds": [
+        0.040258726017782465,
+        0.04060570750152692
+      ],
+      "median_peak_rss_kib": 62976.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "scipy_vode_bdf",
+      "backend": "VODE BDF",
+      "scope": {
+        "case_id": "B-stiffdiag-n32-L1000",
+        "description": "B diagonal stiff; n=32, spectral ratio about 1000, rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 32
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.06223316700197756,
+      "latency_iqr_seconds": [
+        0.061757607996696606,
+        0.06236665751202963
+      ],
+      "median_peak_rss_kib": 62976.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "backend": "Rodas5P",
+      "scope": {
+        "case_id": "B-stiffdiag-n32-L1000",
+        "description": "B diagonal stiff; n=32, spectral ratio about 1000, rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 32
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.0010587670000000002,
+      "latency_iqr_seconds": [
+        0.001049413,
+        0.0010740139999999999
+      ],
+      "median_peak_rss_kib": 1008580.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "diffsol",
+      "backend": "BDF",
+      "scope": {
+        "case_id": "B-stiffdiag-n32-L1000",
+        "description": "B diagonal stiff; n=32, spectral ratio about 1000, rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 32
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.000743839,
+      "latency_iqr_seconds": [
+        0.0007416015,
+        0.000751747
+      ],
+      "median_peak_rss_kib": null,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "vigilode",
+      "backend": "native-rodas5p-fast",
+      "scope": {
+        "case_id": "C-rotation-w10",
+        "description": "C rotation omega=10; rtol=1e-6, atol=1e-10",
+        "rtol": 1e-06,
+        "dimension": 2
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.000435631,
+      "latency_iqr_seconds": [
+        0.00041432350000000003,
+        0.0004644365
+      ],
+      "median_peak_rss_kib": 13312.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "scipy_vode_adams",
+      "backend": "VODE Adams",
+      "scope": {
+        "case_id": "C-rotation-w10",
+        "description": "C rotation omega=10; rtol=1e-6, atol=1e-10",
+        "rtol": 1e-06,
+        "dimension": 2
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.0015856160316616297,
+      "latency_iqr_seconds": [
+        0.0015809334872756153,
+        0.0015969930100254714
+      ],
+      "median_peak_rss_kib": 62976.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "scipy_vode_bdf",
+      "backend": "VODE BDF",
+      "scope": {
+        "case_id": "C-rotation-w10",
+        "description": "C rotation omega=10; rtol=1e-6, atol=1e-10",
+        "rtol": 1e-06,
+        "dimension": 2
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.0017396319890394807,
+      "latency_iqr_seconds": [
+        0.0017381630023010075,
+        0.0017568279872648418
+      ],
+      "median_peak_rss_kib": 62976.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "backend": "Tsit5",
+      "scope": {
+        "case_id": "C-rotation-w10",
+        "description": "C rotation omega=10; rtol=1e-6, atol=1e-10",
+        "rtol": 1e-06,
+        "dimension": 2
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.00038046300000000005,
+      "latency_iqr_seconds": [
+        0.00036556100000000003,
+        0.0003927405
+      ],
+      "median_peak_rss_kib": 989640.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "diffsol",
+      "backend": "Tsit45",
+      "scope": {
+        "case_id": "C-rotation-w10",
+        "description": "C rotation omega=10; rtol=1e-6, atol=1e-10",
+        "rtol": 1e-06,
+        "dimension": 2
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.000201646,
+      "latency_iqr_seconds": [
+        0.0001941715,
+        0.000207531
+      ],
+      "median_peak_rss_kib": null,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "vigilode",
+      "backend": "native-rodas5p-fast",
+      "scope": {
+        "case_id": "D-damping-z1",
+        "description": "D critical damping zeta=1; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 2
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.000114631,
+      "latency_iqr_seconds": [
+        0.0001142665,
+        0.00011613
+      ],
+      "median_peak_rss_kib": 13312.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "scipy_vode_adams",
+      "backend": "VODE Adams",
+      "scope": {
+        "case_id": "D-damping-z1",
+        "description": "D critical damping zeta=1; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 2
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.0006878399872221053,
+      "latency_iqr_seconds": [
+        0.000683019490679726,
+        0.0007014944858383387
+      ],
+      "median_peak_rss_kib": 62976.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "scipy_vode_bdf",
+      "backend": "VODE BDF",
+      "scope": {
+        "case_id": "D-damping-z1",
+        "description": "D critical damping zeta=1; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 2
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.000836874998640269,
+      "latency_iqr_seconds": [
+        0.0008253504929598421,
+        0.0008919065294321626
+      ],
+      "median_peak_rss_kib": 62976.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "backend": "Rodas5P",
+      "scope": {
+        "case_id": "D-damping-z1",
+        "description": "D critical damping zeta=1; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 2
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.000351836,
+      "latency_iqr_seconds": [
+        0.0003321775,
+        0.000358307
+      ],
+      "median_peak_rss_kib": 1010380.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "diffsol",
+      "backend": "BDF",
+      "scope": {
+        "case_id": "D-damping-z1",
+        "description": "D critical damping zeta=1; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 2
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 3.9758e-05,
+      "latency_iqr_seconds": [
+        3.94705e-05,
+        3.9815500000000005e-05
+      ],
+      "median_peak_rss_kib": null,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "vigilode",
+      "backend": "native-rodas5p-fast",
+      "scope": {
+        "case_id": "E-nonnormal-transient",
+        "description": "E triangular nonnormal exact transient; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 2
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.000108518,
+      "latency_iqr_seconds": [
+        0.00010765300000000001,
+        0.000112964
+      ],
+      "median_peak_rss_kib": 13312.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "scipy_vode_adams",
+      "backend": "VODE Adams",
+      "scope": {
+        "case_id": "E-nonnormal-transient",
+        "description": "E triangular nonnormal exact transient; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 2
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.00043737003579735756,
+      "latency_iqr_seconds": [
+        0.0004345534835010767,
+        0.0004475614696275443
+      ],
+      "median_peak_rss_kib": 62976.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "scipy_vode_bdf",
+      "backend": "VODE BDF",
+      "scope": {
+        "case_id": "E-nonnormal-transient",
+        "description": "E triangular nonnormal exact transient; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 2
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.0005669280071742833,
+      "latency_iqr_seconds": [
+        0.0005558190168812871,
+        0.0005698640015907586
+      ],
+      "median_peak_rss_kib": 62976.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "backend": "Rodas5P",
+      "scope": {
+        "case_id": "E-nonnormal-transient",
+        "description": "E triangular nonnormal exact transient; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 2
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.00017287200000000002,
+      "latency_iqr_seconds": [
+        0.00017099000000000001,
+        0.00018431300000000002
+      ],
+      "median_peak_rss_kib": 1003080.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "diffsol",
+      "backend": "BDF",
+      "scope": {
+        "case_id": "E-nonnormal-transient",
+        "description": "E triangular nonnormal exact transient; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 2
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 2.0532e-05,
+      "latency_iqr_seconds": [
+        2.045e-05,
+        2.06565e-05
+      ],
+      "median_peak_rss_kib": null,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "vigilode",
+      "backend": "native-rodas5p-fast",
+      "scope": {
+        "case_id": "F-heat-n128",
+        "description": "F periodic heat Fourier mode n=128; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 128
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.014555132,
+      "latency_iqr_seconds": [
+        0.0145362165,
+        0.014615399
+      ],
+      "median_peak_rss_kib": 13824.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": {
+        "status": "optimization_possible",
+        "evidence_ref": "OPTIMIZATION_PLAN.json#heat-adapter-dense-jvp",
+        "scope_limited": true,
+        "note": "Measured benchmark adapter derivative work; no implementation or predicted speedup."
+      }
+    },
+    {
+      "solver": "scipy_vode_adams",
+      "backend": "VODE Adams",
+      "scope": {
+        "case_id": "F-heat-n128",
+        "description": "F periodic heat Fourier mode n=128; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 128
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.16252779500791803,
+      "latency_iqr_seconds": [
+        0.1615905795188155,
+        0.1632208380033262
+      ],
+      "median_peak_rss_kib": 63488.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "scipy_vode_bdf",
+      "backend": "VODE BDF",
+      "scope": {
+        "case_id": "F-heat-n128",
+        "description": "F periodic heat Fourier mode n=128; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 128
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.25239770498592407,
+      "latency_iqr_seconds": [
+        0.25154968051356263,
+        0.2542646865185816
+      ],
+      "median_peak_rss_kib": 63488.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "backend": "Rodas5P",
+      "scope": {
+        "case_id": "F-heat-n128",
+        "description": "F periodic heat Fourier mode n=128; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 128
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.009195117000000001,
+      "latency_iqr_seconds": [
+        0.0062659035,
+        0.009321799
+      ],
+      "median_peak_rss_kib": 1010336.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "diffsol",
+      "backend": "BDF",
+      "scope": {
+        "case_id": "F-heat-n128",
+        "description": "F periodic heat Fourier mode n=128; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 128
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.003954097,
+      "latency_iqr_seconds": [
+        0.0039297535,
+        0.0040050835
+      ],
+      "median_peak_rss_kib": null,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "vigilode",
+      "backend": "native-rodas5p-fast",
+      "scope": {
+        "case_id": "G-mixed-nearzero",
+        "description": "G mixed scale / near-zero; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 8
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.000194584,
+      "latency_iqr_seconds": [
+        0.00019138,
+        0.0002172475
+      ],
+      "median_peak_rss_kib": 13312.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "scipy_vode_adams",
+      "backend": "VODE Adams",
+      "scope": {
+        "case_id": "G-mixed-nearzero",
+        "description": "G mixed scale / near-zero; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 8
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.008681706967763603,
+      "latency_iqr_seconds": [
+        0.008676166005898267,
+        0.008763491990976036
+      ],
+      "median_peak_rss_kib": 62976.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "scipy_vode_bdf",
+      "backend": "VODE BDF",
+      "scope": {
+        "case_id": "G-mixed-nearzero",
+        "description": "G mixed scale / near-zero; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 8
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.0077897419687360525,
+      "latency_iqr_seconds": [
+        0.007778340019285679,
+        0.007831776514649391
+      ],
+      "median_peak_rss_kib": 62976.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "Julia OrdinaryDiffEq",
+      "backend": "Rodas5P",
+      "scope": {
+        "case_id": "G-mixed-nearzero",
+        "description": "G mixed scale / near-zero; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 8
+      },
+      "verdict": "hold",
+      "evidence_level": "empirical",
+      "accuracy_pass": true,
+      "measurements": 7,
+      "accuracy_pass_count": 7,
+      "accuracy_fail_count": 0,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.00020507900000000002,
+      "latency_iqr_seconds": [
+        0.00019579,
+        0.00021620000000000002
+      ],
+      "median_peak_rss_kib": 1004464.0,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Hold pending broader paired confirmation, adequate reference, and scope expansion.",
+      "optimization_opportunity": null
+    },
+    {
+      "solver": "diffsol",
+      "backend": "BDF",
+      "scope": {
+        "case_id": "G-mixed-nearzero",
+        "description": "G mixed scale / near-zero; rtol=1e-6",
+        "rtol": 1e-06,
+        "dimension": 8
+      },
+      "verdict": "prune",
+      "evidence_level": "empirical",
+      "accuracy_pass": false,
+      "measurements": 7,
+      "accuracy_pass_count": 0,
+      "accuracy_fail_count": 7,
+      "accuracy_unknown_count": 0,
+      "median_latency_seconds": 0.000109835,
+      "latency_iqr_seconds": [
+        0.000109317,
+        0.0001150215
+      ],
+      "median_peak_rss_kib": null,
+      "speed_ratio_definition": "baseline_time / candidate_time",
+      "speed_ratio": null,
+      "uncertainty_interval": null,
+      "limitations": [
+        "One exact case and tolerance only.",
+        "Confirmation arms were sequential randomized, not paired; no speed promotion.",
+        "Wall time is diagnostic and host exclusivity/frequency lock are unestablished.",
+        "No full workspace tests or broad certification."
+      ],
+      "evidence_paths": [
+        "CONFIRMATION_RESULTS_RECOVERED.jsonl",
+        "JULIA_RESULTS.jsonl",
+        "DIFFSOL_RESULTS_RECOVERED.jsonl"
+      ],
+      "next_action": "Accuracy failure reproduced in this exact case/budget; retain scoped prune only, investigate method/tolerance behavior before broader claims.",
+      "optimization_opportunity": null
+    }
+  ],
+  "policy_note": "Scoped empirical verdicts only. No promote or specialization based on unpaired/case-limited timing; scoped prune applies only to reproduced accuracy failure at stated exact case and tolerance.",
+  "optimization_opportunity_count": 1
+}

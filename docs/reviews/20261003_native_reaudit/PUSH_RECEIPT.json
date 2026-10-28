@@ -1,0 +1,69 @@
+{
+  "schema": "vigilode-native-reaudit-publication-v1",
+  "date": "2026-10-03",
+  "repository": "cosmosapjw-quantum/vigilode",
+  "pull_request": 70,
+  "branch": "audit/rvj-native-followup-20261003",
+  "base_branch": "claude/jolly-wozniak-7wl15h-wu25-stiff-benchmark",
+  "pre_push_head": "312aa57ada821f383f2a8b4da7b2800e4d227d54",
+  "pre_push_tree": "fb2bc19fccdf34153b86b1dc69fabc4404a0e478",
+  "transport_commit": "9acf493ee67ef8e766859f2fed4d1fd0bf3f98cd",
+  "content_commit": "447c7868c76819f98e4931c0aadb18662e201768",
+  "content_tree": "2c4a1570e42c133bbb5c3b035f81e81c3a627754",
+  "expected_local_content_tree": "2c4a1570e42c133bbb5c3b035f81e81c3a627754",
+  "exact_tree_match": true,
+  "incremental_patch": {
+    "bytes": 274742,
+    "sha256": "e41d3402e8615994a6e9b78efbc33d2ecabc69cf9e4dcb201aa6d9dc0d8f6239",
+    "original_zip_sha256": "fff7b17be25ef7d4c3017c9ee69ad30de615b4d910cb0106f57d9c4affb3e8f0",
+    "manifest_entries_verified": 70,
+    "files_in_original_overlay": 71
+  },
+  "content_compare_from_pre_push_head": {
+    "status": "ahead",
+    "ahead_by": 2,
+    "behind_by": 0,
+    "files_added": 69,
+    "files_modified": 2,
+    "files_deleted": 0,
+    "modified_product_paths": [
+      "crates/rodas5p-integrators/src/causal_majorant.rs",
+      "crates/rodas5p-integrators/tests/native_reaudit_radius_contracts.rs"
+    ],
+    "all_added_paths_under": "docs/reviews/20261003_native_reaudit/"
+  },
+  "publication_workflow": {
+    "run_id": 37090185386,
+    "job_id": 111108675605,
+    "observed_job_conclusion": "success",
+    "method": "owner-authorized one-shot exact-patch recovery, length/SHA-256 checked before apply, complete Git tree checked before non-force push",
+    "temporary_payload_and_publication_workflow_removed_from_content_tree": true
+  },
+  "verification_level": "R1: provider acknowledgement, remote branch/commit/tree identity, local independent Git-tree and SHA-256 checks; not a complete remote restore test",
+  "new_branch_created": false,
+  "new_pull_request_created": false,
+  "force_push": false,
+  "merged": false,
+  "protected_files_unchanged": [
+    "research/LEDGER.jsonl",
+    "Cargo.lock",
+    "coefficient fixtures",
+    "holdouts",
+    "timing authority"
+  ],
+  "scientific_tests_rerun_in_publication_turn": false,
+  "historical_validation": {
+    "source": "FINAL_VERIFICATION.json",
+    "focused_native": "37 passed, 0 failed, 2 ignored",
+    "python_tools": "211 passed, 0 failed",
+    "algebra": "4 checks passed",
+    "format_and_all_feature_clippy": "exit 0",
+    "whole_workspace": "600-second timeout, exit 124; not an overall PASS"
+  },
+  "notes": [
+    "This receipt describes the content snapshot immediately before adding the receipt itself.",
+    "Original report, handoff, manifest and validation bytes are preserved, including historical statements that publication had not yet occurred. This receipt supersedes those publication-status statements only.",
+    "No new scientific validation, generic RVJ promotion, production speedup or timing authorization is asserted.",
+    "PR remains draft; final-head CI and full-workspace completion remain separate from publication success."
+  ]
+}

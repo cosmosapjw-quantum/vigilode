@@ -1,0 +1,162 @@
+{
+  "schema": "vigilode.nonstiff-local-execution.v1",
+  "source_commit": "45037fc24e8f8101605f309e1fdb3a9a4e3df56d",
+  "source_tree": "b43b69b1ec5b86f3577d7cd6efdefe2d3acb9bad",
+  "source_worktree_clean": true,
+  "source_input_sha256_manifest": "source-input-sha256.txt",
+  "source_input_sha256_manifest_hash": "545a1595c2b8954c06916e490c497d2f4f74fd799db32163ed64b8901929c642",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "cargo": "cargo 1.94.1 (29ea6fb6a 2026-03-24)",
+  "runtime_scratch_paths_present": false,
+  "cargo_target_dir": "/home/cosmosapjw/vigilode-nonstiff-run-Ioh017/build",
+  "cargo_build_jobs": 2,
+  "cargo_profile_dev_debug": 0,
+  "cargo_profile_test_debug": 0,
+  "binary_sha256": {
+    "nonstiff_bench": "50534f6dc5da3c7c123e74c83c2d6d437474a94282decd274711534292586ac1",
+    "nonstiff_ensemble_bench": "d42d7338120dcd7288e9b1ac3a622fe0385ccba5d7bd9ba3ddd17f99e9228480"
+  },
+  "steps": [
+    {
+      "name": "metadata_initial",
+      "command": "cargo metadata --locked --offline --format-version 1",
+      "exit_code": 101,
+      "stdout_or_combined_log": "cargo-metadata.initial-failure.stdout.json",
+      "stdout_or_combined_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_log": "cargo-metadata.initial-failure.stderr.log",
+      "stderr_sha256": "ed7f92591b34dd63ffd0119ad84c23ea5b6e7a849f4f85670f5c2a41a575dae3"
+    },
+    {
+      "name": "dependency_fetch",
+      "command": "cargo fetch --locked",
+      "exit_code": 0,
+      "stdout_or_combined_log": "cargo-fetch.stdout.log",
+      "stdout_or_combined_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_log": "cargo-fetch.stderr.log",
+      "stderr_sha256": "a806b630e4d5092e73bf5a14deb2da42f38e5ffe77d78f9c45569d53dfb83a1e",
+      "started_utc": "2026-10-22T21:34:11Z",
+      "ended_utc": "2026-10-22T21:34:14Z",
+      "wall_seconds": 3.0
+    },
+    {
+      "name": "metadata_after_fetch",
+      "command": "cargo metadata --locked --offline --format-version 1",
+      "exit_code": 0,
+      "stdout_or_combined_log": "cargo-metadata.json",
+      "stdout_or_combined_sha256": "ca8b9432dad5e83c68aa6c6a776799d8c01c356d6c0b26da282feae60f19dfb5",
+      "stderr_log": "cargo-metadata.stderr.log",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "started_utc": "2026-10-22T21:34:19Z",
+      "ended_utc": "2026-10-22T21:34:19Z",
+      "wall_seconds": 0.0
+    },
+    {
+      "name": "kernel_tests",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test dopri5_contracts --test dopri5_allocation",
+      "exit_code": 0,
+      "stdout_or_combined_log": "tests-kernel.log",
+      "stdout_or_combined_sha256": "8e80b76653e1ff9f662371467d9c712a3d595876ca2b39813e0b0594ece9e033",
+      "stderr_log": null,
+      "stderr_sha256": null,
+      "started_utc": "2026-10-22T21:34:19Z",
+      "ended_utc": "2026-10-22T21:35:34Z",
+      "wall_seconds": 75.0
+    },
+    {
+      "name": "public_ensemble_tests",
+      "command": "cargo test --locked --offline -p vigilode --test explicit_contracts --test explicit_ensemble_contracts",
+      "exit_code": 0,
+      "stdout_or_combined_log": "tests-public-ensemble.log",
+      "stdout_or_combined_sha256": "db788dfe41251a4f6a5b951bc0ece2cd68e925721cfed87743a3666e677200bd",
+      "stderr_log": null,
+      "stderr_sha256": null,
+      "started_utc": "2026-10-22T21:35:34Z",
+      "ended_utc": "2026-10-22T21:35:40Z",
+      "wall_seconds": 6.0
+    },
+    {
+      "name": "measurement_build",
+      "command": "cargo build --locked --offline --profile measurement -p vigilode --example nonstiff_bench --example nonstiff_ensemble_bench",
+      "exit_code": 0,
+      "stdout_or_combined_log": "build-measurement.log",
+      "stdout_or_combined_sha256": "efc2f09f6924a3ad548d6e8134fc53e6a8a18cfab0382e9ece4c777a1f6cb115",
+      "stderr_log": null,
+      "stderr_sha256": null,
+      "started_utc": "2026-10-22T21:35:40Z",
+      "ended_utc": "2026-10-22T21:38:08Z",
+      "wall_seconds": 148.0
+    },
+    {
+      "name": "full_campaign",
+      "command": "python3 research/nonstiff_explicit_20261023/run_bench.py --binary \"$CARGO_TARGET_DIR/measurement/examples/nonstiff_bench\" --out \"$VIGILODE_RUN_ROOT/full-comparison\" --source-commit \"$VIGILODE_SOURCE\" --external --full --budget-seconds 7200",
+      "exit_code": 0,
+      "stdout_or_combined_log": "full-comparison-runner.log",
+      "stdout_or_combined_sha256": "b18166a8fd62649157bf69cb7c058cdea461cd48f8062e684dd176d2a36343b9",
+      "stderr_log": null,
+      "stderr_sha256": null,
+      "started_utc": "2026-10-22T21:38:15Z",
+      "ended_utc": "2026-10-22T21:40:55Z",
+      "wall_seconds": 160.0
+    },
+    {
+      "name": "full_analysis",
+      "command": "python3 research/nonstiff_explicit_20261023/analyze_bench.py \"$VIGILODE_RUN_ROOT/full-comparison\"",
+      "exit_code": 0,
+      "stdout_or_combined_log": "full-comparison-analysis.log",
+      "stdout_or_combined_sha256": "af5df31863599f34395d47d0dafade1f4096c9462e36104eeaab72c72c91d3ab",
+      "stderr_log": null,
+      "stderr_sha256": null,
+      "started_utc": "2026-10-22T21:40:55Z",
+      "ended_utc": "2026-10-22T21:41:23Z",
+      "wall_seconds": 28.0
+    },
+    {
+      "name": "ensemble_campaign",
+      "command": "python3 research/nonstiff_explicit_20261023/run_ensemble_bench.py --binary \"$CARGO_TARGET_DIR/measurement/examples/nonstiff_ensemble_bench\" --out \"$VIGILODE_RUN_ROOT/ensemble-comparison\" --source-commit \"$VIGILODE_SOURCE\" --budget-seconds 180",
+      "exit_code": 0,
+      "stdout_or_combined_log": "ensemble-comparison-runner.log",
+      "stdout_or_combined_sha256": "f22f070b79d0999c1a3def14f9967194cb07658febcb25d27a7b32ea3e1438c9",
+      "stderr_log": null,
+      "stderr_sha256": null,
+      "started_utc": "2026-10-22T21:41:23Z",
+      "ended_utc": "2026-10-22T21:41:27Z",
+      "wall_seconds": 4.0
+    }
+  ],
+  "output_artifact_sha256": {
+    "full-comparison": {
+      "PLAN.json": "fd9a2353ca92d912b78fdcfedc6f6771af461649aa01f98a19fc06508f71ee0d",
+      "RECEIPTS.json": "72e0cdc2c29cc3478e01fb465e7bea40f7e1b4d56ac6a7358306957d5ab23ea6",
+      "SUMMARY.json": "d23f4e6e3600d01a15ef583ded81d7c8720d9854b3d028d1a2e8bab811f6a455",
+      "REPLAY.json": "de3ef08b1fdd9564e23c5fa05f08ec2a970dc37eca9d56d890484aaeddb899d6",
+      "RAW_MANIFEST.json": "27150dcb7ee80706c5d623f5a3ffd48e67b94065cb679e88c51b457192998e2e",
+      "RAW_OUTPUTS.tar.gz": "0e490edd04dd05423bd90979972fe3dbc870f199d14862d216fe28abc3f244d2"
+    },
+    "ensemble-comparison": {
+      "PLAN.json": "262593254bf88c958ac707a136175a2d04bcc6ad11b38ef1608892dc8360e238",
+      "RECEIPTS.json": "243fb2b9cc51e60ec6d0cb49b9155f979a3f2f027dbb3f6dd38a9a0654804af2",
+      "SUMMARY.json": "dd41702a85c4bedcf87bf87f688082a8dfde5d01af680d9e79d6317e94e73631",
+      "REPLAY.json": "370b643da0bc959500644b1f64211b51104318a027ba3ec666b4892ba426ed2e",
+      "RAW_MANIFEST.json": "3798e4591efe6ed9260aef3306f75deca0d4610c9dd632252408dbd50cc69d3d",
+      "RAW_OUTPUTS.tar.gz": "f2433ea268e1c0f3fa7859ee207b74e7f3693f6af9be3d3007c25c0680acf3cd"
+    }
+  },
+  "outcome_counts": {
+    "full-comparison": {
+      "RECEIPTS": {
+        "COMPLETED": 576
+      },
+      "REPLAY": {
+        "True": 576
+      }
+    },
+    "ensemble-comparison": {
+      "RECEIPTS": {
+        "COMPLETED": 16
+      },
+      "REPLAY": {
+        "True": 16
+      }
+    }
+  }
+}

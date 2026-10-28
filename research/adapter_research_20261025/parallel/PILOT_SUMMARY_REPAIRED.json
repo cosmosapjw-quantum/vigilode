@@ -1,0 +1,141 @@
+{
+  "schema": "vigilode.execution-selection-pilot.v1",
+  "source": "research/adapter_research_20261025/parallel/pilot_repaired.jsonl",
+  "timing_status": "EXPLORATORY_SHARED_HOST",
+  "results": [
+    {
+      "batch_len": 1,
+      "workers": 2,
+      "heldout_median_seconds": {
+        "serial": 5.643499999999999e-06,
+        "parallel": 2.8968e-05,
+        "adaptive": 5.6785e-06
+      },
+      "heldout_faster_arm": "serial",
+      "adaptive_time_over_best_median": 1.006201825108532,
+      "selected_parallel_fraction": 0.0,
+      "choice_disagreement_fraction": 0.0,
+      "reasons": {
+        "SingleWorker": 20
+      },
+      "calibration_seconds": 0.0,
+      "startup_seconds": 0.0,
+      "warmup_seconds": 0.0,
+      "calibration_samples": [],
+      "first_selection": {
+        "estimated_cost_recovery_calls": null,
+        "horizon_recovers_calibration": false,
+        "mode": "Serial",
+        "parallel_upper_seconds": null,
+        "probe_due": false,
+        "reason": "SingleWorker",
+        "serial_lower_seconds": null
+      },
+      "adaptive_total_with_calibration_and_startup": 0.000133948,
+      "serial_total": 0.000277592,
+      "parallel_total_excluding_pool_startup": 0.000922004,
+      "checksum_equal": true
+    },
+    {
+      "batch_len": 64,
+      "workers": 2,
+      "heldout_median_seconds": {
+        "serial": 0.000627638,
+        "parallel": 0.00041043199999999996,
+        "adaptive": 0.00040006199999999997
+      },
+      "heldout_faster_arm": "parallel",
+      "adaptive_time_over_best_median": 0.9747339388741618,
+      "selected_parallel_fraction": 1.0,
+      "choice_disagreement_fraction": 0.0,
+      "reasons": {
+        "MeasuredGain": 1,
+        "HysteresisRetained": 19
+      },
+      "calibration_seconds": 0.004240601,
+      "startup_seconds": 7.2137e-05,
+      "warmup_seconds": 0.001065396,
+      "calibration_samples": [
+        {
+          "parallel_seconds": 0.000464717,
+          "serial_first": false,
+          "serial_seconds": 0.000599657
+        },
+        {
+          "parallel_seconds": 0.000395405,
+          "serial_first": true,
+          "serial_seconds": 0.000592146
+        },
+        {
+          "parallel_seconds": 0.00043915,
+          "serial_first": false,
+          "serial_seconds": 0.000681708
+        }
+      ],
+      "first_selection": {
+        "estimated_cost_recovery_calls": 33.844242676313876,
+        "horizon_recovers_calibration": false,
+        "mode": "Parallel",
+        "parallel_upper_seconds": 0.000464717,
+        "probe_due": false,
+        "reason": "MeasuredGain",
+        "serial_lower_seconds": 0.000592146
+      },
+      "adaptive_total_with_calibration_and_startup": 0.012788644,
+      "serial_total": 0.013072443,
+      "parallel_total_excluding_pool_startup": 0.008554245,
+      "checksum_equal": true
+    },
+    {
+      "batch_len": 256,
+      "workers": 2,
+      "heldout_median_seconds": {
+        "serial": 0.002528859,
+        "parallel": 0.0021178815,
+        "adaptive": 0.0016053385
+      },
+      "heldout_faster_arm": "parallel",
+      "adaptive_time_over_best_median": 0.7579925977917084,
+      "selected_parallel_fraction": 1.0,
+      "choice_disagreement_fraction": 0.0,
+      "reasons": {
+        "MeasuredGain": 1,
+        "HysteresisRetained": 19
+      },
+      "calibration_seconds": 0.015534008,
+      "startup_seconds": 0.000205589,
+      "warmup_seconds": 0.004109536,
+      "calibration_samples": [
+        {
+          "parallel_seconds": 0.001356195,
+          "serial_first": false,
+          "serial_seconds": 0.002444024
+        },
+        {
+          "parallel_seconds": 0.00141407,
+          "serial_first": true,
+          "serial_seconds": 0.002428471
+        },
+        {
+          "parallel_seconds": 0.001388253,
+          "serial_first": false,
+          "serial_seconds": 0.002388962
+        }
+      ],
+      "first_selection": {
+        "estimated_cost_recovery_calls": 16.144964775585397,
+        "horizon_recovers_calibration": true,
+        "mode": "Parallel",
+        "parallel_upper_seconds": 0.00141407,
+        "probe_due": false,
+        "reason": "MeasuredGain",
+        "serial_lower_seconds": 0.002388962
+      },
+      "adaptive_total_with_calibration_and_startup": 0.047244585,
+      "serial_total": 0.051421395,
+      "parallel_total_excluding_pool_startup": 0.036293267,
+      "checksum_equal": true
+    }
+  ],
+  "interpretation": "Single-process paired calibration and heldout cyclic timing; choice disagreement is a diagnostic, not statistical proof of misclassification. Empirical timing envelopes are not certified future costs."
+}

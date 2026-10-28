@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "reviewer": "parent native agent; complementary derivation, not blinded review",
+  "reviewed_utc": "2026-10-27T14:12:16.313429+00:00",
+  "source": "crates/vigilode-coupled/src/rhs_homotopy.rs",
+  "source_sha256": "167b838b2ddc90175cd66e5db38e0f5d9e4f12277efb33e1104a3c0456f9768c",
+  "checks": [
+    {
+      "id": "H1",
+      "statement": "Positive-sum cubic inverse follows from S^3-3S^2=(u^3-u^-3)^2. Monotone stage has a unique real root.",
+      "result": "pass_scoped",
+      "evidence": [
+        "homotopy/THEORY.md",
+        "evidence/WOLFRAM_REVIEW2.json"
+      ]
+    },
+    {
+      "id": "H2",
+      "statement": "Candidates are untrusted until original outward F(K) residual plus state rounding fits the unchanged physical step budget; actual polynomial dispatches are charged before execution. Scalar repair and bisection retain cap and accepted prefix.",
+      "result": "pass_scoped",
+      "evidence": [
+        "crates/vigilode-coupled/src/rhs_homotopy.rs",
+        "homotopy/PASS1_EXECUTION.json"
+      ]
+    },
+    {
+      "id": "H3",
+      "statement": "Dimension-one stack path preserves lambda=1 signed-zero mapping, hypot norm and update expression order; native parity covers four acceleration controls and both seeds.",
+      "result": "pass_scoped",
+      "evidence": [
+        "homotopy/PASS1_EXECUTION.json"
+      ]
+    },
+    {
+      "id": "H4",
+      "statement": "Pad\u00e9 coefficients are fixed by inverse-series matching; beta^3(3+8beta)/(1+3beta)^3 is exact and nonnegative. Candidate validity is independently verified, so no speculative approximation bound is accepted as the physical certificate.",
+      "result": "pass_scoped",
+      "evidence": [
+        "homotopy/THEORY.md",
+        "homotopy/WOLFRAM_RECEIPT.json",
+        "homotopy/WOLFRAM_RATIONAL_RECEIPT.json"
+      ]
+    }
+  ],
+  "findings": [],
+  "scope_limits": [
+    "Sealed scalar cubic model only; generic RHS closure/order/branch conditions are unchanged.",
+    "Planner truncation constant is a proved upper bound, not sharp.",
+    "Native wall time and guest instruction counts are distinct; rational is not universally faster than scalar."
+  ],
+  "symbolic_receipt_correction": "The first parent Wolfram query included D[2 m-y,y] with m defined independent of y, which returns -1 and does not differentiate the implicit map. It is excluded from evidence. The subsequent Reduce query correctly checks |2/(d+3 a x^2)-1|<=1 for d>=1,a>=0."
+}

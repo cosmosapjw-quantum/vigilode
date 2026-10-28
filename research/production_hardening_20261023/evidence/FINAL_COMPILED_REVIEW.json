@@ -1,0 +1,100 @@
+{
+  "schema": "vigilode.hardening-independent-compiled-closure.v1",
+  "source_commit": "5913fe062706c820e768b9e150e5cd1c274f7bf9",
+  "source_tree": "7a70caf85569dbe6c77ecb9a53fe666cd40ae618",
+  "previous_review": "evidence/DENSE_CODE_REVIEW.json",
+  "previous_receipt_preserved": true,
+  "decision": "PASS_SCOPED_COMPILED_CONTRACTS",
+  "checked_rust_test_passes": 67,
+  "python_protocol_tests": 7,
+  "all_commands_exit_zero": true,
+  "log_hashes": [
+    {
+      "path": "research/production_hardening_20261023/evidence/validation_v1/00.stdout.log",
+      "matches": true
+    },
+    {
+      "path": "research/production_hardening_20261023/evidence/validation_v1/00.stderr.log",
+      "matches": true
+    },
+    {
+      "path": "research/production_hardening_20261023/evidence/validation_v1/01.stdout.log",
+      "matches": true
+    },
+    {
+      "path": "research/production_hardening_20261023/evidence/validation_v1/01.stderr.log",
+      "matches": true
+    },
+    {
+      "path": "research/production_hardening_20261023/evidence/validation_v1/02.stdout.log",
+      "matches": true
+    },
+    {
+      "path": "research/production_hardening_20261023/evidence/validation_v1/02.stderr.log",
+      "matches": true
+    },
+    {
+      "path": "research/production_hardening_20261023/evidence/validation_v1/03.stdout.log",
+      "matches": true
+    },
+    {
+      "path": "research/production_hardening_20261023/evidence/validation_v1/03.stderr.log",
+      "matches": true
+    },
+    {
+      "path": "research/production_hardening_20261023/evidence/validation_v1/04.stdout.log",
+      "matches": true
+    },
+    {
+      "path": "research/production_hardening_20261023/evidence/validation_v1/04.stderr.log",
+      "matches": true
+    },
+    {
+      "path": "research/production_hardening_20261023/evidence/validation_v1/05.stdout.log",
+      "matches": true
+    },
+    {
+      "path": "research/production_hardening_20261023/evidence/validation_v1/05.stderr.log",
+      "matches": true
+    }
+  ],
+  "closure_tests": [
+    {
+      "name": "dense_cross_zero_interval_accepts_query_whose_theta_rounds_to_one",
+      "log": "research/production_hardening_20261023/evidence/validation_v1/00.stdout.log"
+    },
+    {
+      "name": "affine_initial_lift_overflow_is_rejected_before_rhs_even_on_zero_span",
+      "log": "research/production_hardening_20261023/evidence/validation_v1/00.stdout.log"
+    },
+    {
+      "name": "dopri5_dense::tests::failed_dense_preparation_never_publishes_partial_interval",
+      "log": "research/production_hardening_20261023/evidence/validation_v1/03.stdout.log"
+    },
+    {
+      "name": "removed_facade_poison_preserves_malformed_output_detection",
+      "log": "research/production_hardening_20261023/evidence/validation_v1/01.stdout.log"
+    },
+    {
+      "name": "subnormal_step_preserves_representable_constant_rhs_increment",
+      "log": "research/production_hardening_20261023/evidence/validation_v1/00.stdout.log"
+    },
+    {
+      "name": "tiny_final_landing_does_not_silently_accept_half_the_increment",
+      "log": "research/production_hardening_20261023/evidence/validation_v1/00.stdout.log"
+    }
+  ],
+  "closed_findings": [
+    {
+      "id": "DENSE-CLOCK-01",
+      "status": "CLOSED",
+      "evidence_test": "dense_cross_zero_interval_accepts_query_whose_theta_rounds_to_one"
+    },
+    {
+      "id": "DENSE-LIFT-INIT",
+      "status": "CLOSED",
+      "evidence_test": "affine_initial_lift_overflow_is_rejected_before_rhs_even_on_zero_span"
+    }
+  ],
+  "scope": "67 targeted Rust tests and7 Python protocol tests at pinnedsource; not a fullworkspace or clientproductioncertification. Source-reviewed exactalgebra and callback/clock/partial-output contracts now have compiledregressionevidence."
+}

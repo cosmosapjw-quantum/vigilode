@@ -1,0 +1,84 @@
+{
+  "schema": "vigilode.frontier-lp01-prespecified-subset.v1",
+  "source_tip": "cff15d6da06effe494664f1ef50e20d47d3ad619",
+  "status": "READY_CONTRACT_FROZEN_NO_RUN",
+  "why_new": "published causal oscillatory fixture spans only 20 radians; long horizon is new scope",
+  "cases": [
+    {
+      "id": "normal_100_f100",
+      "cycles": 100,
+      "angular_frequency": 100.0,
+      "damping": 0.0,
+      "observations": 4097
+    },
+    {
+      "id": "damped_100_f10000",
+      "cycles": 100,
+      "angular_frequency": 10000.0,
+      "damping_fraction_of_frequency": 0.0001,
+      "observations": 4097
+    },
+    {
+      "id": "normal_1000_f1",
+      "cycles": 1000,
+      "angular_frequency": 1.0,
+      "damping": 0.0,
+      "observations": 4097
+    }
+  ],
+  "reference": "analytic rotation phase and amplitude at each physical observation; track unwrapped branch from known frequency and interval index",
+  "zero_amplitude_mask_rule": "mask iff independent reference amplitude <=1e-12*initial amplitude; mask count recorded; nonfinite/numerical collapse at unmasked time is failure",
+  "proposed_thresholds": {
+    "phase_radians": 0.001,
+    "relative_amplitude": 1e-05,
+    "sampled_state_normalized": 1e-05,
+    "reference_uncertainty_fraction_of_cap": 0.1
+  },
+  "timing": "no timed solve until source commit/tree/binary freeze; warmup1 timed5, 90-second per-process cap, total qualification shared cap",
+  "negative_controls": [
+    "rotation-equivariant nonlinear amplitude: new client/contract required",
+    "noncommuting residual: supported route and independent reference required"
+  ],
+  "current_blocker": "existing examples have fixed horizons and 17 observation points; new registration or a separate runner is required",
+  "production_scope": "HOLD; this pilot can establish only sampled long-horizon phase/amplitude on 3 linear 2D cases",
+  "initial_state": [
+    1.0,
+    0.0
+  ],
+  "t0": 0.0,
+  "observation_rule": "t_i = binary64(T * i / 4096), i=0..4096; T = binary64(2*pi*cycles/frequency) recorded per case",
+  "solver_tolerances": [
+    {
+      "rtol": 1e-06,
+      "atol": 1e-08
+    },
+    {
+      "rtol": 1e-08,
+      "atol": 1e-10
+    }
+  ],
+  "same_achieved_error_cap": {
+    "physical_norm": "Euclidean L2 on 2D physical state",
+    "normalized_error": "max_i ||y_i - y_ref(t_i)||_2 / max(1,||y0||_2,||y_ref(t_i)||_2)",
+    "cap": 1e-05,
+    "interpretation": "reference sampled state cap, separate from per-solver rtol/atol"
+  },
+  "phase_rule": "sum principal atan2(cross(y_i,y_i+1), dot(y_i,y_i+1)) from initial angle; compare every cumulative value with independent omega*(t_i-t0); reject numerical zero/alias-ambiguous/nonfinite increments; require analytic observation phase spacing<pi",
+  "independent_reference": "mpmath 100 dps sin/cos/exp evaluated at exact rational values of emitted binary64 times and parameters; compare 80 vs 100 dps and require difference<=10% of each state/phase/amplitude cap",
+  "run_matrix": "3 cases x 2 input tolerances x 2 adaptive methods plus 1 exact declared-flow control per case; warmup1+timed5; serial; stop at 1200s LP01 focused cap and shared 5400s/500 process cap",
+  "controls": {
+    "supported": [
+      "full-RHS DOPRI5",
+      "declared-homogeneous Lawson",
+      "exact declared carrier action"
+    ],
+    "not_run_requiring_client_contract": [
+      "rotation-equivariant nonlinear amplitude",
+      "noncommuting residual"
+    ],
+    "unsupported_for_exact_homogeneous_flow": [
+      "nonlinear residual",
+      "noncommuting residual"
+    ]
+  }
+}

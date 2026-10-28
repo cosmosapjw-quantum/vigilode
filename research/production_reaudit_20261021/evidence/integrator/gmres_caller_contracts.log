@@ -1,0 +1,112 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+error[E0463]: can't find crate for `rodas5p_integrators`
+ --> crates/rodas5p-integrators/tests/reaudit_lagged_failure_work.rs:3:5
+  |
+3 | use rodas5p_integrators::{
+  |     ^^^^^^^^^^^^^^^^^^^ can't find crate
+
+error[E0463]: can't find crate for `rodas5p_integrators`
+ --> crates/rodas5p-integrators/tests/b1_problems/mod.rs:9:5
+  |
+9 | use rodas5p_integrators::{AdaptiveStepConfig, OdeProblem, OutputSchedule, robertson_problem};
+  |     ^^^^^^^^^^^^^^^^^^^ can't find crate
+
+error[E0463]: can't find crate for `rodas5p_krylov`
+  --> crates/rodas5p-integrators/tests/b1b_gmres_contracts.rs:30:5
+   |
+30 | use rodas5p_krylov::{
+   |     ^^^^^^^^^^^^^^ can't find crate
+
+error[E0282]: type annotations needed
+  --> crates/rodas5p-integrators/tests/reaudit_lagged_failure_work.rs:81:17
+   |
+81 |         assert!((y - (-((i + 1) as f64)).exp()).abs() < 1e-6);
+   |                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ cannot infer type
+
+Some errors have detailed explanations: E0282, E0463.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `rodas5p-integrators` (test "reaudit_lagged_failure_work") due to 2 previous errors
+warning: build failed, waiting for other jobs to finish...
+error[E0282]: type annotations needed
+   --> crates/rodas5p-integrators/tests/b1b_gmres_contracts.rs:116:43
+    |
+116 |         let fold = end.iter().fold(0u64, |h, v| h.rotate_left(7) ^ v.to_bits());
+    |                                           ^     - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+116 |         let fold = end.iter().fold(0u64, |h: /* Type */, v| h.rotate_left(7) ^ v.to_bits());
+    |                                            ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/rodas5p-integrators/tests/b1b_gmres_contracts.rs:116:46
+    |
+116 |         let fold = end.iter().fold(0u64, |h, v| h.rotate_left(7) ^ v.to_bits());
+    |                                              ^                     - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+116 |         let fold = end.iter().fold(0u64, |h, v: /* Type */| h.rotate_left(7) ^ v.to_bits());
+    |                                               ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/rodas5p-integrators/tests/b1b_gmres_contracts.rs:176:29
+    |
+176 |                 let scale = a.abs().max(f64::MIN_POSITIVE);
+    |                             ^ cannot infer type
+
+error[E0282]: type annotations needed
+   --> crates/rodas5p-integrators/tests/b1b_gmres_contracts.rs:244:13
+    |
+244 |     assert!(problem.has_jvp() && problem.has_explicit_jacobian());
+    |             ^^^^^^^ cannot infer type
+
+error[E0599]: no method named `to_bits` found for reference `&{float}` in the current scope
+   --> crates/rodas5p-integrators/tests/b1b_gmres_contracts.rs:345:35
+    |
+345 |         assert_eq!(a.to_bits(), m.to_bits());
+    |                                   ^^^^^^^
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `Float` which provides `to_bits` is implemented but not in scope; perhaps you want to import it
+    |
+ 17 + use serde_json::lexical::num::Float;
+    |
+help: there is a method `to_i8` with a similar name
+    |
+345 -         assert_eq!(a.to_bits(), m.to_bits());
+345 +         assert_eq!(a.to_bits(), m.to_i8());
+    |
+
+error[E0599]: no method named `to_bits` found for reference `&{float}` in the current scope
+   --> crates/rodas5p-integrators/tests/b1b_gmres_contracts.rs:438:39
+    |
+438 |             assert_eq!(r.to_bits(), m.to_bits(), "reuse_ls {reuse_ls}");
+    |                                       ^^^^^^^
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: trait `Float` which provides `to_bits` is implemented but not in scope; perhaps you want to import it
+    |
+ 17 + use serde_json::lexical::num::Float;
+    |
+help: there is a method `to_i8` with a similar name
+    |
+438 -             assert_eq!(r.to_bits(), m.to_bits(), "reuse_ls {reuse_ls}");
+438 +             assert_eq!(r.to_bits(), m.to_i8(), "reuse_ls {reuse_ls}");
+    |
+
+Some errors have detailed explanations: E0282, E0463, E0599.
+error: could not compile `rodas5p-integrators` (test "b1b_gmres_contracts") due to 8 previous errors

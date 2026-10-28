@@ -1,0 +1,36 @@
+{
+  "schema_version": 1,
+  "source_commit": "b2379658a4eb0d8b4ddddcd58f754ef28e615c12",
+  "baseline_commit": "c513f478f952068b91e3da368fb2cb156d942b28",
+  "research_node_check": {
+    "command": "python3 tools/check-research-node.py --base c513f478f952068b91e3da368fb2cb156d942b28",
+    "exit_code": 1,
+    "errors": [
+      {
+        "path": "research/production_audit_20261018/CONTINUATION_DAG.json",
+        "ledger_id": "L-0124",
+        "ledger_expected_sha256": "cf2d47486a736588487cc1cedef806b83983a9685030e9c9e786c64a1ff3d9e8",
+        "baseline_and_current_sha256": "39c90fedb63c5b57b5af921e0a3487cd3de194e67bae6aa9afdce9954351b879",
+        "unchanged_by_this_work": true
+      },
+      {
+        "path": "research/production_audit_20261018/CONTINUATION_FINDINGS.json",
+        "ledger_id": "L-0124",
+        "ledger_expected_sha256": "6d78d278917243c30a8ae434fdf90d0c30bc76603c393d415205c398efde6376",
+        "baseline_and_current_sha256": "f1e3a9667a1e31be67f2b85a249cb4928bd24f6b330a00c9219fcb3ff9914214",
+        "unchanged_by_this_work": true
+      }
+    ],
+    "classification": "preexisting_baseline_output_hash_mismatch",
+    "new_node_or_append_only_errors": []
+  },
+  "authority_refs_check": {
+    "command": "python3 tools/check-authority-refs.py",
+    "exit_code": 0,
+    "citations": 1630,
+    "distinct_shas": 291
+  },
+  "package_validator": "PASS",
+  "run_record_structure": "PASS",
+  "action": "Preserve historical ledger and baseline files; report inherited provenance discrepancy separately from new scoped numerical evidence."
+}

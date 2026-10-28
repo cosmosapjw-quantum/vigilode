@@ -1,0 +1,1428 @@
+{
+  "schema_version": 1,
+  "workflow_version": "1.0.0",
+  "task": "both",
+  "unit_id": "adaptive-causal-20261023",
+  "objective": "소규모 계산환경에서 stiff/rapidly oscillating ODE를 효율적으로 풀기 위한 상황별 경로, 구조를 활용하는 작용, 인과적 단계 소거와 안전한 이차 분기 해법을 증명하고 native Rust에 구현한다.",
+  "scope": "2026-10-23 현재 branch의 새 opt-in 경로에 대한 조건부 이론, native 구현, 단일 CPU 벤치마크 및 독립 검토. 기존 발표된 구면 정보 연구는 보존·재사용한다. 범용 production 자격이나 보편적 가속은 이 연구 회차의 완료와 별개이다.",
+  "status": "complete",
+  "dependencies": [
+    {
+      "id": "D-BASE",
+      "identity": "14c74978b93339a79d7228a324fa77552dae548e",
+      "description": "Fetched baseline; earlier host-only results not assumed present."
+    },
+    {
+      "id": "D-INITIAL",
+      "identity": "548526add83a38a996875b3bd2f3cd3357465ed6",
+      "description": "Initial native freeze and original benchmark cohort."
+    },
+    {
+      "id": "D-FINAL",
+      "identity": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+      "description": "Native freeze with persistent observed DOPRI for Forbidden route."
+    },
+    {
+      "id": "D-GEOMETRY",
+      "identity": "sha256:31465145db1c564c4bc9f2edfbc9e3a00e4637cc0838560de9cb01b40f6488c8",
+      "description": "Input hashes, draft sections, prior proof identities and primary-source transfer map."
+    },
+    {
+      "id": "D-RVJ",
+      "identity": "sha256:51c95ac58f630abfa509c4037afb483eb236358fbb5cdba067698c192248b976",
+      "description": "RVJ attachment identity and exact equation/domain transfer scope."
+    },
+    {
+      "id": "D-SPHERE",
+      "identity": "sha256:6981ec0aa6e0c8fd0534e989da59c06b614eef649ef6a9152fb455621fb86ff9",
+      "description": "Earlier spherical-information research artifact manifest; unchanged scientific content reused."
+    },
+    {
+      "id": "D-LOCK",
+      "identity": "sha256:3c3310208cb895851aced4b4506ccd761e04c62d93113372919542478163a1e5",
+      "description": "Locked native dependency graph."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "E-BASE",
+      "kind": "source",
+      "locator": "research/adaptive_causal_20261023/evidence/BASELINE.json",
+      "scope": "Baseline identity and published benchmark evidence retained once.",
+      "dependency_ids": [
+        "D-BASE"
+      ]
+    },
+    {
+      "id": "E-PLAN",
+      "kind": "decision",
+      "locator": "research/adaptive_causal_20261023/evidence/PREREGISTRATION.json",
+      "scope": "Objectives, nine attachment hashes, workstreams and no-NCP/derivative/benchmark contracts.",
+      "dependency_ids": [
+        "D-BASE"
+      ]
+    },
+    {
+      "id": "E-GEOMETRY",
+      "kind": "source",
+      "locator": "research/adaptive_causal_20261023/analysis/SOURCE_MAP.json",
+      "scope": "Geometric drafts and previous repo theory mapped by file identity and exact source scope.",
+      "dependency_ids": [
+        "D-GEOMETRY"
+      ]
+    },
+    {
+      "id": "E-RVJ",
+      "kind": "source",
+      "locator": "research/adaptive_causal_20261023/evidence/RVJ_MAP.json",
+      "scope": "RVJ pp.7–17; approximate-W and stiff-order restrictions retained; constant carrier transfer.",
+      "dependency_ids": [
+        "D-RVJ"
+      ]
+    },
+    {
+      "id": "E-THEORY",
+      "kind": "derivation",
+      "locator": "research/adaptive_causal_20261023/analysis/ALGEBRAIC_TRANSFER_KO.md",
+      "scope": "AT1 quotient identity and defect bound; AT2 rotation block actions; AT3 quadratic branch; AT4 causal finite propagation.",
+      "dependency_ids": [
+        "D-GEOMETRY",
+        "D-BASE"
+      ]
+    },
+    {
+      "id": "E-OSC",
+      "kind": "derivation",
+      "locator": "research/adaptive_causal_20261023/analysis/OSCILLATORY_KO.md",
+      "scope": "Constant declared A, Lawson construction, smooth transformed-order assumptions and limitations.",
+      "dependency_ids": [
+        "D-RVJ",
+        "D-INITIAL"
+      ]
+    },
+    {
+      "id": "E-CAUSAL",
+      "kind": "implementation",
+      "locator": "research/adaptive_causal_20261023/analysis/CAUSAL_IMPLEMENTATION_KO.md",
+      "scope": "Raw-U target, actual strict-causality guard, forward/Picard APIs and residual-preserving implementation.",
+      "dependency_ids": [
+        "D-INITIAL"
+      ]
+    },
+    {
+      "id": "E-QUADRATIC",
+      "kind": "implementation",
+      "locator": "research/adaptive_causal_20261023/analysis/QUADRATIC_IMPLEMENTATION_KO.md",
+      "scope": "Scaled scalar branch kernel, exceptional degree charts and floating diagnostic scope.",
+      "dependency_ids": [
+        "D-INITIAL"
+      ]
+    },
+    {
+      "id": "E-EXACT",
+      "kind": "calculation",
+      "locator": "research/adaptive_causal_20261023/results/algebraic_exact_checks.json",
+      "scope": "Fourteen exact rational check groups; these supplement, not replace, proofs.",
+      "dependency_ids": [
+        "D-GEOMETRY"
+      ]
+    },
+    {
+      "id": "E-WOLFRAM",
+      "kind": "calculation",
+      "locator": "research/adaptive_causal_20261023/evidence/algebraic_wolfram.json",
+      "scope": "Actual symbolic identity output; no numerical trajectory benchmark.",
+      "dependency_ids": [
+        "D-GEOMETRY"
+      ]
+    },
+    {
+      "id": "E-NATIVE",
+      "kind": "implementation",
+      "locator": "research/adaptive_causal_20261023/results/FINAL_NATIVE_TESTS.json",
+      "scope": "Initial native receipt: 120 facade plus 17 quotient/quadratic tests.",
+      "dependency_ids": [
+        "D-INITIAL",
+        "D-LOCK"
+      ]
+    },
+    {
+      "id": "E-NATIVE-FINAL",
+      "kind": "implementation",
+      "locator": "research/adaptive_causal_20261023/results/persistent_final_facade.stdout.log",
+      "scope": "Final facade log: 122 passed, zero failed across 12 groups; independently reconciled.",
+      "dependency_ids": [
+        "D-FINAL",
+        "D-LOCK"
+      ]
+    },
+    {
+      "id": "E-CAUSAL-TESTS",
+      "kind": "implementation",
+      "locator": "research/adaptive_causal_20261023/results/causal_regression_receipt.json",
+      "scope": "66 coupled regression tests; unchanged source reused after final facade-only change.",
+      "dependency_ids": [
+        "D-INITIAL",
+        "D-LOCK"
+      ]
+    },
+    {
+      "id": "E-CAUSAL-PINS",
+      "kind": "source",
+      "locator": "research/adaptive_causal_20261023/evidence/CAUSAL_CODE_PINS.json",
+      "scope": "Native raw coefficient, implementation, test and compiler identity.",
+      "dependency_ids": [
+        "D-INITIAL"
+      ]
+    },
+    {
+      "id": "E-CORRECTION",
+      "kind": "implementation",
+      "locator": "research/adaptive_causal_20261023/results/switching_persistent_correction.json",
+      "scope": "Measured overhead led to persistent Forbidden DOPRI; 14 switching contracts.",
+      "dependency_ids": [
+        "D-FINAL"
+      ]
+    },
+    {
+      "id": "E-SWITCHING",
+      "kind": "calculation",
+      "locator": "research/adaptive_causal_20261023/results/switching_campaign/SUMMARY.json",
+      "scope": "864 original-source records, 828 successes; adverse oscillatory routing and 36 explicit Prothero failures retained.",
+      "dependency_ids": [
+        "D-INITIAL"
+      ]
+    },
+    {
+      "id": "E-RHS",
+      "kind": "calculation",
+      "locator": "research/adaptive_causal_20261023/results/rhs_persistent_campaign/SUMMARY.json",
+      "scope": "324 corrected-source records, 288 successes; separate timing cohort.",
+      "dependency_ids": [
+        "D-FINAL"
+      ]
+    },
+    {
+      "id": "E-PARITY",
+      "kind": "calculation",
+      "locator": "research/adaptive_causal_20261023/results/rhs_persistent_campaign/RHS_PARITY.json",
+      "scope": "108 exact serialized trajectory/work/failure-state parity pairs; 96 successful pairs.",
+      "dependency_ids": [
+        "D-FINAL"
+      ]
+    },
+    {
+      "id": "E-QUOTIENT-BENCH",
+      "kind": "calculation",
+      "locator": "research/adaptive_causal_20261023/results/quotient_summary.json",
+      "scope": "112 records including 84 timed; specialized gains and unfavorable slow/forced-stiff controls.",
+      "dependency_ids": [
+        "D-INITIAL"
+      ]
+    },
+    {
+      "id": "E-CAUSAL-BENCH",
+      "kind": "calculation",
+      "locator": "research/adaptive_causal_20261023/results/causal_benchmark_summary.json",
+      "scope": "36 matching original-stage roots; only six rows have embedded_error<=1, so root cost is not trajectory speed.",
+      "dependency_ids": [
+        "D-INITIAL"
+      ]
+    },
+    {
+      "id": "E-REVIEW",
+      "kind": "review",
+      "locator": "research/adaptive_causal_20261023/REVIEW.json",
+      "scope": "Independent source/math, all four campaign and final main-report/decisions review complete under scope; six findings corrected.",
+      "dependency_ids": [
+        "D-INITIAL",
+        "D-FINAL"
+      ]
+    },
+    {
+      "id": "E-INDEPENDENT-EXACT",
+      "kind": "calculation",
+      "locator": "research/adaptive_causal_20261023/results/independent_review_checks.json",
+      "scope": "Ten independent exact rational and 90-digit reference check groups.",
+      "dependency_ids": [
+        "D-INITIAL"
+      ]
+    },
+    {
+      "id": "E-INDEPENDENT-BENCH",
+      "kind": "review",
+      "locator": "research/adaptive_causal_20261023/results/independent_benchmark_review.json",
+      "scope": "1866 independent source, raw, aggregate and parity reconciliations.",
+      "dependency_ids": [
+        "D-INITIAL",
+        "D-FINAL"
+      ]
+    },
+    {
+      "id": "E-COMPLETION",
+      "kind": "decision",
+      "locator": "research/adaptive_causal_20261023/CAUSAL_COMPLETION.json",
+      "scope": "Implemented causal APIs and explicit derivative/production scope boundaries.",
+      "dependency_ids": [
+        "D-INITIAL"
+      ]
+    },
+    {
+      "id": "E-SPHERE",
+      "kind": "artifact",
+      "locator": "research/spherical_information_20261023/ARTIFACT_MANIFEST.json",
+      "scope": "Preserved earlier 121-file spherical-information package; no unchanged scientific execution rerun.",
+      "dependency_ids": [
+        "D-SPHERE"
+      ]
+    },
+    {
+      "id": "E-REPORT",
+      "kind": "artifact",
+      "locator": "research/adaptive_causal_20261023/REPORT_KO.md",
+      "scope": "Human-readable final mathematical/algorithmic/benchmark report, independently accepted within stated scope.",
+      "dependency_ids": [
+        "D-FINAL"
+      ]
+    },
+    {
+      "id": "E-DECISIONS",
+      "kind": "decision",
+      "locator": "research/adaptive_causal_20261023/DECISIONS.json",
+      "scope": "Final route-level production/use classification; broad production HOLD.",
+      "dependency_ids": [
+        "D-FINAL"
+      ]
+    },
+    {
+      "id": "E-NEXT",
+      "kind": "decision",
+      "locator": "research/adaptive_causal_20261023/NEXT_STEPS.json",
+      "scope": "Concrete next implementation tasks with acceptance conditions and dependency order.",
+      "dependency_ids": [
+        "D-FINAL"
+      ]
+    },
+    {
+      "id": "E-BENCH-PLAN",
+      "kind": "artifact",
+      "locator": "research/adaptive_causal_20261023/BENCHMARK_PLAN.json",
+      "scope": "Future broad local comparison campaign; explicitly NOT_RUN_PLANNED and no NCP.",
+      "dependency_ids": [
+        "D-FINAL"
+      ]
+    },
+    {
+      "id": "E-HANDOFF",
+      "kind": "artifact",
+      "locator": "research/adaptive_causal_20261023/HANDOFF_KO.md",
+      "scope": "Copyable local verification/handoff prompt preserving original checkouts and receipts.",
+      "dependency_ids": [
+        "D-FINAL"
+      ]
+    },
+    {
+      "id": "E-REPRODUCE",
+      "kind": "artifact",
+      "locator": "research/adaptive_causal_20261023/REPRODUCE.md",
+      "scope": "Native tests, local campaign commands and actual source-cohort identities.",
+      "dependency_ids": [
+        "D-FINAL"
+      ]
+    }
+  ],
+  "stages": [
+    {
+      "id": "R1",
+      "name": "연구 위치·계약",
+      "status": "complete",
+      "evidence_refs": [
+        "E-BASE",
+        "E-PLAN"
+      ],
+      "dependency_ids": [
+        "D-BASE"
+      ],
+      "reason": "고정 baseline과 derivative authority, 단일 스레드, 무NCP 조건을 정했다.",
+      "reuse": null
+    },
+    {
+      "id": "R2",
+      "name": "근거·재사용",
+      "status": "complete",
+      "evidence_refs": [
+        "E-GEOMETRY",
+        "E-RVJ",
+        "E-SPHERE",
+        "E-BASE"
+      ],
+      "dependency_ids": [
+        "D-GEOMETRY",
+        "D-RVJ",
+        "D-SPHERE",
+        "D-BASE"
+      ],
+      "reason": "기존 quotient/causal 이론과 구면 연구를 출처·의존성별로 재사용하고 새 드래프트의 적용 구간만 검토했다.",
+      "reuse": null
+    },
+    {
+      "id": "R3",
+      "name": "주장·전제 정렬",
+      "status": "complete",
+      "evidence_refs": [
+        "E-THEORY",
+        "E-OSC",
+        "E-REVIEW"
+      ],
+      "dependency_ids": [
+        "D-GEOMETRY",
+        "D-RVJ"
+      ],
+      "reason": "알려진 연산자 구조, 실제 raw 계수의 strict lower 조건, 양의 판별식, smooth transformed 문제를 명시했다.",
+      "reuse": null
+    },
+    {
+      "id": "R4",
+      "name": "가설·표현 탐색",
+      "status": "complete",
+      "evidence_refs": [
+        "E-THEORY",
+        "E-RVJ"
+      ],
+      "dependency_ids": [
+        "D-GEOMETRY",
+        "D-RVJ"
+      ],
+      "reason": "quotient polynomial, 상수 carrier, 분기 chart, strict-causal front를 구체적 계산 표현으로 선택했다.",
+      "reuse": null
+    },
+    {
+      "id": "R5",
+      "name": "구성적 유도",
+      "status": "complete",
+      "evidence_refs": [
+        "E-THEORY",
+        "E-OSC"
+      ],
+      "dependency_ids": [
+        "D-GEOMETRY",
+        "D-RVJ"
+      ],
+      "reason": "AT1–AT4의 입력 계약, 실제 계산 절약, 오차/조건 한계를 유도했다. 일반 no-go 또는 보편적 속도 정리를 새 성과로 채택하지 않았다.",
+      "reuse": null
+    },
+    {
+      "id": "R6",
+      "name": "독립 검증",
+      "status": "complete",
+      "evidence_refs": [
+        "E-EXACT",
+        "E-WOLFRAM",
+        "E-INDEPENDENT-EXACT",
+        "E-REVIEW"
+      ],
+      "dependency_ids": [
+        "D-GEOMETRY",
+        "D-INITIAL"
+      ],
+      "reason": "저자와 독립 검토자의 유리수/고정밀 계산, 실제 Wolfram 출력, native 반례 회귀를 교차 확인했다.",
+      "reuse": null
+    },
+    {
+      "id": "R7",
+      "name": "판별 검증",
+      "status": "complete",
+      "evidence_refs": [
+        "E-SWITCHING",
+        "E-RHS",
+        "E-PARITY",
+        "E-QUOTIENT-BENCH",
+        "E-CAUSAL-BENCH"
+      ],
+      "dependency_ids": [
+        "D-INITIAL",
+        "D-FINAL"
+      ],
+      "reason": "순수 carrier와 stiff 잔차, slow control, 비정규성, oscillatory switching, embedded 불합격 root를 분리했다.",
+      "reuse": null
+    },
+    {
+      "id": "R8",
+      "name": "결과 판정",
+      "status": "complete",
+      "evidence_refs": [
+        "E-REVIEW",
+        "E-COMPLETION"
+      ],
+      "dependency_ids": [
+        "D-INITIAL",
+        "D-FINAL"
+      ],
+      "reason": "조건부 새 opt-in 경로는 제한된 범위에서 수용하며 범용 production은 미확립으로 판정했다.",
+      "reuse": null
+    },
+    {
+      "id": "R9",
+      "name": "정식 결과·코딩 연결",
+      "status": "complete",
+      "evidence_refs": [
+        "E-THEORY",
+        "E-CAUSAL",
+        "E-OSC",
+        "E-QUADRATIC",
+        "E-CORRECTION"
+      ],
+      "dependency_ids": [
+        "D-INITIAL",
+        "D-FINAL"
+      ],
+      "reason": "증명을 native API와 계산량 지표에 연결했다. 일반 quotient 발견, 자동 모든 경로 통합, stiff-uniform nonlinear order는 구현 또는 증명했다고 주장하지 않는다.",
+      "reuse": null
+    },
+    {
+      "id": "R10",
+      "name": "종료·재개",
+      "status": "complete",
+      "evidence_refs": [
+        "E-REPORT",
+        "E-DECISIONS",
+        "E-NEXT",
+        "E-BENCH-PLAN",
+        "E-REVIEW"
+      ],
+      "dependency_ids": [
+        "D-FINAL"
+      ],
+      "reason": "검토된 연구보고서, 범위별 판정과 다음 연구·개발 단계를 보존했다. 미해결 general-production 과제는 별도로 명시했다. 원격 게시 영수증은 독립적인 storage 상태로 추적한다.",
+      "reuse": null
+    },
+    {
+      "id": "C1",
+      "name": "목표·baseline",
+      "status": "complete",
+      "evidence_refs": [
+        "E-BASE",
+        "E-PLAN"
+      ],
+      "dependency_ids": [
+        "D-BASE"
+      ],
+      "reason": "원본을 보존한 별도 연구 branch에서 baseline을 고정했다.",
+      "reuse": null
+    },
+    {
+      "id": "C2",
+      "name": "식–데이터–코드",
+      "status": "complete",
+      "evidence_refs": [
+        "E-THEORY",
+        "E-CAUSAL-PINS",
+        "E-QUADRATIC",
+        "E-OSC"
+      ],
+      "dependency_ids": [
+        "D-INITIAL"
+      ],
+      "reason": "원래 stage 식, 선언된 A+N split, scalar quadratic를 각 native API의 입력 의미에 맞췄다.",
+      "reuse": null
+    },
+    {
+      "id": "C3",
+      "name": "수치 설계",
+      "status": "complete",
+      "evidence_refs": [
+        "E-CAUSAL",
+        "E-QUADRATIC",
+        "E-OSC",
+        "E-CORRECTION"
+      ],
+      "dependency_ids": [
+        "D-INITIAL",
+        "D-FINAL"
+      ],
+      "reason": "잔차 재검사, exceptional chart, finite front, explicit derivative authority, persistent RHS 경로를 설계했다.",
+      "reuse": null
+    },
+    {
+      "id": "C4",
+      "name": "실행 DAG·자원",
+      "status": "complete",
+      "evidence_refs": [
+        "E-PLAN",
+        "E-SWITCHING",
+        "E-RHS",
+        "E-CAUSAL-PINS"
+      ],
+      "dependency_ids": [
+        "D-INITIAL",
+        "D-FINAL",
+        "D-LOCK"
+      ],
+      "reason": "노드별 agent 개발 후 공유 CPU에서 측정을 순차 수행했다. CPU affinity 1개와 thread 환경 1을 사용했고 NCP는 사용하지 않았다.",
+      "reuse": null
+    },
+    {
+      "id": "C5",
+      "name": "구현",
+      "status": "complete",
+      "evidence_refs": [
+        "E-CAUSAL",
+        "E-QUADRATIC",
+        "E-OSC",
+        "E-CORRECTION",
+        "E-COMPLETION"
+      ],
+      "dependency_ids": [
+        "D-INITIAL",
+        "D-FINAL"
+      ],
+      "reason": "switching adapter, quotient Lawson, scalar branch root, causal forward/Picard를 구현하고 독립 검토 지적을 수정했다.",
+      "reuse": null
+    },
+    {
+      "id": "C6",
+      "name": "구현 검증",
+      "status": "complete",
+      "evidence_refs": [
+        "E-NATIVE",
+        "E-NATIVE-FINAL",
+        "E-CAUSAL-TESTS",
+        "E-REVIEW"
+      ],
+      "dependency_ids": [
+        "D-INITIAL",
+        "D-FINAL",
+        "D-LOCK"
+      ],
+      "reason": "현재 facade 122개와 소스 불변 integrator 17개/coupled 66개 회귀의 총205 pass를 구분해 보존한다. 전체 workspace 전수 통과라고 확대하지 않는다.",
+      "reuse": null
+    },
+    {
+      "id": "C7",
+      "name": "과학 검증",
+      "status": "complete",
+      "evidence_refs": [
+        "E-EXACT",
+        "E-INDEPENDENT-EXACT",
+        "E-CAUSAL-BENCH",
+        "E-QUOTIENT-BENCH",
+        "E-PARITY"
+      ],
+      "dependency_ids": [
+        "D-INITIAL",
+        "D-FINAL"
+      ],
+      "reason": "독립 analytic/full-stage reference, 정확한 branch 관계, 순수 carrier 작용과 실제오차를 검증했다. fixed-step root 성공과 adaptive trajectory 수락을 구분한다.",
+      "reuse": null
+    },
+    {
+      "id": "C8",
+      "name": "수치·재현성",
+      "status": "complete",
+      "evidence_refs": [
+        "E-SWITCHING",
+        "E-RHS",
+        "E-QUOTIENT-BENCH",
+        "E-CAUSAL-BENCH",
+        "E-INDEPENDENT-BENCH"
+      ],
+      "dependency_ids": [
+        "D-INITIAL",
+        "D-FINAL"
+      ],
+      "reason": "원본 실패, warmup/repeat, source/binary identity, 단일 CPU 조건, 압축 raw hash를 보존했다. 서로 다른 source cohort를 합친 속도 주장은 하지 않는다.",
+      "reuse": null
+    },
+    {
+      "id": "C9",
+      "name": "독립 검토",
+      "status": "complete",
+      "evidence_refs": [
+        "E-REVIEW",
+        "E-INDEPENDENT-BENCH",
+        "E-INDEPENDENT-EXACT",
+        "E-REPORT",
+        "E-DECISIONS"
+      ],
+      "dependency_ids": [
+        "D-INITIAL",
+        "D-FINAL"
+      ],
+      "reason": "native, 네 benchmark cohort 및 최종 보고서/판정 독립 검토 완료: 여섯 지적 수정, 1866 reconciliation pass; 새 opt-in 경로의 명시된 범위만 수용했다.",
+      "reuse": null
+    },
+    {
+      "id": "C10",
+      "name": "판정·인계",
+      "status": "complete",
+      "evidence_refs": [
+        "E-REVIEW",
+        "E-DECISIONS",
+        "E-NEXT",
+        "E-HANDOFF",
+        "E-REPRODUCE"
+      ],
+      "dependency_ids": [
+        "D-FINAL"
+      ],
+      "reason": "최종 구현·벤치마크 결과와 source identity, local 검증 명령 및 인계 prompt를 작성했고 독립 검토를 마쳤다. 아직 실행하지 않은 확대 캠페인을 NOT_RUN_PLANNED로 분리했다.",
+      "reuse": null
+    }
+  ],
+  "claims": [
+    {
+      "id": "AT1",
+      "statement": "A known annihilating polynomial q of degree d produces the shifted inverse in d-1 operator actions; the explicit defect identity supplies a near-relation bound.",
+      "scope": "Finite-dimensional A, s!=0, q(1/s)!=0; exact q(A)=0 or certified full-space defect norm. No cheap discovery of q is claimed.",
+      "basis": [
+        "derived",
+        "literature-supported",
+        "numerically checked"
+      ],
+      "evidence_refs": [
+        "E-THEORY",
+        "E-EXACT",
+        "E-REVIEW"
+      ],
+      "obligations": [
+        "Generic operator-contract/compiler integration remains future work."
+      ]
+    },
+    {
+      "id": "AT2",
+      "statement": "Declared constant damped-rotation blocks admit O(n) exact flow/resolvent actions and a derivative-free Lawson-DOPRI implementation.",
+      "scope": "Nonnegative damping and forward durations; supplied known A; callback is remainder N. Classical fifth order requires smooth transformed dynamics and is not uniform in arbitrary stiffness.",
+      "basis": [
+        "derived",
+        "implementation-verified",
+        "numerically checked"
+      ],
+      "evidence_refs": [
+        "E-OSC",
+        "E-THEORY",
+        "E-NATIVE",
+        "E-QUOTIENT-BENCH",
+        "E-REVIEW"
+      ],
+      "obligations": [
+        "Time-dependent/noncommuting carrier and generic stiff residual adaptation remain unproved/unimplemented."
+      ]
+    },
+    {
+      "id": "AT3",
+      "statement": "The declared scalar quadratic continuation chart has an explicit branch root and a residual-to-root-error identity away from the fold.",
+      "scope": "a>0, lambda in [0,1], resolved positive discriminant; candidate derivative nonnegative. Floating residual indicator is not an interval enclosure.",
+      "basis": [
+        "derived",
+        "implementation-verified",
+        "numerically checked"
+      ],
+      "evidence_refs": [
+        "E-THEORY",
+        "E-QUADRATIC",
+        "E-EXACT",
+        "E-NATIVE",
+        "E-REVIEW"
+      ],
+      "obligations": []
+    },
+    {
+      "id": "AT4",
+      "statement": "The exact strict raw-U stage target can be solved by one forward substitution; causal Picard fronts terminate in at most s-1 updates after the affine seed in exact arithmetic.",
+      "scope": "Frozen Q, common invertible W_m, actual raw A/C exactly strict lower. Floating acceptance retains projected and original-space residual checks. Frozen derivative actions and small matrices remain.",
+      "basis": [
+        "derived",
+        "implementation-verified",
+        "numerically checked"
+      ],
+      "evidence_refs": [
+        "E-THEORY",
+        "E-CAUSAL",
+        "E-CAUSAL-TESTS",
+        "E-CAUSAL-BENCH",
+        "E-REVIEW"
+      ],
+      "obligations": [
+        "Whole-trajectory cost and broader nonlinear/stiff work-precision coverage remain future work."
+      ]
+    },
+    {
+      "id": "RHS-PERSISTENCE",
+      "statement": "The Forbidden route retains the same DOPRI session and matches serialized output, work and partial failure state in 108 paired runs.",
+      "scope": "Final d4e8623b cohort; 96 successful pairs and 12 failed partial pairs. This removes artificial restart work; shared-host timing does not establish universal acceleration.",
+      "basis": [
+        "implementation-verified",
+        "numerically checked"
+      ],
+      "evidence_refs": [
+        "E-CORRECTION",
+        "E-PARITY",
+        "E-RHS",
+        "E-REVIEW"
+      ],
+      "obligations": []
+    },
+    {
+      "id": "GENERAL-PRODUCTION",
+      "statement": "General-purpose production suitability is not established by this scoped loop.",
+      "scope": "Separate opt-in APIs are implemented; authorized FD/JVP window switching can misroute oscillatory problems, and complete trajectory evidence for causal correctors is limited.",
+      "basis": [
+        "unresolved"
+      ],
+      "evidence_refs": [
+        "E-REVIEW"
+      ],
+      "obligations": [
+        "Persistent multi-method session",
+        "Oscillation-aware switching policy",
+        "Whole-trajectory causal work-precision benchmarks",
+        "Broader external-comparator campaign under matched actual error"
+      ]
+    }
+  ],
+  "checks": [
+    {
+      "id": "CHK-PROOFS",
+      "domain": "math",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "E-THEORY",
+        "E-REVIEW"
+      ],
+      "execution_ref": null,
+      "reason": "AT1–AT4 valid under the explicit hypotheses; no universal speed/order statement."
+    },
+    {
+      "id": "CHK-EXACT",
+      "domain": "math",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "E-EXACT"
+      ],
+      "execution_ref": "X-EXACT",
+      "reason": "Fourteen exact check groups."
+    },
+    {
+      "id": "CHK-INDEPENDENT",
+      "domain": "math",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "E-INDEPENDENT-EXACT"
+      ],
+      "execution_ref": "X-INDEPENDENT",
+      "reason": "Ten independent check groups and high-precision extreme-input references."
+    },
+    {
+      "id": "CHK-NATIVE",
+      "domain": "implementation",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "E-NATIVE",
+        "E-NATIVE-FINAL",
+        "E-CAUSAL-TESTS",
+        "E-REVIEW"
+      ],
+      "execution_ref": "X-NATIVE-FINAL",
+      "reason": "Current-scope total205:122 current facade,17 unaffected integrator,66 unaffected coupled. Not a full-workspace or production certification."
+    },
+    {
+      "id": "CHK-PERSISTENCE",
+      "domain": "numerics",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "E-PARITY",
+        "E-RHS"
+      ],
+      "execution_ref": "X-RHS",
+      "reason": "108 exact output/work/partial-state parities and zero derivative work."
+    },
+    {
+      "id": "CHK-WORK-PRECISION",
+      "domain": "numerics",
+      "result": "partial",
+      "evidence_refs": [
+        "E-SWITCHING",
+        "E-RHS",
+        "E-QUOTIENT-BENCH",
+        "E-CAUSAL-BENCH"
+      ],
+      "execution_ref": "X-RECONCILE",
+      "reason": "Specialized wins and losses preserved; benchmark coverage supports scoped decisions, not general production."
+    },
+    {
+      "id": "CHK-ARTIFACTS",
+      "domain": "packaging",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "E-INDEPENDENT-BENCH",
+        "E-REVIEW"
+      ],
+      "execution_ref": "X-RECONCILE",
+      "reason": "1866 source/raw/aggregate checks and final report consistency accepted by independent review; final publication manifest and remote receipt are separate storage actions."
+    },
+    {
+      "id": "CHK-GENERAL-PRODUCTION",
+      "domain": "numerics",
+      "result": "not_run",
+      "evidence_refs": [
+        "E-REVIEW"
+      ],
+      "execution_ref": null,
+      "reason": "No general production qualification campaign or independent institutional certification completed."
+    },
+    {
+      "id": "CHK-PUBLICATION",
+      "domain": "storage",
+      "result": "not_run",
+      "evidence_refs": [],
+      "execution_ref": null,
+      "reason": "Remote push receipt will be produced by parent after final report closure."
+    },
+    {
+      "id": "CHK-FINAL-REVIEW",
+      "domain": "packaging",
+      "result": "pass_scoped",
+      "evidence_refs": [
+        "E-REVIEW",
+        "E-REPORT",
+        "E-DECISIONS",
+        "E-NEXT",
+        "E-BENCH-PLAN",
+        "E-HANDOFF",
+        "E-REPRODUCE"
+      ],
+      "execution_ref": null,
+      "reason": "Independent main-report/decisions review COMPLETE_SCOPED, with no active blocking findings."
+    }
+  ],
+  "executions": [
+    {
+      "id": "X-EXACT",
+      "status": "completed",
+      "command": [
+        "python3",
+        "research/adaptive_causal_20261023/src/check_algebraic_transfer.py"
+      ],
+      "environment": {
+        "python": "3.12.14",
+        "arithmetic": "fractions.Fraction"
+      },
+      "evidence_refs": [
+        "E-EXACT"
+      ],
+      "exit_code": 0,
+      "reason": "Completed scoped execution; exact details remain in linked receipt."
+    },
+    {
+      "id": "X-INDEPENDENT",
+      "status": "completed",
+      "command": [
+        "python3",
+        "research/adaptive_causal_20261023/src/independent_review_checks.py"
+      ],
+      "environment": {
+        "arithmetic": "fractions.Fraction and decimal.Decimal precision 90"
+      },
+      "evidence_refs": [
+        "E-INDEPENDENT-EXACT"
+      ],
+      "exit_code": 0,
+      "reason": "Completed scoped execution; exact details remain in linked receipt."
+    },
+    {
+      "id": "X-NATIVE-INITIAL-0",
+      "status": "completed",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "vigilode",
+        "--locked",
+        "--offline",
+        "--tests"
+      ],
+      "environment": {
+        "host": "shared Linux sandbox",
+        "ncp": false,
+        "dependency_lock": "Cargo.lock",
+        "runtime_environment_file": "/workspace/scratch/0dc1e721cf82/task_runtime/env-1023.sh",
+        "source_commit": "548526add83a38a996875b3bd2f3cd3357465ed6"
+      },
+      "evidence_refs": [
+        "E-NATIVE"
+      ],
+      "exit_code": 0,
+      "reason": "Completed scoped execution; exact details remain in linked receipt."
+    },
+    {
+      "id": "X-NATIVE-INITIAL-1",
+      "status": "completed",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "rodas5p-integrators",
+        "--locked",
+        "--offline",
+        "--test",
+        "quadratic_branch_contracts",
+        "--test",
+        "quotient_flow_contracts"
+      ],
+      "environment": {
+        "host": "shared Linux sandbox",
+        "ncp": false,
+        "dependency_lock": "Cargo.lock",
+        "runtime_environment_file": "/workspace/scratch/0dc1e721cf82/task_runtime/env-1023.sh",
+        "source_commit": "548526add83a38a996875b3bd2f3cd3357465ed6"
+      },
+      "evidence_refs": [
+        "E-NATIVE"
+      ],
+      "exit_code": 0,
+      "reason": "Completed scoped execution; exact details remain in linked receipt."
+    },
+    {
+      "id": "X-CAUSAL",
+      "status": "completed",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "vigilode-coupled",
+        "--locked",
+        "--offline",
+        "--lib",
+        "--tests",
+        "--",
+        "--nocapture"
+      ],
+      "environment": {
+        "host": "shared Linux sandbox",
+        "ncp": false,
+        "dependency_lock": "Cargo.lock",
+        "runtime_environment_file": "/workspace/scratch/0dc1e721cf82/task_runtime/env-1023.sh",
+        "source_commit": "548526add83a38a996875b3bd2f3cd3357465ed6"
+      },
+      "evidence_refs": [
+        "E-CAUSAL-TESTS"
+      ],
+      "exit_code": 0,
+      "reason": "Completed scoped execution; exact details remain in linked receipt."
+    },
+    {
+      "id": "X-NATIVE-FINAL",
+      "status": "completed",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "vigilode",
+        "--locked",
+        "--offline",
+        "--tests"
+      ],
+      "environment": {
+        "host": "shared Linux sandbox",
+        "ncp": false,
+        "dependency_lock": "Cargo.lock",
+        "runtime_environment_file": "/workspace/scratch/0dc1e721cf82/task_runtime/env-1023.sh",
+        "source_commit": "d4e8623bf8add9f505ec018532c4602e5a838a41"
+      },
+      "evidence_refs": [
+        "E-NATIVE-FINAL",
+        "E-REVIEW"
+      ],
+      "exit_code": 0,
+      "reason": "Completed scoped execution; exact details remain in linked receipt."
+    },
+    {
+      "id": "X-QUOTIENT",
+      "status": "completed",
+      "command": [
+        "/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/measurement/examples/quotient_flow_bench"
+      ],
+      "environment": {
+        "host": "shared Linux sandbox",
+        "ncp": false,
+        "dependency_lock": "Cargo.lock",
+        "runtime_environment_file": "/workspace/scratch/0dc1e721cf82/task_runtime/env-1023.sh",
+        "source_commit": "548526add83a38a996875b3bd2f3cd3357465ed6",
+        "cpu_affinity": [
+          0
+        ],
+        "threads": 1
+      },
+      "evidence_refs": [
+        "E-QUOTIENT-BENCH"
+      ],
+      "exit_code": 0,
+      "reason": "Completed scoped execution; exact details remain in linked receipt."
+    },
+    {
+      "id": "X-SWITCHING",
+      "status": "completed",
+      "command": [
+        "/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/measurement/examples/adaptive_causal_bench",
+        "--case",
+        "decay",
+        "--mode",
+        "rodas-jvp",
+        "--dimension",
+        "1",
+        "--rtol",
+        "1e-06",
+        "--windows",
+        "16",
+        "--source-commit",
+        "548526add83a38a996875b3bd2f3cd3357465ed6"
+      ],
+      "environment": {
+        "host": "b0ab32d68884",
+        "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+        "source_commit": "548526add83a38a996875b3bd2f3cd3357465ed6",
+        "binary_sha256": "c13249a6beef7941552053fb7b30acd71856d5e5b4251c82744246a007ed8e73",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_settings": {
+          "RAYON_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1"
+        }
+      },
+      "evidence_refs": [
+        "E-SWITCHING"
+      ],
+      "exit_code": 0,
+      "reason": "Campaign orchestration completed; individual solver failures are retained and are not converted into successful runs.",
+      "command_scope": "Actual first preserved process invocation; complete campaign commands and exit statuses are in RAW_RUNS.jsonl.gz.",
+      "campaign_records": 864,
+      "all_commands_locator": "research/adaptive_causal_20261023/results/switching_campaign/RAW_RUNS.jsonl.gz"
+    },
+    {
+      "id": "X-RHS",
+      "status": "completed",
+      "command": [
+        "/workspace/scratch/0dc1e721cf82/task_runtime/target-1023/measurement/examples/adaptive_causal_bench",
+        "--case",
+        "decay",
+        "--mode",
+        "switch-rhs",
+        "--dimension",
+        "1",
+        "--rtol",
+        "1e-06",
+        "--windows",
+        "16",
+        "--source-commit",
+        "d4e8623bf8add9f505ec018532c4602e5a838a41"
+      ],
+      "environment": {
+        "host": "b0ab32d68884",
+        "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+        "source_commit": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+        "binary_sha256": "e67f995433e225d7f3d662b5c61abd8b57d55f29159a5132022658ef686b8ef1",
+        "cpu_affinity": [
+          0
+        ],
+        "thread_settings": {
+          "RAYON_NUM_THREADS": "1",
+          "OMP_NUM_THREADS": "1",
+          "OPENBLAS_NUM_THREADS": "1",
+          "MKL_NUM_THREADS": "1"
+        }
+      },
+      "evidence_refs": [
+        "E-RHS"
+      ],
+      "exit_code": 0,
+      "reason": "Campaign orchestration completed; individual solver failures are retained and are not converted into successful runs.",
+      "command_scope": "Actual first preserved process invocation; complete campaign commands and exit statuses are in RAW_RUNS.jsonl.gz.",
+      "campaign_records": 324,
+      "all_commands_locator": "research/adaptive_causal_20261023/results/rhs_persistent_campaign/RAW_RUNS.jsonl.gz"
+    },
+    {
+      "id": "X-RECONCILE",
+      "status": "completed",
+      "command": [
+        "python3",
+        "research/adaptive_causal_20261023/src/independent_benchmark_review.py"
+      ],
+      "environment": {
+        "python": "3.12.14",
+        "scope": "reconcile all four native benchmark cohorts without rerunning solvers"
+      },
+      "evidence_refs": [
+        "E-INDEPENDENT-BENCH",
+        "E-REVIEW"
+      ],
+      "exit_code": 0,
+      "reason": "Completed scoped execution; exact details remain in linked receipt."
+    }
+  ],
+  "decisions": [
+    {
+      "id": "DEC-SCOPED",
+      "decision": "ACCEPT_WITH_DOCUMENTED_SCOPE",
+      "evidence_refs": [
+        "E-REVIEW"
+      ],
+      "description": "New opt-in APIs and constructive theorems accepted within their contracts."
+    },
+    {
+      "id": "DEC-PRODUCTION",
+      "decision": "NOT_ESTABLISHED",
+      "evidence_refs": [
+        "E-REVIEW"
+      ],
+      "description": "An implemented research increment is not equivalent to broad production qualification."
+    },
+    {
+      "id": "DEC-DEFAULT",
+      "decision": "RETAIN_PERSISTENT_RHS_ONLY_DEFAULT",
+      "evidence_refs": [
+        "E-CORRECTION",
+        "E-PARITY"
+      ],
+      "description": "Default forbids derivatives and preserves one DOPRI session; FD/JVP fallback requires explicit authorization."
+    }
+  ],
+  "overrides": [
+    {
+      "id": "OV-NCP",
+      "origin": "user instruction",
+      "decision": "No NCP execution",
+      "evidence_refs": [
+        "E-PLAN"
+      ]
+    },
+    {
+      "id": "OV-REUSE",
+      "origin": "user instruction",
+      "decision": "Do not rerun unchanged already-published science after one adversarial audit unless a changed dependency requires it.",
+      "evidence_refs": [
+        "E-BASE",
+        "E-GEOMETRY",
+        "E-SPHERE"
+      ]
+    }
+  ],
+  "failures": [
+    {
+      "id": "FAIL-REVIEW",
+      "class": "implementation",
+      "status": "fixed",
+      "evidence_refs": [
+        "E-REVIEW"
+      ],
+      "description": "Six independent findings corrected: underflow, inverse overflow, hidden time FD, solve telemetry, exceptional quadratic charts and stale causal aggregation.",
+      "next_action": "Keep the added regressions and identity reconciliation in future CI."
+    },
+    {
+      "id": "FAIL-EXPLICIT-STIFF",
+      "class": "numerics",
+      "status": "preserved_expected_budget_failure",
+      "evidence_refs": [
+        "E-SWITCHING",
+        "E-RHS"
+      ],
+      "description": "Each switching cohort preserves36 explicit Prothero budget exits. These remain failures, not successful timings.",
+      "next_action": "Use explicit authorized stiff fallback when appropriate; test oscillation-aware selection before making it a general default."
+    },
+    {
+      "id": "FAIL-ROOT-NOT-STEP",
+      "class": "numerics",
+      "status": "scope_limitation",
+      "evidence_refs": [
+        "E-CAUSAL-BENCH"
+      ],
+      "description": "30 of36 causal root benchmark rows fail physical embedded step acceptance despite matching target roots.",
+      "next_action": "Benchmark full adaptive trajectories at matched actual error."
+    },
+    {
+      "id": "FAIL-SPECIALIZATION",
+      "class": "numerics",
+      "status": "scope_limitation",
+      "evidence_refs": [
+        "E-QUOTIENT-BENCH",
+        "E-SWITCHING"
+      ],
+      "description": "Slow/forced-stiff Lawson controls and oscillatory switching regret demonstrate that neither route is uniformly faster.",
+      "next_action": "Introduce validated structure-aware routing and report all unfavorable cases."
+    }
+  ],
+  "next_actions": [
+    {
+      "id": "NEXT-CLOSE",
+      "priority": 0,
+      "status": "published_payload_verified",
+      "owner": "integration_parent",
+      "action": "Native and research payload were published via the connected GitHub API and its branch ref read back. Publish this metadata receipt as the next fast-forward commit.",
+      "evidence_refs": [
+        "E-REVIEW"
+      ]
+    },
+    {
+      "id": "NEXT-PERSISTENT-MULTI",
+      "priority": 1,
+      "status": "planned",
+      "action": "Implement persistent multi-method sessions for authorized switching and separate rejection pressure from rapid oscillation.",
+      "evidence_refs": [
+        "E-CORRECTION",
+        "E-SWITCHING"
+      ]
+    },
+    {
+      "id": "NEXT-CAUSAL-TRAJECTORY",
+      "priority": 1,
+      "status": "planned",
+      "action": "Measure adaptive causal trajectories against protected baseline at matched observed error before a user-facing speed claim.",
+      "evidence_refs": [
+        "E-CAUSAL-BENCH"
+      ]
+    },
+    {
+      "id": "NEXT-STRUCTURED-ROUTE",
+      "priority": 1,
+      "status": "planned",
+      "action": "Expose explicit known-structure capability negotiation for quotient/coupled APIs; do not silently infer a global annihilating polynomial from samples.",
+      "evidence_refs": [
+        "E-THEORY",
+        "E-OSC"
+      ]
+    },
+    {
+      "id": "NEXT-GENERAL-QUALIFICATION",
+      "priority": 2,
+      "status": "planned",
+      "action": "Expand external comparator and failure coverage after adapter integration; qualify production by stated problem classes, not a blanket label.",
+      "evidence_refs": [
+        "E-REVIEW"
+      ]
+    }
+  ],
+  "source_cohorts": {
+    "baseline_commit": "14c74978b93339a79d7228a324fa77552dae548e",
+    "initial_native_commit": "548526add83a38a996875b3bd2f3cd3357465ed6",
+    "final_native_commit": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+    "interpretation": "Initial switching, quotient and causal benchmark receipts remain attached to 548526a. The corrected Forbidden/default RHS route has a separate 324-record cohort at d4e8623b. Unchanged integrator and coupled tests are reused by source identity, not relabelled as rerun. No cross-cohort wall-time ratio is presented as an identical-source comparison."
+  },
+  "reuse_decisions": [
+    {
+      "id": "REUSE-1",
+      "scope": "Prior algebraic/causal proofs and primary-source polynomial functional calculus",
+      "evidence_refs": [
+        "E-GEOMETRY",
+        "E-THEORY"
+      ],
+      "policy": "Use cited proof statements under their original hypotheses. New proof-to-code transfers and newly modified arithmetic are checked; unchanged old benchmark suites are not repeated."
+    },
+    {
+      "id": "REUSE-2",
+      "scope": "Previously published spherical-information research",
+      "evidence_refs": [
+        "E-SPHERE"
+      ],
+      "policy": "Preserve imported package and 121-file manifest identity; no new claim about that unchanged science."
+    },
+    {
+      "id": "REUSE-3",
+      "scope": "Unchanged quotient/quadratic and coupled native tests after d4e8623b facade change",
+      "evidence_refs": [
+        "E-NATIVE",
+        "E-CAUSAL-TESTS",
+        "E-CAUSAL-PINS",
+        "E-REVIEW"
+      ],
+      "policy": "Reuse 17+66 tests with matching source hashes; facade was rerun and passed 122 tests."
+    }
+  ],
+  "strong_no_go_review": {
+    "status": "not_applicable",
+    "new_strong_no_go_claims": [],
+    "reason": "This loop supplies conditional constructive algorithms and retains observed counterexamples as limitations. It does not admit a new impossibility theorem. NG1–NG7 are recorded to prevent converting scoped negative evidence into a universal exclusion.",
+    "criteria": [
+      {
+        "id": "NG1",
+        "criterion": "정확한 대상과 양화",
+        "disposition": "constructive_scope_checked",
+        "evidence_refs": [
+          "E-THEORY"
+        ],
+        "reason": "Known q, declared constant A, scalar quadratic and strictly causal raw target define the exact applicable classes."
+      },
+      {
+        "id": "NG2",
+        "criterion": "완결된 증명",
+        "disposition": "constructive_proofs_provided",
+        "evidence_refs": [
+          "E-THEORY"
+        ],
+        "reason": "Explicit inverse, branch and finite-front proofs replace a no-go conclusion."
+      },
+      {
+        "id": "NG3",
+        "criterion": "비자명성·비공허성",
+        "disposition": "nonempty_positive_examples_checked",
+        "evidence_refs": [
+          "E-EXACT",
+          "E-QUOTIENT-BENCH",
+          "E-CAUSAL-BENCH"
+        ],
+        "reason": "Rotation, confluent/nonsemisimple quotient, nonlinear causal and positive-discriminant examples are executable."
+      },
+      {
+        "id": "NG4",
+        "criterion": "핵심 장애 기작",
+        "disposition": "mechanisms_and_remedies_identified",
+        "evidence_refs": [
+          "E-REVIEW",
+          "E-RVJ"
+        ],
+        "reason": "Near-fold conditioning, arithmetic overflow/underflow, stiff residuals and switching regret are separated and given scoped remedies."
+      },
+      {
+        "id": "NG5",
+        "criterion": "구체적인 과학적 중요성",
+        "disposition": "work_reduction_measured_in_scope",
+        "evidence_refs": [
+          "E-CAUSAL-BENCH",
+          "E-QUOTIENT-BENCH",
+          "E-PARITY"
+        ],
+        "reason": "Current-stage derivative work, carrier RHS demand and unnecessary restart work are reduced in identified cases."
+      },
+      {
+        "id": "NG6",
+        "criterion": "원전 대조로 확인한 문헌 대비 새 기여",
+        "disposition": "novelty_not_claimed",
+        "evidence_refs": [
+          "E-GEOMETRY",
+          "E-RVJ",
+          "E-THEORY"
+        ],
+        "reason": "Classical minimal-polynomial functional calculus and Lawson construction are attributed. Contribution claimed here is implementation and source-specific transfer, not invention of these mathematical principles."
+      },
+      {
+        "id": "NG7",
+        "criterion": "주장 범위와 독립 검토의 일치",
+        "disposition": "scoped_independent_review_complete",
+        "evidence_refs": [
+          "E-REVIEW"
+        ],
+        "reason": "Independent reviewer accepts AT1–AT4 under hypotheses; broader production and universal stiff order remain unestablished."
+      }
+    ]
+  },
+  "closure_note": "All R1–R10 and C1–C10 stages are complete for this scoped research/code delivery. Final independent review is COMPLETE_SCOPED. Broader production development and the planned future comparator campaign remain open. Research and native source were published with identical Git trees and the branch ref read back; PUBLISH_MAP.json records payload identity. The workflow validator assesses structure/references, not scientific validity.",
+  "publication": {
+    "status": "payload_published_and_ref_readback_verified",
+    "source_commit": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+    "remote_native_commit": "d2775a7a0c0e5784d190158c2a3159f0f89d4f72",
+    "published_payload_commit": "a25406e0dab28333acbf1cfc17e4d6b0f55a0ddd",
+    "receipt_locator": "PUBLISH_MAP.json",
+    "note": "Complete native and research Git trees match local evidence snapshots. Subsequent metadata-only commit publishes this verification record."
+  }
+}

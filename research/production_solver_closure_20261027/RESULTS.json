@@ -1,0 +1,743 @@
+{
+  "schema_version": 1,
+  "baseline_pr": 91,
+  "baseline_commit": "206298b4068d923bb47c7160b111b7439098660c",
+  "status": "complete_scoped",
+  "correction_loops": {
+    "structural": 3,
+    "homotopy": 1,
+    "adapter": 3
+  },
+  "maximum_per_research_task": 3,
+  "integration_accounting_correction_loops": 1,
+  "comparisons": {
+    "ratio_definition": "baseline native elapsed time / candidate native elapsed time",
+    "range_definition": "minimum/maximum of five paired ABBA/BAAB blocks; descriptive, not a confidence interval",
+    "structural": [
+      {
+        "dimension": 1,
+        "threads": 1,
+        "steps": 64,
+        "comparisons": [
+          {
+            "candidate": "fused",
+            "paired_block_speedups": [
+              0.9659921269507596,
+              1.0197687590046938,
+              1.0110510073433037,
+              1.2314842250854237,
+              0.7373119977583615
+            ],
+            "median_speedup": 1.0110510073433037,
+            "observed_range": [
+              0.7373119977583615,
+              1.2314842250854237
+            ],
+            "loops_per_batch": 1000
+          },
+          {
+            "candidate": "enclosed",
+            "paired_block_speedups": [
+              1.198546656852967,
+              1.3228536315280939,
+              1.189535457512859,
+              1.153978993103474,
+              1.169521145193766
+            ],
+            "median_speedup": 1.189535457512859,
+            "observed_range": [
+              1.153978993103474,
+              1.3228536315280939
+            ],
+            "loops_per_batch": 1000
+          }
+        ],
+        "diagnostics": [
+          {
+            "all_grid_bits_equal": true,
+            "arm": "pr91",
+            "maximum_common_grid_error": 4.440892098500626e-16,
+            "maximum_pr91_difference": 0.0,
+            "maximum_screen_metric": 4.109126233720062e-17,
+            "screen_kind": "operational original-space f64 residual",
+            "work": {
+              "full_state_causal_accumulations": 3584,
+              "jacobian_evaluations": 0,
+              "jvp_evaluations": 0,
+              "lifted_components": 512,
+              "matrix_factorizations": 0,
+              "newton_updates": 0,
+              "original_space_residual_components": 512,
+              "physical_linear_actions": 512,
+              "rhs_evaluations": 576,
+              "scalar_stage_solves": 0,
+              "shifted_resolvent_actions": 0
+            }
+          },
+          {
+            "all_grid_bits_equal": true,
+            "arm": "fused",
+            "maximum_common_grid_error": 4.440892098500626e-16,
+            "maximum_pr91_difference": 0.0,
+            "maximum_screen_metric": 4.109126233720062e-17,
+            "screen_kind": "operational original-space f64 residual",
+            "work": {
+              "enclosed_lift_components": 0,
+              "enclosed_mean_components": 0,
+              "factorized_residual_stages": 0,
+              "full_state_causal_accumulations": 3584,
+              "jacobian_evaluations": 0,
+              "jvp_evaluations": 0,
+              "lifted_components": 512,
+              "matrix_factorizations": 0,
+              "newton_updates": 0,
+              "original_space_residual_components": 512,
+              "physical_linear_actions": 512,
+              "rhs_evaluations": 576,
+              "scalar_stage_solves": 0,
+              "shifted_resolvent_actions": 0
+            }
+          },
+          {
+            "all_grid_bits_equal": true,
+            "arm": "enclosed",
+            "maximum_common_grid_error": 4.440892098500626e-16,
+            "maximum_pr91_difference": 0.0,
+            "maximum_screen_metric": 1.3020215105146324e-16,
+            "screen_kind": "outward original-space upper bound",
+            "work": {
+              "enclosed_lift_components": 512,
+              "enclosed_mean_components": 128,
+              "factorized_residual_stages": 512,
+              "full_state_causal_accumulations": 0,
+              "jacobian_evaluations": 0,
+              "jvp_evaluations": 0,
+              "lifted_components": 512,
+              "matrix_factorizations": 0,
+              "newton_updates": 0,
+              "original_space_residual_components": 512,
+              "physical_linear_actions": 0,
+              "rhs_evaluations": 64,
+              "scalar_stage_solves": 0,
+              "shifted_resolvent_actions": 0
+            }
+          }
+        ]
+      },
+      {
+        "dimension": 2048,
+        "threads": 1,
+        "steps": 64,
+        "comparisons": [
+          {
+            "candidate": "fused",
+            "paired_block_speedups": [
+              1.219764091731663,
+              0.7094992617114455,
+              1.1989981584758072,
+              0.618610820041744,
+              0.8404797526180551
+            ],
+            "median_speedup": 0.8404797526180551,
+            "observed_range": [
+              0.618610820041744,
+              1.219764091731663
+            ],
+            "loops_per_batch": 4
+          },
+          {
+            "candidate": "enclosed",
+            "paired_block_speedups": [
+              3.6137063560502343,
+              2.062922159335423,
+              2.226847125685553,
+              1.2255881748061848,
+              1.9450789500588608
+            ],
+            "median_speedup": 2.062922159335423,
+            "observed_range": [
+              1.2255881748061848,
+              3.6137063560502343
+            ],
+            "loops_per_batch": 3
+          }
+        ],
+        "diagnostics": [
+          {
+            "all_grid_bits_equal": true,
+            "arm": "pr91",
+            "maximum_common_grid_error": 2.397597120840089e-10,
+            "maximum_pr91_difference": 0.0,
+            "maximum_screen_metric": 3.191891195797325e-16,
+            "screen_kind": "operational original-space f64 residual",
+            "work": {
+              "full_state_causal_accumulations": 7340032,
+              "jacobian_evaluations": 0,
+              "jvp_evaluations": 0,
+              "lifted_components": 1048576,
+              "matrix_factorizations": 0,
+              "newton_updates": 0,
+              "original_space_residual_components": 1048576,
+              "physical_linear_actions": 512,
+              "rhs_evaluations": 576,
+              "scalar_stage_solves": 0,
+              "shifted_resolvent_actions": 0
+            }
+          },
+          {
+            "all_grid_bits_equal": true,
+            "arm": "fused",
+            "maximum_common_grid_error": 2.397597120840089e-10,
+            "maximum_pr91_difference": 0.0,
+            "maximum_screen_metric": 3.191891195797325e-16,
+            "screen_kind": "operational original-space f64 residual",
+            "work": {
+              "enclosed_lift_components": 0,
+              "enclosed_mean_components": 0,
+              "factorized_residual_stages": 0,
+              "full_state_causal_accumulations": 7340032,
+              "jacobian_evaluations": 0,
+              "jvp_evaluations": 0,
+              "lifted_components": 1048576,
+              "matrix_factorizations": 0,
+              "newton_updates": 0,
+              "original_space_residual_components": 1048576,
+              "physical_linear_actions": 512,
+              "rhs_evaluations": 576,
+              "scalar_stage_solves": 0,
+              "shifted_resolvent_actions": 0
+            }
+          },
+          {
+            "all_grid_bits_equal": true,
+            "arm": "enclosed",
+            "maximum_common_grid_error": 2.397597120840089e-10,
+            "maximum_pr91_difference": 0.0,
+            "maximum_screen_metric": 1.1836574495221259e-15,
+            "screen_kind": "outward original-space upper bound",
+            "work": {
+              "enclosed_lift_components": 1048576,
+              "enclosed_mean_components": 262144,
+              "factorized_residual_stages": 512,
+              "full_state_causal_accumulations": 0,
+              "jacobian_evaluations": 0,
+              "jvp_evaluations": 0,
+              "lifted_components": 1048576,
+              "matrix_factorizations": 0,
+              "newton_updates": 0,
+              "original_space_residual_components": 1048576,
+              "physical_linear_actions": 0,
+              "rhs_evaluations": 64,
+              "scalar_stage_solves": 0,
+              "shifted_resolvent_actions": 0
+            }
+          }
+        ]
+      },
+      {
+        "dimension": 2048,
+        "threads": 2,
+        "steps": 64,
+        "comparisons": [
+          {
+            "candidate": "fused",
+            "paired_block_speedups": [
+              1.0315539541427905,
+              1.0326642516584559,
+              1.276144202457042,
+              1.2126768388728992,
+              1.2396167302453576
+            ],
+            "median_speedup": 1.2126768388728992,
+            "observed_range": [
+              1.0315539541427905,
+              1.276144202457042
+            ],
+            "loops_per_batch": 3
+          },
+          {
+            "candidate": "enclosed",
+            "paired_block_speedups": [
+              2.1524716407588436,
+              0.7447179962226778,
+              1.4761901633959926,
+              2.328034417014171,
+              2.304550201887878
+            ],
+            "median_speedup": 2.1524716407588436,
+            "observed_range": [
+              0.7447179962226778,
+              2.328034417014171
+            ],
+            "loops_per_batch": 2
+          }
+        ],
+        "diagnostics": [
+          {
+            "all_grid_bits_equal": true,
+            "arm": "pr91",
+            "maximum_common_grid_error": 2.397597120840089e-10,
+            "maximum_pr91_difference": 0.0,
+            "maximum_screen_metric": 3.191891195797325e-16,
+            "screen_kind": "operational original-space f64 residual",
+            "work": {
+              "full_state_causal_accumulations": 7340032,
+              "jacobian_evaluations": 0,
+              "jvp_evaluations": 0,
+              "lifted_components": 1048576,
+              "matrix_factorizations": 0,
+              "newton_updates": 0,
+              "original_space_residual_components": 1048576,
+              "physical_linear_actions": 512,
+              "rhs_evaluations": 576,
+              "scalar_stage_solves": 0,
+              "shifted_resolvent_actions": 0
+            }
+          },
+          {
+            "all_grid_bits_equal": true,
+            "arm": "fused",
+            "maximum_common_grid_error": 2.397597120840089e-10,
+            "maximum_pr91_difference": 0.0,
+            "maximum_screen_metric": 3.191891195797325e-16,
+            "screen_kind": "operational original-space f64 residual",
+            "work": {
+              "enclosed_lift_components": 0,
+              "enclosed_mean_components": 0,
+              "factorized_residual_stages": 0,
+              "full_state_causal_accumulations": 7340032,
+              "jacobian_evaluations": 0,
+              "jvp_evaluations": 0,
+              "lifted_components": 1048576,
+              "matrix_factorizations": 0,
+              "newton_updates": 0,
+              "original_space_residual_components": 1048576,
+              "physical_linear_actions": 512,
+              "rhs_evaluations": 576,
+              "scalar_stage_solves": 0,
+              "shifted_resolvent_actions": 0
+            }
+          },
+          {
+            "all_grid_bits_equal": true,
+            "arm": "enclosed",
+            "maximum_common_grid_error": 2.397597120840089e-10,
+            "maximum_pr91_difference": 0.0,
+            "maximum_screen_metric": 1.1836574495221259e-15,
+            "screen_kind": "outward original-space upper bound",
+            "work": {
+              "enclosed_lift_components": 1048576,
+              "enclosed_mean_components": 262144,
+              "factorized_residual_stages": 512,
+              "full_state_causal_accumulations": 0,
+              "jacobian_evaluations": 0,
+              "jvp_evaluations": 0,
+              "lifted_components": 1048576,
+              "matrix_factorizations": 0,
+              "newton_updates": 0,
+              "original_space_residual_components": 1048576,
+              "physical_linear_actions": 0,
+              "rhs_evaluations": 64,
+              "scalar_stage_solves": 0,
+              "shifted_resolvent_actions": 0
+            }
+          }
+        ]
+      },
+      {
+        "dimension": 64,
+        "threads": 1,
+        "steps": 64,
+        "comparisons": [
+          {
+            "candidate": "fused",
+            "paired_block_speedups": [
+              1.1864874678253652,
+              1.1608340398472798,
+              0.9151701298386777,
+              1.2663742840843248,
+              1.1684223277898282
+            ],
+            "median_speedup": 1.1684223277898282,
+            "observed_range": [
+              0.9151701298386777,
+              1.2663742840843248
+            ],
+            "loops_per_batch": 114
+          },
+          {
+            "candidate": "enclosed",
+            "paired_block_speedups": [
+              1.6892138053054029,
+              1.9984968435029729,
+              1.6485048600474879,
+              1.7834256647615103,
+              1.864449008524527
+            ],
+            "median_speedup": 1.7834256647615103,
+            "observed_range": [
+              1.6485048600474879,
+              1.9984968435029729
+            ],
+            "loops_per_batch": 139
+          }
+        ],
+        "diagnostics": [
+          {
+            "all_grid_bits_equal": true,
+            "arm": "pr91",
+            "maximum_common_grid_error": 2.384490382922877e-10,
+            "maximum_pr91_difference": 0.0,
+            "maximum_screen_metric": 2.636779683484747e-16,
+            "screen_kind": "operational original-space f64 residual",
+            "work": {
+              "full_state_causal_accumulations": 229376,
+              "jacobian_evaluations": 0,
+              "jvp_evaluations": 0,
+              "lifted_components": 32768,
+              "matrix_factorizations": 0,
+              "newton_updates": 0,
+              "original_space_residual_components": 32768,
+              "physical_linear_actions": 512,
+              "rhs_evaluations": 576,
+              "scalar_stage_solves": 0,
+              "shifted_resolvent_actions": 0
+            }
+          },
+          {
+            "all_grid_bits_equal": true,
+            "arm": "fused",
+            "maximum_common_grid_error": 2.384490382922877e-10,
+            "maximum_pr91_difference": 0.0,
+            "maximum_screen_metric": 2.636779683484747e-16,
+            "screen_kind": "operational original-space f64 residual",
+            "work": {
+              "enclosed_lift_components": 0,
+              "enclosed_mean_components": 0,
+              "factorized_residual_stages": 0,
+              "full_state_causal_accumulations": 229376,
+              "jacobian_evaluations": 0,
+              "jvp_evaluations": 0,
+              "lifted_components": 32768,
+              "matrix_factorizations": 0,
+              "newton_updates": 0,
+              "original_space_residual_components": 32768,
+              "physical_linear_actions": 512,
+              "rhs_evaluations": 576,
+              "scalar_stage_solves": 0,
+              "shifted_resolvent_actions": 0
+            }
+          },
+          {
+            "all_grid_bits_equal": true,
+            "arm": "enclosed",
+            "maximum_common_grid_error": 2.384490382922877e-10,
+            "maximum_pr91_difference": 0.0,
+            "maximum_screen_metric": 1.1802240658564118e-15,
+            "screen_kind": "outward original-space upper bound",
+            "work": {
+              "enclosed_lift_components": 32768,
+              "enclosed_mean_components": 8192,
+              "factorized_residual_stages": 512,
+              "full_state_causal_accumulations": 0,
+              "jacobian_evaluations": 0,
+              "jvp_evaluations": 0,
+              "lifted_components": 32768,
+              "matrix_factorizations": 0,
+              "newton_updates": 0,
+              "original_space_residual_components": 32768,
+              "physical_linear_actions": 0,
+              "rhs_evaluations": 64,
+              "scalar_stage_solves": 0,
+              "shifted_resolvent_actions": 0
+            }
+          }
+        ]
+      }
+    ],
+    "homotopy": [
+      {
+        "case": "cubic",
+        "a": "generic",
+        "b": "scalar",
+        "median_a_over_b": 1.7282746201720829,
+        "minimum": 0.9582522168270915,
+        "maximum": 1.903389075344664,
+        "paired_ratios": [
+          1.7282746201720829,
+          1.2639094500129548,
+          0.9582522168270915,
+          1.7592175109076529,
+          1.903389075344664
+        ],
+        "interpretation": "descriptive paired-block range; not a confidence interval"
+      },
+      {
+        "case": "cubic",
+        "a": "scalar",
+        "b": "algebraic",
+        "median_a_over_b": 0.8885594483276184,
+        "minimum": 0.662867377532571,
+        "maximum": 1.3782510619160422,
+        "paired_ratios": [
+          0.8885594483276184,
+          0.8686257974277396,
+          0.662867377532571,
+          1.3782510619160422,
+          0.9542234492057587
+        ],
+        "interpretation": "descriptive paired-block range; not a confidence interval"
+      },
+      {
+        "case": "cubic",
+        "a": "generic",
+        "b": "algebraic",
+        "median_a_over_b": 1.333890468752758,
+        "minimum": 1.0424763782468571,
+        "maximum": 1.4176205151802002,
+        "paired_ratios": [
+          1.4176205151802002,
+          1.333890468752758,
+          1.0424763782468571,
+          1.3666025222201588,
+          1.0585733487184659
+        ],
+        "interpretation": "descriptive paired-block range; not a confidence interval"
+      },
+      {
+        "case": "cubic",
+        "a": "generic",
+        "b": "rational",
+        "median_a_over_b": 1.5136356162048779,
+        "minimum": 0.7159064706626731,
+        "maximum": 1.6662726850764704,
+        "paired_ratios": [
+          1.6662726850764704,
+          0.7159064706626731,
+          1.6341516509318188,
+          1.4361962644455015,
+          1.5136356162048779
+        ],
+        "interpretation": "descriptive paired-block range; not a confidence interval"
+      },
+      {
+        "case": "cubic",
+        "a": "scalar",
+        "b": "rational",
+        "median_a_over_b": 0.9702957912627551,
+        "minimum": 0.7808136116158626,
+        "maximum": 1.1893358852514648,
+        "paired_ratios": [
+          1.0512865456088967,
+          0.9188636764180947,
+          0.7808136116158626,
+          0.9702957912627551,
+          1.1893358852514648
+        ],
+        "interpretation": "descriptive paired-block range; not a confidence interval"
+      },
+      {
+        "case": "cubic",
+        "a": "algebraic",
+        "b": "rational",
+        "median_a_over_b": 1.1392881630003941,
+        "minimum": 1.0252221866129083,
+        "maximum": 1.5560331213975784,
+        "paired_ratios": [
+          1.5560331213975784,
+          1.1192421370981287,
+          1.0252221866129083,
+          1.2721291525244294,
+          1.1392881630003941
+        ],
+        "interpretation": "descriptive paired-block range; not a confidence interval"
+      },
+      {
+        "case": "nonlinear",
+        "a": "generic",
+        "b": "scalar",
+        "median_a_over_b": 1.4735895445199867,
+        "minimum": 1.438766276129082,
+        "maximum": 1.8278941111340574,
+        "paired_ratios": [
+          1.46173603938787,
+          1.438766276129082,
+          1.4735895445199867,
+          1.8278941111340574,
+          1.5009892669119478
+        ],
+        "interpretation": "descriptive paired-block range; not a confidence interval"
+      },
+      {
+        "case": "nonlinear",
+        "a": "scalar",
+        "b": "algebraic",
+        "median_a_over_b": 0.9581191013248862,
+        "minimum": 0.7815513206894354,
+        "maximum": 1.0085574646368936,
+        "paired_ratios": [
+          1.0085574646368936,
+          0.7815513206894354,
+          0.9581191013248862,
+          0.9153737762234415,
+          0.9647071262423346
+        ],
+        "interpretation": "descriptive paired-block range; not a confidence interval"
+      },
+      {
+        "case": "nonlinear",
+        "a": "generic",
+        "b": "algebraic",
+        "median_a_over_b": 1.318572553096997,
+        "minimum": 0.9650019896007034,
+        "maximum": 2.170274236629033,
+        "paired_ratios": [
+          2.170274236629033,
+          1.318572553096997,
+          1.1423918587052548,
+          1.5688314948063735,
+          0.9650019896007034
+        ],
+        "interpretation": "descriptive paired-block range; not a confidence interval"
+      },
+      {
+        "case": "nonlinear",
+        "a": "generic",
+        "b": "rational",
+        "median_a_over_b": 1.670431382884016,
+        "minimum": 1.1020881512435523,
+        "maximum": 1.7665181790758397,
+        "paired_ratios": [
+          1.1020881512435523,
+          1.670431382884016,
+          1.7665181790758397,
+          1.2467908315623673,
+          1.707844432319538
+        ],
+        "interpretation": "descriptive paired-block range; not a confidence interval"
+      },
+      {
+        "case": "nonlinear",
+        "a": "scalar",
+        "b": "rational",
+        "median_a_over_b": 1.0969152716734374,
+        "minimum": 0.8173271665218368,
+        "maximum": 1.2240461660949564,
+        "paired_ratios": [
+          1.2240461660949564,
+          0.8173271665218368,
+          1.0188120656746134,
+          1.15627050105896,
+          1.0969152716734374
+        ],
+        "interpretation": "descriptive paired-block range; not a confidence interval"
+      },
+      {
+        "case": "nonlinear",
+        "a": "algebraic",
+        "b": "rational",
+        "median_a_over_b": 1.1677857144954011,
+        "minimum": 1.1282642585259541,
+        "maximum": 1.8458614785479244,
+        "paired_ratios": [
+          1.1656210368600164,
+          1.1677857144954011,
+          1.1282642585259541,
+          1.8458614785479244,
+          1.3222302710025775
+        ],
+        "interpretation": "descriptive paired-block range; not a confidence interval"
+      }
+    ],
+    "adapter": [
+      {
+        "case": "stiff-cubic",
+        "baseline": "pr91",
+        "candidate": "observed-pr91",
+        "median_speedup": 1.0106244266235496,
+        "observed_speedup_range": [
+          0.8981072275287725,
+          1.4468697424270744
+        ],
+        "instruction_slopes_per_trajectory": {
+          "pr91": 7799712.625,
+          "observed-pr91": 7839131.25
+        },
+        "instruction_change_percent": 0.5053856070754925
+      },
+      {
+        "case": "reentrant-nonlinear",
+        "baseline": "rhs-only",
+        "candidate": "observed-strict-sentinel",
+        "median_speedup": 0.3403582780500989,
+        "observed_speedup_range": [
+          0.12647578696156234,
+          0.5046062279186364
+        ],
+        "instruction_slopes_per_trajectory": {
+          "rhs-only": 39519807.5,
+          "observed-strict-sentinel": 96831168.75
+        },
+        "instruction_change_percent": 145.01933302686254
+      }
+    ]
+  },
+  "instruction_profiles": {
+    "structural": {
+      "status": "completed",
+      "instructions_per_repetition": {
+        "pr91": 347516244.75,
+        "fused": 309511284.25,
+        "enclosed": 130256982.0
+      },
+      "ratio_to_first_arm": {
+        "pr91": 1.0,
+        "fused": 0.8906383195774332,
+        "enclosed": 0.3748227139531439
+      },
+      "binary_unchanged": true,
+      "source_changes_during_profile": [],
+      "interpretation": "guest instruction count; startup subtracted; not native wall time"
+    },
+    "homotopy": {
+      "status": "completed",
+      "instructions_per_repetition": {
+        "generic": 3182149.3,
+        "scalar": 2028310.0,
+        "algebraic": 2061615.0,
+        "rational": 1940807.0
+      },
+      "ratio_to_first_arm": {
+        "generic": 1.0,
+        "scalar": 0.6374025253937645,
+        "algebraic": 0.6478687219358312,
+        "rational": 0.6099044441440884
+      },
+      "binary_unchanged": true,
+      "source_changes_during_profile": [],
+      "interpretation": "guest instruction count; startup subtracted; not native wall time"
+    }
+  },
+  "decisions": {
+    "default_production_route": "persistent RHS-only DOPRI5",
+    "selective_jvp": "Explicit supplied callback only after problem-level accuracy and total-cost qualification.",
+    "structural": "Use charged API and full outward residual enclosure within the proved mean-field model; actual serial/parallel deployment choice remains hardware-qualified.",
+    "cubic": "Scalar Picard is a recommended opt-in; retain generic legacy default and separately qualified rational predictor.",
+    "adapter": "Keep observed-entry-step reuse off by default; aggressive return sentinel is not a universally faster policy."
+  },
+  "performance_provenance": {
+    "structural": "structural/FINAL_BENCHMARK_SUMMARY.json",
+    "homotopy": "homotopy/RUN_RECORD.json",
+    "adapter": "adapter/PERFORMANCE.json",
+    "adapter_final_source_note": "Final C3 changes two conditionals only; final correctness audit equals the measured cohort. Timing and instructions were not remeasured after C3.",
+    "final_integration_note": "Profiles are attached to their frozen source/binary identities. Subsequent inherited lagged failure-counter repair does not create a new timing measurement."
+  },
+  "validation": "evidence/VALIDATION_SUMMARY.json",
+  "local_development_plan": "DEVELOPMENT_PLAN.json",
+  "theoretical_limits": [
+    "Structural full-stage residual bound is not yet a full adaptive trajectory certificate.",
+    "Generic nonlinear carrier closure/order and finite-budget vector homotopy require additional explicit hypotheses.",
+    "Current-window exact integer cost comparisons cannot certify arbitrary future regimes.",
+    "No universal rational, parallel, Anderson-acceleration or switching advantage is claimed."
+  ]
+}

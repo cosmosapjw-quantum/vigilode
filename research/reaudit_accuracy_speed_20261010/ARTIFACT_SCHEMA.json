@@ -1,0 +1,229 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:vigilode:reaudit-20261010:artifacts",
+  "title": "VigilODE machine-readable review artifacts",
+  "oneOf": [
+    {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "artifact",
+        "nodes"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "artifact": {
+          "const": "vigilode_next_development_dag"
+        },
+        "nodes": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "title_ko",
+              "kind",
+              "status",
+              "claim_ceiling",
+              "priority",
+              "depends_on",
+              "edit_targets",
+              "contract",
+              "implementation_steps",
+              "acceptance_gate",
+              "kill_or_hold_gate",
+              "reused_evidence",
+              "measurement_units",
+              "execution"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "title_ko": {
+                "type": "string"
+              },
+              "kind": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string"
+              },
+              "claim_ceiling": {
+                "type": "string"
+              },
+              "priority": {
+                "enum": [
+                  "P0",
+                  "P1",
+                  "P2",
+                  "P3"
+                ]
+              },
+              "depends_on": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "uniqueItems": true
+              },
+              "edit_targets": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "contract": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "implementation_steps": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "acceptance_gate": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "kill_or_hold_gate": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "reused_evidence": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "measurement_units": {
+                "type": "array",
+                "minItems": 1,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "execution": {
+                "type": "object",
+                "required": [
+                  "requires_new_preregistration",
+                  "command_status",
+                  "command"
+                ],
+                "properties": {
+                  "requires_new_preregistration": {
+                    "type": "boolean"
+                  },
+                  "command_status": {
+                    "const": "PLANNED_COMMAND_REQUIRES_IMPLEMENTATION_AND_NEW_TEST_FILE"
+                  },
+                  "command": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "artifact",
+        "findings"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "artifact": {
+          "const": "findings"
+        },
+        "findings": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "severity",
+              "status",
+              "confidence",
+              "locations",
+              "evidence",
+              "next_nodes",
+              "claim_ceiling"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "severity": {
+                "enum": [
+                  "P0",
+                  "P1",
+                  "P2",
+                  "P3"
+                ]
+              },
+              "next_nodes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object",
+      "required": [
+        "schema_version",
+        "artifact",
+        "claims"
+      ],
+      "properties": {
+        "schema_version": {
+          "const": "1.0"
+        },
+        "artifact": {
+          "const": "claim_ledger"
+        },
+        "claims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "claim",
+              "evidence_level",
+              "decision",
+              "evidence_paths",
+              "scope",
+              "claim_ceiling"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

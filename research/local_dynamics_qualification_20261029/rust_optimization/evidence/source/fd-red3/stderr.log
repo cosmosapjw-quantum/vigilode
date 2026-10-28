@@ -1,0 +1,22 @@
+   Compiling vigilode v0.1.0 (/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/baseline/crates/vigilode)
+warning: variant `Recoverable` is never constructed
+  --> crates/vigilode/tests/fd_allocation_contracts.rs:14:9
+   |
+13 |     pub enum CallbackError {
+   |              ------------- variant in this enum
+14 |         Recoverable(String),
+   |         ^^^^^^^^^^^
+   |
+   = note: `CallbackError` has a derived impl for the trait `Debug`, but this is intentionally ignored during dead code analysis
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `vigilode` (test "fd_allocation_contracts") generated 1 warning
+    Finished `measurement` profile [optimized] target(s) in 0.47s
+     Running tests/fd_allocation_contracts.rs (/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-red/measurement/deps/fd_allocation_contracts-6a707bdb6e22fc1c)
+
+thread 'repeated_fd_builds_reuse_scratch_after_warmup' (2053837) panicked at crates/vigilode/tests/fd_allocation_contracts.rs:111:5:
+assertion `left == right` failed: dense scratch was reallocated
+  left: 4
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `-p vigilode --test fd_allocation_contracts`

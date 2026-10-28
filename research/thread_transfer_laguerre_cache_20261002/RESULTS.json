@@ -1,0 +1,147 @@
+{
+  "combination": [
+    {
+      "degree": 16,
+      "summary": {
+        "column_bound_sum": 4.791209526615861e-16,
+        "column_bounds": [
+          4.12181881213274e-16,
+          5.761006223178377e-17,
+          8.151493098993487e-18,
+          1.0544812462449874e-18,
+          1.2303487128975471e-19
+        ],
+        "combined_bound": 4.79120952661593e-16,
+        "combined_over_columns": 1.0000000000000144,
+        "combined_setup_operations": 23342
+      }
+    },
+    {
+      "degree": 32,
+      "summary": {
+        "column_bound_sum": 5.100769869689557e-16,
+        "column_bounds": [
+          4.4101263962643463e-16,
+          5.95737121792248e-17,
+          8.301208434060713e-18,
+          1.0656103917562013e-18,
+          1.238163374791862e-19
+        ],
+        "combined_bound": 5.100769869741074e-16,
+        "combined_over_columns": 1.0000000000100997,
+        "combined_setup_operations": 145454
+      }
+    }
+  ],
+  "gate_native": {
+    "cold_warm_separated": true,
+    "invalidation": true
+  },
+  "invalidation": {
+    "cold_operations": 145454,
+    "hits": 1,
+    "identical_key_hits_bitwise": true,
+    "misses": 6,
+    "variants": [
+      {
+        "change": "degree",
+        "missed": true,
+        "setup_operations": 133377
+      },
+      {
+        "change": "extent-one-ulp",
+        "missed": true,
+        "setup_operations": 145454
+      },
+      {
+        "change": "depth",
+        "missed": true,
+        "setup_operations": 250174
+      },
+      {
+        "change": "coefficient-one-ulp",
+        "missed": true,
+        "setup_operations": 145454
+      },
+      {
+        "change": "coefficients-of-another-h",
+        "missed": true,
+        "setup_operations": 145454
+      },
+      {
+        "change": "proof-version",
+        "missed": true
+      }
+    ],
+    "warm_operations": 0
+  },
+  "note": "gate item 3 (combination validity) is in EXACT_CHECK.json",
+  "schema": "vigilode-thread-transfer-laguerre-cache-v1",
+  "setup_cost": [
+    {
+      "degree": 16,
+      "per_action": [
+        {
+          "action_flops": 2048,
+          "actions_to_amortize_one_setup": 11.3974609375,
+          "n": 8
+        },
+        {
+          "action_flops": 73728,
+          "actions_to_amortize_one_setup": 0.3165961371527778,
+          "n": 64
+        }
+      ],
+      "setup_interval_operations": 23342
+    },
+    {
+      "degree": 32,
+      "per_action": [
+        {
+          "action_flops": 4096,
+          "actions_to_amortize_one_setup": 35.51123046875,
+          "n": 8
+        },
+        {
+          "action_flops": 147456,
+          "actions_to_amortize_one_setup": 0.9864230685763888,
+          "n": 64
+        }
+      ],
+      "setup_interval_operations": 145454
+    },
+    {
+      "degree": 64,
+      "per_action": [
+        {
+          "action_flops": 8192,
+          "actions_to_amortize_one_setup": 123.755615234375,
+          "n": 8
+        },
+        {
+          "action_flops": 294912,
+          "actions_to_amortize_one_setup": 3.437655978732639,
+          "n": 64
+        }
+      ],
+      "setup_interval_operations": 1013806
+    },
+    {
+      "degree": 128,
+      "per_action": [
+        {
+          "action_flops": 16384,
+          "actions_to_amortize_one_setup": 460.2528076171875,
+          "n": 8
+        },
+        {
+          "action_flops": 589824,
+          "actions_to_amortize_one_setup": 12.784800211588541,
+          "n": 64
+        }
+      ],
+      "setup_interval_operations": 7540782
+    }
+  ],
+  "setup_cost_fitted_exponent": 2.7785473841665738
+}

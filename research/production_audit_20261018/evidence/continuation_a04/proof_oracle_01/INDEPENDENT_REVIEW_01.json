@@ -1,0 +1,100 @@
+{
+  "schema_version": 1,
+  "unit": "A04-PROOF-ORACLE-01",
+  "verdict": "READY",
+  "scope": "Frozen proof-oracle fixture implementation, harness, and recorded execution only",
+  "reviewer": {
+    "identity": "a04_oracle_independent_review",
+    "role": "COSTROUTE01 research-review",
+    "read_only": true,
+    "content_authored_by": "reviewer",
+    "artifact_persistence_by": "controller",
+    "runtime_identity": "NOT_INDEPENDENTLY_OBSERVED"
+  },
+  "checkout": {
+    "cwd": "/home/cosmosapjw/vigilode",
+    "branch": "audit/production-readiness-20261018",
+    "head": "7e2873887ed6038b47b667c976435810851c5dba"
+  },
+  "evidence_directory": "research/production_audit_20261018/evidence/continuation_a04/proof_oracle_01",
+  "reviewed_artifact_sha256": {
+    "FINAL_V3_SOURCE_IDENTITY.json": "e635618553e31f6c8ceab1464bbb0affa04e5ffbeeb6bfec4749824d5394602e",
+    "native_final_v3.json": "55a467bf8a3314ad4772362fc24624832952d31b7515e91afbab9effaad7e0d0",
+    "fraction_final_v3_results.json": "3c7cefe8243ca3de802fea407ca68615a679916bfcaca01594bd431402b13073",
+    "final_v3_run_record.json": "6d183df46fb88d02d7d46638c173fb600c4bd733558b2c32fb4a3b9854052e43",
+    "fraction_final_v3_run_record.json": "aec03341f382463745d9c7c62882c6eba3e04baa142dbccbc3f134473b59231d",
+    "first_test.log": "6ea069d4431859bd904be43a87f98076cd26aaf6860de5395876ef584485cd38",
+    "../arithmetic_research_01/CONTRACT_INDEPENDENT_REVIEW_01.json": "68afc8cf65c7b4391765281a8420ec0b6d2758188c0eac86ff01367d943db593",
+    "../arithmetic_research_01/PREREGISTRATION.md": "74813eb6f6c5b80032347cb100cebd93048d1469861a93e410c7bc64c0f0eabc",
+    "../arithmetic_research_01/DERIVATION_KO.md": "49ba350e384620468c65167f4978124aed5dff3ad0bb7163691439daa5f01270",
+    "../arithmetic_research_01/RESEARCH_DECISION.json": "66a5b37122818f3dbe1163544b3ba7f850fe035eb9f081c729959d22f37a53d1"
+  },
+  "reviewed_repository_source_sha256": {
+    "crates/rodas5p-core/src/leja_action.rs": "25904301d40f11d6a5fee1d27aac7454ca02874a9e995634e7909af2e4ae97e8",
+    "crates/rodas5p-core/src/directed.rs": "2adadb6a5d77073e0a7d3d60aedfbf37e124d15a586a880d7d5a8c8d5307a814",
+    "crates/rodas5p-core/src/leja_setup_work.rs": "b8dd7b8d74339209448ea512427b7813d63c49f2bda2f82d6e423f3135249baf",
+    "crates/rodas5p-core/src/polynomial_action.rs": "656d494fd74783090676e1d3a18aaaa5dbd5df99c0541745979aeb6e26394a48",
+    "crates/rodas5p-core/tests/production_audit_leja_arithmetic_oracle.rs": "83662ace89060db0e48583b7a0d1352ba837a3ede3347f590deefae990d5aaad",
+    "crates/rodas5p-core/tests/leja_fraction_oracle.py": "f23a88d9c668a3ea311d4e2959b89166d1d390f12496763d34254f9deb69c0fb",
+    "Cargo.lock": "04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400"
+  },
+  "identity_recheck": {
+    "final_v3_source_bindings_match": true,
+    "artifact_manifest_entries_checked": 35,
+    "artifact_manifest_mismatches": [],
+    "frozen_contract_hashes_match": true
+  },
+  "verified": {
+    "action_fixtures": 12,
+    "standalone_coefficient_fixtures": 4,
+    "successful_action_returns": 8,
+    "typed_nonfinite_refusals": 4,
+    "frozen_inputs_budgets_caps_and_expected_branches_match": true,
+    "recorded_exact_comparisons": 218,
+    "all_exact_comparisons_pass": true,
+    "oracle_orders_executed": [64],
+    "coefficient_reference": "Complete homogeneous polynomial Fraction series with rigorous geometric remainder",
+    "fused_reference": "Exact represented matrix-phi Taylor series with rigorous componentwise uniform remainder",
+    "triage": "U <= b^2 gives PASS; L > b^2 gives FALSIFIED; otherwise INCONCLUSIVE",
+    "remainder_domains": "M+2>R for coefficient tables; M+2+k>B for every active fused k",
+    "refusal_reports_preserved": true,
+    "work_deltas_match_before_after_receipts": true,
+    "f09_attempted_work": {"poly_coefficient_setups": 1, "last_certification_ops": 26},
+    "native_rust_execution_exit_code_from_record": 0,
+    "fraction_execution_exit_code_from_record": 0,
+    "first_compile_failure_exit_code": 101,
+    "first_compile_failure_classification": "Test adapter API compatibility: Distinct requires &[Vec<f64>;5]",
+    "first_failure_retained": true
+  },
+  "allocation": {
+    "positive_control_allocations": 3,
+    "calibration_precedes_warmed_measurements": true,
+    "warmed_counts": {"A04-F02-SCALAR-DISTINCT": 0, "A04-F03-NEWTON-DISTINCT": 0, "A04-F04-NEWTON-SAME-SIGNED": 0},
+    "verdict": "ZERO_ALLOCATION_PASS_SCOPED",
+    "scope": "These three warmed successful calls at unchanged capacity/cache in the recorded test build",
+    "calibration_failure_policy_reviewed": "ALLOCATION_UNAVAILABLE; withhold zero-allocation admission and preserve numerical oracle execution"
+  },
+  "reviewer_execution": {
+    "source_and_artifact_hash_rechecks": "COMPLETED",
+    "read_only_exact_result_recomputation": "COMPLETED",
+    "recomputation_exit_code": 0,
+    "recomputed_numeric_rows": 12,
+    "saved_comparison_results_and_rational_digests_match": true,
+    "recomputation_method": "Invoked the reviewed oracle functions in memory against the preserved native receipt; no files written",
+    "rust_test_rerun": false,
+    "source_edits": false,
+    "new_tests_added": false,
+    "commit_or_push": false
+  },
+  "blocking_findings": [],
+  "limitations": [
+    "F09 exercises finite-input overflow refusal in the initial outward L2 norm, not matvec overflow.",
+    "Coefficient comparisons concern separately queried public helper tables; the actual internal cached table was not directly exported. Actual returned fused centers were checked separately.",
+    "Only M=64 executed; higher refinement orders and cap exhaustion were inspected in code but were not exercised by these fixtures.",
+    "Calibration succeeded in the recorded execution; calibration-failure behavior was inspected in code rather than observed at runtime.",
+    "The reviewer inspected existing Rust execution records and did not rerun Rust.",
+    "This bounded fixture result does not establish universal Leja arithmetic certification, all feature combinations, or performance superiority."
+  ],
+  "full_A04": {"authority": "EstimateOnly", "decision": "HOLD"},
+  "next_action": "Close the bounded proof-oracle node and continue the dependency-safe DAG. Full Leja authority requires its remaining source-matched proof and admission obligations."
+}

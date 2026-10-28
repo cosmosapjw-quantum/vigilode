@@ -1,0 +1,17 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode-integ-dda8d2f/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized] target(s) in 0.55s
+     Running tests/declared_structure_routing.rs (/home/cosmosapjw/vigilode-integ-target/debug/deps/declared_structure_routing-858e4f00ed7ed06b)
+     Running tests/p0_partial_contracts.rs (/home/cosmosapjw/vigilode-integ-target/debug/deps/p0_partial_contracts-0975a6ac04ae7af6)

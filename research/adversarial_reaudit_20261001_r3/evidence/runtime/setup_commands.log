@@ -1,0 +1,28 @@
+$ rustc --version --verbose
+rustc 1.94.1 (e408947bf 2026-03-25)
+binary: rustc
+commit-hash: e408947bfd200af42db322daf0fadfe7e26d3bd1
+commit-date: 2026-03-25
+host: x86_64-unknown-linux-gnu
+release: 1.94.1
+LLVM version: 21.1.8
+
+exit=0
+$ cargo --version
+cargo 1.94.1 (29ea6fb6a 2026-03-24)
+
+exit=0
+$ rustfmt --version
+rustfmt 1.8.0-stable (e408947bfd 2026-03-25)
+
+exit=0
+$ rustc /workspace/scratch/0dc1e721cf82/runtime_r3/probes/hello.rs -o /workspace/scratch/0dc1e721cf82/runtime_r3/probes/hello
+
+exit=0
+$ /workspace/scratch/0dc1e721cf82/runtime_r3/probes/hello
+RUST_EXECUTION_PASS 42
+
+exit=0
+$ cargo metadata --locked --offline --format-version 1 --manifest-path /workspace/scratch/0dc1e721cf82/vigilode/Cargo.toml
+[cargo_metadata.json]
+exit=0

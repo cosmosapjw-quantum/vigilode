@@ -1,0 +1,2253 @@
+{
+  "driver": "rodas5p-mf-fast-transformed-v1",
+  "gate": {
+    "allocations_at_most_half": false,
+    "matched_accuracy": false,
+    "one_step_agrees": false,
+    "rhs_assembly_jvps_7_to_0": true,
+    "semantics": true,
+    "strict_matrix_free": true
+  },
+  "problems": [
+    {
+      "adaptive": [
+        {
+          "accuracy_passes": true,
+          "allocation_passes": true,
+          "method": "Gmres",
+          "mf_fast": {
+            "accepted": 43,
+            "allocations_per_attempt": 211.22222222222223,
+            "attempts": 45,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 40.4,
+              "linear_iterations": 17.444444444444443,
+              "linear_matvecs": 32.4,
+              "preconditioner_apps": 25.4,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 7.955555555555556
+            },
+            "rejected": 2,
+            "relative_error": 3.674390609930747e-7,
+            "state_reuses": 2,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 45,
+            "per_attempt": {
+              "diagnostic_matvecs": 9.422222222222222,
+              "jvp_calls": 52.86666666666667,
+              "linear_iterations": 18.466666666666665,
+              "linear_matvecs": 35.2,
+              "preconditioner_apps": 26.77777777777778,
+              "rhs_assembly_jvps": 8.244444444444444,
+              "rhs_evaluations": 9.244444444444444
+            },
+            "relative_error": 3.6742819430901145e-7
+          },
+          "sequential": {
+            "accepted": 43,
+            "allocations_per_attempt": 515.6,
+            "attempts": 45,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 47.06666666666667,
+              "linear_iterations": 17.177777777777777,
+              "linear_matvecs": 32.06666666666667,
+              "preconditioner_apps": 25.066666666666666,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 2,
+            "relative_error": 3.674390628542332e-7,
+            "success": true
+          }
+        },
+        {
+          "accuracy_passes": true,
+          "allocation_passes": true,
+          "method": "Lgmres",
+          "mf_fast": {
+            "accepted": 43,
+            "allocations_per_attempt": 430.31111111111113,
+            "attempts": 45,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 56.13333333333333,
+              "linear_iterations": 17.42222222222222,
+              "linear_matvecs": 32.37777777777778,
+              "preconditioner_apps": 41.13333333333333,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 7.955555555555556
+            },
+            "rejected": 2,
+            "relative_error": 3.6743906549087445e-7,
+            "state_reuses": 2,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 45,
+            "per_attempt": {
+              "diagnostic_matvecs": 9.422222222222222,
+              "jvp_calls": 69.08888888888889,
+              "linear_iterations": 18.555555555555557,
+              "linear_matvecs": 35.28888888888889,
+              "preconditioner_apps": 43.0,
+              "rhs_assembly_jvps": 8.244444444444444,
+              "rhs_evaluations": 9.244444444444444
+            },
+            "relative_error": 3.674281928355943e-7
+          },
+          "sequential": {
+            "accepted": 43,
+            "allocations_per_attempt": 890.9111111111112,
+            "attempts": 45,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 62.82222222222222,
+              "linear_iterations": 17.266666666666666,
+              "linear_matvecs": 32.15555555555556,
+              "preconditioner_apps": 40.82222222222222,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 2,
+            "relative_error": 3.67439063939909e-7,
+            "success": true
+          }
+        },
+        {
+          "accuracy_passes": true,
+          "allocation_passes": false,
+          "method": "Gcrodr",
+          "mf_fast": {
+            "accepted": 43,
+            "allocations_per_attempt": 220.42222222222222,
+            "attempts": 45,
+            "per_attempt": {
+              "diagnostic_matvecs": 16.0,
+              "jvp_calls": 25.066666666666666,
+              "linear_iterations": 0.1111111111111111,
+              "linear_matvecs": 7.111111111111111,
+              "preconditioner_apps": 10.066666666666666,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 7.955555555555556
+            },
+            "rejected": 2,
+            "relative_error": 3.6744304604360457e-7,
+            "state_reuses": 2,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 45,
+            "per_attempt": {
+              "diagnostic_matvecs": 18.22222222222222,
+              "jvp_calls": 37.977777777777774,
+              "linear_iterations": 0.28888888888888886,
+              "linear_matvecs": 8.88888888888889,
+              "preconditioner_apps": 11.377777777777778,
+              "rhs_assembly_jvps": 8.4,
+              "rhs_evaluations": 9.4
+            },
+            "relative_error": 3.6742928138066877e-7
+          },
+          "sequential": {
+            "accepted": 43,
+            "allocations_per_attempt": 408.24444444444447,
+            "attempts": 45,
+            "per_attempt": {
+              "diagnostic_matvecs": 15.933333333333334,
+              "jvp_calls": 32.0,
+              "linear_iterations": 0.1111111111111111,
+              "linear_matvecs": 7.111111111111111,
+              "preconditioner_apps": 10.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 2,
+            "relative_error": 3.6743903369608347e-7,
+            "success": true
+          }
+        }
+      ],
+      "dimension": 3,
+      "one_step": [
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 40.0,
+              "linear_iterations": 17.0,
+              "linear_matvecs": 32.0,
+              "preconditioner_apps": 25.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 49.0,
+              "linear_iterations": 19.0,
+              "linear_matvecs": 34.0,
+              "preconditioner_apps": 27.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 0.027162605588761504,
+            "relative_difference": 2.369199960721776e-9,
+            "sequential": 0.02716260552440786
+          },
+          "h": 0.0001,
+          "method": "Gmres",
+          "passes": true,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.6093625997831706e-14
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 48.0,
+              "linear_iterations": 17.0,
+              "linear_matvecs": 32.0,
+              "preconditioner_apps": 33.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 57.0,
+              "linear_iterations": 19.0,
+              "linear_matvecs": 34.0,
+              "preconditioner_apps": 35.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 0.027162605574996654,
+            "relative_difference": 1.8624425968795778e-9,
+            "sequential": 0.02716260552440786
+          },
+          "h": 0.0001,
+          "method": "Lgmres",
+          "passes": true,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 5.929230630780102e-14
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 17.0,
+              "jvp_calls": 27.0,
+              "linear_iterations": 3.0,
+              "linear_matvecs": 10.0,
+              "preconditioner_apps": 12.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 17.0,
+              "jvp_calls": 33.0,
+              "linear_iterations": 2.0,
+              "linear_matvecs": 9.0,
+              "preconditioner_apps": 11.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 0.027162605638804415,
+            "relative_difference": 4.197100986448559e-9,
+            "sequential": 0.027162605524800217
+          },
+          "h": 0.0001,
+          "method": "Gcrodr",
+          "passes": true,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 3.3881317890172014e-14
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 44.0,
+              "linear_iterations": 21.0,
+              "linear_matvecs": 36.0,
+              "preconditioner_apps": 29.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 50.0,
+              "linear_iterations": 20.0,
+              "linear_matvecs": 35.0,
+              "preconditioner_apps": 28.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 1000000.0,
+            "relative_difference": 3.492459654808043e-16,
+            "sequential": 1000000.0000000003
+          },
+          "h": 0.01,
+          "method": "Gmres",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 2.6256706075411455e+117
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 52.0,
+              "linear_iterations": 21.0,
+              "linear_matvecs": 36.0,
+              "preconditioner_apps": 37.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 58.0,
+              "linear_iterations": 20.0,
+              "linear_matvecs": 35.0,
+              "preconditioner_apps": 36.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 1000000.0,
+            "relative_difference": 3.492459654808043e-16,
+            "sequential": 1000000.0000000003
+          },
+          "h": 0.01,
+          "method": "Lgmres",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 2.545820159726835e+117
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 17.0,
+              "jvp_calls": 26.0,
+              "linear_iterations": 2.0,
+              "linear_matvecs": 9.0,
+              "preconditioner_apps": 11.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 17.0,
+              "jvp_calls": 33.0,
+              "linear_iterations": 2.0,
+              "linear_matvecs": 9.0,
+              "preconditioner_apps": 11.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 1000000.0000000002,
+            "relative_difference": 1.1641532182693478e-16,
+            "sequential": 1000000.0000000003
+          },
+          "h": 0.01,
+          "method": "Gcrodr",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 2.127779579993093e+117
+        }
+      ],
+      "problem": "robertson"
+    },
+    {
+      "adaptive": [
+        {
+          "accuracy_passes": true,
+          "allocation_passes": true,
+          "method": "Gmres",
+          "mf_fast": {
+            "accepted": 351,
+            "allocations_per_attempt": 194.2366737739872,
+            "attempts": 469,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 39.08315565031983,
+              "linear_iterations": 16.05543710021322,
+              "linear_matvecs": 31.083155650319828,
+              "preconditioner_apps": 24.083155650319828,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 7.748400852878465
+            },
+            "rejected": 118,
+            "relative_error": 7.590808161117953e-7,
+            "state_reuses": 118,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 469,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.42643923240938,
+              "jvp_calls": 47.38379530916844,
+              "linear_iterations": 16.102345415778252,
+              "linear_matvecs": 31.584221748400854,
+              "preconditioner_apps": 24.15778251599147,
+              "rhs_assembly_jvps": 7.373134328358209,
+              "rhs_evaluations": 8.373134328358208
+            },
+            "relative_error": 7.590794398568979e-7
+          },
+          "sequential": {
+            "accepted": 351,
+            "allocations_per_attempt": 486.4648187633262,
+            "attempts": 469,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 45.95522388059702,
+              "linear_iterations": 15.970149253731343,
+              "linear_matvecs": 30.955223880597014,
+              "preconditioner_apps": 23.955223880597014,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 118,
+            "relative_error": 7.590796804900237e-7,
+            "success": true
+          }
+        },
+        {
+          "accuracy_passes": true,
+          "allocation_passes": true,
+          "method": "Lgmres",
+          "mf_fast": {
+            "accepted": 351,
+            "allocations_per_attempt": 415.7398720682303,
+            "attempts": 469,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 55.10874200426439,
+              "linear_iterations": 16.063965884861407,
+              "linear_matvecs": 31.095948827292112,
+              "preconditioner_apps": 40.10874200426439,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 7.748400852878465
+            },
+            "rejected": 118,
+            "relative_error": 7.590788551275123e-7,
+            "state_reuses": 118,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 469,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.42643923240938,
+              "jvp_calls": 63.42004264392324,
+              "linear_iterations": 16.102345415778252,
+              "linear_matvecs": 31.584221748400854,
+              "preconditioner_apps": 40.19402985074627,
+              "rhs_assembly_jvps": 7.373134328358209,
+              "rhs_evaluations": 8.373134328358208
+            },
+            "relative_error": 7.590794898315439e-7
+          },
+          "sequential": {
+            "accepted": 351,
+            "allocations_per_attempt": 867.1556503198294,
+            "attempts": 469,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 61.91684434968017,
+              "linear_iterations": 15.970149253731343,
+              "linear_matvecs": 30.955223880597014,
+              "preconditioner_apps": 39.91684434968017,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 118,
+            "relative_error": 7.590797674250848e-7,
+            "success": true
+          }
+        },
+        {
+          "accuracy_passes": true,
+          "allocation_passes": false,
+          "method": "Gcrodr",
+          "mf_fast": {
+            "accepted": 351,
+            "allocations_per_attempt": 209.3049040511727,
+            "attempts": 469,
+            "per_attempt": {
+              "diagnostic_matvecs": 16.00852878464819,
+              "jvp_calls": 25.02132196162047,
+              "linear_iterations": 0.010660980810234541,
+              "linear_matvecs": 7.017057569296376,
+              "preconditioner_apps": 10.014925373134329,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 7.748400852878465
+            },
+            "rejected": 118,
+            "relative_error": 7.590800031128029e-7,
+            "state_reuses": 118,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 469,
+            "per_attempt": {
+              "diagnostic_matvecs": 16.4818763326226,
+              "jvp_calls": 33.28144989339019,
+              "linear_iterations": 0.0042643923240938165,
+              "linear_matvecs": 7.430703624733476,
+              "preconditioner_apps": 10.05543710021322,
+              "rhs_assembly_jvps": 7.373134328358209,
+              "rhs_evaluations": 8.373134328358208
+            },
+            "relative_error": 7.590795705197742e-7
+          },
+          "sequential": {
+            "accepted": 351,
+            "allocations_per_attempt": 398.0575692963753,
+            "attempts": 469,
+            "per_attempt": {
+              "diagnostic_matvecs": 15.985074626865671,
+              "jvp_calls": 31.98507462686567,
+              "linear_iterations": 0.0042643923240938165,
+              "linear_matvecs": 7.004264392324094,
+              "preconditioner_apps": 9.985074626865671,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 118,
+            "relative_error": 7.590796692977853e-7,
+            "success": true
+          }
+        }
+      ],
+      "dimension": 2,
+      "one_step": [
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 39.0,
+              "linear_iterations": 16.0,
+              "linear_matvecs": 31.0,
+              "preconditioner_apps": 24.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 46.0,
+              "linear_iterations": 16.0,
+              "linear_matvecs": 31.0,
+              "preconditioner_apps": 24.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 0.00014487068655282654,
+            "relative_difference": 5.0225540128492034e-9,
+            "sequential": 0.0001448706858252057
+          },
+          "h": 0.0001,
+          "method": "Gmres",
+          "passes": true,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.0028870095490916e-12
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 47.0,
+              "linear_iterations": 16.0,
+              "linear_matvecs": 31.0,
+              "preconditioner_apps": 32.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 54.0,
+              "linear_iterations": 16.0,
+              "linear_matvecs": 31.0,
+              "preconditioner_apps": 32.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 0.00014487068648429594,
+            "relative_difference": 4.549507289187967e-9,
+            "sequential": 0.0001448706858252057
+          },
+          "h": 0.0001,
+          "method": "Lgmres",
+          "passes": true,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.8973538018496328e-12
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 16.0,
+              "jvp_calls": 25.0,
+              "linear_iterations": 2.0,
+              "linear_matvecs": 9.0,
+              "preconditioner_apps": 10.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 16.0,
+              "jvp_calls": 32.0,
+              "linear_iterations": 2.0,
+              "linear_matvecs": 9.0,
+              "preconditioner_apps": 10.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 0.0001448706860383399,
+            "relative_difference": 1.4381340128440957e-9,
+            "sequential": 0.00014487068582999643
+          },
+          "h": 0.0001,
+          "method": "Gcrodr",
+          "passes": true,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.7076184216646695e-12
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 39.0,
+              "linear_iterations": 16.0,
+              "linear_matvecs": 31.0,
+              "preconditioner_apps": 24.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 46.0,
+              "linear_iterations": 16.0,
+              "linear_matvecs": 31.0,
+              "preconditioner_apps": 24.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 70.68716019080146,
+            "relative_difference": 1.1841179366467443e-13,
+            "sequential": 70.6871601907931
+          },
+          "h": 0.01,
+          "method": "Gmres",
+          "passes": true,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.984089975648473e-11
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 47.0,
+              "linear_iterations": 16.0,
+              "linear_matvecs": 31.0,
+              "preconditioner_apps": 32.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 54.0,
+              "linear_iterations": 16.0,
+              "linear_matvecs": 31.0,
+              "preconditioner_apps": 32.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 70.68716019080146,
+            "relative_difference": 1.1841179366467443e-13,
+            "sequential": 70.6871601907931
+          },
+          "h": 0.01,
+          "method": "Lgmres",
+          "passes": true,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.984089975648473e-11
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 16.0,
+              "jvp_calls": 25.0,
+              "linear_iterations": 2.0,
+              "linear_matvecs": 9.0,
+              "preconditioner_apps": 10.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 16.0,
+              "jvp_calls": 32.0,
+              "linear_iterations": 2.0,
+              "linear_matvecs": 9.0,
+              "preconditioner_apps": 10.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 70.68716019080179,
+            "relative_difference": 1.1016920700889772e-13,
+            "sequential": 70.687160190794
+          },
+          "h": 0.01,
+          "method": "Gcrodr",
+          "passes": true,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 2.7647155398380363e-11
+        }
+      ],
+      "problem": "van-der-pol-mu1000"
+    },
+    {
+      "adaptive": [
+        {
+          "accuracy_passes": true,
+          "allocation_passes": false,
+          "method": "Gmres",
+          "mf_fast": {
+            "accepted": 204,
+            "allocations_per_attempt": 710.8904761904762,
+            "attempts": 210,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 78.77142857142857,
+              "linear_iterations": 55.8,
+              "linear_matvecs": 70.77142857142857,
+              "preconditioner_apps": 63.77142857142857,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 7.9714285714285715
+            },
+            "rejected": 6,
+            "relative_error": 2.6280462713946466e-7,
+            "state_reuses": 6,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 210,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.228571428571428,
+              "jvp_calls": 86.5047619047619,
+              "linear_iterations": 55.86666666666667,
+              "linear_matvecs": 71.07619047619048,
+              "preconditioner_apps": 63.84761904761905,
+              "rhs_assembly_jvps": 7.2,
+              "rhs_evaluations": 8.2
+            },
+            "relative_error": 2.6284715658066227e-7
+          },
+          "sequential": {
+            "accepted": 205,
+            "allocations_per_attempt": 1146.5680751173709,
+            "attempts": 213,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 85.28638497652582,
+              "linear_iterations": 55.375586854460096,
+              "linear_matvecs": 70.28638497652582,
+              "preconditioner_apps": 63.286384976525824,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 8,
+            "relative_error": 3.441329951042747e-7,
+            "success": true
+          }
+        },
+        {
+          "accuracy_passes": true,
+          "allocation_passes": false,
+          "method": "Lgmres",
+          "mf_fast": {
+            "accepted": 204,
+            "allocations_per_attempt": 947.4333333333333,
+            "attempts": 210,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 94.7,
+              "linear_iterations": 55.8,
+              "linear_matvecs": 70.77142857142857,
+              "preconditioner_apps": 79.7,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 7.9714285714285715
+            },
+            "rejected": 6,
+            "relative_error": 2.6280419686245887e-7,
+            "state_reuses": 6,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 210,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.228571428571428,
+              "jvp_calls": 102.44761904761904,
+              "linear_iterations": 55.86666666666667,
+              "linear_matvecs": 71.07619047619048,
+              "preconditioner_apps": 79.79047619047618,
+              "rhs_assembly_jvps": 7.2,
+              "rhs_evaluations": 8.2
+            },
+            "relative_error": 2.628469502701367e-7
+          },
+          "sequential": {
+            "accepted": 205,
+            "allocations_per_attempt": 1524.694835680751,
+            "attempts": 213,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 101.14553990610328,
+              "linear_iterations": 55.375586854460096,
+              "linear_matvecs": 70.28638497652582,
+              "preconditioner_apps": 79.14553990610328,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 8,
+            "relative_error": 3.4413304237218487e-7,
+            "success": true
+          }
+        },
+        {
+          "accuracy_passes": true,
+          "allocation_passes": false,
+          "method": "Gcrodr",
+          "mf_fast": {
+            "accepted": 204,
+            "allocations_per_attempt": 459.3857142857143,
+            "attempts": 210,
+            "per_attempt": {
+              "diagnostic_matvecs": 15.971428571428572,
+              "jvp_calls": 29.97142857142857,
+              "linear_iterations": 0.03333333333333333,
+              "linear_matvecs": 7.033333333333333,
+              "preconditioner_apps": 14.971428571428572,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 7.9714285714285715
+            },
+            "rejected": 6,
+            "relative_error": 2.62803178378018e-7,
+            "state_reuses": 6,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 210,
+            "per_attempt": {
+              "diagnostic_matvecs": 16.20952380952381,
+              "jvp_calls": 37.63809523809524,
+              "linear_iterations": 0.03333333333333333,
+              "linear_matvecs": 7.261904761904762,
+              "preconditioner_apps": 14.980952380952381,
+              "rhs_assembly_jvps": 7.2,
+              "rhs_evaluations": 8.2
+            },
+            "relative_error": 2.628464029355416e-7
+          },
+          "sequential": {
+            "accepted": 205,
+            "allocations_per_attempt": 655.0610328638497,
+            "attempts": 213,
+            "per_attempt": {
+              "diagnostic_matvecs": 15.910798122065728,
+              "jvp_calls": 36.91079812206573,
+              "linear_iterations": 0.03286384976525822,
+              "linear_matvecs": 7.032863849765258,
+              "preconditioner_apps": 14.910798122065728,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 8,
+            "relative_error": 3.4413280283509894e-7,
+            "success": true
+          }
+        }
+      ],
+      "dimension": 8,
+      "one_step": [
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 71.0,
+              "linear_iterations": 49.0,
+              "linear_matvecs": 63.0,
+              "preconditioner_apps": 56.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 62.0,
+              "linear_iterations": 35.0,
+              "linear_matvecs": 47.0,
+              "preconditioner_apps": 40.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 6.505720404304788e-10,
+            "relative_difference": 0.5162561673125715,
+            "sequential": 4.2906472827976e-10
+          },
+          "h": 0.0001,
+          "method": "Gmres",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.4094628242311558e-12
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 78.0,
+              "linear_iterations": 49.0,
+              "linear_matvecs": 63.0,
+              "preconditioner_apps": 63.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 67.0,
+              "linear_iterations": 35.0,
+              "linear_matvecs": 47.0,
+              "preconditioner_apps": 45.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 4.915237982701808e-10,
+            "relative_difference": 0.10068818569548135,
+            "sequential": 4.4656043796782134e-10
+          },
+          "h": 0.0001,
+          "method": "Lgmres",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 8.131516293641283e-13
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 15.0,
+              "jvp_calls": 29.0,
+              "linear_iterations": 7.0,
+              "linear_matvecs": 14.0,
+              "preconditioner_apps": 14.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 13.0,
+              "jvp_calls": 34.0,
+              "linear_iterations": 7.0,
+              "linear_matvecs": 14.0,
+              "preconditioner_apps": 12.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 3.241207228559061e-9,
+            "relative_difference": 6.2481254023447095,
+            "sequential": 4.471786908530248e-10
+          },
+          "h": 0.0001,
+          "method": "Gcrodr",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.7928246422025318e-12
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 79.0,
+              "linear_iterations": 56.0,
+              "linear_matvecs": 71.0,
+              "preconditioner_apps": 64.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 78.0,
+              "linear_iterations": 49.0,
+              "linear_matvecs": 63.0,
+              "preconditioner_apps": 56.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 0.1347812354097582,
+            "relative_difference": 1.766834300835159e-6,
+            "sequential": 0.13478099727406911
+          },
+          "h": 0.01,
+          "method": "Gmres",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.249000902703301e-10
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 87.0,
+              "linear_iterations": 56.0,
+              "linear_matvecs": 71.0,
+              "preconditioner_apps": 72.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 85.0,
+              "linear_iterations": 49.0,
+              "linear_matvecs": 63.0,
+              "preconditioner_apps": 63.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 0.13478123577217352,
+            "relative_difference": 1.769549955870809e-6,
+            "sequential": 0.13478099727046575
+          },
+          "h": 0.01,
+          "method": "Lgmres",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 7.28583859910259e-11
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 16.0,
+              "jvp_calls": 30.0,
+              "linear_iterations": 7.0,
+              "linear_matvecs": 14.0,
+              "preconditioner_apps": 15.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 15.0,
+              "jvp_calls": 36.0,
+              "linear_iterations": 7.0,
+              "linear_matvecs": 14.0,
+              "preconditioner_apps": 14.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 0.1347812348066414,
+            "relative_difference": 1.7599150736287934e-6,
+            "sequential": 0.13478099760353207
+          },
+          "h": 0.01,
+          "method": "Gcrodr",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.7694179454963432e-10
+        }
+      ],
+      "problem": "hires"
+    },
+    {
+      "adaptive": [
+        {
+          "accuracy_passes": true,
+          "allocation_passes": false,
+          "method": "Gmres",
+          "mf_fast": {
+            "accepted": 82,
+            "allocations_per_attempt": 3625.532608695652,
+            "attempts": 92,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 351.0217391304348,
+              "linear_iterations": 327.82608695652175,
+              "linear_matvecs": 343.0217391304348,
+              "preconditioner_apps": 336.0217391304348,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 7.891304347826087
+            },
+            "rejected": 10,
+            "relative_error": 2.1425178358521616e-6,
+            "state_reuses": 10,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 92,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.695652173913043,
+              "jvp_calls": 358.2391304347826,
+              "linear_iterations": 326.0869565217391,
+              "linear_matvecs": 341.9347826086956,
+              "preconditioner_apps": 334.2391304347826,
+              "rhs_assembly_jvps": 7.608695652173913,
+              "rhs_evaluations": 8.608695652173912
+            },
+            "relative_error": 2.1425180544761713e-6
+          },
+          "sequential": {
+            "accepted": 82,
+            "allocations_per_attempt": 4501.728260869565,
+            "attempts": 92,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 345.0978260869565,
+              "linear_iterations": 315.2173913043478,
+              "linear_matvecs": 330.0978260869565,
+              "preconditioner_apps": 323.0978260869565,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 10,
+            "relative_error": 2.142518053633458e-6,
+            "success": true
+          }
+        },
+        {
+          "accuracy_passes": true,
+          "allocation_passes": false,
+          "method": "Lgmres",
+          "mf_fast": {
+            "accepted": 82,
+            "allocations_per_attempt": 3954.358695652174,
+            "attempts": 92,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 308.4673913043478,
+              "linear_iterations": 337.54347826086956,
+              "linear_matvecs": 283.64130434782606,
+              "preconditioner_apps": 293.4673913043478,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 7.891304347826087
+            },
+            "rejected": 10,
+            "relative_error": 2.1425179143449226e-6,
+            "state_reuses": 10,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 92,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.695652173913043,
+              "jvp_calls": 292.7826086956522,
+              "linear_iterations": 309.39130434782606,
+              "linear_matvecs": 260.4130434782609,
+              "preconditioner_apps": 268.7826086956522,
+              "rhs_assembly_jvps": 7.608695652173913,
+              "rhs_evaluations": 8.608695652173912
+            },
+            "relative_error": 2.14251804472477e-6
+          },
+          "sequential": {
+            "accepted": 82,
+            "allocations_per_attempt": 4605.836956521739,
+            "attempts": 92,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 289.35869565217394,
+              "linear_iterations": 307.6304347826087,
+              "linear_matvecs": 258.3695652173913,
+              "preconditioner_apps": 267.35869565217394,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 10,
+            "relative_error": 2.1425180027094728e-6,
+            "success": true
+          }
+        },
+        {
+          "accuracy_passes": false,
+          "allocation_passes": false,
+          "method": "Gcrodr",
+          "mf_fast": {
+            "accepted": 2501,
+            "allocations_per_attempt": 4639.5182,
+            "attempts": 5000,
+            "per_attempt": {
+              "diagnostic_matvecs": 19.3762,
+              "jvp_calls": 273.7458,
+              "linear_iterations": 240.2604,
+              "linear_matvecs": 247.518,
+              "preconditioner_apps": 261.6314,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 4.857
+            },
+            "rejected": 2499,
+            "relative_error": 0.40184787511351294,
+            "state_reuses": 2499,
+            "success": false
+          },
+          "protected_inner_forced": null,
+          "sequential": {
+            "accepted": 2501,
+            "allocations_per_attempt": 4489.95,
+            "attempts": 5000,
+            "per_attempt": {
+              "diagnostic_matvecs": 17.3312,
+              "jvp_calls": 236.9928,
+              "linear_iterations": 200.5344,
+              "linear_matvecs": 208.1548,
+              "preconditioner_apps": 219.512,
+              "rhs_assembly_jvps": 4.6804,
+              "rhs_evaluations": 5.6804
+            },
+            "rejected": 2499,
+            "relative_error": 0.47210608629058753,
+            "success": false
+          }
+        }
+      ],
+      "dimension": 100,
+      "one_step": [
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 343.0,
+              "linear_iterations": 320.0,
+              "linear_matvecs": 335.0,
+              "preconditioner_apps": 328.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 268.0,
+              "linear_iterations": 240.0,
+              "linear_matvecs": 253.0,
+              "preconditioner_apps": 246.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 6.432211764698274e-13,
+            "relative_difference": 0.9783526178622352,
+            "sequential": 2.9713577945653785e-11
+          },
+          "h": 0.0001,
+          "method": "Gmres",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.5968293701273047e-15
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 271.0,
+              "linear_iterations": 266.0,
+              "linear_matvecs": 255.0,
+              "preconditioner_apps": 256.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 214.0,
+              "linear_iterations": 195.0,
+              "linear_matvecs": 193.0,
+              "preconditioner_apps": 192.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 6.769961160590139e-13,
+            "relative_difference": 0.9772079124811661,
+            "sequential": 2.970312023852962e-11
+          },
+          "h": 0.0001,
+          "method": "Lgmres",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 6.843554443402734e-16
+        },
+        {
+          "h": 0.0001,
+          "method": "Gcrodr",
+          "mf_fast_error": "linear solve failed: least-squares solve produced NaN/Inf for 41x40 system",
+          "passes": false,
+          "sequential_error": "linear solve failed: least-squares solve produced NaN/Inf for 41x40 system"
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 343.0,
+              "linear_iterations": 320.0,
+              "linear_matvecs": 335.0,
+              "preconditioner_apps": 328.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 350.0,
+              "linear_iterations": 320.0,
+              "linear_matvecs": 335.0,
+              "preconditioner_apps": 328.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 0.002264341064362042,
+            "relative_difference": 9.590631648045638e-10,
+            "sequential": 0.0022643410665336883
+          },
+          "h": 0.01,
+          "method": "Gmres",
+          "passes": true,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 7.956772632862912e-13
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 271.0,
+              "linear_iterations": 268.0,
+              "linear_matvecs": 255.0,
+              "preconditioner_apps": 256.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 278.0,
+              "linear_iterations": 268.0,
+              "linear_matvecs": 255.0,
+              "preconditioner_apps": 256.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 0.002264341064132129,
+            "relative_difference": 1.1162258169325142e-9,
+            "sequential": 0.002264341066659645
+          },
+          "h": 0.01,
+          "method": "Lgmres",
+          "passes": true,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.1241678765696225e-12
+        },
+        {
+          "h": 0.01,
+          "method": "Gcrodr",
+          "mf_fast_error": null,
+          "passes": false,
+          "sequential_error": "linear solve failed: least-squares solve produced NaN/Inf for 41x40 system"
+        }
+      ],
+      "problem": "brusselator-1d-50"
+    },
+    {
+      "adaptive": [
+        {
+          "accuracy_passes": true,
+          "allocation_passes": true,
+          "method": "Gmres",
+          "mf_fast": {
+            "accepted": 12,
+            "allocations_per_attempt": 106.33333333333333,
+            "attempts": 12,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 30.0,
+              "linear_iterations": 7.5,
+              "linear_matvecs": 22.0,
+              "preconditioner_apps": 15.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 0,
+            "relative_error": 5.97553770771826e-9,
+            "state_reuses": 0,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 12,
+            "per_attempt": {
+              "diagnostic_matvecs": 12.666666666666666,
+              "jvp_calls": 51.416666666666664,
+              "linear_iterations": 8.0,
+              "linear_matvecs": 27.666666666666668,
+              "preconditioner_apps": 16.0,
+              "rhs_assembly_jvps": 11.083333333333334,
+              "rhs_evaluations": 12.083333333333334
+            },
+            "relative_error": 5.975537585621464e-9
+          },
+          "sequential": {
+            "accepted": 12,
+            "allocations_per_attempt": 327.4166666666667,
+            "attempts": 12,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 33.666666666666664,
+              "linear_iterations": 5.833333333333333,
+              "linear_matvecs": 18.666666666666668,
+              "preconditioner_apps": 11.666666666666666,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 0,
+            "relative_error": 5.97553770771826e-9,
+            "success": true
+          }
+        },
+        {
+          "accuracy_passes": true,
+          "allocation_passes": false,
+          "method": "Lgmres",
+          "mf_fast": {
+            "accepted": 12,
+            "allocations_per_attempt": 317.25,
+            "attempts": 12,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 44.166666666666664,
+              "linear_iterations": 7.333333333333333,
+              "linear_matvecs": 21.666666666666668,
+              "preconditioner_apps": 29.166666666666668,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 0,
+            "relative_error": 5.97553770771826e-9,
+            "state_reuses": 0,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 12,
+            "per_attempt": {
+              "diagnostic_matvecs": 12.666666666666666,
+              "jvp_calls": 66.75,
+              "linear_iterations": 8.0,
+              "linear_matvecs": 27.666666666666668,
+              "preconditioner_apps": 31.333333333333332,
+              "rhs_assembly_jvps": 11.083333333333334,
+              "rhs_evaluations": 12.083333333333334
+            },
+            "relative_error": 5.97553770771826e-9
+          },
+          "sequential": {
+            "accepted": 12,
+            "allocations_per_attempt": 621.0,
+            "attempts": 12,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 45.416666666666664,
+              "linear_iterations": 5.833333333333333,
+              "linear_matvecs": 18.666666666666668,
+              "preconditioner_apps": 23.416666666666668,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 0,
+            "relative_error": 5.97553770771826e-9,
+            "success": true
+          }
+        },
+        {
+          "accuracy_passes": true,
+          "allocation_passes": true,
+          "method": "Gcrodr",
+          "mf_fast": {
+            "accepted": 14,
+            "allocations_per_attempt": 172.625,
+            "attempts": 16,
+            "per_attempt": {
+              "diagnostic_matvecs": 15.125,
+              "jvp_calls": 23.125,
+              "linear_iterations": 0.1875,
+              "linear_matvecs": 7.0625,
+              "preconditioner_apps": 8.625,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 7.75
+            },
+            "rejected": 2,
+            "relative_error": 1.540335743958584e-8,
+            "state_reuses": 2,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 12,
+            "per_attempt": {
+              "diagnostic_matvecs": 20.666666666666668,
+              "jvp_calls": 44.416666666666664,
+              "linear_iterations": 0.08333333333333333,
+              "linear_matvecs": 11.75,
+              "preconditioner_apps": 9.0,
+              "rhs_assembly_jvps": 11.083333333333334,
+              "rhs_evaluations": 12.083333333333334
+            },
+            "relative_error": 5.975537585621464e-9
+          },
+          "sequential": {
+            "accepted": 12,
+            "allocations_per_attempt": 354.8333333333333,
+            "attempts": 12,
+            "per_attempt": {
+              "diagnostic_matvecs": 13.833333333333334,
+              "jvp_calls": 28.833333333333332,
+              "linear_iterations": 0.08333333333333333,
+              "linear_matvecs": 7.083333333333333,
+              "preconditioner_apps": 6.833333333333333,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 0,
+            "relative_error": 5.97553770771826e-9,
+            "success": true
+          }
+        }
+      ],
+      "dimension": 1,
+      "one_step": [
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 29.0,
+              "linear_iterations": 7.0,
+              "linear_matvecs": 21.0,
+              "preconditioner_apps": 14.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 34.0,
+              "linear_iterations": 6.0,
+              "linear_matvecs": 19.0,
+              "preconditioner_apps": 12.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 8.868965701912004e-14,
+            "relative_difference": 0.5240148338743231,
+            "sequential": 1.8632861553442368e-13
+          },
+          "h": 0.0001,
+          "method": "Gmres",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 5.149960319306146e-13
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 36.0,
+              "linear_iterations": 7.0,
+              "linear_matvecs": 21.0,
+              "preconditioner_apps": 21.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 40.0,
+              "linear_iterations": 6.0,
+              "linear_matvecs": 19.0,
+              "preconditioner_apps": 18.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 2.218130819523732e-13,
+            "relative_difference": 0.1904402408410203,
+            "sequential": 1.8632861553442368e-13
+          },
+          "h": 0.0001,
+          "method": "Lgmres",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 7.318364664277155e-13
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 15.0,
+              "jvp_calls": 23.0,
+              "linear_iterations": 1.0,
+              "linear_matvecs": 8.0,
+              "preconditioner_apps": 8.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 14.0,
+              "jvp_calls": 29.0,
+              "linear_iterations": 1.0,
+              "linear_matvecs": 8.0,
+              "preconditioner_apps": 7.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 8.868965701912004e-14,
+            "relative_difference": 0.5240148338743231,
+            "sequential": 1.8632861553442368e-13
+          },
+          "h": 0.0001,
+          "method": "Gcrodr",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 5.149960319306146e-13
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 31.0,
+              "linear_iterations": 8.0,
+              "linear_matvecs": 23.0,
+              "preconditioner_apps": 16.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 38.0,
+              "linear_iterations": 8.0,
+              "linear_matvecs": 23.0,
+              "preconditioner_apps": 16.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 1.2143692148483301e-8,
+            "relative_difference": 0.00005153664091284083,
+            "sequential": 1.2143066335633981e-8
+          },
+          "h": 0.01,
+          "method": "Gmres",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 6.938893903907228e-12
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 39.0,
+              "linear_iterations": 8.0,
+              "linear_matvecs": 23.0,
+              "preconditioner_apps": 24.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 46.0,
+              "linear_iterations": 8.0,
+              "linear_matvecs": 23.0,
+              "preconditioner_apps": 24.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 1.2141469272988296e-8,
+            "relative_difference": 0.0001315205403266113,
+            "sequential": 1.2143066335633981e-8
+          },
+          "h": 0.01,
+          "method": "Lgmres",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 6.938893903907228e-12
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 16.0,
+              "jvp_calls": 24.0,
+              "linear_iterations": 1.0,
+              "linear_matvecs": 8.0,
+              "preconditioner_apps": 9.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 16.0,
+              "jvp_calls": 31.0,
+              "linear_iterations": 1.0,
+              "linear_matvecs": 8.0,
+              "preconditioner_apps": 9.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 1.2143444966732924e-8,
+            "relative_difference": 0.000031180847446457514,
+            "sequential": 1.2143066335633981e-8
+          },
+          "h": 0.01,
+          "method": "Gcrodr",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 6.938893903907228e-12
+        }
+      ],
+      "problem": "prothero-robinson-forced"
+    },
+    {
+      "adaptive": [
+        {
+          "accuracy_passes": true,
+          "allocation_passes": false,
+          "method": "Gmres",
+          "mf_fast": {
+            "accepted": 13,
+            "allocations_per_attempt": 361.6923076923077,
+            "attempts": 13,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 53.46153846153846,
+              "linear_iterations": 30.76923076923077,
+              "linear_matvecs": 45.46153846153846,
+              "preconditioner_apps": 38.46153846153846,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 0,
+            "relative_error": 4.677230252394752e-8,
+            "state_reuses": 0,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 13,
+            "per_attempt": {
+              "diagnostic_matvecs": 14.76923076923077,
+              "jvp_calls": 90.3076923076923,
+              "linear_iterations": 39.07692307692308,
+              "linear_matvecs": 62.61538461538461,
+              "preconditioner_apps": 48.84615384615385,
+              "rhs_assembly_jvps": 12.923076923076923,
+              "rhs_evaluations": 13.923076923076923
+            },
+            "relative_error": 4.67723013107488e-8
+          },
+          "sequential": {
+            "accepted": 13,
+            "allocations_per_attempt": 659.0769230769231,
+            "attempts": 13,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 57.38461538461539,
+              "linear_iterations": 28.307692307692307,
+              "linear_matvecs": 42.38461538461539,
+              "preconditioner_apps": 35.38461538461539,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 0,
+            "relative_error": 4.67723013107488e-8,
+            "success": true
+          }
+        },
+        {
+          "accuracy_passes": true,
+          "allocation_passes": false,
+          "method": "Lgmres",
+          "mf_fast": {
+            "accepted": 13,
+            "allocations_per_attempt": 576.1538461538462,
+            "attempts": 13,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 68.46153846153847,
+              "linear_iterations": 30.76923076923077,
+              "linear_matvecs": 45.46153846153846,
+              "preconditioner_apps": 53.46153846153846,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 0,
+            "relative_error": 4.6772300517503474e-8,
+            "state_reuses": 0,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 13,
+            "per_attempt": {
+              "diagnostic_matvecs": 14.76923076923077,
+              "jvp_calls": 107.46153846153847,
+              "linear_iterations": 39.07692307692308,
+              "linear_matvecs": 62.61538461538461,
+              "preconditioner_apps": 66.0,
+              "rhs_assembly_jvps": 12.923076923076923,
+              "rhs_evaluations": 13.923076923076923
+            },
+            "relative_error": 4.677230121742582e-8
+          },
+          "sequential": {
+            "accepted": 13,
+            "allocations_per_attempt": 995.8461538461538,
+            "attempts": 13,
+            "per_attempt": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 71.61538461538461,
+              "linear_iterations": 28.307692307692307,
+              "linear_matvecs": 42.38461538461539,
+              "preconditioner_apps": 49.61538461538461,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 0,
+            "relative_error": 4.677230107744135e-8,
+            "success": true
+          }
+        },
+        {
+          "accuracy_passes": true,
+          "allocation_passes": false,
+          "method": "Gcrodr",
+          "mf_fast": {
+            "accepted": 13,
+            "allocations_per_attempt": 301.84615384615387,
+            "attempts": 13,
+            "per_attempt": {
+              "diagnostic_matvecs": 15.692307692307692,
+              "jvp_calls": 26.692307692307693,
+              "linear_iterations": 0.3076923076923077,
+              "linear_matvecs": 7.3076923076923075,
+              "preconditioner_apps": 11.692307692307692,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 0,
+            "relative_error": 4.6772303270531356e-8,
+            "state_reuses": 0,
+            "success": true
+          },
+          "protected_inner_forced": {
+            "attempts": 13,
+            "per_attempt": {
+              "diagnostic_matvecs": 24.53846153846154,
+              "jvp_calls": 55.23076923076923,
+              "linear_iterations": 0.3076923076923077,
+              "linear_matvecs": 14.076923076923077,
+              "preconditioner_apps": 13.76923076923077,
+              "rhs_assembly_jvps": 12.923076923076923,
+              "rhs_evaluations": 13.923076923076923
+            },
+            "relative_error": 4.677230145073327e-8
+          },
+          "sequential": {
+            "accepted": 13,
+            "allocations_per_attempt": 486.2307692307692,
+            "attempts": 13,
+            "per_attempt": {
+              "diagnostic_matvecs": 15.076923076923077,
+              "jvp_calls": 33.07692307692308,
+              "linear_iterations": 0.3076923076923077,
+              "linear_matvecs": 7.3076923076923075,
+              "preconditioner_apps": 11.076923076923077,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            },
+            "rejected": 0,
+            "relative_error": 4.677230098411837e-8,
+            "success": true
+          }
+        }
+      ],
+      "dimension": 4,
+      "one_step": [
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 50.0,
+              "linear_iterations": 28.0,
+              "linear_matvecs": 42.0,
+              "preconditioner_apps": 35.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 52.0,
+              "linear_iterations": 24.0,
+              "linear_matvecs": 37.0,
+              "preconditioner_apps": 30.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 3.786687662919142e-11,
+            "relative_difference": 7.416152912554449,
+            "sequential": 4.499309485299996e-12
+          },
+          "h": 0.0001,
+          "method": "Gmres",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.8503701657334562e-16
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 57.0,
+              "linear_iterations": 28.0,
+              "linear_matvecs": 42.0,
+              "preconditioner_apps": 42.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 58.0,
+              "linear_iterations": 24.0,
+              "linear_matvecs": 37.0,
+              "preconditioner_apps": 36.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 3.791096516576407e-11,
+            "relative_difference": 7.425044083612331,
+            "sequential": 4.49979427876291e-12
+          },
+          "h": 0.0001,
+          "method": "Lgmres",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.8503701657334562e-16
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 15.0,
+              "jvp_calls": 26.0,
+              "linear_iterations": 4.0,
+              "linear_matvecs": 11.0,
+              "preconditioner_apps": 11.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 14.0,
+              "jvp_calls": 32.0,
+              "linear_iterations": 4.0,
+              "linear_matvecs": 11.0,
+              "preconditioner_apps": 10.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 3.6623028438020654e-11,
+            "relative_difference": 7.139646702315049,
+            "sequential": 4.499338826045664e-12
+          },
+          "h": 0.0001,
+          "method": "Gcrodr",
+          "passes": false,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.8503701657334562e-16
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 55.0,
+              "linear_iterations": 32.0,
+              "linear_matvecs": 47.0,
+              "preconditioner_apps": 40.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 62.0,
+              "linear_iterations": 32.0,
+              "linear_matvecs": 47.0,
+              "preconditioner_apps": 40.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 0.069656506712179,
+            "relative_difference": 1.2388009151534593e-9,
+            "sequential": 0.06965650662588846
+          },
+          "h": 0.05,
+          "method": "Gmres",
+          "passes": true,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.3664272869022798e-15
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 63.0,
+              "linear_iterations": 32.0,
+              "linear_matvecs": 47.0,
+              "preconditioner_apps": 48.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 8.0,
+              "jvp_calls": 70.0,
+              "linear_iterations": 32.0,
+              "linear_matvecs": 47.0,
+              "preconditioner_apps": 48.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 0.06965650671093149,
+            "relative_difference": 1.2208947622693686e-9,
+            "sequential": 0.06965650662588822
+          },
+          "h": 0.05,
+          "method": "Lgmres",
+          "passes": true,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 1.3664272869022798e-15
+        },
+        {
+          "all_stages_nonzero": true,
+          "counters": {
+            "mf_fast": {
+              "diagnostic_matvecs": 16.0,
+              "jvp_calls": 27.0,
+              "linear_iterations": 4.0,
+              "linear_matvecs": 11.0,
+              "preconditioner_apps": 12.0,
+              "rhs_assembly_jvps": 0.0,
+              "rhs_evaluations": 8.0
+            },
+            "sequential": {
+              "diagnostic_matvecs": 16.0,
+              "jvp_calls": 34.0,
+              "linear_iterations": 4.0,
+              "linear_matvecs": 11.0,
+              "preconditioner_apps": 12.0,
+              "rhs_assembly_jvps": 7.0,
+              "rhs_evaluations": 8.0
+            }
+          },
+          "error_norm": {
+            "mf_fast": 0.069656507055183,
+            "relative_difference": 6.111215813495821e-9,
+            "sequential": 0.06965650662949706
+          },
+          "h": 0.05,
+          "method": "Gcrodr",
+          "passes": true,
+          "rhs_assembly_jvps": {
+            "mf_fast": 0,
+            "sequential": 7
+          },
+          "state_difference_scaled_max": 9.25185082866728e-16
+        }
+      ],
+      "problem": "quadratic-4"
+    }
+  ],
+  "schema": "vigilode-thread-transfer-mf-workspace-v1",
+  "semantics": {
+    "nonautonomous_ok": true,
+    "output_times_exact": true,
+    "prothero_robinson_error": 9.463576589041622e-10,
+    "rejected_attempt_mutates_recycle": true,
+    "rollback_reproduces_clean_attempt": true,
+    "run_had_rejection": true,
+    "tiny_step_completes": true,
+    "zero_rhs_zero_stages": true
+  },
+  "verdict": "FAIL"
+}

@@ -1,0 +1,10 @@
+{
+  "attempt": "post-repair targeted-test compile with certificate/output preservation assertions",
+  "command": "cargo test --locked --offline -p rodas5p-integrators --test production_audit_pr101_provider -- --nocapture",
+  "observed_exit_code": 101,
+  "classification": "implementation/test-plumbing failure, not numerical evidence",
+  "failure": "E0425: certificate_snapshot and output_before_rejection were inserted into a different test scope than their declarations",
+  "raw_log_status": "NOT_PRESERVED: the targeted_test.log path was subsequently overwritten by a successful rerun; first_test.log is a distinct successful run (exit 0)",
+  "evidence_note": "The compiler diagnostics were observed in the runner output, but no raw file remains. Do not treat the successful first_test.log as this failure.",
+  "repair": "moved those assertions and snapshots into pr101_certificate_mismatch_and_rejected_tube_preserve_work; no solver/model/tolerance changes"
+}

@@ -1,0 +1,462 @@
+{
+ "agent": "roadmap",
+ "immediate": [
+  {
+   "finding_ids": [
+    "F-025",
+    "F-067"
+   ],
+   "action": "Push the preserved dirty-worktree bytes (audit2_stage_certificate_research.rs, its contract tests, Lean/Rocq sources) to a remote archival ref (a non-PR branch or a signed git bundle with SHA-256), without reset/stash/rebase and without touching the PR #42 publication whitelist. Record the ref in the M0 plan Task 1 instead of 'recover from local worktree'.",
+   "effort": "XS",
+   "unblocks": "M0 Task 1 becomes reproducible from a remote ref; any reviewer can rebuild the state M0 starts from; removes the single-disk loss risk for the only copy of the stage-certificate code and proofs."
+  },
+  {
+   "finding_ids": [
+    "F-009",
+    "F-077",
+    "F-031",
+    "E-04"
+   ],
+   "action": "Remove the step-0 hard abort in rodas5p_inner_forcing_target (g4_s5b0_inner_tolerance.rs:64-76): replace the 64*eps-vs-K-form-rhs guard with a residual floor expressed in the rhs scale plus a recorded 'roundoff_floor_active' flag, and let the embedded estimate decide acceptance (fix design G2-2). Add the missing unit test for the Err branch and put the offending stage norm in the message.",
+   "effort": "S",
+   "unblocks": "Tight-rtol (1e-8..1e-10) runs of the protected matrix-free lane on |lambda|~1e6 problems; fixed-h convergence ladders at tight rtol (E-04 could not run P1 rtol=1e-10 at any h); honest rejected_steps / linear_solve_failures counters (currently inflated by 5x shrink retries on a non-accuracy criterion)."
+  },
+  {
+   "finding_ids": [
+    "F-006",
+    "F-076",
+    "E-01",
+    "E-03"
+   ],
+   "action": "Fix adaptive_next_step_after_attempt (adaptive.rs:269): an accepted step that was shortened by an output landing must still record the acceptance and apply the controller factor to the pre-clip requested step. Add a regression test asserting the accepted step sequence of the clipped arm varies with rtol. Make the campaign initial_step tolerance-aware instead of span/100.",
+   "effort": "S",
+   "unblocks": "A clipped arm that is actually adaptive; until then every clipped-lane number in scientific-validity-v2 is a fixed-step h=span/100 run and no dense-vs-clipped comparison can be interpreted."
+  },
+  {
+   "finding_ids": [
+    "F-010",
+    "E-05"
+   ],
+   "action": "GCRO-DR: reset previous_solution and the recycle space when the dimension or the operator/preconditioner identity changes, and return a typed Dimension error instead of panicking in copy_from_slice (gcrodr.rs:416-464; fix design G3-1). Add the recycle_dim>1 invariant test and an E-05-style stale-state test (G3-2).",
+   "effort": "S",
+   "unblocks": "Safe reuse of GcrodrState by fair-ab SolverSession and external drivers (process abort under panic=abort today); removes the 352-vs-264 iteration stale warm start measured in E-05."
+  },
+  {
+   "finding_ids": [
+    "F-003",
+    "F-021",
+    "F-097"
+   ],
+   "action": "Run the sealed v3.7 consumed-N=192 replay (v37_continuation_transaction_contracts.rs:69) and bisect the 17-vs-18 target_attempt_index mismatch to either a post-seal code change or a wrong pin. Record the outcome as a dated typed failure note next to the v3.7 ledger (do not edit the sealed ledger). Add a CI job that runs --ignored replay tests and the audit2-research feature, and make the campaign smoke test fail rather than report NOT_RUN when VIGILODE_CODE_REVISION is absent.",
+   "effort": "S",
+   "unblocks": "Trust status of the v3.3/v3.5/v3.7 sealed ledgers; the '1075 passed' headline stops hiding an unrun, failing sealed replay."
+  },
+  {
+   "finding_ids": [
+    "F-004",
+    "F-029",
+    "F-033",
+    "F-007",
+    "E-01",
+    "E-03"
+   ],
+   "action": "Add a dated addendum to the scientific-validity-v2 ledgers (append-only) stating: (a) dense-arm global error in case-tolerance weights exceeds 1 in 12/18 n=96 rows, up to 207x on semilinear advection-diffusion; (b) VigilODE trails scipy Radau in 17/18 rows, median ~2.6x; (c) the published max_grid_wrms is in a fixed (1e-10,1e-8) basis, with the renormalized table (median 2.15, >1 in 36/54); (d) the gap<=0.1*dense_error rule is unattainable by construction and also fails for scipy Radau in 17/18 pairs, so 'complete-nonpassing' carries no solver information.",
+   "effort": "XS",
+   "unblocks": "Removes the P1 protocol artifact from the record without rewriting history; puts the actionable result (global error growth under satisfied local control) on the record so the next node can target it."
+  },
+  {
+   "finding_ids": [
+    "F-030",
+    "F-018",
+    "F-020",
+    "E-04",
+    "E-09"
+   ],
+   "action": "Write the RED tests first: (1) fixed-rtol, fixed-h halving ladder for the production forcing rule on Prothero-Robinson and advection-diffusion, asserting the matrix-free error tracks the direct-LU error within a stated factor (the current test ties rtol to h^6 and cannot see the floor); (2) a stiff observed-order test that records the measured order (3-4 on PR lambda=-1e4) as a pinned expectation instead of asserting 5.",
+   "effort": "S",
+   "unblocks": "Test-driven replacement of the forcing rule (structural item G2-1); makes the pass criterion 'relative to direct LU' because E-04 shows slope>=4.5 is unattainable on stiff PR even with exact linear algebra."
+  },
+  {
+   "finding_ids": [
+    "F-040",
+    "F-011",
+    "E-06"
+   ],
+   "action": "Exponential lane P1/P2 numerics: normalize the augmentation column / Krylov seed by ||v|| before the augmented Pade-13 (G4-FIX-1), and at happy breakdown report a Sidje/KIOPS-style residual estimate instead of error_estimate=0 (G4-FIX-2). Add the ||v||=1e8 and the near-invariant-subspace (v=e1+4.5e-7 e2) cases as tests.",
+   "effort": "M",
+   "unblocks": "phi_k accuracy independent of physical units (E-06: 2.7e-9..1.6e-8 relative error at ||v||=1e8 vs 2e-13 threshold); relative tolerances below ~1e-6 become enforceable in adaptive_exponential."
+  },
+  {
+   "finding_ids": [
+    "F-034",
+    "F-087",
+    "F-037",
+    "F-106"
+   ],
+   "action": "Input-validation sweep: reject NaN/Inf rtol/atol in scalar Krylov configs (atol=+Inf currently certifies x=0), make safe_l2 propagate NaN instead of returning 0.0, require a true-residual certificate in seeded shared-basis GMRES when the largest preconditioned RHS is ~0, and turn the ShiftedOperator::new expect into a typed error.",
+   "effort": "XS",
+   "unblocks": "Closes the remaining ways a non-finite or degenerate input becomes a passing certificate; prerequisite for trusting any receipt field named converged."
+  },
+  {
+   "finding_ids": [
+    "F-049",
+    "F-019",
+    "F-070"
+   ],
+   "action": "Load and invert the RODAS5P coefficient snapshot once (OnceLock) instead of re-parsing JSON and re-inverting the 8x8 matrix on every step and every dense-output sample; verify the carried provenance hash at that single load.",
+   "effort": "XS",
+   "unblocks": "Removes a fixed per-step overhead that biases every small-n timing against RODAS5P; makes the provenance hash an executed check rather than carried text."
+  }
+ ],
+ "structural": [
+  {
+   "finding_ids": [
+    "F-008",
+    "F-005",
+    "F-031",
+    "F-033",
+    "E-04"
+   ],
+   "action": "Replace the production inner-forcing rule tau = 0.1/||b||_1 (an h- and rtol-independent absolute stage-residual budget whenever rhs_wrms >= flow_wrms) by a forcing term scaled to the embedded error estimate / local error target, so the admitted stage residual shrinks with the truncation error (fix design G2-1). Apply at all three call sites (integrate.rs:774, dense_output_v2.rs:585, g4_s5b0_regime_atlas.rs:1631) behind one function.",
+   "effort": "M",
+   "rationale": "E-04: under the current rule the fixed-h error is a floor at 0.1-0.3*rtol with slopes <=0 over 5+ halvings and eta grows as h^-1.9. Every v3.5-v3.7 receipt and the v2 campaign ran through this rule, and the embedded estimator cannot see the inexact-solve error (F-033: semilinear rows 17-261 tolerance units out while every step is accepted). This is the most likely contributor to the 2.6x gap to scipy Radau and must be fixed before any certificate is built on top of it."
+  },
+  {
+   "finding_ids": [
+    "F-031",
+    "F-008",
+    "F-009"
+   ],
+   "action": "Keep the K-form stage equations for now, but state every relative inner criterion against a solution-scale reference (||K_i|| or the error scale) rather than ||rhs||, which is O(h|lambda|) larger on stiff modes. Record a decision note on the U-form (rhs without h*J*sum gamma_ij K_j) as a separate, later lane (fix design G2-3).",
+   "effort": "S",
+   "rationale": "E-04 measured rhs_wrms/flow_wrms = 40 at h=1/8 and rhs_wrms up to 5e11, so any fraction-of-rhs criterion is loose by that factor. The U-form rewrite touches tableau replays, dense output and JVP accounting (effort L, high risk) and should not be bundled with the forcing-rule fix."
+  },
+  {
+   "finding_ids": [
+    "F-007",
+    "F-029",
+    "F-006",
+    "E-01",
+    "E-03"
+   ],
+   "action": "Redesign the output-policy admissibility protocol: judge each arm against the reference in the case's own (atol, rtol) weights with a declared constant (error <= C*tol), and test policy equivalence only where it is a meaningful statement (same accepted-step sequence, dense evaluation vs landed output). Collapse the 3 near-identical dimension replicas so 54 rows are reported as 18 independent cases.",
+   "effort": "M",
+   "rationale": "By the triangle inequality any row with clipped_max < 0.9*dense_max is Dominated by construction; E-01 finds gap/dense >= 0.1245 in all 54 rows and E-03 shows scipy Radau fails the same rule in 17/18 pairs. The gate measures the difference of two O(tol) realisations, not solver quality, and the holdout threshold derived from it can never be reached."
+  },
+  {
+   "finding_ids": [
+    "F-060",
+    "F-061",
+    "F-062",
+    "F-059",
+    "F-057",
+    "F-064",
+    "F-101",
+    "F-104"
+   ],
+   "action": "Repair the stage-certificate evaluator before it is used on any client: per-stage residual bounds q_i (not one linear solve's bound broadcast to all stages), separate stage count from state dimension, directed rounding on the residual and norm computations and not only the last product/sum, an actually computed M08 reuse quantity epsilon+delta, enforcement of max_arnoldi per trace row, a kappa premise the evaluator can check, and digests that bind T, weights, kappa, ehat and x.",
+   "effort": "M",
+   "rationale": "These are defects in what the certificate computes, so a certified accept could be wrong regardless of how general the Lean/Rocq theorems are. The M0 plan closes three software items (max_arnoldi, serde round trip, upward rounding) but not F-060, F-062 or F-064."
+  },
+  {
+   "finding_ids": [
+    "F-014",
+    "F-065",
+    "F-100"
+   ],
+   "action": "Remove reference-in-the-loop acceptance from the reusable-preconditioner transaction: the commit decision must use only runtime quantities (embedded estimate plus contamination bound); the reference distance becomes a post-hoc evaluation column. Apply the same evaluation to the protected fallback so both dispositions are judged identically, and have Rust execute the Bateman oracle verifier instead of asserting byte identity to checked-in files.",
+   "effort": "S",
+   "rationale": "A Candidate/ProtectedFallback/Rejected disposition that consumed the reference cannot be cited as evidence of runtime quality; this is the P1-class leakage pattern of the rubric, contained today only by the audit2-research feature gate."
+  },
+  {
+   "finding_ids": [
+    "F-048",
+    "F-022",
+    "F-051",
+    "F-050",
+    "F-039",
+    "F-035",
+    "F-081",
+    "F-095",
+    "F-096",
+    "F-094",
+    "E-08"
+   ],
+   "action": "Define one work-counter contract and pin it with tests on both lanes: jvp_calls = number of JVP callbacks, reported separately from linear_matvecs; block GMRES charges 8 JVPs / 8 LU solves as 8; failed and rejected attempts (legacy atlas run_trajectory, exponential trials) keep their work; true-residual matvecs and GCRO-DR inner products are counted; the fair-ab screen reports both executions.",
+   "effort": "M",
+   "rationale": "E-08: rhs_calls and ft_calls are exact in all 24 arms, but jvp_calls has different meanings on the generic and matrix-free paths, so any cross-lane cost ratio is currently not comparable. This must precede the performance study that design section 7 places last."
+  },
+  {
+   "finding_ids": [
+    "F-002",
+    "F-069",
+    "F-020",
+    "E-03"
+   ],
+   "action": "Dense output: document the interpolant as order 4 nonstiff / order ~3 stiff, add an optional interior error check (compare against the embedded solution or a midpoint defect sample) with a typed 'dense_uncontrolled' flag in the result, and add a stiff dense-output accuracy test.",
+   "effort": "M",
+   "rationale": "F-002 measures interior error 17x-610x above tolerance on Prothero-Robinson lambda=-1e5 while endpoints pass. E-03 refutes interpolation as the dominant error on the v2 campaign rows (grid/accepted ratio median 1.08, max 2.43), so this ranks below the forcing rule and the protocol, but it is a real missing control on very stiff problems."
+  },
+  {
+   "finding_ids": [
+    "F-042",
+    "F-043",
+    "F-041",
+    "F-045",
+    "F-091",
+    "E-06",
+    "E-08"
+   ],
+   "action": "Exponential lane: scale-aware fused phi combination with Pade squarings chosen from the operator norm rather than the augmented norm (G4-FIX-3); Krylov threshold and phi error proxy in the same WRMS units as the time error (G4-FIX-4); a stiff, non-scalar, non-commuting order test (G4-FIX-6); stop using the method's own embedded estimate as the atlas 'unsafe' label.",
+   "effort": "M",
+   "rationale": "Order evidence for pexprb54s4 rests on a scalar y'=y^2 test where the Krylov space is exact; E-06 shows unit-dependent accuracy; E-08 shows the exponential arm rejects non-autonomous problems, so it could not be measured on either audit problem."
+  },
+  {
+   "finding_ids": [
+    "F-010",
+    "F-088",
+    "F-082",
+    "F-038",
+    "F-089",
+    "F-090",
+    "F-085",
+    "F-036",
+    "E-05"
+   ],
+   "action": "One Krylov state-validity model shared by GMRES/LGMRES/GCRO-DR: warm start, recycle basis and augmentation directions are all keyed by (dimension, operator identity, preconditioner identity) and dropped on mismatch; add stagnation detection to restarted GMRES; unify breakdown/NaN handling; either delete gmres_givens.rs or make it the production kernel.",
+   "effort": "M",
+   "rationale": "E-05: residual reporting is honest and all solvers fail closed (42/42 converged rows match recomputed residuals), so the defects are in state reuse: GCRO-DR 4126 vs 271 matvecs with a mutated operator, LGMRES failing 3 of 6 solves after a preconditioner swap where a fresh state converges."
+  },
+  {
+   "finding_ids": [
+    "F-052",
+    "F-056",
+    "F-053",
+    "F-099",
+    "F-073"
+   ],
+   "action": "Comparator fairness: tolerance-proportional Newton tolerances and Jacobian/LU reuse in the internal BDF/Radau comparators; do not charge RadauIIA3 for the extra factorization of the ported error estimate without stating it; matched step-controller settings with the SciPy arm; every timing path reports a dispersion estimate from repeated paired runs before the 1.15x Tier-L rule is applied.",
+   "effort": "M",
+   "rationale": "Without these the internal comparators are handicapped and a 1.15x promotion threshold can be crossed by host noise, so any speed claim would be P0-vulnerable on publication."
+  }
+ ],
+ "research_roadmap_delta": [
+  {
+   "finding_ids": [
+    "F-005",
+    "F-008",
+    "F-009",
+    "F-030",
+    "E-04"
+   ],
+   "change": "Move the inner-forcing rule and the fixed-step order-preservation experiments (design section 7, items 1-2) ahead of M1 Bateman real-client execution. New order: forcing-rule RED tests -> forcing-rule replacement -> fixed-h ladder against direct LU -> then M1.",
+   "rationale": "E-04 shows the production rule has an h-independent error floor and aborts on legal input. A Bateman certificate built now would certify stages solved to a tolerance that grows as h shrinks. Design section 7 itself allows reordering 'when newly observed evidence creates a higher-priority blocker'; E-04 is that evidence.",
+   "conflicts_with": "Design section 6 ('M1 opens only if M0 is verified. It must not be replaced by another planning/audit node') and the section 7 default order, which places these lanes after real-client evidence. Plan Task 14 (M1 Bateman preflight) would be deferred."
+  },
+  {
+   "finding_ids": [
+    "F-007",
+    "F-006",
+    "F-029",
+    "F-076",
+    "E-01",
+    "E-03"
+   ],
+   "change": "Move the output-policy protocol redesign and the clipped-controller fix ahead of any further campaign, calibration or holdout execution. Retire the gap<=0.1*dense_error gate with an append-only invalidation note; do not open the v2 holdout under the current rule.",
+   "rationale": "The gate is unattainable for any adaptive solver run twice (scipy Radau fails it in 17/18 pairs), the clipped arm is a fixed-step run, and the metric basis is not the case tolerance. Spending a holdout on this protocol would consume it for no information.",
+   "conflicts_with": "Design section 7 item 5 (transactional retry / event / dense-output semantics is fifth in the default order) and the v2 ledger guidance to 'improve output-policy agreement' (duplicate finding F-001)."
+  },
+  {
+   "finding_ids": [
+    "F-027",
+    "F-018",
+    "E-04",
+    "E-07",
+    "E-09"
+   ],
+   "change": "Reclassify blocker M09 from 'NOT_GENERICALLY_CLOSED, needs a method-specific W-order proof' to 'answered by existing theory; remaining work is an empirical order campaign'. Drop the proof option from M09's remaining_evidence and keep only the perturbation/order campaign: exact J vs stale J vs Krylov-projected J, fixed h, measured against the direct-LU arm.",
+   "rationale": "RODAS5P is a Rosenbrock (ROW) method whose order 5 assumes the exact Jacobian; W-method order conditions (Hairer-Wanner vol. II, sec. IV.7) state what an arbitrary Jacobian approximation costs, and Rosenbrock-Krylov theory (Tranquilli and Sandu, SISC 36, 2014) gives the reduced condition set when the approximation is a Krylov projection. The design already names Tranquilli-Sandu as its anchor, yet the ledger treats the question as open and the tree does not cite the W-method result. E-07 confirms the tableau is order 5(4) with exact J, so no generic fifth-order arbitrary-J theorem is available to prove. Citation details were taken from the audit brief and F-027, not re-checked against the sources in this pass.",
+   "conflicts_with": "Blocker ledger M09 (priority P0, remaining_evidence 'method-specific W-order proof or perturbation/order campaign') and design section 7 item 3 ('approximate/stale Jacobian effects and Rosenbrock/W/Krylov order conditions' as a theory node)."
+  },
+  {
+   "finding_ids": [
+    "F-031",
+    "F-018",
+    "F-008",
+    "E-04",
+    "E-09"
+   ],
+   "change": "Restate blocker M07 (fifth-order algebraic tolerance scaling). Its hypothesis 'RHS = O(h)' does not hold for the K-form stage equation on stiff modes (rhs is O(h|lambda|) larger), and its acceptance criterion should be 'inexact arm within a stated factor of the direct-LU arm over the ladder', not 'slope >= 4.5'.",
+   "rationale": "E-04 P1PR: the direct-LU arm itself shows order ~4 (slopes 4.01, 4.03, 4.03, 3.63) and E-09 shows order ~3 on PR lambda=-1e4 and 3.2-4.8 with a stiff diagonal mass matrix. This is classical stiff order reduction, so a fifth-order slope criterion fails for every arm and cannot discriminate the forcing rule.",
+   "conflicts_with": "Blocker ledger M07 (theorem 'if RHS=O(h), relative residual O(h^5)'; remaining evidence 'fixed-h refinement, uniform amplification window')."
+  },
+  {
+   "finding_ids": [
+    "F-058",
+    "F-060",
+    "F-061",
+    "F-062",
+    "F-024"
+   ],
+   "change": "Shrink M0's formal scope and re-aim it. Keep one universal authority (Lean) for F01/F03/F04 at arbitrary n and drop the duplicated Rocq track and the Wolfram/Sage/Singular cross-check records (plan Task 6, 13 backend-role records). Spend the recovered effort on the evaluator defects F-060/F-061/F-062, which the theorems do not cover.",
+   "rationale": "F01/F03/F04 are elementary finite-dimensional facts (strict-lower nilpotency, Neumann inverse, nonnegative majorant recursion); proving them twice adds no evidence about the solver. The defects that would make a certified accept wrong are in the Rust evaluator: one residual bound broadcast to all stages, round-to-nearest residual and norms, reuse quantity never computed.",
+   "conflicts_with": "Design section 5 ('Lean/mathlib and Rocq remain universal authorities ... Wolfram/Sage/Singular remain role-limited exact cross-checks') and plan Tasks 3-6; also the plan constraint that M0 closes only the three listed C01 items."
+  },
+  {
+   "finding_ids": [
+    "F-063",
+    "F-100",
+    "F-014",
+    "F-033",
+    "E-03",
+    "E-04"
+   ],
+   "change": "Demote the Bateman client from 'first real-client scientific execution' to a kill test, and make the first scientific execution a client where inexactness is actually exercised: the semilinear advection-diffusion family and the Prothero-Robinson ladder already in the corpus.",
+   "rationale": "By the ledger's own M03 theorem, Jacobi-preconditioned GMRES on Bateman terminates in <= 2 iterations, so stage residuals are near roundoff and the contamination certificate is never stressed; the <=2-iteration kill test is also not implemented or visible in receipts (F-063). The measured defects are elsewhere: semilinear rows are 17-207x outside case tolerance with every step accepted.",
+   "conflicts_with": "Design section 6 ('Primary target: the already-constructed Bateman client lane') and ledger X01 (six-case Bateman candidate run as the P0 non-mathematical blocker)."
+  },
+  {
+   "finding_ids": [
+    "F-004",
+    "F-033",
+    "F-052",
+    "E-02",
+    "E-03"
+   ],
+   "change": "Insert a new node directly after the forcing-rule fix: 'global error under satisfied local control'. Re-run the 18 n=96 rows (E-02 reproduces them bitwise) with direct LU, with the new forcing rule, and with scipy Radau, and attribute the 2.6x median / 70x semilinear gap to inexact stages, stiff order reduction, or controller settings.",
+   "rationale": "This is the one solver-quality result the audit produced and it is absent from the plan. E-03 rules out interpolation as the cause, and embedded norms are <= 1 in every arm, so the cause is upstream of the controller. The node is a numerical measurement, which satisfies the design's own progress-first rule.",
+   "conflicts_with": "Not in the Sep-4 design or plan; it would sit between M0 and M1. Plan constraint 'Candidate executions: exactly 0 throughout M0' is respected only if this runs as a separate node after M0."
+  },
+  {
+   "finding_ids": [
+    "F-038",
+    "F-010",
+    "E-05"
+   ],
+   "change": "Rescope M11 (nonnormal GMRES) from a convergence-theory question to an engineering node: stagnation detection, true-residual history in receipts, and a fallback policy. Keep its position (design section 7 item 4) but drop field-of-values / pseudospectral probes unless a client fails with honest residuals.",
+   "rationale": "The ledger already records that no universal fast-convergence theorem exists. E-05 shows the solvers report true residuals correctly and fail closed; what is missing is detection of stagnation and safe state reuse, not theory.",
+   "conflicts_with": "Ledger M11 remaining_evidence ('FOV or pseudospectral probe') and its P0 priority; consistent with the design's ordering."
+  },
+  {
+   "finding_ids": [
+    "F-062",
+    "F-014",
+    "F-065",
+    "E-05"
+   ],
+   "change": "Hold M08 (cross-step / retry reuse) and all reusable-preconditioner claims until the reuse quantity epsilon+delta is computed at runtime and acceptance no longer reads the reference. Order it after the forcing rule and the Krylov state-validity model.",
+   "rationale": "Reuse is admitted today by identity equality only, and E-05 shows reuse across a preconditioner change can turn a convergent solve into a failure. A reuse certificate that is never evaluated cannot support a claim.",
+   "conflicts_with": "Ledger M08 status CLOSED_CONDITIONAL (the theorem stands; the runtime evidence does not exist) and PR #38/#39 substrate framing."
+  },
+  {
+   "finding_ids": [
+    "F-023",
+    "F-047",
+    "F-093",
+    "F-046"
+   ],
+   "change": "Downgrade the v3.5 'SURVIVES this discriminating holdout' result to 'one unsafe event, inside the one-rank margin, non-discriminating'; mark Holdout512 / Holdout320 / Holdout384 as consumed; drop the FrozenK1Comparator as holdout evidence; stop extending the v2.5/v2.9 policy constants until each has an in-repo derivation. A fresh holdout is required before any new policy-safety claim.",
+   "rationale": "One positive cannot discriminate, the frozen k=1 comparator hard-codes step indices that can only have come from the N=512 holdout, and holdout profiles are re-consumed by v3.6/v3.7 under the same name.",
+   "conflicts_with": "Sealed v3.5 ledger wording and any v3.6/v3.7 receipt that cites it as a validated safety witness. Append a note; do not edit the sealed files."
+  },
+  {
+   "finding_ids": [
+    "F-045",
+    "F-011",
+    "F-040",
+    "F-041",
+    "F-048",
+    "F-053",
+    "E-06",
+    "E-08"
+   ],
+   "change": "Drop from the near-term roadmap: exponential-lane promotion and atlas recommendation labels, the production polyalgorithm selection, and any speed comparison. Keep the performance study last as the design says, but move its cheap prerequisites (counter contract, coefficient caching, timing dispersion) early because they are correctness of accounting, not performance claims.",
+   "rationale": "The exponential lane has a P1 error-estimate defect and unit-dependent accuracy, and cost ratios are not comparable across lanes until jvp_calls means one thing.",
+   "conflicts_with": "Plan constraint 'No performance, speedup, scalability ... work belongs to M0' if the accounting fixes are scheduled inside M0; schedule them outside M0 to avoid the conflict. Agrees with design section 7 item 7."
+  }
+ ],
+ "process": [
+  {
+   "finding_ids": [
+    "F-024",
+    "F-025"
+   ],
+   "action": "Enforce the design's own section 3.1 rule with a counter in the repo: each node must produce a numerical measurement, a counterexample, or a merged code change. Count M0 as a process cycle unless it ships the evaluator repairs. Cap a node's prose at one RESULT.md and one receipt; no new schema family without retiring one.",
+   "rationale": "Since v3.6 the tree gained 8 research nodes, 4744 Markdown lines and 83 schema/receipt identifiers with zero admitted results and zero candidate executions, and the Sep-4 plan adds 14 tasks before the first measurement. The STALL_PROCESS_ACCRETION condition is already met by the design's own definition."
+  },
+  {
+   "finding_ids": [
+    "F-007",
+    "F-030",
+    "E-03",
+    "E-04"
+   ],
+   "action": "Attainability check before any gate is frozen: run the proposed criterion on (a) a control solver (scipy Radau) and (b) a same-code-path perturbation pair (h0 vs 0.7*h0). A gate the control fails is rejected at design time. Record the check in the pre-registration.",
+   "rationale": "Two pre-registered criteria were unattainable: the 0.1 output-policy rule (fails for scipy Radau in 17/18 pairs) and the slope>=4.5 order criterion on stiff PR (fails for direct LU). Each cost a full campaign and produced a nonpass with no solver information."
+  },
+  {
+   "finding_ids": [
+    "F-003",
+    "F-021",
+    "F-097",
+    "F-020"
+   ],
+   "action": "One CI matrix replaces per-node manual verification bundles: default tests, --ignored sealed replays, the audit2-research feature, and a measurement-profile run with the debug_assert invariants promoted to checked assertions. A sealed replay that fails becomes a typed failure file next to the ledger, written by CI.",
+   "rationale": "Failure preservation is kept, but by automation: the sealed v3.7 replay has been failing unobserved because it is #[ignore]d and no workflow passes --ignored; the campaign smoke test passes as NOT_RUN."
+  },
+  {
+   "finding_ids": [
+    "F-044",
+    "F-103",
+    "F-080",
+    "F-092",
+    "F-107"
+   ],
+   "action": "Ban literal receipt fields: every boolean or ratio in a receipt (scientifically_certified, result_independent, matching_trial_stages, converged, info, legacy_to_fused ratio) is either computed from run data or removed. Add a lint test that greps receipt constructors for literal true / constant ratios.",
+   "rationale": "Literal flags are the cheapest route to a P0 (a published receipt field that is false). Removing fields cuts receipt size and review load while making the remaining fields trustworthy."
+  },
+  {
+   "finding_ids": [
+    "F-029",
+    "F-004",
+    "F-074",
+    "F-018"
+   ],
+   "action": "Replace per-node CLAIM_SCOPE documents with one claims table in the README: claim, evidence file, units, status. All error numbers are reported in the case's own (atol, rtol) weights; order claims state 'nonstiff 5, stiff 3-4 observed'. A claim with no row in the table is not made.",
+   "rationale": "Claim ceilings are currently long per-node strings that did not prevent the two misleading readings the audit found (WRMS 310 read as tolerance excess; 'fifth-order recovery' read as stiff evidence). One table is shorter and harder to misread."
+  },
+  {
+   "finding_ids": [
+    "F-093",
+    "F-047",
+    "F-023",
+    "F-098"
+   ],
+   "action": "Keep a holdout consumption register (one JSON file): profile, first-opened revision, consumers. A consumed holdout is renamed 'replay-N' in code and may not be cited as holdout evidence again. In-tree reference artifacts carry generator identity and wrms_basis or are marked legacy.",
+   "rationale": "Holdout leakage here came from reuse and naming, not from bad intent; a register is lighter than per-node holdout contracts and makes re-consumption visible."
+  },
+  {
+   "finding_ids": [
+    "F-025",
+    "F-067",
+    "F-068",
+    "F-102",
+    "F-064",
+    "F-108"
+   ],
+   "action": "Publish-first and rebuildable-from-remote rule: no plan step may depend on bytes that exist only in a local worktree; build.rs degrades to 'provenance unknown' without git and computes dirty from tracked files only; receipts round-trip through serde_json in tests, reject non-finite values with a typed error, and digest the decision-driving inputs.",
+   "rationale": "This replaces the durable-checkpoint ceremony (bind HEAD/tree/worktree/allowed dirty paths per node) with properties that are checked by the build and the tests, and removes the class of failure where the project's latest scientific state is unreproducible."
+  },
+  {
+   "finding_ids": [
+    "F-046",
+    "F-072",
+    "F-085",
+    "F-078",
+    "F-079"
+   ],
+   "action": "Constants register: every policy or numerical constant (V25/V29 thresholds, tau=13.397, FD step sqrt(eps), harmonic-Ritz thresholds, controller growth cap, fixed_point_error term in the controller) gets a one-line source: derivation, literature reference, or 'tuned on <dataset>'. Tuned constants name the data they saw.",
+   "rationale": "Unsourced constants are where calibration information silently enters decisions; a register is a small, one-time cost and makes later holdout claims auditable."
+  }
+ ]
+}

@@ -1,0 +1,11 @@
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/baseline/crates/rodas5p-integrators)
+    Finished `measurement` profile [optimized] target(s) in 0.36s
+     Running tests/time_fd_workspace_contracts.rs (/home/cosmosapjw/vigilode-rust-opt-20261028T212815Z-t14sx5sh/target-red/measurement/deps/time_fd_workspace_contracts-19f5d3acf90f101d)
+
+thread 'dense_fd_scratch_matches_stack_callback_and_has_no_step_allocations' (2051237) panicked at crates/rodas5p-integrators/tests/time_fd_workspace_contracts.rs:132:9:
+assertion failed: fd.observed.success && cb.observed.success
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'matrix_free_fd_scratch_matches_stack_callback_and_has_no_step_allocations' (2051239) panicked at crates/rodas5p-integrators/tests/time_fd_workspace_contracts.rs:171:9:
+assertion failed: fd.observed.success && cb.observed.success
+error: test failed, to rerun pass `-p rodas5p-integrators --test time_fd_workspace_contracts`

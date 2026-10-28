@@ -1,0 +1,16 @@
+   Compiling rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+error[E0432]: unresolved imports `rodas5p_core::damped_moments::DampedForcingMomentRefusal`, `rodas5p_core::damped_moments::DampedForcingMomentWork`, `rodas5p_core::damped_moments::compute_damped_forcing_moment`
+ --> crates/rodas5p-core/tests/damped_forcing_moment_consumer.rs:2:5
+  |
+2 |     DampedForcingMomentRefusal, DampedForcingMomentWork, compute_damped_forcing_moment,
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  |     |                           |                        |
+  |     |                           |                        no `compute_damped_forcing_moment` in `damped_moments`
+  |     |                           |                        help: a similar name exists in the module: `compute_damped_moment`
+  |     |                           no `DampedForcingMomentWork` in `damped_moments`
+  |     no `DampedForcingMomentRefusal` in `damped_moments`
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `rodas5p-core` (test "damped_forcing_moment_consumer") due to 1 previous error
+
+EXIT_CODE=101

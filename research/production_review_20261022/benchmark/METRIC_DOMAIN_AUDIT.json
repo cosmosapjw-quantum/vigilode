@@ -1,0 +1,16 @@
+{
+  "issue": "negative reference density produces a negative depletion weight; equal negative trajectories previously scored zero",
+  "before": "metric_before.log: one failure, one ZeroDivisionError, one pass",
+  "fix": "require finite positive initial photon energy and finite nonnegative subsequent reference photon energy before forming normalized depletion weights",
+  "scope": "prospective harness hardening; old published measurements left unchanged, not rescored without raw trajectories",
+  "tests": [
+    "negative physical reference",
+    "zero initial density",
+    "unchanged positive equal trajectory"
+  ],
+  "dependency": "mpmath installed for existing physics reference imports",
+  "after": "metric_after.log: 3 tests PASS",
+  "changed_source": "external_audits/vigilode_bassrei_ncp_c1_20261022/harness/scenarios.py",
+  "changed_source_sha256": "958e34c9cdc8bd544bc0dde1b73ee2e883fc4c01c8140282d8def3cfd3918fb6",
+  "initial_environment_failure": "ModuleNotFoundError: mpmath before test execution; resolved by installing mpmath, then captured numerical red/green logs"
+}

@@ -1,0 +1,109 @@
+{
+  "schema": "vigilode-component-benchmark-dag-v1",
+  "campaign": "component_benchmark_20261018",
+  "baseline": "26f0b3a187ab41f7d68922491cc489b268c0caa1",
+  "parent_dag": "research/all_dag_completion_20261018/DAG.json",
+  "original_A01_A12_preserved": true,
+  "nodes": [
+    {
+      "id": "P0",
+      "depends_on": [],
+      "status": "RUNNING",
+      "acceptance": [
+        "preserve checkouts",
+        "inventory and capability mapping",
+        "frozen source/environment/inputs",
+        "negative controls",
+        "remote EXEC_SHA"
+      ],
+      "instance_hours_cap": 6
+    },
+    {
+      "id": "P1",
+      "depends_on": [
+        "P0"
+      ],
+      "status": "WAITING",
+      "acceptance": [
+        "source-bound independent references",
+        "component contracts and allocation controls",
+        "cross-language RHS/J/JVP parity"
+      ],
+      "instance_hours_cap": 12
+    },
+    {
+      "id": "P2",
+      "depends_on": [
+        "P1"
+      ],
+      "status": "WAITING",
+      "acceptance": [
+        "all components classified by actual evidence or explicit gap",
+        "family-balanced applicability screening",
+        "all failure arms retained",
+        "unchanged tolerances and mesh"
+      ],
+      "instance_hours_cap": 20
+    },
+    {
+      "id": "P3",
+      "depends_on": [
+        "P2"
+      ],
+      "status": "WAITING",
+      "acceptance": [
+        "<=16 frozen contrasts",
+        "17 paired independent processes per contrast",
+        "global multiplicity fixed",
+        "controlled contention and matched timing scope",
+        "same-target and same-achieved-error gates separated"
+      ],
+      "instance_hours_cap": 24
+    },
+    {
+      "id": "P4",
+      "depends_on": [
+        "P3"
+      ],
+      "status": "WAITING",
+      "acceptance": [
+        "fresh Astra ultra independent analysis",
+        "JSON CSV Korean report from one result collection",
+        "counterexamples and missing-capability/ref/evidence gaps",
+        "next executable DAG",
+        "reviewed branch publication"
+      ],
+      "instance_hours_cap": 6
+    },
+    {
+      "id": "RESERVE",
+      "depends_on": [],
+      "status": "AVAILABLE",
+      "acceptance": [
+        "one diagnosed infrastructure retry",
+        "result recovery and safe release"
+      ],
+      "instance_hours_cap": 4
+    }
+  ],
+  "scope_execution": "case-level pipeline permitted after that case prerequisites; typed HOLD descendants do not run",
+  "scientific_decisions": {
+    "broad_production": "HOLD",
+    "global_all_time_accuracy": "HOLD",
+    "statistical_timing_authority": "HOLD"
+  },
+  "model_routing": {
+    "planning_contract_requested": "gpt-6-astra/ultra",
+    "implementation_requested": "gpt-6-sol/medium",
+    "controller_requested": "gpt-6.1-sol/medium",
+    "final_independent_analysis_requested": "gpt-6-astra/ultra",
+    "observed_runtime_identity": "NOT_INDEPENDENTLY_OBSERVED"
+  },
+  "publication": "research/all-dag-completion-20261018 only; fast-forward; no force push",
+  "resource_contract": {
+    "existing_instances_only": true,
+    "aggregate_instance_hours_cap": 72,
+    "shared_ledger": "NCP_LEASE_LEDGER.json",
+    "ledger_reset_forbidden": true
+  }
+}

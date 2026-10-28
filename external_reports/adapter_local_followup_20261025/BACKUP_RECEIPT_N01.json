@@ -1,0 +1,129 @@
+{
+  "schema": "vigilode.create_only_backup_receipt.v1",
+  "created_utc": "2026-10-25T13:32:04.159942+00:00",
+  "source": "/tmp/vigilode-local-run-20261024.geLVCp9Q",
+  "destination": "/home/cosmosapjw/vigilode-local-archive/n01-vigilode-local-run-20261024.geLVCp9Q",
+  "receipt_path": "/tmp/BACKUP_RECEIPT_N01_20261025.json",
+  "copy": {
+    "initial_command": "cp -a --reflink=always SOURCE/. DESTINATION/",
+    "initial_exit_code": 1,
+    "initial_result": "FICLONE Operation not supported on overlay-backed files; partial files left in the exclusive new destination",
+    "completion_command": "cp -a SOURCE/. DESTINATION/",
+    "completion_exit_code": 0,
+    "metadata": "archive mode; source/destination on same ext4 device; regular copy used after reflink failure",
+    "other_mutations": "none"
+  },
+  "census": {
+    "source": {
+      "regular_files": 25122,
+      "directories": 7628,
+      "symlinks": 38,
+      "other": 0,
+      "logical_bytes": 7714955488,
+      "type_paths_sha256": "3fcb47a53ca3c5c141b6ac4e87ae2b78f8037cea66df625ae740fb0ec69e7a02"
+    },
+    "destination": {
+      "regular_files": 25122,
+      "directories": 7628,
+      "symlinks": 38,
+      "other": 0,
+      "logical_bytes": 7714955488,
+      "type_paths_sha256": "3fcb47a53ca3c5c141b6ac4e87ae2b78f8037cea66df625ae740fb0ec69e7a02"
+    },
+    "match": true,
+    "exit_code": 0
+  },
+  "file_list_sha256": {
+    "source": "a4cab07aa85d59e98630f1ae753eb74d6db25fd9f474fd94075121e9488360be",
+    "destination": "a4cab07aa85d59e98630f1ae753eb74d6db25fd9f474fd94075121e9488360be",
+    "match": true,
+    "command": "find ROOT -type f -printf %P\\0 | sort -z | sha256sum",
+    "exit_code": 0
+  },
+  "manifests": [
+    {
+      "path": "RAW_SHA256.txt",
+      "sha256": "b35e9f0e551222cb75aac128264501f6003452d6c1109de789e55a4dabb451e6",
+      "entries": 10256,
+      "source_check_command": "(cd /tmp/vigilode-local-run-20261024.geLVCp9Q/ && sha256sum -c RAW_SHA256.txt)",
+      "source_check_exit_code": 0,
+      "destination_check_command": "(cd /home/cosmosapjw/vigilode-local-archive/n01-vigilode-local-run-20261024.geLVCp9Q/ && sha256sum -c RAW_SHA256.txt)",
+      "destination_check_exit_code": 0
+    },
+    {
+      "path": "native_diffsol_followup/RAW_SHA256.txt",
+      "sha256": "2d02b075da7cb6b3eb0ec54c8f89dd4a9d7fd9e3c67a0d5ba683489b27883e00",
+      "entries": 2557,
+      "source_check_command": "(cd /tmp/vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup && sha256sum -c RAW_SHA256.txt)",
+      "source_check_exit_code": 0,
+      "destination_check_command": "(cd /home/cosmosapjw/vigilode-local-archive/n01-vigilode-local-run-20261024.geLVCp9Q/native_diffsol_followup && sha256sum -c RAW_SHA256.txt)",
+      "destination_check_exit_code": 0
+    },
+    {
+      "path": "robertson_reference/SHA256.txt",
+      "sha256": "f6f95214e3e07e120870102388aa376f9edafee034f6989688bbb13e89b183e5",
+      "entries": 4,
+      "source_check_command": "(cd /tmp/vigilode-local-run-20261024.geLVCp9Q/robertson_reference && sha256sum -c SHA256.txt)",
+      "source_check_exit_code": 0,
+      "destination_check_command": "(cd /home/cosmosapjw/vigilode-local-archive/n01-vigilode-local-run-20261024.geLVCp9Q/robertson_reference && sha256sum -c SHA256.txt)",
+      "destination_check_exit_code": 0
+    }
+  ],
+  "key_file_hashes": [
+    {
+      "path": "FINAL_HANDOFF_KO.md",
+      "size_bytes": 3646,
+      "source_sha256": "e05e26ec0e4f6293e6cdc4e23eb55f843a4c571dba73ffeae5fce4db270d6fa6",
+      "destination_sha256": "e05e26ec0e4f6293e6cdc4e23eb55f843a4c571dba73ffeae5fce4db270d6fa6",
+      "match": true
+    },
+    {
+      "path": "stage_build/BUILD_RECEIPT.json",
+      "size_bytes": 1703,
+      "source_sha256": "47e0057e394993170676c0cb1bc01d2e86ca5f51cd0b5dc60651d92ffcc32ea6",
+      "destination_sha256": "47e0057e394993170676c0cb1bc01d2e86ca5f51cd0b5dc60651d92ffcc32ea6",
+      "match": true
+    },
+    {
+      "path": "profile/CAMPAIGN_IDENTITY.json",
+      "size_bytes": 20421,
+      "source_sha256": "887bd2a60cb92656f3f366d09a99b4e638f19b3ed1aab0666a45c55a4c575187",
+      "destination_sha256": "887bd2a60cb92656f3f366d09a99b4e638f19b3ed1aab0666a45c55a4c575187",
+      "match": true
+    },
+    {
+      "path": "continuation_20261025T080718Z/COST_LEDGER_V7_20261025T1029.json",
+      "size_bytes": 1136,
+      "source_sha256": "12460ce668eeee0da9f416244bf6a579f6635a9067078033ea727a565e527b5e",
+      "destination_sha256": "12460ce668eeee0da9f416244bf6a579f6635a9067078033ea727a565e527b5e",
+      "match": true
+    },
+    {
+      "path": "continuation_20261025T080718Z/case20_wiring_fix_20261025T111239Z/SOURCE_HASH_MANIFEST.json",
+      "size_bytes": 14585,
+      "source_sha256": "1078b937e41ab20e21567f3ac143b441889151edc3f8e3838db91a8df817b9bc",
+      "destination_sha256": "1078b937e41ab20e21567f3ac143b441889151edc3f8e3838db91a8df817b9bc",
+      "match": true
+    },
+    {
+      "path": "target/measurement/deps/libpaste-7408d65a49c76175.so",
+      "size_bytes": 5083704,
+      "source_sha256": "915b50113f21a7cbd11f8c48fad4f8609c00a03e83277119a4fd650b01f43af0",
+      "destination_sha256": "915b50113f21a7cbd11f8c48fad4f8609c00a03e83277119a4fd650b01f43af0",
+      "match": true
+    }
+  ],
+  "verification_scope": "All entries in all three existing SHA256 manifests verified independently in source and destination; full relative regular-file path-list hash; six representative handoff/build/campaign/continuation/source-manifest/binary files hashed on both sides. No full SHA256 pass over all 7.7 GB beyond listed manifest entries.",
+  "mismatches": [],
+  "source_root_stat_after_copy": {
+    "device": 66306,
+    "inode": 24663679,
+    "mtime_ns": 1792915726140149491,
+    "ctime_ns": 1792915726140149491
+  },
+  "benchmark_writer_process_scan": "no matching process observed on initial scan; root controller also reported no writer",
+  "dates": {
+    "copy_started_local": "2026-10-25T22:27:12+09:00",
+    "receipt_created_local": "2026-10-25T22:32:07.768417+09:00"
+  }
+}

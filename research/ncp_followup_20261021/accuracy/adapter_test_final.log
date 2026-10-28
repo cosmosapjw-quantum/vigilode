@@ -1,0 +1,28 @@
+   Compiling rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-followup/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-followup/crates/rodas5p-krylov)
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-followup/crates/rodas5p-integrators)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 43.56s
+     Running unittests examples/component_benchmark_native.rs (/workspace/scratch/0dc1e721cf82/runtime/final-target/debug/examples/component_benchmark_native-fa063c8718863190)
+
+running 5 tests
+test support::tests::stencil_refuses_nonfinite_parameters_without_modifying_output ... ok
+test support::tests::fourier_complex_equations_at_zero ... ok
+test support::tests::diagonal_fixture_preserves_sparsity ... ok
+test support::tests::analytic_heat_assembly_runs_through_fast_driver_with_same_trajectory ... ok
+test support::tests::analytic_stencil_matches_basis_jvp_including_periodic_collisions ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

@@ -1,0 +1,69 @@
+    Checking vigilode-a07 v0.1.0 (/home/cosmosapjw/vigilode/tools/benchmarks/diffsol/a07)
+error[E0599]: no method named `get_index` found for struct `FaerMat<T>` in the current scope
+   --> src/main.rs:137:24
+    |
+137 |                 matrix.get_index(0, col),
+    |                        ^^^^^^^^^
+    |
+   ::: /home/cosmosapjw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diffsol-la-0.1.0/src/matrix/mod.rs:404:8
+    |
+404 |     fn get_index(&self, i: IndexType, j: IndexType) -> Self::T;
+    |        --------- the method is available for `FaerMat<f64>` here
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: there is a method `set_index` with a similar name, but with different arguments
+   --> /home/cosmosapjw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diffsol-la-0.1.0/src/matrix/mod.rs:401:5
+    |
+401 |     fn set_index(&mut self, i: IndexType, j: IndexType, value: Self::T);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: trait `DenseMatrix` which provides `get_index` is implemented but not in scope; perhaps you want to import it
+    |
+  1 + use diffsol::DenseMatrix;
+    |
+
+error[E0599]: no method named `get_index` found for struct `FaerMat<T>` in the current scope
+   --> src/main.rs:138:24
+    |
+138 |                 matrix.get_index(1, col),
+    |                        ^^^^^^^^^
+    |
+   ::: /home/cosmosapjw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diffsol-la-0.1.0/src/matrix/mod.rs:404:8
+    |
+404 |     fn get_index(&self, i: IndexType, j: IndexType) -> Self::T;
+    |        --------- the method is available for `FaerMat<f64>` here
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: there is a method `set_index` with a similar name, but with different arguments
+   --> /home/cosmosapjw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diffsol-la-0.1.0/src/matrix/mod.rs:401:5
+    |
+401 |     fn set_index(&mut self, i: IndexType, j: IndexType, value: Self::T);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: trait `DenseMatrix` which provides `get_index` is implemented but not in scope; perhaps you want to import it
+    |
+  1 + use diffsol::DenseMatrix;
+    |
+
+error[E0599]: no method named `get_index` found for struct `FaerMat<T>` in the current scope
+   --> src/main.rs:139:24
+    |
+139 |                 matrix.get_index(2, col),
+    |                        ^^^^^^^^^
+    |
+   ::: /home/cosmosapjw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diffsol-la-0.1.0/src/matrix/mod.rs:404:8
+    |
+404 |     fn get_index(&self, i: IndexType, j: IndexType) -> Self::T;
+    |        --------- the method is available for `FaerMat<f64>` here
+    |
+    = help: items from traits can only be used if the trait is in scope
+help: there is a method `set_index` with a similar name, but with different arguments
+   --> /home/cosmosapjw/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/diffsol-la-0.1.0/src/matrix/mod.rs:401:5
+    |
+401 |     fn set_index(&mut self, i: IndexType, j: IndexType, value: Self::T);
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+help: trait `DenseMatrix` which provides `get_index` is implemented but not in scope; perhaps you want to import it
+    |
+  1 + use diffsol::DenseMatrix;
+    |
+
+For more information about this error, try `rustc --explain E0599`.
+error: could not compile `vigilode-a07` (bin "vigilode-a07") due to 3 previous errors

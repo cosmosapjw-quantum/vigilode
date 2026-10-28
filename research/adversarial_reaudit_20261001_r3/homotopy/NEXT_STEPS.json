@@ -1,0 +1,165 @@
+{
+  "schema": "vigilode.r3.homotopy.next.v1",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "nodes": [
+    {
+      "id": "HOM-01",
+      "priority": "P1",
+      "title": "Define and enforce the stage target coefficient semantics",
+      "depends_on": [],
+      "inputs": [
+        "native_tableau_bits.json",
+        "coefficient_structure.json"
+      ],
+      "target_files": [
+        "crates/rodas5p-core/src/coefficients.rs",
+        "crates/rodas5p-integrators/src/block.rs",
+        "crates/rodas5p-integrators/src/sequential.rs"
+      ],
+      "implementation": "Choose canonical strict-lower construction with validated Gamma inverse transformation, or retain full native coefficients and include their leakage in a verified target enclosure. Explicitly bind alpha+Gamma versus rounded L semantics. Do not silently zero coefficients inside certificate only.",
+      "acceptance": [
+        "Record native coefficient bits and target identifier.",
+        "Prove mathematical equality or quantified data-perturbation allowance between sequential and full-block consumers.",
+        "Any proof invoking H^8=0 checks exact structural zeros in its own target."
+      ],
+      "failure_status": "TARGET_SEMANTICS_UNRESOLVED",
+      "deliverables": [
+        "target_semantics.json",
+        "coefficient_structural_contracts.rs"
+      ]
+    },
+    {
+      "id": "HOM-02",
+      "priority": "P1",
+      "title": "Implement Rust outward certificate reference for small targets",
+      "depends_on": [
+        "HOM-01"
+      ],
+      "inputs": [
+        "certified_majorant.py",
+        "results.json"
+      ],
+      "target_files": [
+        "new research-only interval certificate module",
+        "new targeted Rust contracts"
+      ],
+      "implementation": "Add residual enclosure, verified inverse witness interface, positive outward recurrence, output/embedded projection rounding and fixed candidate scale. Use exact oracle fixtures for arithmetic edge cases.",
+      "acceptance": [
+        "All24 recorded bounded fixtures enclosed on matching target.",
+        "underflow/cancellation/overflow handled with explicit fail-closed semantics.",
+        "Certification kind distinguishes stage-target bound from ODE error estimator."
+      ],
+      "failure_status": "CERTIFICATE_NOT_VALIDATED",
+      "deliverables": [
+        "rust_certificate_probe",
+        "native_certificate_results.json"
+      ]
+    },
+    {
+      "id": "HOM-03",
+      "priority": "P2",
+      "title": "Construct scalable structure-preserving inverse witness",
+      "depends_on": [
+        "HOM-01"
+      ],
+      "inputs": [
+        "HOMOTOPY_RESEARCH_KO.md"
+      ],
+      "target_files": [
+        "operator/preconditioner witness interface"
+      ],
+      "implementation": "Start diagonal/block-triangular/banded W. For a general approximate inverse V verify |I-VW|<=R and a suitable comparison inverse, without assuming JVP access implies entrywise absolute bounds.",
+      "acceptance": [
+        "Matrix/operator identity ties witness to h,J,preconditioner and tolerances.",
+        "All inverse residual arithmetic enclosed.",
+        "Witness work/storage and rebuild/reuse cost recorded."
+      ],
+      "failure_status": "INVERSE_WITNESS_UNAVAILABLE",
+      "deliverables": [
+        "inverse_witness_contract",
+        "structured_fixture_results"
+      ]
+    },
+    {
+      "id": "HOM-04",
+      "priority": "P2",
+      "title": "Run block structured three-level certificate and radius predictor",
+      "depends_on": [
+        "HOM-02",
+        "HOM-03"
+      ],
+      "inputs": [
+        "results.json"
+      ],
+      "target_files": [
+        "parallel certificate experimental module"
+      ],
+      "implementation": "Predict D from authorized past step data, assemble comparison H, evaluate finite path sum with block operations, then validate radius closure and output budgets. Keep all failed predictors in ledger.",
+      "acceptance": [
+        "No exact root/candidate reference leakage into D prediction.",
+        "All closure failures reject or fallback.",
+        "Independently compare enclosures with exact/small interval oracle.",
+        "Measure serial and actual worker execution including certificate work."
+      ],
+      "failure_status": "RADIUS_CLOSURE_OR_COST_FAIL",
+      "deliverables": [
+        "radius_predictor_contract",
+        "parallel_certificate_receipts"
+      ]
+    },
+    {
+      "id": "HOM-05",
+      "priority": "P2",
+      "title": "Replace q2 eighth diagnostic only after equivalent admission",
+      "depends_on": [
+        "HOM-02",
+        "HOM-03"
+      ],
+      "inputs": [
+        "current transactional_q1_q2.rs"
+      ],
+      "target_files": [
+        "crates/rodas5p-integrators/src/transactional_q1_q2.rs"
+      ],
+      "implementation": "Keep the seventh-batch q2 candidate exactly fixed. Substitute rigorous native-target output/embedded admission for q=0 diagnostic, then remove only that unapplied diagnostic batch.",
+      "acceptance": [
+        "Candidate output/stages bit identity before/after diagnostic removal.",
+        "Wrong or unverified certificate cannot fast-accept.",
+        "W batch7 and certificate work separately accounted; fallback transaction preserved."
+      ],
+      "failure_status": "ADMISSION_EQUIVALENCE_NOT_ESTABLISHED",
+      "deliverables": [
+        "q2_diagnostic_replacement_contracts",
+        "work_ledger_comparison.json"
+      ]
+    },
+    {
+      "id": "HOM-06",
+      "priority": "P2",
+      "title": "Measure matched-accuracy full-attempt speedup",
+      "depends_on": [
+        "HOM-04",
+        "HOM-05"
+      ],
+      "inputs": [
+        "source-bound timing/session protocol",
+        "full-attempt work records"
+      ],
+      "target_files": [
+        "fair-ab campaign runner"
+      ],
+      "implementation": "Compare serial baseline versus P=1,2,4,8 at equal output grid and tolerance. Include witness construction, RHS/JVP, certificate, rejected attempts and fallback in independent-session paired timings.",
+      "acceptance": [
+        "Same correctness/accuracy gate for all lanes.",
+        "No synthetic clock promoted as speed measurement.",
+        "Report p1,pf,certificate fraction,vector work,memory and total wall time.",
+        "Fail if significant work-accuracy regression or admission mismatch."
+      ],
+      "failure_status": "SPEEDUP_UNPROVEN",
+      "deliverables": [
+        "matched_accuracy_campaign.json",
+        "paired_timing_report"
+      ]
+    }
+  ]
+}

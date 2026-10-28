@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "node": "A11",
+  "status": "IMPLEMENTED_SCOPED_PASS",
+  "agent": "/root/dag_a11_grayscott",
+  "original_node_acceptance": "Full symmetric Jacobian bound on tube; reject maxdiag shortcut; O(C) reaction block method",
+  "delivered": [
+    "Immutable GrayScott point-callback/interval-provider model binding",
+    "Continuous residual and actual error tube via generic A05 transaction driver",
+    "Outward full symmetric-part lognorm with counted attempted operations",
+    "RHS/JVP direct stencils remove two temporary Vec allocations per callback",
+    "Typed dimension/storage usize-overflow guard",
+    "Native tests, nonlinear replay example, proof and local reproduction instructions"
+  ],
+  "domain": {
+    "model": "periodic GrayScott 2D with original represented coefficients",
+    "grid_min": 2,
+    "norm": "unweighted Euclidean",
+    "initial_uncertainty": "finite L2 ball",
+    "absolute_budget": "unchanged supplied positive atol",
+    "requested_output_budget_enforced": true,
+    "later_segment_evaluate_budget_auto_enforced": false,
+    "other_pdes_admitted": false
+  },
+  "production": {
+    "scoped_certificate": "PASS_SCOPED_INDEPENDENTLY_REVIEWED",
+    "broad_production": "HOLD",
+    "speed": "NOT_MEASURED",
+    "remaining_gates": [
+      "Target grid/horizon resource and wall-time evidence",
+      "Final aggregate source identity check"
+    ]
+  },
+  "theory": {
+    "reused": [
+      "Previously published exact 2x2 symmetric reaction eigenvalue formula",
+      "Periodic diffusion negative-semidefinite structure",
+      "Existing continuous-residual comparison theorem"
+    ],
+    "new_integration": "Generated capability binds actual trajectory tube and original callbacks; outward inherited radii supplied by A05",
+    "lognorm_arithmetic_cost": "24*C+5 counted provider primitives including interval input validation on finite normal domain",
+    "space": "O(C) driver/provider boxes; O(1) additional scalar workspace for lognorm",
+    "callback_memory_reduction": "4 temporary Vec allocations and 4*C zero-initializations per RHS/JVP pair; two C-length arrays peak removed; no elapsed speed inference"
+  },
+  "validation": {
+    "rust_version": "1.94.1",
+    "new_contract_tests": 7,
+    "regression_tests": 3,
+    "compile_fail_tests": 1,
+    "commands": [
+      {
+        "command": "cargo test --locked --offline -p rodas5p-integrators --test all_dag_a11_verified --test a11_gray_scott_log_norm -- --nocapture",
+        "exit_code": 0,
+        "log": "evidence/native_tests.log"
+      },
+      {
+        "command": "cargo test --locked --offline -p rodas5p-integrators --doc BoundGrayScottProblem",
+        "exit_code": 0,
+        "log": "evidence/doc_tests.log"
+      },
+      {
+        "command": "cargo run --locked --offline -p rodas5p-integrators --example gray_scott_verified_run -- 4",
+        "exit_code": 0,
+        "log": "evidence/native_example.log",
+        "data": "evidence/nonlinear_trajectory.json"
+      }
+    ],
+    "first_attempt": {
+      "exit_code": 101,
+      "reason": "Concurrent actual_k_homotopy.rs coefficients reference/owned type error before test execution",
+      "log": "evidence/first_compile_attempt.log"
+    },
+    "exact_homogeneous": {
+      "grid": 3,
+      "span": [
+        0,
+        0.2
+      ],
+      "initial_radius": 1e-08,
+      "atol": 1e-05,
+      "accepted": 34,
+      "rejected": 21,
+      "provider_operations": 24640
+    },
+    "nonlinear": {
+      "grid": 4,
+      "span": [
+        0,
+        0.1
+      ],
+      "atol": 0.0001,
+      "rtol": 1e-07,
+      "outputs": 11,
+      "accepted": 6,
+      "rejected": 2,
+      "max_certified_output_radius": 4.631424315750511e-05,
+      "diagnostic_reference": "Independent coordinate-loop RK4 at h=1e-4 and 5e-5; not proof authority",
+      "max_error_to_finer_reference": 8.938889858629839e-15,
+      "max_reference_spread": 9.506558148265855e-15,
+      "provider_operations": 6328
+    },
+    "lognorm_work": {
+      "cells": [
+        4,
+        9,
+        16
+      ],
+      "provider_operations": [
+        101,
+        221,
+        389
+      ]
+    }
+  },
+  "source_identity": {
+    "kind": "working_tree_sha256",
+    "base_commit": "40a36d922e915e1d1c296adc136b7e5b7676eb67",
+    "files": {
+      "crates/rodas5p-integrators/src/gray_scott.rs": "366a20843c7931238f458b62760f146ecf34068ba306fc43acd39258390653ad",
+      "crates/rodas5p-integrators/src/gray_scott_verified.rs": "190d1013040688debdee17e5be45e711a7b09403e6b8d26896fb849aa96001df",
+      "crates/rodas5p-integrators/src/generic_verified.rs": "0a014a6d55fcb494524b3105547eeb21fd2ab1b1557c1bf14838f7def14b7e17",
+      "crates/rodas5p-integrators/src/dense_output_v2.rs": "1a46db7831523e3ba3e44169f6456061ee716b4f1073d2076d9c0ef1e0a26bae",
+      "crates/rodas5p-integrators/tests/all_dag_a11_verified.rs": "dabd453f1cc05ca829df66483877492a3539f044cea61b02d93a7d95fd527d62",
+      "crates/rodas5p-integrators/tests/a11_gray_scott_log_norm.rs": "7ef7eb8a864756dc512e22985c535e4ac47249bf4d7277c4d8a5b1e66f03dd0b",
+      "crates/rodas5p-integrators/examples/gray_scott_verified_run.rs": "fc060d070a81fa261a8d80fd501c02a6d7aa19b4e4d596eca99ce251b334df29",
+      "Cargo.lock": "04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400"
+    }
+  },
+  "future_optional_improvements": [
+    {
+      "id": "A11-POLY-DEFECT",
+      "goal": "Same-tolerance larger admissible steps",
+      "method": "Cancellation-preserving degree-12 reaction polynomial residual or adaptive time subdivision",
+      "not_required_for_original_node_acceptance": true
+    }
+  ],
+  "report": "REPORT_KO.md",
+  "independent_review": {
+    "status": "PASS_SCOPED",
+    "reviewer": "/root/dag_a12_independent/dense_independent",
+    "report": "../../reviews/DENSE_INDEPENDENT.md",
+    "machine_readable": "../../reviews/DENSE_INDEPENDENT.json",
+    "blocking_defects": 0
+  }
+}

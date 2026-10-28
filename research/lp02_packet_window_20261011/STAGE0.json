@@ -1,0 +1,47 @@
+{
+  "schema": "vigilode-lp02-stage0-v1",
+  "node_id": "LP02",
+  "decision": "FEASIBLE",
+  "verdict": "PASS",
+  "claim": "Stage 0 decision FEASIBLE: kappa=0 finite-window packet and native total certificate satisfy zero online solver counters, verified Picard convergence, exact Dahlquist limit, validated mode bounds enclosure, and typed admission refusal gates.",
+  "scientific_gates": {
+    "vg1_zero_online_solver_counters": {
+      "jacobian_calls": 0,
+      "jvp_calls": 0,
+      "krylov_iterations": 0,
+      "linear_solves": 0,
+      "passed": true
+    },
+    "vg2_picard_convergence_and_dahlquist_limit": {
+      "picard_defect_monotonic_reduction": true,
+      "chi_zero_dahlquist_defect_zero": true,
+      "passed": true
+    },
+    "vg3_native_certificate_and_reconstruction": {
+      "mean_defect_enclosure": true,
+      "mode_bounds_enclosure": true,
+      "initial_reconstruction_consistency": true,
+      "passed": true
+    },
+    "negative_admission_gate": {
+      "horizon_zero_or_negative_rejected": true,
+      "order_zero_rejected": true,
+      "order_too_large_rejected": true,
+      "gronwall_condition_violated_rejected": true,
+      "mode_out_of_bounds_rejected": true,
+      "tau_out_of_range_rejected": true,
+      "passed": true
+    }
+  },
+  "rust_test_suite": {
+    "command": "cargo test --offline --locked -p rodas5p-integrators --test packet_window_contracts -- --test-threads=1",
+    "exit_code": 0,
+    "tests_passed": 6,
+    "status": "PASS"
+  },
+  "input_files_sha256": {
+    "crates/rodas5p-integrators/src/packet_window.rs": "407ec677c1b175a317d65bea8f06492afeac2db53c22525a9717dbfd19c80e4f",
+    "crates/rodas5p-integrators/src/packet_work.rs": "031a7372e237933fba4c9d7e34dfc5ace1598778f892ae48abd72af4a1c10348",
+    "crates/rodas5p-integrators/tests/packet_window_contracts.rs": "2f2a8239ab2b13f0665c6c6c59802e8d4e63bffbfe8bd93ba76e5f54efb6f860"
+  }
+}

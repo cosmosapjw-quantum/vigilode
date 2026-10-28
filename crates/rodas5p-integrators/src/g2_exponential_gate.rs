@@ -375,6 +375,7 @@ fn integrate_square(method: &str, h: f64) -> CoreResult<(f64, WorkCounters)> {
         };
         y = report.y_new;
         work.accumulate(report.work);
+        // Sealed replay clock: crate::RESEARCH_REPLAY_CLOCK_POLICY.
         t += h;
     }
     Ok(((y[0] - 1.0 / (1.0 - final_time)).abs(), work))
@@ -670,7 +671,8 @@ pub fn run_g2_exponential_gate(
             "The matrix-free phi engine is a full-Arnoldi correctness reference, not KIOPS: incomplete orthogonalization, adaptive substepping, restart and fused phi combinations are not implemented.".into(),
             "Nonautonomous augmentation and nonsingular mass-matrix exponential treatment are not implemented in this bounded node.".into(),
             "The declared pexprb54s4 critical depth of three is a dependency-graph property; separate unfused phi actions currently dominate work, so no wall-time promotion is authorized.".into(),
-            "BDF2 and Radau IIA3 remain byte-frozen comparators and physical clients are excluded from this gate.".into(),
+            "BDF2 remains a legacy context comparator; Radau IIA3 uses the authorized Cell-G frozen-Jacobian embedded-estimator baseline, and physical clients are excluded from this gate.".into(),
+            "The order screen is the scalar y' = y^2 problem, where Krylov is exact and phi functions commute. pexprb54s4 is order 5 nonstiff. On one stiff non-commuting problem, in the finite window |lambda| h = 100 down to 6.25 with lambda fixed, the observed global slopes are 4.19, 4.39, 4.92; a Krylov dimension cap lowers them further. These are observations of that window, not a classical or stiff-order result (tests/exponential_order_contracts.rs, audit F-041).".into(),
         ],
     })
 }

@@ -1,0 +1,301 @@
+{
+  "actual_solver_launches_by_reviewer": 0,
+  "campaign_output": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/julia_comparison_20261025T1102",
+  "claim_ceiling": "Only the eight exact Julia case/method groups and their five timed members satisfy the frozen maximum-component absolute endpoint error plus empirical U <= 1e-4. References remain non-certified estimates. No full-trajectory, statistical timing, cross-cohort speed-ratio, universal zero-allocation or production claim.",
+  "cost_accounting": {
+    "absolute_deadline_utc": "2026-10-27T08:07:00Z",
+    "active_event_reservation_seconds_at_review": 0,
+    "campaign_closeout_cumulative_seconds_before_later_case20_fixtures": 3754.5065580429,
+    "campaign_plus_tail_charge_seconds": 431.7287512780167,
+    "campaign_reservation_terminalized": true,
+    "campaign_started_reservation_seconds": 7260,
+    "campaign_terminal_measured_charge_seconds": 371.7287512780167,
+    "fixed_global_cap_seconds": 172800,
+    "later_case20_synthetic_fixture_increment_observed_seconds": 118,
+    "later_fixture_evidence": [
+      {
+        "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/case20_wiring_fix_20261025T111239Z/red_python_fixtures/fixture_010/native/attempt_001/RECEIPT.json",
+        "sha256": "4141b844c9528635355803fbf898176b153df5638f01ac74741b6ee7ab386b45",
+        "synthetic_fixture_seconds": 100
+      },
+      {
+        "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/case20_wiring_fix_20261025T111239Z/red_python_fixtures/fixture_025/native/attempt_001/RECEIPT.json",
+        "sha256": "a328439a4f6858184b20b01ff12b81f71a8084cb4c9f521fb182e552e5451808",
+        "synthetic_fixture_seconds": 7
+      },
+      {
+        "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/case20_wiring_fix_20261025T111239Z/red_python_fixtures/fixture_025/native/controller/invocation_001/RECEIPT.json",
+        "sha256": "f7610a8dfcb3c08a6250362c0670a1329db2d731a07dbaa18f43737a13aad071",
+        "synthetic_fixture_seconds": 11
+      }
+    ],
+    "legacy_conservative_fixture_seconds_retained": 236,
+    "live_cumulative_seconds_observed_during_audit": 3872.5065580429,
+    "live_total_note": "Later independent case 20 tests can append events or add recursively counted synthetic fixture receipts; this is an observed snapshot, not a frozen future total.",
+    "no_cost_reset": true,
+    "reviewed_chain_prefix_event_count": 186,
+    "reviewed_chain_prefix_sha256": "94e6a1b573b90e9f11585f197e380104b4bfad60ad6f823efeafbbeced6453ff",
+    "tail_charge_receipt": {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/JULIA_COMPARISON_UNMEASURED_TAIL_CHARGE_20261025.json",
+      "sha256": "9b5e0ca218688f22c2b75a35f8607ad1469530fd0e27c5aadcd82ebe7d284683"
+    },
+    "tail_charge_seconds": 60,
+    "tail_exact_duration_known": false,
+    "tail_interpretation": "Conservative administrative allowance for unmeasured outer finalization; not observed duration or a formally verified runtime bound."
+  },
+  "decision": "PASS_SCOPED",
+  "executed_plan": {
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/julia_comparison_20261025T1102/PLAN.json",
+    "sha256": "b39e285829bb0cd8814015875d4024df11fdf2bc619bc57b05080a331d0ff7b3"
+  },
+  "findings": [],
+  "groups": [
+    {
+      "case": 1,
+      "decision": "PASS_SCOPED",
+      "empirical_reference_U": 1e-12,
+      "max_actual_error": 1.6763154212439627e-13,
+      "max_actual_error_plus_U": 1.1676315421243963e-12,
+      "median_adapter_solve_seconds_diagnostic_only": 0.086546379,
+      "method": "julia-tsit5",
+      "timed_passes": 5,
+      "timed_required": 5,
+      "warmup_passes": 1
+    },
+    {
+      "case": 1,
+      "decision": "PASS_SCOPED",
+      "empirical_reference_U": 1e-12,
+      "max_actual_error": 2.629063633463602e-12,
+      "max_actual_error_plus_U": 3.6290636334636017e-12,
+      "median_adapter_solve_seconds_diagnostic_only": 0.003063923,
+      "method": "julia-rodas5p",
+      "timed_passes": 5,
+      "timed_required": 5,
+      "warmup_passes": 1
+    },
+    {
+      "case": 10,
+      "decision": "PASS_SCOPED",
+      "empirical_reference_U": 1.0293376434257197e-12,
+      "max_actual_error": 6.837251681490741e-09,
+      "max_actual_error_plus_U": 6.838281019134167e-09,
+      "median_adapter_solve_seconds_diagnostic_only": 0.008154926,
+      "method": "julia-tsit5",
+      "timed_passes": 5,
+      "timed_required": 5,
+      "warmup_passes": 1
+    },
+    {
+      "case": 10,
+      "decision": "PASS_SCOPED",
+      "empirical_reference_U": 1.0293376434257197e-12,
+      "max_actual_error": 4.700907622612327e-07,
+      "max_actual_error_plus_U": 4.700917915988761e-07,
+      "median_adapter_solve_seconds_diagnostic_only": 0.07195825,
+      "method": "julia-rodas5p",
+      "timed_passes": 5,
+      "timed_required": 5,
+      "warmup_passes": 1
+    },
+    {
+      "case": 15,
+      "decision": "PASS_SCOPED",
+      "empirical_reference_U": 4.606794937242376e-11,
+      "max_actual_error": 4.9199552876189045e-08,
+      "max_actual_error_plus_U": 4.924562082556147e-08,
+      "median_adapter_solve_seconds_diagnostic_only": 2.362260757,
+      "method": "julia-tsit5",
+      "timed_passes": 5,
+      "timed_required": 5,
+      "warmup_passes": 1
+    },
+    {
+      "case": 15,
+      "decision": "PASS_SCOPED",
+      "empirical_reference_U": 4.606794937242376e-11,
+      "max_actual_error": 1.4731449837768196e-08,
+      "max_actual_error_plus_U": 1.4777517787140619e-08,
+      "median_adapter_solve_seconds_diagnostic_only": 3.7081167130000003,
+      "method": "julia-rodas5p",
+      "timed_passes": 5,
+      "timed_required": 5,
+      "warmup_passes": 1
+    },
+    {
+      "case": 16,
+      "decision": "PASS_SCOPED",
+      "empirical_reference_U": 1.0015820678100908e-12,
+      "max_actual_error": 4.770855932534346e-11,
+      "max_actual_error_plus_U": 4.871014139315355e-11,
+      "median_adapter_solve_seconds_diagnostic_only": 0.0015261530000000001,
+      "method": "julia-tsit5",
+      "timed_passes": 5,
+      "timed_required": 5,
+      "warmup_passes": 1
+    },
+    {
+      "case": 16,
+      "decision": "PASS_SCOPED",
+      "empirical_reference_U": 1.0015820678100908e-12,
+      "max_actual_error": 5.172116263052473e-09,
+      "max_actual_error_plus_U": 5.1731178451202835e-09,
+      "median_adapter_solve_seconds_diagnostic_only": 0.0027421150000000003,
+      "method": "julia-rodas5p",
+      "timed_passes": 5,
+      "timed_required": 5,
+      "warmup_passes": 1
+    }
+  ],
+  "historical_task_status_promotion": "NONE",
+  "launch_approval": {
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/JULIA_COMPARISON_LAUNCH_APPROVAL_V2_20261025T1102.json",
+    "sha256": "777015c5528ca726b2f119956a1ec4409830b9eda702c9f2b58a6fa1e6eb0a0d"
+  },
+  "measured_files": {
+    "adapter": {
+      "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_20261024/local/julia_adapter.jl",
+      "sha256": "7ac20ed0eab425fe7ef3565033b325297764038752354a745fc49f9c329f1b5d"
+    },
+    "binary": {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/native_diffsol_offline_locked_build_20261025T0924/target/measurement/examples/local_bottleneck_suite",
+      "sha256": "b7eecc929570fd8ef25d3d7aca7d9a9d6aa4ea60ca84774996fc13f5556c9124"
+    },
+    "build_receipt": {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/native_diffsol_packet_build_20261025T1036/build_artifacts/BUILD_RECEIPT.json",
+      "sha256": "48804247685ea922d7ca95b87b1b5c9efb1b260074986b312e5ac24182a0c022"
+    },
+    "julia": {
+      "path": "/home/cosmosapjw/.julia/juliaup/julia-1.12.7+0.x64.linux.gnu/bin/julia",
+      "sha256": "582718c20c563d824b88a08e2a9d0afcf5015b3053f425697cecc79ec4e9ea36"
+    },
+    "manifest": {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/full_followup_julia_env/Manifest.toml",
+      "sha256": "efae48f9d5364cc06dadcb23dd90a29544e16698287ea691d08701a03cc322b8"
+    },
+    "project": {
+      "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/full_followup_julia_env/Project.toml",
+      "sha256": "aac35708e8d49ce88ee2d6e82b220a357d722683522f1e8e5a8b7d0b50e484f4"
+    }
+  },
+  "observed_runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+  "post_run_workspace_drift": {
+    "campaign_before_after_snapshots_all_clean": true,
+    "classification": "Later workspace changes; no mutation found in campaign raw evidence or measured inputs.",
+    "current_checkout_has_later_case20_edits": true,
+    "measured_adapter_binary_environment_reference_bytes_still_match": true,
+    "parent_provided_timeline": "Parent reports clean 11:11:59 UTC snapshot and subsequent case20 worker edits, after comparison completion 11:10:17 UTC."
+  },
+  "production_admission": "HOLD",
+  "reviewed_utc": "2026-10-25T11:16:43.288915+00:00",
+  "reviewer_independent_of_implementation_and_campaign_execution": true,
+  "reviewer_task": "/root/runner_gate_independent_review",
+  "schema": "vigilode.julia-comparison-independent-result-review.v1",
+  "source_at_execution": {
+    "commit": "2a4bf90d1445b67542bdac5030b4c5d10da20445",
+    "repo": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout",
+    "status_porcelain": "",
+    "tree": "98a0af41837653065e5346d1dd21272474f34c52"
+  },
+  "source_or_raw_files_modified_by_reviewer": false,
+  "summary": {
+    "path": "/tmp/vigilode-local-run-20261024.geLVCp9Q/continuation_20261025T080718Z/julia_comparison_20261025T1102/SUMMARY.json",
+    "sha256": "fc126a197442590c5618329068ef8d2d13d1c92e5cd7bb95d81173747466e057"
+  },
+  "timing": {
+    "adapter_reported_solve_seconds_after_short_explicit_warmup": "Verified finite and copied exactly from raw output; may still contain residual compilation.",
+    "attempt_process_wall_seconds_total": 353.27406061720103,
+    "authority": "diagnostic_only",
+    "campaign_measured_wall_seconds": 371.7287512780167,
+    "controller_exclusive_seconds": 11.879548192955554,
+    "historical_native_diffsol_context": "Preserved exactly from approved plan; different source/tolerances forbid speed-ratio claims.",
+    "import_probe_separate_process": true,
+    "method_jit_seconds": "UNATTRIBUTED",
+    "observed_child_wall_seconds_total": 359.84920308506116,
+    "per_attempt_process_wall_includes_startup_import_JIT_and_warmup": true,
+    "setup_process_wall_seconds_total": 6.5751424678601325,
+    "setup_residual_seconds": "UNATTRIBUTED",
+    "speed_comparison_status": "NOT_COMPUTED",
+    "speed_ratios": {}
+  },
+  "validation": {
+    "affinity_claim_scope": "CPU 0 was set by reviewed child preexec and recorded as requested; this wrapper has no independent per-child affinity readback.",
+    "all_actual_error_plus_empirical_U_leq_fixed_error_limit": true,
+    "all_expected_case_method_phase_index_combinations_present_once": true,
+    "all_raw_hashes_before_after_source_locks_and_summary_receipt_equality_verified": true,
+    "all_recorded_process_groups_absent": true,
+    "all_solver_success_retcode_final_time_and_identity_checks_pass": true,
+    "attempts_individually_reviewed": 48,
+    "campaign_warmups": 8,
+    "configured_cpu": 0,
+    "configured_threads": 1,
+    "error_limit": 0.0001,
+    "inventory_digest_method": "SHA256 of compact sorted-key JSON array of all immediate files in 48 attempt folders and 2 setup folders, entries path relative to campaign and sha256, sorted by path.",
+    "per_attempt_rss_samples_within_bound": true,
+    "process_cost_records_verified": 50,
+    "raw_and_receipt_files_hashed": 498,
+    "raw_result_full_finite_endpoint_vectors_recomputed": 48,
+    "recorded_process_groups": [
+      2745796,
+      2747375,
+      2746571,
+      2746163,
+      2747766,
+      2746975,
+      2726646,
+      2728267,
+      2727410,
+      2727029,
+      2728665,
+      2727865,
+      2734757,
+      2736449,
+      2735644,
+      2735208,
+      2736889,
+      2736040,
+      2729219,
+      2731522,
+      2730314,
+      2729777,
+      2732001,
+      2730955,
+      2737284,
+      2739232,
+      2738250,
+      2737703,
+      2739706,
+      2738740,
+      2732427,
+      2734134,
+      2733361,
+      2732960,
+      2734448,
+      2733759,
+      2743927,
+      2745202,
+      2744565,
+      2744254,
+      2745514,
+      2744906,
+      2740175,
+      2742512,
+      2741349,
+      2740741,
+      2743290,
+      2741939,
+      2726207,
+      2726137
+    ],
+    "setup_children": 2,
+    "sorted_relative_path_sha256_inventory_digest": "47d7a13c2e350d3b3dd51549af6c62680d19d48f249ec05a530f7e520140282a",
+    "stderr_empty_for_all_attempts": true,
+    "thread_cli_environment_and_import_BLAS_check_verified": true,
+    "timed_samples": 40,
+    "worst_actual_error_plus_U": 4.700917915988761e-07
+  },
+  "wrapper": {
+    "path": "/tmp/vigilode-native-diffsol.qrGY78PY/checkout/research/local_frontier_native_diffsol_20261024/julia_comparison.py",
+    "sha256": "8e0a5510f56052938ec09eaae216cb12b76f017b6b216b73f696bc46be0cb8b3"
+  }
+}

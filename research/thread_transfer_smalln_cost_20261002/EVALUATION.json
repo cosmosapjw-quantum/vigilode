@@ -1,0 +1,339 @@
+{
+ "schema": "vigilode-thread-transfer-smalln-evaluation-v1",
+ "identity": [
+  {
+   "problem": "van-der-pol-mu1000",
+   "rtol": 0.0001,
+   "identical": true,
+   "attempts": 242,
+   "small_attempts": 242
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "rtol": 1e-06,
+   "identical": true,
+   "attempts": 469,
+   "small_attempts": 469
+  },
+  {
+   "problem": "van-der-pol-mu1000",
+   "rtol": 1e-08,
+   "identical": true,
+   "attempts": 947,
+   "small_attempts": 947
+  },
+  {
+   "problem": "robertson",
+   "rtol": 0.0001,
+   "identical": true,
+   "attempts": 26,
+   "small_attempts": 26
+  },
+  {
+   "problem": "robertson",
+   "rtol": 1e-06,
+   "identical": true,
+   "attempts": 45,
+   "small_attempts": 45
+  },
+  {
+   "problem": "robertson",
+   "rtol": 1e-08,
+   "identical": true,
+   "attempts": 103,
+   "small_attempts": 103
+  },
+  {
+   "problem": "hires",
+   "rtol": 0.0001,
+   "identical": true,
+   "attempts": 82,
+   "small_attempts": 82
+  },
+  {
+   "problem": "hires",
+   "rtol": 1e-06,
+   "identical": true,
+   "attempts": 210,
+   "small_attempts": 210
+  },
+  {
+   "problem": "hires",
+   "rtol": 1e-08,
+   "identical": true,
+   "attempts": 784,
+   "small_attempts": 784
+  }
+ ],
+ "instructions": [
+  {
+   "problem": "van-der-pol-mu1000",
+   "rodas5p-fast": {
+    "attempts": 469,
+    "ir_per_run": 4263273,
+    "ir_per_attempt": 9090.134328358208,
+    "top_functions": [
+     {
+      "function": "rodas5p_integrators::rodas5p_fast::integrate_rodas5p_fast_observed",
+      "share": 0.7438465704635852
+     },
+     {
+      "function": "rodas5p_integrators::output::land_capped",
+      "share": 0.056105016028764755
+     },
+     {
+      "function": "rodas5p_integrators::problem::OdeProblem::eval_rhs_into",
+      "share": 0.046029423872222114
+     },
+     {
+      "function": "rodas5p_integrators::output::step_to",
+      "share": 0.03565570396265968
+     },
+     {
+      "function": "rodas5p_integrators::problems::stiff_van_der_pol_problem::{{closure}}",
+      "share": 0.021963641549579395
+     },
+     {
+      "function": "__memcpy_avx_unaligned_erms",
+      "share": 0.021618132359809
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::AdaptiveStepConfig::validate",
+      "share": 0.01763902991903169
+     },
+     {
+      "function": "__ieee754_pow_fma",
+      "share": 0.01166099379514284
+     }
+    ]
+   },
+   "rodas5p-fast-small": {
+    "attempts": 469,
+    "ir_per_run": 1673729,
+    "ir_per_attempt": 3568.7185501066097,
+    "top_functions": [
+     {
+      "function": "rodas5p_integrators::rodas5p_fast_small::integrate_rodas5p_fast_small_observed",
+      "share": 0.5773491407509818
+     },
+     {
+      "function": "rodas5p_integrators::output::land_capped",
+      "share": 0.1429090372455756
+     },
+     {
+      "function": "rodas5p_integrators::output::step_to",
+      "share": 0.0908211544401752
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::AdaptiveStepConfig::validate",
+      "share": 0.044929615248346655
+     },
+     {
+      "function": "__ieee754_pow_fma",
+      "share": 0.029702538463514703
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor",
+      "share": 0.027741050074414676
+     },
+     {
+      "function": "rodas5p_integrators::output::OutputCollector::limit_step",
+      "share": 0.026059774312328938
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::adaptive_next_step_after_attempt",
+      "share": 0.019258792791425613
+     }
+    ]
+   },
+   "ratio": 0.39259249876796537
+  },
+  {
+   "problem": "robertson",
+   "rodas5p-fast": {
+    "attempts": 45,
+    "ir_per_run": 512294,
+    "ir_per_attempt": 11384.31111111111,
+    "top_functions": [
+     {
+      "function": "rodas5p_integrators::rodas5p_fast::integrate_rodas5p_fast_observed",
+      "share": 0.748201228200994
+     },
+     {
+      "function": "rodas5p_integrators::output::land_capped",
+      "share": 0.04480044661854326
+     },
+     {
+      "function": "rodas5p_integrators::problem::OdeProblem::eval_rhs_into",
+      "share": 0.04262786603005306
+     },
+     {
+      "function": "rodas5p_integrators::output::step_to",
+      "share": 0.028565628330607034
+     },
+     {
+      "function": "rodas5p_integrators::problems::robertson_problem::{{closure}}",
+      "share": 0.0270059770366235
+     },
+     {
+      "function": "__memcpy_avx_unaligned_erms",
+      "share": 0.018520615115539124
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::AdaptiveStepConfig::validate",
+      "share": 0.014366750342576723
+     },
+     {
+      "function": "__ieee754_pow_fma",
+      "share": 0.009311059664958012
+     }
+    ]
+   },
+   "rodas5p-fast-small": {
+    "attempts": 45,
+    "ir_per_run": 227680,
+    "ir_per_attempt": 5059.555555555556,
+    "top_functions": [
+     {
+      "function": "rodas5p::stiff_benchmark::run_small",
+      "share": 0.6454717146872804
+     },
+     {
+      "function": "rodas5p_integrators::output::land_capped",
+      "share": 0.10080375966268447
+     },
+     {
+      "function": "rodas5p_integrators::output::step_to",
+      "share": 0.06427442023893183
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::AdaptiveStepConfig::validate",
+      "share": 0.03232607167955025
+     },
+     {
+      "function": "__ieee754_pow_fma",
+      "share": 0.020950456781447645
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor",
+      "share": 0.01956693605059733
+     },
+     {
+      "function": "rodas5p_integrators::output::OutputCollector::limit_step",
+      "share": 0.018381061138439916
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::adaptive_next_step_after_attempt",
+      "share": 0.014116303583977512
+     }
+    ]
+   },
+   "ratio": 0.4444322986410148
+  },
+  {
+   "problem": "hires",
+   "rodas5p-fast": {
+    "attempts": 210,
+    "ir_per_run": 4289692,
+    "ir_per_attempt": 20427.10476190476,
+    "top_functions": [
+     {
+      "function": "rodas5p_integrators::rodas5p_fast::integrate_rodas5p_fast_observed",
+      "share": 0.824698369952901
+     },
+     {
+      "function": "rodas5p::stiff_benchmark::hires_problem::{{closure}}",
+      "share": 0.041060290575640396
+     },
+     {
+      "function": "rodas5p_integrators::problem::OdeProblem::eval_rhs_into",
+      "share": 0.037462829499180825
+     },
+     {
+      "function": "rodas5p_integrators::output::land_capped",
+      "share": 0.02496706057218094
+     },
+     {
+      "function": "rodas5p_integrators::output::step_to",
+      "share": 0.016034717644063955
+     },
+     {
+      "function": "__memcpy_avx_unaligned_erms",
+      "share": 0.010697970856648916
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::AdaptiveStepConfig::validate",
+      "share": 0.007870028897179564
+     },
+     {
+      "function": "rodas5p::stiff_benchmark::hires_problem::hires_fill",
+      "share": 0.006752932378361896
+     }
+    ]
+   },
+   "rodas5p-fast-small": {
+    "attempts": 210,
+    "ir_per_run": 2583361,
+    "ir_per_attempt": 12301.719047619048,
+    "top_functions": [
+     {
+      "function": "rodas5p::stiff_benchmark::run_small",
+      "share": 0.814510244599961
+     },
+     {
+      "function": "rodas5p_integrators::rodas5p_fast_small::rhs_counted",
+      "share": 0.0550794101172852
+     },
+     {
+      "function": "rodas5p_integrators::output::land_capped",
+      "share": 0.041458007611015264
+     },
+     {
+      "function": "rodas5p_integrators::output::step_to",
+      "share": 0.02662577936262102
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::AdaptiveStepConfig::validate",
+      "share": 0.013068247140062886
+     },
+     {
+      "function": "__ieee754_pow_fma",
+      "share": 0.008616681911664687
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor",
+      "share": 0.008047655747686832
+     },
+     {
+      "function": "rodas5p_integrators::output::OutputCollector::accept",
+      "share": 0.007679143565301172
+     }
+    ]
+   },
+   "ratio": 0.6022252879693928
+  }
+ ],
+ "ensemble": {
+  "rodas5p-fast": {
+   "members": 64,
+   "attempts": 20083,
+   "checksum": -47.78788524467381,
+   "ir_per_trajectory": 2857808.1875,
+   "single_trajectory_mu1000_ir": 4263273
+  },
+  "rodas5p-fast-small": {
+   "members": 64,
+   "attempts": 20083,
+   "checksum": -47.78788524467381,
+   "ir_per_trajectory": 1122413.5625,
+   "single_trajectory_mu1000_ir": 1673729
+  },
+  "checksums_equal": true,
+  "per_trajectory_ratio": 0.39275328813508764
+ },
+ "validity_gate": {
+  "identical_results": true,
+  "instructions_at_most_0_8": true
+ },
+ "verdict": "PASS"
+}

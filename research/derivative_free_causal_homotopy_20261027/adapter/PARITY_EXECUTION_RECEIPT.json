@@ -1,0 +1,41 @@
+{
+  "commands": [
+    {
+      "name": "parity_build",
+      "command": [
+        "flock",
+        "/tmp/vigilode-cargo-20261027.lock",
+        "cargo",
+        "build",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "--example",
+        "selective_jvp_20261027"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 17.264588525998988,
+      "stdout": "parity_build.log",
+      "stderr": "parity_build.stderr.log"
+    },
+    {
+      "name": "parity_experiment",
+      "command": [
+        "flock",
+        "/tmp/vigilode-cargo-20261027.lock",
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/selective_jvp_20261027"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.14395136900566285,
+      "stdout": "PARITY_RESULTS.json",
+      "stderr": "parity_experiment.stderr.log"
+    }
+  ],
+  "binary_sha256": "321f3c09f1f4979abafa3d7872449e2c330dc149141f48b0859f06842444e55a",
+  "example_sha256": "6eee0eea6bd0caf1d88dca923f6d90bdc202f9c3c4c0e4b8a7767eae88a7731e",
+  "switching_sha256": "62a5501ee664b46428dd4a5379c8e2ec021da2570a074c9e31b5cbb3e19e91c6",
+  "entry_cost_ratio_control": 0.9999999999999999
+}

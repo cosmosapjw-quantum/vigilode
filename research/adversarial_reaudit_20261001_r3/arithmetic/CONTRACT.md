@@ -1,0 +1,5 @@
+# Arithmetic R3 contract
+
+Source `cc2cd041737e7ff543624d1b59893a3b4397369f`. Parent task preregistration governs. Production files remain unchanged. Re-execute the previous phi reproducer as newly source-bound R3 evidence, plus R2 budget fixtures. Investigate finite representable outputs after partial weighting underflow, scalar amplitude homogeneity, mixed-scale labels, finite normal/subnormal signed power boundaries. Independent references: Python Fraction on represented binary64 inputs and Decimal scalar exp/phi, not either native phi path. If an unsafe convergence claim is observed, demonstrate a standalone fail-closed repair gate; do not silently modify production or claim full-range certified arithmetic.
+
+Acceptance: closure is restricted to original fixtures; a new finding needs native observed behavior and exact/independent oracle, reproducible source/probe hashes, source locations, limitations, explicit development contract. Runtime/tool failure remains separate. One final independent reviewer is owned by the root; this lane does not self-promote.

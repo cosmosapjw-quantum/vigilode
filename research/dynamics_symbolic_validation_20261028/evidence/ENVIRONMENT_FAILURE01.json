@@ -1,0 +1,43 @@
+{
+  "purpose": "Dependency and runtime compile preparation only; no scientific tests or benchmarks",
+  "argv": [
+    "flock",
+    "/tmp/vigilode-cargo-20261027.lock",
+    "/tmp/vigilode-rvj-rust/bin/cargo",
+    "build",
+    "--profile",
+    "measurement",
+    "--locked",
+    "--offline",
+    "-p",
+    "vigilode-coupled",
+    "-p",
+    "vigilode"
+  ],
+  "cwd": "/workspace/scratch/f9615df1ce94/vigilode-validation",
+  "environment": {
+    "PATH": "/tmp/vigilode-rvj-rust/bin:/root/.codex/tmp/arg0-linux/codex-arg0X3MRNk:/opt/codex/codex-path:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/override:/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/node/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/opt/codex/runtimes/codex-primary-runtime/dependencies/bin/fallback",
+    "RUSTC": "/tmp/vigilode-rvj-rust/bin/rustc",
+    "RUSTDOC": "/tmp/vigilode-rvj-rust/bin/rustdoc",
+    "CARGO_HOME": "/tmp/vigilode-rvj-cargo",
+    "CARGO_TARGET_DIR": "/dev/shm/vigilode-validation-f9615df1/target",
+    "TMPDIR": "/dev/shm/vigilode-validation-f9615df1/tmp",
+    "CARGO_BUILD_JOBS": "2",
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1"
+  },
+  "source_sha": "87465835d9d21298d235917f036580b0b53ab645",
+  "lock_sha256_before": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351",
+  "started_unix": 1793189833.7404795,
+  "status": "failed",
+  "log": "/workspace/scratch/f9615df1ce94/runtime/environment_prepare.log",
+  "exit_code": 101,
+  "elapsed_seconds": 94.55977463722229,
+  "lock_sha256_after": "efb379071fa42c2b6bdbe969163ac2f41cf318c262c5c67d0910450298333351",
+  "failure_class": "INPUT_DEPENDENCY",
+  "failure_detail": "Sparse checkout omitted tracked fixtures/rodas5p_coefficients_snapshot.json required by include_str at crates/rodas5p-core/src/coefficients.rs:19",
+  "next_action": "Include tracked fixtures directory, then rerun identical locked/offline compile with fresh receipt while reusing compiled third-party dependencies",
+  "runtime_classification": "EXECUTION_FAILED",
+  "toolchain_probe": "Rust 1.94.1 and Cargo 1.94.1 execute successfully"
+}

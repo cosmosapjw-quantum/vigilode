@@ -1,0 +1,32 @@
+{
+  "command": [
+    "flock",
+    "/workspace/scratch/0dc1e721cf82/runtime1024/cargo-frontier.lock",
+    "cargo",
+    "run",
+    "--locked",
+    "--offline",
+    "--profile",
+    "measurement",
+    "-p",
+    "rodas5p-core",
+    "--example",
+    "invariant_module_bench"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds_including_build_and_lock_wait": 25.73780339100631,
+  "source_sha256": {
+    "crates/rodas5p-core/src/invariant_module.rs": "c1f493466bfb10ee17be2134110de5fad68b438f09acd58160c562ba7bc8faa0",
+    "crates/rodas5p-core/src/shared_shift_jet.rs": "ad60ab702e347ba286628b63309d9c30285cbca37f96477e39f168abf8764be8",
+    "crates/rodas5p-core/examples/invariant_module_bench.rs": "c5b1c14e790b0827cdd84baf5f7e4d585aaa52aa5cd4ecefcadff795a93f3074"
+  },
+  "stdout_sha256": "cbb0d14552e5abe741b7a675e5a89be38556737ba5c354dc81573ebc272ec977",
+  "stderr_sha256": "e943f7d91de0047ae58e050e9e713e94ab04882f5211db001f360c909d7110a2",
+  "thread_controls": {
+    "RAYON_NUM_THREADS": "1",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1"
+  },
+  "scope": "tiny structural kernel microbenchmark; no ODE or production claim"
+}

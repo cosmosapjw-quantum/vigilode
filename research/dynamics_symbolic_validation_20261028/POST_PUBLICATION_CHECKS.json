@@ -1,0 +1,214 @@
+{
+  "schema": "vigilode.dynamics-postpublication-check.v1",
+  "actual_source": "03ee868aa6e6dc670b1e0f8de408c11cf2673217",
+  "pr": 98,
+  "scope": "Additional strict coupled all-targets Clippy; production workflow lints facade/core without dependencies and does not certify coupled lint closure",
+  "command": [
+    "/tmp/vigilode-rvj-rust/bin/cargo",
+    "clippy",
+    "--profile",
+    "measurement",
+    "--locked",
+    "--offline",
+    "-p",
+    "vigilode-coupled",
+    "--all-targets",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "exit_code": 101,
+  "source_unchanged": true,
+  "diagnostics": 26,
+  "diagnostic_locations": [
+    {
+      "path": "crates/vigilode-coupled/src/algebra.rs",
+      "current_line": 205,
+      "baseline_line": 205,
+      "line_unchanged_from_pr97": true,
+      "source_line": "    if n == 0 || n % STAGES != 0 || a.nrows() != n || a.ncols() != n {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/residual_first.rs",
+      "current_line": 151,
+      "baseline_line": 151,
+      "line_unchanged_from_pr97": true,
+      "source_line": "    for i in 0..S {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/solver.rs",
+      "current_line": 324,
+      "baseline_line": 324,
+      "line_unchanged_from_pr97": true,
+      "source_line": "    for i in 0..S {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/solver.rs",
+      "current_line": 357,
+      "baseline_line": 357,
+      "line_unchanged_from_pr97": true,
+      "source_line": "                for j in 0..i {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/solver.rs",
+      "current_line": 528,
+      "baseline_line": 528,
+      "line_unchanged_from_pr97": true,
+      "source_line": "pub(crate) fn run("
+    },
+    {
+      "path": "crates/vigilode-coupled/src/switching.rs",
+      "current_line": 303,
+      "baseline_line": 302,
+      "line_unchanged_from_pr97": true,
+      "source_line": "        } else if self.baseline.is_some() {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/switching.rs",
+      "current_line": 435,
+      "baseline_line": 434,
+      "line_unchanged_from_pr97": true,
+      "source_line": "            if let (Some(epsilon), Some(p)) ="
+    },
+    {
+      "path": "crates/vigilode-coupled/src/rhs_homotopy.rs",
+      "current_line": 304,
+      "baseline_line": 304,
+      "line_unchanged_from_pr97": true,
+      "source_line": "            if selected.norm > cfg.residual_l2_tolerance"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/rhs_homotopy.rs",
+      "current_line": 657,
+      "baseline_line": 657,
+      "line_unchanged_from_pr97": true,
+      "source_line": "        if selected.norm > map.plan.stage_residual_target && acceleration != RhsAcceleration::Picard"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "current_line": 257,
+      "baseline_line": 257,
+      "line_unchanged_from_pr97": true,
+      "source_line": "                for j in 0..i {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "current_line": 296,
+      "baseline_line": 296,
+      "line_unchanged_from_pr97": true,
+      "source_line": "    ) -> StructuralResult<StructuralCandidate> {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "current_line": 314,
+      "baseline_line": 314,
+      "line_unchanged_from_pr97": true,
+      "source_line": "                for j in 0..i {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "current_line": 356,
+      "baseline_line": 356,
+      "line_unchanged_from_pr97": true,
+      "source_line": "                for j in 0..i {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "current_line": 369,
+      "baseline_line": 369,
+      "line_unchanged_from_pr97": true,
+      "source_line": "                    for j in 0..i {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "current_line": 433,
+      "baseline_line": 433,
+      "line_unchanged_from_pr97": true,
+      "source_line": "    for i in 0..S {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "current_line": 484,
+      "baseline_line": 484,
+      "line_unchanged_from_pr97": true,
+      "source_line": "                for i in (j + 1)..S {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "current_line": 560,
+      "baseline_line": 560,
+      "line_unchanged_from_pr97": true,
+      "source_line": "    ) -> StructuralResult<StructuralCandidate> {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "current_line": 740,
+      "baseline_line": 740,
+      "line_unchanged_from_pr97": true,
+      "source_line": "                for j in 0..i {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "current_line": 763,
+      "baseline_line": 763,
+      "line_unchanged_from_pr97": true,
+      "source_line": "            for j in 0..i {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "current_line": 785,
+      "baseline_line": 785,
+      "line_unchanged_from_pr97": true,
+      "source_line": "                for j in 0..=i {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "current_line": 893,
+      "baseline_line": 893,
+      "line_unchanged_from_pr97": true,
+      "source_line": "    ) -> StructuralResult<EnclosedStructuralCandidate> {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "current_line": 965,
+      "baseline_line": 965,
+      "line_unchanged_from_pr97": true,
+      "source_line": "            for i in 0..S {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "current_line": 972,
+      "baseline_line": 972,
+      "line_unchanged_from_pr97": true,
+      "source_line": "                for j in 0..=i {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/cyclic_closure.rs",
+      "current_line": 374,
+      "baseline_line": 374,
+      "line_unchanged_from_pr97": true,
+      "source_line": "        p = -b[i] * p;"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/raw_step.rs",
+      "current_line": 111,
+      "baseline_line": 111,
+      "line_unchanged_from_pr97": true,
+      "source_line": "        for j in 0..i {"
+    },
+    {
+      "path": "crates/vigilode-coupled/src/raw_step.rs",
+      "current_line": 629,
+      "baseline_line": 629,
+      "line_unchanged_from_pr97": true,
+      "source_line": "        for j in 0..i {"
+    }
+  ],
+  "classification": "INHERITED_SOURCE_LINT_FAILURE; source-line matches checked against PR97; lib failure prevents full test/example lint completion",
+  "solver_source_changes": false,
+  "counter_change": "None; diagnostic only, no repair episode",
+  "remaining_gate": "Q-LINT/coupled broader lint closure OPEN",
+  "production": "HOLD",
+  "receipt": "evidence/post-clippy.receipt.json",
+  "raw_log": "evidence/post-clippy.stderr.log.gz"
+}

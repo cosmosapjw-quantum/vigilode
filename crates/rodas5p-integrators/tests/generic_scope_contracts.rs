@@ -3,8 +3,7 @@ use std::path::{Path, PathBuf};
 
 use rodas5p_core::sha256_hex;
 
-const BDF_SHA256: &str = "68c681b58686e706ab6890d3be68bb1ca4a9398517e0e755a5c64b2cef746a04";
-const RADAU_SHA256: &str = "edec0453a5338fc8357a7c026aff894869641b486a3aa3df858353a315bb441b";
+const LEGACY_BDF_SHA256: &str = "68c681b58686e706ab6890d3be68bb1ca4a9398517e0e755a5c64b2cef746a04";
 
 fn rust_sources_under(path: &Path, out: &mut Vec<PathBuf>) {
     for entry in fs::read_dir(path).expect("scope source directory must be readable") {
@@ -19,9 +18,49 @@ fn rust_sources_under(path: &Path, out: &mut Vec<PathBuf>) {
 }
 
 #[test]
-fn bdf_and_radau_remain_byte_frozen_comparators() {
-    assert_eq!(sha256_hex(include_bytes!("../src/bdf.rs")), BDF_SHA256);
-    assert_eq!(sha256_hex(include_bytes!("../src/radau.rs")), RADAU_SHA256);
+fn bdf_v2_semantic_baseline_explicitly_retires_the_legacy_source_byte_freeze() {
+    assert_ne!(
+        sha256_hex(include_bytes!("../src/bdf.rs")),
+        LEGACY_BDF_SHA256,
+        "the v2 predictor-corrector estimator and dense-output baseline must not silently revert to the legacy step-doubling source"
+    );
+}
+
+#[test]
+fn radau3_cell_g_baseline_has_embedded_semantics_instead_of_a_source_byte_claim() {
+    use rodas5p_integrators::{
+        AdaptiveStepConfig, OutputSchedule, RadauConfig, RadauIiaStages,
+        integrate_radau_adaptive_observed, scalar_linear_problem,
+    };
+
+    let (problem, y0) = scalar_linear_problem(-5.0, 1.0);
+    let result = integrate_radau_adaptive_observed(
+        &problem,
+        (0.0, 0.1),
+        &y0,
+        &RadauConfig {
+            stages: RadauIiaStages::Three,
+            ..Default::default()
+        },
+        &AdaptiveStepConfig {
+            atol: 1.0,
+            rtol: 0.0,
+            initial_step: 0.1,
+            max_step: 0.1,
+            ..Default::default()
+        },
+        &OutputSchedule::new(vec![0.0, 0.1]).unwrap(),
+    )
+    .unwrap();
+
+    assert!(result.observed.success);
+    assert_eq!(result.diagnostics.estimator_orders, vec![4]);
+    assert_eq!(
+        result.diagnostics.estimator_ids,
+        vec!["radau-iia3-scipy-1.17.0-embedded-order3"]
+    );
+    assert_eq!(result.observed.counters.accepted_steps, 1);
+    assert_eq!(result.observed.internal_steps, 1);
 }
 
 #[test]

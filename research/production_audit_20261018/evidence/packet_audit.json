@@ -1,0 +1,121 @@
+{
+  "schema": "vigilode-packet-adversarial-audit-v1",
+  "baseline_commit": "2fc61b944fe431d40ba455c373579bce00b0c39a",
+  "reviewer": "packet_audit",
+  "decision": "HOLD_PRODUCTION_CERTIFICATION",
+  "scope": "native scalar collective packet, trajectory, damped moments",
+  "historical_campaign_reruns": 0,
+  "baseline_regression": {
+    "passed": 0,
+    "failed": 6,
+    "log": "packet_audit_baseline/tests_before.log"
+  },
+  "changed_regression": {
+    "passed": 8,
+    "failed": 0,
+    "log": "packet_audit_baseline/tests_after.log"
+  },
+  "command": "PATH=/workspace/scratch/0dc1e721cf82/runtime/rust/bin:$PATH CARGO_HOME=/workspace/scratch/0dc1e721cf82/runtime/cargo-home cargo test --locked --offline -p rodas5p-integrators --test production_audit_packet -- --nocapture",
+  "findings": [
+    {
+      "id": "PK-01",
+      "severity": "critical",
+      "title": "damped model accepted by undamped compiler",
+      "status": "FIXED_REFUSAL"
+    },
+    {
+      "id": "PK-02",
+      "severity": "critical",
+      "title": "plain float arithmetic represented as total outward certificate",
+      "status": "HOLD_OUTWARD_ARITHMETIC"
+    },
+    {
+      "id": "PK-03",
+      "severity": "high",
+      "title": "dense output fails normalized-time restriction",
+      "status": "FIXED"
+    },
+    {
+      "id": "PK-04",
+      "severity": "high",
+      "title": "trajectory substitutes total kernel error for force magnitude",
+      "status": "FIXED"
+    },
+    {
+      "id": "PK-05",
+      "severity": "high",
+      "title": "initial uncertainty can leave proved domain",
+      "status": "FIXED_NARROW_DOMAIN"
+    },
+    {
+      "id": "PK-06",
+      "severity": "medium",
+      "title": "runtime mutable config and tiny-time completion",
+      "status": "FIXED"
+    },
+    {
+      "id": "PK-07",
+      "severity": "high",
+      "title": "damped normalized beta initialization is not outward",
+      "status": "DELEGATED_THEORY_AGENT"
+    },
+    {
+      "id": "PK-08",
+      "severity": "high",
+      "title": "collective model binding only dimension/mass",
+      "status": "OPEN"
+    },
+    {
+      "id": "PK-09",
+      "severity": "medium",
+      "title": "allocation and work authority contradict source",
+      "status": "OPEN"
+    },
+    {
+      "id": "PK-10",
+      "severity": "high",
+      "title": "softened model assumptions and mutable packet identity",
+      "status": "OPEN"
+    }
+  ],
+  "source_hashes": {
+    "crates/rodas5p-integrators/src/packet_window.rs": {
+      "before": "407ec677c1b175a317d65bea8f06492afeac2db53c22525a9717dbfd19c80e4f",
+      "after": "200ab82fd72bc3a4e95eedb91242b047ef6168795a2a7c86369e16d26fd9c242"
+    },
+    "crates/rodas5p-integrators/src/packet_trajectory.rs": {
+      "before": "8dc6c6c8365e7ae5434ff5a3c972f997541fb47dcfb0e27ba963437f6f84270c",
+      "after": "b179d27685b91a1c55ff89dc311a2c2362f70e6aa1e25808e44ef68bf4106f04"
+    }
+  },
+  "numerical_counterexamples": {
+    "undamped_route_for_damping": {
+      "initial": 0.5,
+      "kappa": 1,
+      "h": 0.1,
+      "returned": 0.5,
+      "returned_bound": 0,
+      "exact_expression": "0.5*exp(-0.1)"
+    },
+    "dense_restriction": {
+      "tau": 0.25,
+      "observed_baseline_error": 2.9296461743461902e-05,
+      "reference": ".5*exp(i*.25*.1*tau)"
+    },
+    "uncertainty": {
+      "initial_center": 0.5,
+      "initial_radius": 100,
+      "true_start": 100.5,
+      "chi": 1,
+      "h": "pi/(100.5^2)",
+      "true_endpoint": -100.5,
+      "certificate_counterexample_method": "analytic solution plus direct targeted refusal test"
+    }
+  },
+  "independent_review": {
+    "reviewer": "/root/independent_review",
+    "confirmed": "dense restriction and inherited transfer under explicit normalized/xi/tube conditions",
+    "correction": "outward S*E initial uncertainty tube guard",
+    "remaining": "PK02 outward total arithmetic and PK10 admission assumptions remain OPEN"
+  }
+}

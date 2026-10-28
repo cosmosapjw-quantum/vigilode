@@ -1,0 +1,213 @@
+{
+  "schema": "vigilode.r3.independent_decision.v1",
+  "reviewer_role": "independent decision reviewer; did not generate candidate implementations or candidate validation design",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "source_tree": "182fa306067b84ee10ec1f1b1e5fbad9e769aae1",
+  "review_started_utc": "2026-09-30T15:48:38.074438+00:00",
+  "status": "FINAL_INDEPENDENT_BOUNDED_ACCEPTANCE",
+  "production_readiness": "HOLD_REWORK_REQUIRED",
+  "prior_execution_status": "NOT_INHERITED",
+  "scientific_promotion": "ACCEPT_BOUNDED_EXPLORATORY_RESEARCH_REPORT_ONLY",
+  "scope": "Bounded source/claim review and selective independent reproduction. No source modifications and no GitHub writes.",
+  "initial_documents_read": [
+    {
+      "path": "r3/PREREGISTRATION.md",
+      "sha256": "e037b9ee3e87cd038c31907bb23ab5a1abf17e3d0db9df242558db9dbef50a27"
+    },
+    {
+      "path": "r3/evidence/source/SOURCE_MANIFEST.json",
+      "sha256": "405157ce112c786ec52181f3b7789875f7781fd1d02607d499429782753915a2"
+    },
+    {
+      "path": "harness_recovered_r3/research/PROJECT_INSTRUCTIONS.md",
+      "sha256": "a306f9ae283d13cec262e4300f19f045c9803a13ad2814d25d7a4b612ab447dc"
+    },
+    {
+      "path": "harness_recovered_r3/research/policies/PHASE_GATES.md",
+      "sha256": "3fec84ecaabb71dbb7a373b0f5b5fea2c5ec845ac0dd726bffedadfdea0c5f98"
+    },
+    {
+      "path": "harness_recovered_r3/research/policies/STOP_RULES.md",
+      "sha256": "f3c4a47febf3c686d4957a6dca862bf9dbdd8904c150623c3032cfd99985be5e"
+    },
+    {
+      "path": "vigilode/docs/REAUDIT_R2_CLOSURE_20260930.md",
+      "sha256": "fd1b6e9d4dcaf42c7d57e1a1128b22fcbd5df1f39af5462c4ea8d0263eededcf"
+    },
+    {
+      "path": "vigilode/research/adversarial_reaudit_20260930_r2/FINDINGS.json",
+      "sha256": "b121b37da42223d466d59c468ee5abaa53e6457df0d2cbd9971667eac16e36c0"
+    },
+    {
+      "path": "vigilode/research/adversarial_reaudit_20260930_r2/REPORT_STATUS.json",
+      "sha256": "674565e55378eeb0a3d4a3f54677b8609d650b79f2d4a3fc635380a1d0f66810"
+    },
+    {
+      "path": "vigilode/crates/rodas5p-integrators/src/output.rs",
+      "sha256": "34b83d9ce0db0bf9d115001e92f4ca95bb754b608f125bb7db12d816b123f1d1"
+    },
+    {
+      "path": "vigilode/crates/rodas5p-integrators/src/integrate.rs",
+      "sha256": "2a440c2df4d42290d597cdb461ded29951d703ac835a308bb0a6b65368182898"
+    },
+    {
+      "path": "vigilode/crates/rodas5p-core/src/matrix_functions.rs",
+      "sha256": "2eb10231cf6ac28b02c83e12b04f4475723a924908592a0394a1008cca500594"
+    },
+    {
+      "path": "vigilode/crates/rodas5p-core/src/binary_scaling.rs",
+      "sha256": "7318748693a7accb44b65af8f6686e3d1b36504ee9782132852ff43cf84507cb"
+    }
+  ],
+  "initial_issues_to_distinguish": [
+    "Seven original reproducer closures versus residual scope limitations",
+    "Exact represented-time ownership versus consistency of the h used in stage equations",
+    "Declarative timing session provenance versus independently observed session provenance",
+    "Dense amplitude labels existence versus final gate consumption",
+    "Exact-arithmetic bounds versus floating-point directed certification",
+    "Operation-count or depth model versus observed wall speedup"
+  ],
+  "independence_limit": "Shared repository and lane evidence; independent decision context and independently chosen selective checks, not model diversity.",
+  "review_updated_utc": "2026-09-30T16:03:12.540067+00:00",
+  "scientific_deliverable": "ACCEPT_BOUNDED_EXPLORATORY_AUDIT_AND_RESEARCH_RESULTS",
+  "research_process_gate": "INCONCLUSIVE_PREREG_NOT_COMMITTED_BEFORE_RUN",
+  "main_report_review": {
+    "path": "REPORT_KO.md",
+    "reviewed_sha256": "da4165b18267338616e15d574a65b86ad5cc21d7dd0aa61449f08747adf30b8f",
+    "decision": "ACCEPT_BOUNDED_SCOPE",
+    "minor_editorial_correction": "Replace 8-batch sequential baseline with eight sequential single-vector W solves to distinguish width-8 homotopy batches.",
+    "runtime_status": "Final campaign aggregate not yet available at review; report correctly does not claim complete workspace PASS. Owner must preserve actual partial/timeout/ignored/NOT_RUN status."
+  },
+  "native_selective_reexecution": {
+    "time": {
+      "exit": 0,
+      "rows": 29
+    },
+    "arithmetic": {
+      "exit": 0,
+      "rows": 529
+    },
+    "statistics": {
+      "exit": 0,
+      "rows": 10
+    },
+    "note": "Rows are not independent tests and are not added to workspace campaign totals"
+  },
+  "confirmed_findings": [
+    {
+      "id": "R3-TIME-01",
+      "severity": "P1",
+      "decision": "ACCEPT_CONFIRMED_ACKNOWLEDGED_RESIDUAL",
+      "scope": "Successful physical step/timestamp mismatch in constant-flow public native fixtures; already documented limit, not new regression"
+    },
+    {
+      "id": "R3-TIME-02",
+      "severity": "P2",
+      "decision": "ACCEPT_CONFIRMED",
+      "scope": "Singleton output schedule accepted for nonzero span and y0 returned at tf in dense/clipped public consumers"
+    },
+    {
+      "id": "R3-ARITH-01",
+      "severity": "P2",
+      "decision": "ACCEPT_CONFIRMED",
+      "scope": "Extreme finite nilpotent action; partial transformed-weight underflow amplified to representable leading output, native convergence/error=0 incorrect for original input"
+    },
+    {
+      "id": "R3-STAT-01",
+      "severity": "P2",
+      "decision": "ACCEPT_CONFIRMED",
+      "scope": "Malformed raw protocol can be rehashed/reassessed and verify_against_raw returns Promote; no actual CLI wall-speed promotion"
+    }
+  ],
+  "coefficient_structure_decision": {
+    "decision": "ACCEPT_CERTIFICATION_PREMISE_FAILURE",
+    "scope": "Exact native represented alpha/L are not strict lower and have nonzero eighth power; projected matrices are nilpotent. Not a demonstrated macroscopic native solver defect."
+  },
+  "research_decisions": [
+    {
+      "claim": "Joint different-vector Laguerre/Chebyshev phi prototype and exact-arithmetic Chebyshev tail",
+      "decision": "PROMOTE_TO_BOUNDED_RESEARCH_REPORT",
+      "status": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "limits": [
+        "Real symmetric nonpositive A, justified spectral enclosure, h>=0",
+        "Total quadrature/recurrence roundoff not certified",
+        "Operator products not wall speed"
+      ]
+    },
+    {
+      "claim": "Outward componentwise quadratic stage bound and doubling path-sum closure",
+      "decision": "PROMOTE_TO_BOUNDED_PROJECTED_TARGET_RESEARCH_REPORT",
+      "status": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "limits": [
+        "Explicit strict-lower projection of native coefficients",
+        "One/two-dimensional exact inverse witness",
+        "Native full-block and sequential arithmetic parity not established",
+        "ODE local/global error and speedup not established"
+      ]
+    },
+    {
+      "claim": "Fixed-threshold bootstrap Monte Carlo tail gate",
+      "decision": "PROMOTE_TO_CONDITIONAL_EXPLORATORY_RESEARCH_REPORT",
+      "status": [
+        "derived",
+        "numerically checked"
+      ],
+      "limits": [
+        "Ideal iid resamples conditional on empirical law",
+        "Fixed B/threshold/delta; optional stopping excluded",
+        "No population bootstrap coverage or actual speed assertion"
+      ]
+    },
+    {
+      "claim": "Clock, phi-loss and raw-protocol guard candidates",
+      "decision": "ACCEPT_STANDALONE_REPAIR_EVIDENCE_ONLY",
+      "limits": [
+        "No production patch",
+        "Clock prototype only local constant-flow cases",
+        "Phi fail-closed guard conservative; nilpotent rearrangement structure-specific"
+      ]
+    }
+  ],
+  "process_deviation": {
+    "source": "docs/RESEARCH_LEDGER.md",
+    "requirement": "PREREGISTRATION.md written and committed before the run",
+    "observed": "Root reports prereg written before scientific probes but not committed before run",
+    "effect": "No preregistered confirmatory PASS or holdout claim. Bounded exact/native witnesses retained as exploratory evidence; ledger INCONCLUSIVE. Do not fabricate history or amend exemption policy."
+  },
+  "independent_checks": [
+    "native_oracle_checks.json",
+    "polynomial_independent_check.json",
+    "homotopy_independent_check.json",
+    "independent_math_checks.json",
+    "statistics_native_independent_summary.json",
+    "native_independent_summary.json"
+  ],
+  "limitations": [
+    "No broad duplicate full suite",
+    "No proof assistant formalization",
+    "Independent decision context and independently selected references, not model diversity",
+    "Production untouched by reviewer"
+  ],
+  "review_finished_utc": "2026-09-30T16:04:49.681499+00:00",
+  "completion": "One bounded scientific review completed; no recursive review required. File/manifest/publication identity checks remain owner delivery tasks.",
+  "scientific_promotion_limits": [
+    "Production readiness remains HOLD_REWORK_REQUIRED",
+    "Research ledger process remains INCONCLUSIVE: preregistration not committed before run",
+    "Claim-specific domains and exclusions in research_decisions are binding",
+    "No confirmatory holdout, native full-block homotopy certification, ODE total-error certification, or measured speedup approval"
+  ],
+  "header_correction": {
+    "utc": "2026-09-30T16:06:51.418035+00:00",
+    "field": "scientific_promotion",
+    "previous_stale_value": "PENDING_INDEPENDENT_REVIEW",
+    "basis": "Synchronize final header with already completed bounded independent decisions; no new review or experiment."
+  }
+}

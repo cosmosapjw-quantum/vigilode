@@ -1,0 +1,312 @@
+{
+  "schema": "vigilode.causal-frontier-summary.v1",
+  "campaign_wall_seconds": 18.045515315998273,
+  "total_runs": 84,
+  "successful_runs": 84,
+  "failed_runs": 0,
+  "comparisons": [
+    {
+      "case": "few-mode",
+      "absolute_error_cap": 1e-05,
+      "eligible_best": {
+        "residual-first": {
+          "method": "residual-first",
+          "rtol": 0.0001,
+          "median_seconds": 0.0017878935,
+          "worst_max_abs_error": 2.3369075415231866e-08,
+          "rhs": 391,
+          "jvp": 251,
+          "accepted": 23,
+          "rejected": 0,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 1.0
+        },
+        "causal-forward": {
+          "method": "causal-forward",
+          "rtol": 0.0001,
+          "median_seconds": 0.0015183885,
+          "worst_max_abs_error": 2.3369075554877106e-08,
+          "rhs": 368,
+          "jvp": 251,
+          "accepted": 23,
+          "rejected": 0,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 1.1774940998301817
+        },
+        "causal-picard": {
+          "method": "causal-picard",
+          "rtol": 0.0001,
+          "median_seconds": 0.001660407,
+          "worst_max_abs_error": 2.3369075415231866e-08,
+          "rhs": 368,
+          "jvp": 251,
+          "accepted": 23,
+          "rejected": 0,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 1.0767802713431105
+        }
+      },
+      "selection_scope": "best of two preregistered tolerances; no global optimality claim"
+    },
+    {
+      "case": "few-mode-large",
+      "absolute_error_cap": 1e-05,
+      "eligible_best": {
+        "residual-first": {
+          "method": "residual-first",
+          "rtol": 0.0001,
+          "median_seconds": 0.0046059865,
+          "worst_max_abs_error": 2.3369075444722165e-08,
+          "rhs": 391,
+          "jvp": 251,
+          "accepted": 23,
+          "rejected": 0,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 1.0
+        },
+        "causal-forward": {
+          "method": "causal-forward",
+          "rtol": 0.0001,
+          "median_seconds": 0.0037510155,
+          "worst_max_abs_error": 2.3369075440385356e-08,
+          "rhs": 368,
+          "jvp": 251,
+          "accepted": 23,
+          "rejected": 0,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 1.2279305430756018
+        },
+        "causal-picard": {
+          "method": "causal-picard",
+          "rtol": 0.0001,
+          "median_seconds": 0.00425267,
+          "worst_max_abs_error": 2.3369075444722165e-08,
+          "rhs": 368,
+          "jvp": 251,
+          "accepted": 23,
+          "rejected": 0,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 1.08308109963858
+        }
+      },
+      "selection_scope": "best of two preregistered tolerances; no global optimality claim"
+    },
+    {
+      "case": "riccati",
+      "absolute_error_cap": 1e-05,
+      "eligible_best": {
+        "residual-first": {
+          "method": "residual-first",
+          "rtol": 0.0001,
+          "median_seconds": 0.0042547635,
+          "worst_max_abs_error": 1.7457175288670967e-10,
+          "rhs": 507,
+          "jvp": 761,
+          "accepted": 19,
+          "rejected": 0,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 1.0
+        },
+        "causal-forward": {
+          "method": "causal-forward",
+          "rtol": 1e-06,
+          "median_seconds": 0.0011840805,
+          "worst_max_abs_error": 1.745716210477255e-10,
+          "rhs": 304,
+          "jvp": 209,
+          "accepted": 19,
+          "rejected": 0,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 3.5933059449927596
+        },
+        "causal-picard": {
+          "method": "causal-picard",
+          "rtol": 1e-06,
+          "median_seconds": 0.0032656860000000003,
+          "worst_max_abs_error": 1.7457114920294003e-10,
+          "rhs": 612,
+          "jvp": 209,
+          "accepted": 19,
+          "rejected": 0,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 1.3028697492655446
+        }
+      },
+      "selection_scope": "best of two preregistered tolerances; no global optimality claim"
+    },
+    {
+      "case": "stiff",
+      "absolute_error_cap": 1e-05,
+      "eligible_best": {
+        "residual-first": {
+          "method": "residual-first",
+          "rtol": 0.0001,
+          "median_seconds": 0.0036768135,
+          "worst_max_abs_error": 5.112944644058981e-09,
+          "rhs": 493,
+          "jvp": 318,
+          "accepted": 26,
+          "rejected": 3,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 1.0
+        },
+        "causal-forward": {
+          "method": "causal-forward",
+          "rtol": 0.0001,
+          "median_seconds": 0.0020347745,
+          "worst_max_abs_error": 5.112944250276752e-09,
+          "rhs": 464,
+          "jvp": 318,
+          "accepted": 26,
+          "rejected": 3,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 1.8069881945149202
+        },
+        "causal-picard": {
+          "method": "causal-picard",
+          "rtol": 0.0001,
+          "median_seconds": 0.0023671745000000003,
+          "worst_max_abs_error": 5.112944644058981e-09,
+          "rhs": 464,
+          "jvp": 318,
+          "accepted": 26,
+          "rejected": 3,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 1.5532498765933815
+        }
+      },
+      "selection_scope": "best of two preregistered tolerances; no global optimality claim"
+    },
+    {
+      "case": "nonnormal",
+      "absolute_error_cap": 1e-05,
+      "eligible_best": {
+        "residual-first": {
+          "method": "residual-first",
+          "rtol": 0.0001,
+          "median_seconds": 0.001716496,
+          "worst_max_abs_error": 1.5648146056701506e-08,
+          "rhs": 323,
+          "jvp": 190,
+          "accepted": 19,
+          "rejected": 0,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 1.0
+        },
+        "causal-forward": {
+          "method": "causal-forward",
+          "rtol": 1e-06,
+          "median_seconds": 0.001069834,
+          "worst_max_abs_error": 4.667234931865494e-10,
+          "rhs": 432,
+          "jvp": 270,
+          "accepted": 27,
+          "rejected": 0,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 1.6044507839533986
+        },
+        "causal-picard": {
+          "method": "causal-picard",
+          "rtol": 0.0001,
+          "median_seconds": 0.001783883,
+          "worst_max_abs_error": 1.5648146056701506e-08,
+          "rhs": 304,
+          "jvp": 190,
+          "accepted": 19,
+          "rejected": 0,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 0.9622245405107847
+        }
+      },
+      "selection_scope": "best of two preregistered tolerances; no global optimality claim"
+    },
+    {
+      "case": "oscillatory",
+      "absolute_error_cap": 1e-05,
+      "eligible_best": {
+        "residual-first": {
+          "method": "residual-first",
+          "rtol": 1e-06,
+          "median_seconds": 0.0071168545,
+          "worst_max_abs_error": 1.704614665531956e-07,
+          "rhs": 1564,
+          "jvp": 920,
+          "accepted": 76,
+          "rejected": 16,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 1.0
+        },
+        "causal-forward": {
+          "method": "causal-forward",
+          "rtol": 1e-06,
+          "median_seconds": 0.004421569,
+          "worst_max_abs_error": 1.7046145800447832e-07,
+          "rhs": 1472,
+          "jvp": 920,
+          "accepted": 76,
+          "rejected": 16,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 1.6095767136055097
+        },
+        "causal-picard": {
+          "method": "causal-picard",
+          "rtol": 1e-06,
+          "median_seconds": 0.0089082,
+          "worst_max_abs_error": 1.704614665531956e-07,
+          "rhs": 1472,
+          "jvp": 920,
+          "accepted": 76,
+          "rejected": 16,
+          "fallback_attempts": 0,
+          "speed_ratio_baseline_over_method": 0.7989104981926765
+        }
+      },
+      "selection_scope": "best of two preregistered tolerances; no global optimality claim"
+    },
+    {
+      "case": "broad",
+      "absolute_error_cap": 1e-05,
+      "eligible_best": {
+        "residual-first": {
+          "method": "residual-first",
+          "rtol": 0.0001,
+          "median_seconds": 0.6445193615,
+          "worst_max_abs_error": 6.077697510166802e-09,
+          "rhs": 1667,
+          "jvp": 18610,
+          "accepted": 32,
+          "rejected": 3,
+          "fallback_attempts": 33,
+          "speed_ratio_baseline_over_method": 1.0
+        },
+        "causal-forward": {
+          "method": "causal-forward",
+          "rtol": 0.0001,
+          "median_seconds": 0.6266343955,
+          "worst_max_abs_error": 6.077697510168496e-09,
+          "rhs": 1598,
+          "jvp": 18610,
+          "accepted": 32,
+          "rejected": 3,
+          "fallback_attempts": 33,
+          "speed_ratio_baseline_over_method": 1.0285413091404427
+        },
+        "causal-picard": {
+          "method": "causal-picard",
+          "rtol": 0.0001,
+          "median_seconds": 0.6725243464999999,
+          "worst_max_abs_error": 6.077697510166802e-09,
+          "rhs": 1598,
+          "jvp": 18610,
+          "accepted": 32,
+          "rejected": 3,
+          "fallback_attempts": 33,
+          "speed_ratio_baseline_over_method": 0.9583584071777542
+        }
+      },
+      "selection_scope": "best of two preregistered tolerances; no global optimality claim"
+    }
+  ],
+  "timing_caveat": "single-host microcampaign; compare repeat spread and work, not universal speed",
+  "production_decision": "SPECIALIZED_ONLY; autonomous identity mass supplied JVP; broad production unresolved"
+}

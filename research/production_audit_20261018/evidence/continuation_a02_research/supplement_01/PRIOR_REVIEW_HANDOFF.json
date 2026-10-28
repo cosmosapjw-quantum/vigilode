@@ -1,0 +1,23 @@
+{
+  "record_type": "PRIOR_REVIEW_HANDOFF",
+  "provenance": "Parent agent /root message in current session; dedicated prior reviewer artifact did not exist",
+  "reviewer_agent": "/root/a01_unequal_reference_review",
+  "source_base_commit": "6b722a918deb0ab178b8e77090cac1280dbb3051",
+  "observed_head": "7e2873887ed6038b47b667c976435810851c5dba",
+  "verdict": "HOLD",
+  "mathematics_D1_D5": "READY",
+  "implementation_contract": "HOLD",
+  "received_parent_message": "There is no dedicated A02 reviewer artifact yet; the completed independent reviewer returned the C1/C2 HOLD in its final response in this session. Please bind that verdict as a prior_review input in your decision packet (reviewer agent a01_unequal_reference_review; source baseline 6b722a9/current 7e28738; math D1-D5 READY, implementation contract HOLD for C1/C2), and preserve the exact received findings in a new evidence note/JSON if needed. Keep the original files immutable by adding supplement_01; no request to modify the proof body.",
+  "findings_from_parent_task": [
+    {
+      "id": "C1",
+      "text": "freeze per-acceptance test input/config identity including model/grid/initial uncertainty/order/degree/sweeps/limits/tolerance source; AT02 unequal local oracle must not falsely claim physical tolerance reuse. Keep existing tolerances unchanged: fixed-grid 1e-5/1e-5, inherited uncertainty 1e-4/1e-4, rejection 2e-4/2e-4, with cited source lines."
+    },
+    {
+      "id": "C2",
+      "text": "retain immutable per-window start seed (time, centers, component radii r_k, weighted e_k, E_global, E_center, physical end/H, model identity); AT07/AT09 must query first window after two commits and refuse stale prepared-window snapshots."
+    }
+  ],
+  "wording_correction": "AT05 uses a non-singleton binary64 subtraction interval; every finite binary64 label is dyadic. D1-D5 proof body must be preserved.",
+  "claim_limit": "This preserves the parent-reported verdict; it is not a newly executed independent review."
+}

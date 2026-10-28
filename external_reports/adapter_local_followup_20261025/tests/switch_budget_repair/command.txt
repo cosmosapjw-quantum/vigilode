@@ -1,0 +1,1 @@
+timeout 240s env CARGO_TARGET_DIR=/tmp/vigilode-adapter-review-target CARGO_BUILD_JOBS=2 cargo test -p vigilode --test switching_persistent_explicit --test switching_contracts --test evidence_switch_contracts --test production_session_contracts --locked --offline -j 2

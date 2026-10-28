@@ -1,0 +1,101 @@
+{
+  "schema_version": "1.0.0",
+  "reviewer": "/root/integration_decision",
+  "review_date": "2026-10-04",
+  "independence": {
+    "candidate_author": false,
+    "initial_validation_designer": false,
+    "source_edits": false,
+    "historical_science_reruns": 0,
+    "review_method": "Separated reviewer read finished source, raw study/oracle rows, test/command logs, contracts and final machine-readable claims; artifact consistency checked without rerunning scientific campaigns."
+  },
+  "source_commit": "699a7adc6dba5fc45d4da01a5456f10f25dcf210",
+  "preregistration_commit": "3e784982104274312027490d481de4929e4f3cf6",
+  "decision": "ACCEPT_NATIVE_RESEARCH",
+  "accepted_scope": [
+    "Dense real shared-shift resolvent action with fixed current J, h >= 0, positive real gamma and outward dissipativity witness in Euclidean norm",
+    "Immutable per-RHS current-target residual certificate at positive absolute tolerance; every supplied RHS column retained",
+    "Narrow chart NaN/shape/nonfinite-configuration/representable-time-progress boundary fixes"
+  ],
+  "claim_status": [
+    "derived",
+    "numerically_checked",
+    "implementation_verified"
+  ],
+  "claims_not_promoted": {
+    "default_solver_activation": "HOLD",
+    "generic_RVJ_stiff_uniform_order": "NOT_ESTABLISHED",
+    "coupled_Fourier_native_client": "HOLD_NOT_IMPLEMENTED",
+    "actual_parallel_dispatch": "HOLD_NOT_IMPLEMENTED",
+    "wall_clock_speedup": "HOLD_NOT_EVALUATED",
+    "historical_chart_and_nonnormal_enclosure_composition": "HOLD_OPEN_PROOF_OBLIGATIONS",
+    "total_process_memory_cap": "NOT_CLAIMED"
+  },
+  "mathematical_review": {
+    "recurrence": "A_gamma=A0(I-zT), T=R0-I, z=(gamma-gamma0)/gamma0; positive-sign normalized Horner coefficients match the target.",
+    "error_authority": "Outward symmetric-part row sums prove a sufficient dissipativity condition; inverse Euclidean gain <= 1 converts current exact-input residual L1 upper into a per-column Euclidean solution-error upper.",
+    "rounding": "Stored-candidate LU, recurrence, ratio and Horner errors are covered by the independently recomputed current-target interval residual, rather than assumed absent.",
+    "binding": "J and input data remain borrowed and fixed during the call; no imported witness or stale operator cache is an acceptance input. Report/candidate/certificate fields are private and not deserializable.",
+    "scope_limits": "Sufficient real Euclidean witness is conservative. This is neither an ODE trajectory error certificate nor a proof of generic solver order."
+  },
+  "verified_evidence": {
+    "native_cases": 15,
+    "target_candidates": 591,
+    "certified_targets": 559,
+    "rejected_targets": 32,
+    "rhs_target_rows": 1341,
+    "certified_rows": 1309,
+    "rejected_rows": 32,
+    "exact_enclosure_failures": 0,
+    "negative_controls": 11,
+    "negative_control_failures": 0,
+    "fresh_unique_rust_tests": 23,
+    "native_new_tests": 6,
+    "chart_new_tests": 9,
+    "related_existing_tests": 8,
+    "root_final_commands": 8,
+    "root_final_nonzero_exits": 0,
+    "dag_nodes": 21,
+    "dag_acyclic": true,
+    "full_repository_regression_claim": false
+  },
+  "review_findings": [
+    {
+      "id": "REVIEW-STORAGE-01",
+      "status": "CLOSED",
+      "finding": "Explicit scalar bound omitted target gamma and certificate tolerance fields: 2*s slots.",
+      "resolution": "Formula accounts for 3*s; large-target-set regression verifies cap 392 admits and 391 rejects.",
+      "remaining_limit": "Faer LU/solver workspace, vector metadata, capacity and total RSS are explicitly excluded."
+    },
+    {
+      "id": "REVIEW-ORACLE-BINDING-01",
+      "status": "CLOSED_HARDENING",
+      "finding": "Original verifier checked target count without ordered correspondence to requested gamma.",
+      "resolution": "Final verifier asserts exact ordered requested-gamma equality and IEEE-754 bit identity of inputs, candidates and bounds."
+    }
+  ],
+  "oracle_independence": "Python stdlib Fraction Gauss-Jordan on exact binary inputs shares no native LU/jet/interval implementation; it checks exact residual L1 and squared Euclidean error against every reported upper, and accepted rows against the fixed tolerance.",
+  "cas_use": {
+    "all_returned_true": true,
+    "warnings": [
+      "Symbol::undefined2",
+      "General::messages"
+    ],
+    "authority": "Supplementary exact-fixture algebra check only; warnings retained, not acceptance authority."
+  },
+  "artifact_consistency": "RESULTS, FINAL_VERIFICATION, raw oracle/study counts agree. Acceptance matrix AC07 was pending this decision. DAG has unique IDs, resolved dependencies and no cycles; production activation remains blocked.",
+  "blocking_findings_in_accepted_scope": [],
+  "publication_condition": "Preserve these claim ceilings; AC07 and final decision metadata may now cite this review. No further historical rerun or recursive review is required.",
+  "reviewed_content_sha256": {
+    "crates/rodas5p-core/src/shared_shift_jet.rs": "bb7cc8473d3e335f126477712ca4b99c30085a1bc2b752cce8e3b577173ac335",
+    "crates/rodas5p-core/tests/shared_shift_jet_contracts.rs": "c0ec1e177f7b47d442202389a1ab1de7c32745856bdc17ce492c9fd57c2422d9",
+    "crates/rodas5p-core/examples/shared_shift_jet_study.rs": "c6fae8b1454efbf55c43a430ca3d076bb15895e7edd0c2d4faa3b236978d2bb9",
+    "crates/rodas5p-integrators/src/stage_chart_candidate.rs": "ed20ffaa02e1d00bebd94bebfdfa687c16e7b8e9823ed19f7c6b03e10ffb7e9f",
+    "crates/rodas5p-integrators/src/chart_transport.rs": "9eb024451ec5b114c487c9e5382690709787a21192f0afa63343bac6e9916db4",
+    "crates/rodas5p-integrators/tests/rvj_integration_boundaries.rs": "ea256a478cfedf1d4fa7f3aebbfa2ad7e78c2440505a98786a4eef7124b830ea",
+    "research/rvj_integration_20261004/verify_exact.py": "225ebf334660e5be9b2590fe5cea41544eb372d6a4139baeba0db6af55e8e642",
+    "research/rvj_integration_20261004/evidence/native_study.json": "a4cc4ffed78925f268472afbe2bd7c7e5128b1ca9d3fdeac9df5ca8778574b8e",
+    "research/rvj_integration_20261004/evidence/exact_oracle.json": "80e7e11b1d65b4d552c87b52a5b5c7e3335b6827e98e42b946787b4d7ee6d317",
+    "research/rvj_integration_20261004/evidence/COMMANDS.jsonl": "becf2ff86ee937967d9c14fb4e2f6dd731fdcf115d36773d4ee326b973de636c"
+  }
+}

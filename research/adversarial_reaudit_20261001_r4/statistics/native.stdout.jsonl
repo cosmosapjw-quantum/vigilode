@@ -1,0 +1,21 @@
+{"kind":"receipt_probe","name":"valid_control_under_documented_authority_hold","result":"Ok(Promote)"}
+{"kind":"receipt_probe","name":"later_empty_warmups","result":"Ok(Promote)"}
+{"kind":"receipt_probe","name":"later_one_warmup","result":"Ok(Promote)"}
+{"kind":"receipt_probe","name":"shift_candidate_counts","result":"Ok(Promote)"}
+{"kind":"receipt_probe","name":"shift_reference_counts","result":"Ok(Promote)"}
+{"kind":"receipt_probe","name":"end_before_start","result":"Ok(Promote)"}
+{"kind":"receipt_probe","name":"wrong_batch","result":"Err(Invalid(\"paired timing needs at least one case\"))"}
+{"kind":"receipt_probe","name":"missing_later_case","result":"Ok(Inconclusive)"}
+{"kind":"r3_closure","name":"empty_order","result":"Err(Invalid(\"INVALID_RAW_TIMING_PROTOCOL: invalid fair-comparison input: paired timing case case-0 does not follow the protocol's seeded ABBA order\"))"}
+{"kind":"r3_closure","name":"wrong_order","result":"Err(Invalid(\"INVALID_RAW_TIMING_PROTOCOL: invalid fair-comparison input: paired timing case case-0 does not follow the protocol's seeded ABBA order\"))"}
+{"kind":"r3_closure","name":"wrong_batch","result":"Err(Invalid(\"INVALID_RAW_TIMING_PROTOCOL: invalid fair-comparison input: paired timing case case-0 records batch 3 but its warmups calibrate to 2\"))"}
+{"kind":"r3_closure","name":"negative_warmup","result":"Err(Invalid(\"INVALID_RAW_TIMING_PROTOCOL: invalid fair-comparison input: case case-0: invalid fair-comparison input: batch calibration needs at least 2 finite nonnegative warmup samples\"))"}
+{"kind":"r3_closure","name":"nan_warmup","result":"Err(Invalid(\"INVALID_RAW_TIMING_PROTOCOL: invalid fair-comparison input: case case-0: invalid fair-comparison input: batch calibration needs at least 2 finite nonnegative warmup samples\"))"}
+{"arm":"chebyshev-cold","kind":"published_replay","result":{"Ok":"Inconclusive"},"study":"poly03"}
+{"arm":"chebyshev-warm","kind":"published_replay","result":{"Ok":"Promote"},"study":"poly03"}
+{"arm":"laguerre-cold","kind":"published_replay","result":{"Ok":"Block"},"study":"poly03"}
+{"arm":"laguerre-warm","kind":"published_replay","result":{"Ok":"Inconclusive"},"study":"poly03"}
+{"arm":"transactional-certified-p1","kind":"published_replay","result":{"Ok":"Block"},"study":"hom06"}
+{"arm":"transactional-certified-p2","kind":"published_replay","result":{"Ok":"Block"},"study":"hom06"}
+{"arm":"transactional-certified-p4","kind":"published_replay","result":{"Ok":"Block"},"study":"hom06"}
+{"arm":"transactional-certified-p8","kind":"published_replay","result":{"Ok":"Block"},"study":"hom06"}

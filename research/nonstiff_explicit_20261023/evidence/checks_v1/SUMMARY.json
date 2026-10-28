@@ -1,0 +1,55 @@
+{
+  "source_commit": "c0f504e2b548c8d4ee114ebd7a71634ea7352ed9",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "ncp_used": false,
+  "environment": {
+    "CARGO_BUILD_JOBS": "2",
+    "CARGO_HOME": "/workspace/scratch/0dc1e721cf82/task_runtime/cargo",
+    "CARGO_TARGET_DIR": "/workspace/scratch/0dc1e721cf82/task_runtime/target",
+    "CARGO_PROFILE_DEV_DEBUG": "0",
+    "CARGO_PROFILE_TEST_DEBUG": "0"
+  },
+  "results": [
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "dopri5_contracts",
+        "--test",
+        "dopri5_allocation"
+      ],
+      "exit_code": 0,
+      "seconds": 173.84748969899374,
+      "passed": 13,
+      "failed": 0,
+      "log": "00.log",
+      "log_sha256": "45d544f074ff74fa790ef2d26139a6112e7c3695a455f6d19991ecf6255697e9"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "--test",
+        "explicit_contracts",
+        "--test",
+        "explicit_ensemble_contracts"
+      ],
+      "exit_code": 0,
+      "seconds": 15.596928483006195,
+      "passed": 12,
+      "failed": 0,
+      "log": "01.log",
+      "log_sha256": "2596c8252ca36bf762ecf4cac627861ca1ff75e9222a1ef29dd317fc8c6781a0"
+    }
+  ],
+  "all_passed": true
+}

@@ -1,0 +1,459 @@
+   Compiling version_check v0.9.5
+   Compiling proc-macro2 v1.0.107
+   Compiling unicode-ident v1.0.24
+   Compiling quote v1.0.47
+   Compiling autocfg v1.5.1
+   Compiling num-traits v0.2.19
+   Compiling bytemuck v1.25.2
+   Compiling nano-gemm-codegen v0.2.1
+   Compiling num-complex v0.4.6
+   Compiling bitflags v2.13.1
+   Compiling paste v1.0.15
+   Compiling libm v0.2.16
+   Compiling raw-cpuid v11.6.0
+   Compiling pulp v0.22.3
+   Compiling cfg-if v1.0.4
+   Compiling pulp-wasm-simd-flag v0.1.1
+   Compiling reborrow v0.5.5
+   Compiling dyn-stack-macros v0.1.3
+   Compiling dyn-stack v0.13.2
+   Compiling once_cell v1.21.4
+   Compiling syn v1.0.109
+   Compiling seq-macro v0.3.6
+   Compiling generic-array v0.14.7
+   Compiling nano-gemm-core v0.2.1
+   Compiling gemm-common v0.19.0
+   Compiling libc v0.2.189
+   Compiling typenum v1.20.1
+   Compiling interpol v0.2.1
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling syn v3.0.3
+   Compiling syn v2.0.119
+   Compiling crossbeam-utils v0.8.22
+   Compiling defer v0.2.1
+   Compiling serde_core v1.0.229
+   Compiling private-gemm-x86 v0.1.20
+   Compiling equator-macro v0.2.1
+   Compiling crossbeam-epoch v0.9.20
+   Compiling zmij v1.0.23
+   Compiling num_cpus v1.17.0
+   Compiling equator v0.2.2
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling gemm-f64 v0.19.0
+   Compiling gemm-f32 v0.19.0
+   Compiling gemm-c64 v0.19.0
+   Compiling gemm-c32 v0.19.0
+   Compiling qd v0.8.0
+   Compiling generativity v1.2.1
+   Compiling serde v1.0.229
+   Compiling crossbeam-deque v0.8.7
+   Compiling serde_json v1.0.151
+   Compiling equator-macro v0.6.0
+   Compiling thiserror v2.0.19
+   Compiling equator v0.6.0
+   Compiling faer-traits v0.24.0
+   Compiling gemm v0.19.0
+   Compiling digest v0.10.7
+   Compiling nano-gemm v0.2.2
+   Compiling thiserror-impl v2.0.19
+   Compiling serde_derive v1.0.229
+   Compiling itoa v1.0.18
+   Compiling memchr v2.8.3
+   Compiling rayon-core v1.13.0
+   Compiling cpufeatures v0.2.17
+   Compiling sha2 v0.10.9
+   Compiling faer v0.24.4
+   Compiling hex v0.4.3
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-joint/crates/rodas5p-integrators)
+   Compiling either v1.17.0
+   Compiling rayon v1.12.0
+   Compiling rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-joint/crates/rodas5p-core)
+   Compiling rodas5p-krylov v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-joint/crates/rodas5p-krylov)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-joint/crates/vigilode)
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/execution_policy.rs:45:5
+    |
+ 45 |     pub workload: WorkloadKey,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: the lint level is defined here
+   --> crates/vigilode/src/lib.rs:160:9
+    |
+160 | #![warn(missing_docs)]
+    |         ^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:46:5
+   |
+46 |     pub comparison: SelectionIdentity,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/execution_policy.rs:166:5
+    |
+166 |     pub observed_dispatches: u64,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/execution_policy.rs:167:5
+    |
+167 |     pub drift_invalidations: u64,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:13:5
+   |
+13 |     pub model_epoch: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:14:5
+   |
+14 |     pub provider_epoch: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:15:5
+   |
+15 |     pub chart_epoch: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:16:5
+   |
+16 |     pub mesh_epoch: u64,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:17:5
+   |
+17 |     pub physical_norm_epoch: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:18:5
+   |
+18 |     pub tolerance_epoch: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:21:5
+   |
+21 |     pub environment_epoch: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:27:5
+   |
+27 |     Work,
+   |     ^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:28:5
+   |
+28 |     Seconds,
+   |     ^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:34:5
+   |
+34 |     ObservedWork,
+   |     ^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:35:5
+   |
+35 |     EmpiricalTiming,
+   |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+  --> crates/vigilode/src/selection_evidence.rs:41:1
+   |
+41 | pub struct CostInterval {
+   | ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:42:5
+   |
+42 |     pub lower: f64,
+   |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:43:5
+   |
+43 |     pub upper: f64,
+   |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> crates/vigilode/src/selection_evidence.rs:46:5
+   |
+46 |     pub fn valid(self) -> bool {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:57:5
+   |
+57 |     pub identity: SelectionIdentity,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:58:5
+   |
+58 |     pub cost: CostInterval,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:59:5
+   |
+59 |     pub unit: CostUnit,
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:60:5
+   |
+60 |     pub kind: CostEvidenceKind,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an enum
+  --> crates/vigilode/src/selection_evidence.rs:68:1
+   |
+68 | pub enum CostIncomparability {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:69:5
+   |
+69 |     IdentityMismatch,
+   |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:70:5
+   |
+70 |     UnitMismatch,
+   |     ^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:71:5
+   |
+71 |     OutputNotQualified,
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:72:5
+   |
+72 |     InvalidInterval,
+   |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:73:5
+   |
+73 |     InvalidPolicy,
+   |     ^^^^^^^^^^^^^
+
+warning: missing documentation for an enum
+  --> crates/vigilode/src/selection_evidence.rs:77:1
+   |
+77 | pub enum CostComparison {
+   | ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:78:5
+   |
+78 |     PreferCandidate,
+   |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:79:5
+   |
+79 |     RetainIncumbent,
+   |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:80:5
+   |
+80 |     Incomparable(CostIncomparability),
+   |     ^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/switching.rs:59:5
+   |
+59 |     InitialComparison,
+   |     ^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/switching.rs:60:5
+   |
+60 |     StableEvidenceBackoff,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/switching.rs:61:5
+   |
+61 |     BackoffExpired,
+   |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/switching.rs:62:5
+   |
+62 |     SentinelExpired,
+   |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/switching.rs:63:5
+   |
+63 |     WorkDeteriorated,
+   |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/switching.rs:64:5
+   |
+64 |     RejectionDeteriorated,
+   |     ^^^^^^^^^^^^^^^^^^^^^
+
+warning: `vigilode` (lib) generated 39 warnings
+warning: `rodas5p-integrators` (lib) generated 1 warning
+error[E0283]: type annotations needed
+   --> crates/vigilode/tests/adaptive_entry_contracts.rs:105:56
+    |
+105 |         new.stats.segments.iter().map(|s| s.rhs_calls).sum()
+    |                                                        ^^^ cannot infer type of the type parameter `S` declared on the method `sum`
+    |
+    = note: cannot satisfy `_: Sum<u64>`
+    = help: the following types implement trait `Sum<A>`:
+              `Duration` implements `Sum<&'a Duration>`
+              `Duration` implements `Sum`
+              `Option<T>` implements `Sum<Option<U>>`
+              `Result<T, E>` implements `Sum<Result<U, E>>`
+              `Saturating<u128>` implements `Sum<&'a Saturating<u128>>`
+              `Saturating<u128>` implements `Sum`
+              `Saturating<u16>` implements `Sum<&'a Saturating<u16>>`
+              `Saturating<u16>` implements `Sum`
+            and 90 others
+note: required by a bound in `std::iter::Iterator::sum`
+   --> /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/traits/iterator.rs:3594:4
+help: consider specifying the generic argument
+    |
+105 |         new.stats.segments.iter().map(|s| s.rhs_calls).sum::<S>()
+    |                                                           +++++
+
+error[E0283]: type annotations needed
+   --> crates/vigilode/tests/adaptive_entry_contracts.rs:105:56
+    |
+103 | /     assert_eq!(
+104 | |         new.stats.rhs_calls,
+105 | |         new.stats.segments.iter().map(|s| s.rhs_calls).sum()
+    | |                                                        ^^^ cannot infer type of the type parameter `S` declared on the method `sum`
+106 | |     );
+    | |_____- type must be known at this point
+    |
+    = note: multiple `impl`s satisfying `u64: PartialEq<_>` found in the following crates: `core`, `serde_json`:
+            - impl PartialEq for u64;
+            - impl PartialEq<serde_json::value::Value> for u64;
+help: consider specifying the generic argument
+    |
+105 |         new.stats.segments.iter().map(|s| s.rhs_calls).sum::<S>()
+    |                                                           +++++
+
+error[E0283]: type annotations needed
+   --> crates/vigilode/tests/adaptive_entry_contracts.rs:149:57
+    |
+149 |             r.stats.segments.iter().map(|s| s.attempts).sum()
+    |                                                         ^^^ cannot infer type of the type parameter `S` declared on the method `sum`
+    |
+    = note: cannot satisfy `_: Sum<usize>`
+    = help: the following types implement trait `Sum<A>`:
+              `Duration` implements `Sum<&'a Duration>`
+              `Duration` implements `Sum`
+              `Option<T>` implements `Sum<Option<U>>`
+              `Result<T, E>` implements `Sum<Result<U, E>>`
+              `Saturating<u128>` implements `Sum<&'a Saturating<u128>>`
+              `Saturating<u128>` implements `Sum`
+              `Saturating<u16>` implements `Sum<&'a Saturating<u16>>`
+              `Saturating<u16>` implements `Sum`
+            and 90 others
+note: required by a bound in `std::iter::Iterator::sum`
+   --> /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/traits/iterator.rs:3594:4
+help: consider specifying the generic argument
+    |
+149 |             r.stats.segments.iter().map(|s| s.attempts).sum::<S>()
+    |                                                            +++++
+
+error[E0283]: type annotations needed
+   --> crates/vigilode/tests/adaptive_entry_contracts.rs:149:57
+    |
+147 | /         assert_eq!(
+148 | |             r.stats.attempts,
+149 | |             r.stats.segments.iter().map(|s| s.attempts).sum()
+    | |                                                         ^^^ cannot infer type of the type parameter `S` declared on the method `sum`
+150 | |         );
+    | |_________- type must be known at this point
+    |
+    = note: multiple `impl`s satisfying `usize: PartialEq<_>` found in the following crates: `core`, `serde_json`:
+            - impl PartialEq for usize;
+            - impl PartialEq<serde_json::value::Value> for usize;
+help: consider specifying the generic argument
+    |
+149 |             r.stats.segments.iter().map(|s| s.attempts).sum::<S>()
+    |                                                            +++++
+
+error[E0283]: type annotations needed
+   --> crates/vigilode/tests/adaptive_entry_contracts.rs:192:53
+    |
+192 |         r.stats.segments.iter().map(|s| s.attempts).sum()
+    |                                                     ^^^ cannot infer type of the type parameter `S` declared on the method `sum`
+    |
+    = note: cannot satisfy `_: Sum<usize>`
+    = help: the following types implement trait `Sum<A>`:
+              `Duration` implements `Sum<&'a Duration>`
+              `Duration` implements `Sum`
+              `Option<T>` implements `Sum<Option<U>>`
+              `Result<T, E>` implements `Sum<Result<U, E>>`
+              `Saturating<u128>` implements `Sum<&'a Saturating<u128>>`
+              `Saturating<u128>` implements `Sum`
+              `Saturating<u16>` implements `Sum<&'a Saturating<u16>>`
+              `Saturating<u16>` implements `Sum`
+            and 90 others
+note: required by a bound in `std::iter::Iterator::sum`
+   --> /rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/traits/iterator.rs:3594:4
+help: consider specifying the generic argument
+    |
+192 |         r.stats.segments.iter().map(|s| s.attempts).sum::<S>()
+    |                                                        +++++
+
+error[E0283]: type annotations needed
+   --> crates/vigilode/tests/adaptive_entry_contracts.rs:192:53
+    |
+190 | /     assert_eq!(
+191 | |         r.stats.attempts,
+192 | |         r.stats.segments.iter().map(|s| s.attempts).sum()
+    | |                                                     ^^^ cannot infer type of the type parameter `S` declared on the method `sum`
+193 | |     );
+    | |_____- type must be known at this point
+    |
+    = note: multiple `impl`s satisfying `usize: PartialEq<_>` found in the following crates: `core`, `serde_json`:
+            - impl PartialEq for usize;
+            - impl PartialEq<serde_json::value::Value> for usize;
+help: consider specifying the generic argument
+    |
+192 |         r.stats.segments.iter().map(|s| s.attempts).sum::<S>()
+    |                                                        +++++
+
+For more information about this error, try `rustc --explain E0283`.
+error: could not compile `vigilode` (test "adaptive_entry_contracts") due to 6 previous errors
+warning: build failed, waiting for other jobs to finish...

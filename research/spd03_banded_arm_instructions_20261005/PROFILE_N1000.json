@@ -1,0 +1,2015 @@
+{
+ "schema": "vigilode-speed-profile-v1",
+ "label": "SPD03 banded arms at n = 1000",
+ "valgrind": "valgrind-3.22.0",
+ "rtol": 1e-06,
+ "binary_sha256": "2e6a119e5a61a84ddfb425bf9651f1d8052ca03a84e2b04a8c621cfc893cfe92",
+ "protocol": "callgrind Ir of stiff-profile-run with 2 minus 1 repetitions, divided by attempts of the 1-repetition run; 1-repetition run repeated as determinism check; no wall clock",
+ "cache_sim": false,
+ "entries": [
+  {
+   "arm": "rodas5p-fast-banded",
+   "problem": "brusselator-1d-500",
+   "rtol": 1e-06,
+   "success": true,
+   "attempts": 92,
+   "accepted_steps": 82,
+   "rejected_steps": 10,
+   "counters": {
+    "direct_factorizations": 92,
+    "direct_solve_calls": 736,
+    "jacobian_builds": 82,
+    "linear_solves": 736,
+    "nonlinear_iterations": 0,
+    "rhs_evaluations": 726
+   },
+   "banded_work": {
+    "factor_operations": 2111860,
+    "solve_operations": 9548864,
+    "stored_slots": 12000
+   },
+   "final_state_sha256": "0bc64820a8e99fb02774aed124882b4e8edd2d7b144705165e78c28437149fe7",
+   "ir_run1": 226574190,
+   "ir_run2": 450928363,
+   "ir_run1_repeat": 226574190,
+   "callgrind_deterministic": true,
+   "ir_per_run": 224354173,
+   "ir_per_attempt": 2438632.315217391,
+   "ir_per_accepted_step": 2736026.5,
+   "categories_by_file": {
+    "rust-std": {
+     "ir": 111716533,
+     "share": 0.4979472033265902
+    },
+    "driver-fast": {
+     "ir": 80939215,
+     "share": 0.36076536450249136
+    },
+    "problem-user-code": {
+     "ir": 21622252,
+     "share": 0.09637552852649636
+    },
+    "glibc-string": {
+     "ir": 9926959,
+     "share": 0.0442468212971461
+    },
+    "output-and-clock": {
+     "ir": 71368,
+     "share": 0.0003181041789670656
+    },
+    "adaptive-control": {
+     "ir": 29629,
+     "share": 0.00013206351191871968
+    },
+    "glibc-malloc": {
+     "ir": 19612,
+     "share": 8.741535643288436e-05
+    },
+    "problem-wrapper": {
+     "ir": 14520,
+     "share": 6.471909929662863e-05
+    },
+    "glibc-libm": {
+     "ir": 11776,
+     "share": 5.2488437556274026e-05
+    },
+    "integrators-other": {
+     "ir": 1534,
+     "share": 6.83740346563556e-06
+    },
+    "core-matrix-operator": {
+     "ir": 336,
+     "share": 1.4976320498393404e-06
+    },
+    "other": {
+     "ir": 304,
+     "share": 1.3550004260451174e-06
+    },
+    "glibc-other": {
+     "ir": 126,
+     "share": 5.616120186897526e-07
+    },
+    "cli-other": {
+     "ir": 5,
+     "share": 2.2286191217847328e-08
+    },
+    "core-other": {
+     "ir": 4,
+     "share": 1.782895297427786e-08
+    }
+   },
+   "named_coverage_by_file": 0.9999986449995739,
+   "categories_by_function": {
+    "driver-fast": {
+     "ir": 186285056,
+     "share": 0.8303168758086795
+    },
+    "problem-user-code": {
+     "ir": 22275942,
+     "share": 0.09928918059393528
+    },
+    "glibc-string": {
+     "ir": 9926959,
+     "share": 0.0442468212971461
+    },
+    "problem-wrapper": {
+     "ir": 5111040,
+     "share": 0.02278112295241328
+    },
+    "output-and-clock": {
+     "ir": 675288,
+     "share": 0.003009919499023537
+    },
+    "adaptive-control": {
+     "ir": 30704,
+     "share": 0.00013685504303055686
+    },
+    "glibc-malloc": {
+     "ir": 18821,
+     "share": 8.388968098222091e-05
+    },
+    "cli-other": {
+     "ir": 14128,
+     "share": 6.297186190514942e-05
+    },
+    "glibc-libm": {
+     "ir": 11776,
+     "share": 5.2488437556274026e-05
+    },
+    "rust-std": {
+     "ir": 3238,
+     "share": 1.4432537432677928e-05
+    },
+    "other": {
+     "ir": 1221,
+     "share": 5.4422878953983175e-06
+    }
+   },
+   "named_coverage_by_function": 0.9999945577121045,
+   "top_functions": [
+    {
+     "function": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+     "ir": 186281961,
+     "share": 0.8303030806563156
+    },
+    {
+     "function": "rodas5p::stiff_benchmark::brusselator_problem::{{closure}}",
+     "ir": 20344698,
+     "share": 0.09068116597947122
+    },
+    {
+     "function": "__memset_avx2_unaligned_erms",
+     "ir": 8631340,
+     "share": 0.03847193874125087
+    },
+    {
+     "function": "rodas5p_integrators::problem::OdeProblem::eval_rhs_into",
+     "ir": 5111040,
+     "share": 0.02278112295241328
+    },
+    {
+     "function": "rodas5p::stiff_benchmark::brusselator_band::{{closure}}",
+     "ir": 1931018,
+     "share": 0.008607007278621022
+    },
+    {
+     "function": "__memcpy_avx_unaligned_erms",
+     "ir": 1295605,
+     "share": 0.005774820154559817
+    },
+    {
+     "function": "rodas5p_integrators::output::OutputCollector::accept",
+     "ir": 574820,
+     "share": 0.0025621096871686
+    },
+    {
+     "function": "rodas5p_integrators::output::land_capped",
+     "ir": 46921,
+     "share": 0.00020913807562652288
+    },
+    {
+     "function": "rodas5p_integrators::output::step_to",
+     "ir": 29862,
+     "share": 0.00013310204842947138
+    },
+    {
+     "function": "rodas5p_integrators::adaptive::AdaptiveStepConfig::validate",
+     "ir": 14880,
+     "share": 6.632370506431365e-05
+    },
+    {
+     "function": "rodas5p::main",
+     "ir": 14128,
+     "share": 6.297186190514942e-05
+    },
+    {
+     "function": "__ieee754_pow_fma",
+     "ir": 9752,
+     "share": 4.3466987351289426e-05
+    },
+    {
+     "function": "rodas5p_integrators::output::OutputCollector::limit_step",
+     "ir": 8556,
+     "share": 3.813613041198035e-05
+    },
+    {
+     "function": "rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor_prevalidated",
+     "ir": 8270,
+     "share": 3.686136027431948e-05
+    },
+    {
+     "function": "_int_malloc",
+     "ir": 7591,
+     "share": 3.383489550693581e-05
+    },
+    {
+     "function": "rodas5p_integrators::adaptive::adaptive_next_step_after_attempt",
+     "ir": 7526,
+     "share": 3.3545175021103796e-05
+    },
+    {
+     "function": "rodas5p_integrators::output::OutputCollector::new",
+     "ir": 7094,
+     "share": 3.161964809988179e-05
+    },
+    {
+     "function": "rodas5p_integrators::output::adaptive_end_step",
+     "ir": 3884,
+     "share": 1.7311913338023803e-05
+    },
+    {
+     "function": "rodas5p_integrators::output::OutputCollector::accept_prechecked",
+     "ir": 2839,
+     "share": 1.2654099373493713e-05
+    },
+    {
+     "function": "rodas5p_integrators::rodas5p_fast::Workspace::with_dense_size",
+     "ir": 2813,
+     "share": 1.2538211179160907e-05
+    },
+    {
+     "function": "_int_free",
+     "ir": 2708,
+     "share": 1.2070201163586112e-05
+    },
+    {
+     "function": "<alloc::vec::Vec<T> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<T,I>>::from_iter",
+     "ir": 2486,
+     "share": 1.1080694273513692e-05
+    },
+    {
+     "function": "pow@@GLIBC_2.29",
+     "ir": 2024,
+     "share": 9.021450204984599e-06
+    },
+    {
+     "function": "_int_free_merge_chunk",
+     "ir": 1669,
+     "share": 7.439130628517438e-06
+    },
+    {
+     "function": "malloc",
+     "ir": 1321,
+     "share": 5.888011719755264e-06
+    },
+    {
+     "function": "free",
+     "ir": 1240,
+     "share": 5.5269754220261375e-06
+    },
+    {
+     "function": "rodas5p_integrators::output::require_progress",
+     "ir": 1196,
+     "share": 5.3308569393090805e-06
+    },
+    {
+     "function": "unlink_chunk.isra.0",
+     "ir": 1122,
+     "share": 5.00102130928494e-06
+    },
+    {
+     "function": "malloc_consolidate",
+     "ir": 1064,
+     "share": 4.742501491157911e-06
+    },
+    {
+     "function": "calloc",
+     "ir": 781,
+     "share": 3.4811030682277525e-06
+    }
+   ],
+   "top_files": [
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "ir": 80939215,
+     "share": 0.36076536450249136
+    },
+    {
+     "file": "crates/rodas5p-cli/src/stiff_benchmark.rs",
+     "ir": 21622252,
+     "share": 0.09637552852649636
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/cmp.rs",
+     "ir": 19558553,
+     "share": 0.0871771304204803
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/range.rs",
+     "ir": 19183380,
+     "share": 0.08550489497692561
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/slice/index.rs",
+     "ir": 18287127,
+     "share": 0.08151008182941175
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/range.rs",
+     "ir": 14945986,
+     "share": 0.06661782038705383
+    },
+    {
+     "file": "./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S",
+     "ir": 8631340,
+     "share": 0.03847193874125087
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/num/uint_macros.rs",
+     "ir": 7019531,
+     "share": 0.031287722025121416
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/num/f64.rs",
+     "ir": 6879709,
+     "share": 0.030664502059429045
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/slice/iter/macros.rs",
+     "ir": 6569896,
+     "share": 0.029283591707474056
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/adapters/zip.rs",
+     "ir": 4854748,
+     "share": 0.021638768448492374
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/slice/mod.rs",
+     "ir": 3683390,
+     "share": 0.016417746773981334
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/arith.rs",
+     "ir": 3036000,
+     "share": 0.013532175307476897
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/internal_macros.rs",
+     "ir": 3036000,
+     "share": 0.013532175307476897
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ptr/mod.rs",
+     "ir": 2949653,
+     "share": 0.013147306156859405
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ptr/non_null.rs",
+     "ir": 1649097,
+     "share": 0.007350418215755675
+    },
+    {
+     "file": "./string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S",
+     "ir": 1295605,
+     "share": 0.005774820154559817
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/output.rs",
+     "ir": 71368,
+     "share": 0.0003181041789670656
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/adaptive.rs",
+     "ir": 29629,
+     "share": 0.00013206351191871968
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/alloc/src/vec/mod.rs",
+     "ir": 21566,
+     "share": 9.61247999608191e-05
+    },
+    {
+     "file": "./malloc/./malloc/malloc.c",
+     "ir": 19286,
+     "share": 8.596229676548071e-05
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/problem.rs",
+     "ir": 14520,
+     "share": 6.471909929662863e-05
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/result.rs",
+     "ir": 12871,
+     "share": 5.736911343298259e-05
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/slice/cmp.rs",
+     "ir": 12043,
+     "share": 5.367852016730707e-05
+    },
+    {
+     "file": "./math/../sysdeps/ieee754/dbl-64/e_pow.c",
+     "ir": 9292,
+     "share": 4.141665775924747e-05
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/alloc/src/raw_vec/mod.rs",
+     "ir": 6971,
+     "share": 3.107140779592274e-05
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/alloc/src/sync.rs",
+     "ir": 4783,
+     "share": 2.1318970518992755e-05
+    },
+    {
+     "file": "./math/./w_pow_template.c",
+     "ir": 2024,
+     "share": 9.021450204984599e-06
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/option.rs",
+     "ir": 2015,
+     "share": 8.981335060792473e-06
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/lib.rs",
+     "ir": 1534,
+     "share": 6.83740346563556e-06
+    }
+   ],
+   "top_lines": [
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 184,
+     "ir": 16254836,
+     "share": 0.07245167666214972
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 353,
+     "ir": 14683200,
+     "share": 0.06544652057797917
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/slice/index.rs",
+     "line": 272,
+     "ir": 14427809,
+     "share": 0.06430818204571573
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/range.rs",
+     "line": 563,
+     "ir": 14135248,
+     "share": 0.0630041679679388
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/cmp.rs",
+     "line": 1908,
+     "ir": 13840283,
+     "share": 0.06168943868942433
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 0,
+     "ir": 8826501,
+     "share": 0.03934181781410413
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 345,
+     "ir": 8818752,
+     "share": 0.03930727867495471
+    },
+    {
+     "file": "./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S",
+     "line": 328,
+     "ir": 8628337,
+     "share": 0.03845855365480543
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/range.rs",
+     "line": 1169,
+     "ir": 7621648,
+     "share": 0.03397150094462473
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/num/uint_macros.rs",
+     "line": 763,
+     "ir": 6256579,
+     "share": 0.027887063192713602
+    },
+    {
+     "file": "crates/rodas5p-cli/src/stiff_benchmark.rs",
+     "line": 282,
+     "ir": 6172452,
+     "share": 0.027512089110996833
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/cmp.rs",
+     "line": 1069,
+     "ir": 5716236,
+     "share": 0.025478625708468546
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/range.rs",
+     "line": 0,
+     "ir": 5048132,
+     "share": 0.022500727008986813
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/num/f64.rs",
+     "line": 583,
+     "ir": 4937855,
+     "share": 0.022009196147200705
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/adapters/zip.rs",
+     "line": 310,
+     "ir": 4525664,
+     "share": 0.02017196265834556
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 351,
+     "ir": 4416000,
+     "share": 0.01968316408360276
+    },
+    {
+     "file": "crates/rodas5p-cli/src/stiff_benchmark.rs",
+     "line": 283,
+     "ir": 4356000,
+     "share": 0.019415729788988593
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 693,
+     "ir": 3864000,
+     "share": 0.017222768573152414
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 708,
+     "ir": 3864000,
+     "share": 0.017222768573152414
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/range.rs",
+     "line": 772,
+     "ir": 3815105,
+     "share": 0.017004831909233086
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 356,
+     "ir": 3680000,
+     "share": 0.016402636736335633
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/slice/iter/macros.rs",
+     "line": 315,
+     "ir": 3274004,
+     "share": 0.014593015838399405
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/arith.rs",
+     "line": 352,
+     "ir": 2944000,
+     "share": 0.013122109389068506
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/internal_macros.rs",
+     "line": 39,
+     "ir": 2944000,
+     "share": 0.013122109389068506
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 237,
+     "ir": 2936272,
+     "share": 0.013087663851922202
+    },
+    {
+     "file": "crates/rodas5p-cli/src/stiff_benchmark.rs",
+     "line": 275,
+     "ir": 2898192,
+     "share": 0.012917932219607076
+    },
+    {
+     "file": "crates/rodas5p-cli/src/stiff_benchmark.rs",
+     "line": 280,
+     "ir": 2896740,
+     "share": 0.012911460309677414
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 350,
+     "ir": 2208000,
+     "share": 0.00984158204180138
+    },
+    {
+     "file": "crates/rodas5p-cli/src/stiff_benchmark.rs",
+     "line": 271,
+     "ir": 2184534,
+     "share": 0.009736988489177778
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/slice/index.rs",
+     "line": 278,
+     "ir": 2112136,
+     "share": 0.009414293354819837
+    }
+   ],
+   "calls": {
+    "watched_callees": {
+     "rodas5p_integrators::output::step_to": {
+      "calls": 553,
+      "per_attempt": 6.010869565217392
+     },
+     "rodas5p_integrators::output::land_capped": {
+      "calls": 276,
+      "per_attempt": 3.0
+     },
+     "rodas5p_integrators::adaptive::AdaptiveStepConfig::validate": {
+      "calls": 93,
+      "per_attempt": 1.0108695652173914
+     },
+     "rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor_prevalidated": {
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     "rodas5p_integrators::output::adaptive_end_step": {
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     "rodas5p_integrators::output::OutputCollector::limit_step": {
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     "rodas5p_integrators::adaptive::adaptive_next_step_after_attempt": {
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     "rodas5p_integrators::output::require_progress": {
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     "rodas5p_integrators::output::OutputCollector::accept": {
+      "calls": 82,
+      "per_attempt": 0.8913043478260869
+     },
+     "rodas5p_integrators::output::OutputCollector::accept_prechecked": {
+      "calls": 82,
+      "per_attempt": 0.8913043478260869
+     },
+     "rodas5p_integrators::output::OutputSchedule::new": {
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     "rodas5p_integrators::output::OutputCollector::new": {
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     "rodas5p_integrators::output::OutputCollector::finish": {
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     "core::ptr::drop_in_place<rodas5p_integrators::adaptive::AdaptiveRunDiagnostics>": {
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     "rodas5p_integrators::output::OutputSchedule::validate_span": {
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     }
+    },
+    "top_callees": [
+     {
+      "function": "__memcpy_avx_unaligned_erms",
+      "calls": 1671,
+      "per_attempt": 18.16304347826087
+     },
+     {
+      "function": "rodas5p_integrators::problem::OdeProblem::eval_rhs_into",
+      "calls": 726,
+      "per_attempt": 7.891304347826087
+     },
+     {
+      "function": "rodas5p::stiff_benchmark::brusselator_problem::{{closure}}",
+      "calls": 726,
+      "per_attempt": 7.891304347826087
+     },
+     {
+      "function": "rodas5p_integrators::output::step_to",
+      "calls": 553,
+      "per_attempt": 6.010869565217392
+     },
+     {
+      "function": "rodas5p_integrators::output::land_capped",
+      "calls": 276,
+      "per_attempt": 3.0
+     },
+     {
+      "function": "__memset_avx2_unaligned_erms",
+      "calls": 186,
+      "per_attempt": 2.0217391304347827
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::AdaptiveStepConfig::validate",
+      "calls": 93,
+      "per_attempt": 1.0108695652173914
+     },
+     {
+      "function": "pow@@GLIBC_2.29",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor_prevalidated",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "function": "rodas5p_integrators::output::adaptive_end_step",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "function": "rodas5p_integrators::output::OutputCollector::limit_step",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::adaptive_next_step_after_attempt",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "function": "rodas5p_integrators::output::require_progress",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "function": "__ieee754_pow_fma",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "function": "0x000000000488e370",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "function": "rodas5p::stiff_benchmark::brusselator_band::{{closure}}",
+      "calls": 82,
+      "per_attempt": 0.8913043478260869
+     },
+     {
+      "function": "rodas5p_integrators::output::OutputCollector::accept",
+      "calls": 82,
+      "per_attempt": 0.8913043478260869
+     },
+     {
+      "function": "rodas5p_integrators::output::OutputCollector::accept_prechecked",
+      "calls": 82,
+      "per_attempt": 0.8913043478260869
+     },
+     {
+      "function": "_int_free",
+      "calls": 48,
+      "per_attempt": 0.5217391304347826
+     },
+     {
+      "function": "unlink_chunk.isra.0",
+      "calls": 44,
+      "per_attempt": 0.4782608695652174
+     },
+     {
+      "function": "free",
+      "calls": 40,
+      "per_attempt": 0.43478260869565216
+     },
+     {
+      "function": "_int_malloc",
+      "calls": 35,
+      "per_attempt": 0.3804347826086957
+     },
+     {
+      "function": "malloc",
+      "calls": 29,
+      "per_attempt": 0.31521739130434784
+     },
+     {
+      "function": "_int_free_merge_chunk",
+      "calls": 23,
+      "per_attempt": 0.25
+     },
+     {
+      "function": "_int_free_maybe_consolidate",
+      "calls": 23,
+      "per_attempt": 0.25
+     },
+     {
+      "function": "<alloc::vec::Vec<T> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<T,I>>::from_iter",
+      "calls": 16,
+      "per_attempt": 0.17391304347826086
+     },
+     {
+      "function": "calloc",
+      "calls": 11,
+      "per_attempt": 0.11956521739130435
+     },
+     {
+      "function": "0x000000000498f740",
+      "calls": 11,
+      "per_attempt": 0.11956521739130435
+     },
+     {
+      "function": "realloc",
+      "calls": 9,
+      "per_attempt": 0.09782608695652174
+     },
+     {
+      "function": "alloc::raw_vec::RawVecInner<A>::finish_grow",
+      "calls": 9,
+      "per_attempt": 0.09782608695652174
+     },
+     {
+      "function": "_int_realloc",
+      "calls": 9,
+      "per_attempt": 0.09782608695652174
+     },
+     {
+      "function": "alloc::raw_vec::RawVecInner<A>::reserve::do_reserve_and_handle",
+      "calls": 7,
+      "per_attempt": 0.07608695652173914
+     },
+     {
+      "function": "__rustc::__rust_alloc_zeroed",
+      "calls": 7,
+      "per_attempt": 0.07608695652173914
+     },
+     {
+      "function": "0x000000000498f6b0",
+      "calls": 7,
+      "per_attempt": 0.07608695652173914
+     },
+     {
+      "function": "alloc_perturb",
+      "calls": 7,
+      "per_attempt": 0.07608695652173914
+     },
+     {
+      "function": "sbrk",
+      "calls": 4,
+      "per_attempt": 0.043478260869565216
+     },
+     {
+      "function": "malloc_consolidate",
+      "calls": 4,
+      "per_attempt": 0.043478260869565216
+     },
+     {
+      "function": "__glibc_morecore",
+      "calls": 4,
+      "per_attempt": 0.043478260869565216
+     },
+     {
+      "function": "brk",
+      "calls": 2,
+      "per_attempt": 0.021739130434782608
+     },
+     {
+      "function": "alloc::raw_vec::RawVec<T,A>::grow_one",
+      "calls": 2,
+      "per_attempt": 0.021739130434782608
+     }
+    ],
+    "watched_pairs": [
+     {
+      "caller": "rodas5p_integrators::output::land_capped",
+      "callee": "rodas5p_integrators::output::step_to",
+      "calls": 552,
+      "per_attempt": 6.0
+     },
+     {
+      "caller": "rodas5p_integrators::output::OutputCollector::limit_step",
+      "callee": "rodas5p_integrators::output::land_capped",
+      "calls": 184,
+      "per_attempt": 2.0
+     },
+     {
+      "caller": "rodas5p_integrators::adaptive::adaptive_next_step_after_attempt",
+      "callee": "rodas5p_integrators::adaptive::AdaptiveStepConfig::validate",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "caller": "rodas5p_integrators::adaptive::adaptive_next_step_after_attempt",
+      "callee": "rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor_prevalidated",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "caller": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+      "callee": "rodas5p_integrators::output::adaptive_end_step",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "caller": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+      "callee": "rodas5p_integrators::output::OutputCollector::limit_step",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "caller": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+      "callee": "rodas5p_integrators::adaptive::adaptive_next_step_after_attempt",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "caller": "rodas5p_integrators::output::OutputCollector::limit_step",
+      "callee": "rodas5p_integrators::output::require_progress",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "caller": "rodas5p_integrators::output::adaptive_end_step",
+      "callee": "rodas5p_integrators::output::land_capped",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "caller": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+      "callee": "rodas5p_integrators::output::OutputCollector::accept",
+      "calls": 82,
+      "per_attempt": 0.8913043478260869
+     },
+     {
+      "caller": "rodas5p_integrators::output::OutputCollector::accept",
+      "callee": "rodas5p_integrators::output::OutputCollector::accept_prechecked",
+      "calls": 82,
+      "per_attempt": 0.8913043478260869
+     },
+     {
+      "caller": "rodas5p::stiff_benchmark::run_banded",
+      "callee": "rodas5p_integrators::output::OutputSchedule::new",
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     {
+      "caller": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+      "callee": "rodas5p_integrators::adaptive::AdaptiveStepConfig::validate",
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     {
+      "caller": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+      "callee": "rodas5p_integrators::output::step_to",
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     {
+      "caller": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+      "callee": "rodas5p_integrators::output::OutputCollector::new",
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     {
+      "caller": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+      "callee": "rodas5p_integrators::output::OutputCollector::finish",
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     {
+      "caller": "rodas5p::main",
+      "callee": "core::ptr::drop_in_place<rodas5p_integrators::adaptive::AdaptiveRunDiagnostics>",
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     {
+      "caller": "rodas5p_integrators::output::OutputCollector::new",
+      "callee": "rodas5p_integrators::output::OutputSchedule::validate_span",
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     }
+    ]
+   }
+  },
+  {
+   "arm": "rodas5p-fast-banded-slices",
+   "problem": "brusselator-1d-500",
+   "rtol": 1e-06,
+   "success": true,
+   "attempts": 92,
+   "accepted_steps": 82,
+   "rejected_steps": 10,
+   "counters": {
+    "direct_factorizations": 92,
+    "direct_solve_calls": 736,
+    "jacobian_builds": 82,
+    "linear_solves": 736,
+    "nonlinear_iterations": 0,
+    "rhs_evaluations": 726
+   },
+   "banded_work": {
+    "factor_operations": 2111860,
+    "solve_operations": 9548864,
+    "stored_slots": 12000
+   },
+   "final_state_sha256": "0bc64820a8e99fb02774aed124882b4e8edd2d7b144705165e78c28437149fe7",
+   "ir_run1": 229022084,
+   "ir_run2": 455825487,
+   "ir_run1_repeat": 229022084,
+   "callgrind_deterministic": true,
+   "ir_per_run": 226803403,
+   "ir_per_attempt": 2465254.3804347827,
+   "ir_per_accepted_step": 2765895.1585365855,
+   "categories_by_file": {
+    "rust-std": {
+     "ir": 129485596,
+     "share": 0.5709155783698713
+    },
+    "driver-fast": {
+     "ir": 65620376,
+     "share": 0.28932712266226446
+    },
+    "problem-user-code": {
+     "ir": 21622252,
+     "share": 0.09533477767086238
+    },
+    "glibc-string": {
+     "ir": 9926881,
+     "share": 0.0437686598556019
+    },
+    "output-and-clock": {
+     "ir": 71368,
+     "share": 0.0003146689999179598
+    },
+    "adaptive-control": {
+     "ir": 29629,
+     "share": 0.00013063736966944893
+    },
+    "glibc-malloc": {
+     "ir": 18696,
+     "share": 8.243262558101917e-05
+    },
+    "problem-wrapper": {
+     "ir": 14520,
+     "share": 6.402020343583645e-05
+    },
+    "glibc-libm": {
+     "ir": 11776,
+     "share": 5.1921619535840916e-05
+    },
+    "integrators-other": {
+     "ir": 1534,
+     "share": 6.763566947009168e-06
+    },
+    "core-matrix-operator": {
+     "ir": 336,
+     "share": 1.4814592530606783e-06
+    },
+    "other": {
+     "ir": 304,
+     "share": 1.340367895626328e-06
+    },
+    "glibc-other": {
+     "ir": 126,
+     "share": 5.555472198977543e-07
+    },
+    "cli-other": {
+     "ir": 5,
+     "share": 2.2045524599117238e-08
+    },
+    "core-other": {
+     "ir": 4,
+     "share": 1.763641967929379e-08
+    }
+   },
+   "named_coverage_by_file": 0.9999986596321043,
+   "categories_by_function": {
+    "driver-fast": {
+     "ir": 188735280,
+     "share": 0.8321536515922558
+    },
+    "problem-user-code": {
+     "ir": 22275942,
+     "share": 0.09821696546590176
+    },
+    "glibc-string": {
+     "ir": 9926881,
+     "share": 0.0437686598556019
+    },
+    "problem-wrapper": {
+     "ir": 5111040,
+     "share": 0.022535111609414432
+    },
+    "output-and-clock": {
+     "ir": 675288,
+     "share": 0.0029774156430977363
+    },
+    "adaptive-control": {
+     "ir": 30704,
+     "share": 0.00013537715745825913
+    },
+    "glibc-malloc": {
+     "ir": 17906,
+     "share": 7.894943269435865e-05
+    },
+    "cli-other": {
+     "ir": 14128,
+     "share": 6.229183430726567e-05
+    },
+    "glibc-libm": {
+     "ir": 11776,
+     "share": 5.1921619535840916e-05
+    },
+    "rust-std": {
+     "ir": 3238,
+     "share": 1.4276681730388323e-05
+    },
+    "other": {
+     "ir": 1220,
+     "share": 5.379108002184606e-06
+    }
+   },
+   "named_coverage_by_function": 0.9999946208919979,
+   "top_functions": [
+    {
+     "function": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+     "ir": 188732185,
+     "share": 0.832140005412529
+    },
+    {
+     "function": "rodas5p::stiff_benchmark::brusselator_problem::{{closure}}",
+     "ir": 20344698,
+     "share": 0.08970190804412224
+    },
+    {
+     "function": "__memset_avx2_unaligned_erms",
+     "ir": 8631276,
+     "share": 0.038056201475954045
+    },
+    {
+     "function": "rodas5p_integrators::problem::OdeProblem::eval_rhs_into",
+     "ir": 5111040,
+     "share": 0.022535111609414432
+    },
+    {
+     "function": "rodas5p::stiff_benchmark::brusselator_band::{{closure}}",
+     "ir": 1931018,
+     "share": 0.008514060964067633
+    },
+    {
+     "function": "__memcpy_avx_unaligned_erms",
+     "ir": 1295605,
+     "share": 0.0057124583796478575
+    },
+    {
+     "function": "rodas5p_integrators::output::OutputCollector::accept",
+     "ir": 574820,
+     "share": 0.002534441690012914
+    },
+    {
+     "function": "rodas5p_integrators::output::land_capped",
+     "ir": 46921,
+     "share": 0.00020687961194303597
+    },
+    {
+     "function": "rodas5p_integrators::output::step_to",
+     "ir": 29862,
+     "share": 0.00013166469111576778
+    },
+    {
+     "function": "rodas5p_integrators::adaptive::AdaptiveStepConfig::validate",
+     "ir": 14880,
+     "share": 6.56074812069729e-05
+    },
+    {
+     "function": "rodas5p::main",
+     "ir": 14128,
+     "share": 6.229183430726567e-05
+    },
+    {
+     "function": "__ieee754_pow_fma",
+     "ir": 9752,
+     "share": 4.299759117811826e-05
+    },
+    {
+     "function": "rodas5p_integrators::output::OutputCollector::limit_step",
+     "ir": 8556,
+     "share": 3.7724301694009415e-05
+    },
+    {
+     "function": "rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor_prevalidated",
+     "ir": 8270,
+     "share": 3.646329768693991e-05
+    },
+    {
+     "function": "rodas5p_integrators::adaptive::adaptive_next_step_after_attempt",
+     "ir": 7526,
+     "share": 3.318292362659127e-05
+    },
+    {
+     "function": "_int_malloc",
+     "ir": 7134,
+     "share": 3.145455449802047e-05
+    },
+    {
+     "function": "rodas5p_integrators::output::OutputCollector::new",
+     "ir": 7094,
+     "share": 3.1278190301227536e-05
+    },
+    {
+     "function": "rodas5p_integrators::output::adaptive_end_step",
+     "ir": 3884,
+     "share": 1.712496350859427e-05
+    },
+    {
+     "function": "rodas5p_integrators::output::OutputCollector::accept_prechecked",
+     "ir": 2839,
+     "share": 1.2517448867378766e-05
+    },
+    {
+     "function": "rodas5p_integrators::rodas5p_fast::Workspace::with_dense_size",
+     "ir": 2813,
+     "share": 1.2402812139463357e-05
+    },
+    {
+     "function": "_int_free",
+     "ir": 2654,
+     "share": 1.170176445721143e-05
+    },
+    {
+     "function": "<alloc::vec::Vec<T> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<T,I>>::from_iter",
+     "ir": 2486,
+     "share": 1.096103483068109e-05
+    },
+    {
+     "function": "pow@@GLIBC_2.29",
+     "ir": 2024,
+     "share": 8.924028357722657e-06
+    },
+    {
+     "function": "_int_free_merge_chunk",
+     "ir": 1599,
+     "share": 7.050158766797692e-06
+    },
+    {
+     "function": "malloc",
+     "ir": 1315,
+     "share": 5.797972969567833e-06
+    },
+    {
+     "function": "free",
+     "ir": 1240,
+     "share": 5.467290100581075e-06
+    },
+    {
+     "function": "rodas5p_integrators::output::require_progress",
+     "ir": 1196,
+     "share": 5.273289484108843e-06
+    },
+    {
+     "function": "unlink_chunk.isra.0",
+     "ir": 1020,
+     "share": 4.497287018219916e-06
+    },
+    {
+     "function": "malloc_consolidate",
+     "ir": 862,
+     "share": 3.8006484408878117e-06
+    },
+    {
+     "function": "calloc",
+     "ir": 781,
+     "share": 3.4435109423821125e-06
+    }
+   ],
+   "top_files": [
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "ir": 65620376,
+     "share": 0.28932712266226446
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/adapters/zip.rs",
+     "ir": 23619988,
+     "share": 0.10414300529697079
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/num/uint_macros.rs",
+     "ir": 22403495,
+     "share": 0.09877936002574
+    },
+    {
+     "file": "crates/rodas5p-cli/src/stiff_benchmark.rs",
+     "ir": 21622252,
+     "share": 0.09533477767086238
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/range.rs",
+     "ir": 19011374,
+     "share": 0.08382314263600357
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/cmp.rs",
+     "ir": 14608953,
+     "share": 0.0644124065457695
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/slice/index.rs",
+     "ir": 9572059,
+     "share": 0.042204212429740304
+    },
+    {
+     "file": "./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S",
+     "ir": 8631276,
+     "share": 0.038056201475954045
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/num/f64.rs",
+     "ir": 7063709,
+     "share": 0.031144634104101163
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/slice/iter/macros.rs",
+     "ir": 6569896,
+     "share": 0.028967360776328388
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/range.rs",
+     "ir": 6157560,
+     "share": 0.027149328090108067
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/internal_macros.rs",
+     "ir": 5972640,
+     "share": 0.026333996408334313
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/arith.rs",
+     "ir": 5240596,
+     "share": 0.02310633760640708
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/slice/mod.rs",
+     "ir": 4603390,
+     "share": 0.020296829496866058
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ptr/mod.rs",
+     "ir": 2949653,
+     "share": 0.013005329554071991
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ptr/non_null.rs",
+     "ir": 1649097,
+     "share": 0.0072710416959660875
+    },
+    {
+     "file": "./string/../sysdeps/x86_64/multiarch/memmove-vec-unaligned-erms.S",
+     "ir": 1295605,
+     "share": 0.0057124583796478575
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/output.rs",
+     "ir": 71368,
+     "share": 0.0003146689999179598
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/adaptive.rs",
+     "ir": 29629,
+     "share": 0.00013063736966944893
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/alloc/src/vec/mod.rs",
+     "ir": 21566,
+     "share": 9.508675670091246e-05
+    },
+    {
+     "file": "./malloc/./malloc/malloc.c",
+     "ir": 18376,
+     "share": 8.102171200667567e-05
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/problem.rs",
+     "ir": 14520,
+     "share": 6.402020343583645e-05
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/result.rs",
+     "ir": 12871,
+     "share": 5.674958942304759e-05
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/slice/cmp.rs",
+     "ir": 12043,
+     "share": 5.309885054943377e-05
+    },
+    {
+     "file": "./math/../sysdeps/ieee754/dbl-64/e_pow.c",
+     "ir": 9292,
+     "share": 4.0969402914999474e-05
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/alloc/src/raw_vec/mod.rs",
+     "ir": 6971,
+     "share": 3.073587039608925e-05
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/alloc/src/sync.rs",
+     "ir": 4783,
+     "share": 2.108874883151555e-05
+    },
+    {
+     "file": "./math/./w_pow_template.c",
+     "ir": 2024,
+     "share": 8.924028357722657e-06
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/option.rs",
+     "ir": 2014,
+     "share": 8.879937308524423e-06
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/lib.rs",
+     "ir": 1534,
+     "share": 6.763566947009168e-06
+    }
+   ],
+   "top_lines": [
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 318,
+     "ir": 16167712,
+     "share": 0.07128513852148859
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/adapters/zip.rs",
+     "line": 306,
+     "ir": 9502864,
+     "share": 0.041899124414813124
+    },
+    {
+     "file": "./string/../sysdeps/x86_64/multiarch/memset-vec-unaligned-erms.S",
+     "line": 328,
+     "ir": 8628273,
+     "share": 0.038042960933879814
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/adapters/zip.rs",
+     "line": 0,
+     "ir": 8490404,
+     "share": 0.037435082047688674
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/num/uint_macros.rs",
+     "line": 942,
+     "ir": 8096000,
+     "share": 0.03569611343089063
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/range.rs",
+     "line": 814,
+     "ir": 7361472,
+     "share": 0.032457502412342555
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 0,
+     "ir": 7360749,
+     "share": 0.03245431462948552
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/cmp.rs",
+     "line": 1908,
+     "ir": 7326683,
+     "share": 0.03230411406128681
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/cmp.rs",
+     "line": 1069,
+     "ir": 7280236,
+     "share": 0.032099324365075774
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/num/uint_macros.rs",
+     "line": 763,
+     "ir": 7176763,
+     "share": 0.03164310105170688
+    },
+    {
+     "file": "crates/rodas5p-cli/src/stiff_benchmark.rs",
+     "line": 282,
+     "ir": 6172452,
+     "share": 0.027214988480574076
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/num/uint_macros.rs",
+     "line": 842,
+     "ir": 6026644,
+     "share": 0.02657210571042446
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 324,
+     "ir": 5888000,
+     "share": 0.025960809767920458
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/adapters/zip.rs",
+     "line": 310,
+     "ir": 5626720,
+     "share": 0.024808798834468987
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/slice/index.rs",
+     "line": 272,
+     "ir": 5338945,
+     "share": 0.023539968666166793
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/range.rs",
+     "line": 772,
+     "ir": 5197681,
+     "share": 0.022917120868772855
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/arith.rs",
+     "line": 352,
+     "ir": 5148596,
+     "share": 0.02270069995378332
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/ops/range.rs",
+     "line": 563,
+     "ir": 5053284,
+     "share": 0.02228045934566511
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/num/f64.rs",
+     "line": 583,
+     "ir": 4937855,
+     "share": 0.021771520773874807
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 327,
+     "ir": 4402752,
+     "share": 0.01941219550396252
+    },
+    {
+     "file": "crates/rodas5p-cli/src/stiff_benchmark.rs",
+     "line": 283,
+     "ir": 4356000,
+     "share": 0.019206061030750936
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 693,
+     "ir": 3864000,
+     "share": 0.0170367814101978
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 708,
+     "ir": 3864000,
+     "share": 0.0170367814101978
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/range.rs",
+     "line": 0,
+     "ir": 3512269,
+     "share": 0.01548596252764338
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/slice/iter/macros.rs",
+     "line": 315,
+     "ir": 3274004,
+     "share": 0.014435427143921646
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/internal_macros.rs",
+     "line": 39,
+     "ir": 2944000,
+     "share": 0.012980404883960229
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 329,
+     "ir": 2944000,
+     "share": 0.012980404883960229
+    },
+    {
+     "file": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+     "line": 330,
+     "ir": 2944000,
+     "share": 0.012980404883960229
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/iter/range.rs",
+     "line": 1169,
+     "ir": 2939952,
+     "share": 0.012962556827244783
+    },
+    {
+     "file": "/rustc/e408947bfd200af42db322daf0fadfe7e26d3bd1/library/core/src/internal_macros.rs",
+     "line": 50,
+     "ir": 2936640,
+     "share": 0.012947953871750328
+    }
+   ],
+   "calls": {
+    "watched_callees": {
+     "rodas5p_integrators::output::step_to": {
+      "calls": 553,
+      "per_attempt": 6.010869565217392
+     },
+     "rodas5p_integrators::output::land_capped": {
+      "calls": 276,
+      "per_attempt": 3.0
+     },
+     "rodas5p_integrators::adaptive::AdaptiveStepConfig::validate": {
+      "calls": 93,
+      "per_attempt": 1.0108695652173914
+     },
+     "rodas5p_integrators::output::require_progress": {
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     "rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor_prevalidated": {
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     "rodas5p_integrators::output::adaptive_end_step": {
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     "rodas5p_integrators::output::OutputCollector::limit_step": {
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     "rodas5p_integrators::adaptive::adaptive_next_step_after_attempt": {
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     "rodas5p_integrators::output::OutputCollector::accept_prechecked": {
+      "calls": 82,
+      "per_attempt": 0.8913043478260869
+     },
+     "rodas5p_integrators::output::OutputCollector::accept": {
+      "calls": 82,
+      "per_attempt": 0.8913043478260869
+     },
+     "rodas5p_integrators::output::OutputSchedule::validate_span": {
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     "rodas5p_integrators::output::OutputSchedule::new": {
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     "core::ptr::drop_in_place<rodas5p_integrators::adaptive::AdaptiveRunDiagnostics>": {
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     "rodas5p_integrators::output::OutputCollector::new": {
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     "rodas5p_integrators::output::OutputCollector::finish": {
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     }
+    },
+    "top_callees": [
+     {
+      "function": "__memcpy_avx_unaligned_erms",
+      "calls": 1671,
+      "per_attempt": 18.16304347826087
+     },
+     {
+      "function": "rodas5p_integrators::problem::OdeProblem::eval_rhs_into",
+      "calls": 726,
+      "per_attempt": 7.891304347826087
+     },
+     {
+      "function": "rodas5p::stiff_benchmark::brusselator_problem::{{closure}}",
+      "calls": 726,
+      "per_attempt": 7.891304347826087
+     },
+     {
+      "function": "rodas5p_integrators::output::step_to",
+      "calls": 553,
+      "per_attempt": 6.010869565217392
+     },
+     {
+      "function": "rodas5p_integrators::output::land_capped",
+      "calls": 276,
+      "per_attempt": 3.0
+     },
+     {
+      "function": "__memset_avx2_unaligned_erms",
+      "calls": 186,
+      "per_attempt": 2.0217391304347827
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::AdaptiveStepConfig::validate",
+      "calls": 93,
+      "per_attempt": 1.0108695652173914
+     },
+     {
+      "function": "rodas5p_integrators::output::require_progress",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor_prevalidated",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "function": "pow@@GLIBC_2.29",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "function": "rodas5p_integrators::output::adaptive_end_step",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "function": "rodas5p_integrators::output::OutputCollector::limit_step",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "function": "rodas5p_integrators::adaptive::adaptive_next_step_after_attempt",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "function": "__ieee754_pow_fma",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "function": "0x000000000488e370",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "function": "rodas5p_integrators::output::OutputCollector::accept_prechecked",
+      "calls": 82,
+      "per_attempt": 0.8913043478260869
+     },
+     {
+      "function": "rodas5p::stiff_benchmark::brusselator_band::{{closure}}",
+      "calls": 82,
+      "per_attempt": 0.8913043478260869
+     },
+     {
+      "function": "rodas5p_integrators::output::OutputCollector::accept",
+      "calls": 82,
+      "per_attempt": 0.8913043478260869
+     },
+     {
+      "function": "_int_free",
+      "calls": 48,
+      "per_attempt": 0.5217391304347826
+     },
+     {
+      "function": "free",
+      "calls": 40,
+      "per_attempt": 0.43478260869565216
+     },
+     {
+      "function": "unlink_chunk.isra.0",
+      "calls": 39,
+      "per_attempt": 0.42391304347826086
+     },
+     {
+      "function": "_int_malloc",
+      "calls": 32,
+      "per_attempt": 0.34782608695652173
+     },
+     {
+      "function": "malloc",
+      "calls": 29,
+      "per_attempt": 0.31521739130434784
+     },
+     {
+      "function": "_int_free_merge_chunk",
+      "calls": 22,
+      "per_attempt": 0.2391304347826087
+     },
+     {
+      "function": "_int_free_maybe_consolidate",
+      "calls": 22,
+      "per_attempt": 0.2391304347826087
+     },
+     {
+      "function": "<alloc::vec::Vec<T> as alloc::vec::spec_from_iter_nested::SpecFromIterNested<T,I>>::from_iter",
+      "calls": 16,
+      "per_attempt": 0.17391304347826086
+     },
+     {
+      "function": "calloc",
+      "calls": 11,
+      "per_attempt": 0.11956521739130435
+     },
+     {
+      "function": "0x000000000498f740",
+      "calls": 11,
+      "per_attempt": 0.11956521739130435
+     },
+     {
+      "function": "realloc",
+      "calls": 9,
+      "per_attempt": 0.09782608695652174
+     },
+     {
+      "function": "alloc::raw_vec::RawVecInner<A>::finish_grow",
+      "calls": 9,
+      "per_attempt": 0.09782608695652174
+     },
+     {
+      "function": "_int_realloc",
+      "calls": 9,
+      "per_attempt": 0.09782608695652174
+     },
+     {
+      "function": "alloc::raw_vec::RawVecInner<A>::reserve::do_reserve_and_handle",
+      "calls": 7,
+      "per_attempt": 0.07608695652173914
+     },
+     {
+      "function": "__rustc::__rust_alloc_zeroed",
+      "calls": 7,
+      "per_attempt": 0.07608695652173914
+     },
+     {
+      "function": "0x000000000498f6b0",
+      "calls": 7,
+      "per_attempt": 0.07608695652173914
+     },
+     {
+      "function": "alloc_perturb",
+      "calls": 6,
+      "per_attempt": 0.06521739130434782
+     },
+     {
+      "function": "sbrk",
+      "calls": 4,
+      "per_attempt": 0.043478260869565216
+     },
+     {
+      "function": "malloc_consolidate",
+      "calls": 4,
+      "per_attempt": 0.043478260869565216
+     },
+     {
+      "function": "__glibc_morecore",
+      "calls": 4,
+      "per_attempt": 0.043478260869565216
+     },
+     {
+      "function": "brk",
+      "calls": 2,
+      "per_attempt": 0.021739130434782608
+     },
+     {
+      "function": "alloc::raw_vec::RawVec<T,A>::grow_one",
+      "calls": 2,
+      "per_attempt": 0.021739130434782608
+     }
+    ],
+    "watched_pairs": [
+     {
+      "caller": "rodas5p_integrators::output::land_capped",
+      "callee": "rodas5p_integrators::output::step_to",
+      "calls": 552,
+      "per_attempt": 6.0
+     },
+     {
+      "caller": "rodas5p_integrators::output::OutputCollector::limit_step",
+      "callee": "rodas5p_integrators::output::land_capped",
+      "calls": 184,
+      "per_attempt": 2.0
+     },
+     {
+      "caller": "rodas5p_integrators::output::adaptive_end_step",
+      "callee": "rodas5p_integrators::output::land_capped",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "caller": "rodas5p_integrators::output::OutputCollector::limit_step",
+      "callee": "rodas5p_integrators::output::require_progress",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "caller": "rodas5p_integrators::adaptive::adaptive_next_step_after_attempt",
+      "callee": "rodas5p_integrators::adaptive::AdaptiveStepConfig::validate",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "caller": "rodas5p_integrators::adaptive::adaptive_next_step_after_attempt",
+      "callee": "rodas5p_integrators::adaptive::AdaptiveControllerState::propose_factor_prevalidated",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "caller": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+      "callee": "rodas5p_integrators::output::adaptive_end_step",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "caller": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+      "callee": "rodas5p_integrators::output::OutputCollector::limit_step",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "caller": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+      "callee": "rodas5p_integrators::adaptive::adaptive_next_step_after_attempt",
+      "calls": 92,
+      "per_attempt": 1.0
+     },
+     {
+      "caller": "rodas5p_integrators::output::OutputCollector::accept",
+      "callee": "rodas5p_integrators::output::OutputCollector::accept_prechecked",
+      "calls": 82,
+      "per_attempt": 0.8913043478260869
+     },
+     {
+      "caller": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+      "callee": "rodas5p_integrators::output::OutputCollector::accept",
+      "calls": 82,
+      "per_attempt": 0.8913043478260869
+     },
+     {
+      "caller": "rodas5p_integrators::output::OutputCollector::new",
+      "callee": "rodas5p_integrators::output::OutputSchedule::validate_span",
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     {
+      "caller": "rodas5p::stiff_benchmark::run_banded",
+      "callee": "rodas5p_integrators::output::OutputSchedule::new",
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     {
+      "caller": "rodas5p::main",
+      "callee": "core::ptr::drop_in_place<rodas5p_integrators::adaptive::AdaptiveRunDiagnostics>",
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     {
+      "caller": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+      "callee": "rodas5p_integrators::adaptive::AdaptiveStepConfig::validate",
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     {
+      "caller": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+      "callee": "rodas5p_integrators::output::step_to",
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     {
+      "caller": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+      "callee": "rodas5p_integrators::output::OutputCollector::new",
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     },
+     {
+      "caller": "rodas5p_integrators::rodas5p_fast::integrate_fast",
+      "callee": "rodas5p_integrators::output::OutputCollector::finish",
+      "calls": 1,
+      "per_attempt": 0.010869565217391304
+     }
+    ]
+   }
+  }
+ ]
+}

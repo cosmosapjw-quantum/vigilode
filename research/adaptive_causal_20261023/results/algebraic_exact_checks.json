@@ -1,0 +1,121 @@
+{
+  "schema": "vigilode.algebraic-transfer-check.v1",
+  "scope": "exact rational identities and causal front; no wall-time benchmark",
+  "python": "3.12.14",
+  "checks": [
+    {
+      "type": "exact_quotient_resolvent",
+      "name": "rotation",
+      "s": "1/100",
+      "degree": 2,
+      "pass": true
+    },
+    {
+      "type": "exact_quotient_resolvent",
+      "name": "rotation",
+      "s": "1/4",
+      "degree": 2,
+      "pass": true
+    },
+    {
+      "type": "exact_quotient_resolvent",
+      "name": "rotation",
+      "s": "10",
+      "degree": 2,
+      "pass": true
+    },
+    {
+      "type": "exact_quotient_resolvent",
+      "name": "confluent_nonsemisimple",
+      "s": "1/100",
+      "degree": 2,
+      "pass": true
+    },
+    {
+      "type": "exact_quotient_resolvent",
+      "name": "confluent_nonsemisimple",
+      "s": "1/4",
+      "degree": 2,
+      "pass": true
+    },
+    {
+      "type": "exact_quotient_resolvent",
+      "name": "confluent_nonsemisimple",
+      "s": "10",
+      "degree": 2,
+      "pass": true
+    },
+    {
+      "type": "exact_quotient_resolvent",
+      "name": "mixed_primary",
+      "s": "1/100",
+      "degree": 3,
+      "pass": true
+    },
+    {
+      "type": "exact_quotient_resolvent",
+      "name": "mixed_primary",
+      "s": "1/4",
+      "degree": 3,
+      "pass": true
+    },
+    {
+      "type": "exact_quotient_resolvent",
+      "name": "mixed_primary",
+      "s": "10",
+      "degree": 3,
+      "pass": true
+    },
+    {
+      "type": "exact_causal_nonlinear_front",
+      "stages": 8,
+      "fronts_after_round": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "pass": true,
+      "full_round_task_count": 64,
+      "triangular_front_skipping_task_count": 36,
+      "sequential_task_count": 8
+    },
+    {
+      "type": "exact_quadratic_branch",
+      "a": "2",
+      "b": "3",
+      "c": "1",
+      "root": "1",
+      "pass": true
+    },
+    {
+      "type": "exact_quadratic_branch",
+      "a": "5",
+      "b": "2",
+      "c": "-3",
+      "root": "2/3",
+      "pass": true
+    },
+    {
+      "type": "exact_quadratic_branch",
+      "a": "3",
+      "b": "2",
+      "c": "0",
+      "root": "2/3",
+      "pass": true
+    },
+    {
+      "type": "exact_quadratic_branch",
+      "a": "2",
+      "b": "0",
+      "c": "7",
+      "root": "0",
+      "pass": true
+    }
+  ],
+  "all_pass": true
+}

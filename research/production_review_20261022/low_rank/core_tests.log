@@ -1,0 +1,21 @@
+   Compiling rodas5p-core v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-core)
+    Finished `test` profile [unoptimized] target(s) in 2.72s
+     Running tests/low_rank_bordered_allocation.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target/debug/deps/low_rank_bordered_allocation-2ddbe23029881bda)
+
+running 1 test
+test refactor_and_both_apply_paths_allocate_zero_across_active_shapes ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/low_rank_bordered_contracts.rs (/workspace/scratch/0dc1e721cf82/task_runtime/target/debug/deps/low_rank_bordered_contracts-e801cbdcd7f12d3b)
+
+running 6 tests
+test application_failures_are_atomic_and_do_not_invalidate_factors ... ok
+test bad_refactors_invalidate_previously_good_factors ... ok
+test rank_zero_is_the_existing_bordered_inverse ... ok
+test impossible_capacities_fail_without_arithmetic_panic ... ok
+test separate_workspaces_support_shared_parallel_factors ... ok
+test original_dimension_matches_independent_dense_solve_for_multiple_shapes ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

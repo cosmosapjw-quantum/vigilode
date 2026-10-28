@@ -1,7 +1,7 @@
 use rodas5p_core::{CoreError, CoreResult, LinearMethod};
 use serde::Serialize;
 
-use crate::{BdfOrder, RadauIiaStages};
+use crate::{BdfConfig, BdfOrder, ComparatorFidelity, RadauConfig, RadauIiaStages};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize)]
 #[serde(rename_all = "kebab-case")]
@@ -123,6 +123,17 @@ impl CandidateSpec {
             self.execution,
             CandidateExecution::Bdf { .. } | CandidateExecution::RadauIrk { .. }
         )
+    }
+
+    /// Audit F-052 label: the native BDF/Radau complete integrators run the
+    /// default reference Newton configuration; every RODAS-stage arm is a
+    /// production arm.
+    pub fn comparator_fidelity(&self) -> ComparatorFidelity {
+        match &self.execution {
+            CandidateExecution::Bdf { .. } => BdfConfig::default().comparator_fidelity(),
+            CandidateExecution::RadauIrk { .. } => RadauConfig::default().comparator_fidelity(),
+            _ => ComparatorFidelity::Production,
+        }
     }
 
     fn sequential(linear_method: LinearMethod, recycle_lifetime: CandidateRecycleLifetime) -> Self {

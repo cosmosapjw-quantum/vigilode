@@ -1,0 +1,10 @@
+error[E0689]: can't call method `max` on ambiguous numeric type `{float}`
+   --> crates/rodas5p-core/src/leja_action.rs:552:61
+    |
+552 |                     bounds[start][end] = bounds[start][end].max(product.mag());
+    |                                                             ^^^
+
+For more information about this error, try `rustc --explain E0689`.
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 16.54s
+     Running `target/debug/examples/solve_stiff`

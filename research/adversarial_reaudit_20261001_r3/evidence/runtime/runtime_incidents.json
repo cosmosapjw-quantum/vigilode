@@ -1,0 +1,119 @@
+{
+  "schema": "vigilode.r3.runtime_incidents.v1",
+  "recorded_utc": "2026-09-30T15:52:35.197462+00:00",
+  "status": "NATIVE_CAMPAIGN_FINALIZED_FULL_BUILD_UNRESOLVED",
+  "incidents": [
+    {
+      "event": "time_lane_first_dependency_build",
+      "reported_exit": 101,
+      "stderr_last_line": "Compiling equator v0.6.0",
+      "compiler_diagnostic_observed": false,
+      "oom_kill_counter": 0,
+      "resolution": "time lane owns one retry after shared lock available"
+    },
+    {
+      "event": "fatal library error, lookup self",
+      "observed_surfaces": [
+        "arithmetic build stderr while session was still running",
+        "ps process-inventory command"
+      ],
+      "attribution": "UNRESOLVED; not specific enough to attribute to Rust compiler or solver",
+      "followup_minimal_commands": [
+        {
+          "argv": [
+            "rustc",
+            "--version"
+          ],
+          "exit": 0
+        },
+        {
+          "argv": [
+            "cargo",
+            "--version"
+          ],
+          "exit": 0
+        },
+        {
+          "argv": [
+            "flock",
+            "--version"
+          ],
+          "exit": 0
+        },
+        {
+          "argv": [
+            "flock",
+            "-n",
+            "runtime_r3/test-lock",
+            "cargo",
+            "--version"
+          ],
+          "exit": 0
+        },
+        {
+          "argv": [
+            "rustc",
+            "runtime_r3/probes/hello.rs",
+            "-o",
+            "runtime_r3/probes/hello_recheck"
+          ],
+          "exit": 0
+        },
+        {
+          "argv": [
+            "runtime_r3/probes/hello_recheck"
+          ],
+          "exit": 0,
+          "stdout": "RUST_EXECUTION_PASS 42"
+        }
+      ],
+      "toolchain_reinstalled_in_response": false
+    },
+    {
+      "event": "zero_length_generated_object",
+      "classification": "BUILD_ENVIRONMENT_CACHE_FAILURE",
+      "compiler_message": "failed to map object file: memory map must have a non-zero length",
+      "source_code_diagnostic": false,
+      "toolchain_unavailable": false,
+      "cause_of_zero_length_objects": "UNRESOLVED",
+      "recovery": "targeted cargo clean -p rodas5p-krylov; remove observed zero-byte generated .o; CARGO_INCREMENTAL=0",
+      "receipt": "targeted_cache_recovery.json",
+      "recovery_build_argv": [
+        "cargo",
+        "build",
+        "--manifest-path",
+        "r3/arithmetic/probe/Cargo.toml",
+        "--bins",
+        "--locked",
+        "--offline",
+        "--jobs",
+        "1"
+      ],
+      "recovery_build_exit": 0,
+      "elapsed_seconds_reported_by_cargo": 25.05,
+      "log": "cache_recovery_build.log",
+      "oom_kill_counter_after": 0
+    },
+    {
+      "event": "fresh_nonincremental_integrators_audit2_feature_zero_object",
+      "classification": "BUILD_ENVIRONMENT_OBJECT_FAILURE",
+      "native_lane": "time",
+      "CARGO_INCREMENTAL": "0",
+      "artifact": "rodas5p_integrators-8198e6ac8b635cc4.rodas5p_integrators.601543c6d6eb2d7f-cgu.00.rcgu.o",
+      "cargo_exit": 101,
+      "scope": "audit2-research feature variant",
+      "resolution_for_time_lane": "unused audit2-research feature removed from standalone probe; same public API default-feature native exit0",
+      "production_changed": false,
+      "full_campaign_followup": "all features retained, dev/test codegen-units=1 with incremental=0; one bounded full build; result pending"
+    },
+    {
+      "event": "incomplete redirected Cargo stream and empty-list false PASS",
+      "classification": "AUDIT_EVIDENCE_HELPER_ERROR",
+      "original_completion_claim_invalid": true,
+      "native_test_inventory_recovered": 682,
+      "guard_repaired": true,
+      "final_full_workspace_pass": false
+    }
+  ],
+  "final_summary": "FINAL_RUNTIME_SUMMARY.json"
+}

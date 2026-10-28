@@ -1,0 +1,59 @@
+=== stdout ===
+
+running 4 tests
+test bdf_v2_semantic_baseline_explicitly_retires_the_legacy_source_byte_freeze ... ok
+test generic_solver_core_does_not_embed_physical_client_bindings ... ok
+test radau3_cell_g_baseline_has_embedded_semantics_instead_of_a_source_byte_claim ... ok
+test required_vectorized_jf_modules_exist_in_the_generic_base ... ok
+
+test result: ok. 4 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.04s
+
+
+running 10 tests
+test a_case_a_pchip_reproduces_nodes_is_c1_monotone_and_refuses_outside_the_domain ... ok
+test b_verner_cross_sections_cell_averages_and_the_quadrature_rule ... ok
+test c_rhs_preserves_the_five_ledgers_to_rounding ... ok
+test d_jacobian_matches_richardson_differences_and_refills_exactly ... ok
+test e_partial_t_matches_richardson_differences_in_t ... ok
+test f_callbacks_and_the_dense_driver_allocate_independently_of_the_step_count ... ok
+test g_runs_are_deterministic_and_uniform_vector_atol_is_scalar ... ok
+test h_a_run_leaving_the_table_ends_in_a_partial_at_the_boundary ... ok
+test h_invalid_declarations_shapes_and_temperatures_are_typed_refusals ... ok
+test pins_transport_matter_rows_and_initial_data ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.08s
+
+
+running 10 tests
+test c10_invalid_declarations_and_shapes_are_typed_refusals ... ok
+test c2_dense_columns_are_unit_rhs_and_the_band_is_exact ... ok
+test c3_rhs_conserves_the_number_ledger ... ok
+test c8_callbacks_allocate_nothing ... ok
+test c8_drivers_allocate_independently_of_the_step_count ... ok
+test c9_runs_are_deterministic_and_uniform_vector_atol_is_scalar ... ok
+test sanity_absorber_cell_average_matches_quadrature ... ok
+test sanity_jvp_callback_and_autonomy_flags ... ok
+test sanity_partial_t_is_right_sided_at_an_exact_threshold_tie ... ok
+test sanity_partial_t_matches_central_differences_away_from_kinks ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.25s
+
+
+=== stderr ===
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `release` profile [optimized] target(s) in 0.49s
+     Running tests/generic_scope_contracts.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/generic_scope_contracts-035e7e611bff6682)
+     Running tests/lrs_photon_chem_contracts.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/lrs_photon_chem_contracts-013347e2b068fe0b)
+     Running tests/lrs_photon_fv_contracts.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/lrs_photon_fv_contracts-2d094542b9fbc303)

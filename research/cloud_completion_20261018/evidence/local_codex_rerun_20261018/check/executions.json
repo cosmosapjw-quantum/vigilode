@@ -1,0 +1,129 @@
+[
+  {
+    "name": "all_targets",
+    "command": [
+      "cargo",
+      "check",
+      "--locked",
+      "--offline",
+      "--workspace",
+      "--all-targets"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 12.986417468055151,
+    "stdout": "all_targets.stdout",
+    "stderr": "all_targets.stderr"
+  },
+  {
+    "name": "core_contracts",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "rodas5p-core",
+      "--test",
+      "leja_enclosed_contract",
+      "--test",
+      "leja_total_contract",
+      "--test",
+      "leja_setup_work_contract"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 2.9695350020192564,
+    "stdout": "core_contracts.stdout",
+    "stderr": "core_contracts.stderr"
+  },
+  {
+    "name": "leja_unit",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "rodas5p-core",
+      "--lib",
+      "cloud_"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 0.9410059669753537,
+    "stdout": "leja_unit.stdout",
+    "stderr": "leja_unit.stderr"
+  },
+  {
+    "name": "integrator_contracts",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "rodas5p-integrators",
+      "--test",
+      "affine_transport_contract",
+      "--test",
+      "production_audit_packet_verified",
+      "--test",
+      "production_audit_packet_curve_output",
+      "--test",
+      "production_audit_pr101_cloud",
+      "--test",
+      "a05_dense_global_output",
+      "--test",
+      "collective_rodas5p_contracts",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 4.1185798610094935,
+    "stdout": "integrator_contracts.stdout",
+    "stderr": "integrator_contracts.stderr"
+  },
+  {
+    "name": "allocation_probe",
+    "command": [
+      "cargo",
+      "test",
+      "--locked",
+      "--offline",
+      "-p",
+      "rodas5p-integrators",
+      "--test",
+      "collective_rodas5p_allocation_contract",
+      "--",
+      "--nocapture"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 0.7720464060548693,
+    "stdout": "allocation_probe.stdout",
+    "stderr": "allocation_probe.stderr"
+  },
+  {
+    "name": "leja_fraction",
+    "command": [
+      "/usr/bin/python3",
+      "research/cloud_completion_20261018/leja_fraction_oracle.py",
+      "/home/cosmosapjw/vigilode-cloud-completion-20261018/artifacts/generated/cloud_codex_check_20261018/leja_runs.json",
+      "--output",
+      "/home/cosmosapjw/vigilode-cloud-completion-20261018/artifacts/generated/cloud_codex_check_20261018/leja_fraction.json"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 0.4618921490618959,
+    "stdout": "leja_fraction.stdout",
+    "stderr": "leja_fraction.stderr"
+  },
+  {
+    "name": "pr101_fraction",
+    "command": [
+      "/usr/bin/python3",
+      "crates/rodas5p-integrators/tests/pr101_cloud_fraction_oracle.py",
+      "/home/cosmosapjw/vigilode-cloud-completion-20261018/artifacts/generated/cloud_codex_check_20261018/integrator_contracts.stdout"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 0.06400125205982476,
+    "stdout": "pr101_fraction.stdout",
+    "stderr": "pr101_fraction.stderr"
+  }
+]

@@ -1,0 +1,336 @@
+{
+  "arithmetic": "binary64; fixed steps h = 1/N (N a power of two) or h = 0.1",
+  "claim_ceiling": "specific-method, specific-problem regression results; nothing is transferred between methods",
+  "gate_native": {
+    "runs_complete": true
+  },
+  "per_method": {
+    "exprb43": {
+      "shares_rvj5_embedded_blindness": false,
+      "shares_rvj5_two_step_no_go": false
+    },
+    "pexprb54s4": {
+      "shares_rvj5_embedded_blindness": false,
+      "shares_rvj5_two_step_no_go": false
+    },
+    "rodas5p": {
+      "shares_rvj5_embedded_blindness": false,
+      "shares_rvj5_two_step_no_go": false
+    }
+  },
+  "rows": [
+    {
+      "fixed_kappa_8": {
+        "data": [
+          {
+            "N": 8,
+            "error": 3.742298903707564e-9,
+            "h": 0.03125
+          },
+          {
+            "N": 16,
+            "error": 1.167536135576957e-10,
+            "h": 0.015625
+          },
+          {
+            "N": 32,
+            "error": 3.639324911099188e-12,
+            "h": 0.0078125
+          },
+          {
+            "N": 64,
+            "error": 1.1282325691114153e-13,
+            "h": 0.00390625
+          }
+        ],
+        "observed_rates": [
+          5.002385686097863,
+          5.00365253458517,
+          5.011534463052843
+        ]
+      },
+      "method": "rodas5p",
+      "quintic_pr": [
+        {
+          "effectivity": 11.04017412093847,
+          "embedded_estimate": 7.403767074560256e-7,
+          "finite": true,
+          "true_local_error": 6.706204986856584e-8,
+          "z": -10.0
+        },
+        {
+          "effectivity": 6.145705120714654,
+          "embedded_estimate": 1.4737171105313272e-7,
+          "finite": true,
+          "true_local_error": 2.397962612237985e-8,
+          "z": -100.0
+        },
+        {
+          "effectivity": 4.574572944080497,
+          "embedded_estimate": 1.6404787026280112e-9,
+          "finite": true,
+          "true_local_error": 3.586080542776769e-10,
+          "z": -10000.0
+        },
+        {
+          "effectivity": 4.562069998845953,
+          "embedded_estimate": 1.6423212875437657e-11,
+          "finite": true,
+          "true_local_error": 3.599947585107674e-12,
+          "z": -1000000.0
+        }
+      ],
+      "two_step_semilinear": [
+        {
+          "N": 16,
+          "finite": true,
+          "kappa": 16777216.0,
+          "manifold_defect_times_kappa": -3.1250829035656125e-8,
+          "x_error_over_h5": -0.017923714825883508,
+          "y_error_over_h3": -1.7168317006759082e-11
+        },
+        {
+          "N": 32,
+          "finite": true,
+          "kappa": 1073741824.0,
+          "manifold_defect_times_kappa": -3.4803604442856795e-10,
+          "x_error_over_h5": -0.006075680255889893,
+          "y_error_over_h3": -2.2409591543537388e-14
+        },
+        {
+          "N": 64,
+          "finite": true,
+          "kappa": 68719476736.0,
+          "manifold_defect_times_kappa": -4.595435143528448e-12,
+          "x_error_over_h5": -0.0025200843811035156,
+          "y_error_over_h3": -3.601414685135834e-17
+        },
+        {
+          "N": 128,
+          "finite": true,
+          "kappa": 4398046511104.0,
+          "manifold_defect_times_kappa": -6.59472476627343e-14,
+          "x_error_over_h5": -0.00115203857421875,
+          "y_error_over_h3": -6.395098751769968e-20
+        },
+        {
+          "N": 256,
+          "finite": true,
+          "kappa": 281474976710656.0,
+          "manifold_defect_times_kappa": -8.881784197001252e-16,
+          "x_error_over_h5": -0.00048828125,
+          "y_error_over_h3": -1.0587911840678754e-22
+        }
+      ]
+    },
+    {
+      "fixed_kappa_8": {
+        "data": [
+          {
+            "N": 8,
+            "error": 5.404386286001087e-8,
+            "h": 0.03125
+          },
+          {
+            "N": 16,
+            "error": 3.407300464704166e-9,
+            "h": 0.015625
+          },
+          {
+            "N": 32,
+            "error": 2.137512897571307e-10,
+            "h": 0.0078125
+          },
+          {
+            "N": 64,
+            "error": 1.3382506572058756e-11,
+            "h": 0.00390625
+          }
+        ],
+        "observed_rates": [
+          3.987429718182428,
+          3.994624143445022,
+          3.997512858860635
+        ]
+      },
+      "method": "exprb43",
+      "quintic_pr": [
+        {
+          "effectivity": 28.999301556617414,
+          "embedded_estimate": 0.000018850006809989426,
+          "finite": true,
+          "true_local_error": 6.500158899753915e-7,
+          "z": -10.0
+        },
+        {
+          "effectivity": 151.66764848175356,
+          "embedded_estimate": 0.00001771334049999991,
+          "finite": true,
+          "true_local_error": 1.1679049999994509e-7,
+          "z": -100.0
+        },
+        {
+          "effectivity": 14011.3234597737,
+          "embedded_estimate": 0.000017502248800340945,
+          "finite": true,
+          "true_local_error": 1.249150292660764e-9,
+          "z": -10000.0
+        },
+        {
+          "effectivity": 1400043.9195813844,
+          "embedded_estimate": 0.000017500022499370658,
+          "finite": true,
+          "true_local_error": 1.249962394365685e-11,
+          "z": -1000000.0
+        }
+      ],
+      "two_step_semilinear": [
+        {
+          "N": 16,
+          "finite": true,
+          "kappa": 16777216.0,
+          "manifold_defect_times_kappa": -4.612772906975593e-6,
+          "x_error_over_h5": -0.09321971307508647,
+          "y_error_over_h3": -1.1757753289867376e-9
+        },
+        {
+          "N": 32,
+          "finite": true,
+          "kappa": 1073741824.0,
+          "manifold_defect_times_kappa": -2.122358904177446e-7,
+          "x_error_over_h5": -0.07711300998926163,
+          "y_error_over_h3": -6.626544297549768e-12
+        },
+        {
+          "N": 64,
+          "finite": true,
+          "kappa": 68719476736.0,
+          "manifold_defect_times_kappa": -1.1454956982959175e-8,
+          "x_error_over_h5": -0.6100606918334961,
+          "y_error_over_h3": -4.8171764903295715e-14
+        },
+        {
+          "N": 128,
+          "finite": true,
+          "kappa": 4398046511104.0,
+          "manifold_defect_times_kappa": -6.619700343435397e-10,
+          "x_error_over_h5": -131.1642074584961,
+          "y_error_over_h3": -4.013976269897908e-15
+        },
+        {
+          "N": 256,
+          "finite": true,
+          "kappa": 281474976710656.0,
+          "manifold_defect_times_kappa": 1.4951693216858075e-9,
+          "x_error_over_h5": -199104.94873046875,
+          "y_error_over_h3": -2.166785719271854e-14
+        }
+      ]
+    },
+    {
+      "fixed_kappa_8": {
+        "data": [
+          {
+            "N": 8,
+            "error": 5.598164142376766e-9,
+            "h": 0.03125
+          },
+          {
+            "N": 16,
+            "error": 1.766929970370893e-10,
+            "h": 0.015625
+          },
+          {
+            "N": 32,
+            "error": 5.5442615285013535e-12,
+            "h": 0.0078125
+          },
+          {
+            "N": 64,
+            "error": 1.7245795076541814e-13,
+            "h": 0.00390625
+          }
+        ],
+        "observed_rates": [
+          4.985637021359952,
+          4.994105739250496,
+          5.0066787650016416
+        ]
+      },
+      "method": "pexprb54s4",
+      "quintic_pr": [
+        {
+          "effectivity": 11.747627432442627,
+          "embedded_estimate": 4.083313373049801e-6,
+          "finite": true,
+          "true_local_error": 3.475862165813321e-7,
+          "z": -10.0
+        },
+        {
+          "effectivity": 3.5267295054985444,
+          "embedded_estimate": 3.7398137968749933e-6,
+          "finite": true,
+          "true_local_error": 1.0604198000000363e-6,
+          "z": -100.0
+        },
+        {
+          "effectivity": 3.076513808893278,
+          "embedded_estimate": 3.6872660059331267e-6,
+          "finite": true,
+          "true_local_error": 1.1985208697176485e-6,
+          "z": -10000.0
+        },
+        {
+          "effectivity": 3.072308077666864,
+          "embedded_estimate": 3.6867242240948588e-6,
+          "finite": true,
+          "true_local_error": 1.1999852003431204e-6,
+          "z": -1000000.0
+        }
+      ],
+      "two_step_semilinear": [
+        {
+          "N": 16,
+          "finite": true,
+          "kappa": 16777216.0,
+          "manifold_defect_times_kappa": -5.217346618735519e-6,
+          "x_error_over_h5": -0.021174256457015872,
+          "y_error_over_h3": -1.2850348716977184e-9
+        },
+        {
+          "N": 32,
+          "finite": true,
+          "kappa": 1073741824.0,
+          "manifold_defect_times_kappa": -2.1511832404286224e-7,
+          "x_error_over_h5": -0.008786685764789581,
+          "y_error_over_h3": -6.581938675185618e-12
+        },
+        {
+          "N": 64,
+          "finite": true,
+          "kappa": 68719476736.0,
+          "manifold_defect_times_kappa": -1.0958358886981046e-8,
+          "x_error_over_h5": -1.073197364807129,
+          "y_error_over_h3": -4.967433189502317e-14
+        },
+        {
+          "N": 128,
+          "finite": true,
+          "kappa": 4398046511104.0,
+          "manifold_defect_times_kappa": -6.569109700649278e-10,
+          "x_error_over_h5": -131.10701751708984,
+          "y_error_over_h3": -4.009951381090792e-15
+        },
+        {
+          "N": 256,
+          "finite": true,
+          "kappa": 281474976710656.0,
+          "manifold_defect_times_kappa": -5.423088644818108e-10,
+          "x_error_over_h5": -199103.81518554688,
+          "y_error_over_h3": -2.1789176490909023e-14
+        }
+      ]
+    }
+  ],
+  "schema": "vigilode-thread-transfer-negative-controls-native-v1"
+}

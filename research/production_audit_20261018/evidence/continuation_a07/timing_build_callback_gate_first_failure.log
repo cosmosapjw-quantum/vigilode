@@ -1,0 +1,10 @@
+Command: env RAYON_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 cargo build --locked --offline --profile measurement
+Working directory: tools/benchmarks/diffsol/a07
+Exit code: 101
+
+Compiler failure:
+error[E0609]: no field `callback_counters` on type `RunFailure`
+  --> src/main.rs:575:40
+The non-allocation-audit timing build had compiled out RunFailure.callback_counters but its Row failure initializer referenced it unconditionally.
+
+Repair: cfg-gated the Row initializer: use the instrumented receipt with allocation-audit, and None in the timing build. No tolerance, model, or measurement changes.

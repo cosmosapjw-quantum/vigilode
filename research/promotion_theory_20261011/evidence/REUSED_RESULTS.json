@@ -1,0 +1,2275 @@
+{
+  "schema": "vigilode-theory-source-reuse-v1",
+  "source_commit": "8ce9bda0d72d308facd615ac42ec137560fd68c6",
+  "source_ledger": "research/LEDGER.jsonl",
+  "source_ledger_sha256": "4e1fff932cffdc796996f52569464bd75ac0ab834a379bdf65e2631859182fb2",
+  "coverage": {
+    "ledger_rows": 103,
+    "active_rows": 91,
+    "reading_scope": "All 103 claim rows and supersession edges; representative current primary reports/source/API boundaries. All historical scientific campaigns reused, zero reruns. No line-by-line full repository certification.",
+    "historical_frozen_preledger_nodes": "Inherited through published ledger seed rows and archive history_matrix; no reconstruction of absent source or missing raw campaigns."
+  },
+  "published_refs": {
+    "remaining": "8ce9bda0d72d308facd615ac42ec137560fd68c6",
+    "ct01": "0ce7c3275625dcac46e323dd7eaf17efa961fbdf",
+    "wave1": "f5a1a7b03af55f2bd986ce439a20a709542a9a43",
+    "reaudit": "4c643172ec488f0ae9108f574915a9bb5069fd3e",
+    "archive_index": "6852b4af9ecadfb8c3aa50c4d240301dd1f3a4db"
+  },
+  "current_safety_closures": [
+    {
+      "finding": "F101",
+      "node": "AS02",
+      "status": "IMPLEMENTED_PUBLISHED",
+      "source": "crates/rodas5p-integrators/src/adaptive.rs",
+      "implementation_commit": "84335c4",
+      "evidence": "docs/reviews/20261010_accuracy_speed/WAVE1_STATUS.md"
+    },
+    {
+      "finding": "F102",
+      "node": "AS01",
+      "status": "IMPLEMENTED_PUBLISHED",
+      "source": "crates/rodas5p-integrators/src/rodas5p_matrix_free_fast.rs",
+      "implementation_commit": "f0a15e8",
+      "evidence": "docs/reviews/20261010_accuracy_speed/WAVE1_STATUS.md"
+    },
+    {
+      "finding": "F104",
+      "node": "AS03",
+      "status": "IMPLEMENTED_PUBLISHED_WITH_EXECUTION_RECEIPT_LIMITATION",
+      "source": "tools/evidence_schema_v2.py",
+      "implementation_commit": "53b7689",
+      "evidence": "docs/reviews/20261010_accuracy_speed/WAVE1_STATUS.md"
+    }
+  ],
+  "pending_registered_nodes": [
+    {
+      "node": "as04_stage_residual_telemetry_20261011",
+      "path": "research/as04_stage_residual_telemetry_20261011/PREREGISTRATION.md",
+      "status": "PREREGISTERED_NOT_EXECUTED",
+      "results_present": false
+    },
+    {
+      "node": "as05_residual_gain_core_20261011",
+      "path": "research/as05_residual_gain_core_20261011/PREREGISTRATION.md",
+      "status": "PREREGISTERED_NOT_EXECUTED",
+      "results_present": false
+    },
+    {
+      "node": "ex01_pexprb_own_step_20261011",
+      "path": "research/ex01_pexprb_own_step_20261011/PREREGISTRATION.md",
+      "status": "PREREGISTERED_NOT_EXECUTED",
+      "results_present": false
+    },
+    {
+      "node": "ht01_homotopy_client_contract_20261011",
+      "path": "research/ht01_homotopy_client_contract_20261011/PREREGISTRATION.md",
+      "status": "PREREGISTERED_NOT_EXECUTED",
+      "results_present": false
+    },
+    {
+      "node": "ht02_homotopy_parallel_pilot_20261011",
+      "path": "research/ht02_homotopy_parallel_pilot_20261011/PREREGISTRATION.md",
+      "status": "PREREGISTERED_NOT_EXECUTED",
+      "results_present": false
+    },
+    {
+      "node": "me01_full_cost_judgement_20261011",
+      "path": "research/me01_full_cost_judgement_20261011/PREREGISTRATION.md",
+      "status": "PREREGISTERED_NOT_EXECUTED",
+      "results_present": false
+    },
+    {
+      "node": "pc01_right_preconditioner_20261011",
+      "path": "research/pc01_right_preconditioner_20261011/PREREGISTRATION.md",
+      "status": "PREREGISTERED_NOT_EXECUTED",
+      "results_present": false
+    },
+    {
+      "node": "py01_laguerre_component_export_20261011",
+      "path": "research/py01_laguerre_component_export_20261011/PREREGISTRATION.md",
+      "status": "PREREGISTERED_NOT_EXECUTED",
+      "results_present": false
+    },
+    {
+      "node": "py02_laguerre_adjoint_bound_20261011",
+      "path": "research/py02_laguerre_adjoint_bound_20261011/PREREGISTRATION.md",
+      "status": "PREREGISTERED_NOT_EXECUTED",
+      "results_present": false
+    },
+    {
+      "node": "py03_single_backend_router_20261011",
+      "path": "research/py03_single_backend_router_20261011/PREREGISTRATION.md",
+      "status": "PREREGISTERED_NOT_EXECUTED",
+      "results_present": false
+    },
+    {
+      "node": "py04_fused_normalization_20261011",
+      "path": "research/py04_fused_normalization_20261011/PREREGISTRATION.md",
+      "status": "PREREGISTERED_NOT_EXECUTED",
+      "results_present": false
+    },
+    {
+      "node": "py05_leja_total_certificate_20261011",
+      "path": "research/py05_leja_total_certificate_20261011/PREREGISTRATION.md",
+      "status": "PREREGISTERED_NOT_EXECUTED",
+      "results_present": false
+    },
+    {
+      "node": "sp02_krylov_workspace_caller_20261011",
+      "path": "research/sp02_krylov_workspace_caller_20261011/PREREGISTRATION.md",
+      "status": "PREREGISTERED_NOT_EXECUTED",
+      "results_present": false
+    },
+    {
+      "node": "sp04_zero_start_recycling_20261011",
+      "path": "research/sp04_zero_start_recycling_20261011/PREREGISTRATION.md",
+      "status": "PREREGISTERED_NOT_EXECUTED",
+      "results_present": false
+    }
+  ],
+  "archive_scope": {
+    "branch_status": "INDEX_ONLY_REMOTE__RAW_PAYLOAD_PENDING",
+    "source": "git show origin/research/rvj-full-history-20261004:research/rvj_full_history_20261004/README_KO.md",
+    "already_integrated_history": "research/rvj_integration_20261004/evidence/history_matrix.md",
+    "already_audited_sources": "research/rvj_integration_20261004/evidence/archive_audit.md",
+    "retained_loop11": "research/rvj_integration_20261004/inputs/loop11_RESEARCH_NOTE_KO.md",
+    "interpretation": "Separate branch is a historical index; the current implementation branch contains the prior source audit, loop11 raw ZIP and translated native follow-ups. Do not equate remote index with full archive payload."
+  },
+  "results": [
+    {
+      "id": "L-0001",
+      "family": "historical_transaction_and_calibration",
+      "source_commit": "501b15e19e888d17f4fdf0171f4a24660ea0e406",
+      "published_verdict": "INCONCLUSIVE",
+      "effective_status": "INCONCLUSIVE",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "v3.5 recorded PASS_ENFORCED_PREFIX_BUDGET_FRESH_DISCRIMINATING_HOLDOUT on the N=320 fresh holdout (29 events, 13 recommendations, 0 unsafe recommendations, 0 budget breaches, 1 exhaustion), but its run source head is absent from this repository's object database and no producing command is recorded in-tree, so this row cannot reproduce the result and records it as INCONCLUSIVE.",
+      "source_paths": [
+        "research/generic_enforced_prefix_budget_v35/results/RESULT_SUMMARY.json",
+        "research/generic_enforced_prefix_budget_v35/results/fresh_holdout320/hires.json",
+        "research/generic_enforced_prefix_budget_v35/results/fresh_holdout320/nonautonomous-forcing.json",
+        "research/generic_enforced_prefix_budget_v35/results/fresh_holdout320/robertson.json",
+        "research/generic_enforced_prefix_budget_v35/results/fresh_holdout320/rotating-nonnormal.json",
+        "research/generic_enforced_prefix_budget_v35/results/fresh_holdout320/semilinear.json",
+        "research/generic_enforced_prefix_budget_v35/results/fresh_holdout320/van-der-pol.json"
+      ],
+      "source_output_sha256": {
+        "research/generic_enforced_prefix_budget_v35/results/RESULT_SUMMARY.json": "cd6222a9d2eb0016d07e365a45f804baef9e24ff3cb8d56534ff1ef96a7d3a5a",
+        "research/generic_enforced_prefix_budget_v35/results/fresh_holdout320/hires.json": "06aaf326b90eb4151f333528b9cd112c52844d8fa2f5ccde75bd5bc9265d9836",
+        "research/generic_enforced_prefix_budget_v35/results/fresh_holdout320/nonautonomous-forcing.json": "a8496db1732e5ad97a5d1623da6da0d16d29d76def0d53826fed676df4df87c9",
+        "research/generic_enforced_prefix_budget_v35/results/fresh_holdout320/robertson.json": "0ee260609290f291f8cfd27b8145a9a79b203fd8be48b97a8cfe214336af411e",
+        "research/generic_enforced_prefix_budget_v35/results/fresh_holdout320/rotating-nonnormal.json": "25b7c1e6eb524e6cc72a586b77982a2034708bad543f8f2158aed7edbee63eda",
+        "research/generic_enforced_prefix_budget_v35/results/fresh_holdout320/semilinear.json": "8fc86afe199527a14440c763b8579d45dc1969ad055e8b79d216323ecf55056e",
+        "research/generic_enforced_prefix_budget_v35/results/fresh_holdout320/van-der-pol.json": "975fc7ffe13fcb50adc62768b4edb5e7491b675a23c510b2a7dfa341c483617c"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0002",
+      "family": "historical_transaction_and_calibration",
+      "source_commit": "535e8f87cf09cc9752081e9e1f3d94d4fb3567bb",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "The v3.6 frozen full-E shadow path conforms to its contract on all 30 consumed shards (127/127 prefix-policy rows bit-exact to v3.5, 64/64 frozen recommendations bit-exact to the preflight, 0 prefix-cap breaches and 0 unsafe recommendations), and re-running the command on 2026-09-29 reproduced the output byte-exactly; this is descriptive contract conformance, not a speedup or fresh-safety claim.",
+      "source_paths": [
+        "research/generic_frozen_full_e_shadow_v36/results/RUNTIME_SHADOW_VERIFICATION.json"
+      ],
+      "source_output_sha256": {
+        "research/generic_frozen_full_e_shadow_v36/results/RUNTIME_SHADOW_VERIFICATION.json": "6019fe94b66c4075c0d020446f3826363a54d10233d3ba805679dcf94c3fcdd3"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0003",
+      "family": "historical_transaction_and_calibration",
+      "source_commit": "72f8ba8f66dcc837a1bfb6a0d75c7b2712c7c93c",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "The v3.7 bounded continuation transaction turned the 64 frozen recommendations into 62 continuation completions and 2 charged 80-JVP cap exhaustions with 0 numerical failures, 0 unsafe recommendations and 0 budget breaches, and re-running the verifier on 2026-09-29 on the runtime shards stored at this commit reproduced the output exactly except input_sha256.binary (the measurement binary was not rebuilt); this is a transaction-semantics result, not a speedup or fresh-safety claim.",
+      "source_paths": [
+        "research/generic_timing_replication_continuation_transaction_v37/results/V37_CONTINUATION_REPLAY_VERIFICATION.json"
+      ],
+      "source_output_sha256": {
+        "research/generic_timing_replication_continuation_transaction_v37/results/V37_CONTINUATION_REPLAY_VERIFICATION.json": "2406c16bdb379992672371432a1fb7681683dd40b8402aa7983a2c67240eb657"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0004",
+      "family": "historical_transaction_and_calibration",
+      "source_commit": "ab8fbcdb709aa1e87603b1ef6f83c5e610c8cb04",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "The canonical v2 RODAS5P calibration executed 54/54 cases with 0 execution failures and every row output-policy-dominated (clipped/dense discrepancy over dense error above the frozen 0.1 limit), so the pass-only freeze was withheld, the Oregonator holdout stayed unopened and no v2 claim was admitted; the cited output is the committed compact extraction of the 260,879,060-byte campaign file, which is not in the repository.",
+      "source_paths": [
+        "research/scientific_validity_v2_20260829/external_reaudit_bundle/rust/calibration_all_cases_compact.json"
+      ],
+      "source_output_sha256": {
+        "research/scientific_validity_v2_20260829/external_reaudit_bundle/rust/calibration_all_cases_compact.json": "23194d4638f16f7b21a79382c274c19a44532c77c707c2d8ebb93908235c456c"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0005",
+      "family": "adversarial_review_imports",
+      "source_commit": "1ba914dc234e25c532a9598b1c30ab156c75218d",
+      "published_verdict": "INCONCLUSIVE",
+      "effective_status": "INCONCLUSIVE",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "The imported R2 re-audit package of source 7708ef9 records 7 findings (1 P1, 6 P2), 11 prior-finding closures, a 14-node development DAG, a partial native suite (632 pass, 23 bounded timeouts, 3 ignored not run) and verdict REWORK; the recorded command checks only package integrity and internal consistency (PASS_PACKAGE_CONTRACTS over 648 files on 2026-09-30), the findings were not re-executed for this row, and no pre-registration exists.",
+      "source_paths": [
+        "research/adversarial_reaudit_20260930_r2/FINDINGS.json",
+        "research/adversarial_reaudit_20260930_r2/REPORT_STATUS.json",
+        "research/adversarial_reaudit_20260930_r2/NEXT_DEVELOPMENT_DAG.json",
+        "research/adversarial_reaudit_20260930_r2/RESEARCH_CLAIMS.json",
+        "research/adversarial_reaudit_20260930_r2/MANIFEST.sha256"
+      ],
+      "source_output_sha256": {
+        "research/adversarial_reaudit_20260930_r2/FINDINGS.json": "b121b37da42223d466d59c468ee5abaa53e6457df0d2cbd9971667eac16e36c0",
+        "research/adversarial_reaudit_20260930_r2/REPORT_STATUS.json": "674565e55378eeb0a3d4a3f54677b8609d650b79f2d4a3fc635380a1d0f66810",
+        "research/adversarial_reaudit_20260930_r2/NEXT_DEVELOPMENT_DAG.json": "be63e340f9e2065191cca8852f2bc9474a442a28f5e612e84bf305eb2d5e8c38",
+        "research/adversarial_reaudit_20260930_r2/RESEARCH_CLAIMS.json": "0cd04dfad0e9e5149c107ac89b2bbde77134db1bb5ecae96021cf34c78f80d37",
+        "research/adversarial_reaudit_20260930_r2/MANIFEST.sha256": "ce693090d8f61721cdcb6ad263dd4334fc4a7fa0d6b4fa1eba7ee8b7256a214e"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0006",
+      "family": "adversarial_review_imports",
+      "source_commit": "4b1be7ed37f022d9c940eb10224b9b7f3f1d8380",
+      "published_verdict": "INCONCLUSIVE",
+      "effective_status": "INCONCLUSIVE",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "Exploratory R3 review records 7 original closures, 1 acknowledged P1 residual and 3 additional P2 counterexamples, bounded polynomial/homotopy/MC research and a 21-node development DAG. Native suite: 625 pass, 26 timeout unresolved, 28 budget not run, 3 ignored; changed contracts 37 pass. The command checks package integrity only, not fresh science. Protocol text was not committed before execution and exact commands/holdout were not fully frozen; ledger INCONCLUSIVE, production REWORK, no speed claim.",
+      "source_paths": [
+        "research/adversarial_reaudit_20261001_r3/FINDINGS.json",
+        "research/adversarial_reaudit_20261001_r3/REPORT_STATUS.json",
+        "research/adversarial_reaudit_20261001_r3/NEXT_DEVELOPMENT_DAG.json",
+        "research/adversarial_reaudit_20261001_r3/RESEARCH_CLAIMS.json",
+        "research/adversarial_reaudit_20261001_r3/polynomial/RESULTS.json",
+        "research/adversarial_reaudit_20261001_r3/homotopy/results.json",
+        "research/adversarial_reaudit_20261001_r3/evidence/runtime/FINAL_RUNTIME_SUMMARY.json",
+        "research/adversarial_reaudit_20261001_r3/MANIFEST.sha256"
+      ],
+      "source_output_sha256": {
+        "research/adversarial_reaudit_20261001_r3/FINDINGS.json": "04df29ccade53b20e668fd5056665e9a3be8ce1820c735f2ff90bbbd3ec9eb35",
+        "research/adversarial_reaudit_20261001_r3/REPORT_STATUS.json": "4ced0723a169fec53ab2e921fa471cc64ca80824a7ac9db72b54e17635efffe4",
+        "research/adversarial_reaudit_20261001_r3/NEXT_DEVELOPMENT_DAG.json": "39b39bb1b8c832116976d78e430a17c17df31c655bb74a78588972b3756ab406",
+        "research/adversarial_reaudit_20261001_r3/RESEARCH_CLAIMS.json": "00c7c53f9053b86024b2722187ba5b01b646a6c52f0c22ad14b1aa12db9f7790",
+        "research/adversarial_reaudit_20261001_r3/polynomial/RESULTS.json": "4a64909fbc67a71928bd0880287732029df0a9a3da34fa9ffb93463d96f5217b",
+        "research/adversarial_reaudit_20261001_r3/homotopy/results.json": "6cb4190e37218969a1fc6248274b7f85b64c4f15f07a084f32048880cec58543",
+        "research/adversarial_reaudit_20261001_r3/evidence/runtime/FINAL_RUNTIME_SUMMARY.json": "9fbf7dc78ad4e864d2e78823b3eb9e1a6f1190332824b7db385b239e04ddd5a9",
+        "research/adversarial_reaudit_20261001_r3/MANIFEST.sha256": "e725c5da5ca761d4aa72a4d2b2e31547538d8307c5f17a2a8d23ccfb40754528"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0007",
+      "family": "statistical_timing_authority",
+      "source_commit": "c8539fec58882b8e8bf28d43439c1163e76f2603",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "The preregistered coverage gate failed: all 18 primary single-case designs covered the corpus estimand only 0.789-0.926 (threshold 0.9374), one also promoting at 0.045 (limit 0.034), while all 18 primary five-case designs covered 0.9925-1.0 with promotion at most 0.0005, so single-case paired timing decisions are not authoritative and no speed claim follows.",
+      "source_paths": [
+        "research/r3_timing_coverage_study_20261001/COVERAGE_STUDY.json"
+      ],
+      "source_output_sha256": {
+        "research/r3_timing_coverage_study_20261001/COVERAGE_STUDY.json": "1c528568a4f36e1ad2364172d1989608a4d6947aa5b5c7a18acf35bd2fa954c0"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0008",
+      "family": "homotopy_causal_certification",
+      "source_commit": "0799a05e6c616084af4d58671ee4c6c93e2c5a1c",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "The preregistered HOM-06 gate failed (SPEEDUP_UNPROVEN): all lanes met the shared accuracy gate with zero per-step admission mismatches, but every certified transactional arm was Blocked against the sequential baseline (speedup point 0.17 at 1 thread, 0.04-0.07 at 2-8 threads) while spending about 5x the RHS evaluations; no speed claim follows.",
+      "source_paths": [
+        "research/r3_matched_accuracy_hom06_20261001/CAMPAIGN.json",
+        "research/r3_matched_accuracy_hom06_20261001/VERIFY.json"
+      ],
+      "source_output_sha256": {
+        "research/r3_matched_accuracy_hom06_20261001/CAMPAIGN.json": "8d665866f10f5c2bc0d945f704e6bc2cd600f8e04b3e4e7f9a1a8abd1aba0980",
+        "research/r3_matched_accuracy_hom06_20261001/VERIFY.json": "cdaf676814fe216237137b60455cd4754bc8578c63ffe31fc4874a50143eff45"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0009",
+      "family": "polynomial_actions",
+      "source_commit": "0799a05e6c616084af4d58671ee4c6c93e2c5a1c",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "The preregistered POLY-03 gate passed for this measured population only: all arms verified within 1e-9 on all 5 cases and warm-coefficient Chebyshev was Promoted against Arnoldi (speedup point 3.17, interval 1.17-13.41), while cold Chebyshev was Inconclusive and cold Laguerre Blocked; under STATISTICAL_AUTHORITY_HOLD, not a production speed claim.",
+      "source_paths": [
+        "research/r3_matched_accuracy_poly03_20261001/CAMPAIGN.json",
+        "research/r3_matched_accuracy_poly03_20261001/VERIFY.json"
+      ],
+      "source_output_sha256": {
+        "research/r3_matched_accuracy_poly03_20261001/CAMPAIGN.json": "fa131ca0320f4b88493634f9c7621611c56cdab23eee141d61164539e0787ef0",
+        "research/r3_matched_accuracy_poly03_20261001/VERIFY.json": "4ecb3fc5d109ef35ccbf3987a8ea16e3222b09b20ef92b5023a0e9ef00710408"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0010",
+      "family": "statistical_timing_authority",
+      "source_commit": "0799a05e6c616084af4d58671ee4c6c93e2c5a1c",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "The corrected coverage study reproduced the L-0007 failure: all 18 primary single-case designs covered 0.7825-0.9255 (threshold 0.93745), while all 18 primary five-case designs covered 0.9935-1.0 with promotion at most 0.0015, so the shared-stream defect did not cause the failure and single-case paired timing decisions remain not authoritative.",
+      "source_paths": [
+        "research/r3_timing_coverage_study_v2_20261001/COVERAGE_STUDY.json"
+      ],
+      "source_output_sha256": {
+        "research/r3_timing_coverage_study_v2_20261001/COVERAGE_STUDY.json": "e0eeb056b88782487615bd9cc2f7e37c26d6d50a3fcaf0e29dfc96d6b9ab2d53"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0011",
+      "family": "regression_and_audit",
+      "source_commit": "b2914f3e3c03eda60a8547619db6284aac8250a2",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "R4 invariant gate FAIL:144 native rows support9 scoped findings(8P2,1P3) in reference time geometry, research transform/stage APIs and timing authority/session validation. Original R3 witnesses mostly close. Four transform false-bound cases, two corrupt-witness and two generic-stage failures are retained.735 native tests:671PASS,4ignored,20timeout,40NOT_RUN; not a complete-suite PASS. No default-solver failure, production readiness or speed promotion is claimed.",
+      "source_paths": [
+        "research/adversarial_reaudit_20261001_r4/NUMERIC_RESULTS.json",
+        "research/adversarial_reaudit_20261001_r4/time/native_raw.jsonl",
+        "research/adversarial_reaudit_20261001_r4/time/EXACT_ORACLE.json",
+        "research/adversarial_reaudit_20261001_r4/polynomial/native.jsonl",
+        "research/adversarial_reaudit_20261001_r4/polynomial/ORACLE_RESULTS.json",
+        "research/adversarial_reaudit_20261001_r4/homotopy/native.jsonl",
+        "research/adversarial_reaudit_20261001_r4/homotopy/RESULTS.json",
+        "research/adversarial_reaudit_20261001_r4/statistics/native.stdout.jsonl",
+        "research/adversarial_reaudit_20261001_r4/evidence/runtime/FINAL_RUNTIME_SUMMARY.json"
+      ],
+      "source_output_sha256": {
+        "research/adversarial_reaudit_20261001_r4/NUMERIC_RESULTS.json": "1434f151325413006fbd1a0279b0638db263c1ff01288c4cfa5a0198efd1715b",
+        "research/adversarial_reaudit_20261001_r4/time/native_raw.jsonl": "9119dfee5cc808469d8945a3ae66e4249db8b629f524016944501f5f735bb1db",
+        "research/adversarial_reaudit_20261001_r4/time/EXACT_ORACLE.json": "efd8a11e361259227f14b2c607e37c66f5e551f531e1cf8b5b409b612d34f833",
+        "research/adversarial_reaudit_20261001_r4/polynomial/native.jsonl": "c820fdc4d3214286f326ae0c502f9fae9c692edc7e8538f1493b1f003116c0ca",
+        "research/adversarial_reaudit_20261001_r4/polynomial/ORACLE_RESULTS.json": "638386d54ce364bdecd09e35173c78310af3770411a909797951a92e23606a01",
+        "research/adversarial_reaudit_20261001_r4/homotopy/native.jsonl": "353cf7f1f9f94d151abeab4c2a7a56adde0be453a25c62c80e70d30490368100",
+        "research/adversarial_reaudit_20261001_r4/homotopy/RESULTS.json": "06cdabe16d93ce56317c0056a7c0011d0ea38e97c22b641f797c4c9a4cb0a5b4",
+        "research/adversarial_reaudit_20261001_r4/statistics/native.stdout.jsonl": "f65cc36b63a00f57807899e18fa924a60cb4ba22bad1491331a9080ede739bfc",
+        "research/adversarial_reaudit_20261001_r4/evidence/runtime/FINAL_RUNTIME_SUMMARY.json": "971cabcf8ca7c9b0e89399ab1c8f0c3826eda3f1dd906ec0627cde8214837037"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0012",
+      "family": "polynomial_actions",
+      "source_commit": "b2914f3e3c03eda60a8547619db6284aac8250a2",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "Bounded standalone candidates PASS their frozen checks:5scaled norms,6inverse-factorials,6adaptive-depth path sums,3diagonal factorizations,32session-interval designs plus6sign enumerations/12controls/4invalid inputs; time candidates match exact fixture geometry. Independent reviewer confirms the stated scopes. These are conditional finite/exact results; Laguerre scale optimization is analysis-only. No production integration, iid verification, general ODE error or measured acceleration claim follows.",
+      "source_paths": [
+        "research/adversarial_reaudit_20261001_r4/NUMERIC_RESULTS.json",
+        "research/adversarial_reaudit_20261001_r4/statistics/EXACT_SESSION_INTERVAL.json",
+        "research/adversarial_reaudit_20261001_r4/homotopy/RESULTS.json",
+        "research/adversarial_reaudit_20261001_r4/polynomial/ORACLE_RESULTS.json",
+        "research/adversarial_reaudit_20261001_r4/time/EXACT_ORACLE.json",
+        "research/adversarial_reaudit_20261001_r4/decision/independent_exact_spotchecks.json",
+        "research/adversarial_reaudit_20261001_r4/decision/independent_median_check.json"
+      ],
+      "source_output_sha256": {
+        "research/adversarial_reaudit_20261001_r4/NUMERIC_RESULTS.json": "1434f151325413006fbd1a0279b0638db263c1ff01288c4cfa5a0198efd1715b",
+        "research/adversarial_reaudit_20261001_r4/statistics/EXACT_SESSION_INTERVAL.json": "b7e1689648a526b466f1c189b69144b1fe90707565ecc3c3d70b55e66df3e791",
+        "research/adversarial_reaudit_20261001_r4/homotopy/RESULTS.json": "06cdabe16d93ce56317c0056a7c0011d0ea38e97c22b641f797c4c9a4cb0a5b4",
+        "research/adversarial_reaudit_20261001_r4/polynomial/ORACLE_RESULTS.json": "638386d54ce364bdecd09e35173c78310af3770411a909797951a92e23606a01",
+        "research/adversarial_reaudit_20261001_r4/time/EXACT_ORACLE.json": "efd8a11e361259227f14b2c607e37c66f5e551f531e1cf8b5b409b612d34f833",
+        "research/adversarial_reaudit_20261001_r4/decision/independent_exact_spotchecks.json": "2cd33827f28b5392e862cbadae7f7e45392fc5dea337259aa999c2a338a61b54",
+        "research/adversarial_reaudit_20261001_r4/decision/independent_median_check.json": "cdd408ee17f8feb6b1fda9e8d1718dccd71ab3b83febb7b4463341f9cafd0950"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0013",
+      "family": "polynomial_actions",
+      "source_commit": "d7005724c294833bb68d0504cec85bccda3f06f1",
+      "published_verdict": "PASS",
+      "effective_status": "SUPERSEDED",
+      "superseded_by": "L-0020",
+      "supersedes": null,
+      "published_claim": "The scalar Laguerre recurrence majorant enclosed the observed error at all 44 evaluated points and exceeded the budget at 8 (rate 0.18 <= 0.5), so a low-degree certified region exists; it is loose (median 162x, up to 3.5e65x at degrees 152-214) and Laguerre stays EstimateOnly pending review.",
+      "source_paths": [
+        "research/r4_laguerre_majorant_scale_20261001/STUDY.json"
+      ],
+      "source_output_sha256": {
+        "research/r4_laguerre_majorant_scale_20261001/STUDY.json": "9078bc6ff4e16cc8eb157aaf5f4ebe2c6c3aca478f17b8f4db430740ab623579"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0014",
+      "family": "polynomial_actions",
+      "source_commit": "d7005724c294833bb68d0504cec85bccda3f06f1",
+      "published_verdict": "FAIL",
+      "effective_status": "SUPERSEDED",
+      "superseded_by": "L-0021",
+      "supersedes": null,
+      "published_claim": "The continuous Laguerre scale never reduced the degree (0 of 22 comparable points, gate requires a quarter) although it kept accuracy and lowered the majorant up to 27x at equal degree; the candidate is rejected and the fixed grid with the scale cap 16 stays.",
+      "source_paths": [
+        "research/r4_laguerre_majorant_scale_20261001/STUDY.json"
+      ],
+      "source_output_sha256": {
+        "research/r4_laguerre_majorant_scale_20261001/STUDY.json": "9078bc6ff4e16cc8eb157aaf5f4ebe2c6c3aca478f17b8f4db430740ab623579"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0015",
+      "family": "shared_shift_jets",
+      "source_commit": "95cb66e072cad7a72addd639447450e306df6b5e",
+      "published_verdict": "PASS",
+      "effective_status": "SUPERSEDED",
+      "superseded_by": "L-0022",
+      "supersedes": null,
+      "published_claim": "All eight frozen-operator arms met relative error <= 1e-10 (max 3.3e-15) with the expected certified/estimate-only labels, counters reconciled (420 and 760 block products), and coefficients were reused only for identical keys (2 setups, 18 reuses over alternating h); timing not evaluated under the authority hold.",
+      "source_paths": [
+        "research/r4_polynomial_regimes_20261001/STUDY.json"
+      ],
+      "source_output_sha256": {
+        "research/r4_polynomial_regimes_20261001/STUDY.json": "65f1c65c1d093d272e599c11d819c93925dfcf9e75ca0e66a9c373ddb491a508"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0016",
+      "family": "shared_shift_jets",
+      "source_commit": "95cb66e072cad7a72addd639447450e306df6b5e",
+      "published_verdict": "PASS",
+      "effective_status": "SUPERSEDED",
+      "superseded_by": "L-0023",
+      "supersedes": null,
+      "published_claim": "Each unbounded-timing arm did exactly its certified twin's degrees, products and coefficient setups and every arm reports cold, warm, setup and formal costs separately; formally a cached eigensystem (124416 setup + 1752 per action) beats Chebyshev (60480 per action) from the third action, a formal count and not a speed claim.",
+      "source_paths": [
+        "research/r4_polynomial_regimes_20261001/STUDY.json"
+      ],
+      "source_output_sha256": {
+        "research/r4_polynomial_regimes_20261001/STUDY.json": "65f1c65c1d093d272e599c11d819c93925dfcf9e75ca0e66a9c373ddb491a508"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0017",
+      "family": "homotopy_causal_certification",
+      "source_commit": "95cb66e072cad7a72addd639447450e306df6b5e",
+      "published_verdict": "FAIL",
+      "effective_status": "SUPERSEDED",
+      "superseded_by": "L-0024",
+      "supersedes": null,
+      "published_claim": "Full and blocked doubling certificates were bit-identical for n=1,2,4 but neither closed its radius in six attempts at n=8 and 16, so the gate fails; the serial certificate was cheapest at every n (425-26000 operations) and SPEEDUP_UNPROVEN is retained with the idealized budget 7.38 vs 8 solves at n=16, P=8.",
+      "source_paths": [
+        "research/r4_homotopy_certificate_cost_20261001/STUDY.json"
+      ],
+      "source_output_sha256": {
+        "research/r4_homotopy_certificate_cost_20261001/STUDY.json": "93bc6615663dfea3e51175a256a545439c2b04e97e88370093d1ae707f19de47"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0018",
+      "family": "statistical_timing_authority",
+      "source_commit": "d7005724c294833bb68d0504cec85bccda3f06f1",
+      "published_verdict": "PASS",
+      "effective_status": "SUPERSEDED",
+      "superseded_by": "L-0025",
+      "supersedes": null,
+      "published_claim": "All 96 in-domain scenarios met the exact finite-sample bound 1 - C q(S,k) within 0.0222 (worst margin -0.0023) and all 40 one-case exact checks matched q within 0.004; the drift law that breaks iid sessions failed as expected. Recorded as a hold pending independent domain review, not timing authority.",
+      "source_paths": [
+        "research/r4_session_median_coverage_20261001/COVERAGE_STUDY.json"
+      ],
+      "source_output_sha256": {
+        "research/r4_session_median_coverage_20261001/COVERAGE_STUDY.json": "dd2cb707de4a6925af6f01ad4750c7d95d9a847205d7a63d123d289dcaf7c87d"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0019",
+      "family": "regression_and_audit",
+      "source_commit": "f18ceb5f888303bbe5db1753faf2f3cdcaefb362",
+      "published_verdict": "PASS",
+      "effective_status": "SUPERSEDED",
+      "superseded_by": "L-0026",
+      "supersedes": null,
+      "published_claim": "All 60 named tests the R4 audit left at a bounded timeout or skipped for budget passed when run individually (60 PASS, 0 FAIL, 0 TIMEOUT, 0 NOT_FOUND; longest 409 s, total 1585 s), so the remainder was budget, not failures; the four ignored tests were listed and not run.",
+      "source_paths": [
+        "research/r4_runtime_remainder_20261001/NAMED_TESTS.json"
+      ],
+      "source_output_sha256": {
+        "research/r4_runtime_remainder_20261001/NAMED_TESTS.json": "c4fd55f0e4e53d59ac782b489cb2e454e917a504d66fdb05d9d2c7c44c928e26"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0020",
+      "family": "polynomial_actions",
+      "source_commit": "d7005724c294833bb68d0504cec85bccda3f06f1",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": "L-0013",
+      "published_claim": "Provenance correction of L-0013: inputs hashed at execution commit d700572 with the preregistration before its results; the scalar Laguerre recurrence majorant enclosed the error against an f64 reference at all 44 evaluated points (31 distinct evaluations) and exceeded the budget at 8 (4 distinct cases, rate 0.18 <= 0.5); this is an empirical check, not a certified region, and it is loose (median 157x, up to 3.5e65x at degrees 152-214), so Laguerre stays EstimateOnly.",
+      "source_paths": [
+        "research/r4_laguerre_majorant_scale_20261001/STUDY.json"
+      ],
+      "source_output_sha256": {
+        "research/r4_laguerre_majorant_scale_20261001/STUDY.json": "9078bc6ff4e16cc8eb157aaf5f4ebe2c6c3aca478f17b8f4db430740ab623579"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0021",
+      "family": "polynomial_actions",
+      "source_commit": "d7005724c294833bb68d0504cec85bccda3f06f1",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": "L-0014",
+      "published_claim": "Provenance correction of L-0014: inputs hashed at execution commit d700572 with the preregistration before its results; the continuous Laguerre scale never reduced the degree (0 of 22 comparable points, gate requires a quarter) although it kept accuracy and lowered the majorant up to 27x at equal degree (diag24-narrow, h=0.1, budget 1e-6); the candidate is rejected and the fixed grid with the scale cap 16 stays.",
+      "source_paths": [
+        "research/r4_laguerre_majorant_scale_20261001/STUDY.json"
+      ],
+      "source_output_sha256": {
+        "research/r4_laguerre_majorant_scale_20261001/STUDY.json": "9078bc6ff4e16cc8eb157aaf5f4ebe2c6c3aca478f17b8f4db430740ab623579"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0022",
+      "family": "shared_shift_jets",
+      "source_commit": "95cb66e072cad7a72addd639447450e306df6b5e",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": "L-0015",
+      "published_claim": "Provenance correction of L-0015: inputs hashed at execution commit 95cb66e with the preregistration before its results; all eight frozen-operator arms met relative error <= 1e-10 (max 3.3e-15) with the expected certified/estimate-only labels, counters reconciled (420 and 760 block products), and coefficients were reused only for identical keys (2 setups, 18 reuses over alternating h); timing not evaluated under the authority hold.",
+      "source_paths": [
+        "research/r4_polynomial_regimes_20261001/STUDY.json"
+      ],
+      "source_output_sha256": {
+        "research/r4_polynomial_regimes_20261001/STUDY.json": "65f1c65c1d093d272e599c11d819c93925dfcf9e75ca0e66a9c373ddb491a508"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0023",
+      "family": "shared_shift_jets",
+      "source_commit": "95cb66e072cad7a72addd639447450e306df6b5e",
+      "published_verdict": "PASS",
+      "effective_status": "SUPERSEDED",
+      "superseded_by": "L-0027",
+      "supersedes": "L-0016",
+      "published_claim": "Provenance correction of L-0016: inputs hashed at execution commit 95cb66e with the preregistration before its results; each unbounded-timing arm ran its certified twin's polynomial degrees, block products and coefficient setups, which holds by construction (one routine, one flag); the certified arm's enclosure work is not counted and is about 10x in the warm wall diagnostic; formally a cached eigensystem (124416 setup + 4056 per action, corrected from 1752) beats Chebyshev (60480) from the third action, a formal count, not a speed claim.",
+      "source_paths": [
+        "research/r4_polynomial_regimes_20261001/STUDY.json"
+      ],
+      "source_output_sha256": {
+        "research/r4_polynomial_regimes_20261001/STUDY.json": "65f1c65c1d093d272e599c11d819c93925dfcf9e75ca0e66a9c373ddb491a508"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0024",
+      "family": "homotopy_causal_certification",
+      "source_commit": "95cb66e072cad7a72addd639447450e306df6b5e",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": "L-0017",
+      "published_claim": "Provenance correction of L-0017: inputs hashed at execution commit 95cb66e with the preregistration before its results; full and blocked doubling certificates were bit-identical for n=1,2,4 but neither closed its radius in six attempts at n=8 and 16, so the gate fails; the serial certificate was cheapest at every n (425-26000 operations) and SPEEDUP_UNPROVEN is retained with the idealized budget 7.38 vs 8 solves at n=16, P=8.",
+      "source_paths": [
+        "research/r4_homotopy_certificate_cost_20261001/STUDY.json"
+      ],
+      "source_output_sha256": {
+        "research/r4_homotopy_certificate_cost_20261001/STUDY.json": "93bc6615663dfea3e51175a256a545439c2b04e97e88370093d1ae707f19de47"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0025",
+      "family": "statistical_timing_authority",
+      "source_commit": "d7005724c294833bb68d0504cec85bccda3f06f1",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": "L-0018",
+      "published_claim": "Provenance correction of L-0018: inputs hashed at execution commit d700572 with the preregistration before its results; all 96 in-domain scenarios met 1 - C q(S,k) within 0.0222 (worst margin -0.0023) and all 40 one-case exact checks matched q (z in [-2.27, 2.03]), though the two-sided check cannot detect over-conservatism where q < 0.0222 (S=8) and covers about 3 distinct laws; drift failed as expected; held pending independent domain review, domain S in {6,8,12,24}.",
+      "source_paths": [
+        "research/r4_session_median_coverage_20261001/COVERAGE_STUDY.json"
+      ],
+      "source_output_sha256": {
+        "research/r4_session_median_coverage_20261001/COVERAGE_STUDY.json": "dd2cb707de4a6925af6f01ad4750c7d95d9a847205d7a63d123d289dcaf7c87d"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0026",
+      "family": "regression_and_audit",
+      "source_commit": "f18ceb5f888303bbe5db1753faf2f3cdcaefb362",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": "L-0019",
+      "published_claim": "Provenance correction of L-0019: inputs hashed at execution commit f18ceb5 with the preregistration before its results; all 60 named tests the R4 audit left at a bounded timeout or skipped for budget passed when run individually (60 PASS, 0 FAIL, 0 TIMEOUT, 0 NOT_FOUND; longest 409 s, total 1585 s), so the remainder was budget, not failures; the four ignored tests were listed and not run.",
+      "source_paths": [
+        "research/r4_runtime_remainder_20261001/NAMED_TESTS.json"
+      ],
+      "source_output_sha256": {
+        "research/r4_runtime_remainder_20261001/NAMED_TESTS.json": "c4fd55f0e4e53d59ac782b489cb2e454e917a504d66fdb05d9d2c7c44c928e26"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0027",
+      "family": "shared_shift_jets",
+      "source_commit": "95cb66e072cad7a72addd639447450e306df6b5e",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": "L-0023",
+      "published_claim": "Wording correction of L-0023 (same inputs at 95cb66e): each unbounded-timing arm ran its certified twin's polynomial degrees, block products and coefficient setups, which holds by construction; the certified arm's enclosure work is not counted, and its warm wall diagnostic is 9.9x (cached Chebyshev), 2.4x (uncached Chebyshev), 22.8x (cached Laguerre) and 2.5x (uncached Laguerre) the unbounded arm's; formally a cached eigensystem (124416 setup + 4056 per action) beats Chebyshev (60480) from the third action, not a speed claim.",
+      "source_paths": [
+        "research/r4_polynomial_regimes_20261001/STUDY.json"
+      ],
+      "source_output_sha256": {
+        "research/r4_polynomial_regimes_20261001/STUDY.json": "65f1c65c1d093d272e599c11d819c93925dfcf9e75ca0e66a9c373ddb491a508"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0028",
+      "family": "benchmark_and_fast_drivers",
+      "source_commit": "fad4dc39bd70744ed10a71782284497981fbc114",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "The benchmark is valid (bit-identical RHS/Jacobian parity, reference uncertainty <= 3.8e-13, deterministic repository arms). At matched error RODAS5P was 1.1x-378x cheaper than the repository BDF2 and Radau on HIRES, van der Pol and Brusselator, and 2.2x-5.9x costlier than the repository Radau on Robertson; SciPy BDF used fewer LU factorizations and Jacobians on all four problems; wall time against SciPy includes Python overhead and is diagnostic only.",
+      "source_paths": [
+        "research/stiff_bdf_radau_benchmark_20261001/RUST.json",
+        "research/stiff_bdf_radau_benchmark_20261001/SCIPY.json",
+        "research/stiff_bdf_radau_benchmark_20261001/ANALYSIS.json"
+      ],
+      "source_output_sha256": {
+        "research/stiff_bdf_radau_benchmark_20261001/RUST.json": "f204c2276404d451349491e1ec0f701a3bc90f8ef58381c32bd7960b3c998d44",
+        "research/stiff_bdf_radau_benchmark_20261001/SCIPY.json": "a36d2c8fd4575f35c5649a957fa9ada4dca525199ad31ee748ecae84422f5660",
+        "research/stiff_bdf_radau_benchmark_20261001/ANALYSIS.json": "0a816616bd86943101db12bd6343caea6af1368883fbab8bb3264fced9017f9b"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0029",
+      "family": "benchmark_and_fast_drivers",
+      "source_commit": "e6a82a68995c256a8235192021ff21eb1b3e21a9",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "The native comparison is valid (bit-identical C/Rust RHS and Jacobians, reference uncertainty <= 3.8e-13, all arms deterministic, 175/175 runs completed). At matched error Hairer RADAU5 and RODAS took 0.04-0.25x RODAS5P wall time everywhere and CVODE 0.19-1.34x; RODAS5P factorization counts are comparable, but it spends 8-16x more time per attempted step than RODAS on small problems, and at n=400 its faer LU and per-step overhead dominate.",
+      "source_paths": [
+        "research/stiff_native_benchmark_20261001/RUST.json",
+        "research/stiff_native_benchmark_20261001/NATIVE.json",
+        "research/stiff_native_benchmark_20261001/ANALYSIS.json"
+      ],
+      "source_output_sha256": {
+        "research/stiff_native_benchmark_20261001/RUST.json": "86d3db8d6610e573d6d73940a02de9051fc24a0b9501041ef75a8e69f5859bbb",
+        "research/stiff_native_benchmark_20261001/NATIVE.json": "5064b638b411fb46089b336a351325a4dbc12acfeacdff2edb226aa80e8fd1ec",
+        "research/stiff_native_benchmark_20261001/ANALYSIS.json": "1cde4762e2b2efc0b50b10919f860b7b2cd2ffe29d0f1da5eec7c49e761bf592"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0030",
+      "family": "benchmark_and_fast_drivers",
+      "source_commit": "cc4071bf976d297f88a268d2ac9a63e6e9bca4a7",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "Gate FAIL: RODAS5P instructions attributed to named categories fell short of 90% (other 41-57%) because the preregistered mapping missed glibc, which has line tables here, and faer gemm kernels without them; profiled runs matched the benchmark and callgrind was deterministic. Instructions per attempted step: RODAS5P 115k, 79.5k and 36.4M against Hairer RODAS 9.2k, 2.9k and 8.8M (12.6x, 27x, 4.1x).",
+      "source_paths": [
+        "research/stiff_rodas5p_profile_20261002/PROFILE.json",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.hairer-rodas.brusselator-1d-200.1.gz",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.hairer-rodas.brusselator-1d-200.2.gz",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.hairer-rodas.hires.1.gz",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.hairer-rodas.hires.2.gz",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.hairer-rodas.van-der-pol-mu1000.1.gz",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.hairer-rodas.van-der-pol-mu1000.2.gz",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.rodas5p.brusselator-1d-200.1.gz",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.rodas5p.brusselator-1d-200.2.gz",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.rodas5p.hires.1.gz",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.rodas5p.hires.2.gz",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.rodas5p.van-der-pol-mu1000.1.gz",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.rodas5p.van-der-pol-mu1000.2.gz"
+      ],
+      "source_output_sha256": {
+        "research/stiff_rodas5p_profile_20261002/PROFILE.json": "961a157f8b6d1698b5611085bd8ccb6a7b20be77a289d2f2081a87ca664f0ab7",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.hairer-rodas.brusselator-1d-200.1.gz": "791e915ff2dc3fba6f33cdf1225f26386111992c43bb734f733ecff7517ddd34",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.hairer-rodas.brusselator-1d-200.2.gz": "df6643306ecbfbee9c882587ed51e746cf74d7b22f33d978b44ae0448b717ffb",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.hairer-rodas.hires.1.gz": "638c6182a8c0702e0257fcd9f7431814185b94d84fc2371262b43adffbab639b",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.hairer-rodas.hires.2.gz": "3ddca7491c18419d0c464ea20202f46a3e5c5f146c6ad49f2f9ada39653b5d36",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.hairer-rodas.van-der-pol-mu1000.1.gz": "45da42de5d5e2ddafeaba5c4a02ee922c39a66609d3abcf5d3db5a7bc8c46b76",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.hairer-rodas.van-der-pol-mu1000.2.gz": "bd65d1d7ea7e879ff7a441351bb8798b8419554514f588bab0a98ac91ca2f7c3",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.rodas5p.brusselator-1d-200.1.gz": "44f5f4ce6366bbf33ec5d4330d9a27269f5aa00731d05b8c2193ef258d8741fb",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.rodas5p.brusselator-1d-200.2.gz": "57a31c987f9c6e78e952b1eac5f79ad835fca16d4d42b46b3bc776759cb6a78a",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.rodas5p.hires.1.gz": "a753dcd03dbd916681aeed72434d881743b30abf4ba25bdd3e745781dab37225",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.rodas5p.hires.2.gz": "dddcafbc6783184c12f4462ca608798650f0eb0a4d401e737ef52030eec1910b",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.rodas5p.van-der-pol-mu1000.1.gz": "3b95a950ed8312934cfbeb4834039b4dabe46607ea79dd9dd2b3591af3e1d157",
+        "research/stiff_rodas5p_profile_20261002/callgrind/callgrind.rodas5p.van-der-pol-mu1000.2.gz": "ba3fef8e28df794baf551c59f80ca967c48d534824c3c3a09336218ab1a672ec"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0031",
+      "family": "benchmark_and_fast_drivers",
+      "source_commit": "0b39b58cb3dc124179172e86234eb13e0d10edd6",
+      "published_verdict": "INCONCLUSIVE",
+      "effective_status": "INCONCLUSIVE",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "Exploratory: on HIRES and van der Pol 37-52% of RODAS5P instructions are inside malloc/free (per-stage Vec allocations, step copies) and 12-17% in faer small-matrix solves; on Brusselator n=400 faer factorization takes 43%, dense matrix-vector products 27% (diagnostic residual after each direct solve and Jacobian products for gamma terms, not vectorized) and matrix construction 14%; perf wall samples agree (allocator 38-50%, matvec 35%).",
+      "source_paths": [
+        "research/stiff_rodas5p_profile_20261002/POSTHOC.json"
+      ],
+      "source_output_sha256": {
+        "research/stiff_rodas5p_profile_20261002/POSTHOC.json": "c5a98e5836e09b74b418637d4d3f5ef3cd90411d020890089123c90bf26b0ab7"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0032",
+      "family": "benchmark_and_fast_drivers",
+      "source_commit": "7d25d19e5fe7c05a893d12732a846c7e2fd292f2",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: the lean RODAS5P driver executes 0.178x (HIRES), 0.119x (van der Pol) and 0.259x (Brusselator n=400) the instructions per attempted step of the sequential path with identical attempts and final-time errors within 1.001x at all 35 points; diagnostically it is 3-11x faster at matched error, faster than CVODE on the small problems, and 1-3.7x behind Hairer RADAU5/RODAS (was 4-25x).",
+      "source_paths": [
+        "research/stiff_rodas5p_fast_20261002/RUST.json",
+        "research/stiff_rodas5p_fast_20261002/NATIVE.json",
+        "research/stiff_rodas5p_fast_20261002/ANALYSIS.json",
+        "research/stiff_rodas5p_fast_20261002/EVALUATION.json"
+      ],
+      "source_output_sha256": {
+        "research/stiff_rodas5p_fast_20261002/RUST.json": "dc1e239f0072e9ac71dbeca7ff3b4c3ae9feea8e1047eec55ec3e20ae58687af",
+        "research/stiff_rodas5p_fast_20261002/NATIVE.json": "ac254de5f2a20c94c34408dccce8726952eb4d007cd14228a47347a212592eb3",
+        "research/stiff_rodas5p_fast_20261002/ANALYSIS.json": "5d7535df41b17284c4ef7c5605602227269f9bf9b303217551aec6cd458494f9",
+        "research/stiff_rodas5p_fast_20261002/EVALUATION.json": "d101ce08c734c9cd6f6032a147b01db3d9519dfe5bed0b1d599bc41bf088db09"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0033",
+      "family": "benchmark_and_fast_drivers",
+      "source_commit": "df151d2fc7d68e288f298955d27181433a4a4040",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL: v2 reproduces v1 exactly at all 35 points and cuts instructions per attempt to 0.397x on Brusselator n=400 (gate 0.6), but not on the small problems (HIRES 1.011x, van der Pol 0.973x; gate 0.95). Diagnostically, on both Brusselator sizes every native arm took 1.03-4.0x v2 wall time at matched error; on the small problems Hairer RADAU5/RODAS stay 0.41-1.9x of it.",
+      "source_paths": [
+        "research/stiff_rodas5p_fast_v2_20261002/RUST.json",
+        "research/stiff_rodas5p_fast_v2_20261002/NATIVE.json",
+        "research/stiff_rodas5p_fast_v2_20261002/ANALYSIS.json",
+        "research/stiff_rodas5p_fast_v2_20261002/EVALUATION.json"
+      ],
+      "source_output_sha256": {
+        "research/stiff_rodas5p_fast_v2_20261002/RUST.json": "d25daa25934bbc9a04e4cd7a8d301bd770107dc398c6c94e70de977d64fabc15",
+        "research/stiff_rodas5p_fast_v2_20261002/NATIVE.json": "a8f161e811e3b2c64f84648a8d1a499a12c453cfd54331ca152eda3d60e9c036",
+        "research/stiff_rodas5p_fast_v2_20261002/ANALYSIS.json": "9df986e3be202f85a8a8371ad69e5962281aa9a1a9d530ed749e6edc3813eda3",
+        "research/stiff_rodas5p_fast_v2_20261002/EVALUATION.json": "d03339aae5b11aaff0402ce9bfc6446acaaf6c3723bca088f0397fb51f8ffb17"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0034",
+      "family": "homotopy_causal_certification",
+      "source_commit": "8f8b6d779c05104b819fc1049b1f8d4cf6341fed",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: natively, the six-attempt schedule still fails at n=8 and 16 (L-0017/L-0024 stay FAIL); with 8 attempts the blocked and full certificates first close at attempts 4,5,6,7,8 for n=1,2,4,8,16, bit-identical to each other, and every native state radius lies 2.7e-15 to 5.8e-15 relative above the exact-rational reference. Radius diagnosis only; no admission or efficiency claim.",
+      "source_paths": [
+        "research/thread_transfer_radius_replay_20261002/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/thread_transfer_radius_replay_20261002/RESULTS.json": "6b8f5d96540663260fe874a191702e93e5e5c3e4b52b36d273797e47171d1456"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0035",
+      "family": "homotopy_causal_certification",
+      "source_commit": "a8554b2f622c0368a5216e41e30de49c11c54051",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: action-first, matrix-order and causal path sums agree bit for bit on integer blocks (s=1,3,8,9,16); all invalid structures are rejected; on the five R4 fixtures the action certificate closes at the same attempt as the blocked one, encloses the exact-rational stage roots, differs from it by at most 4.4e-16 relative, is bit-identical for 1-8 workers, and counts 0.565x the directed operations and 0.64x the allocated values. Counted cost only; the serial certificate stays cheaper (425-26000 ops).",
+      "source_paths": [
+        "research/thread_transfer_path_action_20261002/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/thread_transfer_path_action_20261002/RESULTS.json": "75ba0c83b4f51d40a0aefbd07a99295eabc0d61da0f13c552ce4ae1929c9f412"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0036",
+      "family": "homotopy_causal_certification",
+      "source_commit": "a8554b2f622c0368a5216e41e30de49c11c54051",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: the residual-seeded radius D=2 max B E(0) closes all five R4 fixtures with one preflight and one check in both path orders (vs 4-8 schedule attempts) and its certificates enclose the exact roots; a constant box reproduces the blocked certificate bit for bit; on k_i=1+k_(i-1)^2 no tested common radius closes while the causal box and (0,1,2) do; the causal box closes all R4 fixtures; invalid radii and factors fail closed. No admission or speed claim.",
+      "source_paths": [
+        "research/thread_transfer_radius_proposal_20261002/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/thread_transfer_radius_proposal_20261002/RESULTS.json": "0e1bca0f5412a307fe81f8b725057b331230ac9795832b4c81300e739f2d5ef5"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0037",
+      "family": "matrix_free_contracts",
+      "source_commit": "672a12abdd1f1f268de00991bc754afed6bce009",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: SymPy reduces r_U - gamma r_K to zero (generic 2x2 M, J; 3 stages); every exact D_Gamma (max 4.1e-15), D_alpha (1.2e-15), output (1.2e-15), embedded (1.1e-16) and dense (1.4e-14) discrepancy lies in its Rust enclosure; native |r_U(SK) - gamma r_K| stays within 0.16 of bound plus rounding allowance on 16 cases; receipts fail on any of 13 mutations; budgets map as |gamma| tau_K. Stage-target transport only.",
+      "source_paths": [
+        "research/thread_transfer_mf_target_20261002/RESULTS.json",
+        "research/thread_transfer_mf_target_20261002/EXACT_CHECK.json"
+      ],
+      "source_output_sha256": {
+        "research/thread_transfer_mf_target_20261002/RESULTS.json": "fd7d09f8a8e986dd85c28d2c74673d8b86760a8fd6dbe4bc6a676730d86491ae",
+        "research/thread_transfer_mf_target_20261002/EXACT_CHECK.json": "05d3fee21847d2c8df2bbb21e3a44510c59c613f8e958d98c0c1d1f0d3f30963"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0038",
+      "family": "matrix_free_contracts",
+      "source_commit": "55267cf1c596c5823a900c6873d8b3c7b9e166e7",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL: RHS-assembly JVPs drop 7 -> 0 per attempt everywhere, the driver is strictly matrix-free and its rollback/output semantics hold, and adaptive accuracy matches the sequential MF step (within 3x) on 17 of 18 runs; but GCRO-DR on the Brusselator completes for neither driver, 22 of 36 one-step comparisons miss the preregistered tolerances (Krylov noise against near-zero error norms, a divergent Robertson step, GCRO-DR failures), and allocations are 0.32-1.03x, not <= 0.5x, of the sequential step's.",
+      "source_paths": [
+        "research/thread_transfer_mf_workspace_20261002/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/thread_transfer_mf_workspace_20261002/RESULTS.json": "d800fb0e21fcdcfd60b4a61e1915cdf8f5df58f83757e036b81c3045e881c014"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0039",
+      "family": "polynomial_actions",
+      "source_commit": "c489795ef454e56b3b84115e679ec52f77c3a818",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: on 9 cases the identity sum c_n (t_hat_n - t_n) = sum z_j(X) delta_j holds exactly, every native envelope is at least the exact Bernstein bound (1x to 111x of it) and |z_j| on 257 points, and every exact recurrence error lies within sum beta_j eps_j; the adjoint bound is 7.35x (m=16) to 7.6e13x (m=64) tighter than the R4 majorant; joint_phi_action reports it per column for degree <= 128 while total_error stays EstimateOnly. One proved component, not a total certificate.",
+      "source_paths": [
+        "research/thread_transfer_laguerre_adjoint_20261002/RESULTS.json",
+        "research/thread_transfer_laguerre_adjoint_20261002/EXACT_CHECK.json"
+      ],
+      "source_output_sha256": {
+        "research/thread_transfer_laguerre_adjoint_20261002/RESULTS.json": "65e3c1be8e217d641bdfc005e2f92df4e113445794448807fbf77fc571010aec",
+        "research/thread_transfer_laguerre_adjoint_20261002/EXACT_CHECK.json": "ee6db97b657cedbe283a2079697e61e78e4f0841b717ac7c893550855b565306"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0040",
+      "family": "regression_and_audit",
+      "source_commit": "4e86588acf19114812456e2adc725ccd8bdfb950",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: the vendored RVJ5 scripts pass 40/40 exact and 89/89 numeric checks (two-step y error/h^3 1.35 at N=256, tending to 4/3; embedded effectivity 5.0e-6 at z=-1e6). Natively, none of RODAS5P, EXPRB43, PEXPRB54S4 shares either counterexample: two-step y errors/h^3 are at most 1.3e-9, observed orders 5.0/4.0/5.0 at kappa=8, effectivities 4.6/1.4e6/3.1 at z=-1e6. Method-specific regression results only.",
+      "source_paths": [
+        "research/thread_transfer_negative_controls_20261002/thread_loop3/results/exact_loop3.json",
+        "research/thread_transfer_negative_controls_20261002/thread_loop3/results/numeric_loop3.json",
+        "research/thread_transfer_negative_controls_20261002/NATIVE.json"
+      ],
+      "source_output_sha256": {
+        "research/thread_transfer_negative_controls_20261002/thread_loop3/results/exact_loop3.json": "a6f5ad8251f009d5da7582bd3f985f0fd4e71abe9e94fef8994e54ec0fd6c9a0",
+        "research/thread_transfer_negative_controls_20261002/thread_loop3/results/numeric_loop3.json": "e113055217ed687f525f18e63512796ec3762533a008de9bf4b796c2f94648db",
+        "research/thread_transfer_negative_controls_20261002/NATIVE.json": "92c632f05e6488fca3d502eedc67587d066c8223bbe6a4c65623b6844f539698"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0041",
+      "family": "benchmark_and_fast_drivers",
+      "source_commit": "8d41b8b8d9150340e301316077d20f65e99c8de6",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: the small-n driver reproduces v2 exactly (final states, steps, RHS/Jacobian/factorization counts) at all 9 points and cuts instructions per attempt to 0.393x (van der Pol, n=2; gate 0.8), 0.602x (HIRES, n=8; gate 0.8) and 0.444x (Robertson, reported); per ensemble trajectory 0.393x with identical checksums. Counted instructions only; no wall-time claim; L-0033 stays FAIL.",
+      "source_paths": [
+        "research/thread_transfer_smalln_cost_20261002/EVALUATION.json"
+      ],
+      "source_output_sha256": {
+        "research/thread_transfer_smalln_cost_20261002/EVALUATION.json": "ed0d6b324239bbfa10a458ddac6b2d2c112ddc0bbd02d4927fab6a4aba7b337d"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0042",
+      "family": "polynomial_actions",
+      "source_commit": "94c3f8f770e6e50dba9b4fc2eb111f34f1b9150d",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: identical keys hit with bit-identical envelopes and zero work; changes of degree, extent (1 ulp), depth, one coefficient (1 ulp), h and proof version all miss; the combined same-vector bound encloses the exact fused recurrence error (3.9e-17 vs 4.8e-16 and 3.8e-17 vs 5.1e-16) but equals the sum of column bounds to 1e-11 (all column coefficients share one sign). Setup costs 2.3e4 to 7.5e6 interval operations for m = 16..128 (exponent 2.78), 11 to 460 actions at n = 8 and 0.3 to 13 at n = 64.",
+      "source_paths": [
+        "research/thread_transfer_laguerre_cache_20261002/RESULTS.json",
+        "research/thread_transfer_laguerre_cache_20261002/EXACT_CHECK.json"
+      ],
+      "source_output_sha256": {
+        "research/thread_transfer_laguerre_cache_20261002/RESULTS.json": "8b1e26e1ff57d8c0dd53b481da6e81c9cb88c2d9c3f492d0e15675ace97ad3ab",
+        "research/thread_transfer_laguerre_cache_20261002/EXACT_CHECK.json": "8d48b5abd76f0602d39a8c9c4835751559e9053483480816ce20ff75d13565fc"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0043",
+      "family": "algebraic_chart_physical_certificates",
+      "source_commit": "3ed357ea1d5a62a56f2864bbf20932e25fe98868",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: SymPy proves w' = -kappa w + (r_C - w r_D)/D and r_C = r_D = 0 for the semilinear chart; the chart refuses D = 0, small or ill-conditioned D and a branch change; it keeps a nonzero fast mode (w(0) = 1/10, matching a 50-digit solution of the original ODE to working precision); at eps = 1e-3 it needs the cofactor residual (with it exact, without it 9.9e-4 relative error); the connection of S = x^2 is -2x. Model-specific chart contract only; no solver change.",
+      "source_paths": [
+        "research/thread_transfer_chart_contract_20261002/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/thread_transfer_chart_contract_20261002/RESULTS.json": "e7be0ab2d4a0937a73c5300b1910a1b2117343e9dabe388235b43908164282c6"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0044",
+      "family": "matrix_free_contracts",
+      "source_commit": "f73cd3c9258059e51cef89de53c5affb25e832f0",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: with an epoch bump the fresh=false attempt re-evaluates f and f_t, refreshes rank-2 GCRO-DR recycle images and equals the fresh twin bitwise; an unchanged epoch keeps the reuse; a smaller epoch and a failed refresh invalidate. Without an epoch an interior change mixes stale f/f_t/images with the live operator (GCRO-DR least-squares NaN; GMRES differs from both models). Client-promised epoch only; no automatic mutation detection.",
+      "source_paths": [
+        "research/rnext07_model_epoch_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/rnext07_model_epoch_20261003/RESULTS.json": "9e6d6c8605f105fc713e0e4c49af03e462cff3d4e232780df87cc4f995973aae"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0045",
+      "family": "matrix_free_contracts",
+      "source_commit": "93d75b0470c4509b707914e20f204e786c7ff07f",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: solve_gmres_into gives bitwise the old GMRES solution, residual, iterations and counters on all 408 frozen solves; refused capacity fails before any operator application with output unchanged; per-solve allocations 0.025-0.24x where cycles average >= 4 columns (0.36-0.85x below that, ungated); the MF driver with the switch is bitwise identical and allocates 0.02-0.28x of the sequential MF step per attempt (L-0038 stays FAIL). No wall-time claim.",
+      "source_paths": [
+        "research/rnext02_gmres_into_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/rnext02_gmres_into_20261003/RESULTS.json": "1ab78aa8c421b2f2df6e4d3347f53124b1007b846c157566df159bfe166c1922"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0046",
+      "family": "recycling",
+      "source_commit": "f2743bfd44294ba704c35df6df81696d966d1ce7",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (item 3): recycled GCRO-DR fails on 21 of 336 frozen Brusselator solves (13 trajectory, 8 one-step), cold GMRES and cold GCRO-DR on none; every failure is recycle-induced with residual gap and C-V orthogonality loss (7 also non-finite least squares); the stagnation reset gives 0 failures at no held-out cost. No false convergence, but the preregistered accounting rule rejects 7 aborted solves whose unfinished cycle is charged yet untraced.",
+      "source_paths": [
+        "research/rnext03_gcrodr_attribution_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/rnext03_gcrodr_attribution_20261003/RESULTS.json": "c172ec29eed79f9c80bf125953d570a27ba97f9f577dbaf1281c654807601acb"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0047",
+      "family": "polynomial_actions",
+      "source_commit": "028f585dec4fdbfd3234061393a9c62a8f7bdf3b",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: the registry recomputes laguerre_adjoint_total from the report fields (bitwise in window); all 52 admitted cases enclose the 50-digit target (bound/error 7.4x-1452x, median 125x), including near cancellation, 1e-310 and 1e300 inputs; declared enclosure, timing execution, Chebyshev, degree 643 and bad budgets are rejected; the scalar branch defers; total_error stays EstimateOnly; depth > 12 is refused. Verified symmetric domain, degree <= 128 only.",
+      "source_paths": [
+        "research/rnext04_laguerre_admission_20261003/cases.json",
+        "research/rnext04_laguerre_admission_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/rnext04_laguerre_admission_20261003/cases.json": "700726f0bd2d58d84fbd1e42bf4daa66efd80312057021bc1e69515f28a01b7d",
+        "research/rnext04_laguerre_admission_20261003/RESULTS.json": "77be64d79b52897accf1cc3766243455591b6588e5823e9b67c1b778fbb22aa7"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0048",
+      "family": "algebraic_chart_physical_certificates",
+      "source_commit": "7767e753001a055c0efccbb699f044fce7f20247",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: on 16 runs (kappa 40/1000, x0 +-1, eps 0/1e-3, tol 1e-6/1e-9) all 19,652 step, dense and output points have boxes containing the 50-digit chart solution and |y - y_ref| <= the global bound (worst ratio 1.0 at eps 0); every whole-step tube is regular; the controller accepts on the local bound; at t = 1/kappa the fast amplitude exceeds the bound by >= 2.2e4; blow-up, x^2 margin and identity mismatch are refused; without the cofactor forcing 0 of 828 points are enclosed. One model only.",
+      "source_paths": [
+        "research/rnext05_chart_provider_20261003/runs.json",
+        "research/rnext05_chart_provider_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/rnext05_chart_provider_20261003/runs.json": "dfc29b26e6cd0effd214efdb59b8e5d1de46277bbcaf8b12e91b9e8b7176aca1",
+        "research/rnext05_chart_provider_20261003/RESULTS.json": "b8dfc64743b6b7ccf4ed4f3fa2c7fcd8b05094b739960b286d16bb382d97a1e8"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0049",
+      "family": "matrix_free_contracts",
+      "source_commit": "ba8e7240143b2255d76800a044f0f5442b66d695",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (item 3): the budgets enclose every completed case (33 of 36; 3 GCRO-DR solver failures) and explain all 20 completed L-0038 item-3 failures (largest share 0.16); but at Robertson h = 1e-2, where both drivers and the exact step give err about 1e6 and the drivers deviate by 4.5e-11, the budget is 2e122 (stage states 1e117, box Jacobian 6e67), so the reject decision is unresolved by the budget.",
+      "source_paths": [
+        "research/rnext01_residual_output_20261003/stages.json",
+        "research/rnext01_residual_output_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/rnext01_residual_output_20261003/stages.json": "1cdff4866e691f85360bba8e795048b366f3a27452ea6f857363baa4f7d7c185",
+        "research/rnext01_residual_output_20261003/RESULTS.json": "46c216904ba201b686ef4753412140edf0701e8728ce4e01713bcc13160e58a2"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0050",
+      "family": "homotopy_causal_certification",
+      "source_commit": "a06d385babf35ce4ca2054d54c955f0366897ff0",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (item 3): the test charged the action-first arm without the certificate's finishing work (68n operations), which its own check caught. Otherwise all 39 attempts were q=2 with depth 7; both arms close and accept every candidate with equal bounds; total margins are negative for n = 1-8 with either arm (abstain); at n = 16 action-first is +0.65 solve units over 15 attempts after correcting post hoc (serial -6.3). No timing.",
+      "source_paths": [
+        "research/rnext06_homotopy_net_cost_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/rnext06_homotopy_net_cost_20261003/RESULTS.json": "d17e886dc98072bb2b7ddd273837f4b3ce7e4fccc45f67cff45011ff0e2181b1"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0051",
+      "family": "nonnormal_stability_metrics",
+      "source_commit": "28863c2e143a780b3ff37d5a31bba8851ab47b56",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (item 1): RODAS5P with binary64 coefficients has |R(iy)| = 1 + 1.3e-19 near the origin, above the 1e-30 tolerance; matrix norms are <= 0.11 vs 2.41. Semilinear: RVJ5's error grows from 1.1e-3 to 1.3e17 and its Jacobian deviation from 1.1 to 1.3e20 as K goes 1e2 to 1e12 (about K^2), a negative result; RODAS5P's fall from 1.1e-4 to 3.9e-11 and 0.11 to 5.6e-10 (labelled not uniform only by the two-sided rule).",
+      "source_paths": [
+        "research/rnext08_perturbation_stability_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/rnext08_perturbation_stability_20261003/RESULTS.json": "1e342d7074c9c2cdfb8ee3f996f7bddca025debf85ca08cd211e95ce6295c312"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0052",
+      "family": "recycling",
+      "source_commit": "0ca066f9af6bcbb0d72cdfc58bd3529d04e05cb0",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (item 3): the reuse check removes 19 of the 21 recycled-GCRO-DR failures of L-0046 (all 13 trajectory failures); 2 one-step solves still diverge from a carried pair with defect 2.2e-9, under the 1e-8 tolerance, because the defect is amplified relative to the projected residual. Defaults unchanged, accounting complete (aborted cycles traced), no false convergence; the fresh family has no failures for any control and recycling uses 0.80x cold GCRO-DR's products there.",
+      "source_paths": [
+        "research/int01_gcrodr_verified_reuse_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/int01_gcrodr_verified_reuse_20261003/RESULTS.json": "af0ed18855bae5ab9961d3348474ff96e3222e590e3ae3b72ae64ffd08f06ab1"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0053",
+      "family": "homotopy_causal_certification",
+      "source_commit": "ab89ce8a66cf6b2d9e0ce0546b7adc85886c9329",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (item 2, dense-arm threshold): the structured arm gives bitwise the dense bounds and identical trajectories on all 87 candidates (n = 1..64), stores 2n instead of 2n^2 slots, builds problem and witness once per attempt instead of twice, and its certificate operations grow with slope 1.00 (27,200 vs 349,760 at n = 64); the gate also required the dense arm's slope >= 1.8 and it is 1.76 over n = 4..64. Dense arm replays L-0050. No timing.",
+      "source_paths": [
+        "research/int02_structural_certificate_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/int02_structural_certificate_20261003/RESULTS.json": "4c5a447446956c49e5ff472f9978596206b81f92a2604f2807830407969eaaca"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0054",
+      "family": "other",
+      "source_commit": "d07b29d975ee98ebfac1cff2f4302d0cf27ad5f3",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: the banded pipeline reproduces v2 bit for bit on all six shared cases (attempts, accept/reject counts, reuses, 41 output states, WorkCounters); counted operations per attempt grow with slopes 1.007 and 1.004 in n up to 4096, and storage is n(3l+2u+2) slots (v2: 2n^2). Pivoting checked against dense partial pivoting in the contract tests. No timing.",
+      "source_paths": [
+        "research/int03_banded_fast_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/int03_banded_fast_20261003/RESULTS.json": "24cddd0330447222f4e85d90bd36133559e0fca5b272fe5de75df526a14462dc"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0055",
+      "family": "algebraic_chart_physical_certificates",
+      "source_commit": "feb4375ffff22f5aae1f8e0da1f6369cc93d723d",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (items 1, 4, 5): triangular-chart Newton fails to converge on 3 of 8 cases (typed statuses; their certificates report 3.5e5-5e5 WRMS or none), 6 of 13 converged runs certify above a 1e-8 WRMS threshold set below binary64 residual level, one approximate-W bound is 1.2e-14 below the distance to the binary64 reference root (reference rounding not allowed for), and the test checked accounting only on converged runs (a post-hoc recount matches all 16); converged roots match the sequential root to 1.4e-15.",
+      "source_paths": [
+        "research/int04_stage_chart_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/int04_stage_chart_20261003/RESULTS.json": "bb619d772675dbc78a62e60689432fd251fa0eefc95dde5b1739b46f8f145295"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0056",
+      "family": "nonnormal_stability_metrics",
+      "source_commit": "3079dd1e4ab0d61202842ae3896bab34b48bf9d8",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: all 66 bounded cases enclose the 50-digit error from above and below; the VIG-A02 Arnoldi candidate gets a certified lower bound of 7.35e-2 under D = diag(1, 2^k) (k = 10, 20, 46); at k = 46, m = 30 the method's own value is certified at 1.1e-15 under D and is unbounded under the identity; for central convection-diffusion the exponential weights make the bound worse than the identity (transport up to 2.4e9). No timing.",
+      "source_paths": [
+        "research/int05_nonnormal_metric_bound_20261003/cases.json",
+        "research/int05_nonnormal_metric_bound_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/int05_nonnormal_metric_bound_20261003/cases.json": "e704a16392b00ba465302b91c162300bdc40f90d6fa712e1932b91faa1dc8e6f",
+        "research/int05_nonnormal_metric_bound_20261003/RESULTS.json": "3538298cca1fc9145c26132b07ced5af9e757337b001551541d3dcb9e6b670dc"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0057",
+      "family": "recycling",
+      "source_commit": "e0882f8a6ecd9077ca180505161abc3c526d9f33",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (item 2): the start projection alone leaves 56 recycle-induced failures (more than recycled GCRO-DR on both one-step sets), and max |C^T V| stays 0.71-0.999 in its failing solves, so orthogonality to the recycle images is lost during Arnoldi, not at its start; with the reuse check (EF) 4 failures remain, all on the fresh Brusselator-80 trajectory set. Defaults unchanged, accounting complete, no false convergence, no harm on the CDR family.",
+      "source_paths": [
+        "research/rev01_gcrodr_start_projection_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/rev01_gcrodr_start_projection_20261003/RESULTS.json": "2f293245d7e61d1f4d3fc62ae74a5c185e80262bb75097198c7a315c4a2ddd07"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0058",
+      "family": "recycling",
+      "source_commit": "a06bc40de9d1a3e11619afdabf1ac9b9723685f1",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (H2 refuted): with the start projection and a second projection pass, max |C^T V| still reaches 0.9999 on the fresh Brusselator-120 set (2.6e-14 on a healthy system), and FG has 28 recycle-induced failures there against plain recycling's 12; no false convergence, full accounting, no harm on CDR. Three repairs (L-0052, L-0057, this) fail on fresh sets; recycled GCRO-DR stays opt-in and is not recommended for these systems.",
+      "source_paths": [
+        "research/rev01b_gcrodr_recycle_reorthogonalization_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/rev01b_gcrodr_recycle_reorthogonalization_20261003/RESULTS.json": "3b822a900d67ec890d9493faaa1e1b1d664678afc0268f29e198a3a1b74711fe"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0059",
+      "family": "recycling",
+      "source_commit": "b6fafd0027058bc6a00b5e7244634dec161fbb85",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS (H3 supported): restoring M^-1 A U = C after every recycle update removes every recycle-induced failure on the fresh Brusselator-160 set (C: 16) and on all seen sets (C: 69), with no false convergence, full accounting and no harm; a large C^T V persists without failures, so it was not the cause. The refresh costs 1.08-1.32x cold GCRO-DR's operator products on the Brusselator trajectories and 0.98x on CDR, so recycling saves nothing here.",
+      "source_paths": [
+        "research/rev01c_gcrodr_refreshed_update_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/rev01c_gcrodr_refreshed_update_20261003/RESULTS.json": "21de031d97da4d2ae13a9c22fd407cf91dbadbac64227d9e4f52befb7673deda"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0060",
+      "family": "nonnormal_stability_metrics",
+      "source_commit": "979a2c872633d106a6a14e34d8a27204a577a2c6",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (item 3): all 18 stepped bounds enclose the 50-digit error, the directed exponential encloses all 251 grid points, and Osborne balancing certifies VIG-A02 k = 46 at 2.2e-15 relative without a hand-chosen metric; stiff convection-diffusion gets absolute bounds of 9e-14 to 7e-13 (single step: useless), but three of six solutions decay below that (2e-7 to 1e-91) because Gershgorin cannot see the decay; strongly nonnormal random and Jordan matrices stay at 1e9-1e19 relative.",
+      "source_paths": [
+        "research/rev02_nonnormal_stepping_20261003/cases.json",
+        "research/rev02_nonnormal_stepping_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/rev02_nonnormal_stepping_20261003/cases.json": "258a90bfa5376cc5cb6f488bc89c402c558ec343e359ec79622f7fb8e79368a6",
+        "research/rev02_nonnormal_stepping_20261003/RESULTS.json": "f20a9fa41a9e62452f23596c3789122b0ddd2c3a3f853ed7f40d554e994180fd"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0061",
+      "family": "matrix_free_contracts",
+      "source_commit": "d5209183e2b8c190b9737f4e4c1393c8dedb7626",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: solve_lgmres_into is bit for bit the existing LGMRES on 1,216 solves (344 failures, identical rollback), leaves the output untouched on every failure, and allocates less on every sequence, but only 0.94-0.99x: the remaining 455-4,099 allocations per solve come from the per-iteration least-squares solve in the shared augmented Arnoldi routine. No timing.",
+      "source_paths": [
+        "research/rev04_lgmres_into_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/rev04_lgmres_into_20261003/RESULTS.json": "377ee1c4ed0f6c0b9310c0f53f51c732f3636944fd5a55ece7567e21e07bce75"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0062",
+      "family": "matrix_free_contracts",
+      "source_commit": "892ffc1b6a54360c43a5d3596aa5a36364e1c1d0",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: at step sizes not used before, all 68 acceptances are resolved by the budget (err + B <= 1) and the budget is valid and finite in all 52 completed cases; the 6 unresolved decisions are rejections at Robertson h = 3e-2 (budget 2e246, error norm 1e6), the safe side; all 27 L-0038-criterion discrepancies lie inside the budgets.",
+      "source_paths": [
+        "research/rev03_one_sided_acceptance_20261003/stages.json",
+        "research/rev03_one_sided_acceptance_20261003/BUDGETS.json",
+        "research/rev03_one_sided_acceptance_20261003/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/rev03_one_sided_acceptance_20261003/stages.json": "3d3e6a24619102c56bc4257c495f7e6c9e4bf767c45edc38768b36fca9d33080",
+        "research/rev03_one_sided_acceptance_20261003/BUDGETS.json": "391c040d5c35123356fd7f8e3b0dc176033e612bb13da12c355b10191a6aae72",
+        "research/rev03_one_sided_acceptance_20261003/RESULTS.json": "4cc53d0a314529a158532c65f4b2146ecbb57a28c9b425d8fb97bd01a2a1e240"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0063",
+      "family": "shared_shift_jets",
+      "source_commit": "699a7adc6dba5fc45d4da01a5456f10f25dcf210",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS scoped native primitive: 15 new cases, 591 targets and 1341 RHS-target exact binary-rational comparisons; all outward bounds enclose, 1309 RHS rows certified and 32 deliberately underresolved rows rejected, 11 negative controls reject. Six core contract tests and nine new chart boundary tests plus eight related regressions pass. Real dense sufficient Euclidean dissipativity only; no generic ODE order, parallel dispatch, default activation or speedup claim.",
+      "source_paths": [
+        "research/rvj_integration_20261004/evidence/native_study.json",
+        "research/rvj_integration_20261004/evidence/exact_oracle.json"
+      ],
+      "source_output_sha256": {
+        "research/rvj_integration_20261004/evidence/native_study.json": "a4cc4ffed78925f268472afbe2bd7c7e5128b1ca9d3fdeac9df5ca8778574b8e",
+        "research/rvj_integration_20261004/evidence/exact_oracle.json": "80e7e11b1d65b4d552c87b52a5b5c7e3335b6827e98e42b946787b4d7ee6d317"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0064",
+      "family": "directed_arithmetic_safety",
+      "source_commit": "4e5dc91600f77c360aa8278ebe5ed782641c78d5",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (G1): repaired C2 under-covers once (x=-707.01) because directed::exp_interval returns [0,2^-1020] for all x<-707, false on (-707.0234,-707); fixed in a follow-up node. Base local counterexamples: chart decay 2/20200 (<=4.7e-16 rel), stepped time direction 676/20000, midpoint radius 2660/20000 (<=0.5 ulp). Repaired C1/C3 zero violations; chart and REV-02 reruns enclose 50-digit truth; published end-to-end bounds were not below truth.",
+      "source_paths": [
+        "research/safe_enclosure_composition_20261004/probes.json",
+        "research/safe_enclosure_composition_20261004/PROBE_RESULTS.json",
+        "research/safe_enclosure_composition_20261004/chart_runs.json",
+        "research/safe_enclosure_composition_20261004/CHART_CHECK.json",
+        "research/safe_enclosure_composition_20261004/rev02_cases.json",
+        "research/safe_enclosure_composition_20261004/REV02_CHECK.json",
+        "research/safe_enclosure_composition_20261004/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/safe_enclosure_composition_20261004/probes.json": "99ca401037d029e10905b6725961562c6d8705e5144c517e124fcd2830a7876d",
+        "research/safe_enclosure_composition_20261004/PROBE_RESULTS.json": "b2c1bcdffff37aa73208731e1640aab00d91d420f01b20b2ef9cc4dfc19408b0",
+        "research/safe_enclosure_composition_20261004/chart_runs.json": "579a8632ee86826b0527a199aec3423f23f29f587ff68789e7d6ea01a9db9adb",
+        "research/safe_enclosure_composition_20261004/CHART_CHECK.json": "b8dfc64743b6b7ccf4ed4f3fa2c7fcd8b05094b739960b286d16bb382d97a1e8",
+        "research/safe_enclosure_composition_20261004/rev02_cases.json": "fde9430e7781c3a0e71ddbeefdf74daaa23c56a30415ec62834e154021f42d77",
+        "research/safe_enclosure_composition_20261004/REV02_CHECK.json": "4a7bf7e63a4db92d4b14466731b1cd48b320dc33c42fb7350f05ffaebadb3e56",
+        "research/safe_enclosure_composition_20261004/RESULTS.json": "528c396aae87b4b48884c05fd59b8a7c3d1759992cc63bd780a433306c8e2c53"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0065",
+      "family": "directed_arithmetic_safety",
+      "source_commit": "171a4d2e859f88cf4f2e3e9c997cf0cccc04a546",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: exp_interval now returns [0, 2^-1019] for x < -707 (e^-707 < 2^-1019); the old floor 2^-1020 was false on (-707.0234,-707). Zero 60-digit violations on 40,511 points incl. the L-0064 counterexample and the REV-02 grid; SAFE-ENCLOSURE repaired compositions C1-C3 now zero violations on the same seeded probes; affected core and chart tests pass.",
+      "source_paths": [
+        "research/safe_enclosure_exp_floor_20261004/exp_rows.json",
+        "research/safe_enclosure_exp_floor_20261004/EXP_CHECK.json",
+        "research/safe_enclosure_exp_floor_20261004/probes.json",
+        "research/safe_enclosure_exp_floor_20261004/PROBE_RESULTS.json",
+        "research/safe_enclosure_exp_floor_20261004/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/safe_enclosure_exp_floor_20261004/exp_rows.json": "68ddf9d6eea2617627a6eee58544920ca9a89a306dd0fc42731c58c98c4ace58",
+        "research/safe_enclosure_exp_floor_20261004/EXP_CHECK.json": "7090b894af3aa00c8b77af6fb3660a5ff769dafe8a9203bdb203c1eba514aec9",
+        "research/safe_enclosure_exp_floor_20261004/probes.json": "d9ba111857a9c45961ab5c00da48ae4b83e2e2f2dd86885dba6f658c0a3caabf",
+        "research/safe_enclosure_exp_floor_20261004/PROBE_RESULTS.json": "a98097941b29a476d55804bc9133d50aeb47c241c174ecb6348e44b70a977bdc",
+        "research/safe_enclosure_exp_floor_20261004/RESULTS.json": "d131f140b8e82fabb2c91971b2fec7a9c6ebac7ef19b49753cecdbbb2a9dba8a"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0066",
+      "family": "recycling",
+      "source_commit": "65a16dde101446f2d0039a94e88a4cf3f87a8f71",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: Legacy policy and default entry reproduce the pre-change export bit for bit (14 rows); refresh-after-update is wired and counted (recycle_update_refreshes) and equals the REV-01c traced call; cold leaves the carried state unchanged. Driver-level linear-solve failures drop from 2453/2475 (brusselator-50, attempt cap hit) and 102/102 (brusselator-160) to 0 with refresh or cold. Counted applications only, no speed claim; default unchanged.",
+      "source_paths": [
+        "research/safe_recycle_policy_20261004/BASE_LEGACY.json",
+        "research/safe_recycle_policy_20261004/RUNS.json",
+        "research/safe_recycle_policy_20261004/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/safe_recycle_policy_20261004/BASE_LEGACY.json": "6b7eadba309c935b2d4d37e38cb1d041450d5db28f45a6e62744a0aa9112e6c0",
+        "research/safe_recycle_policy_20261004/RUNS.json": "07826bc0e215310ed60e15110b7371847b8f75fca583e3261e80685e53fa5b34",
+        "research/safe_recycle_policy_20261004/RESULTS.json": "998cd36ca7c20a7d893b7b060bf213512b461a3db0878bc0f6b4a87f45e721f7"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0067",
+      "family": "shared_shift_jets",
+      "source_commit": "f01ce4abf68467e92a807af81d11c8b2a23d0d64",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: 8,500 n=8 candidate columns of all four methods certified and enclosing the exact error (worst error/bound 0.30); executed flops equal independent formulas; selector cheapest in 87/90 (3 misses from the WideCluster abstention). Jet has a positive counted-flop margin over the best of individual LU, common-shift LU and Hessenberg reuse in 49/90 configurations (narrow up to 12.6x), none for all-equal shifts. No timing, no speed claim.",
+      "source_paths": [
+        "research/pp04_shared_shift_policy_20261004/cases.json",
+        "research/pp04_shared_shift_policy_20261004/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/pp04_shared_shift_policy_20261004/cases.json": "385cdf8f9881aee0d86388b6d5f562a2f18b613aacc8fd8db202ff014b49e563",
+        "research/pp04_shared_shift_policy_20261004/RESULTS.json": "aec94bf1521dab586c4e083e8a64ec5f965556583584acbe8778dad9d8c583b6"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0068",
+      "family": "shared_shift_jets",
+      "source_commit": "e22d12ea0694898c4f65f9b383bd44c8c24b93b1",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: compressed jet outputs certified against the original RHS: 2,052 n=8 columns enclose the exact error (worst error/bound 0.40), 135/135 compressed and 216/216 uncompressed targets certified; plus/minus amplitudes kept distinct; LU column solves drop to k(d+1) (16 vs 256 at rank 1, M=16). Full-rank sets abstain when M<=n. Near-dependent sets at 1e-12/1e-6 were full rank under tolerance 1e-13 (prediction not observed).",
+      "source_paths": [
+        "research/pp03_rhs_compression_20261004/cases.json",
+        "research/pp03_rhs_compression_20261004/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/pp03_rhs_compression_20261004/cases.json": "15d7cbd66843831900a48aff0c9a81e5d719c17db6ed0f0edbd22cb3a15f02cb",
+        "research/pp03_rhs_compression_20261004/RESULTS.json": "134669097be123076aa67c4d8ef2ae5e9cf684414765a73ed52b6af16b220a77"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0069",
+      "family": "storage_budget",
+      "source_commit": "108a0d5e13fe986b4cbbb526235506ee29a36f5a",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (G2 as registered): budget refusals made 2 allocator events of <=72 bytes (the error message string and its growth), above the registered limit of one; nothing problem-sized is allocated before refusal. G1 PASS: non-LU peak within explicit slots + 64 B per allocation in 72/72; the slot bound alone is exceeded (1.0-2.0x) in 22 small-n configurations by struct/Vec headers. P_lu/(8n^2) about 3 for n>=16.",
+      "source_paths": [
+        "research/storage_runtime_20261004/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/storage_runtime_20261004/RESULTS.json": "a18de66117bdf79b6b4ddc25755c332670dfa8576c1f2b80f4304f852e5953af"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0070",
+      "family": "shared_shift_jets",
+      "source_commit": "24270b66b50801f2b30a0c660a9e0ecbf63d0743",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: opt-in complex-shift certificate with upward gain |gamma|/Re gamma (H = I) bounds the actual error of the exact binary target in all 480 single-column and 16 partial-fraction cases (Pade [3/3], [6/6], random shifts, complex jet; n = 4, 6 exact Fraction, n = 16, 24 at 50 digits); worst bound/actual 1.17. 36/36 negative controls fail closed. G3 observed: 16/80 random shifts have actual error above ||r||_2 (up to 2.16x), so gain 1 would under-bound. No timing or default change.",
+      "source_paths": [
+        "research/pp16_complex_shift_gain_20261004/pade_shifts.json",
+        "research/pp16_complex_shift_gain_20261004/cases.json",
+        "research/pp16_complex_shift_gain_20261004/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/pp16_complex_shift_gain_20261004/pade_shifts.json": "293191d93685a57136bced3f77063f0a2a60f3b33f54afd9ccc01226852edb71",
+        "research/pp16_complex_shift_gain_20261004/cases.json": "70da21e02d89c7fcafe0c1cee947b4a003ba54a2987a3a25cb6d95c7d1dee586",
+        "research/pp16_complex_shift_gain_20261004/RESULTS.json": "6e1d03f4784b9a3961b4692aa55fbaae1cc24ed3f839df8a776edf16e31058c7"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0071",
+      "family": "polynomial_actions",
+      "source_commit": "ddeeb41d4abf893bb57aca53a2496c958c4054b2",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "On 79 preregistered verified symmetric fixtures the opt-in router admits 76 results, all enclosing the 50-digit target (bound/error 4.3-3.0e3), never admits declared enclosures, the timing execution, Laguerre degree >128 or an over-budget bound, ends unmet budgets in Fallback, and charges exactly both attempts. It routes 0 cases to Laguerre: Laguerre is never cheaper in vector products (ratio 1.0-1.57) and only Chebyshev admits in 33 cases. No speed claim.",
+      "source_paths": [
+        "research/pp08_laguerre_router_20261004/cases.json",
+        "research/pp08_laguerre_router_20261004/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/pp08_laguerre_router_20261004/cases.json": "0034a41ddd5830225afc9a24f226830c7de24cc8781fefb9b28ec45c579e83da",
+        "research/pp08_laguerre_router_20261004/RESULTS.json": "281a42abe0d14ccdca3e981a8f579573aa2e30f4ebaf90f225a663fde8490aec"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0072",
+      "family": "fourier_physical_client",
+      "source_commit": "5c593288710c24ca9f194bc2c70cb138d494ce07",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (G2, G3 as registered; G1 PASS): all committed states and interior points enclose the reference (worst 0.18); the archived exact certificate accepts every native path with native/source error 1.000006 to 1.0112 (limit 1.01 exceeded in forty_tight); the cyclic-alias control was committed because its wrapped harmonics were below tolerance (bound 6.2e-13 encloses actual 2.8e-14). Other controls fail closed; no bound below actual error anywhere.",
+      "source_paths": [
+        "research/pp05_fourier_client_20261004/cases.json",
+        "research/pp05_fourier_client_20261004/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/pp05_fourier_client_20261004/cases.json": "3dfbf74c7c37ae05d3a889abeb647d0e7d7ba1acbf93aec7550888123260f265",
+        "research/pp05_fourier_client_20261004/RESULTS.json": "dd548470d55c3dc46056ba26c94af262c1d5bb30eda4fec4b9f618347997a6fd"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0073",
+      "family": "fourier_physical_client",
+      "source_commit": "fb52d1fbd8703f3a569e0031d97c8ef7d85bcb9f",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (G3 as registered): FFT right side equals the direct product within 5.3e-16 relative on all 48 calls; FFT-built runs enclose the reference (worst 0.108); the under-padded grid is refused without override, but with override its aliasing error is 3.6e-12 relative and the accurate candidates were correctly committed, so the expected rejection did not occur. No bound below actual error.",
+      "source_paths": [
+        "research/pp06_fourier_fft_candidate_20261004/cases.json",
+        "research/pp06_fourier_fft_candidate_20261004/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/pp06_fourier_fft_candidate_20261004/cases.json": "964ec5d8a5d7401a1e414fc6ae72ff66f7748e40beebec693bc154f919d46442",
+        "research/pp06_fourier_fft_candidate_20261004/RESULTS.json": "4c64fad567e22f7617ed11d0ed17c3e0b19df8d8df6614200a84f8a23b66e0a1"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0074",
+      "family": "shared_shift_jets",
+      "source_commit": "f5a440358ed50b224cb57f9a54115d08c62b49e4",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS, decision abstain: the native Fourier client performs no shifted solve (kill condition 'no nearby distinct shifts'); a frozen-J Newton variant would see >1 shift only at 7 halving starts, all at radius >= 1/2 (jet not admissible); the dissipativity witness fails at all 28 starts (row bound 0.056-0.115), alternative gain finite (1.006-1.022). No artificial workload substituted.",
+      "source_paths": [
+        "research/pp07_fourier_shared_action_20261004/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/pp07_fourier_shared_action_20261004/RESULTS.json": "b4b745c0f1cc96d2074f2a6ed27b823dbeab2fbfe205d36fed7453b10a8ac3cc"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0075",
+      "family": "nonnormal_stability_metrics",
+      "source_commit": "f7343c1626842845a0b0147fbd4849834dfda820",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (G3): all 36 certificates enclose; verified mu -9.86 replaces Gershgorin 0 on F2, giving 3/6 F2 cases within 1e-8 relative (Pe 10 both, Pe 50 tau 0.01) but not Pe 50 tau 0.1 or Pe 200, whose solutions decay at the convective rate (~e^-218); power-of-two Osborne cannot symmetrize them. G1's 50-digit check flagged three 2x2 rows by <3e-48 where mu equals lambda exactly (post-hoc exact check).",
+      "source_paths": [
+        "research/pp12_lognorm_decay_20261004/cases.json",
+        "research/pp12_lognorm_decay_20261004/RESULTS.json",
+        "research/pp12_lognorm_decay_20261004/POSTHOC_G1.json"
+      ],
+      "source_output_sha256": {
+        "research/pp12_lognorm_decay_20261004/cases.json": "9f77edfd9e88e066ce29c7f51f74a2459147c1d7a364f6abe8d44f1f5aaf6547",
+        "research/pp12_lognorm_decay_20261004/RESULTS.json": "22e942064b6bcfaaf50329ba7ef375b62619b218cb09dec5a7abeb8ea1f1dc53",
+        "research/pp12_lognorm_decay_20261004/POSTHOC_G1.json": "d509b46310407a54dfbf6ab0f3bf3df25ee1e17e52484602ca1fbda056008727"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0076",
+      "family": "nonnormal_stability_metrics",
+      "source_commit": "e698541ea6cb39903b2b89e565d79813d1755f27",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (G3 16/18): all 90 certificates enclose and every mu_up >= lambda_max; all six REV-02 stiff F2 cases now within 1e-8 relative (worst 3.0e-11, chain metric gives mu=-2/h^2), 10/12 holdout cases too; the two failures have exact solutions 6.2e-373 and 5.0e-414, below the binary64 range, so no binary64 result can meet a relative criterion (holdout design defect). REV-02/PP12 FAILs stand.",
+      "source_paths": [
+        "research/pp12b_chain_symmetrizer_20261004/cases.json",
+        "research/pp12b_chain_symmetrizer_20261004/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/pp12b_chain_symmetrizer_20261004/cases.json": "f2df8141fa1ca5874cdabc1d66dcbb3412938e1c4ba2d0ad82fcbf90d92b3e85",
+        "research/pp12b_chain_symmetrizer_20261004/RESULTS.json": "0e69e1efb3a9b4794010a07a834024786486820a98bb09d20995d593f2cede81"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0077",
+      "family": "polynomial_actions",
+      "source_commit": "cf01facc304f6c0b03ef028f13bfdb9c7d4fc45f",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "G1 fails: the published R-NEXT-04 cases.json has no component fields, so the six h rho >= 20 cases (h rho 48, L' = 16) cannot be decomposed. G2 holds: certified max |L_n| on [0, 16], n <= 128, max 710.47 (n = 5), within 1.01 of attained values, no violation at 10,000 points per n. e^{L'/2}/max E_n = 4.196, so recomputed totals stay >= 2.3e6 (>= 3.2e3 even with E_n = 1) against budgets 1e-6. Supplementary derived emulation puts truncation + coefficient at ~1e-17 of the totals.",
+      "source_paths": [
+        "research/pp09_laguerre_envelope_20261004/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/pp09_laguerre_envelope_20261004/RESULTS.json": "c50789bc3fab65a4f600a329723d48e422c60f8162a9ff39cec0dbd63e318beb"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0078",
+      "family": "polynomial_actions",
+      "source_commit": "57ab6af14b861c2744c3531ff6f7dd58e090f67e",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: all 54 bounded certificates enclose the 50-digit error of the fused candidate; the perturbation is >0 in all 54 rounding cases and exactly 0 in all 18 power-of-two controls. Seeded and control cases are useful (bound 1.4e-15 to 1.0e-11 relative, 3.5 to 4.9e4 times the error; perturbation dominates 16/18 seeded). Subnormal w: valid but useless (absolute floor ~1e-15). Large w (1e100): Taylor rejects and all 18 are Unbounded (e^omega overflows). No speed claim.",
+      "source_paths": [
+        "research/pp11_taylor_fused_total_20261004/cases.json",
+        "research/pp11_taylor_fused_total_20261004/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/pp11_taylor_fused_total_20261004/cases.json": "095cc115289edbec5149711dffc30158be0f6de0dba28cb6d16e80a7da3f581f",
+        "research/pp11_taylor_fused_total_20261004/RESULTS.json": "915dd4065a34f4eae5d0a36255209c23213772be697e33c56e0cffcec6aa07cb"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0079",
+      "family": "fourier_physical_client",
+      "source_commit": "675f55d7f9977cb1f9bcf49ebc6fd1b07cee8974",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (G3): certified client bounds enclose actual errors at omega 1, 40, 1e4 (G1); RODAS5P closest tolerance named (G2) but no matched error reached at omega 40 and 1e4 (best 1.6x and 193x the client bound). The independent reviewer failed the drafted report for a misleading matched-error statement and an untested work-scaling claim; corrections appended, draft kept. No speed claim.",
+      "source_paths": [
+        "research/pp15_fourier_comparator_20261004/cases.json",
+        "research/pp15_fourier_comparator_20261004/RESULTS.json",
+        "research/pp15_fourier_comparator_20261004/REVIEW.md"
+      ],
+      "source_output_sha256": {
+        "research/pp15_fourier_comparator_20261004/cases.json": "70076bdcb10696be2ac318b8e1a32f4def3265c73da85bcd8225f5d1c4feb370",
+        "research/pp15_fourier_comparator_20261004/RESULTS.json": "9b369db45d0ff5964bd1f770dda9f55fde35e4593ce7eb861104bfb1ff072ac2",
+        "research/pp15_fourier_comparator_20261004/REVIEW.md": "ede5921ad1a5825d8bc734eb0b94a96c40cdb129a260d002153f371c747b1627"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0080",
+      "family": "polynomial_actions",
+      "source_commit": "088205f0507b93db410b08d1d292c6e2837ba0ff",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "On the 72 PP08 fixtures every Newton-Leja report is EstimateOnly (LEJA_TOTAL_NOT_CERTIFIED) and no certified API admits it; actual error <= tolerance in 72/72 (G2 needs <=10x in 90%), estimate never under-reports (estimate/actual 4.8-7.2e5). Vector products vs certified Chebyshev at the same tolerance: ratio 0.83-2.0 (median 1.15), Leja fewer only in the 8 rho=200,h=0.2 cases. No certificate, no speed claim.",
+      "source_paths": [
+        "research/pp10_leja_candidate_20261004/cases.json",
+        "research/pp10_leja_candidate_20261004/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/pp10_leja_candidate_20261004/cases.json": "c82c5b119425d84432729c18cc4e5a04e87d6676517210ba2703bb9c9535ca2e",
+        "research/pp10_leja_candidate_20261004/RESULTS.json": "227c3032391412067123f3f17f426f3139261b7f5fb5b8911ac79655312da25a"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0081",
+      "family": "native_counted_work_optimizations",
+      "source_commit": "4187c0b97b56b244e4a8d8da8446fa3f74f415ba",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: both opt-in changes are bitwise identical to the legacy fast drivers on all 56 identity points and six banded grid cases, and the fused landing equals the legacy triple landing in 616,920 property samples (0 class A/B, 14 class C re-extension cases reported); per attempt they remove exactly one validate call (171 Ir) and two re-landings (629-678 Ir): small driver 3,580 -> 2,778 Ir (0.78x, van der Pol), 5,076 -> 4,264 (Robertson), 12,435 -> 11,586 (HIRES); dense v2 0.91-0.96x at n <= 8, 0.999x at n = 400. Counted instructions only; no wall-time claim.",
+      "source_paths": [
+        "research/spd01_fast_driver_overhead_20261005/RESULTS_CORRECTED.json",
+        "research/spd01_fast_driver_overhead_20261005/RESULTS.json",
+        "research/spd01_fast_driver_overhead_20261005/PROFILE_DENSE.json",
+        "research/spd01_fast_driver_overhead_20261005/PROFILE_DENSE_B50.json",
+        "research/spd01_fast_driver_overhead_20261005/PROFILE_SMALL.json",
+        "research/spd01_fast_driver_overhead_20261005/IDENTITY.json",
+        "research/spd01_fast_driver_overhead_20261005/BANDED.json",
+        "research/spd01_fast_driver_overhead_20261005/PROPERTY.json"
+      ],
+      "source_output_sha256": {
+        "research/spd01_fast_driver_overhead_20261005/RESULTS_CORRECTED.json": "81d7cf6e8ecfcd14ba53cb40368849f481e86d4e04f7444722e09161b2d51e69",
+        "research/spd01_fast_driver_overhead_20261005/RESULTS.json": "80e8cc0124ec525e9206a8da0298ff792ee7f9d965a149f4e3cf101ac206cee2",
+        "research/spd01_fast_driver_overhead_20261005/PROFILE_DENSE.json": "0a3b4b41244a7db68a4244017ca6001f41dd4dfe8a1dfc1edfba3f950e4377ad",
+        "research/spd01_fast_driver_overhead_20261005/PROFILE_DENSE_B50.json": "e0a8721cada091500a0fa939fbb9da8a805c2eb5be4d520776dbf799779cfadf",
+        "research/spd01_fast_driver_overhead_20261005/PROFILE_SMALL.json": "9afacda763f9af25ad932566f0a0786e986e78ec2c6d762b428de1c845474314",
+        "research/spd01_fast_driver_overhead_20261005/IDENTITY.json": "009a313c43666442c9ca2f304801640bfa77a72915024e3ea4b3f54da4fb67ae",
+        "research/spd01_fast_driver_overhead_20261005/BANDED.json": "1cd1ec17d39a2146898308f684b189af15f136a124c3bcb0f3c8a7afff920362",
+        "research/spd01_fast_driver_overhead_20261005/PROPERTY.json": "2ca34af0420e0064ec639993bb0ef71c70fec7c3d1dcf1a1ec647af9d5e23a65"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0082",
+      "family": "native_counted_work_optimizations",
+      "source_commit": "5bbfa0f1c828f8484781edf80a8ac52fe82ce3f0",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (items 4, 5): the column-extent LU is bitwise identical to v2 on all 35 identity points and 2,000 contract matrices, allocates one extra buffer per integration and none per step, and cuts instructions per attempt to 0.517x at n = 400 (3.90M -> 2.02M) and 0.773x at n = 100; but it costs 1.036-1.062x at n <= 8 (gate <= 1.03) and the unchanged legacy path compiled 1.024x its base at n = 400 (gate +-2 %), so the policy stays opt-in. Remaining n = 400 cost: the W copy and the two extent scans (~0.5M each). Counted instructions only; no wall-time claim.",
+      "source_paths": [
+        "research/spd02_lu_column_extents_20261005/RESULTS.json",
+        "research/spd02_lu_column_extents_20261005/PROFILE.json",
+        "research/spd02_lu_column_extents_20261005/IDENTITY.json"
+      ],
+      "source_output_sha256": {
+        "research/spd02_lu_column_extents_20261005/RESULTS.json": "3d9021d0ab9fa4417801b9874d261956bfb9848c48be3ec9af7e27ef02966b77",
+        "research/spd02_lu_column_extents_20261005/PROFILE.json": "68fb05600cf88b0bfbe97eab63b09a7bffdfe0ba9f9012100ca327655ee55edf",
+        "research/spd02_lu_column_extents_20261005/IDENTITY.json": "b40f469a77fe1067ac0855769b44eab83c422cb1d8a234f95e3dfcfff0700bcb"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0083",
+      "family": "native_counted_work_optimizations",
+      "source_commit": "a9b11bb6327d2b08912e824f6c3103e2fc0dd7df",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: the banded pipeline, reached through new CLI arms with a native band fill, is bitwise identical to v2 on all 14 Brusselator points and cuts instructions per attempt to 0.255x at n = 400 (3.84M -> 0.98M) and 0.617x at n = 100; banded operations per attempt grow with slope 1.011 (n = 100 to 400) and 1.003 (to n = 1000). A slices kernel is bitwise identical to the indexed kernel but costs 1.012x its instructions (secondary item fails). Declared-band problems only. Counted instructions only; no wall-time claim.",
+      "source_paths": [
+        "research/spd03_banded_arm_instructions_20261005/RESULTS.json",
+        "research/spd03_banded_arm_instructions_20261005/PROFILE.json",
+        "research/spd03_banded_arm_instructions_20261005/PROFILE_N1000.json",
+        "research/spd03_banded_arm_instructions_20261005/IDENTITY.json",
+        "research/spd03_banded_arm_instructions_20261005/INT03.json"
+      ],
+      "source_output_sha256": {
+        "research/spd03_banded_arm_instructions_20261005/RESULTS.json": "84470f9c3ff3ab2d543e8e47b7dc117987f718dcd494b05c4a8687444a4275b2",
+        "research/spd03_banded_arm_instructions_20261005/PROFILE.json": "9359e287c3818bb0e10fe17ce53d1618390b191d720307c6d3aadf6ba9dd7bf8",
+        "research/spd03_banded_arm_instructions_20261005/PROFILE_N1000.json": "62333e5e92a21daef7210006fc14686af9ce58112f184e27d582c389afdd5a43",
+        "research/spd03_banded_arm_instructions_20261005/IDENTITY.json": "15c8a868b75b5109aacb421b8f7876a46e9da357c3a899e0f9f8b1977e76053b",
+        "research/spd03_banded_arm_instructions_20261005/INT03.json": "5d2a711cf930523d2acd2e609fb51e5cf6b1266eceabd11b9b3849e543c5d513"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0084",
+      "family": "native_counted_work_optimizations",
+      "source_commit": "0c731b02ac5dcbd10e7a71c2187f05161fa806b9",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL: starting stage i of the matrix-free U-form driver's GMRES-into solves from stage i of the last accepted step gives 0.963-1.001x the linear matvecs of the default start on the two Brusselators (gate <= 0.85) and 1.03-1.05x on Robertson and van der Pol; base reproduced bitwise on 14 cases. Reported: the default Previous start costs 1.02-1.57x the matvecs of a zero start in all 14 cases. Counted Krylov work only; no wall-time claim.",
+      "source_paths": [
+        "research/spd07_mf_step_warm_start_20261007/RUNS.json",
+        "research/spd07_mf_step_warm_start_20261007/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/spd07_mf_step_warm_start_20261007/RUNS.json": "7e046147b039ed0449fcef8669ae7f06fe2985184ef5618f40bfb8ef017eebec",
+        "research/spd07_mf_step_warm_start_20261007/RESULTS.json": "bcc91946e55a38de77f04cc31db91ac6ccd82e61831a1420b3d021cd36f0cc26"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0085",
+      "family": "native_counted_work_optimizations",
+      "source_commit": "bd62a8b4e8a6a02479d3c3192c8b57f2fa9a4250",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: fixed stage tables, const-generic stage functions and index-loop solves in the small-n driver are bitwise identical to L-0041 on 21 points and the 64-member ensemble, and give 0.838x (van der Pol), 0.848x (Robertson) and 0.736x (HIRES) Ir per attempt of the legacy arm in the same binary. The legacy arm itself drifted +5.2%/+2.9%/+0.3% against the SPD01 base; against the base the static arm is 0.882x/0.872x/0.737x. Counted instructions only; no wall-time claim.",
+      "source_paths": [
+        "research/spd06_small_static_stages_20261007/RESULTS.json",
+        "research/spd06_small_static_stages_20261007/IDENTITY.json",
+        "research/spd06_small_static_stages_20261007/ENSEMBLE_SMALL.json",
+        "research/spd06_small_static_stages_20261007/ENSEMBLE_STATIC.json",
+        "research/spd06_small_static_stages_20261007/PROFILE.json",
+        "research/spd06_small_static_stages_20261007/PROFILE_ROB8.json"
+      ],
+      "source_output_sha256": {
+        "research/spd06_small_static_stages_20261007/RESULTS.json": "1ea931db1c4d448929c97c0f2f4e2dea6253f5aec1b1c671258325f3a48ec2bd",
+        "research/spd06_small_static_stages_20261007/IDENTITY.json": "380b756a47df367dbbd2c7ee2ed4bc0abdd5a6f646ca8b132260e8435320d16c",
+        "research/spd06_small_static_stages_20261007/ENSEMBLE_SMALL.json": "64046f2c705334758dcd3f8c2624e54f821f3a71f1eb8e140e4a50781ba375f3",
+        "research/spd06_small_static_stages_20261007/ENSEMBLE_STATIC.json": "57369fd346885f3c8217c9abc6c26bab366cc4e941ec0da4f7b6ee659133806f",
+        "research/spd06_small_static_stages_20261007/PROFILE.json": "b9ba35ea51fd9e25673b3f8a4f844823d6c60792cdb88d4402432491dc917ec0",
+        "research/spd06_small_static_stages_20261007/PROFILE_ROB8.json": "20df44c0b63bbdfc3337613e8383441b6d398acaba2110ebd38266fde19ba69b"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0086",
+      "family": "native_counted_work_optimizations",
+      "source_commit": "bd62a8b4e8a6a02479d3c3192c8b57f2fa9a4250",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: applying the column-extent LU only for n > 64 is bitwise identical to v2 on 37 points, costs 1.0000-1.0001x Ir per attempt at n = 2, 3, 8 and 60, and gives 0.833x at n = 80, 0.787x at n = 100 and 0.531x at n = 400. Reported: the always-on variant already gives 0.888x at n = 60, so the fixed threshold leaves that gain unused. Counted instructions only; no wall-time claim.",
+      "source_paths": [
+        "research/spd09_colext_threshold_20261007/RESULTS.json",
+        "research/spd09_colext_threshold_20261007/IDENTITY.json",
+        "research/spd09_colext_threshold_20261007/PROFILE.json"
+      ],
+      "source_output_sha256": {
+        "research/spd09_colext_threshold_20261007/RESULTS.json": "85365c5615c544ad595dfc095efae60d63af94480d326d4aeb4fdaec86b8848e",
+        "research/spd09_colext_threshold_20261007/IDENTITY.json": "4c21fbc64b7a6b32ea2e1943e1ee5107dcd8e02c261123cc4586578df623f603",
+        "research/spd09_colext_threshold_20261007/PROFILE.json": "9b79ace0bd4392fa0dc1a0ace24b4019cffb5ea4b6387ad224444d3d17fcffdf"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0087",
+      "family": "native_counted_work_optimizations",
+      "source_commit": "fd998ca3bf1c62c86c8033d2115ad624f84ac6ac",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: a workspace-owned least-squares solve calling faer's in-place column-pivoted QR with the high-level path's parameters is bitwise identical to small::least_squares on 1,024 systems and reuse sequences and to GMRES-into on 408 solves, removes exactly 11 allocations per least-squares solve, and cuts the matrix-free driver's allocations per attempt to 0.018-0.096x on five problems (HIRES 0.48x, its JVP allocates). faer 0.24.4. Allocation counts only; no instruction or wall-time claim.",
+      "source_paths": [
+        "research/spd04_ls_workspace_20261007/RESULTS_RAW.json",
+        "research/spd04_ls_workspace_20261007/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/spd04_ls_workspace_20261007/RESULTS_RAW.json": "be6281b04e5158e1f1b2147eeee9e43f72c8018fc8a20dd590d49127535267da",
+        "research/spd04_ls_workspace_20261007/RESULTS.json": "4bc2c95b8c82ac2374feebf414e28a5b96769c34216b9c23aca7e861122d950b"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0088",
+      "family": "native_counted_work_optimizations",
+      "source_commit": "fd998ca3bf1c62c86c8033d2115ad624f84ac6ac",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: solving the LGMRES-into least-squares problem once per cycle instead of after every Arnoldi column is bitwise identical to the legacy path on all 1,216 rev04 solves (344 failures, all final-residual failures, outputs and states rolled back) and cuts allocations per solve to 0.027-0.042x of L-0061's LGMRES-into (e.g. 4,059 -> 110, 455.7 -> 15.4). No driver calls solve_lgmres_into. Allocation counts only; no instruction or wall-time claim.",
+      "source_paths": [
+        "research/spd05_lgmres_ls_once_20261007/RESULTS_RAW.json",
+        "research/spd05_lgmres_ls_once_20261007/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/spd05_lgmres_ls_once_20261007/RESULTS_RAW.json": "6134f5869175fa4140b8a7f8b2b0741041914ce17bdb9b0872c7443c5f27eedc",
+        "research/spd05_lgmres_ls_once_20261007/RESULTS.json": "be624dae099c4b4d9e487d18aeee025fab094736ce5e16dd337f5afd780c5694"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0089",
+      "family": "native_counted_work_optimizations",
+      "source_commit": "fd998ca3bf1c62c86c8033d2115ad624f84ac6ac",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (kill): integrating 4 or 8 van der Pol members on lanes with each member's exact scalar arithmetic is bitwise identical for all 64 members and masks injected failures per lane, but gives 0.937x / 0.924x Ir per trajectory of the scalar arm (gate <= 0.80, kill > 0.90). The scalar arm drifted +8.6% from the base export (legacy item fails); against the base, batch8 is 1.005x. Counted instructions only; no wall-time claim.",
+      "source_paths": [
+        "research/spd08_small_ensemble_lanes_20261007/CONTRACT.json",
+        "research/spd08_small_ensemble_lanes_20261007/PROFILE.json",
+        "research/spd08_small_ensemble_lanes_20261007/PROFILE.members.rodas5p-fast-small.json",
+        "research/spd08_small_ensemble_lanes_20261007/PROFILE.members.rodas5p-fast-small-batch4.json",
+        "research/spd08_small_ensemble_lanes_20261007/PROFILE.members.rodas5p-fast-small-batch8.json",
+        "research/spd08_small_ensemble_lanes_20261007/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/spd08_small_ensemble_lanes_20261007/CONTRACT.json": "b1c1bb99010a549887efb93187c3b25dd47779152eea8fb347e3f3da62fb4519",
+        "research/spd08_small_ensemble_lanes_20261007/PROFILE.json": "b4ddc0d65f550809591279e906bafe3fe58f6eed548e414d8e3170b6e3bd2e54",
+        "research/spd08_small_ensemble_lanes_20261007/PROFILE.members.rodas5p-fast-small.json": "9b16538a242874cb6dd179230ba2ee8d6cd7417c8863a3c0ba3ec2bbae7d9bfa",
+        "research/spd08_small_ensemble_lanes_20261007/PROFILE.members.rodas5p-fast-small-batch4.json": "43f0690844e8a6c55f0936c1eb99a75d7062a7bb21d0c2252b1e9074585f888c",
+        "research/spd08_small_ensemble_lanes_20261007/PROFILE.members.rodas5p-fast-small-batch8.json": "58b31c87e5d2ca5c1345ad3c7ca0b5cb027b5d6e0afd5b81ce4747c3b877c7e5",
+        "research/spd08_small_ensemble_lanes_20261007/RESULTS.json": "fa3f51a83c244d63b4b79d618e8daea1cd46f3cd605d8162892c89cd59380cae"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0090",
+      "family": "algorithmic_target_controller_guard",
+      "source_commit": "0df3ede6917583d322d59c00ad84b69778ec962e",
+      "published_verdict": "FAIL",
+      "effective_status": "SUPERSEDED",
+      "superseded_by": "L-0093",
+      "supersedes": null,
+      "published_claim": "FAIL (items 2, 3): the CoupledGuarded stage target reproduces the pilot's work cut (JVP per accepted step vs Legacy: Bruss-50 0.31/0.26, inner products 0.11/0.07; Bruss-160 0.45/0.51; HIRES, Robertson, vdP 0.68-0.75) with error <= 1.5x the dense twin on 29 of 31 cells, but vig1b-k20 is 37.1x/4.4x the twin (the nu-guard repairs vigb-k20, not the single block), and at the registered 200-column budget diagpr128 and semilin128 k=3 exhaust the budget (as Legacy does). Counted work only; no wall-time claim.",
+      "source_paths": [
+        "research/alg01_coupled_stage_target_20261008/RUNS.json",
+        "research/alg01_coupled_stage_target_20261008/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/alg01_coupled_stage_target_20261008/RUNS.json": "605b5d4d482b03d4428c7f0986a6e39525fc90697e83d064bb6bd78f81edd041",
+        "research/alg01_coupled_stage_target_20261008/RESULTS.json": "4fdcfa2c0067c5324852208674e83f5c7626202d4d1f3f21c39cc5976d0bca1a"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0091",
+      "family": "algorithmic_target_controller_guard",
+      "source_commit": "cae94865fa855770a79a939063ed0df4cd198ffd",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (items 3, 5): PredictiveCapped cuts van der Pol attempts at matched accuracy to 0.68-0.84x of the integral controller (5/5 E) and its rejections from 28.5% to 7.0%, with Integral bitwise unchanged (276/276), but Robertson's cheapest-run ratio reaches 1.160 at E = 3.16e-9 (gate 1.10; frontier 1.025) and van der Pol at rtol 5.62e-7 exceeds the calibration bound (err/rtol 2.55-2.57 vs 2.05-2.28) on all three seeds. Counted attempts only; no wall-time claim.",
+      "source_paths": [
+        "research/alg02_predictive_controller_20261008/RUNS.json",
+        "research/alg02_predictive_controller_20261008/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/alg02_predictive_controller_20261008/RUNS.json": "2d5d1331a662e9eb9f1331949d3f9cab3170196264276071868e68fd9527d7e0",
+        "research/alg02_predictive_controller_20261008/RESULTS.json": "38329e7cd34c65677a02c16c692841de94466e672bee04cdfe1d20fe0e88c023"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0092",
+      "family": "algorithmic_target_controller_guard",
+      "source_commit": "0df3ede6917583d322d59c00ad84b69778ec962e",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (item 4): budget 2000 with the stagnation guard and production fallback is bitwise neutral on 14/14 SPD07 cells, completes every stress cell including Robertson to 4e10 (the guard without fallback livelocks there), has 0 linear failures on Brusselator-160/300 and uses 0.655x B0's and 0.418x Rbig's JVPs on Brusselator-300 1e-4, but Robertson to 4e10 at rtol 1e-5 ends at 3.32x the dense twin's error (gate 1.5x). Counted work only; no wall-time claim.",
+      "source_paths": [
+        "research/alg03_stage_budget_guard_20261008/RUNS.json",
+        "research/alg03_stage_budget_guard_20261008/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/alg03_stage_budget_guard_20261008/RUNS.json": "a4126e75899cb1d53bc84608c949505a8ae01ad659bc40595ebeb6e7262041a9",
+        "research/alg03_stage_budget_guard_20261008/RESULTS.json": "a9562caca1ca2c9c64193e834ea3f9ec7415c492ec48bbebf25fd95c3d1d67af"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0093",
+      "family": "algorithmic_target_controller_guard",
+      "source_commit": "0df3ede6917583d322d59c00ad84b69778ec962e",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": "L-0090",
+      "published_claim": "Correction of L-0090 (same run, same outputs; verdict unchanged FAIL, items 2 and 3): the CoupledGuarded stage target cuts JVP per accepted step vs Legacy on the Brusselators (Bruss-50 0.31/0.26 vs ProjL2 0.47/0.30; Bruss-160 0.45/0.51 vs ProjL2 0.73/0.62), but its small-n passes (HIRES, Robertson, vdP 0.68-0.75) come from the staged solver omitting the diagnostic residual (ProjL2 equal or better). vig1b-k20 is 37.1x/4.4x the twin; item 3 was infeasible at budget 200 for every arm. No wall-time claim.",
+      "source_paths": [
+        "research/alg01_coupled_stage_target_20261008/RUNS.json",
+        "research/alg01_coupled_stage_target_20261008/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/alg01_coupled_stage_target_20261008/RUNS.json": "605b5d4d482b03d4428c7f0986a6e39525fc90697e83d064bb6bd78f81edd041",
+        "research/alg01_coupled_stage_target_20261008/RESULTS.json": "4fdcfa2c0067c5324852208674e83f5c7626202d4d1f3f21c39cc5976d0bca1a"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0094",
+      "family": "algorithmic_target_controller_guard",
+      "source_commit": "12dbb2da6af9b4225c641b52708bcb3cddc65d7a",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL (item 2 only): CoupledGuarded2 keeps error <= 1.5x the dense twin on 30 of 31 cells (vig1b-k20 at 1e-4 now 1.00x, was 37.1x) but vig1b-k20 at 1e-8 is 4.18x (Legacy 1.73x). Its own work gain over ProjL2 on the Brusselators is gm 0.738 (0.61-0.87); ladders at budget 20000 are 0.997-1.001x LU; small n within 0.91-1.006x DupFix, which alone explains most small-n savings (0.63-0.89x Legacy). Counted work only.",
+      "source_paths": [
+        "research/alg04_coupled_target_v2_20261010/RUNS.json",
+        "research/alg04_coupled_target_v2_20261010/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/alg04_coupled_target_v2_20261010/RUNS.json": "0512f858f6c1cba4a5940452e383e1f0f565bee1e9c25e83264d10b8cf14ff44",
+        "research/alg04_coupled_target_v2_20261010/RESULTS.json": "6a6bee1ccc1fe2ace665ea1c11f0c1c7473026f1a87fe7fa1b86fb47e9849b94"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0095",
+      "family": "algorithmic_target_controller_guard",
+      "source_commit": "e60199856280bd0528e11836e93c3f3717b8c199",
+      "published_verdict": "FAIL",
+      "effective_status": "SUPERSEDED",
+      "superseded_by": "L-0098",
+      "supersedes": null,
+      "published_claim": "FAIL (item 5, single-cell bound only): on fresh seeds PredictiveCapped2 gives van der Pol frontier ratios 0.685-0.834 (5/5 E), worst 1.015/1.033/0.969 on HIRES/Robertson/Brusselator-50, rejections 28.3% -> 6.8%, calibration fit ratios <= 1.56 (bound 2.0), but one van der Pol cell has err/rtol 65.17 where the integral controller has 65.04 (absolute bound 10 was mis-specified). PREDcap2 equals PREDcap on all 276 cells. Counted attempts only.",
+      "source_paths": [
+        "research/alg05_predictive_controller_v2_20261010/RUNS.json",
+        "research/alg05_predictive_controller_v2_20261010/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/alg05_predictive_controller_v2_20261010/RUNS.json": "76184aa21fba66e1f6a614c74fbe765f853050f8be661e4dba1246c1d3018807",
+        "research/alg05_predictive_controller_v2_20261010/RESULTS.json": "9b8d007123191aae60e581e89a3d37dda6c4aac4ffc8d9c46da87c2f7a157050"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0096",
+      "family": "algorithmic_target_controller_guard",
+      "source_commit": "12dbb2da6af9b4225c641b52708bcb3cddc65d7a",
+      "published_verdict": "PASS",
+      "effective_status": "SUPERSEDED",
+      "superseded_by": "L-0097",
+      "supersedes": null,
+      "published_claim": "PASS: B3 (G1+G2+G3) completes every stress cell including Robertson to 4e10, has 0 linear failures in 24 cells, error 0.54-1.00x the twin, and uses 0.418x Rbig's JVPs on Brusselator-300 1e-4. The predicted mechanism is not confirmed: G3 charges are <= 2.7e-3, never flip a decision, and all arms take identical Robertson steps; the 1e-5 spread (B3a 1.87x, B3 0.54x) is endpoint sensitivity. Most gain over ALG03 comes from ALG04's target. Counted work only.",
+      "source_paths": [
+        "research/alg06_guard_v2_20261010/RUNS.json",
+        "research/alg06_guard_v2_20261010/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/alg06_guard_v2_20261010/RUNS.json": "26aaa444f06149335e904558805797067c0fdcc53c976b92ea1ee3fe56e67432",
+        "research/alg06_guard_v2_20261010/RESULTS.json": "af43d6f602d2fde24fdd567d693e4cdc3e738b49ebc441470f32d53bae891899"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0097",
+      "family": "algorithmic_target_controller_guard",
+      "source_commit": "12dbb2da6af9b4225c641b52708bcb3cddc65d7a",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": "L-0096",
+      "published_claim": "Correction of L-0096 (same run and outputs; verdict PASS by the registered rule, item 4 not robust): B3 completes every stress cell with 0 linear failures and 0.418x Rbig's JVPs on Brusselator-300, but the Robertson-4e10 1e-5 accuracy pass is a favourable draw: in unregistered reviewer reruns with h0 perturbed by k*1e-9 (24 runs) B3 is 0.011-5.70x the twin (median 2.39x, 15/24 above 1.5x) while Rbig stays 0.95-1.06x. G3 never acted (charges <= 2.7e-3); step counts, not sequences, coincide. Not evidence for G1-G3.",
+      "source_paths": [
+        "research/alg06_guard_v2_20261010/RUNS.json",
+        "research/alg06_guard_v2_20261010/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/alg06_guard_v2_20261010/RUNS.json": "26aaa444f06149335e904558805797067c0fdcc53c976b92ea1ee3fe56e67432",
+        "research/alg06_guard_v2_20261010/RESULTS.json": "af43d6f602d2fde24fdd567d693e4cdc3e738b49ebc441470f32d53bae891899"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0098",
+      "family": "algorithmic_target_controller_guard",
+      "source_commit": "e60199856280bd0528e11836e93c3f3717b8c199",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": "L-0095",
+      "published_claim": "Correction of L-0095 (same run and outputs; verdict FAIL, item 5 single-cell bound): on fresh seeds PredictiveCapped2 gives van der Pol frontier ratios 0.685-0.834 (5/5 E), worst 1.015/1.033/0.969 on HIRES/Robertson/Brusselator-50, rejections 28.3% -> 6.8%, calibration fit ratios <= 1.56 (bound 2.0); one van der Pol cell has err/rtol 65.17 where the reference arm I has 65.04 (I's ALG02 maximum, 14.7, already exceeded the bound). PREDcap2 equals PREDcap on all 276 cells. Counted attempts only.",
+      "source_paths": [
+        "research/alg05_predictive_controller_v2_20261010/RUNS.json",
+        "research/alg05_predictive_controller_v2_20261010/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/alg05_predictive_controller_v2_20261010/RUNS.json": "76184aa21fba66e1f6a614c74fbe765f853050f8be661e4dba1246c1d3018807",
+        "research/alg05_predictive_controller_v2_20261010/RESULTS.json": "9b8d007123191aae60e581e89a3d37dda6c4aac4ffc8d9c46da87c2f7a157050"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0099",
+      "family": "represented_2x2_gain_witness",
+      "source_commit": "95d589e862c35c675fac3bee7ebdb962415a97de",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS within represented-real-2x2 research scope: 30/30 signed correction, gain and WRMS enclosures pass an independent exact Fraction oracle, including4 fixed holdout;12/12 invalid controls reject. First run FAIL(11/12 rejects) is preserved: identity with subnormal metric was a valid input; only the overflow fixture changed. Bounds can be very loose. No W-formation/JVP/nonlinear/global-accuracy, wall-time or default promotion claim.",
+      "source_paths": [
+        "research/reaudit_accuracy_speed_20261010/NATIVE.json",
+        "research/reaudit_accuracy_speed_20261010/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/reaudit_accuracy_speed_20261010/NATIVE.json": "b9404714af837dfb099db564550e88127ff52a0c9341758862529261b85bd364",
+        "research/reaudit_accuracy_speed_20261010/RESULTS.json": "20a6cb32aa119142576bac4adbe836fbd6e13623cf4dd2c4c0fbda36fc0d0e21"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0100",
+      "family": "versioned_residual_accounting",
+      "source_commit": "3ea305cc4756a5ec6092c9e3deabcea9226c0ae6",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "PASS: v2 accounting gives bitwise identical states, decisions and residual norms in 44/44 cells and 10/10 kernel cases; JVP(v1)-JVP(v2) equals the independently counted confirmed exits in 44/44; same-binary Ir v2/v1 0.962-0.996 on 5 profiled cells. Decision rule = versioned: 9 pre-existing tests pin v1 counters, so the default stays RecomputeFinal and ReuseConfirmed is an explicit option. No default, global-accuracy or wall-time claim.",
+      "source_paths": [
+        "research/sp01_dupfix_adoption_20261010/RUNS.json",
+        "research/sp01_dupfix_adoption_20261010/PROFILE.json",
+        "research/sp01_dupfix_adoption_20261010/RESULTS.json",
+        "research/sp01_dupfix_adoption_20261010/DEFAULT_TRIAL.json",
+        "research/sp01_dupfix_adoption_20261010/DEFAULT_TRIAL_FAILURES.json"
+      ],
+      "source_output_sha256": {
+        "research/sp01_dupfix_adoption_20261010/RUNS.json": "d38f20092cc6381849111cf811bfe22a3900436880679022394d9b92ad5c4152",
+        "research/sp01_dupfix_adoption_20261010/PROFILE.json": "729fc53b4909ce7ce12233fe132a8ca9ec893be6303755198b0d532cae5706c0",
+        "research/sp01_dupfix_adoption_20261010/RESULTS.json": "150d22a89bfdfbf351728f2676b52737b848ef77e35fb8de1abd5d3ab09d3ce2",
+        "research/sp01_dupfix_adoption_20261010/DEFAULT_TRIAL.json": "dcd64d8c1d403a4cc4c094ed1245506ae0ffc460cbc8fc804517dd2e67a5e84f",
+        "research/sp01_dupfix_adoption_20261010/DEFAULT_TRIAL_FAILURES.json": "f674c7fd888c4069d29ab0c94187a80ea52ba97bd2378bfae385cf0f286da249"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0101",
+      "family": "declared_structure_routing",
+      "source_commit": "f3a5a8a7122378de64c9f9060da27eb74e72eb66",
+      "published_verdict": "FAIL",
+      "effective_status": "FAIL",
+      "superseded_by": null,
+      "supersedes": null,
+      "published_claim": "FAIL on gate item 5 only: routed/banded Ir 1.0738 (1e-6) and 1.0347 (1e-8) at n=1000 exceed 1.02, because band verification on JVP-less problems builds the dense Jacobian (one-time O(n^2): memset + 2 dense products). Items 1-4 hold: 10/10 malformed declarations rejected before any step; bitwise parity in 15/15 cells; routed/min(dense,colext64) 0.487 at n=400; slope 1.057/1.031. No default, sparse or wall-time claim.",
+      "source_paths": [
+        "research/sp03_declared_structure_routing_20261010/RUNS.json",
+        "research/sp03_declared_structure_routing_20261010/PROFILE.json",
+        "research/sp03_declared_structure_routing_20261010/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/sp03_declared_structure_routing_20261010/RUNS.json": "7c71add3a5012c2ee3cfa2b7670cb1ea4316d86c33b813d890889908f2b7496e",
+        "research/sp03_declared_structure_routing_20261010/PROFILE.json": "bc03ba2da61a251bcf3cf4b72d3686d5e954e4df4a85d97c6f8a3f19b0d47a75",
+        "research/sp03_declared_structure_routing_20261010/RESULTS.json": "3e6a49f8c6f5e9d0ce8ee04386d2e21328248bc1ef3dfb5c921e9bceca25b31b"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0102",
+      "family": "predictive_controller_interior_grid",
+      "source_commit": "088187b03aaeb94a5c43a077f7efadda004ab0a4",
+      "published_verdict": "PASS",
+      "effective_status": "SUPERSEDED",
+      "superseded_by": "L-0103",
+      "supersedes": null,
+      "published_claim": "PASS on a fixed deterministic corpus (not random samples): PredictiveCapped2 vs Integral with a 40-point interior grid, 6 fresh seeds. vdP frontier 0.801-0.863 at 3 in-range E; others worst 0.989-1.017; worst seed <=1.020; vdP rejections 0.283x; calibration fit 0.91-1.05, equal-rtol medians 0.99-1.00; 0 catastrophic cells. PredictiveCapped2 equals PredictiveCapped in all 644 cells: the ALG05 fixes never acted. No default, global-accuracy or wall-time claim.",
+      "source_paths": [
+        "research/ct01_controller_grid_holdout_20261010/RUNS.json",
+        "research/ct01_controller_grid_holdout_20261010/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/ct01_controller_grid_holdout_20261010/RUNS.json": "b7c7b3655f19f1855cd1b0681ff918cd93c975afbbf08743f253711e61b07a38",
+        "research/ct01_controller_grid_holdout_20261010/RESULTS.json": "b2b4a849a4d7cd4d5b6036ce7d3b143f54a2f59367565dacf49c3240264c249c"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    },
+    {
+      "id": "L-0103",
+      "family": "predictive_controller_interior_grid",
+      "source_commit": "088187b03aaeb94a5c43a077f7efadda004ab0a4",
+      "published_verdict": "PASS",
+      "effective_status": "PASS",
+      "superseded_by": null,
+      "supersedes": "L-0102",
+      "published_claim": "PASS on a fixed deterministic corpus (not random samples): PredictiveCapped2 vs Integral with a 40-point interior grid, 6 fresh seeds. vdP frontier 0.801-0.863 at 3 in-range E; others worst 0.989-1.017; worst seed <=1.020; vdP rejections 0.283x; calibration fit 0.91-1.05, equal-rtol medians 0.99-1.00; 0 catastrophic cells. PredictiveCapped2 equals PredictiveCapped in all 644 cells: the ALG05 fixes never acted. No default, global-accuracy or wall-time claim.",
+      "source_paths": [
+        "research/ct01_controller_grid_holdout_20261010/RUNS.json",
+        "research/ct01_controller_grid_holdout_20261010/RESULTS.json"
+      ],
+      "source_output_sha256": {
+        "research/ct01_controller_grid_holdout_20261010/RUNS.json": "b7c7b3655f19f1855cd1b0681ff918cd93c975afbbf08743f253711e61b07a38",
+        "research/ct01_controller_grid_holdout_20261010/RESULTS.json": "b2b4a849a4d7cd4d5b6036ce7d3b143f54a2f59367565dacf49c3240264c249c"
+      },
+      "review_action": "REUSED_PUBLISHED_RESULT_NO_EXPERIMENT_RERUN",
+      "status_semantics": "PASS means registered gate only; independent production, global-error, and wall-time scopes are not inferred"
+    }
+  ]
+}

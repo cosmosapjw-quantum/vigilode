@@ -1,0 +1,637 @@
+{
+  "schema_version": 1,
+  "task": "fresh local rerun of published cloud implementation",
+  "recorded_at_utc": "2026-10-18T10:45:01.703510+00:00",
+  "repository": "https://github.com/cosmosapjw-quantum/vigilode",
+  "branch": "research/cloud-completion-20261018",
+  "handoff_commit": "4cb795d2b4d3d1cc43ac1ede37d48e4f4daaac3b",
+  "fetched_remote_head": "412856893c3451917ea19c38ec2965f8790d3a1c",
+  "executed_head": "412856893c3451917ea19c38ec2965f8790d3a1c",
+  "published_source_commit": "b2379658a4eb0d8b4ddddcd58f754ef28e615c12",
+  "source_manifest_files": 31,
+  "source_manifest_changed": [],
+  "source_manifest_missing": [],
+  "cargo_lock_sha256": "04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400",
+  "environment": {
+    "rustc": "1.94.1 (e408947bf 2026-03-25)",
+    "cargo": "1.94.1 (29ea6fb6a 2026-03-24)",
+    "python": "3.12.3",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "LD_LIBRARY_PATH_set": true,
+    "dependencies": "--locked --offline"
+  },
+  "commands": {
+    "check": [
+      {
+        "name": "all_targets",
+        "command": [
+          "cargo",
+          "check",
+          "--locked",
+          "--offline",
+          "--workspace",
+          "--all-targets"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 12.986417468055151,
+        "stdout": "all_targets.stdout",
+        "stderr": "all_targets.stderr"
+      },
+      {
+        "name": "core_contracts",
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-p",
+          "rodas5p-core",
+          "--test",
+          "leja_enclosed_contract",
+          "--test",
+          "leja_total_contract",
+          "--test",
+          "leja_setup_work_contract"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 2.9695350020192564,
+        "stdout": "core_contracts.stdout",
+        "stderr": "core_contracts.stderr"
+      },
+      {
+        "name": "leja_unit",
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-p",
+          "rodas5p-core",
+          "--lib",
+          "cloud_"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 0.9410059669753537,
+        "stdout": "leja_unit.stdout",
+        "stderr": "leja_unit.stderr"
+      },
+      {
+        "name": "integrator_contracts",
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-p",
+          "rodas5p-integrators",
+          "--test",
+          "affine_transport_contract",
+          "--test",
+          "production_audit_packet_verified",
+          "--test",
+          "production_audit_packet_curve_output",
+          "--test",
+          "production_audit_pr101_cloud",
+          "--test",
+          "a05_dense_global_output",
+          "--test",
+          "collective_rodas5p_contracts",
+          "--",
+          "--nocapture"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 4.1185798610094935,
+        "stdout": "integrator_contracts.stdout",
+        "stderr": "integrator_contracts.stderr"
+      },
+      {
+        "name": "allocation_probe",
+        "command": [
+          "cargo",
+          "test",
+          "--locked",
+          "--offline",
+          "-p",
+          "rodas5p-integrators",
+          "--test",
+          "collective_rodas5p_allocation_contract",
+          "--",
+          "--nocapture"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 0.7720464060548693,
+        "stdout": "allocation_probe.stdout",
+        "stderr": "allocation_probe.stderr"
+      },
+      {
+        "name": "leja_fraction",
+        "command": [
+          "/usr/bin/python3",
+          "research/cloud_completion_20261018/leja_fraction_oracle.py",
+          "/home/cosmosapjw/vigilode-cloud-completion-20261018/artifacts/generated/cloud_codex_check_20261018/leja_runs.json",
+          "--output",
+          "/home/cosmosapjw/vigilode-cloud-completion-20261018/artifacts/generated/cloud_codex_check_20261018/leja_fraction.json"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 0.4618921490618959,
+        "stdout": "leja_fraction.stdout",
+        "stderr": "leja_fraction.stderr"
+      },
+      {
+        "name": "pr101_fraction",
+        "command": [
+          "/usr/bin/python3",
+          "crates/rodas5p-integrators/tests/pr101_cloud_fraction_oracle.py",
+          "/home/cosmosapjw/vigilode-cloud-completion-20261018/artifacts/generated/cloud_codex_check_20261018/integrator_contracts.stdout"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 0.06400125205982476,
+        "stdout": "pr101_fraction.stdout",
+        "stderr": "pr101_fraction.stderr"
+      }
+    ],
+    "smoke": [
+      {
+        "name": "packet_run",
+        "command": [
+          "cargo",
+          "run",
+          "--locked",
+          "--offline",
+          "-p",
+          "rodas5p-integrators",
+          "--example",
+          "packet_verified_run",
+          "--",
+          "16",
+          "32"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 0.7627547619631514,
+        "stdout": "packet_run.stdout",
+        "stderr": "packet_run.stderr"
+      },
+      {
+        "name": "pr101_run",
+        "command": [
+          "cargo",
+          "run",
+          "--locked",
+          "--offline",
+          "-p",
+          "rodas5p-integrators",
+          "--example",
+          "pr101_verified_run"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 0.9023365640314296,
+        "stdout": "pr101_run.stdout",
+        "stderr": "pr101_run.stderr"
+      }
+    ],
+    "bench": [
+      {
+        "name": "comparison_build",
+        "command": [
+          "cargo",
+          "build",
+          "--locked",
+          "--offline",
+          "--profile",
+          "measurement",
+          "-p",
+          "rodas5p-integrators",
+          "--example",
+          "collective_structured_compare"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 1.1862764960387722,
+        "stdout": "comparison_build.stdout",
+        "stderr": "comparison_build.stderr"
+      },
+      {
+        "name": "structured_comparison",
+        "command": [
+          "cargo",
+          "run",
+          "--locked",
+          "--offline",
+          "--profile",
+          "measurement",
+          "-p",
+          "rodas5p-integrators",
+          "--example",
+          "collective_structured_compare",
+          "--",
+          "32",
+          "5"
+        ],
+        "exit_code": 0,
+        "wall_seconds": 0.11793452000711113,
+        "stdout": "structured_comparison.stdout",
+        "stderr": "structured_comparison.stderr"
+      }
+    ]
+  },
+  "stage_results": {
+    "check": {
+      "schema_version": 1,
+      "success": true,
+      "nonallocation_commands_success": true,
+      "executions": [
+        {
+          "name": "all_targets",
+          "command": [
+            "cargo",
+            "check",
+            "--locked",
+            "--offline",
+            "--workspace",
+            "--all-targets"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 12.986417468055151,
+          "stdout": "all_targets.stdout",
+          "stderr": "all_targets.stderr"
+        },
+        {
+          "name": "core_contracts",
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "--offline",
+            "-p",
+            "rodas5p-core",
+            "--test",
+            "leja_enclosed_contract",
+            "--test",
+            "leja_total_contract",
+            "--test",
+            "leja_setup_work_contract"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 2.9695350020192564,
+          "stdout": "core_contracts.stdout",
+          "stderr": "core_contracts.stderr"
+        },
+        {
+          "name": "leja_unit",
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "--offline",
+            "-p",
+            "rodas5p-core",
+            "--lib",
+            "cloud_"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 0.9410059669753537,
+          "stdout": "leja_unit.stdout",
+          "stderr": "leja_unit.stderr"
+        },
+        {
+          "name": "integrator_contracts",
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "--offline",
+            "-p",
+            "rodas5p-integrators",
+            "--test",
+            "affine_transport_contract",
+            "--test",
+            "production_audit_packet_verified",
+            "--test",
+            "production_audit_packet_curve_output",
+            "--test",
+            "production_audit_pr101_cloud",
+            "--test",
+            "a05_dense_global_output",
+            "--test",
+            "collective_rodas5p_contracts",
+            "--",
+            "--nocapture"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 4.1185798610094935,
+          "stdout": "integrator_contracts.stdout",
+          "stderr": "integrator_contracts.stderr"
+        },
+        {
+          "name": "allocation_probe",
+          "command": [
+            "cargo",
+            "test",
+            "--locked",
+            "--offline",
+            "-p",
+            "rodas5p-integrators",
+            "--test",
+            "collective_rodas5p_allocation_contract",
+            "--",
+            "--nocapture"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 0.7720464060548693,
+          "stdout": "allocation_probe.stdout",
+          "stderr": "allocation_probe.stderr"
+        },
+        {
+          "name": "leja_fraction",
+          "command": [
+            "/usr/bin/python3",
+            "research/cloud_completion_20261018/leja_fraction_oracle.py",
+            "/home/cosmosapjw/vigilode-cloud-completion-20261018/artifacts/generated/cloud_codex_check_20261018/leja_runs.json",
+            "--output",
+            "/home/cosmosapjw/vigilode-cloud-completion-20261018/artifacts/generated/cloud_codex_check_20261018/leja_fraction.json"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 0.4618921490618959,
+          "stdout": "leja_fraction.stdout",
+          "stderr": "leja_fraction.stderr"
+        },
+        {
+          "name": "pr101_fraction",
+          "command": [
+            "/usr/bin/python3",
+            "crates/rodas5p-integrators/tests/pr101_cloud_fraction_oracle.py",
+            "/home/cosmosapjw/vigilode-cloud-completion-20261018/artifacts/generated/cloud_codex_check_20261018/integrator_contracts.stdout"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 0.06400125205982476,
+          "stdout": "pr101_fraction.stdout",
+          "stderr": "pr101_fraction.stderr"
+        }
+      ],
+      "scientific_scope": "See DECISION.json; successful process alone does not establish accuracy or speed.",
+      "return_to_review": [
+        "environment.json",
+        "executions.json",
+        "*.stdout",
+        "*.stderr",
+        "*.json"
+      ]
+    },
+    "smoke": {
+      "schema_version": 1,
+      "success": true,
+      "nonallocation_commands_success": true,
+      "executions": [
+        {
+          "name": "packet_run",
+          "command": [
+            "cargo",
+            "run",
+            "--locked",
+            "--offline",
+            "-p",
+            "rodas5p-integrators",
+            "--example",
+            "packet_verified_run",
+            "--",
+            "16",
+            "32"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 0.7627547619631514,
+          "stdout": "packet_run.stdout",
+          "stderr": "packet_run.stderr"
+        },
+        {
+          "name": "pr101_run",
+          "command": [
+            "cargo",
+            "run",
+            "--locked",
+            "--offline",
+            "-p",
+            "rodas5p-integrators",
+            "--example",
+            "pr101_verified_run"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 0.9023365640314296,
+          "stdout": "pr101_run.stdout",
+          "stderr": "pr101_run.stderr"
+        }
+      ],
+      "scientific_scope": "See DECISION.json; successful process alone does not establish accuracy or speed.",
+      "return_to_review": [
+        "environment.json",
+        "executions.json",
+        "*.stdout",
+        "*.stderr",
+        "*.json"
+      ]
+    },
+    "bench": {
+      "schema_version": 1,
+      "success": true,
+      "nonallocation_commands_success": true,
+      "executions": [
+        {
+          "name": "comparison_build",
+          "command": [
+            "cargo",
+            "build",
+            "--locked",
+            "--offline",
+            "--profile",
+            "measurement",
+            "-p",
+            "rodas5p-integrators",
+            "--example",
+            "collective_structured_compare"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 1.1862764960387722,
+          "stdout": "comparison_build.stdout",
+          "stderr": "comparison_build.stderr"
+        },
+        {
+          "name": "structured_comparison",
+          "command": [
+            "cargo",
+            "run",
+            "--locked",
+            "--offline",
+            "--profile",
+            "measurement",
+            "-p",
+            "rodas5p-integrators",
+            "--example",
+            "collective_structured_compare",
+            "--",
+            "32",
+            "5"
+          ],
+          "exit_code": 0,
+          "wall_seconds": 0.11793452000711113,
+          "stdout": "structured_comparison.stdout",
+          "stderr": "structured_comparison.stderr"
+        }
+      ],
+      "scientific_scope": "See DECISION.json; successful process alone does not establish accuracy or speed.",
+      "return_to_review": [
+        "environment.json",
+        "executions.json",
+        "*.stdout",
+        "*.stderr",
+        "*.json"
+      ]
+    }
+  },
+  "allocation": {
+    "positive_control": "PASS",
+    "positive_control_library_clone_calls": 3,
+    "bench_rows": 30,
+    "all_rows_calibrated": true,
+    "arm_call_counts": {
+      "dense_fast": [
+        70
+      ],
+      "structured": [
+        37
+      ]
+    },
+    "authority": "Only measured attempts under this calibrated runner; not a generic zero-allocation claim."
+  },
+  "bench_summary": [
+    {
+      "rtol": 1e-10,
+      "atol": 1e-13,
+      "output_count": 11,
+      "arms": [
+        {
+          "arm": "dense_fast",
+          "n": 5,
+          "successful": 5,
+          "empirical_accuracy_gate_pass": 5,
+          "median_elapsed_ns": 2115698,
+          "max_grid_wrms_reference_error": 0.4350283954029967,
+          "max_empirical_gate_upper": 0.43533436556655064,
+          "max_abs_reference_error": 1.5386025786767732e-12,
+          "allocation_calls": [
+            70
+          ],
+          "allocator_calibration_valid": true,
+          "positive_control_clone_calls": [
+            3
+          ]
+        },
+        {
+          "arm": "structured",
+          "n": 5,
+          "successful": 5,
+          "empirical_accuracy_gate_pass": 5,
+          "median_elapsed_ns": 1329028,
+          "max_grid_wrms_reference_error": 0.434549070488822,
+          "max_empirical_gate_upper": 0.43485504065237596,
+          "max_abs_reference_error": 1.5367047911940546e-12,
+          "allocation_calls": [
+            37
+          ],
+          "allocator_calibration_valid": true,
+          "positive_control_clone_calls": [
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "output_count": 11,
+      "arms": [
+        {
+          "arm": "dense_fast",
+          "n": 5,
+          "successful": 5,
+          "empirical_accuracy_gate_pass": 5,
+          "median_elapsed_ns": 902671,
+          "max_grid_wrms_reference_error": 0.40353559365430286,
+          "max_empirical_gate_upper": 0.4035386533559384,
+          "max_abs_reference_error": 1.4732051689669845e-10,
+          "allocation_calls": [
+            70
+          ],
+          "allocator_calibration_valid": true,
+          "positive_control_clone_calls": [
+            3
+          ]
+        },
+        {
+          "arm": "structured",
+          "n": 5,
+          "successful": 5,
+          "empirical_accuracy_gate_pass": 5,
+          "median_elapsed_ns": 573487,
+          "max_grid_wrms_reference_error": 0.40353108945194266,
+          "max_empirical_gate_upper": 0.4035341491535782,
+          "max_abs_reference_error": 1.4731766501130394e-10,
+          "allocation_calls": [
+            37
+          ],
+          "allocator_calibration_valid": true,
+          "positive_control_clone_calls": [
+            3
+          ]
+        }
+      ]
+    },
+    {
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "output_count": 11,
+      "arms": [
+        {
+          "arm": "dense_fast",
+          "n": 5,
+          "successful": 5,
+          "empirical_accuracy_gate_pass": 5,
+          "median_elapsed_ns": 527790,
+          "max_grid_wrms_reference_error": 0.044324163456446464,
+          "max_empirical_gate_upper": 0.04432419405346282,
+          "max_abs_reference_error": 1.6521663967483669e-09,
+          "allocation_calls": [
+            70
+          ],
+          "allocator_calibration_valid": true,
+          "positive_control_clone_calls": [
+            3
+          ]
+        },
+        {
+          "arm": "structured",
+          "n": 5,
+          "successful": 5,
+          "empirical_accuracy_gate_pass": 5,
+          "median_elapsed_ns": 329854,
+          "max_grid_wrms_reference_error": 0.04432406647051313,
+          "max_empirical_gate_upper": 0.04432409706752949,
+          "max_abs_reference_error": 1.6521647452916177e-09,
+          "allocation_calls": [
+            37
+          ],
+          "allocator_calibration_valid": true,
+          "positive_control_clone_calls": [
+            3
+          ]
+        }
+      ]
+    }
+  ],
+  "decisions": {
+    "local_check": "PASS",
+    "local_smoke": "PASS",
+    "local_bench": "PASS_DIAGNOSTIC_ONLY",
+    "overall_production": "HOLD",
+    "measured_speed_promotion": "HOLD",
+    "empirical_RK4_reference": "not certified"
+  },
+  "scope_note": "No source code or tolerance changes; broad promotion is not inferred from scoped rerun."
+}

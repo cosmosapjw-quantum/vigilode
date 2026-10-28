@@ -1,0 +1,72 @@
+{
+  "schema": "vigilode.independent-core-audit.v1",
+  "baseline_commit": "fbc3c272fa06b443de148631ea78bfa6a34f1b2b",
+  "scope": [
+    "DOPRI5 kernel",
+    "public explicit facade",
+    "independent ensemble",
+    "shared adaptive output clock",
+    "new dense sampling",
+    "new affine physical norm"
+  ],
+  "execution_scope": "Static source review plus independent Python IEEE-754 transcription; Rust regression results belong to final validation receipt.",
+  "findings": [
+    {
+      "id": "F-CORE-01",
+      "priority": "P1",
+      "category": "floating_point_correctness",
+      "baseline_issue": "h*coefficient may underflow before multiplication by large finite RHS, causing false zero embedded estimate with finite incorrect endpoint increment",
+      "reproduction": {
+        "h": "f64::from_bits(2)",
+        "rhs": [
+          1e+308,
+          -1e+308
+        ],
+        "initial_state": 0,
+        "baseline_relative_error": 0.5,
+        "revised_relative_error": 1.99584030953472e-16,
+        "evidence": "evidence/IEEE_SUBNORMAL_REPRO.json",
+        "kind": "independent Python binary64 transcription"
+      },
+      "implementation_status": "tiny-step product-order repair implemented; see final Rust verification",
+      "tests": [
+        "crates/rodas5p-integrators/tests/dopri5_extreme_contracts.rs"
+      ]
+    },
+    {
+      "id": "F-CORE-02",
+      "priority": "P2",
+      "category": "retry_progress",
+      "baseline_issue": "output residue landing can restore rejected endpoint after pre-landing clock shrink",
+      "implementation_status": "post-landing strict shrink check implemented",
+      "tests": [
+        "adaptive_output::tests::rejected_final_landing_cannot_be_restored_by_rounding_residue",
+        "adaptive_output::tests::rejected_interior_landing_cannot_be_restored_by_rounding_residue"
+      ],
+      "limitation": "prevents identical represented retry; does not guarantee useful convergence with min_factor=1"
+    },
+    {
+      "id": "F-CORE-03",
+      "priority": "P2",
+      "category": "memory_work",
+      "baseline_issue": "facade and kernel both poison and finite-scan RHS output",
+      "implementation_status": "facade poison removed; both finite scans retained to preserve detailed telemetry",
+      "structural_savings": "one n-element write pass per actual RHS evaluation",
+      "elapsed_time_claim": "defer to paired measurements"
+    }
+  ],
+  "new_code_static_review": {
+    "accepted_interval_atomic_dense_publication": "PASS_SOURCE_REVIEW",
+    "physical_lift_error_offset_separation": "PASS_SOURCE_REVIEW",
+    "physical_dimension_rms": "PASS_SOURCE_REVIEW",
+    "kernel_poison_all_public_routes": "PASS_SOURCE_REVIEW",
+    "last_accepted_state_preservation": "PASS_SOURCE_REVIEW",
+    "remaining_contracts": [
+      "dense interpolation is not independently error controlled",
+      "differential residual order differs from interpolation state-error order",
+      "rank-deficient lift is a seminorm",
+      "observation-density independence is conditioned on successful finite interpolation",
+      "automatic stiffness routing, events and mass support remain out of scope"
+    ]
+  }
+}

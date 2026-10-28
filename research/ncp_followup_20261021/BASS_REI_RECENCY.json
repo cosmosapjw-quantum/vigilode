@@ -1,0 +1,33 @@
+{
+  "schema_version": 1,
+  "checked_date_kst": "2026-10-21",
+  "method": "read-only GitHub connector repository metadata, branch search, exact refs, commit metadata and directory blob identities",
+  "scope": "targeted recency check of the directly relevant C14/C15/signed-stress receiver dependencies; not an exhaustive all-branch scientific audit",
+  "default_branches": [
+    {"repo":"cosmosapjw-quantum/bass","branch":"main","head":"9c6506e4e2087129a8b674ff10438e5db1a55c9d","commit_date_utc":"2026-09-30T01:48:38Z","repository_last_push_utc":"2026-10-21T07:05:09Z"},
+    {"repo":"cosmosapjw-quantum/rei_bianchi","branch":"main","head":"ae3402713c4b6530ab2b27f008f5f5d5c6a999ed","commit_date_utc":"2026-08-11T07:26:05Z","repository_last_push_utc":"2026-10-21T07:05:13Z"}
+  ],
+  "relevant_current_branches": [
+    {"repo":"cosmosapjw-quantum/bass","branch":"research/rei-sigma-pi-pilot-20261021","head":"26f4a89a54462c4e7c5705f281f187f33f45166a","tree":"eeec1833e12996ccc2a74665d5d45790f622638d","commit_date_utc":"2026-10-21T07:05:07Z","message":"research: record verified result publication and final backup receipts"},
+    {"repo":"cosmosapjw-quantum/rei_bianchi","branch":"research/rei-sigma-pi-pilot-20261021","head":"d32cd99fa19c65aa1ca63dbc8aab8741834270e8","tree":"d571059263dbbc974de9b27f4d6e6a465f3bf925","commit_date_utc":"2026-10-21T07:05:11Z","message":"research: record verified result publication and final backup receipts"},
+    {"repo":"cosmosapjw-quantum/rei_bianchi","branch":"research/rei-c15-sigma-pi-feedback-20261015","head":"80825585f9fe31d2ee0d5af545ada3fa1f52be72","status":"same head as inspected source snapshot"},
+    {"repo":"cosmosapjw-quantum/rei_bianchi","branch":"research/rei-run18-vigilode-c0-repair-20261020","head":"99e07bcff126d0a73a03bafc4b71e0b735dbcc3e","tree":"a529f6356722e6602774fbc7f4ddc6c63b878f33","commit_date_utc":"2026-10-19T20:08:29Z","status":"metadata inspected: exact Git readback, safe restoration and latest VigilODE import identity; not re-audited here"},
+    {"repo":"cosmosapjw-quantum/rei_bianchi","branch":"research/rei-run19-rate-acceleration-20261020","head":"c9deb933761a8d2593d1176aee028cd423bdbc05","tree":"2156464df42a8b4a5460f4adfc7a275ec01a90c5","commit_date_utc":"2026-10-20T07:29:37Z","status":"metadata inspected: rate-acceleration delivery and incomplete science DAG retained; not re-audited here"},
+    {"repo":"cosmosapjw-quantum/bass","branch":"research/bass-pr171-rei-bolometric-contract-20261018","head":"220c0525e36e817fbe3a4e8932508555e781c1c3","status":"head identity only; bolometric contract remains a separate integration dependency"}
+  ],
+  "byte_identity_comparisons": [
+    {"repo":"cosmosapjw-quantum/rei_bianchi","ref":"d32cd99fa19c65aa1ca63dbc8aab8741834270e8","path":"research/rei_c15_sigma_pi_feedback_20261015/coupled.py","current_blob":"99d1217f35c5333684efd206db7cb2d2abe14a47","matches_inspected_snapshot":true},
+    {"repo":"cosmosapjw-quantum/rei_bianchi","ref":"d32cd99fa19c65aa1ca63dbc8aab8741834270e8","path":"research/rei_c14_thomson_receiver_20261015/dynamic_thomson.py","current_blob":"7ad9c7875809853398e266e54bb374f75c2546cb","matches_inspected_snapshot":true},
+    {"repo":"cosmosapjw-quantum/rei_bianchi","ref":"d32cd99fa19c65aa1ca63dbc8aab8741834270e8","path":"research/rei_c14_thomson_receiver_20261015/vendor_pr137_lrs_boltzmann.py","current_blob":"e15e1875fba7fcc4a42e257e291c54d9b540a3f0","matches_inspected_snapshot":true},
+    {"repo":"cosmosapjw-quantum/bass","ref":"26f4a89a54462c4e7c5705f281f187f33f45166a","path":"research/rei_sigma_pi_pilot_20261021/SPLIT_CONTRACT.json","current_blob":"d6765ed4daa29601d0f07b9bc053a80be508f5c3","matches_inspected_local_contract":true,"supersedes_uncertainty":"BASS_REI_INPUTS.json conservatively identified this as an unclaimed local snapshot. This additional check establishes that its exact bytes are published at this current pilot head."}
+  ],
+  "conclusion": "The inspected C14/C15 APIs and separate signed matter/radiation stress contract are unchanged in the current 2026-10-21 pilot branches. The newer run18/run19 and bolometric branches are identified for subsequent live integration, without claiming they were imported or scientifically revalidated. Default main is not the current research integration target in either repository.",
+  "reproduction_urls": [
+    "https://api.github.com/repos/cosmosapjw-quantum/bass/git/ref/heads/research/rei-sigma-pi-pilot-20261021",
+    "https://api.github.com/repos/cosmosapjw-quantum/rei_bianchi/git/ref/heads/research/rei-sigma-pi-pilot-20261021",
+    "https://api.github.com/repos/cosmosapjw-quantum/rei_bianchi/contents/research/rei_c15_sigma_pi_feedback_20261015?ref=d32cd99fa19c65aa1ca63dbc8aab8741834270e8",
+    "https://api.github.com/repos/cosmosapjw-quantum/rei_bianchi/contents/research/rei_c14_thomson_receiver_20261015?ref=d32cd99fa19c65aa1ca63dbc8aab8741834270e8",
+    "https://api.github.com/repos/cosmosapjw-quantum/bass/contents/research/rei_sigma_pi_pilot_20261021?ref=26f4a89a54462c4e7c5705f281f187f33f45166a"
+  ],
+  "mutations": "Only this new recency receipt was added; physics code and previously reviewed INPUTS hashes were not changed."
+}

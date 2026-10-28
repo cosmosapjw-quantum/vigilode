@@ -1,0 +1,56 @@
+{
+  "status": "PASS",
+  "head": "6b722a918deb0ab178b8e77090cac1280dbb3051",
+  "execution_identities": [
+    {
+      "identity": "execution_identity.json",
+      "commit": "1fe7a1ba9b9cc9144ff3e7304b21dc94b9c6dbce",
+      "tree": "bb2ec06231e8ad5dddd3dc4c3ad22b65b2305ec5",
+      "source_hash_count": 10,
+      "command_count": 2,
+      "status": "PASS"
+    },
+    {
+      "identity": "repair_accounting/execution_identity.json",
+      "commit": "c97912d219c7cceb468ea67e21f5d0715d93bdc5",
+      "tree": "c671952acc7ad5f0281cef06c09d403e5cb0459f",
+      "source_hash_count": 9,
+      "command_count": 1,
+      "status": "PASS"
+    },
+    {
+      "identity": "followup_subnormal_initial/execution_identity.json",
+      "commit": "6b722a918deb0ab178b8e77090cac1280dbb3051",
+      "tree": "c3ad93694e5dcf01ec968f170ab9d853afad1b24",
+      "source_hash_count": 7,
+      "command_count": 1,
+      "status": "PASS"
+    }
+  ],
+  "work_deltas": {
+    "first_success": {
+      "output_value_items": 6,
+      "certificate_items": 216,
+      "output_horner_terms": 54,
+      "curve_time_normalization_ops": 3,
+      "curve_output_certificate_ops": 110,
+      "curve_frozen_query_attempts": 1
+    },
+    "overflow": {
+      "curve_output_certificate_ops": 7,
+      "curve_frozen_query_attempts": 1,
+      "curve_frozen_query_refusals": 1
+    },
+    "subnormal": {
+      "output_value_items": 2,
+      "certificate_items": 108,
+      "output_horner_terms": 18,
+      "curve_time_normalization_ops": 3,
+      "curve_output_certificate_ops": 52,
+      "curve_frozen_query_attempts": 1
+    }
+  },
+  "payload_identical_to_independently_reviewed_ufref": true,
+  "payload_sha256": "ae524daf9bf6539edbe7cc1b5b4d31276da2d73ff0d5392cc15cace0f5220651",
+  "rust_tests_rerun_by_reviewer": false
+}

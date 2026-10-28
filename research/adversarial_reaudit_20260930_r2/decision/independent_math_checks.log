@@ -1,0 +1,78 @@
+{
+  "schema": "vigilode.independent_math_checks.v1",
+  "checks": {
+    "mixed_exact_budget_below_output_5": true,
+    "m08_exact_epsilon": true,
+    "independent_fraction_componentwise_majorant": true,
+    "poly_uncapped_failure_and_capped_pass": true,
+    "telemetry_physical_invariance": true,
+    "telemetry_residual_scaling": true
+  },
+  "exact_budget": "2505590639513609676395827429376/2505618534107015908629993881161",
+  "exact_budget_float": 0.999988867182683,
+  "m08_exact_epsilon": "1/20282409603651670423947251286016",
+  "homotopy_independent_exact_fixture": [
+    {
+      "candidate": "zero",
+      "exact_componentwise_stage_inequalities": true
+    },
+    {
+      "candidate": "perturbed",
+      "exact_componentwise_stage_inequalities": true
+    }
+  ],
+  "polynomial_reexecution": [
+    {
+      "cap": 64.0,
+      "degree": 111,
+      "errors": [
+        1.891911563350548e-08,
+        1.0227105001263058e-08,
+        8.427222056146758e-11,
+        5.232852337662562e-12,
+        1.5730047176512234e-11
+      ],
+      "pass_1e_10": false
+    },
+    {
+      "cap": 16.0,
+      "degree": 209,
+      "errors": [
+        2.272031612614469e-13,
+        6.6224267582318065e-15,
+        8.120603600336629e-16,
+        2.228877409664892e-16,
+        6.824344005791151e-17
+      ],
+      "pass_1e_10": true
+    }
+  ],
+  "telemetry": [
+    {
+      "alpha": 0.25,
+      "physical_error": 0.1321205588285577,
+      "residual_norm": 16.0
+    },
+    {
+      "alpha": 1.0,
+      "physical_error": 0.1321205588285577,
+      "residual_norm": 1.0
+    },
+    {
+      "alpha": 4.0,
+      "physical_error": 0.13212055882855767,
+      "residual_norm": 0.0625
+    },
+    {
+      "alpha": 16.0,
+      "physical_error": 0.13212055882855764,
+      "residual_norm": 0.00390625
+    },
+    {
+      "alpha": 64.0,
+      "physical_error": 0.13212055882855764,
+      "residual_norm": 0.000244140625
+    }
+  ],
+  "claim_ceiling": "bounded oracle checks; no production certificate, global convergence theorem, or measured speedup"
+}

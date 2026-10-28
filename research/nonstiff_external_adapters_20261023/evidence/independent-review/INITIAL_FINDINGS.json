@@ -1,0 +1,49 @@
+{
+  "stage": "pre-freeze independent code review",
+  "requested_role": "costroute-research-review",
+  "requested_model": "gpt-6-astra",
+  "requested_effort": "xhigh",
+  "observed_runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+  "reviewer": "/root/n14_independent_review",
+  "findings": [
+    {
+      "severity": "MAJOR",
+      "file": "analyze_external.py",
+      "lines": "135-148; merge56",
+      "problem": "Strict verify_campaign checks did not control frozen analyzer eligibility; wrong adapter identity/method or shortened times could enter ratios/plots.",
+      "approved_repair": "Gate every adapter warmup/timed receipt for external and merged derived eligibility; preserve raw records and frozen analyzer.",
+      "id": "EA-001"
+    },
+    {
+      "severity": "MAJOR",
+      "file": "verify_adapters.py",
+      "lines": "302-327",
+      "problem": "Empty/malformed negative-control result could pass max-step-exhaustion.",
+      "approved_repair": "Require parseable honest max_steps=1 failure with identity/method/grid/initial/partial/lastaccepted/work checks; input refusals nonzero or explicit valid refusal.",
+      "id": "EA-002"
+    },
+    {
+      "severity": "MAJOR",
+      "file": "adapters/julia/adapter.jl",
+      "lines": "79-80",
+      "problem": "Rejected OrdinaryDiffEq trial u may remain when MaxIters stops; integ.t plus integ.u can mislabel rejected trial as last accepted state.",
+      "approved_repair": "Use pinned accepted/uprev semantics or actual accepted snapshot; forced-rejection and accepted-last-step controls; include all costs.",
+      "id": "EA-003"
+    },
+    {
+      "severity": "MINOR",
+      "file": "adapters/julia/adapter.jl",
+      "lines": "89-96",
+      "problem": "Missing registered dimension and julia mode refusal.",
+      "approved_repair": "Restrict frozen registered grid and julia mode; add negative controls.",
+      "id": "EA-004"
+    }
+  ],
+  "repair_policy": "Same single bounded pre-freeze round covering shared Python gates and Julia accepted-state/protocol repairs; no scientific policy changes",
+  "status": "REPAIR_IN_PROGRESS",
+  "base": "8c80985e30778df4ba44b2b7085753fa345cf0e2",
+  "contract_commit": "a07360f02693ed5674599d3bff97e24c97d45e6e",
+  "implementation_identity": "uncommitted development, not final execution source",
+  "decision": "HOLD_PENDING_ONE_BOUNDED_REPAIR_AND_FINAL_SOURCE_EVIDENCE",
+  "reviewer_executed_solvers": false
+}

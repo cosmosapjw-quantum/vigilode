@@ -1,0 +1,43 @@
+{
+  "scope": "adaptation subtask, exact cofactor client and opt-in exponential controller repair",
+  "baseline_commit": "d79326648a7273c0decd641eaf94d94f5bea7c63",
+  "rust_version": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "tests": [
+    {
+      "command": "cargo test -p vigilode --test cofactor_chart_contracts --locked --offline",
+      "exit_code": 0,
+      "passed": 4,
+      "log": "cofactor_tests.log"
+    },
+    {
+      "command": "cargo test -p rodas5p-integrators --test exponential_controller_repair --test adaptive_fused_exponential_contracts --locked --offline",
+      "exit_code": 0,
+      "passed": 5,
+      "log": "exponential_tests.log"
+    }
+  ],
+  "pilot": {
+    "command": "cargo run -p vigilode --example adaptation_geometry_pilot --profile measurement --locked --offline",
+    "exit_code": 0,
+    "raw": "PILOT_RAW.jsonl",
+    "rows": 28,
+    "warmup_per_group": 1,
+    "timed_repeats_per_group": 3,
+    "scope": "native DOPRI; declared exact cofactor structure; no general promotion",
+    "raw_sha256": "87a0fbe0c3b35db74885bf0b1add652573adc5065b636119ede05fecfa11788b"
+  },
+  "source_sha256": {
+    "crates/vigilode/src/cofactor_chart.rs": "701811d7be152fb4c5db335291af77107df00e652d32272cce410cb4a6c97aa4",
+    "crates/vigilode/tests/cofactor_chart_contracts.rs": "3a5095731ebb9c241950f111bc5b5103e15abc411a73189eb3b9409bbdd13d53",
+    "crates/vigilode/examples/adaptation_geometry_pilot.rs": "41adf938c4b8ef9b369baaa39e7a7b77ae6d54fcf36a81c610253481f1f2f323",
+    "crates/rodas5p-integrators/src/adaptive_exponential.rs": "c6e40ba8097a5593c52f1721e587df15ee2865c62b87f5cbf7fb2bd95c409d91",
+    "crates/rodas5p-integrators/tests/exponential_controller_repair.rs": "12a74dae42dee53be49aa3094ca43431685ae64cbdb65e4411f98d28f36dfe96"
+  },
+  "review_fixes": [
+    "intermediate exponential underflow despite representable final carrier",
+    "elapsed-time difference overflow with representable rate-scaled duration",
+    "underflow of rate*dt in primitive despite representable scaled integral"
+  ],
+  "skill_context_used": "physmath-research-loop 1.3.0 SKILL + POLICY_INTEGRATION + THEORY_LOOP + CODING_LOOP",
+  "binary_sha256": "c06c39d407b97081c87367a4a54693e971ff4e745fcabf1057c0fc2665dfe4d1"
+}

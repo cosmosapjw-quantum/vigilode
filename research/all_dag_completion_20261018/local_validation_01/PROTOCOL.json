@@ -1,0 +1,125 @@
+{
+  "schema_version": 1,
+  "verification_before": {
+    "schema_version": 1,
+    "node_count": 12,
+    "source_files_checked": 414,
+    "source_manifest_sha256": "5a461ee10fc178e188631e242705d992978d68292d4a10f0ee3f856854cea916",
+    "dag_sha256": "38f2d5c2a5ba44dcf93120bbd0c9a1c98937d20767f74065a5e2372003c68063",
+    "errors": [],
+    "passed": true,
+    "production_promotion": false,
+    "speed_promotion": false
+  },
+  "commands": [
+    {
+      "id": "core_contracts",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-core",
+        "--test",
+        "leja_enclosed_contract",
+        "--test",
+        "guarded_polynomial_router",
+        "--",
+        "--test-threads=1"
+      ]
+    },
+    {
+      "id": "integrator_contracts",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "all_dag_a01_packet",
+        "--test",
+        "production_audit_packet_adaptive",
+        "--test",
+        "production_audit_packet_verified",
+        "--test",
+        "production_audit_damped_packet",
+        "--test",
+        "all_dag_a05_verified",
+        "--test",
+        "all_dag_a06_direct",
+        "--test",
+        "collective_rodas5p_allocation_contract",
+        "--test",
+        "nonlinear_homotopy_contracts",
+        "--test",
+        "actual_k_homotopy_contracts",
+        "--test",
+        "all_dag_a10_bernstein",
+        "--test",
+        "all_dag_a11_verified",
+        "--",
+        "--nocapture",
+        "--test-threads=1"
+      ]
+    },
+    {
+      "id": "homotopy_unit",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--lib",
+        "nonlinear_homotopy::tests"
+      ]
+    },
+    {
+      "id": "leja_token_doc",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-core",
+        "--doc",
+        "AdmittedLejaFused"
+      ]
+    },
+    {
+      "id": "polynomial_token_doc",
+      "argv": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-core",
+        "--doc",
+        "GuardedPolynomialAction"
+      ]
+    },
+    {
+      "id": "tool_contracts",
+      "argv": [
+        "/usr/bin/python3",
+        "-m",
+        "unittest",
+        "discover",
+        "-s",
+        "tools/tests",
+        "-p",
+        "test_all_dag_*.py",
+        "-v"
+      ]
+    }
+  ],
+  "selection": "changed native contracts only; historical campaigns reused",
+  "performance_campaign": "separate optional all_dag_benchmark.py run",
+  "promotion": "NONE"
+}

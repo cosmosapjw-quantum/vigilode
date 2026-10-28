@@ -1,0 +1,171 @@
+{
+  "schema": "vigilode.frontier.search-protocol.v1",
+  "created_utc": "2026-10-23",
+  "source_commit": "9b210c76dffb8909902f733e80d6cfa32405006e",
+  "scope": "Finite, evidence-led MCTS-inspired research tree; not a stochastic MCTS convergence or global optimality claim.",
+  "attachment_pipeline_sha256": "bf78183ea353979fe6bf009e725fa28a7228ed55ca4593f3659eb2add26f03f3",
+  "policy": {
+    "ncp": false,
+    "max_siblings": 3,
+    "parallel_independent_blockers": true,
+    "unchanged_published_evidence": "reuse after source/assumption audit",
+    "clean_room_scope": "Attachment charter governs its own tree-search project; no rewrite or erasure of VigilODE history.",
+    "single_node_rule": "Adapt CMB-specific one-step rule to <=3 siblings per independently assigned blocker, as explicitly requested by user.",
+    "merge": false
+  },
+  "selection": {
+    "hard_constraints": [
+      "mathematical assumptions explicit",
+      "original residual/true error validated",
+      "failures retained",
+      "source identity recorded"
+    ],
+    "objectives": [
+      "achieved error",
+      "weighted invariant defects",
+      "actual work",
+      "single-thread elapsed",
+      "workspace/storage",
+      "applicability"
+    ],
+    "dominance": "Compare only same problem, reference, accuracy budget and execution cohort. Unknown dimensions prevent dominance. Different support requires separate portfolio branches.",
+    "backpropagation": "Parent records verified leaves, failures, unresolved eligibility, Pareto set, without averaging away a failed correctness condition.",
+    "pruning": "Local scope only; no strong universal no-go."
+  },
+  "roots": [
+    {
+      "id": "SW",
+      "blockers": [
+        "SW02",
+        "SW03",
+        "DV01"
+      ],
+      "candidates": [
+        [
+          "SW.LEGACY",
+          "pressure-only baseline"
+        ],
+        [
+          "SW.PILOT",
+          "bounded same-checkpoint implicit pilot"
+        ],
+        [
+          "SW.SESSION",
+          "persistent authorized native sessions"
+        ]
+      ]
+    },
+    {
+      "id": "QF",
+      "blockers": [
+        "QF01"
+      ],
+      "candidates": [
+        [
+          "QF.LAWSON",
+          "existing Lawson forcing"
+        ],
+        [
+          "QF.AFFINE",
+          "stable exact phi1 action"
+        ],
+        [
+          "QF.SHIFT",
+          "equilibrium-shift action"
+        ]
+      ]
+    },
+    {
+      "id": "CF",
+      "blockers": [
+        "CF01",
+        "CP01"
+      ],
+      "candidates": [
+        [
+          "CF.RESIDUAL",
+          "residual-first baseline"
+        ],
+        [
+          "CF.FORWARD",
+          "causal forward"
+        ],
+        [
+          "CF.PICARD",
+          "batched causal Picard"
+        ]
+      ]
+    },
+    {
+      "id": "QA",
+      "blockers": [
+        "QA01"
+      ],
+      "candidates": [
+        [
+          "QA.QUOTIENT",
+          "declared polynomial resolvent with full-space witness"
+        ],
+        [
+          "QA.NEUMANN",
+          "geometric polynomial"
+        ],
+        [
+          "QA.FALLBACK",
+          "retain general solver"
+        ]
+      ]
+    },
+    {
+      "id": "PDE",
+      "blockers": [
+        "SG01"
+      ],
+      "candidates": [
+        [
+          "PDE.EULER",
+          "conservative Euler"
+        ],
+        [
+          "PDE.UNIFORM",
+          "positive Poisson uniformization"
+        ],
+        [
+          "PDE.RKL2",
+          "Legendre stabilized second-order polynomial"
+        ]
+      ]
+    },
+    {
+      "id": "PB",
+      "blockers": [
+        "PB01"
+      ],
+      "candidates": [
+        [
+          "PB.REUSE",
+          "prior published unchanged cohorts"
+        ],
+        [
+          "PB.TARGETED",
+          "new affected trajectories and grid tests"
+        ],
+        [
+          "PB.EXTERNAL",
+          "future local VODE/DVODE diffsol Julia matched-error cohort"
+        ]
+      ]
+    }
+  ],
+  "test_policy": {
+    "native": "affected code tests only; broaden after concrete failure",
+    "timing": "freeze source then coordinated single-thread cohort; compile/setup timing separate",
+    "external_comparators": [
+      "VODE/DVODE",
+      "diffsol",
+      "Julia"
+    ],
+    "unavailable": "NOT_RUN, not simulated"
+  },
+  "status": "premeasurement"
+}

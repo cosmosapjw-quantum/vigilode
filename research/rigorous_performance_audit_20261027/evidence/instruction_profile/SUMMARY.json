@@ -1,0 +1,134 @@
+{
+  "status": "COMPLETE",
+  "protocol": {
+    "version": "Valgrind/Callgrind 3.22.0 Ubuntu noble",
+    "metric": "Ir per repetition from difference of two batch totals",
+    "selected": [
+      [
+        "lu",
+        32,
+        100,
+        1000
+      ],
+      [
+        "dense",
+        65,
+        2,
+        6
+      ],
+      [
+        "adapter",
+        16,
+        2,
+        10
+      ]
+    ],
+    "accuracy": "profiled arms must retain analytic cap and within-profiler output equality",
+    "maximum_wall_seconds": 150,
+    "wall_time_claim": false,
+    "cpu_feature_scope": "Valgrind guest; not necessarily native SIMD dispatch",
+    "reason": "Native wall and process CPU timing remained inconclusive in two passes"
+  },
+  "rows": [
+    {
+      "kind": "lu",
+      "n": 32,
+      "small_reps": 100,
+      "large_reps": 1000,
+      "totals": [
+        {
+          "optimized": false,
+          "reps": 100,
+          "Ir": 1958214
+        },
+        {
+          "optimized": false,
+          "reps": 1000,
+          "Ir": 14098368
+        },
+        {
+          "optimized": true,
+          "reps": 100,
+          "Ir": 1778685
+        },
+        {
+          "optimized": true,
+          "reps": 1000,
+          "Ir": 12316826
+        }
+      ],
+      "baseline_Ir_per_rep": 13489.06,
+      "candidate_Ir_per_rep": 11709.045555555556,
+      "baseline_over_candidate": 1.1520204559798544,
+      "reduction_fraction": 0.13195985816983857,
+      "accuracy_pass": true
+    },
+    {
+      "kind": "dense",
+      "n": 65,
+      "small_reps": 2,
+      "large_reps": 6,
+      "totals": [
+        {
+          "optimized": false,
+          "reps": 2,
+          "Ir": 181790275
+        },
+        {
+          "optimized": false,
+          "reps": 6,
+          "Ir": 420674540
+        },
+        {
+          "optimized": true,
+          "reps": 2,
+          "Ir": 177101128
+        },
+        {
+          "optimized": true,
+          "reps": 6,
+          "Ir": 409761440
+        }
+      ],
+      "baseline_Ir_per_rep": 59721066.25,
+      "candidate_Ir_per_rep": 58165078.0,
+      "baseline_over_candidate": 1.026751244965235,
+      "reduction_fraction": 0.02605426104561559,
+      "accuracy_pass": true
+    },
+    {
+      "kind": "adapter",
+      "n": 16,
+      "small_reps": 2,
+      "large_reps": 10,
+      "totals": [
+        {
+          "optimized": false,
+          "reps": 2,
+          "Ir": 33705745
+        },
+        {
+          "optimized": false,
+          "reps": 10,
+          "Ir": 66819782
+        },
+        {
+          "optimized": true,
+          "reps": 2,
+          "Ir": 33557265
+        },
+        {
+          "optimized": true,
+          "reps": 10,
+          "Ir": 66098240
+        }
+      ],
+      "baseline_Ir_per_rep": 4139254.625,
+      "candidate_Ir_per_rep": 4067621.875,
+      "baseline_over_candidate": 1.0176104741790926,
+      "reduction_fraction": 0.017305712378107185,
+      "accuracy_pass": true
+    }
+  ],
+  "elapsed_seconds": 41.12160092999693
+}

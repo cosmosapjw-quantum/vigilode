@@ -1,0 +1,99 @@
+warning: fields `prepared_centers`, `prepared_radii`, `prepared_times`, `prepared_count`, `radii`, and `prepared_valid` are never read
+   --> crates/rodas5p-integrators/src/output.rs:706:5
+    |
+698 | pub(crate) struct OutputCollector {
+    |                   --------------- fields in this struct
+...
+706 |     prepared_centers: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^^^
+707 |     prepared_radii: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^
+708 |     prepared_times: Vec<f64>,
+    |     ^^^^^^^^^^^^^^
+709 |     prepared_count: usize,
+    |     ^^^^^^^^^^^^^^
+710 |     radii: Vec<Vec<f64>>,
+    |     ^^^^^
+711 |     prepared_valid: bool,
+    |     ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `rodas5p-integrators` (lib) generated 3 warnings
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.64s
+     Running tests/production_audit_packet_curve.rs (target/debug/deps/production_audit_packet_curve-303856b2e0c0848e)
+
+running 4 tests
+test asymmetric_nonlinear_curve_uses_actual_weighted_mean_and_full_degree ... FAILED
+test evaluation_reuses_frozen_storage_without_allocating_and_refuses_bad_times ... FAILED
+test linear_dyadic_residual_contains_exact_fraction_and_curve_evaluates_consistently ... FAILED
+test malformed_degree_and_overflowing_frequency_refuse_with_attempted_work ... FAILED
+
+failures:
+
+---- asymmetric_nonlinear_curve_uses_actual_weighted_mean_and_full_degree stdout ----
+
+thread 'asymmetric_nonlinear_curve_uses_actual_weighted_mean_and_full_degree' (3792820) panicked at crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:174:5:
+assertion failed: candidate.mean.iter().enumerate().any(|(k, &(re, im))|
+        {
+            let represented = curve.mean_coefficients()[k];
+            !represented.re.contains(re) || !represented.im.contains(im)
+        })
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- evaluation_reuses_frozen_storage_without_allocating_and_refuses_bad_times stdout ----
+
+thread 'evaluation_reuses_frozen_storage_without_allocating_and_refuses_bad_times' (3792821) panicked at crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:191:35:
+called `Result::unwrap()` on an `Err` value: PoisonError { .. }
+
+---- linear_dyadic_residual_contains_exact_fraction_and_curve_evaluates_consistently stdout ----
+
+thread 'linear_dyadic_residual_contains_exact_fraction_and_curve_evaluates_consistently' (3792822) panicked at crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:97:35:
+called `Result::unwrap()` on an `Err` value: PoisonError { .. }
+
+---- malformed_degree_and_overflowing_frequency_refuse_with_attempted_work stdout ----
+
+thread 'malformed_degree_and_overflowing_frequency_refuse_with_attempted_work' (3792823) panicked at crates/rodas5p-integrators/tests/production_audit_packet_curve.rs:234:35:
+called `Result::unwrap()` on an `Err` value: PoisonError { .. }
+
+
+failures:
+    asymmetric_nonlinear_curve_uses_actual_weighted_mean_and_full_degree
+    evaluation_reuses_frozen_storage_without_allocating_and_refuses_bad_times
+    linear_dyadic_residual_contains_exact_fraction_and_curve_evaluates_consistently
+    malformed_degree_and_overflowing_frequency_refuse_with_attempted_work
+
+test result: FAILED. 0 passed; 4 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test production_audit_packet_curve`

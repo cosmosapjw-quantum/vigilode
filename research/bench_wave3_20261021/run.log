@@ -1,0 +1,144 @@
+problem robertson
+  reference vigilode rtol 1e-12: Success
+  cross-check diffsol-bdf-dense rtol Some(1e-12): disagreement Some(1.7061058592854744e-11)
+  vigilode               rtol 1e-4: Success err Some(1.6710335124576046e-7) 0.089 ms
+  diffsol-bdf-dense      rtol 1e-4: Success err Some(9.431508940833266e-5) 0.080 ms
+  cvode-bdf-dense        rtol 1e-4: Success err Some(0.00028629115342772174) 0.169 ms
+  dvode-mf21             rtol 1e-4: Success err Some(0.00016968987777752958) 0.041 ms
+  radau5                 rtol 1e-4: Success err Some(1.5111091929479669e-5) 0.019 ms
+  rodas                  rtol 1e-4: Success err Some(2.1913346275386232e-5) 0.018 ms
+  internal-radau-iia3    rtol 1e-4: Success err Some(6.404036584208376e-6) 0.407 ms
+  vigilode-dense         rtol 1e-4: Success err Some(1.1284761149003349e-5) 0.043 ms
+  vigilode-dense-off     rtol 1e-4: Success err Some(1.1349637474538486e-5) 0.038 ms
+  vigilode               rtol 1e-6: Success err Some(5.187587056856333e-8) 0.094 ms
+  diffsol-bdf-dense      rtol 1e-6: Success err Some(1.496814251574838e-6) 0.106 ms
+  cvode-bdf-dense        rtol 1e-6: Success err Some(2.0292925409728006e-6) 0.237 ms
+  dvode-mf21             rtol 1e-6: Success err Some(3.365552131698252e-6) 0.080 ms
+  radau5                 rtol 1e-6: Success err Some(8.012872182434017e-7) 0.028 ms
+  rodas                  rtol 1e-6: Success err Some(3.9815484436631e-7) 0.038 ms
+  internal-radau-iia3    rtol 1e-6: Success err Some(1.2653071335827006e-7) 0.743 ms
+  vigilode-dense         rtol 1e-6: Success err Some(5.018786133248334e-7) 0.057 ms
+  vigilode-dense-off     rtol 1e-6: Success err Some(6.466120096221803e-7) 0.051 ms
+  vigilode               rtol 1e-8: Success err Some(1.598293897480858e-9) 0.124 ms
+  diffsol-bdf-dense      rtol 1e-8: Success err Some(2.8621670513166957e-8) 0.198 ms
+  cvode-bdf-dense        rtol 1e-8: Success err Some(5.150933048508401e-8) 0.434 ms
+  dvode-mf21             rtol 1e-8: Success err Some(5.5227329734625545e-8) 0.127 ms
+  radau5                 rtol 1e-8: Success err Some(4.444823399857661e-8) 0.049 ms
+  rodas                  rtol 1e-8: Success err Some(9.251836563766874e-9) 0.105 ms
+  internal-radau-iia3    rtol 1e-8: Success err Some(1.4581470376019765e-9) 1.785 ms
+  vigilode-dense         rtol 1e-8: Success err Some(3.4920692742971443e-9) 0.111 ms
+  vigilode-dense-off     rtol 1e-8: Success err Some(6.498964026842553e-9) 0.095 ms
+problem hires
+  reference vigilode rtol 1e-12: Success
+  cross-check diffsol-bdf-dense rtol Some(1e-12): disagreement Some(4.160837022135082e-11)
+  vigilode               rtol 1e-4: Success err Some(2.274124601220878e-5) 0.194 ms
+  diffsol-bdf-dense      rtol 1e-4: Success err Some(0.0004061411485088449) 0.245 ms
+  cvode-bdf-dense        rtol 1e-4: Success err Some(0.00030605006343407205) 0.436 ms
+  dvode-mf21             rtol 1e-4: Success err Some(0.0007920059116558984) 0.205 ms
+  radau5                 rtol 1e-4: Success err Some(3.15838953712019e-5) 0.102 ms
+  rodas                  rtol 1e-4: Success err Some(5.157192254773321e-5) 0.090 ms
+  internal-radau-iia3    rtol 1e-4: Success err Some(1.6845040160433842e-5) 4.698 ms
+  vigilode-dense         rtol 1e-4: Success err Some(9.784637975591993e-5) 0.154 ms
+  vigilode-dense-off     rtol 1e-4: Success err Some(0.0003620444140036858) 0.128 ms
+  vigilode               rtol 1e-6: Success err Some(1.435143936376217e-7) 0.367 ms
+  diffsol-bdf-dense      rtol 1e-6: Success err Some(5.553682239173043e-6) 0.423 ms
+  cvode-bdf-dense        rtol 1e-6: Success err Some(8.503586110454807e-6) 1.028 ms
+  dvode-mf21             rtol 1e-6: Success err Some(8.97626047376264e-6) 0.312 ms
+  radau5                 rtol 1e-6: Success err Some(6.855661263598046e-6) 0.179 ms
+  rodas                  rtol 1e-6: Success err Some(7.625197893041677e-7) 0.344 ms
+  internal-radau-iia3    rtol 1e-6: Success err Some(8.326818365409535e-7) 6.754 ms
+  vigilode-dense         rtol 1e-6: Success err Some(6.291585841131112e-7) 0.371 ms
+  vigilode-dense-off     rtol 1e-6: Success err Some(7.445590971811977e-6) 0.325 ms
+  vigilode               rtol 1e-8: Success err Some(2.179527160959872e-9) 1.101 ms
+  diffsol-bdf-dense      rtol 1e-8: Success err Some(8.147967161454561e-8) 0.615 ms
+  cvode-bdf-dense        rtol 1e-8: Success err Some(1.6552532783618123e-7) 1.824 ms
+  dvode-mf21             rtol 1e-8: Success err Some(1.6683689172184834e-7) 0.504 ms
+  radau5                 rtol 1e-8: Success err Some(1.008158015292046e-6) 0.316 ms
+  rodas                  rtol 1e-8: Success err Some(8.459642725699697e-9) 1.900 ms
+  internal-radau-iia3    rtol 1e-8: Success err Some(7.843668350138182e-8) 8.509 ms
+  vigilode-dense         rtol 1e-8: Success err Some(5.579042829221648e-9) 1.307 ms
+  vigilode-dense-off     rtol 1e-8: Success err Some(6.198728274662995e-9) 1.122 ms
+problem van-der-pol-mu1000
+  reference vigilode rtol 1e-12: Success
+  cross-check diffsol-bdf-dense rtol Some(1e-12): disagreement Some(1.0086236108119875e-9)
+  vigilode               rtol 1e-4: Success err Some(1.4416596941813985e-5) 0.185 ms
+  diffsol-bdf-dense      rtol 1e-4: Success err Some(0.0002858183251050727) 0.463 ms
+  cvode-bdf-dense        rtol 1e-4: Success err Some(0.003718127917489309) 0.482 ms
+  dvode-mf21             rtol 1e-4: Success err Some(0.0037101646852812794) 0.146 ms
+  radau5                 rtol 1e-4: Success err Some(9.540806614744659e-5) 0.091 ms
+  rodas                  rtol 1e-4: Success err Some(0.00013314485825968435) 0.075 ms
+  internal-radau-iia3    rtol 1e-4: Success err Some(6.715800787151618e-7) 8.670 ms
+  vigilode-dense         rtol 1e-4: Success err Some(0.00016339100909145782) 0.179 ms
+  vigilode-dense-off     rtol 1e-4: Success err Some(0.0001345262847080358) 0.161 ms
+  vigilode               rtol 1e-6: Success err Some(4.5977811880658173e-7) 0.292 ms
+  diffsol-bdf-dense      rtol 1e-6: Success err Some(3.9768392665490634e-5) 0.581 ms
+  cvode-bdf-dense        rtol 1e-6: Success err Some(0.00025386163039506273) 0.880 ms
+  dvode-mf21             rtol 1e-6: Success err Some(0.00025468558819930756) 0.252 ms
+  radau5                 rtol 1e-6: Success err Some(2.470321130956235e-6) 0.152 ms
+  rodas                  rtol 1e-6: Success err Some(6.607518180931272e-6) 0.196 ms
+  internal-radau-iia3    rtol 1e-6: Success err Some(2.1123067625918525e-8) 13.045 ms
+  vigilode-dense         rtol 1e-6: Success err Some(2.041018972871023e-6) 0.337 ms
+  vigilode-dense-off     rtol 1e-6: Success err Some(2.072792939013417e-6) 0.302 ms
+  vigilode               rtol 1e-8: Success err Some(1.2370673070132269e-8) 0.568 ms
+  diffsol-bdf-dense      rtol 1e-8: Success err Some(2.271414328953451e-6) 0.970 ms
+  cvode-bdf-dense        rtol 1e-8: Success err Some(3.5019022670341458e-6) 1.874 ms
+  dvode-mf21             rtol 1e-8: SolverFailure { code: -1, message: "DVODE ISTATE -1" } err None 0.222 ms
+  radau5                 rtol 1e-8: Success err Some(1.3476425264448465e-7) 0.270 ms
+  rodas                  rtol 1e-8: Success err Some(5.990738679390517e-8) 0.603 ms
+  internal-radau-iia3    rtol 1e-8: Success err Some(2.1146696871738454e-9) 12.271 ms
+  vigilode-dense         rtol 1e-8: Success err Some(2.7226146607067023e-8) 0.660 ms
+  vigilode-dense-off     rtol 1e-8: Success err Some(2.7479946222883533e-8) 0.591 ms
+problem brusselator-1d-n100
+  reference vigilode rtol 1e-12: Success
+  cross-check diffsol-bdf-dense rtol Some(1e-12): disagreement Some(3.3924928507951993e-10)
+  vigilode               rtol 1e-4: Success err Some(2.213369753958024e-5) 2.735 ms
+  vigilode-banded        rtol 1e-4: Success err Some(2.213369753958024e-5) 1.647 ms
+  diffsol-bdf-dense      rtol 1e-4: Success err Some(0.0017684514343455587) 2.578 ms
+  diffsol-bdf-sparse     rtol 1e-4: Success err Some(0.0017684514343459345) 0.718 ms
+  cvode-bdf-dense        rtol 1e-4: Success err Some(0.0015666344207922514) 4.595 ms
+  cvode-bdf-band         rtol 1e-4: Success err Some(0.0015666344207922514) 1.185 ms
+  dvode-mf21             rtol 1e-4: Success err Some(0.001492117041956423) 0.861 ms
+  dvode-mf24             rtol 1e-4: Success err Some(0.0014921170419564377) 0.457 ms
+  radau5                 rtol 1e-4: Success err Some(6.664358204991958e-5) 2.250 ms
+  radau5-band            rtol 1e-4: Success err Some(6.664358204991958e-5) 0.622 ms
+  rodas                  rtol 1e-4: Success err Some(0.00021053655608315347) 1.420 ms
+  rodas-band             rtol 1e-4: Success err Some(0.00021053655608315347) 0.606 ms
+  internal-radau-iia3    rtol 1e-4: Success err Some(2.1284375209252423e-5) 86.686 ms
+  vigilode-dense         rtol 1e-4: Success err Some(0.00011340406708884155) 1.513 ms
+  vigilode-dense-off     rtol 1e-4: Success err Some(0.00011340406708884155) 1.396 ms
+  vigilode-banded-dense  rtol 1e-4: Success err Some(0.00011340406708884155) 0.931 ms
+  vigilode-banded-dense-off rtol 1e-4: Success err Some(0.00011340406708884155) 0.832 ms
+  vigilode               rtol 1e-6: Success err Some(4.544470808635702e-7) 3.395 ms
+  vigilode-banded        rtol 1e-6: Success err Some(4.544470808635702e-7) 2.045 ms
+  diffsol-bdf-dense      rtol 1e-6: Success err Some(4.3100998753714874e-5) 3.432 ms
+  diffsol-bdf-sparse     rtol 1e-6: Success err Some(4.3100998753714874e-5) 1.020 ms
+  cvode-bdf-dense        rtol 1e-6: Success err Some(1.1825954459687122e-5) 7.807 ms
+  cvode-bdf-band         rtol 1e-6: Success err Some(1.1825954459687122e-5) 2.169 ms
+  dvode-mf21             rtol 1e-6: Success err Some(1.1824417317745741e-5) 1.374 ms
+  dvode-mf24             rtol 1e-6: Success err Some(1.1824417316420016e-5) 0.735 ms
+  radau5                 rtol 1e-6: Success err Some(1.6827314995419747e-6) 3.888 ms
+  radau5-band            rtol 1e-6: Success err Some(1.6827314995419747e-6) 1.022 ms
+  rodas                  rtol 1e-6: Success err Some(1.003324186255887e-6) 3.433 ms
+  rodas-band             rtol 1e-6: Success err Some(1.003324186255887e-6) 1.437 ms
+  internal-radau-iia3    rtol 1e-6: Success err Some(2.3291449890516444e-7) 186.133 ms
+  vigilode-dense         rtol 1e-6: Success err Some(9.000451844925759e-6) 2.826 ms
+  vigilode-dense-off     rtol 1e-6: Success err Some(9.000451844925759e-6) 2.592 ms
+  vigilode-banded-dense  rtol 1e-6: Success err Some(9.000451844925759e-6) 1.688 ms
+  vigilode-banded-dense-off rtol 1e-6: Success err Some(9.000451844925759e-6) 1.485 ms
+  vigilode               rtol 1e-8: Success err Some(6.258121960353743e-8) 5.984 ms
+  vigilode-banded        rtol 1e-8: Success err Some(6.258121960353743e-8) 3.592 ms
+  diffsol-bdf-dense      rtol 1e-8: Success err Some(4.6592856926937785e-7) 4.370 ms
+  diffsol-bdf-sparse     rtol 1e-8: Success err Some(4.6592856926937785e-7) 1.593 ms
+  cvode-bdf-dense        rtol 1e-8: Success err Some(6.182064033228523e-7) 13.313 ms
+  cvode-bdf-band         rtol 1e-8: Success err Some(6.182064033228523e-7) 3.874 ms
+  dvode-mf21             rtol 1e-8: Success err Some(6.181829860207705e-7) 2.295 ms
+  dvode-mf24             rtol 1e-8: Success err Some(6.181829791333892e-7) 1.300 ms
+  radau5                 rtol 1e-8: Success err Some(7.4077804997091e-8) 7.066 ms
+  radau5-band            rtol 1e-8: Success err Some(7.4077804997091e-8) 1.903 ms
+  rodas                  rtol 1e-8: Success err Some(9.896604167433165e-9) 10.006 ms
+  rodas-band             rtol 1e-8: Success err Some(9.896604167433165e-9) 4.132 ms
+  internal-radau-iia3    rtol 1e-8: Success err Some(2.0743114204893085e-9) 339.393 ms
+  vigilode-dense         rtol 1e-8: Success err Some(8.774929606378542e-8) 6.085 ms
+  vigilode-dense-off     rtol 1e-8: Success err Some(8.774929606378542e-8) 5.652 ms
+  vigilode-banded-dense  rtol 1e-8: Success err Some(8.774929606378542e-8) 3.601 ms
+  vigilode-banded-dense-off rtol 1e-8: Success err Some(8.774929606378542e-8) 3.107 ms

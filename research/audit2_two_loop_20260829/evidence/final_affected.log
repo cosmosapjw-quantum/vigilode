@@ -1,0 +1,85 @@
+   Compiling rodas5p-fair-ab v0.1.0 (/mnt/data/vigilode_audit2_run/repo/crates/rodas5p-fair-ab)
+   Compiling rodas5p-integrators v0.1.0 (/mnt/data/vigilode_audit2_run/repo/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 17.79s
+     Running tests/global_error_contracts.rs (/mnt/data/vigilode_audit2_run/target/debug/deps/global_error_contracts-c7fe38f1c42bab43)
+
+running 8 tests
+test common_grid_rejects_missing_output_times_instead_of_interpolating ... ok
+test exact_and_known_perturbed_trajectories_have_expected_external_errors ... ok
+test fixed_anchor_screen_is_thread_deterministic_and_exposes_all_five_candidates ... ok
+test operator_application_cost_axis_counts_vectors_without_double_counting_block_calls ... ok
+test output_policy_dominance_is_strict_at_ten_percent_and_excludes_only_the_policy_row ... ok
+test output_policy_gap_uses_the_tight_reference_weight_table ... ok
+test pareto_and_target_selection_preserve_failures_and_choose_true_nondominated_points ... ok
+test pareto_screen_stores_only_common_outputs_and_retains_paired_output_policy_evidence ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 3.87s
+
+     Running tests/output_accuracy_assessment_contracts.rs (/mnt/data/vigilode_audit2_run/target/debug/deps/output_accuracy_assessment_contracts-f71944fe3b92aea6)
+
+running 9 tests
+test accurate_but_policy_sensitive_is_not_accuracy_failure ... ok
+test boundary_and_lower_bound_are_distinct ... ok
+test equal_bad_trajectories_do_not_certify_accuracy ... ok
+test missing_budget_is_not_pass ... ok
+test nonfinite_negative_and_overflow_rejected ... ok
+test paired_assessment_preserves_evidence_and_legacy_sensitivity ... ok
+test scalar_error_gap_is_not_trajectory_distance ... ok
+test signed_zero_zero_budget_is_well_defined ... ok
+test uncertain_reference_does_not_pass_boundary ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.01s
+
+     Running tests/audit2_structured_correction_contracts.rs (/mnt/data/vigilode_audit2_run/target/debug/deps/audit2_structured_correction_contracts-c9e9634061e705f4)
+
+running 2 tests
+test common_w_matches_full_target_correction_without_stage_jacobians ... AUDIT2_CORRECTION {"backward_error":2.2654240594673795e-17,"common_w_factorizations":1,"common_w_solve_vectors":8,"condition_f":32.1868941892757,"h":0.001,"jvp_vectors":14,"n":4,"oracle_stage_jacobian_builds":8,"production_activation":false,"stage_jacobian_builds":0,"state_relative_difference":1.8848678895664682e-16}
+AUDIT2_CORRECTION {"backward_error":2.71859495368274e-17,"common_w_factorizations":1,"common_w_solve_vectors":8,"condition_f":48.15539609968375,"h":0.01,"jvp_vectors":14,"n":4,"oracle_stage_jacobian_builds":8,"production_activation":false,"stage_jacobian_builds":0,"state_relative_difference":3.6548494033031817e-16}
+AUDIT2_CORRECTION {"backward_error":4.0312149854839976e-17,"common_w_factorizations":1,"common_w_solve_vectors":8,"condition_f":273.5893796138375,"h":0.05,"jvp_vectors":14,"n":4,"oracle_stage_jacobian_builds":8,"production_activation":false,"stage_jacobian_builds":0,"state_relative_difference":1.666302071168706e-15}
+AUDIT2_CORRECTION {"backward_error":4.385499289973989e-17,"common_w_factorizations":1,"common_w_solve_vectors":8,"condition_f":639.3844679761464,"h":0.1,"jvp_vectors":14,"n":4,"oracle_stage_jacobian_builds":8,"production_activation":false,"stage_jacobian_builds":0,"state_relative_difference":5.401770427481455e-15}
+AUDIT2_CORRECTION {"backward_error":1.4852616054157297e-17,"common_w_factorizations":1,"common_w_solve_vectors":8,"condition_f":64.39594926671359,"h":0.001,"jvp_vectors":14,"n":8,"oracle_stage_jacobian_builds":8,"production_activation":false,"stage_jacobian_builds":0,"state_relative_difference":2.0556451484980062e-16}
+AUDIT2_CORRECTION {"backward_error":2.3251416524296363e-17,"common_w_factorizations":1,"common_w_solve_vectors":8,"condition_f":98.04386993105479,"h":0.01,"jvp_vectors":14,"n":8,"oracle_stage_jacobian_builds":8,"production_activation":false,"stage_jacobian_builds":0,"state_relative_difference":4.247634410174568e-16}
+AUDIT2_CORRECTION {"backward_error":2.927585159676027e-17,"common_w_factorizations":1,"common_w_solve_vectors":8,"condition_f":566.0147512882842,"h":0.05,"jvp_vectors":14,"n":8,"oracle_stage_jacobian_builds":8,"production_activation":false,"stage_jacobian_builds":0,"state_relative_difference":1.6531644281835385e-15}
+AUDIT2_CORRECTION {"backward_error":2.5241839791192305e-17,"common_w_factorizations":1,"common_w_solve_vectors":8,"condition_f":1321.8745901132472,"h":0.1,"jvp_vectors":14,"n":8,"oracle_stage_jacobian_builds":8,"production_activation":false,"stage_jacobian_builds":0,"state_relative_difference":3.6815106380735504e-15}
+AUDIT2_CORRECTION {"backward_error":9.896493735560202e-18,"common_w_factorizations":1,"common_w_solve_vectors":8,"condition_f":128.81405942059033,"h":0.001,"jvp_vectors":14,"n":16,"oracle_stage_jacobian_builds":8,"production_activation":false,"stage_jacobian_builds":0,"state_relative_difference":2.1377988071050075e-16}
+AUDIT2_CORRECTION {"backward_error":1.3531985895212753e-17,"common_w_factorizations":1,"common_w_solve_vectors":8,"condition_f":197.8202670133432,"h":0.01,"jvp_vectors":14,"n":16,"oracle_stage_jacobian_builds":8,"production_activation":false,"stage_jacobian_builds":0,"state_relative_difference":3.8055024077819215e-16}
+AUDIT2_CORRECTION {"backward_error":1.917926854916436e-17,"common_w_factorizations":1,"common_w_solve_vectors":8,"condition_f":1150.7273970663073,"h":0.05,"jvp_vectors":14,"n":16,"oracle_stage_jacobian_builds":8,"production_activation":false,"stage_jacobian_builds":0,"state_relative_difference":1.7418041110114558e-15}
+AUDIT2_CORRECTION {"backward_error":2.1884671911243223e-17,"common_w_factorizations":1,"common_w_solve_vectors":8,"condition_f":2686.7976507838134,"h":0.1,"jvp_vectors":14,"n":16,"oracle_stage_jacobian_builds":8,"production_activation":false,"stage_jacobian_builds":0,"state_relative_difference":5.090990658366563e-15}
+ok
+test invalid_shape_fails_before_factorization ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.66s
+
+     Running tests/dense_output_v2_contracts.rs (/mnt/data/vigilode_audit2_run/target/debug/deps/dense_output_v2_contracts-16cf1fcc970d143d)
+
+running 15 tests
+test adaptive_implicit_failures_preserve_the_committed_output_prefix ... ok
+test adaptive_radau_and_bdf_dense_paths_are_output_grid_invariant ... ok
+test analytic_dense_extensions_recover_their_expected_interior_orders ... ok
+test bdf2_quadratic_dense_interpolant_honors_all_three_nodes ... ok
+test bdf_history_restarts_when_the_natural_step_exactly_matches_a_hard_stop ... ok
+test dense_implicit_failure_kinds_match_work_counters ... ok
+test dense_output_grid_density_does_not_change_adaptive_internal_steps ... ok
+test every_adaptive_rodas_family_samples_dense_outputs_without_grid_clipping ... ok
+test fixed_dense_observation_samples_four_inner_times_without_clipping_the_macro_step ... ok
+test hard_stop_landing_is_controller_neutral_while_ordinary_outputs_are_not_landings ... ok
+test implicit_dense_paths_land_on_hard_stops_before_interpolating_later_outputs ... ok
+test legacy_clipped_wrappers_are_bit_stable_and_new_hard_stops_do_not_cross ... ok
+test protected_adaptive_rodas_and_low_order_implicit_dense_sampling_are_available ... ok
+test radau_iia3_collocation_cubic_has_the_bk_endpoint_oracle_and_dense_sampling ... ok
+test rodas5p_h_gamma_extension_uses_transformed_k_without_an_extra_h ... ok
+
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.84s
+
+     Running tests/homotopy_numerical_contracts.rs (/mnt/data/vigilode_audit2_run/target/debug/deps/homotopy_numerical_contracts-7250a822b3a13062)
+
+running 6 tests
+test fixed_homotopy_path_validates_schedule_and_reaches_the_affine_q7_endpoint ... ok
+test homotopy_step_accepts_the_affine_oracle_and_falls_back_transactionally ... ok
+test low_depth_homotopy_paths_remain_finite_and_expose_a_residual_hierarchy ... ok
+test manufactured_mass_problem_has_noncommuting_structure_and_exact_rhs ... ok
+test nonlinear_output_certificate_reduces_to_the_affine_exact_correction ... ok
+test partial_linear_decomposition_matches_the_protected_block_operator ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+

@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "scope": "BASS/rei separate application loop",
+  "production": "HOLD",
+  "nodes": [
+    {
+      "id": "P01",
+      "status": "complete",
+      "objective": "LRS Bianchi I conservative RHS/JVP oracle",
+      "depends_on": [],
+      "evidence": [
+        "BASS_REI_FVM_REFERENCE.py",
+        "BASS_REI_CHECKS.json"
+      ]
+    },
+    {
+      "id": "P02",
+      "status": "pending",
+      "objective": "Rust fixed-grid adapter integrated through actual VigilODE stages",
+      "depends_on": [
+        "P01"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "P03",
+      "status": "pending",
+      "objective": "Energy-block Thomson low-rank plus matter Schur preconditioner",
+      "depends_on": [
+        "P02"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "P04",
+      "status": "pending",
+      "objective": "Source-owned absorption/recombination and signed stress integration",
+      "depends_on": [
+        "P02"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "P05",
+      "status": "pending",
+      "objective": "Accepted-step conservative remap with operator/controller cache rebind",
+      "depends_on": [
+        "P03",
+        "P04"
+      ],
+      "evidence": []
+    },
+    {
+      "id": "P06",
+      "status": "pending",
+      "objective": "Full sphere, polarized/tilted and class-B transport",
+      "depends_on": [
+        "P05"
+      ],
+      "evidence": []
+    }
+  ],
+  "claims": [
+    {
+      "id": "PHY-L1",
+      "basis": [
+        "derived",
+        "numerically checked"
+      ],
+      "statement": "LRS Bianchi-I Liouville density a^3 E^3 f obeys conservative q-mu transport",
+      "scope": "proper-time normal congruence; unpolarized scalar"
+    },
+    {
+      "id": "PHY-L2",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "statement": "shared interior face flux conserves number with explicit boundary ledger",
+      "scope": "semi-discrete first-order oracle"
+    },
+    {
+      "id": "PHY-L3",
+      "basis": [
+        "derived",
+        "implementation-verified"
+      ],
+      "statement": "unpolarized elastic axial Thomson gain costs O(N_mu) per energy group using rank-two moments",
+      "scope": "fixed cold-electron frame, no polarization/energy redistribution"
+    },
+    {
+      "id": "PHY-L4",
+      "basis": [
+        "derived",
+        "numerically checked"
+      ],
+      "statement": "freezing a nonlinear multiplicative RHS coefficient can reduce global order to one",
+      "scope": "explicit y prime equals y squared diagnostic; not a universal limiter theorem"
+    }
+  ],
+  "next_run": "python3 research/ncp_followup_20261021/BASS_REI_FVM_REFERENCE.py research/ncp_followup_20261021/BASS_REI_CHECKS.json",
+  "remaining": [
+    "live Rust adapter",
+    "independent physical solution convergence",
+    "positive high-order update",
+    "live BASS/rei code integration",
+    "NCP performance"
+  ]
+}

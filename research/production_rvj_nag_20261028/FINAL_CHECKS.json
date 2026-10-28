@@ -1,0 +1,35 @@
+{
+  "schema": "vigilode.rvj-final-metadata.v1",
+  "execution_source_sha": "64004e23042f2cf076da5378be724f50c3856f4c",
+  "research_node": {
+    "status": "PASS",
+    "ledger_rows_at_check": 178,
+    "receipt": "evidence/metadata/research-node.json"
+  },
+  "authority": {
+    "status": "FAIL_LOCAL_CACHE_AUDIT",
+    "first_attempt": "TIMEOUT_120_SECONDS",
+    "unmodified_checker_completed_with": {
+      "GIT_NO_LAZY_FETCH": "1"
+    },
+    "citations": 10338,
+    "distinct_shas": 813,
+    "missing_not_allowlisted_distinct": 178,
+    "missing_allowlisted_distinct": 27,
+    "non_commit_distinct": 186,
+    "reachable_distinct": 422,
+    "failure_citations": 919,
+    "new_node_failure_citations": 3,
+    "new_node_failure_scope": "Byte-preserved PR95 intake contains external BASS commit and blob references. Repository-untyped checker treats these as VigilODE commit authorities. No allowlist/schema/source-history edits were made.",
+    "comparison_limit": "Partial-clone cached-object audit is not directly comparable to prior PR96 fuller-checkout missing=49. Missing may include unavailable blobs as well as commits; do not label178 as newly broken commits.",
+    "receipt": "evidence/metadata/authority-refs-offline.json"
+  },
+  "whitespace": {
+    "full_raw_diff": "Two terminal-blank-line warnings in byte-preserved native test stdout; retained as evidence.",
+    "source_and_documents": "PASS",
+    "receipt": "evidence/metadata/source-doc-whitespace.json"
+  },
+  "production_status": "HOLD",
+  "new_scientific_runs": 0,
+  "qualification_repair_attempts_in_this_metadata_step": 0
+}

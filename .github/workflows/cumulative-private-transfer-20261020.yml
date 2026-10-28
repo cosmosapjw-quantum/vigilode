@@ -1,0 +1,72 @@
+name: Import original research archives without public backup sharing
+on:
+  push:
+    branches: [research/cumulative-evidence-20261020]
+    paths: ['.github/workflows/cumulative-private-transfer-20261020.yml']
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: cumulative-original-archive-transfer
+  cancel-in-progress: false
+jobs:
+  import:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+      - name: Publish one-use transport public key and import verified artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          NODE=research/cumulative_20261020
+          OUT="$NODE/transfers/${GITHUB_RUN_ID}"
+          mkdir -p "$OUT"
+          PRIVATE="$RUNNER_TEMP/vigilode-transfer-key.pem"
+          trap 'rm -f "$PRIVATE" "$RUNNER_TEMP/vigilode-envelope.json"' EXIT
+          umask 077
+          openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:4096 -out "$PRIVATE" 2>/dev/null
+          openssl pkey -in "$PRIVATE" -pubout -out "$OUT/public.pem"
+          printf '{"run_id":"%s","status":"AWAITING_ENCRYPTED_REQUEST","algorithm":"RSA4096-OAEP-SHA256","private_key_committed":false}\n' "$GITHUB_RUN_ID" > "$OUT/KEY_EXCHANGE.json"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- "$OUT/public.pem" "$OUT/KEY_EXCHANGE.json"
+          git commit -m "archive: publish one-use transfer key ${GITHUB_RUN_ID} [skip ci]"
+          git push origin HEAD:refs/heads/research/cumulative-evidence-20261020
+          ENVELOPE="$NODE/transfers/${GITHUB_RUN_ID}/envelope.json"
+          FOUND=0
+          for _ in $(seq 1 54); do
+            git fetch --quiet origin research/cumulative-evidence-20261020
+            if git cat-file -e "origin/research/cumulative-evidence-20261020:$ENVELOPE" 2>/dev/null; then
+              git show "origin/research/cumulative-evidence-20261020:$ENVELOPE" > "$RUNNER_TEMP/vigilode-envelope.json"
+              FOUND=1
+              break
+            fi
+            sleep 10
+          done
+          if [[ "$FOUND" != 1 ]]; then
+            printf '{"status":"TRANSFER_REQUEST_NOT_RECEIVED","new_scientific_execution":false}\n' > "$OUT/IMPORT_FAILURE.json"
+            exit 1
+          fi
+          python3 "$NODE/secure_transfer/receive.py" "$PRIVATE" "$RUNNER_TEMP/vigilode-envelope.json" "$OUT" "$GITHUB_RUN_ID"
+      - name: Publish only imported files and sanitized receipts
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          NODE=research/cumulative_20261020
+          OUT="$NODE/transfers/${GITHUB_RUN_ID}"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for p in "$NODE/original_archives" "$NODE/original_sources" "$NODE/ORIGINALS_MANIFEST.json" "$OUT"; do
+            [[ ! -e "$p" ]] || git add -f -- "$p"
+          done
+          if ! git diff --cached --quiet; then
+            git commit -m "archive: publish original ZIPs and72source members ${GITHUB_RUN_ID} [skip ci]"
+            git fetch origin research/cumulative-evidence-20261020
+            git rebase origin/research/cumulative-evidence-20261020
+            git push origin HEAD:refs/heads/research/cumulative-evidence-20261020
+          fi

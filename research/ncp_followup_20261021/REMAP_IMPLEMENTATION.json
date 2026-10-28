@@ -1,0 +1,123 @@
+{
+  "schema_version": 1,
+  "workflow_version": "1.0.0",
+  "task": "both",
+  "unit_id": "FVM-RM01",
+  "objective": "Implement positive conservative interval cell-integral remap with bounded memory and a usable remap perturbation diagnostic.",
+  "scope": "Same-domain one-dimensional measure-coordinate grids, nonnegative scalar integrals, fixed capacity; no ODE accepted-step hook yet.",
+  "baseline_commit": "7a63876a97fc17f640771ec06658269947049994",
+  "status": "complete_scoped_kernel",
+  "production_integration": "HOLD_PENDING_CLIENT_BINDING_AND_ACCEPTED_STEP_HOOK",
+  "implementation": {
+    "module": "crates/rodas5p-integrators/src/conservative_remap.rs",
+    "public_api": "rodas5p_integrators::conservative_remap::{ConservativeRemapWorkspace, RemapReport, RemapError}",
+    "computational_complexity": "O(n+m)",
+    "workspace_element_bytes": "16*N_max",
+    "allocation_scope": "Two Vec allocations at workspace construction; remap paths have no allocation/resize calls.",
+    "refusal_atomicity": "Caller destination untouched until all numerical checks complete.",
+    "mass_tolerance": "Explicit finite nonnegative caller threshold on floating diagnostic relative mass discrepancy."
+  },
+  "claims": [
+    {
+      "id": "R1",
+      "statement": "Overlap matrix is positive column stochastic; conserves scalar integral and contracts weighted L1 differences in exact real arithmetic.",
+      "basis": [
+        "derived"
+      ],
+      "evidence": "research/ncp_followup_20261021/REMAP_THEORY.md"
+    },
+    {
+      "id": "R2",
+      "statement": "Overlapping sorted partitions require at most n+m-1 positive overlap segments.",
+      "basis": [
+        "derived"
+      ],
+      "evidence": "research/ncp_followup_20261021/REMAP_THEORY.md"
+    },
+    {
+      "id": "R3",
+      "statement": "Remap perturbations enter e_next <= L*e + temporal_spatial_defect + remap_defect + arithmetic_error.",
+      "basis": [
+        "derived"
+      ],
+      "evidence": "research/ncp_followup_20261021/REMAP_THEORY.md"
+    },
+    {
+      "id": "R4",
+      "statement": "Eight standalone Rust tests pass for exact hand-computed maps, positivity, conservation, contractions, changing dimensions and atomic refusal.",
+      "basis": [
+        "implementation-verified",
+        "numerically checked"
+      ],
+      "evidence": "research/ncp_followup_20261021/evidence/REMAP_TESTS.log"
+    },
+    {
+      "id": "R5",
+      "statement": "Remap report values are floating diagnostics, not outward-rounded certificate values.",
+      "basis": [
+        "implementation-verified"
+      ],
+      "evidence": "crates/rodas5p-integrators/src/conservative_remap.rs"
+    }
+  ],
+  "validation": {
+    "command": "source /workspace/scratch/0dc1e721cf82/runtime/env.sh; rustc --edition 2024 --test crates/rodas5p-integrators/src/conservative_remap.rs -o /workspace/scratch/0dc1e721cf82/runtime/conservative_remap_tests; /workspace/scratch/0dc1e721cf82/runtime/conservative_remap_tests --nocapture",
+    "exit_code": 0,
+    "tests_passed": 8,
+    "tests_failed": 0,
+    "log": "research/ncp_followup_20261021/evidence/REMAP_TESTS.log",
+    "cargo_integration_test": "not_run_by_this_unit; root integration validation may supersede"
+  },
+  "independent_review": {
+    "reviewer": "/root/followup_reviewer",
+    "result": "no blocking issue found in code/proofs; units clarification applied",
+    "change": "Changed photon dN/dU to per-proper-volume dn/du_gamma and documented required proper volume factor."
+  },
+  "scientific_contract": {
+    "measure": "Edges are cumulative positive measure, not necessarily raw energy or theta.",
+    "photon_number_energy_coordinate": "E^3/3 for measure E^2 dE; normalization and angle measure handled consistently by caller.",
+    "energy_coordinate": "E^4/4 for measure E^3 dE.",
+    "simultaneous_number_energy": "Not implemented; requires separate constrained multi-moment reconstruction.",
+    "angular_scope": "General Bianchi needs S^2; theta-only requires axisymmetry.",
+    "polarization": "Signed Stokes components unsupported by this nonnegative scalar API.",
+    "temporal_order": "Fifth-order time integration does not remove remap error; per-remap O(h^6) is sufficient when O(1/h) remaps occur under stability assumptions."
+  },
+  "next_actions": [
+    {
+      "id": "FVM-RM02",
+      "action": "Bind the actual photon variable, phase-space measure, normalization and physical norm in BASS/rei."
+    },
+    {
+      "id": "FVM-RM03",
+      "action": "Add accepted-step transactional state/grid/epoch commit, cache invalidation, mapped dense-output identity and controller norm update."
+    },
+    {
+      "id": "FVM-RM04",
+      "action": "Validate fixed threshold-aligned energy mesh, number/energy accounting, independent spatial/time refinement."
+    },
+    {
+      "id": "FVM-RM05",
+      "action": "Implement positivity-realizable multi-moment reconstruction and directed remap error upper bounds."
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "crates/rodas5p-integrators/src/conservative_remap.rs",
+      "sha256": "4ba4f712a57ebb03888db1aa4127448a2a66a964c15bd596292c1b6c92c97e08"
+    },
+    {
+      "path": "research/ncp_followup_20261021/REMAP_THEORY.md",
+      "sha256": "e080ee9cb32ebd560d76d6c258dd6c0d96f64231b9e82e0aff1a3808e0de275a"
+    },
+    {
+      "path": "research/ncp_followup_20261021/evidence/REMAP_TESTS.log",
+      "sha256": "020ff25e2815c2d2167b16a32b79194f2b475d06142a0d4914cfd238bb0950dc"
+    }
+  ],
+  "parent_validation": {
+    "result": "PASS_SCOPED",
+    "evidence": "evidence/final_03/SUMMARY.json",
+    "native_module_tests": 8,
+    "module_included_in_actual_adapter_library_build": true
+  }
+}

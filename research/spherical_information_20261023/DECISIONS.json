@@ -1,0 +1,216 @@
+{
+  "schema": "spherical-information.decisions.v1",
+  "date": "2026-10-23",
+  "workflow_version": "1.0.0",
+  "objective_status": "completed_scoped_theory_and_lightweight_verification",
+  "production_solver_status": "not_assessed_by_this_package",
+  "inherited_broad_production_status": "HOLD",
+  "native_repo_modified": false,
+  "ncp_used": false,
+  "claims": [
+    {
+      "id": "SG01",
+      "statement": "Conservative weighted cell means have an exact nonnegative Bregman loss and nested refinement telescope.",
+      "basis": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "scope": "positive supplied finite angular states; scalar contracted thermal entropy",
+      "evidence": [
+        "analysis/PAPER_I_METHODS_KO.md",
+        "src/spherical_mesh.py",
+        "results/mesh_results.json"
+      ],
+      "decision": "adopt_as_reference",
+      "remaining": [
+        "native full-occupation remap",
+        "continuum unresolved error"
+      ]
+    },
+    {
+      "id": "SG02",
+      "statement": "A cellwise lower entropy curvature bounds each declared linear observer error.",
+      "basis": [
+        "derived",
+        "numerically checked"
+      ],
+      "scope": "finite-grid error relative to supplied fine state; floating tests are not interval certification",
+      "evidence": [
+        "RESEARCH_REPORT_KO.md#3-엔트로피-손실을-계산하는-적응형-구면-격자",
+        "results/mesh_results.json"
+      ],
+      "decision": "adopt_observer_bound",
+      "remaining": [
+        "refine directly to observer tolerance",
+        "tightness near vacuum"
+      ]
+    },
+    {
+      "id": "SG03",
+      "statement": "Energy-only thermal remap changes particle number; joint MB number-energy entropy is strictly convex and preserves both means.",
+      "basis": [
+        "derived",
+        "numerically checked"
+      ],
+      "scope": "massless MB joint closure; general quantum/full-f route separately specified",
+      "evidence": [
+        "analysis/PAPER_I_METHODS_KO.md",
+        "evidence/entropy_geometry_wolfram.json",
+        "results/mesh_results.json"
+      ],
+      "decision": "use_joint_or_full_occupation_for_number_clients",
+      "remaining": [
+        "BE/FD joint reconstruction",
+        "native bin-weight mapping"
+      ]
+    },
+    {
+      "id": "SG04",
+      "statement": "a <= W/W0 <= b implies preconditioned entropy Hessian condition <= b/a independently of angular cutoff.",
+      "basis": [
+        "derived",
+        "literature-supported",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "scope": "same positive finite quadrature and scores; H0 positive definite; moment inversion rather than arbitrary ODE Jacobian",
+      "evidence": [
+        "analysis/PAPER_II_METHODS_KO.md",
+        "src/fisher_demo.py",
+        "results/fisher_results.json"
+      ],
+      "decision": "adopt_for_closure_prototype",
+      "remaining": [
+        "matrix-free native implementation",
+        "extreme variance triangular-factor path"
+      ]
+    },
+    {
+      "id": "SG05",
+      "statement": "Fixed-metric gradient descent is Newton-free and contracts by (b-a)/(b+a) on a certified admissible solution ball.",
+      "basis": [
+        "derived"
+      ],
+      "scope": "uniform Hessian bounds throughout the stated ball and starting point in that ball",
+      "evidence": [
+        "analysis/PAPER_II_METHODS_KO.md"
+      ],
+      "decision": "research_candidate",
+      "remaining": [
+        "construct practical domain certificate",
+        "nonlinear closure experiment"
+      ]
+    },
+    {
+      "id": "SG06",
+      "statement": "The existing rank-six FVM collision has an exact small-matrix exponential action, including singular capacitance matrices.",
+      "basis": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "scope": "fixed grid, scalar common collision rate and known optical depth; no general coupled-step order claim",
+      "evidence": [
+        "analysis/THOMSON_LOW_RANK_KO.md",
+        "src/thomson_demo.py",
+        "results/thomson_results.json"
+      ],
+      "decision": "highest_priority_native_candidate",
+      "remaining": [
+        "cache small decomposition",
+        "coupled work-precision experiment"
+      ]
+    },
+    {
+      "id": "SG07",
+      "statement": "Real transverse coherency Thomson gain closes on six symmetric moments and admits a PSD-preserving exact subflow.",
+      "basis": [
+        "derived",
+        "literature-supported",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "scope": "cold rest-frame elastic shell, circular V=0, quadrature preserving required angular moments",
+      "evidence": [
+        "analysis/THOMSON_LOW_RANK_KO.md",
+        "evidence/polarized_collision_wolfram.json",
+        "results/thomson_results.json"
+      ],
+      "decision": "adopt_scoped_polarized_reference",
+      "remaining": [
+        "spin/transport coupling",
+        "tilt and energy redistribution",
+        "circular polarization extension"
+      ]
+    },
+    {
+      "id": "SG08",
+      "statement": "Positive mass-preserving maps yield global Hellinger error <= initial error + sum sqrt(local Poisson KL), with bounded-observable control.",
+      "basis": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "scope": "equal-mass finite MB states, column-stochastic propagators; general F-rho/BE/FD or arbitrary RK steps excluded",
+      "evidence": [
+        "RESEARCH_REPORT_KO.md",
+        "src/remap_budget_demo.py",
+        "results/remap_budget_results.json"
+      ],
+      "decision": "adopt_conditional_budget",
+      "remaining": [
+        "actual time-step positivity contract",
+        "nonlinear stability factors"
+      ]
+    },
+    {
+      "id": "SG09",
+      "statement": "Massive shell Poisson multipliers give certified cutoff selection; Laguerre alpha=2 orthonormalizes massless MB radial tangent scores.",
+      "basis": [
+        "derived",
+        "numerically checked",
+        "implementation-verified"
+      ],
+      "scope": "known tail/norm bound; velocity <1 for suppression; no radial velocity suppression for photons",
+      "evidence": [
+        "analysis/PAPER_II_METHODS_KO.md",
+        "src/spectral_tools_demo.py",
+        "results/spectral_tools_results.json"
+      ],
+      "decision": "adopt_spectral_reference",
+      "remaining": [
+        "state-dependent tail controller",
+        "native transforms"
+      ]
+    }
+  ],
+  "measured_highlights": {
+    "beam_same_allowed_budget": {
+      "fraction": 0.01,
+      "uniform_cells": 4096,
+      "adaptive_cells": 106,
+      "ratio": 38.64150943396226,
+      "interpretation": "state count, not PDE wall-time"
+    },
+    "fisher_hard_case": {
+      "raw_condition": 356678.30990931607,
+      "whitened_condition": 1.5900528412422996,
+      "median_solve_speed_ratio": 5.072616606664588
+    },
+    "fisher_iterations": {
+      "plain_cg": 124,
+      "fisher_pcg": 9
+    },
+    "mesh_configurations": 20,
+    "fisher_configurations": 13,
+    "remap_configurations": 8,
+    "remap_step_checks": 320
+  },
+  "general_limits": [
+    "finite-grid certificate is not continuum PDE certificate",
+    "microtimings are shared-host diagnostics",
+    "current native source was only read",
+    "published unchanged theories were reused"
+  ]
+}

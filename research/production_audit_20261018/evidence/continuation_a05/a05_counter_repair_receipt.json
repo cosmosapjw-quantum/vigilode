@@ -1,0 +1,59 @@
+{
+  "scope": "A05 represented quartic interval operation accounting",
+  "source_identity": {
+    "base_head": "de990927d0f9197f0e37fcaeccee33bea6c7b8af",
+    "checkout_head_at_validation": "c3036c63da02ca9b04cd39ccf580cd67d00ccb0c",
+    "branch": "audit/production-readiness-20261018",
+    "working_tree_was_dirty": true,
+    "files": {
+      "crates/rodas5p-integrators/src/dense_output_v2.rs": "538934f7557c386308f0bb5188c31abbb54462a578dd10130fa663f6a0ebce18",
+      "crates/rodas5p-integrators/src/lib.rs": "bb8f86fc41585a66fb898a75261ec8b974bc6549b82ab4bccb2c2c27f4e502d4",
+      "crates/rodas5p-integrators/tests/a05_dense_global_output.rs": "7ca62af076056c99cab7e26d7ad0219724808ce78dc660c0d9009209f5a8d58f"
+    }
+  },
+  "repair": {
+    "value_shared_interval_ops_precharged": 1,
+    "value_interval_ops_per_component_precharged": 9,
+    "derivative_shared_interval_ops_precharged": 2,
+    "derivative_interval_ops_per_component_precharged": 14,
+    "center_shared_subtraction_precharged": 1,
+    "center_binary64_ops_per_component_precharged": 9,
+    "center_endpoint_operations": 0,
+    "metric_regression_dimension": 3,
+    "metric_regression": "interior exact counts: center=1+9N, value=1+9N, derivative=2+14N; endpoint adds zero center/value operations and still counts derivative formula work",
+    "global_residual_or_trajectory_authority_added": false,
+    "allocation_evidence": "Source inspection: from_step allocates endpoint, coefficient, and identity vectors; successful evaluate methods use caller-owned output and have no heap allocation in their success path. Error construction may allocate. No allocator-instrumented zero-allocation claim."
+  },
+  "validation": {
+    "test_command": "cargo test --locked --offline -p rodas5p-integrators --test a05_dense_global_output -- --nocapture",
+    "test_exit_code": 0,
+    "test_result": "11 passed, 0 failed",
+    "test_log": "a05_center_counter_final.log",
+    "test_log_sha256": "df41e43ada34c6ee49cf30e6a1bd902eb5b23a2421cce1ff6be673b8bee54244",
+    "clippy_command": "cargo clippy --locked --offline -p rodas5p-integrators --all-targets -- -D warnings",
+    "clippy_exit_code": 0,
+    "clippy_log": "a05_center_counter_clippy.log",
+    "clippy_log_sha256": "e7a3d8a178fd889970e3001328c9630b92cd57bf11878954622d9f3f85c50958",
+    "format_command": "rustfmt --edition 2024 --check crates/rodas5p-integrators/src/dense_output_v2.rs crates/rodas5p-integrators/tests/a05_dense_global_output.rs",
+    "rustfmt_exit_code": 0,
+    "git_diff_check_exit_code": 0,
+    "format_log": "a05_center_counter_fmt.log",
+    "format_log_sha256": "1ca4a13146b2891c0e462123ac0cb848f92e6221f18b870a1b78c232d1956c35",
+    "diff_check_log": "a05_center_counter_diffcheck.log",
+    "diff_check_log_sha256": "1ca4a13146b2891c0e462123ac0cb848f92e6221f18b870a1b78c232d1956c35",
+    "preserved_first_failure": {
+      "log": "a05_center_counter_first_failure.log",
+      "sha256": "10a1bbbfb5e0969dda931ff86bc5f1f2a97606f18c3a5e29fb48f186724784e7",
+      "exit_code": 101,
+      "observed_center_count": 21,
+      "expected_center_count": 28
+    },
+    "prior_receipt": "a05_counter_repair_receipt_pre_center.json",
+    "prior_receipt_sha256": "75fc23f40afb3a4ed7c6024c0cd1b39f46fda483dab4d7a979c64ea58a4ff1a5"
+  },
+  "decision": {
+    "represented_quartic_interval_component": "PASS_WITH_SCOPE",
+    "global_continuous_output_and_trajectory_authority": "HOLD",
+    "reason": "No interval RHS/log-norm interface or verified continuous residual/gain tube is available."
+  }
+}

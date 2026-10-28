@@ -1,0 +1,781 @@
+{
+  "schema": "vigilode.nonstiff-campaign.v1",
+  "source_commit": "45037fc24e8f8101605f309e1fdb3a9a4e3df56d",
+  "binary": "/workspace/scratch/0dc1e721cf82/task_runtime/target/measurement/examples/nonstiff_bench",
+  "binary_sha256": "6e871c6068977a270b6d4aaddcecbe54da06159dd57666662e05f38b9a4bafbd",
+  "profile": "measurement",
+  "compiler_options": "opt-level=3,lto=false,codegen-units=16",
+  "ncp_used": false,
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "logical_cpus": 9,
+  "affinity": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "cgroup_cpu_max": "1600000 200000",
+  "budget_seconds": 900.0,
+  "per_run_timeout": 45.0,
+  "full": false,
+  "warmups_per_configuration": 1,
+  "timed_repeats": 3,
+  "seed": 20261023,
+  "order": "randomized case/tolerance groups in every round; shuffled solver order within each group",
+  "primary_metric": "max error normalized by max(1,initial magnitude,reference magnitude); 5 observed times",
+  "external_comparators": {
+    "vode": {
+      "available": true,
+      "command": [
+        "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python",
+        "/workspace/scratch/0dc1e721cf82/vigilode-nonstiff/research/nonstiff_explicit_20261023/vode_adapter.py"
+      ],
+      "family": "VODE/DVODE",
+      "language": "Python callback; Fortran VODE",
+      "status": "REGISTERED",
+      "reason": null
+    },
+    "diffsol": {
+      "available": false,
+      "command": null,
+      "family": "diffsol",
+      "status": "NOT_RUN",
+      "reason": "not requested or adapter unavailable; no substitute method used"
+    },
+    "julia": {
+      "available": false,
+      "command": null,
+      "family": "Julia",
+      "julia_executable_observed": null,
+      "status": "NOT_RUN",
+      "reason": "not requested or adapter unavailable; no substitute method used"
+    }
+  },
+  "configurations": [
+    {
+      "id": 0,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "dopri5"
+    },
+    {
+      "id": 1,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 2,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "vode"
+    },
+    {
+      "id": 3,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "dopri5"
+    },
+    {
+      "id": 4,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 5,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "vode"
+    },
+    {
+      "id": 6,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "dopri5"
+    },
+    {
+      "id": 7,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 8,
+      "case": "decay",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "vode"
+    },
+    {
+      "id": 9,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "dopri5"
+    },
+    {
+      "id": 10,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 11,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "vode"
+    },
+    {
+      "id": 12,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "dopri5"
+    },
+    {
+      "id": 13,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 14,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "vode"
+    },
+    {
+      "id": 15,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "dopri5"
+    },
+    {
+      "id": 16,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 17,
+      "case": "driven",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "vode"
+    },
+    {
+      "id": 18,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "dopri5"
+    },
+    {
+      "id": 19,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 20,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "vode"
+    },
+    {
+      "id": 21,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "dopri5"
+    },
+    {
+      "id": 22,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 23,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "vode"
+    },
+    {
+      "id": 24,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "dopri5"
+    },
+    {
+      "id": 25,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 26,
+      "case": "logistic",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "vode"
+    },
+    {
+      "id": 27,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "dopri5"
+    },
+    {
+      "id": 28,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 29,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "vode"
+    },
+    {
+      "id": 30,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "dopri5"
+    },
+    {
+      "id": 31,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 32,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "vode"
+    },
+    {
+      "id": 33,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "dopri5"
+    },
+    {
+      "id": 34,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 35,
+      "case": "harmonic",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "vode"
+    },
+    {
+      "id": 36,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "dopri5"
+    },
+    {
+      "id": 37,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 38,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "vode"
+    },
+    {
+      "id": 39,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "dopri5"
+    },
+    {
+      "id": 40,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 41,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "vode"
+    },
+    {
+      "id": 42,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "dopri5"
+    },
+    {
+      "id": 43,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 44,
+      "case": "rapid",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "vode"
+    },
+    {
+      "id": 45,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "dopri5"
+    },
+    {
+      "id": 46,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 47,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "vode"
+    },
+    {
+      "id": 48,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "dopri5"
+    },
+    {
+      "id": 49,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 50,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "vode"
+    },
+    {
+      "id": 51,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "dopri5"
+    },
+    {
+      "id": 52,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 53,
+      "case": "damped",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "vode"
+    },
+    {
+      "id": 54,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "dopri5"
+    },
+    {
+      "id": 55,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 56,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "vode"
+    },
+    {
+      "id": 57,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "dopri5"
+    },
+    {
+      "id": 58,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 59,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "vode"
+    },
+    {
+      "id": 60,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "dopri5"
+    },
+    {
+      "id": 61,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 62,
+      "case": "mixed-scales",
+      "dimension": 12,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "vode"
+    },
+    {
+      "id": 63,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "dopri5"
+    },
+    {
+      "id": 64,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 65,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "vode"
+    },
+    {
+      "id": 66,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "dopri5"
+    },
+    {
+      "id": 67,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 68,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "vode"
+    },
+    {
+      "id": 69,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "dopri5"
+    },
+    {
+      "id": 70,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 71,
+      "case": "nonnormal",
+      "dimension": 8,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "vode"
+    },
+    {
+      "id": 72,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "dopri5"
+    },
+    {
+      "id": 73,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "rodas-mf"
+    },
+    {
+      "id": 74,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "vode"
+    },
+    {
+      "id": 75,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "dopri5"
+    },
+    {
+      "id": 76,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "rodas-mf"
+    },
+    {
+      "id": 77,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "vode"
+    },
+    {
+      "id": 78,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "dopri5"
+    },
+    {
+      "id": 79,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "rodas-mf"
+    },
+    {
+      "id": 80,
+      "case": "large-vector",
+      "dimension": 4096,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "vode"
+    },
+    {
+      "id": 81,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "dopri5"
+    },
+    {
+      "id": 82,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 83,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 0.0001,
+      "atol": 1.0000000000000001e-07,
+      "mode": "vode"
+    },
+    {
+      "id": 84,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "dopri5"
+    },
+    {
+      "id": 85,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 86,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 1e-06,
+      "atol": 1e-09,
+      "mode": "vode"
+    },
+    {
+      "id": 87,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "dopri5"
+    },
+    {
+      "id": 88,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "rodas-dense"
+    },
+    {
+      "id": 89,
+      "case": "stiff-control",
+      "dimension": 12,
+      "rtol": 1e-08,
+      "atol": 1.0000000000000001e-11,
+      "mode": "vode"
+    }
+  ]
+}

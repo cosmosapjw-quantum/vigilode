@@ -1,0 +1,40 @@
+diff --git a/crates/vigilode-coupled/src/cyclic_closure.rs b/crates/vigilode-coupled/src/cyclic_closure.rs
+index 741f02d1..21960a3f 100644
+--- a/crates/vigilode-coupled/src/cyclic_closure.rs
++++ b/crates/vigilode-coupled/src/cyclic_closure.rs
+@@ -9,7 +9,7 @@
+ //!
+ //! The caller supplies the valid incoming slow radius. A slab receipt alone
+ //! does not certify an unrelated initial condition or a discontinuous chain.
+-//! [`integrate_rk4`] generates the fixed zero-initial-data candidate on [0,1].
++//! [`integrate_rk4`] generates the fixed zero-initial-data candidate on `[0,1]`.
+ //! Arithmetic inherits `rodas5p_core::directed`'s IEEE round-to-nearest,
+ //! gradual-underflow and compiler-transform assumptions.
+ 
+@@ -391,7 +391,7 @@ fn lifted_rhs(model: &CyclicModel, state: &[f64], work: &mut CyclicWork) -> Core
+     Ok(full)
+ }
+ 
+-/// Fixed dyadic RK4 candidate, x(0)=q(0)=0 and physical t in [0,1].
++/// Fixed dyadic RK4 candidate, x(0)=q(0)=0 and physical t in `[0,1]`.
+ /// Returned endpoints require a separate original-equation certificate.
+ pub fn integrate_rk4(
+     model: &CyclicModel,
+@@ -433,7 +433,7 @@ pub fn integrate_rk4(
+ 
+ #[derive(Clone, Debug, Serialize)]
+ pub struct CoefficientDiagnostics {
+-    /// Component, Bernstein coefficient, [lower, upper].
++    /// Component, Bernstein coefficient, `[lower, upper]`.
+     pub path_bernstein: Vec<[[f64; 2]; 4]>,
+     pub slow_bernstein: Vec<[[f64; 2]; 4]>,
+     pub algebraic_bernstein: Vec<[[f64; 2]; 7]>,
+@@ -512,7 +512,7 @@ fn check_domain(path: &[[Interval; 4]], n: usize) -> CoreResult<()> {
+     Ok(())
+ }
+ 
+-/// Enclose the exact certified Hermite curve at represented theta in [0,1].
++/// Enclose the exact certified Hermite curve at represented theta in `[0,1]`.
+ /// The returned intervals enclose the mathematical curve, rather than
+ /// silently substituting rounded slopes into a different interpolant.
+ pub fn enclose_dense(

@@ -1,0 +1,23 @@
+$ python3 -m unittest tools.tests.test_component_benchmark_probe_campaign -v
+test_missing_lease_is_rejected (tools.tests.test_component_benchmark_probe_campaign.ProbeCampaignTests.test_missing_lease_is_rejected) ... ok
+test_physical_dedup_ignores_tolerance_variant (tools.tests.test_component_benchmark_probe_campaign.ProbeCampaignTests.test_physical_dedup_ignores_tolerance_variant) ... ok
+test_resume_preserves_raw_receipt_and_rejects_tampering (tools.tests.test_component_benchmark_probe_campaign.ProbeCampaignTests.test_resume_preserves_raw_receipt_and_rejects_tampering) ... ERROR
+
+======================================================================
+ERROR: test_resume_preserves_raw_receipt_and_rejects_tampering (tools.tests.test_component_benchmark_probe_campaign.ProbeCampaignTests.test_resume_preserves_raw_receipt_and_rejects_tampering)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/vigilode-all-dag-validation-20261018/tools/tests/test_component_benchmark_probe_campaign.py", line 54, in test_resume_preserves_raw_receipt_and_rejects_tampering
+    mapping = run(config,base/'output',ledger,lease,
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/vigilode-all-dag-validation-20261018/tools/component_benchmark/probe_campaign.py", line 239, in run
+    raise RuntimeError('PROBE_SOURCE_OR_EXECUTABLE_DRIFT')
+RuntimeError: PROBE_SOURCE_OR_EXECUTABLE_DRIFT
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.218s
+
+FAILED (errors=1)
+exit=1
+
+Cause: the fake adapter's command included a log file path that was absent before execution and created during execution; executable binding correctly identified the change. The test now passes that path through environment instead.

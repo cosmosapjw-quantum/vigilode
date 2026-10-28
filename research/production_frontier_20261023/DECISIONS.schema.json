@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/cosmosapjw-quantum/vigilode/research/production_frontier_20261023/DECISIONS.schema.json",
+  "title": "VigilODE scoped frontier decisions",
+  "type": "object",
+  "required": [
+    "schema",
+    "broad_production",
+    "decisions",
+    "external_comparators_status"
+  ],
+  "properties": {
+    "schema": {
+      "const": "vigilode.frontier.decisions.v1"
+    },
+    "broad_production": {
+      "enum": [
+        "HOLD",
+        "PROMOTE"
+      ]
+    },
+    "external_comparators_status": {
+      "enum": [
+        "NOT_RUN",
+        "PARTIAL",
+        "COMPLETE"
+      ]
+    },
+    "decisions": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "scope",
+          "assumptions",
+          "evidence",
+          "remaining",
+          "enabled_as_general_default"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "enum": [
+              "PROMOTE",
+              "SPECIALIZED_ONLY",
+              "OPTIMIZATION_POSSIBLE",
+              "HOLD",
+              "PRUNE"
+            ]
+          },
+          "scope": {
+            "type": "string"
+          },
+          "assumptions": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "evidence": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            }
+          },
+          "remaining": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "enabled_as_general_default": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  }
+}

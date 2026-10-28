@@ -1,0 +1,353 @@
+{
+  "schema": "vigilode.frontier-switch-research.v1",
+  "base_commit": "9b210c76dffb8909902f733e80d6cfa32405006e",
+  "status": "functional-contracts-passed-mixed-benchmark-results-default-promotion-hold",
+  "candidates": [
+    {
+      "id": "SW-A",
+      "change": "retain pressure-only entry",
+      "decision": "retain-as-comparator",
+      "reason": "published rapid-JVP loss; no measured benefit prerequisite"
+    },
+    {
+      "id": "SW-B",
+      "change": "checkpointable persistent authorized sessions",
+      "decision": "defer",
+      "reason": "requires native cache/partial-result contract extension across engines"
+    },
+    {
+      "id": "SW-C",
+      "change": "bounded same-checkpoint implicit replay before entry",
+      "decision": "selected-experimental",
+      "reason": "20 switching contract tests pass;120-row campaign removes expensive rapid JVP routing but regresses FD/transition cohorts; retained experimental, pruned as broad default",
+      "default_dispatch_decision": "pruned-for-current-campaign-scope"
+    }
+  ],
+  "proofs": [
+    {
+      "id": "SW-T1",
+      "statement": "entry pilot attempts <= min(global_budget,pilot_limit*pilot_attempt_budget); pilot states never committed",
+      "assumptions": [
+        "native attempt budget respected"
+      ],
+      "not_claimed": [
+        "bounded callback execution time"
+      ]
+    },
+    {
+      "id": "SW-T2",
+      "statement": "stationary per-interval work with r=implicit/explicit<1 gives total reduction after K>r/(1-r) future intervals",
+      "assumptions": [
+        "identical accuracy contract attained",
+        "constant comparable per-interval costs"
+      ],
+      "not_claimed": [
+        "global no regret",
+        "wall-time speedup for arbitrary callbacks"
+      ]
+    }
+  ],
+  "new_config": {
+    "implicit_pilot_attempt_budget": 0,
+    "implicit_pilot_limit": 1,
+    "entry_cost_ratio": 0.8
+  },
+  "known_limits": [
+    "authorized sessions still restart",
+    "synthetic work != wall time",
+    "same local tolerances != same global error",
+    "rejected explicit work can evaluate beyond pilot target",
+    "finite early pilot can miss later regime changes",
+    "segments in disposition order; pilot appears before earlier-executed explicit candidate",
+    "transition campaign observed one early rejected pilot followed by zero switches and worse cost than legacy-FD"
+  ],
+  "next_steps": [
+    {
+      "id": "SW02",
+      "state": "open",
+      "task": "persistent explicit and implicit native sessions with epoch/cache invalidation",
+      "acceptance": [
+        "unchanged single-method output and counters",
+        "partial-state/recoverable/fatal tests"
+      ]
+    },
+    {
+      "id": "SW03",
+      "state": "partial",
+      "task": "persistent-session and epoch-aware bounded re-exploration after mixed complete-trajectory campaign",
+      "acceptance": [
+        "all pilot costs charged",
+        "retain rapid32.5x historical counterexample",
+        "worst losses reported",
+        "retain new rapid-FD and transition-FD losses as regressions",
+        "improve transition only with all re-exploration work included"
+      ]
+    },
+    {
+      "id": "DV01",
+      "state": "partial",
+      "task": "separate permission from verified future benefit and native provider cost",
+      "acceptance": [
+        "RHS-only override",
+        "actual error and work/time Pareto evaluation"
+      ]
+    },
+    {
+      "id": "SW-FATAL",
+      "state": "open",
+      "task": "distinct native fatal signal preserving partial-state/work results",
+      "cause": "fd.rs Guard maps Fatal and Recoverable to CoreError::NonFinite",
+      "acceptance": [
+        "one fatal user callback",
+        "zero subsequent native retries",
+        "partial accepted state/counters intact"
+      ]
+    }
+  ],
+  "verification": {
+    "switching_contract_tests_passed": 20,
+    "new_contract_tests_passed": 6,
+    "prior_switching_contract_tests_passed": 14,
+    "receipt": "evidence/native_facade_tests_final.log",
+    "final_native_test_suite_total_passed": 59,
+    "note": "59 spans all frontier native test groups;20 are the two switching test groups"
+  },
+  "evaluated_experiment": {
+    "implicit_pilot_attempt_budget": 16,
+    "implicit_pilot_limit": 1,
+    "entry_cost_ratio": 0.8
+  },
+  "benchmark": {
+    "source_commit": "55ad7ec6af8b127cb90849db56abff4f02b9920b",
+    "summary": "results/switching_campaign/SUMMARY.json",
+    "plan": "results/switching_campaign/PLAN.json",
+    "raw_rows": "results/switching_campaign/ROWS.json",
+    "receipts": "results/switching_campaign/RECEIPTS.json",
+    "successes": 114,
+    "failures": 6,
+    "failure_scope": "all6 failures are RHS-only Prothero attempt-budget exhaustion; retained raw",
+    "cpu": 0,
+    "repeats": 3,
+    "warmup_per_setting": 1,
+    "rtols": [
+      1e-06,
+      1e-08
+    ],
+    "common_sampled_absolute_error_cap": 1e-05,
+    "selection": "fastest of two prespecified tolerances satisfying all repeat errors at common observations; exploratory same-host only",
+    "limitations": [
+      "common sampled error cap does not imply identical achieved errors",
+      "three timed repeats and substantial timing variation",
+      "two prespecified tolerances, not an optimized continuum work-precision frontier",
+      "four synthetic problems; no external solver comparison",
+      "no continuous-time global error certificate"
+    ],
+    "comparisons": [
+      {
+        "case": "rapid",
+        "baseline": "legacy-jvp",
+        "candidate": "screen-jvp",
+        "baseline_selected": {
+          "rtol": 1e-06,
+          "median_seconds": 0.039326296,
+          "min_seconds": 0.039280444,
+          "max_seconds": 0.158670419,
+          "worst_error": 6.5430224310825125e-06,
+          "rhs": 26528,
+          "jvp": 106717,
+          "attempts": 3415,
+          "probes": 3,
+          "switches": 1
+        },
+        "candidate_selected": {
+          "rtol": 1e-08,
+          "median_seconds": 0.00415848,
+          "min_seconds": 0.004013283,
+          "max_seconds": 0.011918842,
+          "worst_error": 9.379035285084214e-07,
+          "rhs": 66743,
+          "jvp": 512,
+          "attempts": 11060,
+          "probes": 1,
+          "switches": 0
+        },
+        "baseline_over_candidate_median_time": 9.456891941286239,
+        "interpretation": "lower candidate elapsed time under common sampled-error cap"
+      },
+      {
+        "case": "rapid",
+        "baseline": "legacy-fd",
+        "candidate": "screen-fd",
+        "baseline_selected": {
+          "rtol": 1e-06,
+          "median_seconds": 0.003016241,
+          "min_seconds": 0.002940928,
+          "max_seconds": 0.003232817,
+          "worst_error": 6.54302448366284e-06,
+          "rhs": 34625,
+          "jvp": 0,
+          "attempts": 3415,
+          "probes": 3,
+          "switches": 1
+        },
+        "candidate_selected": {
+          "rtol": 1e-08,
+          "median_seconds": 0.006131652,
+          "min_seconds": 0.004529274,
+          "max_seconds": 0.009585109,
+          "worst_error": 9.379035285084214e-07,
+          "rhs": 66788,
+          "jvp": 0,
+          "attempts": 11060,
+          "probes": 1,
+          "switches": 0
+        },
+        "baseline_over_candidate_median_time": 0.4919132723122578,
+        "interpretation": "higher candidate elapsed time under common sampled-error cap"
+      },
+      {
+        "case": "transition",
+        "baseline": "legacy-fd",
+        "candidate": "screen-fd",
+        "baseline_selected": {
+          "rtol": 1e-06,
+          "median_seconds": 0.000352851,
+          "min_seconds": 0.000349827,
+          "max_seconds": 0.000426011,
+          "worst_error": 1.895875878510367e-07,
+          "rhs": 1153,
+          "jvp": 0,
+          "attempts": 145,
+          "probes": 2,
+          "switches": 2
+        },
+        "candidate_selected": {
+          "rtol": 1e-06,
+          "median_seconds": 0.0010763,
+          "min_seconds": 0.00104946,
+          "max_seconds": 0.001192515,
+          "worst_error": 8.275440546157142e-07,
+          "rhs": 8403,
+          "jvp": 0,
+          "attempts": 1384,
+          "probes": 1,
+          "switches": 0
+        },
+        "baseline_over_candidate_median_time": 0.3278370342841215,
+        "interpretation": "higher candidate elapsed time under common sampled-error cap"
+      },
+      {
+        "case": "transition",
+        "baseline": "legacy-jvp",
+        "candidate": "screen-jvp",
+        "baseline_selected": {
+          "rtol": 1e-06,
+          "median_seconds": 0.001086606,
+          "min_seconds": 0.001011092,
+          "max_seconds": 0.00114936,
+          "worst_error": 1.895875878510367e-07,
+          "rhs": 1019,
+          "jvp": 1750,
+          "attempts": 145,
+          "probes": 2,
+          "switches": 2
+        },
+        "candidate_selected": {
+          "rtol": 1e-06,
+          "median_seconds": 0.001280107,
+          "min_seconds": 0.001191324,
+          "max_seconds": 0.001468932,
+          "worst_error": 8.275440546157142e-07,
+          "rhs": 8383,
+          "jvp": 382,
+          "attempts": 1384,
+          "probes": 1,
+          "switches": 0
+        },
+        "baseline_over_candidate_median_time": 0.84883997978294,
+        "interpretation": "higher candidate elapsed time under common sampled-error cap"
+      },
+      {
+        "case": "prothero",
+        "baseline": "legacy-fd",
+        "candidate": "screen-fd",
+        "baseline_selected": {
+          "rtol": 1e-08,
+          "median_seconds": 0.00035169,
+          "min_seconds": 0.000333482,
+          "max_seconds": 0.000430057,
+          "worst_error": 6.709743871624596e-12,
+          "rhs": 1304,
+          "jvp": 0,
+          "attempts": 162,
+          "probes": 3,
+          "switches": 1
+        },
+        "candidate_selected": {
+          "rtol": 1e-08,
+          "median_seconds": 0.000469897,
+          "min_seconds": 0.000338199,
+          "max_seconds": 0.000654245,
+          "worst_error": 6.709743871624596e-12,
+          "rhs": 1334,
+          "jvp": 0,
+          "attempts": 165,
+          "probes": 4,
+          "switches": 1
+        },
+        "baseline_over_candidate_median_time": 0.7484406157094001,
+        "interpretation": "higher candidate elapsed time under common sampled-error cap"
+      },
+      {
+        "case": "decay",
+        "baseline": "rhs",
+        "candidate": "screen-fd",
+        "baseline_selected": {
+          "rtol": 1e-06,
+          "median_seconds": 3.6995e-05,
+          "min_seconds": 3.4371e-05,
+          "max_seconds": 3.7776e-05,
+          "worst_error": 7.63602460707169e-08,
+          "rhs": 217,
+          "jvp": 0,
+          "attempts": 36,
+          "probes": 0,
+          "switches": 0
+        },
+        "candidate_selected": {
+          "rtol": 1e-06,
+          "median_seconds": 6.9434e-05,
+          "min_seconds": 6.5908e-05,
+          "max_seconds": 9.4301e-05,
+          "worst_error": 1.4057414565726845e-08,
+          "rhs": 592,
+          "jvp": 0,
+          "attempts": 96,
+          "probes": 0,
+          "switches": 0
+        },
+        "baseline_over_candidate_median_time": 0.5328081343434052,
+        "interpretation": "higher candidate elapsed time under common sampled-error cap"
+      }
+    ],
+    "timed_rows": 120,
+    "same_error_cap_passes": 105,
+    "completed_but_over_cap": 9
+  },
+  "decision": {
+    "broad_default": "HOLD",
+    "screened_jvp_fast_rotation": "retain-as-specialized-experimental-option",
+    "screened_fd_general": "do-not-promote",
+    "basis": [
+      "rapid JVP median improves9.46x vs legacy JVP with total pilot cost included",
+      "rapid FD common-cap median regresses2.03x with lower achieved error",
+      "transition FD median regresses3.05x and misses later favorable implicit regime",
+      "cheap decay still pays authorized-window restarts"
+    ],
+    "next_implementation_order": [
+      "persistent authorized sessions",
+      "epoch/change-triggered bounded re-exploration",
+      "measured provider cost and error-aware dispatch"
+    ]
+  }
+}

@@ -1,0 +1,30 @@
+{
+  "schema": "vigilode.symbolic-check.v1",
+  "initial": {
+    "code": "MatrixPower[B,0] singular-evaluation artifact, see raw",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Symbol::undefined2: Warning: Global symbols \"B, B, B, B\" are undefined.\nMatrixPower::sing: Matrix {{0, 0, 0, 0}, {a, 0, 0, 0}, {b, c, 0, 0}, {d, e, f, 0}} is singular.\nMatrixPower::sing: Matrix {{0, 0, 0, 0}, {a, 0, 0, 0}, {b, c, 0, 0}, {d, e, f, 0}} is singular.\nMatrixPower::sing: Matrix {{0, 0, 0, 0}, {a, 0, 0, 0}, {b, c, 0, 0}, {d, e, f, 0}} is singular.\nMatrixPower::sing: Matrix {{0, 0, 0, 0}, {a, 0, 0, 0}, {b, c, 0, 0}, {d, e, f, 0}} is singular.\nMatrixPower::sing: Matrix {{0, 0, 0, 0}, {a, 0, 0, 0}, {b, c, 0, 0}, {d, e, f, 0}} is singular.\nMatrixPower::sing: Matrix {{0, 0, 0, 0}, {a, 0, 0, 0}, {b, c, 0, 0}, {d, e, f, 0}} is singular.\nMatrixPower::sing: Matrix {{0, 0, 0, 0}, {a, 0, 0, 0}, {b, c, 0, 0}, {d, e, f, 0}} is singular.\nMatrixPower::sing: Matrix {{0, 0, 0, 0}, {a, 0, 0, 0}, {b, c, 0, 0}, {d, e, f, 0}} is singular.\nMatrixPower::sing: Matrix {{0, 0, 0, 0}, {a, 0, 0, 0}, {b, c, 0, 0}, {d, e, f, 0}} is singular.\nMatrixPower::sing: Matrix {{0, 0, 0, 0}, {a, 0, 0, 0}, {b, c, 0, 0}, {d, e, f, 0}} is singular.\nGeneral::messages: Messages were generated which may indicate errors.\n\nOut[1]= {{{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}} - MatrixPower[{{0, 0, 0, 0}, {a, 0, 0, 0}, {b, c, 0, 0}, {d, e, f, 0}}, 0], ({{0, 0, 0, 0}, {a, 0, 0, 0}, {b + a*c, c, 0, 0}, {d + a*e + b*f + a*c*f, e + c*f, f, 0}} + MatrixPower[{{0, 0, 0, 0}, {a, 0, 0, 0}, {b, c, 0, 0}, {d, e, f, 0}}, 0]) . {u1, u2, u3, u4}, {{1, 0}, {0, 1}}, -1 + aa + bb*h*w^2 + (bb - aa*h)*x}"
+        }
+      ],
+      "structuredContent": null,
+      "isError": false
+    }
+  },
+  "repair": {
+    "code": "bbmat={{0,0,0,0},{a,0,0,0},{b,c,0,0},{d,e,f,0}}; ss=IdentityMatrix[4]+bbmat+bbmat.bbmat+bbmat.bbmat.bbmat; {Simplify[(IdentityMatrix[4]-bbmat).ss-IdentityMatrix[4]], Expand[ss.{u1,u2,u3,u4}], Simplify[bbmat.bbmat.bbmat.bbmat], Solve[{aa+bb*h*w^2==1,bb-aa*h==0},{aa,bb}]}",
+    "result": {
+      "content": [
+        {
+          "type": "text",
+          "text": "Out[1]= {{{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, {u1, a*u1 + u2, b*u1 + a*c*u1 + c*u2 + u3, d*u1 + a*e*u1 + b*f*u1 + a*c*f*u1 + e*u2 + c*f*u2 + f*u3 + u4}, {{0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}}, {{aa -> -(-1 - h^2*w^2)^(-1), bb -> h/(1 + h^2*w^2)}}}"
+        }
+      ],
+      "structuredContent": null,
+      "isError": false
+    }
+  },
+  "interpretation": "Explicit finite matrix products avoid the evaluator's symbolic MatrixPower(...,0) failure; algebraic identities only, not a float enclosure or general theorem proof."
+}

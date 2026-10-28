@@ -1,0 +1,37 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Checking vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-adapters/crates/vigilode)
+error[E0609]: no field `status` on type `ExplicitSolution`
+  --> crates/vigilode/examples/execution_policy_pilot.rs:23:18
+   |
+23 |     assert_eq!(s.status, Status::Success);
+   |                  ^^^^^^ unknown field
+   |
+help: a field with a similar name exists
+   |
+23 -     assert_eq!(s.status, Status::Success);
+23 +     assert_eq!(s.stats, Status::Success);
+   |
+
+error[E0599]: no method named `final_state` found for struct `ExplicitSolution` in the current scope
+  --> crates/vigilode/examples/execution_policy_pilot.rs:24:20
+   |
+24 |     let result = s.final_state().unwrap()[0];
+   |                    ^^^^^^^^^^^-- help: remove the arguments
+   |                    |
+   |                    field, not a method
+
+Some errors have detailed explanations: E0599, E0609.
+For more information about an error, try `rustc --explain E0599`.
+error: could not compile `vigilode` (example "execution_policy_pilot") due to 2 previous errors

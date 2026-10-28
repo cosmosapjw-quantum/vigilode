@@ -1,0 +1,287 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling vigilode v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-joint/crates/vigilode)
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/execution_policy.rs:45:5
+    |
+ 45 |     pub workload: WorkloadKey,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+note: the lint level is defined here
+   --> crates/vigilode/src/lib.rs:160:9
+    |
+160 | #![warn(missing_docs)]
+    |         ^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/execution_policy.rs:46:5
+   |
+46 |     pub comparison: SelectionIdentity,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/execution_policy.rs:177:5
+    |
+177 |     pub observed_dispatches: u64,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+   --> crates/vigilode/src/execution_policy.rs:178:5
+    |
+178 |     pub drift_invalidations: u64,
+    |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:13:5
+   |
+13 |     pub model_epoch: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:14:5
+   |
+14 |     pub provider_epoch: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:15:5
+   |
+15 |     pub chart_epoch: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:16:5
+   |
+16 |     pub mesh_epoch: u64,
+   |     ^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:17:5
+   |
+17 |     pub physical_norm_epoch: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:18:5
+   |
+18 |     pub tolerance_epoch: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:21:5
+   |
+21 |     pub environment_epoch: u64,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:27:5
+   |
+27 |     Work,
+   |     ^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:28:5
+   |
+28 |     Seconds,
+   |     ^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:34:5
+   |
+34 |     ObservedWork,
+   |     ^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:35:5
+   |
+35 |     EmpiricalTiming,
+   |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct
+  --> crates/vigilode/src/selection_evidence.rs:41:1
+   |
+41 | pub struct CostInterval {
+   | ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:42:5
+   |
+42 |     pub lower: f64,
+   |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:43:5
+   |
+43 |     pub upper: f64,
+   |     ^^^^^^^^^^^^^^
+
+warning: missing documentation for a method
+  --> crates/vigilode/src/selection_evidence.rs:46:5
+   |
+46 |     pub fn valid(self) -> bool {
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:57:5
+   |
+57 |     pub identity: SelectionIdentity,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:58:5
+   |
+58 |     pub cost: CostInterval,
+   |     ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:59:5
+   |
+59 |     pub unit: CostUnit,
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a struct field
+  --> crates/vigilode/src/selection_evidence.rs:60:5
+   |
+60 |     pub kind: CostEvidenceKind,
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for an enum
+  --> crates/vigilode/src/selection_evidence.rs:68:1
+   |
+68 | pub enum CostIncomparability {
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:69:5
+   |
+69 |     IdentityMismatch,
+   |     ^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:70:5
+   |
+70 |     UnitMismatch,
+   |     ^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:71:5
+   |
+71 |     OutputNotQualified,
+   |     ^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:72:5
+   |
+72 |     InvalidInterval,
+   |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:73:5
+   |
+73 |     InvalidPolicy,
+   |     ^^^^^^^^^^^^^
+
+warning: missing documentation for an enum
+  --> crates/vigilode/src/selection_evidence.rs:77:1
+   |
+77 | pub enum CostComparison {
+   | ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:78:5
+   |
+78 |     PreferCandidate,
+   |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:79:5
+   |
+79 |     RetainIncumbent,
+   |     ^^^^^^^^^^^^^^^
+
+warning: missing documentation for a variant
+  --> crates/vigilode/src/selection_evidence.rs:80:5
+   |
+80 |     Incomparable(CostIncomparability),
+   |     ^^^^^^^^^^^^
+
+warning: `vigilode` (lib) generated 33 warnings
+warning: `vigilode` (lib test) generated 33 warnings (33 duplicates)
+warning: constant `METHODS` is never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:100:11
+    |
+100 | pub const METHODS: [&str; 4] = ["dopri5", "rodas5p-mf", "rodas5p-dense", "switching"];
+    |           ^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: constant `LAYERS` is never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:101:11
+    |
+101 | pub const LAYERS: [&str; 3] = ["serial", "data", "ensemble"];
+    |           ^^^^^^
+
+warning: multiple methods are never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:194:12
+    |
+111 | impl Model {
+    | ---------- methods in this implementation
+...
+194 |     pub fn name(&self) -> &'static str {
+    |            ^^^^
+...
+197 |     pub fn variant(&self) -> &'static str {
+    |            ^^^^^^^
+...
+200 |     pub fn autonomous(&self) -> bool {
+    |            ^^^^^^^^^^
+...
+203 |     pub fn exact_kind(&self) -> &'static str {
+    |            ^^^^^^^^^^
+...
+210 |     pub fn metadata(&self) -> Value {
+    |            ^^^^^^^^
+...
+213 |     pub fn parameters(&self) -> Value {
+    |            ^^^^^^^^^^
+...
+876 |     pub fn diagnostics(&self, y: &[f64]) -> Value {
+    |            ^^^^^^^^^^^
+
+warning: constant `NAMES` is never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:905:7
+    |
+905 | const NAMES: [&str; 24] = [
+    |       ^^^^^
+
+warning: constant `VARIANTS` is never used
+   --> crates/vigilode/tests/../examples/local_bottleneck_support/models.rs:931:7
+    |
+931 | const VARIANTS: [&str; 24] = [
+    |       ^^^^^^^^
+
+warning: `vigilode` (test "local_bottleneck_models") generated 5 warnings
+error: linking with `cc` failed: exit status: 1
+  |
+  = note:  "cc" "-m64" "/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/rustcGw05yC/symbols.o" "<99 object files omitted>" "-Wl,--as-needed" "-Wl,-Bstatic" "<sysroot>/lib/rustlib/x86_64-unknown-linux-gnu/lib/{libtest-*,libgetopts-*,librustc_std_workspace_std-*}.rlib" "/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/{libvigilode-e24f7099870537ce,librodas5p_integrators-be89680a3d93deed,librodas5p_krylov-240feffc54886455,librayon-c1b9b54b493fde86,librayon_core-00efb761647c0bdb,libcrossbeam_deque-84041e29bd64ca64,libcrossbeam_epoch-f8896b359efef9e3,libcrossbeam_utils-5392a2c44512fe8b,libeither-4045cb82614bd84b,librodas5p_core-79f25c17b5376e87,libhex-e5ec8a81ee0bf6d9,libserde_json-31de49837e97daf9,libmemchr-39e829d3658f9d7b,libzmij-584df7364bceb963,libitoa-798eb72370c2dacd,libfaer-27639c13e584578c,libnano_gemm-afbd0dcb21b6c6fe,libnano_gemm_f64-33cbe526dfee956e,libnano_gemm_f32-ee19db524093ce82,libnano_gemm_c64-8067f46a8154d12a,libnano_gemm_c32-8436df3c98db524c,libnano_gemm_core-e14c283e866eff5e,libequator-033204cba31d1438,libgemm-54d3357382c44c8a,libgemm_c32-df65eb6b63b6521c,libgemm_c64-d796f78693d2bae1,libgemm_f32-533cc71f47ca2b4a,libgemm_f64-b6d52730d09d0d05,libgemm_common-b67d5507fe471314,libonce_cell-03eaad589cd1e9ec,libprivate_gemm_x86-e9eec06fb5f47a10,libraw_cpuid-e9c1944f195edb52,libbitflags-11b6e11e836f7f1c,libequator-2e2643ac9113bf7b,libreborrow-17e259048b2a6ca4,libgenerativity-d4154816ad2ffc4a,libfaer_traits-909afaf655d06785,libqd-a89c50795b4372e1,libpulp-63e8e5fa805b7ae8,libnum_complex-5336f58af6518a60,libnum_traits-9fff63c43c770a6c,libdyn_stack-49f2281fd65ea077,libbytemuck-16ce106cdb5a06aa,libsha2-332268d5d0808ca9,libcpufeatures-618cfa52b580a46a,libcfg_if-240b169be3bd5d4e,libdigest-3ac83c797847795b,libblock_buffer-31c05e86d24a4392,libcrypto_common-1d2aa6cb014a2918,libgeneric_array-511ca11be105bc49,libtypenum-91e18d342208ea6d,libthiserror-c9fd17330ae10f9b,libserde-2d230c0f543c7c68,libserde_core-68b3191c01520f1b}.rlib" "<sysroot>/lib/rustlib/x86_64-unknown-linux-gnu/lib/{libstd-*,libpanic_unwind-*,libobject-*,libmemchr-*,libaddr2line-*,libgimli-*,libcfg_if-*,librustc_demangle-*,libstd_detect-*,libhashbrown-*,librustc_std_workspace_alloc-*,libminiz_oxide-*,libadler2-*,libunwind-*,liblibc-*,librustc_std_workspace_core-*,liballoc-*,libcore-*,libcompiler_builtins-*}.rlib" "-Wl,-Bdynamic" "-lgcc_s" "-lutil" "-lrt" "-lpthread" "-lm" "-ldl" "-lc" "-L" "/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/rustcGw05yC/raw-dylibs" "-B<sysroot>/lib/rustlib/x86_64-unknown-linux-gnu/bin/gcc-ld" "-fuse-ld=lld" "-Wl,--eh-frame-hdr" "-Wl,-z,noexecstack" "-L" "<sysroot>/lib/rustlib/x86_64-unknown-linux-gnu/lib" "-o" "/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/facade_contracts-f849230f611d4174" "-Wl,--gc-sections" "-pie" "-Wl,-z,relro,-z,now" "-nodefaultlibs"
+  = note: some arguments are omitted. use `--verbose` to show all linker arguments
+  = note: collect2: fatal error: ld terminated with signal 7 [Bus error]
+          compilation terminated.
+          
+
+error: could not compile `vigilode` (test "facade_contracts") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: linking with `cc` failed: exit status: 1
+  |
+  = note:  "cc" "-m64" "/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/rustcyeMdl0/symbols.o" "<29 object files omitted>" "-Wl,--as-needed" "-Wl,-Bstatic" "<sysroot>/lib/rustlib/x86_64-unknown-linux-gnu/lib/{libtest-*,libgetopts-*,librustc_std_workspace_std-*}.rlib" "/workspace/scratch/0dc1e721cf82/target-joint/debug/deps/{libvigilode-e24f7099870537ce,librodas5p_integrators-be89680a3d93deed,librodas5p_krylov-240feffc54886455,librayon-c1b9b54b493fde86,librayon_core-00efb761647c0bdb,libcrossbeam_deque-84041e29bd64ca64,libcrossbeam_epoch-f8896b359efef9e3,libcrossbeam_utils-5392a2c44512fe8b,libeither-4045cb82614bd84b,librodas5p_core-79f25c17b5376e87,libhex-e5ec8a81ee0bf6d9,libserde_json-31de49837e97daf9,libmemchr-39e829d3658f9d7b,libzmij-584df7364bceb963,libitoa-798eb72370c2dacd,libf

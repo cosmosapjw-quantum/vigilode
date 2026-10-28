@@ -1,0 +1,12 @@
+{
+  "role": "supplementary_symbolic_check_of_preregistered_algebra",
+  "time": "2026-10-01",
+  "input_code": "q[r_, p_] := r^(p+1)+(1-r)^(p+1); <|\"unequal_half_factor\" -> Together[q[2/3,1]/(1-q[2/3,1])], \"equal_half_factor\" -> FullSimplify[q[1/2,p]/(1-q[1/2,p]), Assumptions -> p > 0], \"one_case_six_session_minmax_coverage\" -> 1-2 Binomial[6,0]/2^6, \"five_case_eight_session_union_lower\" -> 1-5*2 Binomial[8,0]/2^8, \"nilpotent_doubling_product\" -> Expand[(1+x)(1+x^2)(1+x^4)]|>",
+  "output": [
+    {
+      "type": "text",
+      "text": "Out[1]= <|\"unequal_half_factor\" -> 5/4, \"equal_half_factor\" -> (-1 + 2^p)^(-1), \"one_case_six_session_minmax_coverage\" -> 31/32, \"five_case_eight_session_union_lower\" -> 123/128, \"nilpotent_doubling_product\" -> 1 + x + x^2 + x^3 + x^4 + x^5 + x^6 + x^7|>"
+    }
+  ],
+  "claim_ceiling": "CAS verifies finite algebraic expressions, not floating-point implementation, IID assumptions or performance."
+}

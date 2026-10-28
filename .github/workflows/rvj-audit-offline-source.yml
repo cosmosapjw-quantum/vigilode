@@ -1,0 +1,38 @@
+name: RVJ audit offline source export
+
+on:
+  push:
+    branches: ['audit/rvj-native-followup-20261003']
+    paths: ['.github/workflows/rvj-audit-offline-source.yml']
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    if: github.repository == 'cosmosapjw-quantum/vigilode'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 77275e2b431e4280366060d44a883f1832909fe6
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Export exact interrupted source, without credentials
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/rvj-offline"
+          test "$(git rev-parse HEAD)" = 77275e2b431e4280366060d44a883f1832909fe6
+          git rev-parse HEAD > "$RUNNER_TEMP/rvj-offline/SOURCE_COMMIT.txt"
+          git rev-parse HEAD^{tree} > "$RUNNER_TEMP/rvj-offline/SOURCE_TREE.txt"
+          git bundle create "$RUNNER_TEMP/rvj-offline/source.bundle" HEAD
+          cd "$RUNNER_TEMP/rvj-offline"
+          sha256sum source.bundle > SHA256SUMS
+      - uses: actions/upload-artifact@v4
+        with:
+          name: rvj-recovery-source-77275e2
+          path: ${{ runner.temp }}/rvj-offline/
+          retention-days: 7
+          if-no-files-found: error

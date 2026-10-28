@@ -1,0 +1,67 @@
+{
+  "status": "PASS",
+  "head": "6b722a918deb0ab178b8e77090cac1280dbb3051",
+  "compile_command": [
+    "rustc",
+    "--edition=2024",
+    "--crate-name",
+    "lcert_review_probe",
+    "/home/cosmosapjw/vigilode/research/production_audit_20261018/evidence/continuation_a01_lcert/reviewer_readonly_20261018/subnormal_owner_probe_v2.rs",
+    "--extern",
+    "rodas5p_integrators=/home/cosmosapjw/vigilode/target/debug/deps/librodas5p_integrators-be89680a3d93deed.rlib",
+    "-L",
+    "dependency=/home/cosmosapjw/vigilode/target/debug/deps",
+    "-o",
+    "/tmp/vigilode-lcert-review-dsjop6ra/probe"
+  ],
+  "compile_exit_code": 0,
+  "run_exit_code": 0,
+  "linked_rlib": "/home/cosmosapjw/vigilode/target/debug/deps/librodas5p_integrators-be89680a3d93deed.rlib",
+  "linked_rlib_sha256": "92f457247f6e0cf3e892452b914e60a6d94553781c78d99e97b248477b5d7a44",
+  "rlib_fingerprint_matches_recorded_test_executable": true,
+  "probe_binary_sha256": "60d82d197402bb000681fd0a6bb88b87fec729980d0cfd20cb1139271473ddb7",
+  "probe_source_sha256": "56b5b9d5a4e07009b9c86086a2a3af30e00d1b99caabfbbae9616fb56cbdd1e9",
+  "reference_oracle_sha256": "3f08a213fac408a37d902b5760ba7c9769e84c384ca40ed35343712a7d022cfd",
+  "checks": [
+    {
+      "case": 0,
+      "time_bits": 0,
+      "disk_checks": 2,
+      "status": "PASS"
+    },
+    {
+      "case": 0,
+      "time_bits": 4589168020290535424,
+      "disk_checks": 2,
+      "status": "PASS"
+    },
+    {
+      "case": 0,
+      "time_bits": 4593671619917905920,
+      "disk_checks": 2,
+      "status": "PASS"
+    },
+    {
+      "case": 1,
+      "time_bits": 0,
+      "disk_checks": 6,
+      "status": "PASS"
+    },
+    {
+      "case": 1,
+      "time_bits": 1,
+      "disk_checks": 6,
+      "status": "PASS"
+    },
+    {
+      "case": 1,
+      "time_bits": 4587366580439587226,
+      "disk_checks": 6,
+      "status": "PASS"
+    }
+  ],
+  "disk_checks": 24,
+  "initial_radius_and_candidate_mutation_did_not_change_owner": true,
+  "after_nan_refusal_same_query_bitwise_identical": true,
+  "first_probe_failure_preserved": "first_probe_compile_classification.json"
+}

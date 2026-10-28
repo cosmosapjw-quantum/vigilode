@@ -1,0 +1,124 @@
+
+### matched accuracy vs direct, work=F: R(frontier; x=extrapolated)/C(cheapest-run) at E
+problem           arm           E=1e-04          E=1e-06          E=1e-08          E=1e-10
+semilin2d-32x48   mf   47.181x/36.523   21.624 /18.168    9.911 / 6.721    4.543x/   nan  
+semilin2d-32x48   lag   3.287x/ 3.939    3.503 / 4.374    3.733 / 3.973    3.979x/   nan  
+semilin2d-32x48   lin   5.680x/ 7.301    5.154 / 5.070    4.677 / 4.699    4.245x/   nan  
+semilin2d-32      mf   35.553 /24.083   17.680 /16.365    8.792 / 6.191    4.372x/   nan  
+semilin2d-32      lag   3.455 / 2.935    3.752 / 4.230    4.075 / 3.820    4.425x/   nan  
+semilin2d-32      lin   5.579 / 5.674    5.197 / 5.161    4.841 / 4.602    4.509x/   nan  
+semilin2d-64      mf   48.335 /29.982   21.399 /18.588    9.474 / 6.259    4.194x/   nan  
+semilin2d-64      lag   2.462 / 2.314    2.690 / 2.714    2.939 / 2.778    3.212x/   nan  
+semilin2d-64      lin   4.245 / 4.185    3.848 / 3.809    3.488 / 3.295    3.161x/   nan  
+semilin2d-128     mf   55.240x/36.128   23.402 /20.003    9.914 / 6.766    4.200x/   nan  
+semilin2d-128     lag   1.815x/ 1.737    1.921 / 1.867    2.034 / 1.924    2.154x/   nan  
+semilin2d-128     lin   3.011x/ 2.870    2.636 / 2.537    2.308 / 2.264    2.021x/   nan  
+semilin2d-256     lag   1.230x/ 1.240    1.225 / 1.195    1.220x/   nan                  -
+semilin2d-256     lin   2.010x/ 1.917    1.633 / 1.559    1.326x/   nan                  -
+semilin2d-64-s4   mf                  - 20.696x/18.582    9.169 / 8.743    4.062x/   nan  
+semilin2d-64-s4   lag                 -  2.681x/ 2.885    2.952 / 2.785    3.250x/   nan  
+semilin2d-64-s4   lin                 -  3.700x/ 3.761    3.413 / 3.482    3.148x/   nan  
+bruss2d-32        mf    5.338 / 4.725    3.490 / 3.280    2.282 / 1.854    1.492 / 1.592  
+bruss2d-32        lag   2.008 / 1.991    2.203 / 2.276    2.417 / 2.563    2.651 / 2.586  
+bruss2d-32        lin   1.786 / 1.788    1.820 / 1.801    1.855 / 1.891    1.890 / 1.895  
+bruss2d-32        dst   1.799 / 1.794    1.788 / 1.772    1.777 / 1.781    1.766 / 1.768  
+bruss2d-64        mf    7.354 / 6.878    4.492 / 4.556    2.744 / 2.119    1.676 / 1.634  
+bruss2d-64        lag   1.335 / 1.346    1.448 / 1.450    1.570 / 1.640    1.702 / 1.693  
+bruss2d-64        lin   1.063 / 1.063    1.093 / 1.092    1.123 / 1.162    1.155 / 1.164  
+bruss2d-64        dst   0.953 / 0.949    0.949 / 0.940    0.944 / 0.948    0.940 / 0.940  
+bruss2d-128       mf    7.829 / 7.286    5.263 / 5.263    3.538 / 2.951    2.378 / 2.268  
+bruss2d-128       lag   0.929 / 0.925    0.938 / 0.928    0.948 / 0.955    0.958 / 0.964  
+bruss2d-128       lin   0.628 / 0.626    0.639 / 0.630    0.651 / 0.665    0.662 / 0.674  
+bruss2d-128       dst   0.486 / 0.483    0.484 / 0.479    0.482 / 0.484    0.479 / 0.479  
+bruss2d-256       lag   0.632x/ 0.639    0.575 / 0.571    0.523x/   nan                  -
+bruss2d-256       lin   0.341x/ 0.347    0.333 / 0.330    0.325x/   nan                  -
+bruss2d-256       dst   0.218x/ 0.218    0.216 / 0.215    0.215x/   nan                  -
+bruss2d-64-a0.1   mf                  -                - 10.042 / 8.623    7.814 / 7.318  
+bruss2d-64-a0.1   lag                 -                -  1.362 / 1.436    1.488 / 1.522  
+bruss2d-64-a0.1   lin                 -                -  1.014 / 1.038    1.066 / 1.086  
+bruss2d-64-a0.1   dst                 -                -  0.786 / 0.776    0.777 / 0.778  
+bruss2d-128-a0.1  mf                  -                - 10.862 / 9.350    8.140x/   nan  
+bruss2d-128-a0.1  lag                 -                -  0.992 / 0.958    0.969x/   nan  
+bruss2d-128-a0.1  lin                 -                -  0.619 / 0.612    0.626x/   nan  
+bruss2d-128-a0.1  dst                 -                -  0.399 / 0.396    0.395x/   nan  
+
+### matched accuracy vs direct, work=T: R(frontier; x=extrapolated)/C(cheapest-run) at E
+problem           arm           E=1e-04          E=1e-06          E=1e-08          E=1e-10
+semilin2d-32x48   mf    6.896x/ 6.163    3.550 / 3.269    1.827 / 1.327    0.941x/   nan  
+semilin2d-32x48   lag   1.610x/ 2.008    1.618 / 1.851    1.626 / 1.685    1.634x/   nan  
+semilin2d-32x48   lin   2.537x/ 3.331    2.229 / 2.107    1.959 / 1.928    1.721x/   nan  
+semilin2d-32      mf    5.900 / 4.493    3.316 / 3.229    1.864 / 1.409    1.048x/   nan  
+semilin2d-32      lag   1.730 / 1.575    1.780 / 1.885    1.831 / 1.727    1.884x/   nan  
+semilin2d-32      lin   2.505 / 2.594    2.278 / 2.185    2.071 / 1.964    1.883x/   nan  
+semilin2d-64      mf    7.876 / 5.509    3.809 / 3.419    1.842 / 1.280    0.891x/   nan  
+semilin2d-64      lag   1.420 / 1.370    1.445 / 1.432    1.471 / 1.382    1.498x/   nan  
+semilin2d-64      lin   2.360 / 2.376    2.084 / 2.048    1.840 / 1.724    1.625x/   nan  
+semilin2d-128     mf   11.386x/ 8.036    5.071 / 4.455    2.258 / 1.567    1.006x/   nan  
+semilin2d-128     lag   1.427x/ 1.368    1.457 / 1.410    1.487 / 1.407    1.519x/   nan  
+semilin2d-128     lin   2.217x/ 2.093    1.912 / 1.845    1.648 / 1.596    1.421x/   nan  
+semilin2d-256     lag   1.254x/ 1.267    1.259 / 1.234    1.264x/   nan                  -
+semilin2d-256     lin   2.085x/ 2.004    1.735 / 1.665    1.443x/   nan                  -
+bruss2d-32        mf    1.664 / 1.597    1.229 / 1.170    0.907 / 0.784    0.670 / 0.707  
+bruss2d-32        lag   1.437 / 1.433    1.517 / 1.543    1.601 / 1.666    1.690 / 1.672  
+bruss2d-32        lin   1.568 / 1.577    1.545 / 1.518    1.522 / 1.526    1.500 / 1.520  
+bruss2d-32        dst   1.795 / 1.791    1.786 / 1.775    1.777 / 1.780    1.768 / 1.767  
+bruss2d-64        mf    2.135 / 2.036    1.431 / 1.428    0.959 / 0.780    0.643 / 0.640  
+bruss2d-64        lag   1.293 / 1.301    1.381 / 1.382    1.475 / 1.531    1.576 / 1.570  
+bruss2d-64        lin   1.150 / 1.148    1.136 / 1.132    1.121 / 1.135    1.107 / 1.132  
+bruss2d-64        dst   0.868 / 0.865    0.865 / 0.859    0.862 / 0.865    0.859 / 0.858  
+bruss2d-128       mf    3.314 / 3.106    2.275 / 2.266    1.561 / 1.313    1.072 / 1.034  
+bruss2d-128       lag   1.032 / 1.030    1.058 / 1.051    1.085 / 1.098    1.113 / 1.111  
+bruss2d-128       lin   0.898 / 0.891    0.879 / 0.864    0.860 / 0.861    0.842 / 0.867  
+bruss2d-128       dst   0.713 / 0.709    0.712 / 0.707    0.710 / 0.713    0.708 / 0.706  
+bruss2d-256       lag   0.816x/ 0.830    0.809 / 0.801    0.802x/   nan                  -
+bruss2d-256       lin   0.611x/ 0.619    0.601 / 0.597    0.591x/   nan                  -
+bruss2d-256       dst   1.790x/ 1.791    1.793 / 1.785    1.795x/   nan                  -
+bruss2d-64-a0.1   mf                  -                -  3.437 / 2.979    2.719 / 2.561  
+bruss2d-64-a0.1   lag                 -                -  1.359 / 1.425    1.471 / 1.501  
+bruss2d-64-a0.1   lin                 -                -  1.247 / 1.218    1.230 / 1.241  
+bruss2d-64-a0.1   dst                 -                -  0.798 / 0.790    0.790 / 0.791  
+bruss2d-128-a0.1  mf                  -                -  5.638 / 4.871    4.255x/   nan  
+bruss2d-128-a0.1  lag                 -                -  1.048 / 1.025    1.042x/   nan  
+bruss2d-128-a0.1  lin                 -                -  0.872 / 0.832    0.833x/   nan  
+bruss2d-128-a0.1  dst                 -                -  0.763 / 0.759    0.758x/   nan  
+
+### error at equal rtol relative to direct (err_arm/err_direct), tight and loose cells
+semilin2d-32x48   rtol 0.0001 direct err 3.339e-05  mf:1.079 lag:0.985 lin:1.044
+semilin2d-32x48   rtol 1e-08  direct err 1.038e-08  mf:1.009 lag:0.993 lin:0.998
+semilin2d-32x48   rtol 1e-09  direct err 1.159e-09  mf:1.002 lag:0.996 lin:0.996
+semilin2d-32x48   rtol 1e-10  direct err 1.245e-10  mf:1.000 lag:0.995 lin:1.000
+semilin2d-32      rtol 0.0001 direct err 3.689e-05  mf:1.097 lag:1.013 lin:1.044
+semilin2d-32      rtol 1e-08  direct err 1.056e-08  mf:1.012 lag:1.003 lin:1.002
+semilin2d-32      rtol 1e-09  direct err 1.177e-09  mf:1.007 lag:1.002 lin:0.998
+semilin2d-32      rtol 1e-10  direct err 1.261e-10  mf:1.004 lag:1.011 lin:1.000
+semilin2d-64      rtol 0.0001 direct err 4.064e-05  mf:0.983 lag:1.039 lin:1.015 | err_cw ratio mf:0.992 lag:1.034 lin:1.018
+semilin2d-64      rtol 1e-08  direct err 1.037e-08  mf:1.012 lag:1.010 lin:1.005 | err_cw ratio mf:1.011 lag:1.009 lin:1.003
+semilin2d-64      rtol 1e-09  direct err 1.168e-09  mf:1.005 lag:1.004 lin:0.998 | err_cw ratio mf:1.005 lag:1.004 lin:0.998
+semilin2d-64      rtol 1e-10  direct err 1.258e-10  mf:1.002 lag:0.991 lin:0.997 | err_cw ratio mf:1.002 lag:0.991 lin:0.997
+semilin2d-128     rtol 0.0001 direct err 2.787e-05  mf:0.989 lag:1.021 lin:1.059 | err_cw ratio mf:0.981 lag:1.015 lin:1.099
+semilin2d-128     rtol 1e-08  direct err 1.061e-08  mf:1.004 lag:0.998 lin:0.997 | err_cw ratio mf:1.004 lag:0.998 lin:0.996
+semilin2d-128     rtol 1e-09  direct err 1.199e-09  mf:1.001 lag:1.001 lin:0.995 | err_cw ratio mf:1.000 lag:1.001 lin:0.995
+semilin2d-128     rtol 1e-10  direct err 1.295e-10  mf:0.996 lag:0.997 lin:1.001 | err_cw ratio mf:0.996 lag:0.998 lin:1.001
+semilin2d-256     rtol 0.0001 direct err 3.475e-05  lag:0.906 lin:0.971 | err_cw ratio lag:0.377 lin:0.534
+semilin2d-256     rtol 1e-08  direct err 1.090e-08  lag:0.994 lin:1.000 | err_cw ratio lag:0.994 lin:0.999
+semilin2d-64-s4   rtol 1e-08  direct err 9.257e-09  mf:1.018 lag:1.008 lin:1.001 | err_cw ratio mf:1.018 lag:1.008 lin:0.999
+semilin2d-64-s4   rtol 1e-09  direct err 1.055e-09  mf:1.009 lag:1.005 lin:0.994 | err_cw ratio mf:1.009 lag:1.005 lin:0.994
+semilin2d-64-s4   rtol 1e-10  direct err 1.139e-10  mf:1.011 lag:1.005 lin:0.996 | err_cw ratio mf:1.011 lag:1.005 lin:0.996
+bruss2d-32        rtol 0.0001 direct err 3.778e-05  mf:0.989 lag:1.014 lin:1.008 dst:0.993
+bruss2d-32        rtol 1e-08  direct err 1.107e-08  mf:0.991 lag:0.997 lin:0.995 dst:0.997
+bruss2d-32        rtol 1e-09  direct err 1.006e-09  mf:0.992 lag:0.995 lin:0.996 dst:0.998
+bruss2d-32        rtol 1e-10  direct err 9.727e-11  mf:0.993 lag:0.996 lin:0.997 dst:1.000
+bruss2d-64        rtol 0.0001 direct err 3.764e-05  mf:0.975 lag:1.016 lin:1.006 dst:0.994
+bruss2d-64        rtol 1e-08  direct err 1.073e-08  mf:0.989 lag:0.997 lin:0.993 dst:0.997
+bruss2d-64        rtol 1e-09  direct err 1.023e-09  mf:0.989 lag:0.997 lin:0.994 dst:0.999
+bruss2d-64        rtol 1e-10  direct err 9.861e-11  mf:0.990 lag:0.996 lin:0.996 dst:1.000
+bruss2d-128       rtol 0.0001 direct err 3.711e-05  mf:1.006 lag:1.013 lin:1.006 dst:0.994
+bruss2d-128       rtol 1e-08  direct err 1.129e-08  mf:0.986 lag:0.997 lin:0.995 dst:0.996
+bruss2d-128       rtol 1e-09  direct err 1.011e-09  mf:0.986 lag:0.998 lin:0.995 dst:0.999
+bruss2d-128       rtol 1e-10  direct err 9.933e-11  mf:0.988 lag:0.996 lin:0.995 dst:1.000
+bruss2d-256       rtol 0.0001 direct err 3.677e-05  lag:1.011 lin:1.008 dst:0.994
+bruss2d-256       rtol 1e-08  direct err 1.136e-08  lag:0.997 lin:0.992 dst:0.996
+bruss2d-64-a0.1   rtol 0.0001 direct err 1.584e-07  mf:1.146 lag:0.990 lin:0.989 dst:1.002
+bruss2d-64-a0.1   rtol 1e-08  direct err 4.110e-11  mf:0.936 lag:1.000 lin:1.000 dst:1.000
+bruss2d-128-a0.1  rtol 0.0001 direct err 1.703e-07  mf:0.831 lag:0.993 lin:0.992 dst:0.990
+bruss2d-128-a0.1  rtol 1e-08  direct err 1.158e-10  mf:1.025 lag:1.000 lin:1.000 dst:1.000

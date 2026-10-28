@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "repository_root_required": true,
+  "requirements": {
+    "rust": "1.94.1",
+    "python": "3.x stdlib",
+    "cargo": "locked dependencies; offline vendor or explicit --online"
+  },
+  "branch": "research/cloud-completion-20261018",
+  "commands": [
+    {
+      "id": "check",
+      "argv": [
+        "python3",
+        "research/cloud_completion_20261018/run_local.py",
+        "--mode",
+        "check",
+        "--output",
+        "artifacts/generated/cloud_local_check"
+      ]
+    },
+    {
+      "id": "smoke",
+      "argv": [
+        "python3",
+        "research/cloud_completion_20261018/run_local.py",
+        "--mode",
+        "smoke",
+        "--output",
+        "artifacts/generated/cloud_local_smoke"
+      ]
+    },
+    {
+      "id": "bench",
+      "argv": [
+        "python3",
+        "research/cloud_completion_20261018/run_local.py",
+        "--mode",
+        "bench",
+        "--profile",
+        "measurement",
+        "--modes",
+        "32",
+        "--repeats",
+        "5",
+        "--output",
+        "artifacts/generated/cloud_local_bench"
+      ]
+    }
+  ],
+  "gates": {
+    "source_identity": "compare SOURCE_IDENTITY.json and latest actual checkout",
+    "numeric": "unchanged model and tolerances; no missing output; all nonallocation checks pass",
+    "allocation": "known 3-vector library clone positive control must pass before interpreting zero",
+    "speed": "equivalent achieved accuracy and output plus setup costs; empirical RK4 refinement remains empirical"
+  },
+  "on_failure": "retain first logs and exact input, classify environment/implementation/numerics; repair only affected scope",
+  "return_files": [
+    "environment.json",
+    "executions.json",
+    "RESULT.json",
+    "*.stdout",
+    "*.stderr",
+    "*.json"
+  ],
+  "remaining_local_implementation": [],
+  "published_source_commit": "b2379658a4eb0d8b4ddddcd58f754ef28e615c12"
+}

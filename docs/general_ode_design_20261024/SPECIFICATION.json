@@ -1,0 +1,323 @@
+{
+  "schema": "vigilode.general-ode-design.v2",
+  "document": "DESIGN_KO.md",
+  "scope": {
+    "equation": "y_prime=f(t,y)",
+    "scalar_type": "IEEE754-binary64",
+    "direction": "forward",
+    "mass": "identity",
+    "dimension": "fixed per solve",
+    "events": false,
+    "general_entry_dense_output": false
+  },
+  "entry_points": {
+    "selector": "GeneralOde::select",
+    "solve": "GeneralOde::solve",
+    "result_success_check": "GeneralSolution::ensure_success",
+    "session": "Dopri5::with_session"
+  },
+  "selection": {
+    "default_regime": "Unknown",
+    "Unknown": "Dopri5",
+    "Nonstiff": "Dopri5",
+    "Stiff": "Rodas5p when authorized",
+    "default_derivatives": "Forbidden",
+    "derivative_policies": [
+      "Forbidden",
+      "ProvidedOnly",
+      "AllowFiniteDifference"
+    ],
+    "provided_only_requires": [
+      "supplied dense/banded Jacobian or JVP",
+      "autonomous declaration or supplied partial time derivative"
+    ],
+    "max_dense_dimension_default": 64,
+    "dense_limit_is": "resource ceiling, not an empirical crossover",
+    "dense_limit_exemption": "compact band callback or grouped band finite differences",
+    "dense_callback_with_band_is_exempt": false,
+    "allow_matrix_free_default": false,
+    "runtime_method_switching": false,
+    "scope": "GeneralOde only; companion adaptive route has separate API"
+  },
+  "methods": {
+    "Dopri5": {
+      "stages": 7,
+      "endpoint_classical_order": 5,
+      "embedded_order": 4,
+      "error_estimator_power": 5,
+      "rhs_only": true,
+      "newton_iterations": false,
+      "matrix_assembly": false,
+      "linear_solve": false,
+      "fsal": true,
+      "steady_new_rhs_calls_per_complete_trial": 6,
+      "first_trial_rhs_calls": 7,
+      "dense_samples_polynomial_degree": 4,
+      "dense_samples_local_error_order": 5,
+      "dense_samples_independent_error_bound": false
+    },
+    "Rodas5p": {
+      "stages": 8,
+      "intended_classical_order": 5,
+      "embedded_order": 4,
+      "error_estimator_power": 5,
+      "gamma": 0.21193756319429014,
+      "coefficient_representation": "decimal constants parsed into binary64",
+      "coefficient_snapshot": "fixtures/rodas5p_coefficients_snapshot.json",
+      "stage_matrix": "I/(h*gamma)-J",
+      "embedded_error": "last raw stage u_8",
+      "rhs_only": false,
+      "newton_iterations": false,
+      "direct_factorizations_per_trial": 1,
+      "direct_stage_solves_per_trial": 8,
+      "dense_fd_rhs_per_jacobian": "n+1",
+      "banded_fd_rhs_per_jacobian": "1+min(lower+upper+1,n)",
+      "time_fd_additional_rhs_per_fresh_state": 2,
+      "stage_parallelism": false,
+      "provided_jvp_gmres": {
+        "restart": 40,
+        "max_total_arnoldi_iterations": 200,
+        "rtol": 1e-10,
+        "initial_guess": "zero",
+        "preconditioner": "none",
+        "vector_atol": false,
+        "dense_output": false,
+        "atol_configured_k_coordinates": 1e-14,
+        "atol_actual_raw_u_shifted_system": "round_down(abs(gamma)*1e-14)",
+        "relative_scale": "raw-U RHS Euclidean norm",
+        "residual_criterion": "norm2(r_U) <= max(round_down(abs(gamma)*1e-14),1e-10*norm2(b_U))"
+      }
+    }
+  },
+  "error_control": {
+    "norm": "sqrt(sum((e_i/(atol_i+rtol*max(abs(y_old_i),abs(y_new_i))))^2)/n)",
+    "accept_when": "finite valid trial and weighted RMS <= 1",
+    "default_rtol": 1e-06,
+    "default_atol": 1e-09,
+    "default_h0": 0.001,
+    "default_max_attempts": 100000,
+    "default_controller": "integral",
+    "safety": 0.9,
+    "accept_factor_limits": [
+      0.2,
+      5.0
+    ],
+    "reject_factor_limits": [
+      0.2,
+      0.9
+    ],
+    "exponent": -0.2,
+    "contract": "local embedded-error control",
+    "global_error_certificate": false,
+    "global_certificate_required_for_ordinary_adaptive_use": false
+  },
+  "session": {
+    "driver_lifetime": "closure-scoped; cannot resume after driver returns",
+    "immutable_bindings": [
+      "dimension",
+      "RHS",
+      "tolerances",
+      "full observation schedule"
+    ],
+    "advance_signature": "advance_to(target, attempt_quota, epochs)",
+    "pause_retains": [
+      "accepted state",
+      "FSAL",
+      "controller",
+      "workspace",
+      "global attempt budget"
+    ],
+    "changed_epochs": "error before RHS call",
+    "early_driver_return_success": false,
+    "schedule_membership_cost": "O(log M) per query; O(M log M) for M registered target calls",
+    "extra_schedule_search_storage": "O(1)",
+    "target_must_be_current_or_registered": true
+  },
+  "proofs": [
+    {
+      "id": 1,
+      "result": "DOPRI5 rooted-tree order conditions: 17 through order 5; embedded 8 through order 4",
+      "arithmetic": "exact rational coefficients; rounded execution distinguished"
+    },
+    {
+      "id": 2,
+      "result": "FSAL reuse from last row equals endpoint weights"
+    },
+    {
+      "id": 3,
+      "result": "normal scalar oscillator bound under absolute phase increment <=0.9",
+      "bound": "T*abs(omega)^6*h_max^5*(1/3600+0.9*exp(0.9)/5040)",
+      "initial_amplitude": 1
+    },
+    {
+      "id": 4,
+      "result": "RODAS transformed stage equivalence by invertible lower triangular Gamma"
+    },
+    {
+      "id": 5,
+      "result": "linear residual amplification and triangular propagation bound"
+    },
+    {
+      "id": 6,
+      "result": "local to global order under flow Lipschitz and uniform local error assumptions"
+    },
+    {
+      "id": 7,
+      "result": "pause equivalence under identical deterministic bindings and full schedule"
+    }
+  ],
+  "figures": {
+    "dopri5_stability": "algebraic stability and one-step error, not timing data",
+    "accepted_state_flow": "numerical state publication and failure semantics",
+    "causal_finite_propagation": "exact-arithmetic causal proof illustration; not timing",
+    "quotient_defect_contraction": "theoretical eta^k bound; not measured residual"
+  },
+  "references": [
+    "10.1016/0771-050X(80)90013-3",
+    "10.1007/s10543-023-00967-x",
+    "https://eprints.maths.manchester.ac.uk/2067/1/paper.pdf",
+    "10.1137/0915029",
+    "10.1090/S0025-5718-05-01771-0",
+    "10.1090/S0025-5718-1986-0815836-3"
+  ],
+  "document_coverage": {
+    "common_interface": "GeneralOde selected standard methods",
+    "companion_algorithms": "explicit opt-in causal, coupled and declared-operator specializations",
+    "distinctive_source": "DISTINCTIVE_ALGORITHMS_KO.md",
+    "merged_in_main_document": true
+  },
+  "companion_methods": {
+    "projected_causal": {
+      "entry": "integrate_causal_observed",
+      "domain": "autonomous identity-mass ODE, supplied base JVP",
+      "stages": 8,
+      "full_state_jacobian_assembly": false,
+      "projected_small_matrix": true,
+      "current_stage_derivative": false,
+      "newton_iteration": false,
+      "basis_storage": "Q and J0Q",
+      "common_factorizations": 1,
+      "small_stage_solves": 8,
+      "factor_and_solve_cost": "O(m^3+s*m^2); basis/projection/RHS/validation additional",
+      "original_space_residual_required": true,
+      "time_embedded_acceptance_separate": true
+    },
+    "causal_picard": {
+      "same_target": true,
+      "parallel_rhs_same_old_iterate": true,
+      "exact_arithmetic_updates_sufficient": 7,
+      "condition": "exact first-stage seed and strict causal target",
+      "wall_time_guarantee": false
+    },
+    "projected_homotopy": {
+      "domain": "same autonomous projected target",
+      "formula": "H_lambda=L_eta*z-g-lambda*h*gamma*N(z)",
+      "eta": "theta+lambda*(1-theta)",
+      "newton_free_all_modes": false,
+      "derivative_determinant": "det(W_m)^8 under C1 RHS and strict causality"
+    },
+    "polynomial_refinement": {
+      "entry_points": [
+        "DeclaredPolynomialResolvent::apply_refined_checked",
+        "DeclaredPolynomialResolvent::apply_refined_or_fallback"
+      ],
+      "scope": "operator kernel; no automatic nonlinear ODE insertion",
+      "identity": "(I-B)*p(B)=I-q(B)/q(1)",
+      "proof_condition": "norm(q(B))/abs(q(1)) <= eta < 1",
+      "residual_recurrence": "r_(k+1)=q(B)*r_k/q(1) in exact arithmetic",
+      "default_maximum_relation_ratio": 0.5,
+      "default_max_corrections": 8,
+      "default_max_operator_actions": 64,
+      "default_stagnation_ratio": 0.95,
+      "workspace_vectors": 4,
+      "callback_failure_hidden_by_fallback": false,
+      "conditional_error_estimate": "norm(p(B))/(1-eta) times residual allowance; binary64 not outward enclosure",
+      "dimension_independent_iteration_corollary": {
+        "operator": "B=-alpha*I+E",
+        "condition": "alpha>=0, norm(E)/(1+alpha)<=eta_star<1 independent of n",
+        "relative_residual_target": "epsilon in (0,1)",
+        "actions": "O(log(1/epsilon)) independent of n",
+        "dense_action_work": "O(n^2 log(1/epsilon))",
+        "comparator_scope": "fresh dense LU O(n^3); reused LU also O(n^2) per RHS, no asymptotic win promised"
+      }
+    },
+    "declared_rotation_flow": {
+      "entry": "DampedRotationFlow",
+      "relation": "(A+d*I)^2=-omega^2*I",
+      "matrix_assembly": false,
+      "derivatives": false,
+      "operator_probe": false,
+      "full_rhs_structure_inferred": false
+    }
+  },
+  "adaptive_companion_selection": {
+    "entry": "integrate_switching_causal_observed",
+    "protected_reference": "integrate_sequential_raw_observed",
+    "candidates": [
+      "Forward",
+      "Picard",
+      "ResidualFirst"
+    ],
+    "candidate_selected_by": "caller",
+    "automatic_switch": "one chosen candidate versus protected same-target raw-U",
+    "default_work_proxy": "attempted RHS+JVP counts; optional other work weights",
+    "calibration": "one accepted protected step",
+    "retain_ratio": 1.25,
+    "reentry_ratio": 1.0,
+    "initial_cooldown": 4,
+    "max_cooldown": 64,
+    "cooldown_clock": "accepted protected steps",
+    "protected_cost_update": "0.75 old + 0.25 new",
+    "same_original_residual_and_embedded_acceptance": true,
+    "global_derivative_free_first_selector": false,
+    "wall_time_guarantee": false,
+    "initial_cooldown_scope": "accepted-but-expensive candidate, or unpriced failure fallback policy",
+    "exploration_overhead_fraction_default": 0.25,
+    "failed_probe_cooldown": "clamp(ceil(C/(epsilon*P))-1,1,max_cooldown)",
+    "failed_probe_reference": "successful same-attempt protected cost preferred, otherwise last finite positive successful reference",
+    "unpriced_failure": "exponential backoff",
+    "disabled_pricing": "exploration_overhead_fraction=None restores exponential backoff",
+    "priced_minimum_cooldown": 1,
+    "priced_bound_scope": "C/((L+1)*P)<=epsilon for identical representative stationary attempted-work costs, physically accepted protected fallback after every failed probe, exact arithmetic and no maximum clipping; otherwise prediction only",
+    "receipt_fields": [
+      "cooldown_rule",
+      "cooldown_limited_by_maximum",
+      "predicted_exploration_overhead",
+      "work_scores_finite"
+    ],
+    "score_serialization": "nonfinite scores represented as None with explicit finite flag"
+  },
+  "distinctive_proofs": [
+    {
+      "id": "C1",
+      "result": "unique projected causal root by common-factor forward construction"
+    },
+    {
+      "id": "C2",
+      "result": "finite propagation in <=7 simultaneous updates for eight stages with exact first-stage seed"
+    },
+    {
+      "id": "C3",
+      "result": "strict causal homotopy has derivative determinant det(W_m)^8 within valid C1 domain"
+    },
+    {
+      "id": "C4",
+      "result": "degree-d relation gives inverse polynomial of degree<=d-1 when q(1)!=0"
+    },
+    {
+      "id": "C5",
+      "result": "approximate relation defect contracts true residual under eta<1"
+    },
+    {
+      "id": "C6",
+      "result": "original-space residual propagates through finite causal Lipschitz recurrence"
+    }
+  ],
+  "derived_extensions_not_implemented_automatically": [
+    "general Chinese-remainder projectors",
+    "online invariant subspace tracking",
+    "parameter-cell inverse certificate reuse",
+    "fixed-operator nonlinear homotopy under uniform ball contraction",
+    "invariant ideal and generic low-rank moment closure"
+  ]
+}

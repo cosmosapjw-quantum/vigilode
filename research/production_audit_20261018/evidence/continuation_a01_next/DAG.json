@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "project": "VigilODE",
+  "continuation": "production-audit-20261018-next-checkpoint",
+  "source_identity": {
+    "exec_sha": "244da1b4211964cff47f1a08793c883e29eb1e7d",
+    "remote_ref_sha": "244da1b4211964cff47f1a08793c883e29eb1e7d"
+  },
+  "nodes": [
+    {
+      "id": "A01",
+      "depends_on": [],
+      "status": "SCOPED_PASS_WITH_HOLD",
+      "decision": "A01 capacity refusal and O(Np) spectral-power recurrence passed independent review and 38/38 post-EXEC tests. Full arithmetic/certificate/work/allocation obligations remain HOLD; roundoff_enclosed=false."
+    },
+    {
+      "id": "A02",
+      "depends_on": [
+        "A01"
+      ],
+      "status": "SCOPED_PASS_WITH_HOLD",
+      "decision": "A reviewed linear-only trajectory path passes 10/10 focused contracts with a high-precision fixture and identity-bound receipts. Nonlinear reconstructed-curve continuous residual, full T1 tube, and work/allocation closure remain open."
+    },
+    {
+      "id": "A03",
+      "depends_on": [
+        "A01"
+      ],
+      "status": "SCOPED_PASS_WITH_HOLD",
+      "decision": "Reviewed scalar forcing-moment consumer Q_{r,d}=I_{d,r} passes unequal-index, zero-rate, rounded-boundary, subnormal, refusal and overflow tests. exp(-2\u03bat) nonlinear packet forcing, carrier/output convention and \u03ba\u21920 multiwindow reconstruction remain open."
+    },
+    {
+      "id": "A04",
+      "depends_on": [],
+      "status": "SCOPED_PASS_WITH_HOLD",
+      "decision": "Reviewed interval replay and failure-transaction accounting pass; warmed zero-allocation contract remains. Total additive-underflow/operator/coefficient/output arithmetic is not closed; EstimateOnly remains required."
+    },
+    {
+      "id": "A05",
+      "depends_on": [],
+      "status": "SCOPED_PASS_WITH_HOLD",
+      "decision": "Reviewed quartic represented-curve interval value/derivative bounds and exact attempted-work counts pass. No continuous RHS residual or verified full-tube one-sided gain exists; requested-grid accuracy remains HOLD."
+    },
+    {
+      "id": "A06",
+      "depends_on": [],
+      "status": "SCOPED_PASS_WITH_HOLD",
+      "decision": "Native rotating-frame, carrier-zero rank-two Woodbury solve; frozen model/state identity, 2x2 Schur refusal, exact RHS and outward residual/error witness pass independent review. Measured complete cost, end-to-end trajectory integration and speed claim remain HOLD."
+    },
+    {
+      "id": "A07",
+      "depends_on": [],
+      "status": "SCOPED_PASS_WITH_HOLD",
+      "decision": "Reused the integrity-reviewed Robertson campaign at rtol=1e-8, atol=[1e-11;3], 101 outputs on [0,40]. Native max WRMS=0.33753007149457903; Diffsol=3.3026992500504733 exceeds 0.05. Accuracy gate fails; timing is diagnostic only, so matched-speed HOLD."
+    },
+    {
+      "id": "A08",
+      "depends_on": [
+        "A04",
+        "A07"
+      ],
+      "status": "BLOCKED",
+      "decision": "Prerequisites A04 total arithmetic and A07 matched-accuracy conditions are not met; no selector/homotopy promotion is admitted."
+    },
+    {
+      "id": "A09",
+      "depends_on": [
+        "A04",
+        "A07"
+      ],
+      "status": "BLOCKED",
+      "decision": "Prerequisites A04 total arithmetic and A07 matched-accuracy conditions are not met; no selector/homotopy promotion is admitted."
+    },
+    {
+      "id": "A10",
+      "depends_on": [
+        "A01"
+      ],
+      "status": "SCOPED_PASS_WITH_HOLD",
+      "decision": "Outward Bernstein transform/subdivision helper rejects nonfinite input and preserves work on overflow; focused packet suite passes. It is not wired into the outward packet candidate path; full A10 remains dependent on open A01 arithmetic."
+    },
+    {
+      "id": "A11",
+      "depends_on": [],
+      "status": "SCOPED_PASS_WITH_HOLD",
+      "decision": "Analytic Gray-Scott semidiscrete \u03bc2 upper bound on supplied componentwise boxes is reviewed and tested. Constructing trajectory boxes, callback-roundoff enclosure and global defect remain outside scope."
+    },
+    {
+      "id": "A12",
+      "depends_on": [],
+      "status": "HOLD",
+      "decision": "Scope decisions issued below; no overall or broad production promotion because required trajectory, Leja, global-output and fair-speed gates remain open."
+    }
+  ],
+  "scope_dependencies": {
+    "A07.packet_strong_baseline": [
+      "A06"
+    ],
+    "A07.generic_diffsol_comparison": [],
+    "A12.packet_kappa0": [
+      "A01",
+      "A02"
+    ],
+    "A12.packet_damped": [
+      "A01",
+      "A02",
+      "A03"
+    ],
+    "A12.leja_total": [
+      "A04"
+    ],
+    "A12.generic_global_outputs": [
+      "A05"
+    ],
+    "A12.matched_accuracy_speed": [
+      "A07"
+    ]
+  },
+  "scope_decisions": {
+    "packet_kappa0": "HOLD",
+    "packet_damped": "HOLD",
+    "leja_total": "HOLD",
+    "generic_global_outputs": "HOLD",
+    "matched_accuracy_speed": "HOLD",
+    "existing_generic_rodas5p": "SCOPED_USE_REMAINS_ALLOWED"
+  },
+  "next_executable_transition": "A05 continuous residual/tube slice is in progress; A04 underflow scoped slice passed review/tests while total arithmetic remains HOLD; continue A01 remaining work and then A02/A03/A10 only as prerequisites close. A08/A09 blocked."
+}

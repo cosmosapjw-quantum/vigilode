@@ -1,0 +1,4526 @@
+{
+ "node": "BASS/rei P05",
+ "mode": "full",
+ "timing_authority": "diagnostic_only",
+ "thresholds": {
+  "R1": {
+   "cases": {
+    "I1": "the integrated state at t = 1.3 (static run S0) on G2",
+    "I2": "a signed version of the integrated state at t = 2.1 (every 7th cell x -0.3, every 3rd absorbed ledger negated), refine",
+    "I3": "integrate level: hook trigger 0.5, config T, G2, rtol 1e-6, banded and client_krylov, inject_failure_at_remap k = 1 and 3"
+   },
+   "status": "OK",
+   "injected": "Err(Injected)",
+   "commit_after_refusal": "Err(NothingStaged)",
+   "unchanged": "the output buffer (prefilled with a sentinel), the committed edges and the epoch bitwise after the injected propose and the NothingStaged commit",
+   "work_kept": "after the refusal attempts 1, refusals 1, commits 0, overlap segments > 0; after the normal commit attempts 2, commits 1",
+   "other_mesh": "the normal commit goes to the other variant of the aligned mesh (refined if the injected attempt was unrefined and vice versa) and equals a fresh remesher's remap bitwise",
+   "epoch_after_commit": 1,
+   "allocations": 0,
+   "new_edges": "both variants bitwise equal to the reference aligned meshes of the runner's x_chi",
+   "remap_parity_rel": 1e-14,
+   "remap_parity_def": "per column (angular columns, absorbed ledgers): max |rust - python| / max |python|",
+   "ledgers_copied": "L_lo, L_hi bitwise",
+   "I3": "NUMERICAL_FAILURE with the typed Injected refusal; final (t, state, edges, epoch) bitwise equal to the uninjected run's k-th remap record (t, y_before, old_edges, epoch k - 1); attempts and every WorkCounters field equal to its attempts_before/counters_before; remesh work attempts k, refusals 1, commits k - 1; the outputs before the refusal bitwise equal; the Krylov client's factorizations equal direct_factorizations"
+  },
+  "R2": {
+   "per_remap_rel": 2e-15,
+   "source_constant": "MAX_RELATIVE_TOTAL_CHANGE: f64 = 2.0e-15 in remesh.rs",
+   "per_column_inject_rel": 2e-15,
+   "drift_rel": 1e-11,
+   "status": "every integrate run is OK except the preregistered R4 client_exact REFUSED and the R1 I3 injected runs (NUMERICAL_FAILURE); OK runs have 0 remesh refusals",
+   "scope": "every integrate run of every gate: the runner's per-remap reports and trace, and the Python fsum of every returned output state against fsum(y0)",
+   "independent": "runs with record_remap_states (G2 hook banded/Krylov, G2 refined hook banded/Krylov, G2 SMOOTH schedule rtol 1e-8, G3 config E hook): per remap |fsum(y_after) - fsum(y_before)| / |fsum(y_before)| <= 2e-15 recomputed in Python, the Python remap of y_before onto new_edges equal to y_after per column <= 1e-14, new_edges bitwise equal to the Python aligned mesh of the reported face, old_edges equal to the previous mesh",
+   "note": "the runner's own per-remap value is checked at the source (a larger change is refused); the independent check above is the evidence"
+  },
+  "R3": {
+   "cycles": 100,
+   "one_cycle_ulps_max": 2,
+   "cycles_rel": 1e-13,
+   "zero_reference_abs": 0.0,
+   "allocations_after_warmup": 0,
+   "kernel_per_remap_rel": 2e-15,
+   "kernel_total_drift_rel": 1e-13,
+   "cases": {
+    "C1": "the integrated state at t = 1.3, x_chi(1.3)",
+    "C2": "the I2 signed state, x_chi(2.1)"
+   }
+  },
+  "R4": {
+   "arm": "hook trigger 0.5, config T, G2, rtol 1e-6; unrefined and refined (refine = true)",
+   "client": {
+    "restart": 4,
+    "max_iterations": 48,
+    "rtol": 1e-12,
+    "two_level": true
+   },
+   "remap_count_equal": true,
+   "client_epoch_equals_remaps": true,
+   "segments": "remaps + 1",
+   "final_rel_factor": 10.0,
+   "final_def": "|X_krylov - X_banded| / |X_banded| <= 10 rtol for X in photons, absorbed, L_lo, L_hi",
+   "refined": "final mesh n + 2 cells; client factorizations == direct_factorizations (work carried across the rebuild)",
+   "restart": "every remap of every hook run here: h_restart == control_h_next bitwise (the driver's stop record against the accept view); restart = fresh controls: h_restart == initial_step",
+   "exact_mode_refusal": "client_exact: status REFUSED with STRUCTURED_EXACT_MIXED_DIRECTION (the comoving energy drift -s c_j changes sign across columns)"
+  },
+  "R5": {
+   "rtols": [
+    1e-06,
+    1e-09
+   ],
+   "attempt_ratio_min": 2.0,
+   "schedule_K": [
+    2,
+    4,
+    8
+   ],
+   "schedule_times": "T k / (K + 1), k = 1..K",
+   "hook_triggers": [
+    1.0,
+    0.5,
+    0.25
+   ],
+   "linears": [
+    "banded",
+    "client_krylov"
+   ],
+   "outputs": [
+    0.0,
+    3.0
+   ],
+   "equal": "allocation counts equal at both rtols for every K and linear (positive control calibrated)",
+   "affine": "schedule: A(8) - A(4) == 2 (A(4) - A(2)) exactly; hook: equal allocation increments per remap across the triggers",
+   "repeat_bitwise": "two hook runs (banded, rtol 1e-6): outputs, remaps and counters bitwise"
+  },
+  "R6": {
+   "a": {
+    "grids": [
+     "G2",
+     "G3",
+     "G4",
+     "G5"
+    ],
+    "config": "E (gamma 0)",
+    "arm": "static",
+    "rtol": 1e-08,
+    "metrics": [
+     "cells_l1_rel",
+     "absorbed_rel"
+    ],
+    "metrics_H": [
+     "photons_rel"
+    ],
+    "monotone": "strict over the grids",
+    "order_window": [
+     0.8,
+     1.25
+    ],
+    "order_pair": "G4->G5",
+    "exact": "P02 Characteristics: cell integrals 12x12 GL on 4x4 subcells; absorbed_total(n_t 48, 400, 48)",
+    "quadrature_refinement_factor": 0.001,
+    "absorbed_refinement_rel": 1e-10,
+    "metric_def": "cells: sum |N - N_ex| / sum |N_ex|; absorbed: |sum A - A_ex| / A_ex; photons [H] (by conservation, the absorbed metric times A_ex / sum N_ex)",
+    "remap_frequency_H": "G4, config E, hook triggers 1, 0.5, 0.25: Sigma delta and the errors against the exact solution on each final mesh"
+   },
+   "b": {
+    "config": "T (gamma 0.5)",
+    "grid": "G2",
+    "arm": "schedule",
+    "remap_times": "SMOOTH",
+    "rtols": [
+     0.0001,
+     1e-06,
+     1e-08
+    ],
+    "outputs": [
+     0.0,
+     1.0,
+     2.0,
+     3.0
+    ],
+    "reference_rtol": 1e-12,
+    "reference_uncertainty_rtol": 1e-11,
+    "reference_uncertainty_over_min_error_max": 0.25,
+    "mesh_match_rel": 8.881784197001252e-16,
+    "strict_decrease": true,
+    "error_def": "max over outputs t > 0 of max |y - y_ref| / max |y_ref| (whole state)"
+   },
+   "c": {
+    "config": "T",
+    "grid": "G2",
+    "arm": "fixed_schedule",
+    "remap_times": "SMOOTH",
+    "N": [
+     1,
+     2,
+     4,
+     8,
+     16,
+     32,
+     64
+    ],
+    "outputs": [
+     0.0,
+     3.0
+    ],
+    "reference": "DOP853 rtol 2.5e-14 (atol 1e-20 C); u_ref against Radau 1e-13",
+    "floor_abs_min": 1e-12,
+    "floor_uref_factor": 100.0,
+    "min_pre_floor_pairs": 2,
+    "min_last_slope": 4.8,
+    "negative_control_max_last_slope": 3.5,
+    "negative_control": "COARSE schedule runs against the COARSE reference: one threshold crossing of a base edge (t = e^0.3125 - 1 = 0.367) inside the first segment, on the base mesh before any remap, makes kbar(t) C0 there; the four remapped segments are smooth. Every run must be OK with the steps rule",
+    "steps": "rejected 0, accepted == attempts, segments N <= attempts <= segments (N + 1), remaps == segments - 1"
+   },
+   "d": {
+    "arm": "hook trigger 0.5",
+    "config": "E",
+    "grids": [
+     "G3",
+     "G4",
+     "G5"
+    ],
+    "l1_change_sum": "strictly decreasing",
+    "note": "co-refines the grid and the remap count (the trigger is in base widths); the fixed-grid remap-frequency refinement is R6a remap_frequency_H"
+   }
+  },
+  "R7": {
+   "kind": "documentation meta-gate: the thresholds equal the plan literal PLAN and the constants reused from the P02 and P02b harnesses (read from their TH by AST, read-only)",
+   "plan": {
+    "R2_per_remap_rel": 2e-15,
+    "R2_drift_rel": 1e-11,
+    "R3_one_cycle_ulps_max": 2,
+    "R3_cycles": 100,
+    "R3_cycles_rel": 1e-13,
+    "R6_order_window": [
+     0.8,
+     1.25
+    ],
+    "R6_min_last_slope": 4.8
+   },
+   "reused": {
+    "R6c from P02 C5": [
+     "floor_abs_min",
+     "floor_uref_factor",
+     "min_pre_floor_pairs",
+     "min_last_slope",
+     "negative_control_max_last_slope"
+    ],
+    "R6a from P02 C4": [
+     "order_window",
+     "selfcheck_refinement_factor",
+     "selfcheck_absorbed_refinement_rel"
+    ],
+    "R6b from P02b C6": [
+     "reference_uncertainty_over_min_error_max"
+    ]
+   }
+  },
+  "incomplete": "any runner request with status TIMEOUT or ENVIRONMENT_FAILURE or a nonzero exit code makes the verdict INVALID",
+  "cargo": {
+   "binaries": [
+    "lrs_photon_remap_contracts",
+    "accept_control_contracts",
+    "lrs_block_solver_contracts",
+    "lrs_photon_fv_contracts",
+    "generic_scope_contracts",
+    "rodas5p_fast_allocations",
+    "fast_vector_atol_contracts",
+    "fixed_step_order_contracts",
+    "client_stage_system_contracts",
+    "partial_t_into_contracts"
+   ],
+   "vigilode_binaries": [
+    "records_contracts"
+   ],
+   "gate_tests": {
+    "R1": [
+     "r1_refusals_roll_back_bit_for_bit_and_keep_their_work",
+     "r1_a_refusal_inside_a_run_keeps_the_accepted_state_and_all_work"
+    ],
+    "R2": [
+     "r2_one_remap_preserves_the_total_and_every_column",
+     "segmented_runs_are_deterministic_and_conserve_the_total"
+    ],
+    "R3": [
+     "r3_refine_coarsen_cycles_are_exact_and_allocate_nothing",
+     "aligned_edges_are_increasing_with_the_face_at_x_chi"
+    ],
+    "R4": [
+     "r4_rebind_makes_the_old_factorization_stale_and_the_rebound_client_restarts",
+     "r4_restarts_take_the_controllers_proposal_or_a_fresh_step",
+     "r4_refined_meshes_rebuild_the_client_and_keep_its_work",
+     "a_continuing_control_leaves_the_run_bit_identical",
+     "the_control_sees_every_accepted_step_once_in_order",
+     "a_stop_at_the_kth_accepted_step_returns_that_step",
+     "a_restart_from_the_stop_reaches_tf",
+     "a_stop_at_tf_is_a_success",
+     "a_stop_on_the_last_budgeted_attempt_is_a_client_stop",
+     "the_client_stop_record_serializes",
+     "every_enum_variant_preserves_its_wire_representation"
+    ],
+    "R5": [
+     "r5_remaps_allocate_nothing_and_restarts_a_constant_count",
+     "the_control_allocates_nothing",
+     "generic_solver_core_does_not_embed_physical_client_bindings"
+    ]
+   }
+  }
+ },
+ "scenario_constants": {
+  "LO": -3.0,
+  "HI": 2.0,
+  "T": 3.0,
+  "GRIDS": {
+   "G1": [
+    16,
+    8
+   ],
+   "G2": [
+    32,
+    16
+   ],
+   "G3": [
+    64,
+    32
+   ],
+   "G4": [
+    128,
+    64
+   ],
+   "G5": [
+    256,
+    128
+   ]
+  },
+  "NQ_ONLY_H": [
+   [
+    32,
+    16
+   ],
+   [
+    64,
+    16
+   ],
+   [
+    128,
+    16
+   ],
+   [
+    256,
+    16
+   ]
+  ],
+  "geometry": {
+   "kind": "power_law",
+   "hh": 0.5,
+   "s0": 0.2,
+   "p": 1.5
+  },
+  "absorber": {
+   "k0": 0.5,
+   "q_chi": -0.5
+  },
+  "gamma": {
+   "E": 0.0,
+   "T": 0.5
+  },
+  "SMOOTH": [
+   0.1499999999999999,
+   0.3224999999999998,
+   0.5208749999999998,
+   0.7490062499999994,
+   1.0113571874999994,
+   1.313060765624999,
+   1.6600198804687487,
+   2.0590228625390607,
+   2.5178762919199196
+  ],
+  "COARSE": [
+   0.6,
+   1.2,
+   1.8,
+   2.4
+  ],
+  "atol_rule": "atol_scale = rtol 1e-6 C_AMP (cell rule)"
+ },
+ "build": {
+  "command": "cargo build --profile measurement -p rodas5p-integrators --example lrs_photon_remap_run --locked --offline -j 8",
+  "exit_code": 0,
+  "wall_s": 2.4459781430196017,
+  "env": {
+   "RUSTUP_TOOLCHAIN": "1.94.1",
+   "CARGO_TARGET_DIR": "/home/cosmosapjw/vigilode-bassrei-target"
+  },
+  "log_file": "raw/cargo_build.log",
+  "log_sha256": "9eed57e6cfcffbed073fcce08f4b53d7d76ed87f0cbac46fe2a6609e2b6cd87a",
+  "log_tail": "warning: variant `EndpointAdmission` is never constructed\n    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5\n     |\n1443 | enum VerifiedTrialFault {\n     |      ------------------ variant in this enum\n1444 |     BeforeQuery(usize),\n1445 |     EndpointAdmission,\n     |     ^^^^^^^^^^^^^^^^^\n     |\n     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis\n     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: `rodas5p-integrators` (lib) generated 1 warning\n   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode-bassrei/crates/rodas5p-integrators)\n    Finished `measurement` profile [optimized] target(s) in 2.41s\n",
+  "binary": "/home/cosmosapjw/vigilode-bassrei-target/measurement/examples/lrs_photon_remap_run",
+  "binary_exists": true
+ },
+ "host": {
+  "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+  "python": "3.12.3",
+  "numpy": "2.4.2",
+  "scipy": "1.17.0",
+  "cpu_count": 24,
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "blas_threads": {
+   "OMP_NUM_THREADS": "1",
+   "OPENBLAS_NUM_THREADS": "1",
+   "MKL_NUM_THREADS": "1"
+  }
+ },
+ "reference_unittests": {
+  "command": "-m unittest discover -s reference -p test_*.py",
+  "exit_code": 0,
+  "tail": [
+   "Ran 15 tests in 1.950s",
+   "",
+   "OK"
+  ],
+  "log_file": "raw/reference_unittests.log"
+ },
+ "H": {
+  "all_runs": {
+   "R6a_hook_G2": {
+    "tag": "R6a_hook_G2",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.08789476798847318,
+    "timing_authority": "diagnostic_only",
+    "attempts": 70,
+    "remap_count": 8,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6a_static_G2": {
+    "tag": "R6a_static_G2",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.1027048488613218,
+    "timing_authority": "diagnostic_only",
+    "attempts": 121,
+    "remap_count": 0,
+    "allocations": null,
+    "client_ops": null
+   },
+   "S0_static_states": {
+    "tag": "S0_static_states",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.22579391789622605,
+    "timing_authority": "diagnostic_only",
+    "attempts": 220,
+    "remap_count": 0,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6a_hook_G3": {
+    "tag": "R6a_hook_G3",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.9065868898760527,
+    "timing_authority": "diagnostic_only",
+    "attempts": 81,
+    "remap_count": 15,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6a_static_G3": {
+    "tag": "R6a_static_G3",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 1.269222065107897,
+    "timing_authority": "diagnostic_only",
+    "attempts": 167,
+    "remap_count": 0,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6a_hook_G4": {
+    "tag": "R6a_hook_G4",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 48.977000893093646,
+    "timing_authority": "diagnostic_only",
+    "attempts": 95,
+    "remap_count": 28,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6a_H_static_nq32_nm16": {
+    "tag": "R6a_H_static_nq32_nm16",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.1169109120965004,
+    "timing_authority": "diagnostic_only",
+    "attempts": 121,
+    "remap_count": 0,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6a_H_static_nq64_nm16": {
+    "tag": "R6a_H_static_nq64_nm16",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.39645493892021477,
+    "timing_authority": "diagnostic_only",
+    "attempts": 167,
+    "remap_count": 0,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6a_H_static_nq128_nm16": {
+    "tag": "R6a_H_static_nq128_nm16",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 1.0896748939994723,
+    "timing_authority": "diagnostic_only",
+    "attempts": 307,
+    "remap_count": 0,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6a_H_static_nq256_nm16": {
+    "tag": "R6a_H_static_nq256_nm16",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 5.011062376899645,
+    "timing_authority": "diagnostic_only",
+    "attempts": 526,
+    "remap_count": 0,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R2rec_hook_banded": {
+    "tag": "R2rec_hook_banded",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.04477619007229805,
+    "timing_authority": "diagnostic_only",
+    "attempts": 32,
+    "remap_count": 7,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R1_I3_hook_banded_inject1": {
+    "tag": "R1_I3_hook_banded_inject1",
+    "status": "NUMERICAL_FAILURE",
+    "reason": "REMAP_REFUSED: Injected at t = 1.9130660935219865e-1",
+    "wall_s": 0.01409540488384664,
+    "timing_authority": "diagnostic_only",
+    "attempts": 8,
+    "remap_count": 0,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R1_I3_hook_banded_inject3": {
+    "tag": "R1_I3_hook_banded_inject3",
+    "status": "NUMERICAL_FAILURE",
+    "reason": "REMAP_REFUSED: Injected at t = 6.554836471242717e-1",
+    "wall_s": 0.021006366005167365,
+    "timing_authority": "diagnostic_only",
+    "attempts": 16,
+    "remap_count": 2,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R2rec_hook_client_krylov": {
+    "tag": "R2rec_hook_client_krylov",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.05779096786864102,
+    "timing_authority": "diagnostic_only",
+    "attempts": 32,
+    "remap_count": 7,
+    "allocations": null,
+    "client_ops": {
+     "factor": 472064,
+     "factorizations": 32,
+     "krylov_iterations": 342,
+     "krylov_matvecs": 598,
+     "linearizations": 32,
+     "linearize": 98656,
+     "max_krylov_iterations": 2,
+     "solve": 0,
+     "solves": 256,
+     "sweeps": 598
+    }
+   },
+   "R1_I3_hook_client_krylov_inject1": {
+    "tag": "R1_I3_hook_client_krylov_inject1",
+    "status": "NUMERICAL_FAILURE",
+    "reason": "REMAP_REFUSED: Injected at t = 1.9130660926626727e-1",
+    "wall_s": 0.014602892100811005,
+    "timing_authority": "diagnostic_only",
+    "attempts": 8,
+    "remap_count": 0,
+    "allocations": null,
+    "client_ops": {
+     "factor": 118016,
+     "factorizations": 8,
+     "krylov_iterations": 64,
+     "krylov_matvecs": 128,
+     "linearizations": 8,
+     "linearize": 24664,
+     "max_krylov_iterations": 1,
+     "solve": 0,
+     "solves": 64,
+     "sweeps": 128
+    }
+   },
+   "R1_I3_hook_client_krylov_inject3": {
+    "tag": "R1_I3_hook_client_krylov_inject3",
+    "status": "NUMERICAL_FAILURE",
+    "reason": "REMAP_REFUSED: Injected at t = 6.554836471289315e-1",
+    "wall_s": 0.02368065807968378,
+    "timing_authority": "diagnostic_only",
+    "attempts": 16,
+    "remap_count": 2,
+    "allocations": null,
+    "client_ops": {
+     "factor": 236032,
+     "factorizations": 16,
+     "krylov_iterations": 128,
+     "krylov_matvecs": 256,
+     "linearizations": 16,
+     "linearize": 49328,
+     "max_krylov_iterations": 1,
+     "solve": 0,
+     "solves": 128,
+     "sweeps": 256
+    }
+   },
+   "R1_inject_I1": {
+    "tag": "R1_inject_I1",
+    "status": "OK",
+    "reason": "",
+    "wall_s": 0.002702384954318404,
+    "timing_authority": "diagnostic_only",
+    "attempts": null,
+    "remap_count": null,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R1_inject_I2": {
+    "tag": "R1_inject_I2",
+    "status": "OK",
+    "reason": "",
+    "wall_s": 0.012822354910895228,
+    "timing_authority": "diagnostic_only",
+    "attempts": null,
+    "remap_count": null,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R3_cycle_C1": {
+    "tag": "R3_cycle_C1",
+    "status": "OK",
+    "reason": "",
+    "wall_s": 0.012649028096348047,
+    "timing_authority": "diagnostic_only",
+    "attempts": null,
+    "remap_count": null,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R3_cycle_C2": {
+    "tag": "R3_cycle_C2",
+    "status": "OK",
+    "reason": "",
+    "wall_s": 0.013015789911150932,
+    "timing_authority": "diagnostic_only",
+    "attempts": null,
+    "remap_count": null,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R4_hook_banded": {
+    "tag": "R4_hook_banded",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.03653273778036237,
+    "timing_authority": "diagnostic_only",
+    "attempts": 30,
+    "remap_count": 7,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R4_hook_client_krylov": {
+    "tag": "R4_hook_client_krylov",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.05152650689706206,
+    "timing_authority": "diagnostic_only",
+    "attempts": 30,
+    "remap_count": 7,
+    "allocations": null,
+    "client_ops": {
+     "factor": 442560,
+     "factorizations": 30,
+     "krylov_iterations": 334,
+     "krylov_matvecs": 574,
+     "linearizations": 30,
+     "linearize": 92490,
+     "max_krylov_iterations": 2,
+     "solve": 0,
+     "solves": 240,
+     "sweeps": 574
+    }
+   },
+   "R4_hook_client_exact": {
+    "tag": "R4_hook_client_exact",
+    "status": "REFUSED",
+    "reason": "invalid numerical input: STRUCTURED_EXACT_MIXED_DIRECTION: the energy drift changes sign across columns",
+    "wall_s": 0.0037273168563842773,
+    "timing_authority": "diagnostic_only",
+    "attempts": null,
+    "remap_count": null,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R4_hook_refined_banded": {
+    "tag": "R4_hook_refined_banded",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.06995434104464948,
+    "timing_authority": "diagnostic_only",
+    "attempts": 59,
+    "remap_count": 7,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R4_hook_fresh_banded": {
+    "tag": "R4_hook_fresh_banded",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.0621660768520087,
+    "timing_authority": "diagnostic_only",
+    "attempts": 55,
+    "remap_count": 7,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R4_hook_refined_client_krylov": {
+    "tag": "R4_hook_refined_client_krylov",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.09888680092990398,
+    "timing_authority": "diagnostic_only",
+    "attempts": 59,
+    "remap_count": 7,
+    "allocations": null,
+    "client_ops": {
+     "factor": 917390,
+     "factorizations": 59,
+     "krylov_iterations": 688,
+     "krylov_matvecs": 1160,
+     "linearizations": 42,
+     "linearize": 135810,
+     "max_krylov_iterations": 2,
+     "solve": 0,
+     "solves": 472,
+     "sweeps": 1160
+    }
+   },
+   "R4_hook_fresh_client_krylov": {
+    "tag": "R4_hook_fresh_client_krylov",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.0771431450266391,
+    "timing_authority": "diagnostic_only",
+    "attempts": 55,
+    "remap_count": 7,
+    "allocations": null,
+    "client_ops": {
+     "factor": 811360,
+     "factorizations": 55,
+     "krylov_iterations": 523,
+     "krylov_matvecs": 963,
+     "linearizations": 55,
+     "linearize": 169565,
+     "max_krylov_iterations": 2,
+     "solve": 0,
+     "solves": 440,
+     "sweeps": 963
+    }
+   },
+   "R5_schedule_banded_K2_rtol1e-06": {
+    "tag": "R5_schedule_banded_K2_rtol1e-06",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.05130727402865887,
+    "timing_authority": "diagnostic_only",
+    "attempts": 50,
+    "remap_count": 2,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 211,
+     "positive_control": 1,
+     "remaps": 2,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 3
+    },
+    "client_ops": null
+   },
+   "R5_schedule_banded_K2_rtol1e-09": {
+    "tag": "R5_schedule_banded_K2_rtol1e-09",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.19977055583149195,
+    "timing_authority": "diagnostic_only",
+    "attempts": 146,
+    "remap_count": 2,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 211,
+     "positive_control": 1,
+     "remaps": 2,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 3
+    },
+    "client_ops": null
+   },
+   "R5_schedule_banded_K4_rtol1e-06": {
+    "tag": "R5_schedule_banded_K4_rtol1e-06",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.04510201490484178,
+    "timing_authority": "diagnostic_only",
+    "attempts": 40,
+    "remap_count": 4,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 339,
+     "positive_control": 1,
+     "remaps": 4,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 5
+    },
+    "client_ops": null
+   },
+   "R6a_H_hook_G4_trigger0.25": {
+    "tag": "R6a_H_hook_G4_trigger0.25",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 55.61433978192508,
+    "timing_authority": "diagnostic_only",
+    "attempts": 109,
+    "remap_count": 43,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R5_schedule_banded_K4_rtol1e-09": {
+    "tag": "R5_schedule_banded_K4_rtol1e-09",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.12089396314695477,
+    "timing_authority": "diagnostic_only",
+    "attempts": 114,
+    "remap_count": 4,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 339,
+     "positive_control": 1,
+     "remaps": 4,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 5
+    },
+    "client_ops": null
+   },
+   "R5_schedule_banded_K8_rtol1e-06": {
+    "tag": "R5_schedule_banded_K8_rtol1e-06",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.042473578825592995,
+    "timing_authority": "diagnostic_only",
+    "attempts": 35,
+    "remap_count": 8,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 595,
+     "positive_control": 1,
+     "remaps": 8,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 9
+    },
+    "client_ops": null
+   },
+   "R5_hook_banded_trigger1.0": {
+    "tag": "R5_hook_banded_trigger1.0",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.06288057495839894,
+    "timing_authority": "diagnostic_only",
+    "attempts": 62,
+    "remap_count": 4,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 331,
+     "positive_control": 1,
+     "remaps": 4,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 5
+    },
+    "client_ops": null
+   },
+   "R5_schedule_banded_K8_rtol1e-09": {
+    "tag": "R5_schedule_banded_K8_rtol1e-09",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.1132296931464225,
+    "timing_authority": "diagnostic_only",
+    "attempts": 106,
+    "remap_count": 8,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 595,
+     "positive_control": 1,
+     "remaps": 8,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 9
+    },
+    "client_ops": null
+   },
+   "R5_hook_banded_trigger0.5": {
+    "tag": "R5_hook_banded_trigger0.5",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.037120958091691136,
+    "timing_authority": "diagnostic_only",
+    "attempts": 30,
+    "remap_count": 7,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 517,
+     "positive_control": 1,
+     "remaps": 7,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 8
+    },
+    "client_ops": null
+   },
+   "R5_hook_banded_trigger0.25": {
+    "tag": "R5_hook_banded_trigger0.25",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.03768529207445681,
+    "timing_authority": "diagnostic_only",
+    "attempts": 30,
+    "remap_count": 12,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 827,
+     "positive_control": 1,
+     "remaps": 12,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 13
+    },
+    "client_ops": null
+   },
+   "R5_schedule_client_krylov_K2_rtol1e-06": {
+    "tag": "R5_schedule_client_krylov_K2_rtol1e-06",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.07103577093221247,
+    "timing_authority": "diagnostic_only",
+    "attempts": 50,
+    "remap_count": 2,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 258,
+     "positive_control": 1,
+     "remaps": 2,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 3
+    },
+    "client_ops": {
+     "factor": 737600,
+     "factorizations": 50,
+     "krylov_iterations": 480,
+     "krylov_matvecs": 880,
+     "linearizations": 38,
+     "linearize": 117154,
+     "max_krylov_iterations": 2,
+     "solve": 0,
+     "solves": 400,
+     "sweeps": 880
+    }
+   },
+   "R5_schedule_client_krylov_K4_rtol1e-06": {
+    "tag": "R5_schedule_client_krylov_K4_rtol1e-06",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.06811612588353455,
+    "timing_authority": "diagnostic_only",
+    "attempts": 40,
+    "remap_count": 4,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 378,
+     "positive_control": 1,
+     "remaps": 4,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 5
+    },
+    "client_ops": {
+     "factor": 590080,
+     "factorizations": 40,
+     "krylov_iterations": 419,
+     "krylov_matvecs": 739,
+     "linearizations": 35,
+     "linearize": 107905,
+     "max_krylov_iterations": 2,
+     "solve": 0,
+     "solves": 320,
+     "sweeps": 739
+    }
+   },
+   "R5_schedule_client_krylov_K2_rtol1e-09": {
+    "tag": "R5_schedule_client_krylov_K2_rtol1e-09",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.20215175719931722,
+    "timing_authority": "diagnostic_only",
+    "attempts": 146,
+    "remap_count": 2,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 258,
+     "positive_control": 1,
+     "remaps": 2,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 3
+    },
+    "client_ops": {
+     "factor": 2153792,
+     "factorizations": 146,
+     "krylov_iterations": 1168,
+     "krylov_matvecs": 2336,
+     "linearizations": 120,
+     "linearize": 369960,
+     "max_krylov_iterations": 1,
+     "solve": 0,
+     "solves": 1168,
+     "sweeps": 2336
+    }
+   },
+   "R5_schedule_client_krylov_K8_rtol1e-06": {
+    "tag": "R5_schedule_client_krylov_K8_rtol1e-06",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.06300924718379974,
+    "timing_authority": "diagnostic_only",
+    "attempts": 35,
+    "remap_count": 8,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 618,
+     "positive_control": 1,
+     "remaps": 8,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 9
+    },
+    "client_ops": {
+     "factor": 516320,
+     "factorizations": 35,
+     "krylov_iterations": 355,
+     "krylov_matvecs": 635,
+     "linearizations": 35,
+     "linearize": 107905,
+     "max_krylov_iterations": 2,
+     "solve": 0,
+     "solves": 280,
+     "sweeps": 635
+    }
+   },
+   "R5_schedule_client_krylov_K4_rtol1e-09": {
+    "tag": "R5_schedule_client_krylov_K4_rtol1e-09",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.19584215991199017,
+    "timing_authority": "diagnostic_only",
+    "attempts": 114,
+    "remap_count": 4,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 378,
+     "positive_control": 1,
+     "remaps": 4,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 5
+    },
+    "client_ops": {
+     "factor": 1681728,
+     "factorizations": 114,
+     "krylov_iterations": 912,
+     "krylov_matvecs": 1824,
+     "linearizations": 107,
+     "linearize": 329881,
+     "max_krylov_iterations": 1,
+     "solve": 0,
+     "solves": 912,
+     "sweeps": 1824
+    }
+   },
+   "R5_schedule_client_krylov_K8_rtol1e-09": {
+    "tag": "R5_schedule_client_krylov_K8_rtol1e-09",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.1474841961171478,
+    "timing_authority": "diagnostic_only",
+    "attempts": 106,
+    "remap_count": 8,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 618,
+     "positive_control": 1,
+     "remaps": 8,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 9
+    },
+    "client_ops": {
+     "factor": 1563712,
+     "factorizations": 106,
+     "krylov_iterations": 848,
+     "krylov_matvecs": 1696,
+     "linearizations": 106,
+     "linearize": 326798,
+     "max_krylov_iterations": 1,
+     "solve": 0,
+     "solves": 848,
+     "sweeps": 1696
+    }
+   },
+   "R5_hook_client_krylov_trigger1.0": {
+    "tag": "R5_hook_client_krylov_trigger1.0",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.09817236382514238,
+    "timing_authority": "diagnostic_only",
+    "attempts": 62,
+    "remap_count": 4,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 370,
+     "positive_control": 1,
+     "remaps": 4,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 5
+    },
+    "client_ops": {
+     "factor": 914624,
+     "factorizations": 62,
+     "krylov_iterations": 611,
+     "krylov_matvecs": 1107,
+     "linearizations": 41,
+     "linearize": 126403,
+     "max_krylov_iterations": 2,
+     "solve": 0,
+     "solves": 496,
+     "sweeps": 1107
+    }
+   },
+   "R5_hook_client_krylov_trigger0.5": {
+    "tag": "R5_hook_client_krylov_trigger0.5",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.05457052798010409,
+    "timing_authority": "diagnostic_only",
+    "attempts": 30,
+    "remap_count": 7,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 544,
+     "positive_control": 1,
+     "remaps": 7,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 8
+    },
+    "client_ops": {
+     "factor": 442560,
+     "factorizations": 30,
+     "krylov_iterations": 334,
+     "krylov_matvecs": 574,
+     "linearizations": 30,
+     "linearize": 92490,
+     "max_krylov_iterations": 2,
+     "solve": 0,
+     "solves": 240,
+     "sweeps": 574
+    }
+   },
+   "R5_hook_client_krylov_trigger0.25": {
+    "tag": "R5_hook_client_krylov_trigger0.25",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.054320405004546046,
+    "timing_authority": "diagnostic_only",
+    "attempts": 30,
+    "remap_count": 12,
+    "allocations": {
+     "calibrated": true,
+     "integrate": 834,
+     "positive_control": 1,
+     "remaps": 12,
+     "scope": "second integrate call on the calling thread incl. remaps, restarts and output",
+     "segments": 13
+    },
+    "client_ops": {
+     "factor": 442560,
+     "factorizations": 30,
+     "krylov_iterations": 346,
+     "krylov_matvecs": 586,
+     "linearizations": 30,
+     "linearize": 92490,
+     "max_krylov_iterations": 2,
+     "solve": 0,
+     "solves": 240,
+     "sweeps": 586
+    }
+   },
+   "R5_repeat0": {
+    "tag": "R5_repeat0",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.04211056511849165,
+    "timing_authority": "diagnostic_only",
+    "attempts": 30,
+    "remap_count": 7,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R5_repeat1": {
+    "tag": "R5_repeat1",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.0368685619905591,
+    "timing_authority": "diagnostic_only",
+    "attempts": 30,
+    "remap_count": 7,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6b_schedule_rtol1e-04": {
+    "tag": "R6b_schedule_rtol1e-04",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.032935886876657605,
+    "timing_authority": "diagnostic_only",
+    "attempts": 23,
+    "remap_count": 9,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6b_H_coarse_rtol1e-04": {
+    "tag": "R6b_H_coarse_rtol1e-04",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.02953053591772914,
+    "timing_authority": "diagnostic_only",
+    "attempts": 18,
+    "remap_count": 4,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6b_H_schedule_krylov_rtol1e-04": {
+    "tag": "R6b_H_schedule_krylov_rtol1e-04",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.0627056360244751,
+    "timing_authority": "diagnostic_only",
+    "attempts": 23,
+    "remap_count": 9,
+    "allocations": null,
+    "client_ops": {
+     "factor": 339296,
+     "factorizations": 23,
+     "krylov_iterations": 290,
+     "krylov_matvecs": 474,
+     "linearizations": 23,
+     "linearize": 70909,
+     "max_krylov_iterations": 4,
+     "solve": 0,
+     "solves": 184,
+     "sweeps": 474
+    }
+   },
+   "R6b_schedule_rtol1e-06": {
+    "tag": "R6b_schedule_rtol1e-06",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.08187012700363994,
+    "timing_authority": "diagnostic_only",
+    "attempts": 42,
+    "remap_count": 9,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6b_H_coarse_rtol1e-06": {
+    "tag": "R6b_H_coarse_rtol1e-06",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.0520173329859972,
+    "timing_authority": "diagnostic_only",
+    "attempts": 43,
+    "remap_count": 4,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6b_H_schedule_krylov_rtol1e-06": {
+    "tag": "R6b_H_schedule_krylov_rtol1e-06",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.10082565597258508,
+    "timing_authority": "diagnostic_only",
+    "attempts": 42,
+    "remap_count": 9,
+    "allocations": null,
+    "client_ops": {
+     "factor": 619584,
+     "factorizations": 42,
+     "krylov_iterations": 404,
+     "krylov_matvecs": 740,
+     "linearizations": 42,
+     "linearize": 129486,
+     "max_krylov_iterations": 2,
+     "solve": 0,
+     "solves": 336,
+     "sweeps": 740
+    }
+   },
+   "R6b_schedule_rtol1e-08": {
+    "tag": "R6b_schedule_rtol1e-08",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.08950573299080133,
+    "timing_authority": "diagnostic_only",
+    "attempts": 73,
+    "remap_count": 9,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6b_H_schedule_krylov_rtol1e-08": {
+    "tag": "R6b_H_schedule_krylov_rtol1e-08",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.10557934897951782,
+    "timing_authority": "diagnostic_only",
+    "attempts": 73,
+    "remap_count": 9,
+    "allocations": null,
+    "client_ops": {
+     "factor": 1076896,
+     "factorizations": 73,
+     "krylov_iterations": 584,
+     "krylov_matvecs": 1168,
+     "linearizations": 73,
+     "linearize": 225059,
+     "max_krylov_iterations": 1,
+     "solve": 0,
+     "solves": 584,
+     "sweeps": 1168
+    }
+   },
+   "R6c_fixed_smooth_N1": {
+    "tag": "R6c_fixed_smooth_N1",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.015292352065443993,
+    "timing_authority": "diagnostic_only",
+    "attempts": 10,
+    "remap_count": 9,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6c_fixed_smooth_N2": {
+    "tag": "R6c_fixed_smooth_N2",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.02488776296377182,
+    "timing_authority": "diagnostic_only",
+    "attempts": 20,
+    "remap_count": 9,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6b_H_coarse_rtol1e-08": {
+    "tag": "R6b_H_coarse_rtol1e-08",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.09746553096920252,
+    "timing_authority": "diagnostic_only",
+    "attempts": 71,
+    "remap_count": 4,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6c_fixed_smooth_N4": {
+    "tag": "R6c_fixed_smooth_N4",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.0461015198379755,
+    "timing_authority": "diagnostic_only",
+    "attempts": 40,
+    "remap_count": 9,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6c_fixed_smooth_N8": {
+    "tag": "R6c_fixed_smooth_N8",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.11874726600944996,
+    "timing_authority": "diagnostic_only",
+    "attempts": 81,
+    "remap_count": 9,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6c_fixed_smooth_N16": {
+    "tag": "R6c_fixed_smooth_N16",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.1745686619542539,
+    "timing_authority": "diagnostic_only",
+    "attempts": 164,
+    "remap_count": 9,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6c_fixed_smooth_N32": {
+    "tag": "R6c_fixed_smooth_N32",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.3490214440971613,
+    "timing_authority": "diagnostic_only",
+    "attempts": 324,
+    "remap_count": 9,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6c_fixed_coarse_N1": {
+    "tag": "R6c_fixed_coarse_N1",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.03566181589849293,
+    "timing_authority": "diagnostic_only",
+    "attempts": 5,
+    "remap_count": 4,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6c_fixed_coarse_N2": {
+    "tag": "R6c_fixed_coarse_N2",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.015613027149811387,
+    "timing_authority": "diagnostic_only",
+    "attempts": 10,
+    "remap_count": 4,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6c_fixed_coarse_N4": {
+    "tag": "R6c_fixed_coarse_N4",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.04797254782170057,
+    "timing_authority": "diagnostic_only",
+    "attempts": 20,
+    "remap_count": 4,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6c_fixed_coarse_N8": {
+    "tag": "R6c_fixed_coarse_N8",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.05288801505230367,
+    "timing_authority": "diagnostic_only",
+    "attempts": 41,
+    "remap_count": 4,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6c_fixed_coarse_N16": {
+    "tag": "R6c_fixed_coarse_N16",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.09021415002644062,
+    "timing_authority": "diagnostic_only",
+    "attempts": 80,
+    "remap_count": 4,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6c_fixed_smooth_N64": {
+    "tag": "R6c_fixed_smooth_N64",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.7106328550726175,
+    "timing_authority": "diagnostic_only",
+    "attempts": 643,
+    "remap_count": 9,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6c_fixed_coarse_N32": {
+    "tag": "R6c_fixed_coarse_N32",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.18375622387975454,
+    "timing_authority": "diagnostic_only",
+    "attempts": 162,
+    "remap_count": 4,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6c_fixed_coarse_N64": {
+    "tag": "R6c_fixed_coarse_N64",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 0.3410016039852053,
+    "timing_authority": "diagnostic_only",
+    "attempts": 324,
+    "remap_count": 4,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6a_H_hook_G4_trigger1.0": {
+    "tag": "R6a_H_hook_G4_trigger1.0",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 86.06121985707432,
+    "timing_authority": "diagnostic_only",
+    "attempts": 251,
+    "remap_count": 16,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6a_static_G4": {
+    "tag": "R6a_static_G4",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 91.56726653408259,
+    "timing_authority": "diagnostic_only",
+    "attempts": 283,
+    "remap_count": 0,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6a_hook_G5": {
+    "tag": "R6a_hook_G5",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 240.56009746319614,
+    "timing_authority": "diagnostic_only",
+    "attempts": 158,
+    "remap_count": 56,
+    "allocations": null,
+    "client_ops": null
+   },
+   "R6a_static_G5": {
+    "tag": "R6a_static_G5",
+    "status": "OK",
+    "reason": "success",
+    "wall_s": 484.2556507079862,
+    "timing_authority": "diagnostic_only",
+    "attempts": 480,
+    "remap_count": 0,
+    "allocations": null,
+    "client_ops": null
+   }
+  },
+  "timing_authority": "diagnostic_only"
+ },
+ "incomplete_requests": [],
+ "cargo": {
+  "commands": [
+   "cargo test -p rodas5p-integrators --release --locked --offline -j 8 --test lrs_photon_remap_contracts --test accept_control_contracts --test lrs_block_solver_contracts --test lrs_photon_fv_contracts --test generic_scope_contracts --test rodas5p_fast_allocations --test fast_vector_atol_contracts --test fixed_step_order_contracts --test client_stage_system_contracts --test partial_t_into_contracts -- --test-threads=1",
+   "cargo test -p vigilode --release --locked --offline -j 8 --test records_contracts -- --test-threads=1"
+  ],
+  "exit_codes": [
+   0,
+   0
+  ],
+  "passed": 68,
+  "failed": 0,
+  "ignored": 0,
+  "binaries_run": [
+   "accept_control_contracts",
+   "client_stage_system_contracts",
+   "fast_vector_atol_contracts",
+   "fixed_step_order_contracts",
+   "generic_scope_contracts",
+   "lrs_block_solver_contracts",
+   "lrs_photon_fv_contracts",
+   "lrs_photon_remap_contracts",
+   "partial_t_into_contracts",
+   "rodas5p_fast_allocations",
+   "records_contracts"
+  ],
+  "duplicate_test_names": [],
+  "all_tests_ok": true,
+  "tests": [
+   {
+    "name": "a_continuing_control_leaves_the_run_bit_identical",
+    "result": "ok"
+   },
+   {
+    "name": "a_restart_from_the_stop_reaches_tf",
+    "result": "ok"
+   },
+   {
+    "name": "a_stop_at_tf_is_a_success",
+    "result": "ok"
+   },
+   {
+    "name": "a_stop_at_the_kth_accepted_step_returns_that_step",
+    "result": "ok"
+   },
+   {
+    "name": "a_stop_on_the_last_budgeted_attempt_is_a_client_stop",
+    "result": "ok"
+   },
+   {
+    "name": "the_client_stop_record_serializes",
+    "result": "ok"
+   },
+   {
+    "name": "the_control_allocates_nothing",
+    "result": "ok"
+   },
+   {
+    "name": "the_control_sees_every_accepted_step_once_in_order",
+    "result": "ok"
+   },
+   {
+    "name": "a_client_step_allocates_nothing",
+    "result": "ok"
+   },
+   {
+    "name": "banded_delegate_reproduces_the_banded_driver_bitwise",
+    "result": "ok"
+   },
+   {
+    "name": "invalid_client_inputs_are_refused",
+    "result": "ok"
+   },
+   {
+    "name": "retryable_client_errors_are_rejections_with_their_work_kept",
+    "result": "ok"
+   },
+   {
+    "name": "invalid_vector_rejected",
+    "result": "ok"
+   },
+   {
+    "name": "robertson_vector_atol_accuracy",
+    "result": "ok"
+   },
+   {
+    "name": "uniform_vector_equals_scalar_bitwise",
+    "result": "ok"
+   },
+   {
+    "name": "vector_entries_weight_their_own_component",
+    "result": "ok"
+   },
+   {
+    "name": "zero_component_follows_zero_scale_rule",
+    "result": "ok"
+   },
+   {
+    "name": "direct_fixed_step_mildly_stiff_pr_band",
+    "result": "ok"
+   },
+   {
+    "name": "direct_fixed_step_nonstiff_order_is_five",
+    "result": "ok"
+   },
+   {
+    "name": "direct_fixed_step_stiff_pr_order_is_reduced_band",
+    "result": "ok"
+   },
+   {
+    "name": "direct_fixed_step_with_mass_matrix_is_order_five",
+    "result": "ok"
+   },
+   {
+    "name": "finite_difference_partial_t_is_accurate_and_keeps_the_order",
+    "result": "ok"
+   },
+   {
+    "name": "forcing_fixed_outer_rtol_error_is_bounded_by_tolerance_floor",
+    "result": "ok"
+   },
+   {
+    "name": "forcing_fixed_outer_rtol_keeps_order_five",
+    "result": "ok"
+   },
+   {
+    "name": "forcing_rule_tight_tolerance_matches_direct_without_abort",
+    "result": "ok"
+   },
+   {
+    "name": "preconditioned_gmres_paths_keep_the_direct_order",
+    "result": "ok"
+   },
+   {
+    "name": "bdf_v2_semantic_baseline_explicitly_retires_the_legacy_source_byte_freeze",
+    "result": "ok"
+   },
+   {
+    "name": "generic_solver_core_does_not_embed_physical_client_bindings",
+    "result": "ok"
+   },
+   {
+    "name": "radau3_cell_g_baseline_has_embedded_semantics_instead_of_a_source_byte_claim",
+    "result": "ok"
+   },
+   {
+    "name": "required_vectorized_jf_modules_exist_in_the_generic_base",
+    "result": "ok"
+   },
+   {
+    "name": "c1_exact_solve_matches_a_dense_lu_and_is_backward_stable",
+    "result": "ok"
+   },
+   {
+    "name": "c3_mixed_direction_is_refused_by_the_exact_mode_and_krylov_converges",
+    "result": "ok"
+   },
+   {
+    "name": "c4_stale_states_and_shapes_are_typed_refusals",
+    "result": "ok"
+   },
+   {
+    "name": "c5_counted_flops_equal_the_closed_forms",
+    "result": "ok"
+   },
+   {
+    "name": "c6_client_runs_allocate_independently_of_the_step_count",
+    "result": "ok"
+   },
+   {
+    "name": "c6_solver_calls_allocate_nothing",
+    "result": "ok"
+   },
+   {
+    "name": "c7_client_runs_are_deterministic_and_agree_with_the_banded_driver",
+    "result": "ok"
+   },
+   {
+    "name": "c8_bordered_jacobian_schur_solve_and_riccati_law",
+    "result": "ok"
+   },
+   {
+    "name": "c10_invalid_declarations_and_shapes_are_typed_refusals",
+    "result": "ok"
+   },
+   {
+    "name": "c2_dense_columns_are_unit_rhs_and_the_band_is_exact",
+    "result": "ok"
+   },
+   {
+    "name": "c3_rhs_conserves_the_number_ledger",
+    "result": "ok"
+   },
+   {
+    "name": "c8_callbacks_allocate_nothing",
+    "result": "ok"
+   },
+   {
+    "name": "c8_drivers_allocate_independently_of_the_step_count",
+    "result": "ok"
+   },
+   {
+    "name": "c9_runs_are_deterministic_and_uniform_vector_atol_is_scalar",
+    "result": "ok"
+   },
+   {
+    "name": "sanity_absorber_cell_average_matches_quadrature",
+    "result": "ok"
+   },
+   {
+    "name": "sanity_jvp_callback_and_autonomy_flags",
+    "result": "ok"
+   },
+   {
+    "name": "sanity_partial_t_is_right_sided_at_an_exact_threshold_tie",
+    "result": "ok"
+   },
+   {
+    "name": "sanity_partial_t_matches_central_differences_away_from_kinks",
+    "result": "ok"
+   },
+   {
+    "name": "aligned_edges_are_increasing_with_the_face_at_x_chi",
+    "result": "ok"
+   },
+   {
+    "name": "r1_a_refusal_inside_a_run_keeps_the_accepted_state_and_all_work",
+    "result": "ok"
+   },
+   {
+    "name": "r1_refusals_roll_back_bit_for_bit_and_keep_their_work",
+    "result": "ok"
+   },
+   {
+    "name": "r2_one_remap_preserves_the_total_and_every_column",
+    "result": "ok"
+   },
+   {
+    "name": "r3_refine_coarsen_cycles_are_exact_and_allocate_nothing",
+    "result": "ok"
+   },
+   {
+    "name": "r4_rebind_makes_the_old_factorization_stale_and_the_rebound_client_restarts",
+    "result": "ok"
+   },
+   {
+    "name": "r4_refined_meshes_rebuild_the_client_and_keep_its_work",
+    "result": "ok"
+   },
+   {
+    "name": "r4_restarts_take_the_controllers_proposal_or_a_fresh_step",
+    "result": "ok"
+   },
+   {
+    "name": "r5_remaps_allocate_nothing_and_restarts_a_constant_count",
+    "result": "ok"
+   },
+   {
+    "name": "segmented_runs_are_deterministic_and_conserve_the_total",
+    "result": "ok"
+   },
+   {
+    "name": "a_non_autonomous_fast_step_with_analytic_ft_allocates_nothing",
+    "result": "ok"
+   },
+   {
+    "name": "fast_runs_match_the_pre_change_golden_digests",
+    "result": "ok"
+   },
+   {
+    "name": "into_form_equals_allocating_form_bitwise_with_equal_counters",
+    "result": "ok"
+   },
+   {
+    "name": "into_form_refuses_shapes_and_non_finite_output",
+    "result": "ok"
+   },
+   {
+    "name": "a_column_extent_step_allocates_nothing",
+    "result": "ok"
+   },
+   {
+    "name": "a_fast_step_allocates_nothing",
+    "result": "ok"
+   },
+   {
+    "name": "a_vector_atol_step_allocates_nothing",
+    "result": "ok"
+   },
+   {
+    "name": "dense_event_stats_match_the_pre_mirror_snapshot",
+    "result": "ok"
+   },
+   {
+    "name": "every_enum_variant_preserves_its_wire_representation",
+    "result": "ok"
+   },
+   {
+    "name": "every_record_preserves_all_nonzero_fields_and_json_order",
+    "result": "ok"
+   }
+  ],
+  "gate_tests_missing_or_not_ok": {
+   "R1": [],
+   "R2": [],
+   "R3": [],
+   "R4": [],
+   "R5": []
+  },
+  "log_file": "raw/cargo_test.log",
+  "wall_s": 4.1139319620560855,
+  "stderr_tail": "ait `Clone`, but this is intentionally ignored during dead code analysis\n     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default\n\nwarning: `rodas5p-integrators` (lib) generated 1 warning\n    Finished `release` profile [optimized] target(s) in 0.04s\n     Running tests/records_contracts.rs (/home/cosmosapjw/vigilode-bassrei-target/release/deps/records_contracts-470c4e332899e17b)\n"
+ },
+ "provenance": {
+  "inputs": {
+   "adapter_mod_rs": {
+    "path": "crates/rodas5p-integrators/examples/lrs_photon_fv_support/mod.rs",
+    "sha256": "ca5b58cb9d83594345012ff5ebf33d5d59c52326ce8dd266a6056ec1eadfc10e"
+   },
+   "remesh_rs": {
+    "path": "crates/rodas5p-integrators/examples/lrs_photon_fv_support/remesh.rs",
+    "sha256": "e4528c6cfe78193eb447a4728903b131a9d1ceb8d3943163d93fa2f918dede3c"
+   },
+   "block_solver_rs": {
+    "path": "crates/rodas5p-integrators/examples/lrs_photon_fv_support/block_solver.rs",
+    "sha256": "dddcec27a66226af9efa17433e896dda8edc23f12601788378638a2058b041b7"
+   },
+   "runner_rs": {
+    "path": "crates/rodas5p-integrators/examples/lrs_photon_remap_run.rs",
+    "sha256": "94c91bbe21e06c5b7691f9adae8e8c48662cc5f50a3a6a0520e083c3edea6a9b"
+   },
+   "test_lrs_photon_remap_contracts_rs": {
+    "path": "crates/rodas5p-integrators/tests/lrs_photon_remap_contracts.rs",
+    "sha256": "af3e7d9741630f059ae4e55049d1206aa774f9c259e1a8fe25f3d797d1afb880"
+   },
+   "test_accept_control_contracts_rs": {
+    "path": "crates/rodas5p-integrators/tests/accept_control_contracts.rs",
+    "sha256": "ab6a9fd346313c0fa140bcaa68e8f7fffa1bedd7b59eb562a43836c3946af611"
+   },
+   "rodas5p_fast_rs": {
+    "path": "crates/rodas5p-integrators/src/rodas5p_fast.rs",
+    "sha256": "6812ace1aad03b174b0a22c378583a5b5f0b2d2c74681a25fb86518405f3ae3e"
+   },
+   "client_stage_rs": {
+    "path": "crates/rodas5p-integrators/src/client_stage.rs",
+    "sha256": "ca3c1c74ff42dcf68f1463ee731065949963ae77123c98467cac2424ceb8bc27"
+   },
+   "conservative_remap_rs": {
+    "path": "crates/rodas5p-integrators/src/conservative_remap.rs",
+    "sha256": "4ba4f712a57ebb03888db1aa4127448a2a66a964c15bd596292c1b6c92c97e08"
+   },
+   "integ_lib_rs": {
+    "path": "crates/rodas5p-integrators/src/lib.rs",
+    "sha256": "4400e0c23240c25461f96bd2d5d31e8297d3fb8b8f95b2f68d7e29d02ebdffc1"
+   },
+   "vigilode_records_rs": {
+    "path": "crates/vigilode/src/records.rs",
+    "sha256": "d1a28c533bf1e1dd98b8eef57af24ec7222ddd018aa947cef14566f2c064b3b9"
+   },
+   "vigilode_solve_rs": {
+    "path": "crates/vigilode/src/solve.rs",
+    "sha256": "f97fea0d12107303a0e66004e39913f372d2f29acab378298eea9c68d606772d"
+   },
+   "run_p05_py": {
+    "path": "research/bassrei_p05_accepted_remap_20261022/run_p05.py",
+    "sha256": "6ebf93e3d21f945bb60676618915cf097b6cbd75308b99f4a4388947543179b4"
+   },
+   "p05_reference_py": {
+    "path": "research/bassrei_p05_accepted_remap_20261022/reference/p05_reference.py",
+    "sha256": "528be512ea8453abfde6f19c8da1a103149f3f0b64c651458484d74fd6fb9266"
+   },
+   "test_p05_reference_py": {
+    "path": "research/bassrei_p05_accepted_remap_20261022/reference/test_p05_reference.py",
+    "sha256": "7f6d1889df04aeeb45f2864bbec81e428cc8d7a6f7e66ae7e2b3705e3ac16749"
+   },
+   "p02_reference_py": {
+    "path": "research/bassrei_p02_fixed_grid_20261021/reference/lrs_reference.py",
+    "sha256": "22e635d724a232cccf6b3f2e985b5125e7ee31a88ff697e4b83bd1d6fcc52afc"
+   },
+   "oracle_py": {
+    "path": "research/ncp_followup_20261021/BASS_REI_FVM_REFERENCE.py",
+    "sha256": "14be5e4d01821f126a575bf901a5041f8ec811a359a0689989a547dee7c14b18"
+   },
+   "p02_harness_py": {
+    "path": "research/bassrei_p02_fixed_grid_20261021/run_p02.py",
+    "sha256": "3e640087685a996499ec2ce74559608899842ed01abb286287e98abddb9fdbbd"
+   },
+   "p02b_harness_py": {
+    "path": "research/bassrei_p02b_fixed_grid_20261022/run_p02b.py",
+    "sha256": "74d691da178e51ed3dda14a2cda83c8eaa73f073e55a89995b4cf4e92a70828f"
+   },
+   "cargo_lock": {
+    "path": "Cargo.lock",
+    "sha256": "3c3310208cb895851aced4b4506ccd761e04c62d93113372919542478163a1e5"
+   },
+   "cargo_toml": {
+    "path": "Cargo.toml",
+    "sha256": "716ff1b052b1333e0ee5867f266426f6ecbec11578444f2e2b9c02baa03b037e"
+   },
+   "rust_toolchain_toml": {
+    "path": "rust-toolchain.toml",
+    "sha256": "f53198ae4fdecfd87da36fe431c771b54c51e975d01c0e99f653bc14d5d48211"
+   },
+   "crate_sources": {
+    "files": 618,
+    "sha256": "74067af7ea4f726307a7b545fa3e908613229466a7fbe0bbffdb9abbcbb73a1a"
+   }
+  },
+  "binary_sha256": "9b8a712844b9413e4aafb606171459cef21438b446ab3e9e1369e6690cbeb9f2",
+  "watched": [
+   "crates",
+   "research/bassrei_p05_accepted_remap_20261022",
+   "research/bassrei_p02_fixed_grid_20261021/reference",
+   "research/bassrei_p02_fixed_grid_20261021/run_p02.py",
+   "research/bassrei_p02b_fixed_grid_20261022/run_p02b.py",
+   "research/ncp_followup_20261021/BASS_REI_FVM_REFERENCE.py",
+   "Cargo.toml",
+   "Cargo.lock",
+   "rust-toolchain.toml",
+   ".cargo"
+  ],
+  "git_start": {
+   "head": "2d24dd6f11ca236f0e93e32529cf4831b0a1be56",
+   "status_short": []
+  },
+  "git_end": {
+   "head": "2d24dd6f11ca236f0e93e32529cf4831b0a1be56",
+   "status_short": [
+    "?? research/bassrei_p05_accepted_remap_20261022/raw/"
+   ]
+  },
+  "tree_changes_start": [],
+  "tree_changes_end": [],
+  "git_error": [
+   null,
+   null
+  ],
+  "inputs_changed_during_run": false,
+  "clean": true
+ },
+ "gates": {
+  "R1": {
+   "pass": true,
+   "values": {
+    "I1": {
+     "status": "OK",
+     "reason": "",
+     "x_chi": -0.083545438532448,
+     "x_chi_python": -0.083545438532448,
+     "x_chi_ulps_vs_python_H": 0,
+     "face": 19,
+     "face_python": 19,
+     "other_face": 20,
+     "other_face_python": 20,
+     "injected": "Err(Injected)",
+     "commit_after_refusal": "Err(NothingStaged)",
+     "buffer_unchanged": true,
+     "edges_unchanged": true,
+     "epoch_unchanged": true,
+     "work_increased": true,
+     "equals_fresh_remesher": true,
+     "work_after_refusal": {
+      "attempts": 1,
+      "commits": 0,
+      "l1_change_sum": 14386507.038783014,
+      "overlap_segments": 1122,
+      "refusals": 1
+     },
+     "work": {
+      "attempts": 2,
+      "commits": 1,
+      "l1_change_sum": 23957982.432488855,
+      "overlap_segments": 2312,
+      "refusals": 1
+     },
+     "epoch": 1,
+     "inject_allocations": 0,
+     "normal_allocations": 0,
+     "new_edges_bitwise": true,
+     "other_edges_bitwise": true,
+     "remap_parity_per_column": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "max_remap_parity": 0.0,
+     "ledgers_copied": true,
+     "ledgers_nonzero": true,
+     "per_column_relative_change": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "pass": true
+    },
+    "I2": {
+     "status": "OK",
+     "reason": "",
+     "x_chi": 0.0657010557455503,
+     "x_chi_python": 0.0657010557455503,
+     "x_chi_ulps_vs_python_H": 0,
+     "face": 21,
+     "face_python": 21,
+     "other_face": 20,
+     "other_face_python": 20,
+     "injected": "Err(Injected)",
+     "commit_after_refusal": "Err(NothingStaged)",
+     "buffer_unchanged": true,
+     "edges_unchanged": true,
+     "epoch_unchanged": true,
+     "work_increased": true,
+     "equals_fresh_remesher": true,
+     "work_after_refusal": {
+      "attempts": 1,
+      "commits": 0,
+      "l1_change_sum": 6854631.659525039,
+      "overlap_segments": 1190,
+      "refusals": 1
+     },
+     "work": {
+      "attempts": 2,
+      "commits": 1,
+      "l1_change_sum": 17901816.123526547,
+      "overlap_segments": 2312,
+      "refusals": 1
+     },
+     "epoch": 1,
+     "inject_allocations": 0,
+     "normal_allocations": 0,
+     "new_edges_bitwise": true,
+     "other_edges_bitwise": true,
+     "remap_parity_per_column": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "max_remap_parity": 0.0,
+     "ledgers_copied": true,
+     "ledgers_nonzero": true,
+     "per_column_relative_change": [
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0
+     ],
+     "pass": true
+    },
+    "I3": {
+     "banded_k1": {
+      "status": "NUMERICAL_FAILURE",
+      "reason": "REMAP_REFUSED: Injected at t = 1.9130660935219865e-1",
+      "t": 0.19130660935219865,
+      "t_expected": 0.19130660935219865,
+      "state_bitwise": true,
+      "edges_bitwise": true,
+      "epoch": 0,
+      "attempts": 8,
+      "attempts_expected": 8,
+      "counters_equal": true,
+      "remesh_work": {
+       "attempts": 1,
+       "commits": 0,
+       "l1_change_sum": 16920971.02357296,
+       "overlap_segments": 1122,
+       "refusals": 1
+      },
+      "outputs_before_equal": true,
+      "client_ops": null,
+      "pass": true
+     },
+     "banded_k3": {
+      "status": "NUMERICAL_FAILURE",
+      "reason": "REMAP_REFUSED: Injected at t = 6.554836471242717e-1",
+      "t": 0.6554836471242717,
+      "t_expected": 0.6554836471242717,
+      "state_bitwise": true,
+      "edges_bitwise": true,
+      "epoch": 2,
+      "attempts": 16,
+      "attempts_expected": 16,
+      "counters_equal": true,
+      "remesh_work": {
+       "attempts": 3,
+       "commits": 2,
+       "l1_change_sum": 58722540.55864464,
+       "overlap_segments": 3400,
+       "refusals": 1
+      },
+      "outputs_before_equal": true,
+      "client_ops": null,
+      "pass": true
+     },
+     "client_krylov_k1": {
+      "status": "NUMERICAL_FAILURE",
+      "reason": "REMAP_REFUSED: Injected at t = 1.9130660926626727e-1",
+      "t": 0.19130660926626727,
+      "t_expected": 0.19130660926626727,
+      "state_bitwise": true,
+      "edges_bitwise": true,
+      "epoch": 0,
+      "attempts": 8,
+      "attempts_expected": 8,
+      "counters_equal": true,
+      "remesh_work": {
+       "attempts": 1,
+       "commits": 0,
+       "l1_change_sum": 16920971.03000012,
+       "overlap_segments": 1122,
+       "refusals": 1
+      },
+      "outputs_before_equal": true,
+      "client_ops": {
+       "factor": 118016,
+       "factorizations": 8,
+       "krylov_iterations": 64,
+       "krylov_matvecs": 128,
+       "linearizations": 8,
+       "linearize": 24664,
+       "max_krylov_iterations": 1,
+       "solve": 0,
+       "solves": 64,
+       "sweeps": 128
+      },
+      "pass": true
+     },
+     "client_krylov_k3": {
+      "status": "NUMERICAL_FAILURE",
+      "reason": "REMAP_REFUSED: Injected at t = 6.554836471289315e-1",
+      "t": 0.6554836471289315,
+      "t_expected": 0.6554836471289315,
+      "state_bitwise": true,
+      "edges_bitwise": true,
+      "epoch": 2,
+      "attempts": 16,
+      "attempts_expected": 16,
+      "counters_equal": true,
+      "remesh_work": {
+       "attempts": 3,
+       "commits": 2,
+       "l1_change_sum": 58722540.54966198,
+       "overlap_segments": 3400,
+       "refusals": 1
+      },
+      "outputs_before_equal": true,
+      "client_ops": {
+       "factor": 236032,
+       "factorizations": 16,
+       "krylov_iterations": 128,
+       "krylov_matvecs": 256,
+       "linearizations": 16,
+       "linearize": 49328,
+       "max_krylov_iterations": 1,
+       "solve": 0,
+       "solves": 128,
+       "sweeps": 256
+      },
+      "pass": true
+     }
+    }
+   },
+   "threshold": {
+    "cases": {
+     "I1": "the integrated state at t = 1.3 (static run S0) on G2",
+     "I2": "a signed version of the integrated state at t = 2.1 (every 7th cell x -0.3, every 3rd absorbed ledger negated), refine",
+     "I3": "integrate level: hook trigger 0.5, config T, G2, rtol 1e-6, banded and client_krylov, inject_failure_at_remap k = 1 and 3"
+    },
+    "status": "OK",
+    "injected": "Err(Injected)",
+    "commit_after_refusal": "Err(NothingStaged)",
+    "unchanged": "the output buffer (prefilled with a sentinel), the committed edges and the epoch bitwise after the injected propose and the NothingStaged commit",
+    "work_kept": "after the refusal attempts 1, refusals 1, commits 0, overlap segments > 0; after the normal commit attempts 2, commits 1",
+    "other_mesh": "the normal commit goes to the other variant of the aligned mesh (refined if the injected attempt was unrefined and vice versa) and equals a fresh remesher's remap bitwise",
+    "epoch_after_commit": 1,
+    "allocations": 0,
+    "new_edges": "both variants bitwise equal to the reference aligned meshes of the runner's x_chi",
+    "remap_parity_rel": 1e-14,
+    "remap_parity_def": "per column (angular columns, absorbed ledgers): max |rust - python| / max |python|",
+    "ledgers_copied": "L_lo, L_hi bitwise",
+    "I3": "NUMERICAL_FAILURE with the typed Injected refusal; final (t, state, edges, epoch) bitwise equal to the uninjected run's k-th remap record (t, y_before, old_edges, epoch k - 1); attempts and every WorkCounters field equal to its attempts_before/counters_before; remesh work attempts k, refusals 1, commits k - 1; the outputs before the refusal bitwise equal; the Krylov client's factorizations equal direct_factorizations"
+   },
+   "reference_unittests_ok": true,
+   "cargo_tests_ok": true
+  },
+  "R3": {
+   "pass": true,
+   "values": {
+    "C1": {
+     "status": "OK",
+     "helper": {
+      "allocations_after_warmup": 0,
+      "bitwise_after_cycles": true,
+      "bitwise_one_cycle": true,
+      "cycles": 100,
+      "max_abs_at_zero_reference": 0.0,
+      "max_relative_after_cycles": 0.0,
+      "max_ulps_one_cycle": 0,
+      "split_relative_total_change": 0.0
+     },
+     "kernel": {
+      "allocations_after_warmup": 0,
+      "bitwise_one_cycle": true,
+      "coarse_cells": 32,
+      "epoch": 201,
+      "face": 19,
+      "fine_cells": 64,
+      "max_abs_at_zero_reference": 0.0,
+      "max_relative_after_cycles": 0.0,
+      "max_relative_total_change_per_remap": 0.0,
+      "max_ulps_one_cycle": 0,
+      "relative_total_drift_after_cycles": 0.0,
+      "remesh_work": {
+       "attempts": 201,
+       "commits": 201,
+       "l1_change_sum": 14386507.038783014,
+       "overlap_segments": 436322,
+       "refusals": 0
+      },
+      "x_chi": -0.083545438532448
+     },
+     "pass": true
+    },
+    "C2": {
+     "status": "OK",
+     "helper": {
+      "allocations_after_warmup": 0,
+      "bitwise_after_cycles": true,
+      "bitwise_one_cycle": true,
+      "cycles": 100,
+      "max_abs_at_zero_reference": 0.0,
+      "max_relative_after_cycles": 0.0,
+      "max_ulps_one_cycle": 0,
+      "split_relative_total_change": 0.0
+     },
+     "kernel": {
+      "allocations_after_warmup": 0,
+      "bitwise_one_cycle": true,
+      "coarse_cells": 32,
+      "epoch": 201,
+      "face": 20,
+      "fine_cells": 64,
+      "max_abs_at_zero_reference": 0.0,
+      "max_relative_after_cycles": 0.0,
+      "max_relative_total_change_per_remap": 0.0,
+      "max_ulps_one_cycle": 0,
+      "relative_total_drift_after_cycles": 0.0,
+      "remesh_work": {
+       "attempts": 201,
+       "commits": 201,
+       "l1_change_sum": 11047184.46400151,
+       "overlap_segments": 436322,
+       "refusals": 0
+      },
+      "x_chi": 0.0657010557455503
+     },
+     "pass": true
+    }
+   },
+   "threshold": {
+    "cycles": 100,
+    "one_cycle_ulps_max": 2,
+    "cycles_rel": 1e-13,
+    "zero_reference_abs": 0.0,
+    "allocations_after_warmup": 0,
+    "kernel_per_remap_rel": 2e-15,
+    "kernel_total_drift_rel": 1e-13,
+    "cases": {
+     "C1": "the integrated state at t = 1.3, x_chi(1.3)",
+     "C2": "the I2 signed state, x_chi(2.1)"
+    }
+   },
+   "cargo_tests_ok": true
+  },
+  "R4": {
+   "pass": true,
+   "values": {
+    "unrefined": {
+     "banded": {
+      "status": "OK",
+      "remaps": 7,
+      "segments": 8,
+      "attempts": 30
+     },
+     "client_krylov": {
+      "status": "OK",
+      "remaps": 7,
+      "segments": 8,
+      "client_epoch": 7,
+      "attempts": 30,
+      "client_ops": {
+       "factor": 442560,
+       "factorizations": 30,
+       "krylov_iterations": 334,
+       "krylov_matvecs": 574,
+       "linearizations": 30,
+       "linearize": 92490,
+       "max_krylov_iterations": 2,
+       "solve": 0,
+       "solves": 240,
+       "sweeps": 574
+      }
+     },
+     "final_rel_diff": {
+      "photons": 2.779820919226972e-12,
+      "absorbed": 2.1712590807019304e-11,
+      "l_lo": 4.3740805999491226e-15,
+      "l_hi": 1.1316078986773075e-14
+     },
+     "over_total0_H": {
+      "l_lo": 8.891031691862709e-09,
+      "l_hi": 3.5003534458295105e-10
+     }
+    },
+    "refined": {
+     "banded": {
+      "status": "OK",
+      "remaps": 7,
+      "segments": 8,
+      "attempts": 59
+     },
+     "client_krylov": {
+      "status": "OK",
+      "remaps": 7,
+      "segments": 8,
+      "client_epoch": 7,
+      "attempts": 59,
+      "client_ops": {
+       "factor": 917390,
+       "factorizations": 59,
+       "krylov_iterations": 688,
+       "krylov_matvecs": 1160,
+       "linearizations": 42,
+       "linearize": 135810,
+       "max_krylov_iterations": 2,
+       "solve": 0,
+       "solves": 472,
+       "sweeps": 1160
+      }
+     },
+     "final_rel_diff": {
+      "photons": 8.657143561711514e-13,
+      "absorbed": 7.178684839682653e-12,
+      "l_lo": 4.374082220843313e-15,
+      "l_hi": 3.98634904487291e-15
+     },
+     "over_total0_H": {
+      "l_lo": 8.891028397132321e-09,
+      "l_hi": 3.5003507780589853e-10
+     },
+     "final_cells": [
+      34,
+      34
+     ]
+    },
+    "restart": {
+     "h_next_equals_control": true,
+     "fresh_uses_initial_step": true,
+     "h_restart_H": {
+      "banded": [
+       0.04625386666573294,
+       0.0655794052419313,
+       0.09847879241309607,
+       0.1333058497614467,
+       0.1568040055509564,
+       0.21511644127518212,
+       0.28070562232880975
+      ],
+      "client_krylov": [
+       0.0462538666575172,
+       0.06557940523116715,
+       0.09847879245376394,
+       0.13330584976503418,
+       0.1568040055370935,
+       0.2151164412820412,
+       0.2807056223007448
+      ]
+     },
+     "fresh_control_H": {
+      "banded": {
+       "status": "OK",
+       "attempts": 55,
+       "remaps": 7,
+       "final_rel_diff_vs_h_next": {
+        "photons": 0.0003421094492318731,
+        "absorbed": 0.0026719346361105244
+       },
+       "h_next_attempts": 30
+      },
+      "client_krylov": {
+       "status": "OK",
+       "attempts": 55,
+       "remaps": 7,
+       "final_rel_diff_vs_h_next": {
+        "photons": 0.0003421094517348156,
+        "absorbed": 0.0026719346555966945
+       },
+       "h_next_attempts": 30
+      }
+     }
+    },
+    "client_exact": {
+     "status": "REFUSED",
+     "reason": "invalid numerical input: STRUCTURED_EXACT_MIXED_DIRECTION: the energy drift changes sign across columns",
+     "typed_refusal": true
+    }
+   },
+   "threshold": {
+    "arm": "hook trigger 0.5, config T, G2, rtol 1e-6; unrefined and refined (refine = true)",
+    "client": {
+     "restart": 4,
+     "max_iterations": 48,
+     "rtol": 1e-12,
+     "two_level": true
+    },
+    "remap_count_equal": true,
+    "client_epoch_equals_remaps": true,
+    "segments": "remaps + 1",
+    "final_rel_factor": 10.0,
+    "final_def": "|X_krylov - X_banded| / |X_banded| <= 10 rtol for X in photons, absorbed, L_lo, L_hi",
+    "refined": "final mesh n + 2 cells; client factorizations == direct_factorizations (work carried across the rebuild)",
+    "restart": "every remap of every hook run here: h_restart == control_h_next bitwise (the driver's stop record against the accept view); restart = fresh controls: h_restart == initial_step",
+    "exact_mode_refusal": "client_exact: status REFUSED with STRUCTURED_EXACT_MIXED_DIRECTION (the comoving energy drift -s c_j changes sign across columns)"
+   },
+   "cargo_tests_ok": true
+  },
+  "R5": {
+   "pass": true,
+   "values": {
+    "schedule": {
+     "banded_K2": {
+      "allocations": [
+       211,
+       211
+      ],
+      "attempts": [
+       50,
+       146
+      ],
+      "remaps": [
+       2,
+       2
+      ],
+      "ok": true
+     },
+     "banded_K4": {
+      "allocations": [
+       339,
+       339
+      ],
+      "attempts": [
+       40,
+       114
+      ],
+      "remaps": [
+       4,
+       4
+      ],
+      "ok": true
+     },
+     "banded_K8": {
+      "allocations": [
+       595,
+       595
+      ],
+      "attempts": [
+       35,
+       106
+      ],
+      "remaps": [
+       8,
+       8
+      ],
+      "ok": true
+     },
+     "banded_affine": {
+      "A": {
+       "2": 211,
+       "4": 339,
+       "8": 595
+      },
+      "per_remap": 64.0,
+      "ok": true
+     },
+     "client_krylov_K2": {
+      "allocations": [
+       258,
+       258
+      ],
+      "attempts": [
+       50,
+       146
+      ],
+      "remaps": [
+       2,
+       2
+      ],
+      "ok": true
+     },
+     "client_krylov_K4": {
+      "allocations": [
+       378,
+       378
+      ],
+      "attempts": [
+       40,
+       114
+      ],
+      "remaps": [
+       4,
+       4
+      ],
+      "ok": true
+     },
+     "client_krylov_K8": {
+      "allocations": [
+       618,
+       618
+      ],
+      "attempts": [
+       35,
+       106
+      ],
+      "remaps": [
+       8,
+       8
+      ],
+      "ok": true
+     },
+     "client_krylov_affine": {
+      "A": {
+       "2": 258,
+       "4": 378,
+       "8": 618
+      },
+      "per_remap": 60.0,
+      "ok": true
+     }
+    },
+    "hook": {
+     "banded": {
+      "remaps": [
+       4,
+       7,
+       12
+      ],
+      "allocations": [
+       331,
+       517,
+       827
+      ],
+      "per_remap": [
+       62.0,
+       62.0
+      ],
+      "ok": true
+     },
+     "client_krylov": {
+      "remaps": [
+       4,
+       7,
+       12
+      ],
+      "allocations": [
+       370,
+       544,
+       834
+      ],
+      "per_remap": [
+       58.0,
+       58.0
+      ],
+      "ok": true
+     }
+    },
+    "repeat_bitwise": true
+   },
+   "threshold": {
+    "rtols": [
+     1e-06,
+     1e-09
+    ],
+    "attempt_ratio_min": 2.0,
+    "schedule_K": [
+     2,
+     4,
+     8
+    ],
+    "schedule_times": "T k / (K + 1), k = 1..K",
+    "hook_triggers": [
+     1.0,
+     0.5,
+     0.25
+    ],
+    "linears": [
+     "banded",
+     "client_krylov"
+    ],
+    "outputs": [
+     0.0,
+     3.0
+    ],
+    "equal": "allocation counts equal at both rtols for every K and linear (positive control calibrated)",
+    "affine": "schedule: A(8) - A(4) == 2 (A(4) - A(2)) exactly; hook: equal allocation increments per remap across the triggers",
+    "repeat_bitwise": "two hook runs (banded, rtol 1e-6): outputs, remaps and counters bitwise"
+   },
+   "cargo_tests_ok": true
+  },
+  "R6a": {
+   "pass": true,
+   "values": {
+    "grids": {
+     "G2": {
+      "status": "OK",
+      "attempts": 121,
+      "wall_s": 0.1027048488613218,
+      "exact_s": 7.566018654964864,
+      "quadrature_refinement_l1": 2.5750466395332397e-08,
+      "cells_l1_rel": 0.12229622758116147,
+      "absorbed_rel": 0.07191336402028471,
+      "photons_rel": 0.00807812860383824,
+      "L_lo": 11.683600112289396,
+      "L_hi": 0.384012227614525,
+      "refinement_over_error": 2.1055814152765415e-07
+     },
+     "G3": {
+      "status": "OK",
+      "attempts": 167,
+      "wall_s": 1.269222065107897,
+      "exact_s": 33.59505121316761,
+      "quadrature_refinement_l1": 5.299585240402811e-09,
+      "cells_l1_rel": 0.06780428730867362,
+      "absorbed_rel": 0.03279534127131852,
+      "photons_rel": 0.0036839366918554983,
+      "L_lo": 0.07515098819824757,
+      "L_hi": 0.0008781728906578168,
+      "refinement_over_error": 7.816003162568278e-08
+     },
+     "G4": {
+      "status": "OK",
+      "attempts": 283,
+      "wall_s": 91.56726653408259,
+      "exact_s": 72.59777945512906,
+      "quadrature_refinement_l1": 1.1469996435596195e-09,
+      "cells_l1_rel": 0.035480612041966994,
+      "absorbed_rel": 0.015005641903981407,
+      "photons_rel": 0.001685600170298579,
+      "L_lo": 0.0015953127946346064,
+      "L_hi": 2.35076393239241e-05,
+      "refinement_over_error": 3.232750444673647e-08
+     },
+     "G5": {
+      "status": "OK",
+      "attempts": 480,
+      "wall_s": 484.2556507079862,
+      "exact_s": 145.20583138777874,
+      "quadrature_refinement_l1": 2.328938746414392e-10,
+      "cells_l1_rel": 0.01811362205630307,
+      "absorbed_rel": 0.007111824572835348,
+      "photons_rel": 0.0007988790330862814,
+      "L_lo": 0.00018376920584742084,
+      "L_hi": 4.62552116135095e-06,
+      "refinement_over_error": 1.2857388429411233e-08
+     }
+    },
+    "orders": {
+     "cells_l1_rel": {
+      "errors": [
+       0.12229622758116147,
+       0.06780428730867362,
+       0.035480612041966994,
+       0.01811362205630307
+      ],
+      "orders": [
+       0.8509314984684402,
+       0.9343456023802388,
+       0.9699558354698115
+      ],
+      "monotone": true,
+      "last_order": 0.9699558354698115,
+      "in_window": true,
+      "gated": true
+     },
+     "absorbed_rel": {
+      "errors": [
+       0.07191336402028471,
+       0.03279534127131852,
+       0.015005641903981407,
+       0.007111824572835348
+      ],
+      "orders": [
+       1.13276901086846,
+       1.1279858527929427,
+       1.0772133923526472
+      ],
+      "monotone": true,
+      "last_order": 1.0772133923526472,
+      "in_window": true,
+      "gated": true
+     },
+     "photons_rel": {
+      "errors": [
+       0.00807812860383824,
+       0.0036839366918554983,
+       0.001685600170298579,
+       0.0007988790330862814
+      ],
+      "orders": [
+       1.1327728448859493,
+       1.127985904023046,
+       1.0772133942798077
+      ],
+      "monotone": true,
+      "last_order": 1.0772133942798077,
+      "in_window": true,
+      "gated": false
+     }
+    },
+    "absorbed_exact": 62271732.87891636,
+    "absorbed_refinement_rel": 2.991156762656274e-15,
+    "absorbed_exact_s": 17.97782043996267,
+    "hook_vs_exact_H": {
+     "G2": {
+      "cells_l1_rel": 0.15762995581742642,
+      "absorbed_rel": 0.13886260381757703,
+      "photons_rel": 0.015598609935671002,
+      "L_lo": 11.683599886152322,
+      "L_hi": 0.38401288214645696,
+      "remaps": 8,
+      "attempts": 70,
+      "l1_change_sum": 152389779.18687424,
+      "h_restart_first": [
+       0.017928436145217105,
+       0.025074993767088157,
+       0.034676990358412624,
+       0.047840328003165955,
+       0.06252170718284972
+      ]
+     },
+     "G3": {
+      "cells_l1_rel": 0.07878752828085903,
+      "absorbed_rel": 0.046914365808092974,
+      "photons_rel": 0.005269942160685309,
+      "L_lo": 0.07515098888734884,
+      "L_hi": 0.0008781728957919411,
+      "remaps": 15,
+      "attempts": 81,
+      "l1_change_sum": 77898564.65650672,
+      "h_restart_first": [
+       0.019324446034733447,
+       0.02253150380284533,
+       0.026252687161907776,
+       0.030103766866627003,
+       0.03269606192351163
+      ]
+     },
+     "G4": {
+      "cells_l1_rel": 0.03783403308613459,
+      "absorbed_rel": 0.020253146090101475,
+      "photons_rel": 0.002275058054957285,
+      "L_lo": 0.0015953127442358953,
+      "L_hi": 2.350763913452412e-05,
+      "remaps": 28,
+      "attempts": 95,
+      "l1_change_sum": 33944885.480314106,
+      "h_restart_first": [
+       0.019656511029325176,
+       0.021165326089557,
+       0.02108400214319769,
+       0.02461616327932788,
+       0.026413501063186594
+      ]
+     },
+     "G5": {
+      "cells_l1_rel": 0.018767839218494977,
+      "absorbed_rel": 0.00833763515270284,
+      "photons_rel": 0.0009365756762474346,
+      "L_lo": 0.00018376920533662538,
+      "L_hi": 4.62552115935597e-06,
+      "remaps": 56,
+      "attempts": 158,
+      "l1_change_sum": 16965963.079573777,
+      "h_restart_first": [
+       0.015414775971441134,
+       0.015921735808075994,
+       0.01431970614440375,
+       0.017576933859322137,
+       0.01785994414041554
+      ]
+     }
+    },
+    "remap_frequency_G4_H": {
+     "0.25": {
+      "cells_l1_rel": 0.03875979562518339,
+      "absorbed_rel": 0.021438920627741425,
+      "photons_rel": 0.0024082574057054176,
+      "L_lo": 0.0015953127829172035,
+      "L_hi": 2.3507639278430763e-05,
+      "remaps": 43,
+      "l1_change_sum": 55689171.73088171
+     },
+     "1.0": {
+      "cells_l1_rel": 0.03657733207058845,
+      "absorbed_rel": 0.015923207270175765,
+      "photons_rel": 0.0017886712914656833,
+      "L_lo": 0.001595312797472915,
+      "L_hi": 2.3507639335196418e-05,
+      "remaps": 16,
+      "l1_change_sum": 8543058.058335222
+     },
+     "0.5": {
+      "cells_l1_rel": 0.03783403308613459,
+      "absorbed_rel": 0.020253146090101475,
+      "photons_rel": 0.002275058054957285,
+      "remaps": 28,
+      "l1_change_sum": 33944885.480314106
+     }
+    },
+    "nq_only_nm16_H": {
+     "32x16": {
+      "cells_l1_rel": 0.12229622758116147,
+      "absorbed_rel": 0.07191336402028471,
+      "photons_rel": 0.00807812860383824,
+      "L_lo": 11.683600112289396,
+      "L_hi": 0.384012227614525
+     },
+     "64x16": {
+      "cells_l1_rel": 0.07491130986691294,
+      "absorbed_rel": 0.03178053986301987,
+      "photons_rel": 0.003569942883471098,
+      "L_lo": 0.04401001641934346,
+      "L_hi": 0.0008332697467837828
+     },
+     "128x16": {
+      "cells_l1_rel": 0.0499836191836564,
+      "absorbed_rel": 0.013765731207330588,
+      "photons_rel": 0.001546319644110771,
+      "L_lo": 0.0007725667469546795,
+      "L_hi": 2.203223497564382e-05
+     },
+     "256x16": {
+      "cells_l1_rel": 0.03953940912306202,
+      "absorbed_rel": 0.005745082282162893,
+      "photons_rel": 0.0006453513765376963,
+      "L_lo": 9.00177572239803e-05,
+      "L_hi": 4.335325851719987e-06
+     },
+     "cells_l1_orders": [
+      0.7071244486968663,
+      0.583728181555844,
+      0.33816405540312494
+     ]
+    }
+   },
+   "threshold": {
+    "grids": [
+     "G2",
+     "G3",
+     "G4",
+     "G5"
+    ],
+    "config": "E (gamma 0)",
+    "arm": "static",
+    "rtol": 1e-08,
+    "metrics": [
+     "cells_l1_rel",
+     "absorbed_rel"
+    ],
+    "metrics_H": [
+     "photons_rel"
+    ],
+    "monotone": "strict over the grids",
+    "order_window": [
+     0.8,
+     1.25
+    ],
+    "order_pair": "G4->G5",
+    "exact": "P02 Characteristics: cell integrals 12x12 GL on 4x4 subcells; absorbed_total(n_t 48, 400, 48)",
+    "quadrature_refinement_factor": 0.001,
+    "absorbed_refinement_rel": 1e-10,
+    "metric_def": "cells: sum |N - N_ex| / sum |N_ex|; absorbed: |sum A - A_ex| / A_ex; photons [H] (by conservation, the absorbed metric times A_ex / sum N_ex)",
+    "remap_frequency_H": "G4, config E, hook triggers 1, 0.5, 0.25: Sigma delta and the errors against the exact solution on each final mesh"
+   }
+  },
+  "R6b": {
+   "pass": true,
+   "values": {
+    "errors": [
+     3.0242708765816323e-06,
+     1.2909302638688938e-07,
+     2.6062393173490596e-09
+    ],
+    "rungs": {
+     "1e-04": {
+      "status": "OK",
+      "error": 3.0242708765816323e-06,
+      "attempts": 23,
+      "remaps": 9,
+      "mesh_max_rel_diff": 0.0,
+      "client_krylov_error_H": 3.0242708772964e-06,
+      "coarse_schedule_error_H": 0.0010253855718070286
+     },
+     "1e-06": {
+      "status": "OK",
+      "error": 1.2909302638688938e-07,
+      "attempts": 42,
+      "remaps": 9,
+      "mesh_max_rel_diff": 0.0,
+      "client_krylov_error_H": 1.290930270796016e-07,
+      "coarse_schedule_error_H": 5.061944635542572e-06
+     },
+     "1e-08": {
+      "status": "OK",
+      "error": 2.6062393173490596e-09,
+      "attempts": 73,
+      "remaps": 9,
+      "mesh_max_rel_diff": 0.0,
+      "client_krylov_error_H": 2.6062385091848065e-09,
+      "coarse_schedule_error_H": 9.909721260078518e-07
+     }
+    },
+    "strictly_decreasing": true,
+    "u_ref": 5.596783148993197e-15,
+    "u_ref_ok": true,
+    "meshes_match": true,
+    "reference": {
+     "segments": [
+      {
+       "t0": 0.0,
+       "t1": 0.1499999999999999,
+       "cells": 32,
+       "split_deviation": 3.20956177341571e-16,
+       "remap_x_chi": -0.4301190288124207,
+       "face_index": 16
+      },
+      {
+       "t0": 0.1499999999999999,
+       "t1": 0.3224999999999998,
+       "cells": 32,
+       "split_deviation": 2.3328970414390516e-16,
+       "remap_x_chi": -0.3602380576248414,
+       "face_index": 17
+      },
+      {
+       "t0": 0.3224999999999998,
+       "t1": 0.5208749999999998,
+       "cells": 32,
+       "split_deviation": 3.155153845769402e-16,
+       "remap_x_chi": -0.29035708643726205,
+       "face_index": 17
+      },
+      {
+       "t0": 0.5208749999999998,
+       "t1": 0.7490062499999994,
+       "cells": 32,
+       "split_deviation": 4.1411772208525217e-16,
+       "remap_x_chi": -0.2204761152496828,
+       "face_index": 18
+      },
+      {
+       "t0": 0.7490062499999994,
+       "t1": 1.0113571874999994,
+       "cells": 32,
+       "split_deviation": 2.6057516493477917e-16,
+       "remap_x_chi": -0.1505951440621034,
+       "face_index": 18
+      },
+      {
+       "t0": 1.0113571874999994,
+       "t1": 1.313060765624999,
+       "cells": 32,
+       "split_deviation": 2.786846359062425e-16,
+       "remap_x_chi": -0.08071417287452409,
+       "face_index": 19
+      },
+      {
+       "t0": 1.313060765624999,
+       "t1": 1.6600198804687487,
+       "cells": 32,
+       "split_deviation": 2.374380482831282e-16,
+       "remap_x_chi": -0.010833201686944793,
+       "face_index": 19
+      },
+      {
+       "t0": 1.6600198804687487,
+       "t1": 2.0590228625390607,
+       "cells": 32,
+       "split_deviation": 3.2131409915228533e-16,
+       "remap_x_chi": 0.059047769500634506,
+       "face_index": 20
+      },
+      {
+       "t0": 2.0590228625390607,
+       "t1": 2.5178762919199196,
+       "cells": 32,
+       "split_deviation": 2.9677816574539166e-16,
+       "remap_x_chi": 0.1289287406882138,
+       "face_index": 20
+      },
+      {
+       "t0": 2.5178762919199196,
+       "t1": 3.0,
+       "cells": 32,
+       "split_deviation": 2.8299102543939474e-16
+      }
+     ],
+     "nfev": 9528,
+     "njev": 24,
+     "nlu": 92,
+     "wall_s": 10.666591953951865
+    }
+   },
+   "threshold": {
+    "config": "T (gamma 0.5)",
+    "grid": "G2",
+    "arm": "schedule",
+    "remap_times": "SMOOTH",
+    "rtols": [
+     0.0001,
+     1e-06,
+     1e-08
+    ],
+    "outputs": [
+     0.0,
+     1.0,
+     2.0,
+     3.0
+    ],
+    "reference_rtol": 1e-12,
+    "reference_uncertainty_rtol": 1e-11,
+    "reference_uncertainty_over_min_error_max": 0.25,
+    "mesh_match_rel": 8.881784197001252e-16,
+    "strict_decrease": true,
+    "error_def": "max over outputs t > 0 of max |y - y_ref| / max |y_ref| (whole state)"
+   },
+   "reference_unittests_ok": true
+  },
+  "R6c": {
+   "pass": true,
+   "values": {
+    "smooth": {
+     "errors": [
+      9.232519082850468e-06,
+      4.161458313863781e-07,
+      1.4897485216572378e-08,
+      4.929789244272787e-10,
+      1.5814850817156085e-11,
+      5.056799183771857e-13,
+      2.089681854481064e-14
+     ],
+     "pairs": [
+      {
+       "N": [
+        1,
+        2
+       ],
+       "slope": 4.471563248795098,
+       "pre_floor": true
+      },
+      {
+       "N": [
+        2,
+        4
+       ],
+       "slope": 4.8039484645417465,
+       "pre_floor": true
+      },
+      {
+       "N": [
+        4,
+        8
+       ],
+       "slope": 4.917399034986807,
+       "pre_floor": true
+      },
+      {
+       "N": [
+        8,
+        16
+       ],
+       "slope": 4.96217411862455,
+       "pre_floor": true
+      },
+      {
+       "N": [
+        16,
+        32
+       ],
+       "slope": 4.966911649507465,
+       "pre_floor": false
+      },
+      {
+       "N": [
+        32,
+        64
+       ],
+       "slope": 4.596869267405331,
+       "pre_floor": false
+      }
+     ],
+     "pre_floor_pairs": 4,
+     "last_pre_floor_slope": 4.96217411862455,
+     "floor": 1e-12,
+     "u_ref": 5.195341627162867e-15,
+     "steps": [
+      {
+       "N": 1,
+       "attempts": 10,
+       "accepted": 10,
+       "rejected": 0,
+       "remaps": 9
+      },
+      {
+       "N": 2,
+       "attempts": 20,
+       "accepted": 20,
+       "rejected": 0,
+       "remaps": 9
+      },
+      {
+       "N": 4,
+       "attempts": 40,
+       "accepted": 40,
+       "rejected": 0,
+       "remaps": 9
+      },
+      {
+       "N": 8,
+       "attempts": 81,
+       "accepted": 81,
+       "rejected": 0,
+       "remaps": 9
+      },
+      {
+       "N": 16,
+       "attempts": 164,
+       "accepted": 164,
+       "rejected": 0,
+       "remaps": 9
+      },
+      {
+       "N": 32,
+       "attempts": 324,
+       "accepted": 324,
+       "rejected": 0,
+       "remaps": 9
+      },
+      {
+       "N": 64,
+       "attempts": 643,
+       "accepted": 643,
+       "rejected": 0,
+       "remaps": 9
+      }
+     ],
+     "steps_ok": true,
+     "pass": true
+    },
+    "coarse_negative": {
+     "errors": [
+      0.030435520539701475,
+      0.001679988020655815,
+      0.001689630245020873,
+      0.0001317866528991911,
+      0.00011696520374967241,
+      2.0074358024901814e-05,
+      4.906409705602699e-06
+     ],
+     "pairs": [
+      {
+       "N": [
+        1,
+        2
+       ],
+       "slope": 4.179233189633583,
+       "pre_floor": true
+      },
+      {
+       "N": [
+        2,
+        4
+       ],
+       "slope": -0.00825661908650223,
+       "pre_floor": true
+      },
+      {
+       "N": [
+        4,
+        8
+       ],
+       "slope": 3.6804313953719077,
+       "pre_floor": true
+      },
+      {
+       "N": [
+        8,
+        16
+       ],
+       "slope": 0.17212486140736027,
+       "pre_floor": true
+      },
+      {
+       "N": [
+        16,
+        32
+       ],
+       "slope": 2.542653646523599,
+       "pre_floor": true
+      },
+      {
+       "N": [
+        32,
+        64
+       ],
+       "slope": 2.0326142362287922,
+       "pre_floor": true
+      }
+     ],
+     "pre_floor_pairs": 6,
+     "last_pre_floor_slope": 2.0326142362287922,
+     "floor": 1.2448910852583027e-10,
+     "u_ref": 1.2448910852583028e-12,
+     "steps": [
+      {
+       "N": 1,
+       "attempts": 5,
+       "accepted": 5,
+       "rejected": 0,
+       "remaps": 4
+      },
+      {
+       "N": 2,
+       "attempts": 10,
+       "accepted": 10,
+       "rejected": 0,
+       "remaps": 4
+      },
+      {
+       "N": 4,
+       "attempts": 20,
+       "accepted": 20,
+       "rejected": 0,
+       "remaps": 4
+      },
+      {
+       "N": 8,
+       "attempts": 41,
+       "accepted": 41,
+       "rejected": 0,
+       "remaps": 4
+      },
+      {
+       "N": 16,
+       "attempts": 80,
+       "accepted": 80,
+       "rejected": 0,
+       "remaps": 4
+      },
+      {
+       "N": 32,
+       "attempts": 162,
+       "accepted": 162,
+       "rejected": 0,
+       "remaps": 4
+      },
+      {
+       "N": 64,
+       "attempts": 324,
+       "accepted": 324,
+       "rejected": 0,
+       "remaps": 4
+      }
+     ],
+     "steps_ok": true,
+     "pass": true
+    },
+    "edge_crossings": {
+     "smooth": [
+      {
+       "segment": [
+        0.0,
+        0.1499999999999999
+       ],
+       "x_chi": [
+        -0.5,
+        -0.4301190288124207
+       ],
+       "edges_crossed": 0
+      },
+      {
+       "segment": [
+        0.1499999999999999,
+        0.3224999999999998
+       ],
+       "x_chi": [
+        -0.4301190288124207,
+        -0.3602380576248414
+       ],
+       "edges_crossed": 0
+      },
+      {
+       "segment": [
+        0.3224999999999998,
+        0.5208749999999998
+       ],
+       "x_chi": [
+        -0.3602380576248414,
+        -0.29035708643726205
+       ],
+       "edges_crossed": 0
+      },
+      {
+       "segment": [
+        0.5208749999999998,
+        0.7490062499999994
+       ],
+       "x_chi": [
+        -0.29035708643726205,
+        -0.2204761152496828
+       ],
+       "edges_crossed": 0
+      },
+      {
+       "segment": [
+        0.7490062499999994,
+        1.0113571874999994
+       ],
+       "x_chi": [
+        -0.2204761152496828,
+        -0.1505951440621034
+       ],
+       "edges_crossed": 0
+      },
+      {
+       "segment": [
+        1.0113571874999994,
+        1.313060765624999
+       ],
+       "x_chi": [
+        -0.1505951440621034,
+        -0.08071417287452409
+       ],
+       "edges_crossed": 0
+      },
+      {
+       "segment": [
+        1.313060765624999,
+        1.6600198804687487
+       ],
+       "x_chi": [
+        -0.08071417287452409,
+        -0.010833201686944793
+       ],
+       "edges_crossed": 0
+      },
+      {
+       "segment": [
+        1.6600198804687487,
+        2.0590228625390607
+       ],
+       "x_chi": [
+        -0.010833201686944793,
+        0.059047769500634506
+       ],
+       "edges_crossed": 0
+      },
+      {
+       "segment": [
+        2.0590228625390607,
+        2.5178762919199196
+       ],
+       "x_chi": [
+        0.059047769500634506,
+        0.1289287406882138
+       ],
+       "edges_crossed": 0
+      },
+      {
+       "segment": [
+        2.5178762919199196,
+        3.0
+       ],
+       "x_chi": [
+        0.1289287406882138,
+        0.1931471805599453
+       ],
+       "edges_crossed": 0
+      }
+     ],
+     "coarse": [
+      {
+       "segment": [
+        0.0,
+        0.6
+       ],
+       "x_chi": [
+        -0.5,
+        -0.2649981853771322
+       ],
+       "edges_crossed": 1
+      },
+      {
+       "segment": [
+        0.6,
+        1.2
+       ],
+       "x_chi": [
+        -0.2649981853771322,
+        -0.10577131981786492
+       ],
+       "edges_crossed": 0
+      },
+      {
+       "segment": [
+        1.2,
+        1.8
+       ],
+       "x_chi": [
+        -0.10577131981786492,
+        0.014809708590579174
+       ],
+       "edges_crossed": 0
+      },
+      {
+       "segment": [
+        1.8,
+        2.4
+       ],
+       "x_chi": [
+        0.014809708590579174,
+        0.11188771581105783
+       ],
+       "edges_crossed": 0
+      },
+      {
+       "segment": [
+        2.4,
+        3.0
+       ],
+       "x_chi": [
+        0.11188771581105783,
+        0.1931471805599453
+       ],
+       "edges_crossed": 0
+      }
+     ]
+    },
+    "reference": {
+     "segments": [
+      {
+       "t0": 0.0,
+       "t1": 0.1499999999999999,
+       "cells": 32,
+       "split_deviation": 3.20956177341571e-16,
+       "remap_x_chi": -0.4301190288124207,
+       "face_index": 16
+      },
+      {
+       "t0": 0.1499999999999999,
+       "t1": 0.3224999999999998,
+       "cells": 32,
+       "split_deviation": 2.3328970414390516e-16,
+       "remap_x_chi": -0.3602380576248414,
+       "face_index": 17
+      },
+      {
+       "t0": 0.3224999999999998,
+       "t1": 0.5208749999999998,
+       "cells": 32,
+       "split_deviation": 3.155153845769402e-16,
+       "remap_x_chi": -0.29035708643726205,
+       "face_index": 17
+      },
+      {
+       "t0": 0.5208749999999998,
+       "t1": 0.7490062499999994,
+       "cells": 32,
+       "split_deviation": 4.1411772208525217e-16,
+       "remap_x_chi": -0.2204761152496828,
+       "face_index": 18
+      },
+      {
+       "t0": 0.7490062499999994,
+       "t1": 1.0113571874999994,
+       "cells": 32,
+       "split_deviation": 2.6057516493477917e-16,
+       "remap_x_chi": -0.1505951440621034,
+       "face_index": 18
+      },
+      {
+       "t0": 1.0113571874999994,
+       "t1": 1.313060765624999,
+       "cells": 32,
+       "split_deviation": 2.786846359062425e-16,
+       "remap_x_chi": -0.08071417287452409,
+       "face_index": 19
+      },
+      {
+       "t0": 1.313060765624999,
+       "t1": 1.6600198804687487,
+       "cells": 32,
+       "split_deviation": 2.374380482831282e-16,
+       "remap_x_chi": -0.010833201686944793,
+       "face_index": 19
+      },
+      {
+       "t0": 1.6600198804687487,
+       "t1": 2.0590228625390607,
+       "cells": 32,
+       "split_deviation": 3.2131409915228533e-16,
+       "remap_x_chi": 0.059047769500634506,
+       "face_index": 20
+      },
+      {
+       "t0": 2.0590228625390607,
+       "t1": 2.5178762919199196,
+       "cells": 32,
+       "split_deviation": 2.9677816574539166e-16,
+       "remap_x_chi": 0.1289287406882138,
+       "face_index": 20
+      },
+      {
+       "t0": 2.5178762919199196,
+       "t1": 3.0,
+       "cells": 32,
+       "split_deviation": 2.8299102543939474e-16
+      }
+     ],
+     "nfev": 860,
+     "njev": 0,
+     "nlu": 0,
+     "wall_s": 2.506612648954615
+    }
+   },
+   "threshold": {
+    "config": "T",
+    "grid": "G2",
+    "arm": "fixed_schedule",
+    "remap_times": "SMOOTH",
+    "N": [
+     1,
+     2,
+     4,
+     8,
+     16,
+     32,
+     64
+    ],
+    "outputs": [
+     0.0,
+     3.0
+    ],
+    "reference": "DOP853 rtol 2.5e-14 (atol 1e-20 C); u_ref against Radau 1e-13",
+    "floor_abs_min": 1e-12,
+    "floor_uref_factor": 100.0,
+    "min_pre_floor_pairs": 2,
+    "min_last_slope": 4.8,
+    "negative_control_max_last_slope": 3.5,
+    "negative_control": "COARSE schedule runs against the COARSE reference: one threshold crossing of a base edge (t = e^0.3125 - 1 = 0.367) inside the first segment, on the base mesh before any remap, makes kbar(t) C0 there; the four remapped segments are smooth. Every run must be OK with the steps rule",
+    "steps": "rejected 0, accepted == attempts, segments N <= attempts <= segments (N + 1), remaps == segments - 1"
+   },
+   "reference_unittests_ok": true
+  },
+  "R6d": {
+   "pass": true,
+   "values": {
+    "grids": [
+     "G3",
+     "G4",
+     "G5"
+    ],
+    "l1_change_sum": [
+     77898564.65650672,
+     33944885.480314106,
+     16965963.079573777
+    ],
+    "remaps": [
+     15,
+     28,
+     56
+    ]
+   },
+   "threshold": {
+    "arm": "hook trigger 0.5",
+    "config": "E",
+    "grids": [
+     "G3",
+     "G4",
+     "G5"
+    ],
+    "l1_change_sum": "strictly decreasing",
+    "note": "co-refines the grid and the remap count (the trigger is in base widths); the fixed-grid remap-frequency refinement is R6a remap_frequency_H"
+   }
+  },
+  "R7": {
+   "pass": true,
+   "values": {
+    "thresholds": {
+     "R2_per_remap_rel": 2e-15,
+     "R2_drift_rel": 1e-11,
+     "R3_one_cycle_ulps_max": 2,
+     "R3_cycles": 100,
+     "R3_cycles_rel": 1e-13,
+     "R6_order_window": [
+      0.8,
+      1.25
+     ],
+     "R6_min_last_slope": 4.8
+    },
+    "plan": {
+     "R2_per_remap_rel": 2e-15,
+     "R2_drift_rel": 1e-11,
+     "R3_one_cycle_ulps_max": 2,
+     "R3_cycles": 100,
+     "R3_cycles_rel": 1e-13,
+     "R6_order_window": [
+      0.8,
+      1.25
+     ],
+     "R6_min_last_slope": 4.8
+    },
+    "plan_equal": true,
+    "reused": {
+     "R6c.floor_abs_min": {
+      "p05": 1e-12,
+      "source": 1e-12,
+      "equal": true
+     },
+     "R6c.floor_uref_factor": {
+      "p05": 100.0,
+      "source": 100.0,
+      "equal": true
+     },
+     "R6c.min_pre_floor_pairs": {
+      "p05": 2,
+      "source": 2,
+      "equal": true
+     },
+     "R6c.min_last_slope": {
+      "p05": 4.8,
+      "source": 4.8,
+      "equal": true
+     },
+     "R6c.negative_control_max_last_slope": {
+      "p05": 3.5,
+      "source": 3.5,
+      "equal": true
+     },
+     "R6a.order_window": {
+      "p05": [
+       0.8,
+       1.25
+      ],
+      "source": [
+       0.8,
+       1.25
+      ],
+      "equal": true
+     },
+     "R6a.quadrature_refinement_factor": {
+      "p05": 0.001,
+      "source": 0.001,
+      "equal": true
+     },
+     "R6a.absorbed_refinement_rel": {
+      "p05": 1e-10,
+      "source": 1e-10,
+      "equal": true
+     },
+     "R6b.reference_uncertainty_over_min_error_max": {
+      "p05": 0.25,
+      "source": 0.25,
+      "equal": true
+     }
+    }
+   },
+   "threshold": {
+    "kind": "documentation meta-gate: the thresholds equal the plan literal PLAN and the constants reused from the P02 and P02b harnesses (read from their TH by AST, read-only)",
+    "plan": {
+     "R2_per_remap_rel": 2e-15,
+     "R2_drift_rel": 1e-11,
+     "R3_one_cycle_ulps_max": 2,
+     "R3_cycles": 100,
+     "R3_cycles_rel": 1e-13,
+     "R6_order_window": [
+      0.8,
+      1.25
+     ],
+     "R6_min_last_slope": 4.8
+    },
+    "reused": {
+     "R6c from P02 C5": [
+      "floor_abs_min",
+      "floor_uref_factor",
+      "min_pre_floor_pairs",
+      "min_last_slope",
+      "negative_control_max_last_slope"
+     ],
+     "R6a from P02 C4": [
+      "order_window",
+      "selfcheck_refinement_factor",
+      "selfcheck_absorbed_refinement_rel"
+     ],
+     "R6b from P02b C6": [
+      "reference_uncertainty_over_min_error_max"
+     ]
+    }
+   }
+  },
+  "R2": {
+   "pass": true,
+   "values": {
+    "remesh_constant": 2e-15,
+    "runs": [
+     {
+      "tag": "S0 static",
+      "remaps": 0,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R2rec banded",
+      "remaps": 7,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R2rec client_krylov",
+      "remaps": 7,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R4 banded",
+      "remaps": 7,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R4 client_krylov",
+      "remaps": 7,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R4 refined banded",
+      "remaps": 7,
+      "max_per_remap_rel": 1.9332368218871283e-16,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R4 fresh banded",
+      "remaps": 7,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R4 refined client_krylov",
+      "remaps": 7,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R4 fresh client_krylov",
+      "remaps": 7,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('schedule', 'banded', 2, 1e-06)",
+      "remaps": 2,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('schedule', 'banded', 2, 1e-09)",
+      "remaps": 2,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('schedule', 'banded', 4, 1e-06)",
+      "remaps": 4,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('schedule', 'banded', 4, 1e-09)",
+      "remaps": 4,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('schedule', 'banded', 8, 1e-06)",
+      "remaps": 8,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('schedule', 'banded', 8, 1e-09)",
+      "remaps": 8,
+      "max_per_remap_rel": 1.9332368218871288e-16,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('hook', 'banded', 1.0)",
+      "remaps": 4,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('hook', 'banded', 0.5)",
+      "remaps": 7,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('hook', 'banded', 0.25)",
+      "remaps": 12,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('schedule', 'client_krylov', 2, 1e-06)",
+      "remaps": 2,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('schedule', 'client_krylov', 2, 1e-09)",
+      "remaps": 2,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('schedule', 'client_krylov', 4, 1e-06)",
+      "remaps": 4,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('schedule', 'client_krylov', 4, 1e-09)",
+      "remaps": 4,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('schedule', 'client_krylov', 8, 1e-06)",
+      "remaps": 8,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('schedule', 'client_krylov', 8, 1e-09)",
+      "remaps": 8,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('hook', 'client_krylov', 1.0)",
+      "remaps": 4,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('hook', 'client_krylov', 0.5)",
+      "remaps": 7,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('hook', 'client_krylov', 0.25)",
+      "remaps": 12,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('repeat', 0)",
+      "remaps": 7,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R5 ('repeat', 1)",
+      "remaps": 7,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6a ('static', 'G2')",
+      "remaps": 0,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6a ('hook', 'G2')",
+      "remaps": 8,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6a ('static', 'G3')",
+      "remaps": 0,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6a ('hook', 'G3')",
+      "remaps": 15,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6a ('static', 'G4')",
+      "remaps": 0,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6a ('hook', 'G4')",
+      "remaps": 28,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6a ('static', 'G5')",
+      "remaps": 0,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6a ('hook', 'G5')",
+      "remaps": 56,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6a ('freq', 1.0)",
+      "remaps": 16,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6a ('freq', 0.25)",
+      "remaps": 43,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6a ('nq_only', (32, 16))",
+      "remaps": 0,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6a ('nq_only', (64, 16))",
+      "remaps": 0,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 3.8664736437742566e-16,
+      "python_max_drift_rel": 3.8664736437742566e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6a ('nq_only', (128, 16))",
+      "remaps": 0,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6a ('nq_only', (256, 16))",
+      "remaps": 0,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 3.8664736437742566e-16,
+      "python_max_drift_rel": 3.8664736437742566e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('b', 'banded', 0.0001)",
+      "remaps": 9,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('b', 'client_krylov', 0.0001)",
+      "remaps": 9,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('b', 'coarse', 0.0001)",
+      "remaps": 4,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 5.799710465661385e-16,
+      "python_max_drift_rel": 5.799710465661385e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('b', 'banded', 1e-06)",
+      "remaps": 9,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('b', 'client_krylov', 1e-06)",
+      "remaps": 9,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('b', 'coarse', 1e-06)",
+      "remaps": 4,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('b', 'banded', 1e-08)",
+      "remaps": 9,
+      "max_per_remap_rel": 1.9332368218871283e-16,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('b', 'client_krylov', 1e-08)",
+      "remaps": 9,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('b', 'coarse', 1e-08)",
+      "remaps": 4,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('c', 'smooth', 1)",
+      "remaps": 9,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 5.799710465661385e-16,
+      "python_max_drift_rel": 5.799710465661385e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('c', 'smooth', 2)",
+      "remaps": 9,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 0.0,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('c', 'smooth', 4)",
+      "remaps": 9,
+      "max_per_remap_rel": 1.9332368218871283e-16,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('c', 'smooth', 8)",
+      "remaps": 9,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 3.8664736437742566e-16,
+      "python_max_drift_rel": 3.8664736437742566e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('c', 'smooth', 16)",
+      "remaps": 9,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('c', 'smooth', 32)",
+      "remaps": 9,
+      "max_per_remap_rel": 1.9332368218871273e-16,
+      "runner_max_drift_rel": 5.799710465661385e-16,
+      "python_max_drift_rel": 3.8664736437742566e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('c', 'smooth', 64)",
+      "remaps": 9,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 3.8664736437742566e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('c', 'coarse', 1)",
+      "remaps": 4,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('c', 'coarse', 2)",
+      "remaps": 4,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 0.0,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('c', 'coarse', 4)",
+      "remaps": 4,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('c', 'coarse', 8)",
+      "remaps": 4,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('c', 'coarse', 16)",
+      "remaps": 4,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('c', 'coarse', 32)",
+      "remaps": 4,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     },
+     {
+      "tag": "R6bc ('c', 'coarse', 64)",
+      "remaps": 4,
+      "max_per_remap_rel": 0.0,
+      "runner_max_drift_rel": 1.9332368218871283e-16,
+      "python_max_drift_rel": 1.9332368218871283e-16,
+      "remesh_refusals": 0,
+      "pass": true
+     }
+    ],
+    "not_ok_runs": [
+     {
+      "tag": "R1 I3 banded k1",
+      "status": "NUMERICAL_FAILURE",
+      "expected": "NUMERICAL_FAILURE",
+      "ok": true,
+      "reason": "REMAP_REFUSED: Injected at t = 1.9130660935219865e-1"
+     },
+     {
+      "tag": "R1 I3 banded k3",
+      "status": "NUMERICAL_FAILURE",
+      "expected": "NUMERICAL_FAILURE",
+      "ok": true,
+      "reason": "REMAP_REFUSED: Injected at t = 6.554836471242717e-1"
+     },
+     {
+      "tag": "R1 I3 client_krylov k1",
+      "status": "NUMERICAL_FAILURE",
+      "expected": "NUMERICAL_FAILURE",
+      "ok": true,
+      "reason": "REMAP_REFUSED: Injected at t = 1.9130660926626727e-1"
+     },
+     {
+      "tag": "R1 I3 client_krylov k3",
+      "status": "NUMERICAL_FAILURE",
+      "expected": "NUMERICAL_FAILURE",
+      "ok": true,
+      "reason": "REMAP_REFUSED: Injected at t = 6.554836471289315e-1"
+     },
+     {
+      "tag": "R4 client_exact",
+      "status": "REFUSED",
+      "expected": "REFUSED",
+      "ok": true,
+      "reason": "invalid numerical input: STRUCTURED_EXACT_MIXED_DIRECTION: the energy drift changes sign across columns"
+     }
+    ],
+    "inject_per_column_max": [
+     0.0,
+     0.0
+    ],
+    "total_remaps_checked": 495,
+    "independent": [
+     {
+      "tag": "R2rec banded",
+      "remaps": 7,
+      "max_fsum_rel_change": 0.0,
+      "max_parity": 0.0,
+      "all_edges_ok": true,
+      "pass": true
+     },
+     {
+      "tag": "R2rec client_krylov",
+      "remaps": 7,
+      "max_fsum_rel_change": 0.0,
+      "max_parity": 0.0,
+      "all_edges_ok": true,
+      "pass": true
+     },
+     {
+      "tag": "R4 refined banded",
+      "remaps": 7,
+      "max_fsum_rel_change": 1.9332368218871283e-16,
+      "max_parity": 0.0,
+      "all_edges_ok": true,
+      "pass": true
+     },
+     {
+      "tag": "R4 refined client_krylov",
+      "remaps": 7,
+      "max_fsum_rel_change": 0.0,
+      "max_parity": 0.0,
+      "all_edges_ok": true,
+      "pass": true
+     },
+     {
+      "tag": "R6b schedule rtol 1e-8",
+      "remaps": 9,
+      "max_fsum_rel_change": 1.9332368218871283e-16,
+      "max_parity": 0.0,
+      "all_edges_ok": true,
+      "pass": true
+     },
+     {
+      "tag": "R6a hook G3",
+      "remaps": 15,
+      "max_fsum_rel_change": 0.0,
+      "max_parity": 0.0,
+      "all_edges_ok": true,
+      "pass": true
+     }
+    ],
+    "independent_remaps": 52
+   },
+   "threshold": {
+    "per_remap_rel": 2e-15,
+    "source_constant": "MAX_RELATIVE_TOTAL_CHANGE: f64 = 2.0e-15 in remesh.rs",
+    "per_column_inject_rel": 2e-15,
+    "drift_rel": 1e-11,
+    "status": "every integrate run is OK except the preregistered R4 client_exact REFUSED and the R1 I3 injected runs (NUMERICAL_FAILURE); OK runs have 0 remesh refusals",
+    "scope": "every integrate run of every gate: the runner's per-remap reports and trace, and the Python fsum of every returned output state against fsum(y0)",
+    "independent": "runs with record_remap_states (G2 hook banded/Krylov, G2 refined hook banded/Krylov, G2 SMOOTH schedule rtol 1e-8, G3 config E hook): per remap |fsum(y_after) - fsum(y_before)| / |fsum(y_before)| <= 2e-15 recomputed in Python, the Python remap of y_before onto new_edges equal to y_after per column <= 1e-14, new_edges bitwise equal to the Python aligned mesh of the reported face, old_edges equal to the previous mesh",
+    "note": "the runner's own per-remap value is checked at the source (a larger change is refused); the independent check above is the evidence"
+   },
+   "cargo_tests_ok": true
+  }
+ },
+ "gate_table": {
+  "R1": true,
+  "R2": true,
+  "R3": true,
+  "R4": true,
+  "R5": true,
+  "R6a": true,
+  "R6b": true,
+  "R6c": true,
+  "R6d": true,
+  "R7": true
+ },
+ "verdict": "PASS",
+ "runtime_s": 574.8617145919707,
+ "raw_dir": "/home/cosmosapjw/vigilode-bassrei/research/bassrei_p05_accepted_remap_20261022/raw",
+ "raw_manifest": {
+  "count": 79,
+  "manifest_sha256": "ef54ab393096e7582de96fa85bd0ec922e8fae6a267745e494a07d2bdb4cfe8b"
+ }
+}

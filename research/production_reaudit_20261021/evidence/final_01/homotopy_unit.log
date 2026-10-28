@@ -1,0 +1,43 @@
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+warning: function `prepare` is never used
+ --> /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:3:8
+  |
+3 | pub fn prepare(n: usize, o: usize, d: usize, sweeps: usize) -> PacketWorkCounters {
+  |        ^^^^^^^
+  |
+  = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: function `initial_adapter` is never used
+  --> /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:95:8
+   |
+95 | pub fn initial_adapter(n: usize, g: usize) -> VerifiedTrajectoryWork {
+   |        ^^^^^^^^^^^^^^^
+
+warning: function `prepare_adapter` is never used
+   --> /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:104:8
+    |
+104 | pub fn prepare_adapter(
+    |        ^^^^^^^^^^^^^^^
+
+warning: function `query_adapter` is never used
+   --> /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:122:8
+    |
+122 | pub fn query_adapter(n: usize, o: usize, d: usize) -> VerifiedTrajectoryWork {
+    |        ^^^^^^^^^^^^^
+
+warning: function `rejected_tolerance_adapter` is never used
+   --> /workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs:134:8
+    |
+134 | pub fn rejected_tolerance_adapter(
+    |        ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `rodas5p-integrators` (lib test) generated 5 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 26.43s
+     Running unittests src/lib.rs (/workspace/scratch/0dc1e721cf82/runtime/dense-target/debug/deps/rodas5p_integrators-27b83ed0c1e5f8b6)
+
+running 2 tests
+test nonlinear_homotopy::tests::complex_prefix_preserves_causal_order_and_tree_shape ... ok
+test nonlinear_homotopy::tests::inward_projection_proves_represented_membership ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 80 filtered out; finished in 0.00s
+

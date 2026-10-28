@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "arithmetic": "Python fractions.Fraction exact rational",
+  "status": "pass",
+  "checks": [
+    {
+      "id": "Q-RATIONAL",
+      "result": "pass",
+      "operator_norm": "60",
+      "eta": "1/110250",
+      "residuals": [
+        [
+          "1/110250",
+          "1/110250"
+        ],
+        [
+          "1/12155062500",
+          "1/12155062500"
+        ],
+        [
+          "1/1340095640625000",
+          "1/1340095640625000"
+        ],
+        [
+          "1/147745544378906250000",
+          "1/147745544378906250000"
+        ]
+      ]
+    },
+    {
+      "id": "Q-DEGREES-1-6",
+      "result": "pass"
+    },
+    {
+      "id": "SHIFTED-NILPOTENT",
+      "result": "pass",
+      "nilpotence_degree": 3,
+      "operator_norm": "110"
+    },
+    {
+      "id": "CRT-PROJECTORS",
+      "result": "pass",
+      "projector_norms": [
+        "3",
+        "2"
+      ]
+    },
+    {
+      "id": "PARAMETER-INVERSE-REUSE",
+      "result": "pass",
+      "uniform_eta": "1/10"
+    },
+    {
+      "id": "CAUSAL-NONLINEAR-PREFIX",
+      "result": "pass",
+      "stages": 4,
+      "updates_after_exact_seed": 3
+    }
+  ],
+  "scope": "Finite algebraic fixtures independently check identities; general statements use proofs in THEORY_REASSESSMENT.md. No binary64/whole-ODE or speed evidence."
+}

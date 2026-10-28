@@ -1,0 +1,158 @@
+{
+  "schema": "vigilode.execution-only-handoff.v1",
+  "executor": {
+    "model": "Codex 6 Luna",
+    "reasoning_effort": "low",
+    "role": "verification_and_registered_measurement_only"
+  },
+  "repository": "cosmosapjw-quantum/vigilode",
+  "branch": "audit/production-reaudit-20261021",
+  "source_binding": {
+    "expected_commit": "capture actual clean checkout HEAD once after remote-tip check",
+    "literal_sha_embedded": false,
+    "require_clean": true,
+    "require_same_commit_through_gate": true,
+    "package_verification_first": true
+  },
+  "authorized_actions": [
+    "read package and implementation receipts",
+    "fetch named remote branch for identity comparison",
+    "verify_package",
+    "run frozen NCP runner",
+    "resume exact matching campaign",
+    "run separate promotion reader",
+    "return original external receipts"
+  ],
+  "not_assigned": [
+    "theory research",
+    "solver/API implementation",
+    "source or protocol edits",
+    "package installation",
+    "lock regeneration",
+    "NCP provisioning",
+    "git commit or push"
+  ],
+  "commands": {
+    "package": [
+      "python3",
+      "research/production_reaudit_20261021/verify_package.py"
+    ],
+    "default": [
+      "python3",
+      "tools/run_ncp_reaudit.py",
+      "--mode",
+      "benchmark",
+      "--output",
+      "<external-fresh-campaign-dir>"
+    ],
+    "verify_only": [
+      "python3",
+      "tools/run_ncp_reaudit.py",
+      "--mode",
+      "verify-only",
+      "--output",
+      "<external-fresh-campaign-dir>"
+    ],
+    "resume": [
+      "python3",
+      "tools/run_ncp_reaudit.py",
+      "--mode",
+      "benchmark",
+      "--output",
+      "<same-campaign-dir>",
+      "--resume"
+    ],
+    "gate": [
+      "python3",
+      "tools/production_promotion_gate.py",
+      "--summary",
+      "<campaign>/SUMMARY.json",
+      "--corpus",
+      "crates/vigilode-bench/protocols/n02_independent_reference_v1.json",
+      "--expected-commit",
+      "<captured-original-HEAD>",
+      "--out",
+      "<campaign>/GATE.json"
+    ]
+  },
+  "frozen_config": "research/production_reaudit_20261021/NCP_CONFIG.json",
+  "protocol": {
+    "rust": "1.94.1",
+    "threads": [
+      1,
+      2,
+      4,
+      8
+    ],
+    "warmups": 2,
+    "repetitions": 21,
+    "comparison_and_bound_rows": 3220,
+    "warmup_rows": 280,
+    "measurement_rows": 2940,
+    "multi_arm_work_precision_results": 1,
+    "required_ids": 3221
+  },
+  "failure_policy": {
+    "missing_prerequisites": "HOLD_RETURN_RAW",
+    "compile_or_test_failure": "HOLD_RETURN_RAW_NO_LOCAL_PATCH",
+    "numerical_refusal": "PRESERVE_CASE_NO_BUDGET_CHANGE",
+    "unknown_rss": "HOLD",
+    "failed_receipt_retry": false,
+    "changed_identity_resume": false,
+    "fresh_campaign_after_external_environment_correction": true,
+    "preserve_previous_campaign": true
+  },
+  "promotion": {
+    "gate_exit_zero_is_promotion": false,
+    "read_fields": [
+      "receipt_integrity",
+      "cases",
+      "broad_production"
+    ],
+    "automatic_release_or_router_change": false,
+    "broad_production": "HOLD",
+    "implemented_checks": [
+      "source/PLAN/build/runtime/raw binding",
+      "supplied corpus matches frozen config lock",
+      "command executable path matches source-bound binary",
+      "complete required coverage and independent reference ladder",
+      "case-level HOLD propagates to receipt integrity"
+    ],
+    "implementation_receipt": "research/production_reaudit_20261021/N08_IMPLEMENTATION.json"
+  },
+  "completed_code_nodes": [
+    "N01",
+    "N02",
+    "N03",
+    "N04",
+    "N05",
+    "N06",
+    "N07",
+    "N08"
+  ],
+  "future_code_tasks_assigned_to_executor": [],
+  "held_scopes": [
+    "unsupported facade feature combinations",
+    "in-loop event termination",
+    "arbitrary callback global certificate",
+    "generic nonlinear stage drift authority",
+    "general nonnormal action",
+    "arbitrary nonlinear full-curve certification",
+    "band/low-rank resolvent extension",
+    "broad production and matched-accuracy speed promotion"
+  ],
+  "return_artifacts": [
+    "PACKAGE_VERIFY.json",
+    "PACKAGE_VERIFY.exit",
+    "EXPECTED_COMMIT.txt",
+    "EXPECTED_TREE.txt",
+    "campaign/PLAN.json",
+    "campaign/PREFLIGHT.json",
+    "campaign/SUMMARY.json",
+    "campaign/GATE.json if produced",
+    "campaign/BENCHMARK_CASES.json if reached",
+    "campaign/WORK_PRECISION.json if reached",
+    "campaign/runs/* original receipts/stdout/stderr/GNU-time"
+  ],
+  "not_run_policy": "Explicit NOT_RUN, never PASS or fabricated placeholder evidence"
+}

@@ -1,0 +1,854 @@
+{
+  "schema": "vigilode-f6-local-analysis.v1",
+  "classification": "SCOPED_MANUFACTURED_F6_TRACE_VALIDATION",
+  "source": {
+    "native_commit": "299310290c2e254149ee30f4a9834c1123066815",
+    "allocation_followup_commit": "a1a459f2be186d9f67ff86bf38c19ae24b769768",
+    "native_command": [
+      "taskset",
+      "-c",
+      "0",
+      "cargo",
+      "run",
+      "--profile",
+      "measurement",
+      "--locked",
+      "--offline",
+      "-p",
+      "vigilode-coupled",
+      "--example",
+      "rvj_trace_campaign"
+    ],
+    "allocation_commands": [
+      [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode-coupled",
+        "--test",
+        "trace_certificate_allocations",
+        "--",
+        "--test-threads=1"
+      ],
+      [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode-coupled",
+        "--test",
+        "trace_certificate_allocations",
+        "--",
+        "--test-threads=1"
+      ]
+    ]
+  },
+  "raw_inputs": {
+    "native_stdout": {
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/final-f6-native/stdout.log",
+      "bytes": 5759216,
+      "sha256": "2f37066ca4ca39821b5f61cc2ad6b14f5dc10a053f70bbfd809658fbe1e5ed9f"
+    },
+    "native_stderr": {
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/final-f6-native/stderr.log",
+      "bytes": 2260,
+      "sha256": "e04712e6ef0b69392f69c94ef011331edbd24f860e6a51030d84480dba562f66"
+    },
+    "native_source_inputs_manifest": {
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/final-f6-native/SOURCE_INPUTS.json",
+      "sha256": "7b5aed93c45d0e7a7ca4b0e3d4c0263fb2398db4da7810d36404b74225ebcd78"
+    },
+    "native_receipt": {
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/final-f6-native/RECEIPT.json",
+      "sha256": "e49b35a2e32cf94ced258d1d5fae9da902664b3b624c2076eec8a4abc4b7bf41"
+    },
+    "oracle_result": {
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/final-f6-oracle-result.json",
+      "bytes": 10677416,
+      "sha256": "d93f79a45077afeb0270c14d112f4ec149a2ebd4896637ff27eaa7aca620ae91"
+    },
+    "oracle_receipt": {
+      "path": "/home/cosmosapjw/evidence-20261028T170155Z/final-f6-oracle/RECEIPT.json",
+      "sha256": "c5f49b6f01fa032c9deaf11ba9a8a601b0574ecaa5a34758759c027caac572a3"
+    },
+    "allocation_receipts": [
+      {
+        "path": "/home/cosmosapjw/evidence-20261028T170155Z/final-f6-alloc/RECEIPT.json",
+        "sha256": "b7e8cdd3ea1e4200095675d9c6835143f9566f06ad61d755e90172e2e6aee6b9",
+        "commit": "299310290c2e254149ee30f4a9834c1123066815",
+        "stdout_sha256": "7d3988fb30f2e005e8b36932b7c0af7bab275dca3bb7a17f69cd3b9e0e45c96a",
+        "exit_code": 0
+      },
+      {
+        "path": "/home/cosmosapjw/evidence-20261028T170155Z/final2-f6-alloc/RECEIPT.json",
+        "sha256": "67a64e22aa82e47ea82423ad4775a4043244d98a8ca9416a99cf6ff6637ccc11",
+        "commit": "a1a459f2be186d9f67ff86bf38c19ae24b769768",
+        "stdout_sha256": "01c9648f62a2d22193174962822144814c839b256e865955343998e34eb90253",
+        "exit_code": 0
+      }
+    ],
+    "native_binary": {
+      "path": "/home/cosmosapjw/target-20261028T170155Z/measurement/examples/rvj_trace_campaign",
+      "sha256": "789d54cd69eba31981c81546b8fe2c686f72ad723d3c281d7dbc86613ff5ef95",
+      "bytes": 680088
+    }
+  },
+  "host": {
+    "hostname": "cosmosapjw",
+    "platform": "Linux-7.0.0-38-generic-x86_64-with-glibc2.39",
+    "cpu_affinity": "0",
+    "rayon_threads": 1,
+    "omp_threads": 1,
+    "openblas_threads": 1,
+    "cargo_build_jobs": 2
+  },
+  "method": {
+    "reference": "p(t)=3/4+t/8+t^5/64; exact node reference on registered dyadic grids",
+    "grid": [
+      16,
+      32,
+      64,
+      128,
+      256
+    ],
+    "routes": [
+      "direct_moments",
+      "shared_polynomial"
+    ],
+    "clock": "t=-1+2*k/N; exact dyadic nodes/midpoints on registered grids",
+    "physical_cap_exact": "1/100000000",
+    "interpretation": "exact dyadic nodal reference errors plus whole-slab original-equation residual/path certificates; displayed decimals are for reading only",
+    "setup_preparation_seconds_global": 0.057802793,
+    "setup_allocation_policy": "global diagnostic preparation is not attributable per route/grid",
+    "native_process_wall_seconds_including_cargo_run_build_and_execution": 172.70210814801976,
+    "native_process_wall_is_not_route_cost": true
+  },
+  "result": {
+    "all_requested_trajectories_completed": true,
+    "native_status": "completed",
+    "native_exit_code": 0,
+    "oracle_status": "PASS_SCOPED_ALL_EXPORTED_SLABS_CHECKED",
+    "oracle_exit_code": 0,
+    "oracle_checks_completed_including_first_failure": 65672,
+    "external_oracle_seconds_total": 2.90577373187989,
+    "total_slabs_checked": 992,
+    "negative_controls_total": 8,
+    "negative_controls_rejected": 8,
+    "negative_controls": [
+      {
+        "kind": "distinct_root_count_at_triple_root",
+        "rejected": true
+      },
+      {
+        "kind": "corrupt_native_residual",
+        "rejected": true
+      },
+      {
+        "kind": "corrupt_native_clock",
+        "rejected": true
+      },
+      {
+        "kind": "corrupt_native_chain",
+        "rejected": true
+      },
+      {
+        "kind": "corrupt_native_domain",
+        "rejected": true
+      },
+      {
+        "kind": "corrupt_native_false_cap",
+        "rejected": true
+      },
+      {
+        "kind": "corrupt_native_provider_work",
+        "rejected": true
+      },
+      {
+        "kind": "corrupt_native_total_cost",
+        "rejected": true
+      }
+    ],
+    "semantics_checks": [
+      {
+        "query": "all_complex_multiplicity",
+        "actual": "accepted",
+        "expected": "accepted",
+        "failure": null
+      },
+      {
+        "query": "selected_branch",
+        "actual": "rejected",
+        "expected": "rejected",
+        "failure": "invalid numerical input: quartic trace requires all complex roots with algebraic multiplicity; selected-real and real-only queries have different targets"
+      },
+      {
+        "query": "real_only",
+        "actual": "rejected",
+        "expected": "rejected",
+        "failure": "invalid numerical input: quartic trace requires all complex roots with algebraic multiplicity; selected-real and real-only queries have different targets"
+      }
+    ],
+    "grid_rows": [
+      {
+        "route": "direct_moments",
+        "slabs": 16,
+        "observations": 17,
+        "max_node_error_inf": 5.036216507159352e-07,
+        "physical_whole_path_cap_exact": "1/100000000",
+        "external_exact_oracle_whole_path_error_upper": {
+          "exact": "4856727631866811639077783001072903923470535804069871920240548414729745109505653058316591556378174791634001948239063673023615424912749790939241807047219501/195217683459964213769797803973877119616099566347825247579655054620588884277870843982235289781310113907166863855195236900430656533741942058420073929528584437760",
+          "decimal_display": 2.4878523019984728e-05
+        },
+        "external_exact_oracle_cap_met": false,
+        "native_outward_whole_path_error_upper": {
+          "exact": "6565542783507267/295147905179352825856",
+          "decimal_display": 2.2244924216953452e-05
+        },
+        "native_outward_cap_met": false,
+        "rhs_calls": 64,
+        "integration_seconds": 4.759e-06,
+        "native_certificate_seconds": 0.000811701,
+        "native_integration_plus_certificate_seconds": 0.00081646,
+        "external_exact_oracle_seconds": 0.035862102173268795,
+        "audit_pipeline_seconds_additive_display": 0.03667856217326879,
+        "external_oracle_slabs_checked": 16,
+        "native_slabs_checked": 16,
+        "max_node_error_inf_exact": "4536220557/9007199254740992",
+        "route_setup_seconds": null,
+        "route_setup_not_measured_reason": "Only one shared diagnostic preparation timing was recorded; there is no per-route setup measurement."
+      },
+      {
+        "route": "shared_polynomial",
+        "slabs": 16,
+        "observations": 17,
+        "max_node_error_inf": 5.036216507159352e-07,
+        "physical_whole_path_cap_exact": "1/100000000",
+        "external_exact_oracle_whole_path_error_upper": {
+          "exact": "4856727631866811639077783001072903923470535804069871920240548414729745109505653058316591556378174791634001948239063673023615424912749790939241807047219501/195217683459964213769797803973877119616099566347825247579655054620588884277870843982235289781310113907166863855195236900430656533741942058420073929528584437760",
+          "decimal_display": 2.4878523019984728e-05
+        },
+        "external_exact_oracle_cap_met": false,
+        "native_outward_whole_path_error_upper": {
+          "exact": "6565542783507267/295147905179352825856",
+          "decimal_display": 2.2244924216953452e-05
+        },
+        "native_outward_cap_met": false,
+        "rhs_calls": 64,
+        "integration_seconds": 4.058e-06,
+        "native_certificate_seconds": 0.000784911,
+        "native_integration_plus_certificate_seconds": 0.000788969,
+        "external_exact_oracle_seconds": 0.03653983003459871,
+        "audit_pipeline_seconds_additive_display": 0.03732879903459871,
+        "external_oracle_slabs_checked": 16,
+        "native_slabs_checked": 16,
+        "max_node_error_inf_exact": "4536220557/9007199254740992",
+        "route_setup_seconds": null,
+        "route_setup_not_measured_reason": "Only one shared diagnostic preparation timing was recorded; there is no per-route setup measurement."
+      },
+      {
+        "route": "direct_moments",
+        "slabs": 32,
+        "observations": 33,
+        "max_node_error_inf": 3.1755113649722944e-08,
+        "physical_whole_path_cap_exact": "1/100000000",
+        "external_exact_oracle_whole_path_error_upper": {
+          "exact": "34649845045438730364183193527011345693411375481111364121616581189454062775408151720510685160541209636584176883254921106189119254012041117481249602671/11915141812741956406848010496452460914068577047596755833719180579869927018913015379775103136066291132029227530224318658473550813827022830714115840425328640",
+          "decimal_display": 2.9080514181026755e-06
+        },
+        "external_exact_oracle_cap_met": false,
+        "native_outward_whole_path_error_upper": {
+          "exact": "3232270183417177/1180591620717411303424",
+          "decimal_display": 2.7378393397820494e-06
+        },
+        "native_outward_cap_met": false,
+        "rhs_calls": 128,
+        "integration_seconds": 8.376e-06,
+        "native_certificate_seconds": 0.001594578,
+        "native_integration_plus_certificate_seconds": 0.001602954,
+        "external_exact_oracle_seconds": 0.07250125799328089,
+        "audit_pipeline_seconds_additive_display": 0.07410421199328089,
+        "external_oracle_slabs_checked": 32,
+        "native_slabs_checked": 32,
+        "max_node_error_inf_exact": "71506159/2251799813685248",
+        "route_setup_seconds": null,
+        "route_setup_not_measured_reason": "Only one shared diagnostic preparation timing was recorded; there is no per-route setup measurement."
+      },
+      {
+        "route": "shared_polynomial",
+        "slabs": 32,
+        "observations": 33,
+        "max_node_error_inf": 3.1755113649722944e-08,
+        "physical_whole_path_cap_exact": "1/100000000",
+        "external_exact_oracle_whole_path_error_upper": {
+          "exact": "34649845045438730364183193527011345693411375481111364121616581189454062775408151720510685160541209636584176883254921106189119254012041117481249602671/11915141812741956406848010496452460914068577047596755833719180579869927018913015379775103136066291132029227530224318658473550813827022830714115840425328640",
+          "decimal_display": 2.9080514181026755e-06
+        },
+        "external_exact_oracle_cap_met": false,
+        "native_outward_whole_path_error_upper": {
+          "exact": "3232270183417177/1180591620717411303424",
+          "decimal_display": 2.7378393397820494e-06
+        },
+        "native_outward_cap_met": false,
+        "rhs_calls": 128,
+        "integration_seconds": 8.125e-06,
+        "native_certificate_seconds": 0.001591973,
+        "native_integration_plus_certificate_seconds": 0.001600098,
+        "external_exact_oracle_seconds": 0.07497546612285078,
+        "audit_pipeline_seconds_additive_display": 0.07657556412285077,
+        "external_oracle_slabs_checked": 32,
+        "native_slabs_checked": 32,
+        "max_node_error_inf_exact": "71506159/2251799813685248",
+        "route_setup_seconds": null,
+        "route_setup_not_measured_reason": "Only one shared diagnostic preparation timing was recorded; there is no per-route setup measurement."
+      },
+      {
+        "route": "direct_moments",
+        "slabs": 64,
+        "observations": 65,
+        "max_node_error_inf": 1.992063958233814e-09,
+        "physical_whole_path_cap_exact": "1/100000000",
+        "external_exact_oracle_whole_path_error_upper": {
+          "exact": "2501366848310716598992226825484233317918839521097495613892207299754271360675781337399041795126665946503561863039872336192262735094524110413729955834618547/7139389566535834103581176831044648945960212712149037625770241997552964910733562294207462026287912737176388163847140092358606867519705309565076989422759659438080",
+          "decimal_display": 3.503614454708103e-07
+        },
+        "external_exact_oracle_cap_met": false,
+        "native_outward_whole_path_error_upper": {
+          "exact": "3206864326253715/9444732965739290427392",
+          "decimal_display": 3.3953996771392005e-07
+        },
+        "native_outward_cap_met": false,
+        "rhs_calls": 256,
+        "integration_seconds": 1.6351e-05,
+        "native_certificate_seconds": 0.003215426,
+        "native_integration_plus_certificate_seconds": 0.003231777,
+        "external_exact_oracle_seconds": 0.1652413869742304,
+        "audit_pipeline_seconds_additive_display": 0.1684731639742304,
+        "external_oracle_slabs_checked": 64,
+        "native_slabs_checked": 64,
+        "max_node_error_inf_exact": "17942917/9007199254740992",
+        "route_setup_seconds": null,
+        "route_setup_not_measured_reason": "Only one shared diagnostic preparation timing was recorded; there is no per-route setup measurement."
+      },
+      {
+        "route": "shared_polynomial",
+        "slabs": 64,
+        "observations": 65,
+        "max_node_error_inf": 1.992063958233814e-09,
+        "physical_whole_path_cap_exact": "1/100000000",
+        "external_exact_oracle_whole_path_error_upper": {
+          "exact": "2501366848310716598992226825484233317918839521097495613892207299754271360675781337399041795126665946503561863039872336192262735094524110413729955834618547/7139389566535834103581176831044648945960212712149037625770241997552964910733562294207462026287912737176388163847140092358606867519705309565076989422759659438080",
+          "decimal_display": 3.503614454708103e-07
+        },
+        "external_exact_oracle_cap_met": false,
+        "native_outward_whole_path_error_upper": {
+          "exact": "3206864326253715/9444732965739290427392",
+          "decimal_display": 3.3953996771392005e-07
+        },
+        "native_outward_cap_met": false,
+        "rhs_calls": 256,
+        "integration_seconds": 1.583e-05,
+        "native_certificate_seconds": 0.003196961,
+        "native_integration_plus_certificate_seconds": 0.003212791,
+        "external_exact_oracle_seconds": 0.15263709891587496,
+        "audit_pipeline_seconds_additive_display": 0.15584988991587495,
+        "external_oracle_slabs_checked": 64,
+        "native_slabs_checked": 64,
+        "max_node_error_inf_exact": "17942917/9007199254740992",
+        "route_setup_seconds": null,
+        "route_setup_not_measured_reason": "Only one shared diagnostic preparation timing was recorded; there is no per-route setup measurement."
+      },
+      {
+        "route": "direct_moments",
+        "slabs": 128,
+        "observations": 129,
+        "max_node_error_inf": 1.2471301769068077e-10,
+        "physical_whole_path_cap_exact": "1/100000000",
+        "external_exact_oracle_whole_path_error_upper": {
+          "exact": "4906892136173631000124924764996800789823336713077510003412192315565168916602445492269576338276438728743130972877389074531217922445290431809949818146361429/114230233064573345657298829296714383135363403394384602012323871960847438571736996707319392420606603794822210621554241477737709880315284953041231830764154551009280",
+          "decimal_display": 4.2956159718240336e-08
+        },
+        "external_exact_oracle_cap_met": false,
+        "native_outward_whole_path_error_upper": {
+          "exact": "3194131756996989/75557863725914323419136",
+          "decimal_display": 4.2273981813245566e-08
+        },
+        "native_outward_cap_met": false,
+        "rhs_calls": 512,
+        "integration_seconds": 3.2401e-05,
+        "native_certificate_seconds": 0.006437183,
+        "native_integration_plus_certificate_seconds": 0.006469584,
+        "external_exact_oracle_seconds": 0.3556218750309199,
+        "audit_pipeline_seconds_additive_display": 0.3620914590309199,
+        "external_oracle_slabs_checked": 128,
+        "native_slabs_checked": 128,
+        "max_node_error_inf_exact": "1123315/9007199254740992",
+        "route_setup_seconds": null,
+        "route_setup_not_measured_reason": "Only one shared diagnostic preparation timing was recorded; there is no per-route setup measurement."
+      },
+      {
+        "route": "shared_polynomial",
+        "slabs": 128,
+        "observations": 129,
+        "max_node_error_inf": 1.2471301769068077e-10,
+        "physical_whole_path_cap_exact": "1/100000000",
+        "external_exact_oracle_whole_path_error_upper": {
+          "exact": "4906892136173631000124924764996800789823336713077510003412192315565168916602445492269576338276438728743130972877389074531217922445290431809949818146361429/114230233064573345657298829296714383135363403394384602012323871960847438571736996707319392420606603794822210621554241477737709880315284953041231830764154551009280",
+          "decimal_display": 4.2956159718240336e-08
+        },
+        "external_exact_oracle_cap_met": false,
+        "native_outward_whole_path_error_upper": {
+          "exact": "3194131756996989/75557863725914323419136",
+          "decimal_display": 4.2273981813245566e-08
+        },
+        "native_outward_cap_met": false,
+        "rhs_calls": 512,
+        "integration_seconds": 3.1749e-05,
+        "native_certificate_seconds": 0.007006448,
+        "native_integration_plus_certificate_seconds": 0.007038197,
+        "external_exact_oracle_seconds": 0.37521534808911383,
+        "audit_pipeline_seconds_additive_display": 0.38225354508911386,
+        "external_oracle_slabs_checked": 128,
+        "native_slabs_checked": 128,
+        "max_node_error_inf_exact": "1123315/9007199254740992",
+        "route_setup_seconds": null,
+        "route_setup_not_measured_reason": "Only one shared diagnostic preparation timing was recorded; there is no per-route setup measurement."
+      },
+      {
+        "route": "direct_moments",
+        "slabs": 256,
+        "observations": 257,
+        "max_node_error_inf": 7.801093104831125e-12,
+        "physical_whole_path_cap_exact": "1/100000000",
+        "external_exact_oracle_whole_path_error_upper": {
+          "exact": "26569721330594132947038487992006425649302750067765419314103716386428525412718759954669239481908674854939124236480729444775509101581804126349199961529465/4997572696575083872506823781731254262172148898504326338039169398287075437513493605945223418401538916023471714692998064651024807263793716695553892595931761606656",
+          "decimal_display": 5.316525230098761e-09
+        },
+        "external_exact_oracle_cap_met": true,
+        "native_outward_whole_path_error_upper": {
+          "exact": "3187760506647573/604462909807314587353088",
+          "decimal_display": 5.2737073771221786e-09
+        },
+        "native_outward_cap_met": true,
+        "rhs_calls": 1024,
+        "integration_seconds": 6.4631e-05,
+        "native_certificate_seconds": 0.012943017,
+        "native_integration_plus_certificate_seconds": 0.013007648,
+        "external_exact_oracle_seconds": 0.592893318971619,
+        "audit_pipeline_seconds_additive_display": 0.605900966971619,
+        "external_oracle_slabs_checked": 256,
+        "native_slabs_checked": 256,
+        "max_node_error_inf_exact": "35133/4503599627370496",
+        "route_setup_seconds": null,
+        "route_setup_not_measured_reason": "Only one shared diagnostic preparation timing was recorded; there is no per-route setup measurement."
+      },
+      {
+        "route": "shared_polynomial",
+        "slabs": 256,
+        "observations": 257,
+        "max_node_error_inf": 7.801093104831125e-12,
+        "physical_whole_path_cap_exact": "1/100000000",
+        "external_exact_oracle_whole_path_error_upper": {
+          "exact": "26569721330594132947038487992006425649302750067765419314103716386428525412718759954669239481908674854939124236480729444775509101581804126349199961529465/4997572696575083872506823781731254262172148898504326338039169398287075437513493605945223418401538916023471714692998064651024807263793716695553892595931761606656",
+          "decimal_display": 5.316525230098761e-09
+        },
+        "external_exact_oracle_cap_met": true,
+        "native_outward_whole_path_error_upper": {
+          "exact": "3187760506647573/604462909807314587353088",
+          "decimal_display": 5.2737073771221786e-09
+        },
+        "native_outward_cap_met": true,
+        "rhs_calls": 1024,
+        "integration_seconds": 6.362e-05,
+        "native_certificate_seconds": 0.013842314,
+        "native_integration_plus_certificate_seconds": 0.013905934,
+        "external_exact_oracle_seconds": 0.5920895729213953,
+        "audit_pipeline_seconds_additive_display": 0.6059955069213953,
+        "external_oracle_slabs_checked": 256,
+        "native_slabs_checked": 256,
+        "max_node_error_inf_exact": "35133/4503599627370496",
+        "route_setup_seconds": null,
+        "route_setup_not_measured_reason": "Only one shared diagnostic preparation timing was recorded; there is no per-route setup measurement."
+      }
+    ],
+    "same_route_observation_bits": [
+      {
+        "slabs": 16,
+        "same_observation_times_and_state_bits": true
+      },
+      {
+        "slabs": 32,
+        "same_observation_times_and_state_bits": true
+      },
+      {
+        "slabs": 64,
+        "same_observation_times_and_state_bits": true
+      },
+      {
+        "slabs": 128,
+        "same_observation_times_and_state_bits": true
+      },
+      {
+        "slabs": 256,
+        "same_observation_times_and_state_bits": true
+      }
+    ],
+    "first_grid_meeting_both_native_and_external_whole_path_caps": 256
+  },
+  "timing_variability": {
+    "profile": "measurement",
+    "phase_repeats": 7,
+    "warmup_blocks_per_phase_route": 1,
+    "trajectory_slabs": 128,
+    "units_per_block": 16,
+    "summary": {
+      "candidate_field": {
+        "direct_moments": {
+          "n": 7,
+          "min_seconds": 6.0895e-05,
+          "median_seconds": 6.1076e-05,
+          "max_seconds": 8.8857e-05,
+          "max_over_min": 1.4591838410378521
+        },
+        "shared_polynomial": {
+          "n": 7,
+          "min_seconds": 5.6116e-05,
+          "median_seconds": 5.7398e-05,
+          "max_seconds": 7.8278e-05,
+          "max_over_min": 1.394931926723216
+        },
+        "paired_direct_over_shared_ratios": {
+          "n": 7,
+          "min": 1.0165271374598472,
+          "median": 1.0796685336678622,
+          "max": 1.135146529037533
+        }
+      },
+      "candidate_trajectory": {
+        "direct_moments": {
+          "n": 7,
+          "min_seconds": 0.000515352,
+          "median_seconds": 0.000519279,
+          "max_seconds": 0.000718797,
+          "max_over_min": 1.3947690122479393
+        },
+        "shared_polynomial": {
+          "n": 7,
+          "min_seconds": 0.00050373,
+          "median_seconds": 0.000506085,
+          "max_seconds": 0.000661098,
+          "max_over_min": 1.3124054553034366
+        },
+        "paired_direct_over_shared_ratios": {
+          "n": 7,
+          "min": 1.0230718837472454,
+          "median": 1.02695420991264,
+          "max": 1.4195515004295405
+        },
+        "interpretation": "Across 7 paired timing blocks direct/shared elapsed ratios are all above 1 for this isolated N=128 candidate trajectory phase; median direct/shared is about 1.027. This is diagnostic-only, small-workload timing and excludes whole-path certification."
+      },
+      "combined_field": {
+        "direct_moments": {
+          "n": 7,
+          "min_seconds": 0.000904706,
+          "median_seconds": 0.000905508,
+          "max_seconds": 0.001056734,
+          "max_over_min": 1.1680413305537931
+        },
+        "shared_polynomial": {
+          "n": 7,
+          "min_seconds": 0.000608127,
+          "median_seconds": 0.000612625,
+          "max_seconds": 0.000787045,
+          "max_over_min": 1.2942115709383073
+        },
+        "paired_direct_over_shared_ratios": {
+          "n": 7,
+          "min": 1.1869801959815547,
+          "median": 1.4775896845423293,
+          "max": 1.4884522476390623
+        }
+      },
+      "interval_field": {
+        "direct_moments": {
+          "n": 7,
+          "min_seconds": 0.000829305,
+          "median_seconds": 0.000836518,
+          "max_seconds": 0.001072173,
+          "max_over_min": 1.2928572720531046
+        },
+        "shared_polynomial": {
+          "n": 7,
+          "min_seconds": 0.000547894,
+          "median_seconds": 0.000553394,
+          "max_seconds": 0.000582739,
+          "max_over_min": 1.0635980682394768
+        },
+        "paired_direct_over_shared_ratios": {
+          "n": 7,
+          "min": 1.492715563171385,
+          "median": 1.5229738295423083,
+          "max": 1.8398854375629572
+        }
+      }
+    },
+    "scope_note": "seven interleaved repeated timing blocks cover micro/field/trajectory phases at N=128; they do not repeat the certified full-path route pair"
+  },
+  "work_counters": {
+    "native_timing_work": {
+      "candidate_field": {
+        "direct_moments": {
+          "per_block_work": {
+            "requests_attempted": 2064,
+            "requests_completed": 2064,
+            "requests_rejected": 0,
+            "moment_batches": 2064,
+            "shared_field_batches": 0,
+            "scalar_additions": 18576,
+            "scalar_multiplications": 26832,
+            "interval_additions": 0,
+            "interval_multiplications": 0,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "ad_evaluations": 0,
+            "newton_updates": 0,
+            "root_enumerations": 0
+          },
+          "same_counters_each_repeat": true
+        },
+        "shared_polynomial": {
+          "per_block_work": {
+            "requests_attempted": 2064,
+            "requests_completed": 2064,
+            "requests_rejected": 0,
+            "moment_batches": 0,
+            "shared_field_batches": 2064,
+            "scalar_additions": 14448,
+            "scalar_multiplications": 16512,
+            "interval_additions": 0,
+            "interval_multiplications": 0,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "ad_evaluations": 0,
+            "newton_updates": 0,
+            "root_enumerations": 0
+          },
+          "same_counters_each_repeat": true
+        }
+      },
+      "interval_field": {
+        "direct_moments": {
+          "per_block_work": {
+            "requests_attempted": 2064,
+            "requests_completed": 2064,
+            "requests_rejected": 0,
+            "moment_batches": 2064,
+            "shared_field_batches": 0,
+            "scalar_additions": 0,
+            "scalar_multiplications": 0,
+            "interval_additions": 18576,
+            "interval_multiplications": 26832,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "ad_evaluations": 0,
+            "newton_updates": 0,
+            "root_enumerations": 0
+          },
+          "same_counters_each_repeat": true
+        },
+        "shared_polynomial": {
+          "per_block_work": {
+            "requests_attempted": 2064,
+            "requests_completed": 2064,
+            "requests_rejected": 0,
+            "moment_batches": 0,
+            "shared_field_batches": 2064,
+            "scalar_additions": 0,
+            "scalar_multiplications": 0,
+            "interval_additions": 14448,
+            "interval_multiplications": 16512,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "ad_evaluations": 0,
+            "newton_updates": 0,
+            "root_enumerations": 0
+          },
+          "same_counters_each_repeat": true
+        }
+      },
+      "combined_field": {
+        "direct_moments": {
+          "per_block_work": {
+            "requests_attempted": 4128,
+            "requests_completed": 4128,
+            "requests_rejected": 0,
+            "moment_batches": 4128,
+            "shared_field_batches": 0,
+            "scalar_additions": 18576,
+            "scalar_multiplications": 26832,
+            "interval_additions": 18576,
+            "interval_multiplications": 26832,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "ad_evaluations": 0,
+            "newton_updates": 0,
+            "root_enumerations": 0
+          },
+          "same_counters_each_repeat": true
+        },
+        "shared_polynomial": {
+          "per_block_work": {
+            "requests_attempted": 4128,
+            "requests_completed": 4128,
+            "requests_rejected": 0,
+            "moment_batches": 0,
+            "shared_field_batches": 4128,
+            "scalar_additions": 14448,
+            "scalar_multiplications": 16512,
+            "interval_additions": 14448,
+            "interval_multiplications": 16512,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "ad_evaluations": 0,
+            "newton_updates": 0,
+            "root_enumerations": 0
+          },
+          "same_counters_each_repeat": true
+        }
+      },
+      "candidate_trajectory": {
+        "direct_moments": {
+          "per_block_work": {
+            "requests_attempted": 16384,
+            "requests_completed": 16384,
+            "requests_rejected": 0,
+            "moment_batches": 16384,
+            "shared_field_batches": 0,
+            "scalar_additions": 147456,
+            "scalar_multiplications": 212992,
+            "interval_additions": 0,
+            "interval_multiplications": 0,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "ad_evaluations": 0,
+            "newton_updates": 0,
+            "root_enumerations": 0
+          },
+          "same_counters_each_repeat": true
+        },
+        "shared_polynomial": {
+          "per_block_work": {
+            "requests_attempted": 16384,
+            "requests_completed": 16384,
+            "requests_rejected": 0,
+            "moment_batches": 8192,
+            "shared_field_batches": 8192,
+            "scalar_additions": 131072,
+            "scalar_multiplications": 172032,
+            "interval_additions": 0,
+            "interval_multiplications": 0,
+            "jacobian_evaluations": 0,
+            "jvp_evaluations": 0,
+            "ad_evaluations": 0,
+            "newton_updates": 0,
+            "root_enumerations": 0
+          },
+          "same_counters_each_repeat": true
+        }
+      }
+    },
+    "grid_rhs_calls": [
+      {
+        "route": "direct_moments",
+        "slabs": 16,
+        "rhs_calls": 64
+      },
+      {
+        "route": "shared_polynomial",
+        "slabs": 16,
+        "rhs_calls": 64
+      },
+      {
+        "route": "direct_moments",
+        "slabs": 32,
+        "rhs_calls": 128
+      },
+      {
+        "route": "shared_polynomial",
+        "slabs": 32,
+        "rhs_calls": 128
+      },
+      {
+        "route": "direct_moments",
+        "slabs": 64,
+        "rhs_calls": 256
+      },
+      {
+        "route": "shared_polynomial",
+        "slabs": 64,
+        "rhs_calls": 256
+      },
+      {
+        "route": "direct_moments",
+        "slabs": 128,
+        "rhs_calls": 512
+      },
+      {
+        "route": "shared_polynomial",
+        "slabs": 128,
+        "rhs_calls": 512
+      },
+      {
+        "route": "direct_moments",
+        "slabs": 256,
+        "rhs_calls": 1024
+      },
+      {
+        "route": "shared_polynomial",
+        "slabs": 256,
+        "rhs_calls": 1024
+      }
+    ],
+    "derivative_counter_scope": "For included native timed route workloads, recorded AD/Jacobian/JVP/Newton/root-enumeration counters are zero where exposed. This supports only the measured manufactured route/certificate path; it is not a statement about general ODE solver integration or arbitrary clients."
+  },
+  "allocation_evidence": {
+    "final_f6_alloc": {
+      "status": "completed",
+      "exit_code": 0,
+      "tests": "successful_slab_arithmetic_allocates_no_heap_objects",
+      "interpretation": "focused successful-slab contract only"
+    },
+    "final2_f6_alloc": {
+      "status": "completed",
+      "exit_code": 0,
+      "tests": [
+        "rejected_strict_tube_charges_only_pre_and_post_loop_allocations",
+        "successful_slab_arithmetic_allocates_no_heap_objects"
+      ],
+      "interpretation": "focused slab allocation cases; does not establish zero allocation for setup, all route orchestration, or whole solver"
+    },
+    "broader_zero_allocation_claim": "NOT_ESTABLISHED"
+  },
+  "cost_interpretation": {
+    "per_grid_native_certified_route_total": "integration_seconds + native_certificate_seconds; also recorded directly by native output",
+    "external_oracle_time": "separate independent audit cost, not a deployed native route component",
+    "global_preparation": "0.057802793 s shared setup, cannot be allocated to each route without a declared policy",
+    "paired_certified_total_cost_ratio": {
+      "status": "NO_QUALIFIED_RATIO",
+      "single_first_passing_grid_raw_pair": {
+        "grid_slabs": 256,
+        "direct_native_total_seconds": 0.013007648,
+        "shared_native_total_seconds": 0.013905934,
+        "shared_over_direct_observed_ratio": 1.069058295550433
+      },
+      "reason": "The certified full-path totals are one native measurement per route at each grid. Seven repeated field/trajectory blocks omit native certificate cost; setup is global and not route-attributed. Thus the raw pair is descriptive, not a repeatable paired total-cost performance claim."
+    }
+  },
+  "claim_ceiling": "Fixed manufactured F6 with all-complex algebraic-multiplicity observable; no broad production or arbitrary ODE performance qualification."
+}

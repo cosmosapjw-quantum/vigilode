@@ -1,0 +1,530 @@
+{
+  "schema": "vigilode-component-native-build-artifacts-v1",
+  "base_head": "26f0b3a187ab41f7d68922491cc489b268c0caa1",
+  "rustc": "rustc 1.94.1 (e408947bf 2026-03-25)",
+  "case_catalog_sha256": "a76da7ccef8edab270e454617c4c6018d8360730e136f2f31f11fa0e4aafb525",
+  "adapter_sources": [
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators/examples/component_benchmark_native.rs",
+      "sha256": "0061f709db439e9f2210b9dc7275f1fbcb9cc43507fd23f4ba74af444a5a079f"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators/examples/component_benchmark_support/mod.rs",
+      "sha256": "9aaf0a2c1d2dfa9388cce84a3675262276e852ede6cf6690af0b1e55a99c234a"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/tools/benchmarks/diffsol/a07/src/bin/component_benchmark.rs",
+      "sha256": "f665f270dd0b3f3953c6298554d69636e9aa6f9b50f78c6d59c87d89032117cf"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/examples/component_benchmark_native",
+      "sha256": "c715b06ef087296e9ae34fd618194635df2f916616a116dc6beaf1be78847cee",
+      "bytes": 141381064,
+      "source": null,
+      "source_sha256": null,
+      "test_functions": [],
+      "execution": "adapter_smoke_executed"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/tools/benchmarks/diffsol/a07/target/debug/component_benchmark",
+      "sha256": "910314b7e90a6e426396578f0e4012f08144f6300bc1e2cd30921d4c0eefa94b",
+      "bytes": 142969320,
+      "source": null,
+      "source_sha256": null,
+      "test_functions": [],
+      "execution": "adapter_smoke_executed"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/alg04_dup_fix_contracts-dda8182000f152c1",
+      "sha256": "8fa9a457674d886fc5745926796a301bf28d155b580a7b9f7cdf9c26836c49d4",
+      "bytes": 68914432,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-krylov/tests/alg04_dup_fix_contracts.rs",
+      "source_sha256": "5b0be18dc9aa3da820f4a1636cbe42961820357228f99a2ca15a63a332141492",
+      "test_functions": [
+        "skipping_the_final_residual_changes_only_the_diagnostic_counters",
+        "a_right_hand_side_already_within_the_threshold_needs_no_operator"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/sp02_workspace_charge-a95882824058736a",
+      "sha256": "b4494c2e9ba368818f5f03000f475dd05559afc8d9f3f3c5557c1daf01b87018",
+      "bytes": 68940648,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-krylov/tests/sp02_workspace_charge.rs",
+      "source_sha256": "2588c9b597b82ac67363ba2a54b6f60b4865c1d4ca060bec9f6cb55f29ebb26c",
+      "test_functions": [
+        "least_squares_workspace_charge_contract",
+        "gmres_workspace_charge_contract",
+        "lgmres_into_workspace_charge_contract"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/rev04_lgmres_into_contracts-b4fa5b924d38848c",
+      "sha256": "519368a043c1112e477b9ea6010891ee12f47a7e3b06c7260808d3eecc5fbb1b",
+      "bytes": 68955616,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-krylov/tests/rev04_lgmres_into_contracts.rs",
+      "source_sha256": "c665c87ab4e7ad7d857e59bf996d054b9eda67ae6c2402744d727580c085e760",
+      "test_functions": [
+        "successful_solves_match_bit_for_bit",
+        "failing_solves_roll_back_alike_and_leave_the_output",
+        "a_direction_of_the_wrong_length_is_dropped_alike",
+        "a_wrong_output_length_is_rejected"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/leja_enclosed_contract-d6343171460982c6",
+      "sha256": "551e75c53b1ea15b2c52b5b0e8a8541ba1b59ca18a9febc8c78ff8b3c2185744",
+      "bytes": 41624784,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-core/tests/leja_enclosed_contract.rs",
+      "source_sha256": "ff93fec6203e5e32c9f3ab35ed961543e2d8ed10563bdb0db78e504b81b3496d",
+      "test_functions": [
+        "exact_spectral_fixtures_export",
+        "explicit_enclosure_rejects_declared_domain_and_keeps_success_transaction",
+        "admitted_fused_output_keeps_bound_budget_and_owner_together",
+        "admission_refuses_legacy_initial_workspace_and_invalid_budgets",
+        "coefficient_cache_reuse_does_not_reuse_another_operators_output",
+        "refused_overflow_attempt_does_not_change_admissible_report",
+        "exact_zero_fused_action_can_be_admitted_at_zero_budget"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/pp10_leja_contracts-f7ed1f8a81a0602c",
+      "sha256": "427afe8aaf9eead385d13981e3729b7784701fc29fb50b3ce8d3ac65f8587a02",
+      "bytes": 61767544,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-core/tests/pp10_leja_contracts.rs",
+      "source_sha256": "4fb1d5abf3a461a7ad47cac71585334d09d66cc46ea297a69c529a5fecfb695d",
+      "test_functions": [
+        "scalar_operator_matches_the_closed_form",
+        "diagonal_operators_meet_the_tolerance_against_closed_forms",
+        "symmetric_operator_agrees_with_the_dense_reference",
+        "degree_cap_stops_without_convergence",
+        "counters_charge_every_operator_product_and_nothing_else",
+        "zero_input_and_zero_step_charge_no_products",
+        "invalid_inputs_are_errors_without_work",
+        "no_certified_api_admits_a_leja_result"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/laguerre_component_export-dd851a275564d09b",
+      "sha256": "3ee9132d9e9a6fe6f7a8d2d340dec514749f61f7a6c5fdd2e61742059d57e3f6",
+      "bytes": 42744840,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-core/tests/laguerre_component_export.rs",
+      "source_sha256": "22db9a56f5fded3425473d0643d059e7fead68f3fc8c358d008c3e2acfe43a2f",
+      "test_functions": [
+        "report_and_counter_parity_with_joint_phi_action",
+        "identity_stamping_and_envelope_key_digest",
+        "refusal_on_declared_enclosure_and_degree_above_128",
+        "vg1_zero_allocation_in_recurrence_and_directed_primitives",
+        "vg2_outward_rebuild_and_nonzero_normalization_shift",
+        "vg2_degree_budget_sweep_monotone_truncation",
+        "export_components"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/declared_structure_routing-0a91e8b2092f4a5c",
+      "sha256": "1c1e9e65c5bd1b49482927bb46dec1dea91c662f8ee9a26bcec14ec8378f1ed4",
+      "bytes": 139301168,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators/tests/declared_structure_routing.rs",
+      "source_sha256": "d3c808d8069293c08d1daa5e099c8ad9a826e4d73af30466ec6b23bd0649c929",
+      "test_functions": [
+        "every_malformed_declaration_is_refused_before_any_step",
+        "band_verification_is_charged_and_reported",
+        "routed_equals_its_target_driver_on_quick_cells",
+        "a_dense_declaration_above_eight_records_its_fallback",
+        "the_transcribed_problems_are_consistent",
+        "export_runs"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/spd08_small_ensemble_lanes-8f763e436bd845bc",
+      "sha256": "db4e8dd465dc33e0d73f1a03677c8bc2774324e1060be0bffd2eeb5f7900d2f1",
+      "bytes": 128433616,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators/tests/spd08_small_ensemble_lanes.rs",
+      "source_sha256": "dc18489de578f93579a6716bc6e2595e5185ca06618838d674a9c173a8edf6c4",
+      "test_functions": [
+        "the_vdp_ensemble_on_lanes_equals_the_scalar_driver",
+        "ragged_ensembles_on_lanes_equal_the_scalar_driver",
+        "rejected_and_exhausted_members_equal_the_scalar_driver",
+        "injected_failures_are_masked_per_lane"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/stage_batch_contracts-82788fc36d93236b",
+      "sha256": "2c9a73c9ab21c13615c84b1f706ac3501421dc583b5f0db1dd3421d42f4e504f",
+      "bytes": 127511368,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators/tests/stage_batch_contracts.rs",
+      "source_sha256": "c5f08ccea8d52ba60459a168f655702a608eba3929d52ea412d2e8d786a1c461",
+      "test_functions": [
+        "local_rayon_pool_executes_rhs_rows_concurrently_and_preserves_order",
+        "shared_operator_rows_are_identical_for_sequential_and_stage_parallel_execution",
+        "failed_parallel_rhs_batch_preserves_attempted_work_accounting",
+        "smoke_feasibility_report_is_deterministic_and_covers_all_required_kernels"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/rodas5p_fast_allocations-c712e1be88ab6b82",
+      "sha256": "d17981cef16e86500a4b025c5ac05e1a3d7c598e339af2a7dcb4e53bf2d30a45",
+      "bytes": 137205520,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators/tests/rodas5p_fast_allocations.rs",
+      "source_sha256": "0468682e6a55837958a8b08887eb9ab08074f6765a1ef28077eb4cc4130d1146",
+      "test_functions": [
+        "a_fast_step_allocates_nothing",
+        "a_column_extent_step_allocates_nothing"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/pexprb_defect_certificate_contract-b4fa0341846e9ca9",
+      "sha256": "dccd3d54e44d20b65c3577d5e481e200ffb0813e469a6f568b6622edb6c852c1",
+      "bytes": 125689688,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators/tests/pexprb_defect_certificate_contract.rs",
+      "source_sha256": "a801bf7145f1528f4272f40e8b8199f99e3d79573a1161a88dc643f55138537f",
+      "test_functions": [
+        "test_f1_defect_bound_monotonicity_and_enclosure",
+        "test_f2_pexprb54s4_phi_engine_level1_parity",
+        "test_f3_rival_specification_contracts",
+        "test_f4_rotadv2d_niche_corpus_parameters"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/matrix_function_contracts-2ec2b8e8bdd805df",
+      "sha256": "846c2158dc3851aae76f7ed84816a1622933fe61b706893ffe92c05dc3c57d02",
+      "bytes": 60864488,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-core/tests/matrix_function_contracts.rs",
+      "source_sha256": "3c68e42df7a8ab7c3cc256f21523b68e950b528286befc9c9a86d8893700970f",
+      "test_functions": [
+        "pade13_matches_scalar_exponential_across_stiff_scales",
+        "dense_phi_action_matches_scalar_values",
+        "dense_phi_action_satisfies_matrix_recurrence",
+        "dense_phi_action_is_invariant_under_the_physical_scale_of_the_vector",
+        "dense_phi_action_is_accurate_for_a_large_vector_on_a_diagonal_matrix",
+        "dense_phi_action_accepts_the_largest_finite_vectors",
+        "dense_phi_action_is_accurate_for_subnormal_and_power_of_two_vectors",
+        "dense_phi_action_reports_a_result_that_really_overflows",
+        "fused_phi_combination_is_accurate_as_the_step_shrinks"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/sparse_direct_contract-ee722149d80a4599",
+      "sha256": "9ef5c2e95fd7f50cfe2de0dda4625671e16fa2d9e2f5d86898b243788eee07c6",
+      "bytes": 61230024,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-core/tests/sparse_direct_contract.rs",
+      "source_sha256": "54d4cc7494f661bdf171208e5c264d99bf33aeb287f6bf1d3f709df1d21f7cfa",
+      "test_functions": [
+        "test_seeded_sparse_matrices_backward_error",
+        "test_brusselator_1d_agreement_with_dense_lu"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/core_contracts-7cda2a959a475a01",
+      "sha256": "c9ff2de27a2a05c40f03cf5352a7386995756dd79dd77a51788fc4eb0a715a48",
+      "bytes": 61424072,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-core/tests/core_contracts.rs",
+      "source_sha256": "2ba318d9f9d6bb3325075df7a912a0131453db4e440c5a209f41a27d1a6292c0",
+      "test_functions": [
+        "safe_l2_handles_extreme_scale",
+        "dense_matrix_matvec_is_row_major_and_exact_for_small_case",
+        "wrms_matches_definition",
+        "coefficient_transform_preserves_rodas5p_structure",
+        "coefficient_snapshot_is_bit_identical_to_the_authoritative_sciml_literals",
+        "direct_solve_agrees_with_known_solution",
+        "linear_operator_default_row_application_preserves_order",
+        "linear_operator_row_application_rejects_ragged_shapes",
+        "linear_solver_config_rejects_non_finite_tolerances",
+        "safe_l2_propagates_nan_and_infinity",
+        "coefficient_tableau_is_parsed_and_derived_once_per_process",
+        "coefficient_snapshot_bytes_match_the_digest_verified_at_load"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/pp16_complex_shift_contracts-80bdf34ebe1adc21",
+      "sha256": "6c23bf6550ccdb64e66fbd9169837a1a3acca8eb75a0e12a886427d48b745f23",
+      "bytes": 60808680,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-core/tests/pp16_complex_shift_contracts.rs",
+      "source_sha256": "670bfc8eecf6319e2f652a45c23c6c3ad27c01ace6e582739488d974e34660c0",
+      "test_functions": [
+        "scalar_hand_case_and_gain",
+        "gain_one_would_under_bound_complex_shift",
+        "real_gamma_reproduces_real_shift_status",
+        "complex_jet_candidates_and_work",
+        "negative_controls_fail_closed",
+        "partial_fraction_contracts"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/shared_shift_jet_contracts-1563bf8c81cde4e9",
+      "sha256": "59820f13024573b375efffa0fbf065a37ba5512564004034f92b66368a5c5ce0",
+      "bytes": 60536472,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-core/tests/shared_shift_jet_contracts.rs",
+      "source_sha256": "c0ec1e177f7b47d442202389a1ab1de7c32745856bdc17ce492c9fd57c2422d9",
+      "test_functions": [
+        "exact_current_target_certificate_rejects_wrong_candidate",
+        "independent_columns_and_executed_work_are_preserved",
+        "under_resolution_and_too_small_tolerance_fail_closed",
+        "identity_limits_and_extreme_center_scaling",
+        "invalid_inputs_unsupported_operators_and_budgets_are_errors",
+        "large_target_set_budget_includes_coordinate_gamma_and_tolerance_slots"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/krylov_contracts-9a27fb8215dc25b0",
+      "sha256": "ed44b2acb69ddf48c065ec38517916595c63d63841deb39dfff6cd72ba6b22d6",
+      "bytes": 78283112,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-krylov/tests/krylov_contracts.rs",
+      "source_sha256": "73818283396848e4707941831094dc4fcf517eb46b369373af0e92ac01f1ae13",
+      "test_functions": [
+        "restarted_gmres_matches_direct_solution_and_certifies_true_residual",
+        "gmres_uses_the_same_jacobi_preconditioner_contract",
+        "lgmres_commits_state_only_after_a_certified_solve",
+        "gcrodr_preserves_bu_equals_c_and_refreshes_changed_operator",
+        "gcrodr_reuses_only_an_exact_operator_preconditioner_system_identity",
+        "lgmres_invalidates_cached_images_on_exact_h_or_preconditioner_change",
+        "gcrodr_cross_operator_refresh_remains_scale_invariant",
+        "gcrodr_arnoldi_breakdown_is_uniformly_operator_scale_invariant",
+        "gcrodr_handles_one_dimensional_recycle_updates_without_panicking"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/gcrodr_state_validity_contracts-7cf5f9ce0647c747",
+      "sha256": "9ad88307a812d76783a7007d4d8bf1f18cd5ab7153e4f6e96e4a718b3e30d9ea",
+      "bytes": 78264056,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-krylov/tests/gcrodr_state_validity_contracts.rs",
+      "source_sha256": "b85e73e2bc6bab20621174c9d8ef080937f7c86fcc15f5b535f45970e300c63d",
+      "test_functions": [
+        "gcrodr_state_reused_across_a_dimension_change_returns_without_panicking",
+        "gcrodr_wrong_length_warm_start_under_matching_identity_is_a_typed_error",
+        "gcrodr_same_system_keeps_the_warm_start",
+        "gcrodr_operator_identity_change_clears_the_stale_warm_start",
+        "gcrodr_recycle_rank_above_one_keeps_its_invariant_across_system_changes",
+        "lgmres_state_reused_across_a_dimension_change_returns_without_panicking"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/block_gmres_contracts-0f72dd7a1fe57e60",
+      "sha256": "c3cbd678af548d333c6bc43b381378711c3bba7e52a0fcb01b6de237edf76ea7",
+      "bytes": 69095608,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-krylov/tests/block_gmres_contracts.rs",
+      "source_sha256": "fbb578aec82581e0ccc03c70c3df1b52d0548cd7fced05ef2a094a23b4cde463",
+      "test_functions": [
+        "block_gmres_solves_multiple_rhs_through_block_operator_calls",
+        "block_gmres_deflates_linearly_dependent_rhs",
+        "block_gmres_rejects_ragged_rhs_without_counting_a_solve",
+        "seeded_shared_basis_refines_all_rhs_to_the_same_true_residual_contract",
+        "exhausted_block_gmres_retains_attempted_work_counters",
+        "block_gmres_does_not_false_converge_on_small_nonzero_rhs",
+        "block_arnoldi_rank_is_uniformly_operator_scale_invariant",
+        "seeded_arnoldi_rank_is_uniformly_operator_scale_invariant"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/all_dag_a01_packet-b422b739bbbee414",
+      "sha256": "91e6334e2a8fb41552f5b64ad44c26e7ba6d2e102a26a58947e0efa68e530e2c",
+      "bytes": 106676608,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators/tests/all_dag_a01_packet.rs",
+      "source_sha256": "4a1786bc2f68ee8d543d57591c47233abc84594f4a969621e3e9ccfd77dc2fca",
+      "test_functions": [
+        "frozen_weighted_owner_preserves_arithmetic_and_refusal_contract",
+        "frozen_component_reference_is_independent_of_allocator_measurement"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/production_audit_damped_packet-ad930853124f1eaa",
+      "sha256": "52b1cbf4e711a3ffd6f377d8bc629ce637e3f94da678838412f8a64c096e36fa",
+      "bytes": 105844096,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators/tests/production_audit_damped_packet.rs",
+      "source_sha256": "74b3ab834fe08b1316ca2b3ccea1a49b98661954f404f84a1ad55a0a275227ef",
+      "test_functions": [
+        "one_mode_cubic_and_confluent_limit",
+        "actual_nonunit_stored_weight_sum_is_used",
+        "linear_large_damping_remains_finite",
+        "large_moment_uses_stable_alternate_or_refuses_width",
+        "unequal_frequencies_refine_without_relaxing_tolerance",
+        "immutable_multimesh_trajectory_carries_nonzero_ball",
+        "source_descriptor_is_owned_and_wrong_frame_refuses",
+        "failed_budgets_and_inexact_mesh_are_typed"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/all_dag_a05_verified-1ca488de4868d921",
+      "sha256": "14ad8bb3abff41adab0f14985173c4ebaf2317c02575708a680f91cae984d55e",
+      "bytes": 137541952,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators/tests/all_dag_a05_verified.rs",
+      "source_sha256": "67b99a5a52406a45731dbbcb0bdd0c8144de03b75941d86383233e0d9b881973",
+      "test_functions": [
+        "generic_pr101_original_101_point_witness_and_continuous_inheritance",
+        "one_failed_trial_exposes_only_initial_committed_output",
+        "collective_two_components_use_same_generic_verified_driver",
+        "generic_zero_span_still_validates_configuration_and_model_domain",
+        "unbound_point_problem_cannot_request_verified_authority",
+        "interval_power_form_retains_small_variation_on_large_offset",
+        "generic_collective_cubic_orbit_is_enclosed"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/all_dag_a06_direct-51e4d57669fd506f",
+      "sha256": "81ccc4daaa7af596e6b633ba544fc0dd08fb4356c98b263c598954c936c3f35e",
+      "bytes": 126444712,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators/tests/all_dag_a06_direct.rs",
+      "source_sha256": "bbb4095c9c825f7896200200c09914680685509a2cc22e246d102278c698f18f",
+      "test_functions": [
+        "non_neumann_inverse_covers_exact_dyadic_solutions_at_native_sizes",
+        "exactly_singular_schur_refuses_and_invalidates_reusable_factors",
+        "opt_in_witnesses_preserve_every_stage_and_charge_eight_interval_passes"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/all_dag_a10_bernstein-ad977c1b83e3c94e",
+      "sha256": "3bcf391196d39d923077fe20c91c97e1bd198e5a37c438ac388162d2d8fda532",
+      "bytes": 106309768,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators/tests/all_dag_a10_bernstein.rs",
+      "source_sha256": "5001dfbaaacc6cc8021aaaa5b91d469c32da901713a9539f758f7fae8f787183",
+      "test_functions": [
+        "unchanged_physical_gate_recovers_actual_nonlinear_packet",
+        "cheap_pass_does_no_transform_or_allocation_and_exhaustion_is_visible",
+        "exact_binomial_family_and_complex_vector_share_outward_contract",
+        "degree_cap_and_invalid_budget_refuse_before_allocating"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/all_dag_a11_verified-3ac0cd026061ad9c",
+      "sha256": "6fa883fb090a5484cd87aa76a009e8eda19868e35487b45249423ec5d53bf9fa",
+      "bytes": 137534664,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators/tests/all_dag_a11_verified.rs",
+      "source_sha256": "dabd453f1cc05ca829df66483877492a3539f044cea61b02d93a7d95fd527d62",
+      "test_functions": [
+        "gray_scott_verified_homogeneous_exact_decay_with_inherited_radius",
+        "gray_scott_nonlinear_nonuniform_trajectory_matches_independent_rk4",
+        "fused_callbacks_preserve_stencil_values_and_interval_rhs_encloses_samples",
+        "interval_refusals_keep_attempted_work_and_grid_overflow_is_typed",
+        "full_symmetric_bound_charges_linear_work_in_cell_count",
+        "failed_gray_scott_trial_preserves_only_committed_prefix",
+        "actual_gray_scott_homogeneous_mode_requires_offdiagonal_symmetric_part"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/actual_k_homotopy_contracts-79a3b44868d28e6e",
+      "sha256": "bccef72648278ea931264536b6dda4b9a60593db6291dd63cab850de1c5d9f29",
+      "bytes": 126930840,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators/tests/actual_k_homotopy_contracts.rs",
+      "source_sha256": "80800ded09667065c55977c6a1ecf0d6f29296b03e52d2392a2d318edab31212",
+      "test_functions": [
+        "full_represented_k_retains_leakage_and_closes_common_tube",
+        "direct_and_continued_actual_stage_targets_have_overlapping_outputs",
+        "actual_stage_budgets_and_target_are_not_relaxed"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/target/debug/deps/nonlinear_homotopy_contracts-d778cd5b7ccad24c",
+      "sha256": "c1ffaef3862257d933c6f2c5043695d050c524625b755ff9e858d128eefa2be1",
+      "bytes": 107297192,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators/tests/nonlinear_homotopy_contracts.rs",
+      "source_sha256": "a9fbfdf7f518eedd8c6158a6376dd627e1d1ffd3c387d3d2dea581e5272dd1a0",
+      "test_functions": [
+        "nonlinear_equal_frequency_orbit_is_inside_verified_endpoints",
+        "unequal_frequency_nonzero_coupling_is_thread_reproducible",
+        "target_and_mesh_refusals_never_return_partial_certificate",
+        "unachievable_tolerance_preserves_attempted_work",
+        "direct_target_and_explicit_homotopy_both_certify_original_source",
+        "common_damping_uses_original_ode_verifier",
+        "budget_driven_refinement_reduces_split_error_without_changing_tolerance"
+      ],
+      "execution": "compiled_only"
+    },
+    {
+      "path": "/tmp/vigilode-all-dag-validation-20261018/tools/benchmarks/diffsol/a07/target/release/component_benchmark",
+      "sha256": "76b7132504ea11fa906a6e6ca8b98033802a08808f979326eb6155947df519ec",
+      "bytes": 3964416,
+      "source": "/tmp/vigilode-all-dag-validation-20261018/tools/benchmarks/diffsol/a07/src/bin/component_benchmark.rs",
+      "source_sha256": "f665f270dd0b3f3953c6298554d69636e9aa6f9b50f78c6d59c87d89032117cf",
+      "test_functions": [],
+      "execution": "release_adapter_scalar_smoke_executed"
+    }
+  ],
+  "commands": [
+    {
+      "command": "cargo build --offline -p rodas5p-integrators --example component_benchmark_native",
+      "exit_code": 0,
+      "log": "/tmp/vigilode-all-dag-validation-20261018/research/component_benchmark_20261018/evidence/native_dev/cargo_build_native_09.log"
+    },
+    {
+      "command": "cargo build --offline --locked --bin component_benchmark [cwd=tools/benchmarks/diffsol/a07]",
+      "exit_code": 0,
+      "log": "/tmp/vigilode-all-dag-validation-20261018/research/component_benchmark_20261018/evidence/native_dev/cargo_build_diffsol_06.log"
+    },
+    {
+      "command": "cargo test --offline -p rodas5p-krylov --test alg04_dup_fix_contracts --test sp02_workspace_charge --test rev04_lgmres_into_contracts --no-run",
+      "exit_code": 0,
+      "log": "/tmp/vigilode-all-dag-validation-20261018/research/component_benchmark_20261018/evidence/native_dev/cargo_compile_krylov_contracts_01.log"
+    },
+    {
+      "command": "cargo test --offline -p rodas5p-core --test leja_enclosed_contract --test pp10_leja_contracts --test laguerre_component_export --no-run",
+      "exit_code": 0,
+      "log": "/tmp/vigilode-all-dag-validation-20261018/research/component_benchmark_20261018/evidence/native_dev/cargo_compile_core_contracts_01.log"
+    },
+    {
+      "command": "cargo test --offline -p rodas5p-integrators --test declared_structure_routing --test spd08_small_ensemble_lanes --test stage_batch_contracts --test rodas5p_fast_allocations --test pexprb_defect_certificate_contract --no-run",
+      "exit_code": 0,
+      "log": "/tmp/vigilode-all-dag-validation-20261018/research/component_benchmark_20261018/evidence/native_dev/cargo_compile_integrator_contracts_01.log"
+    },
+    {
+      "command": "cargo test --offline -p rodas5p-integrators --example component_benchmark_native",
+      "exit_code": 0,
+      "log": "/tmp/vigilode-all-dag-validation-20261018/research/component_benchmark_20261018/evidence/native_dev/cargo_test_native_04.log"
+    },
+    {
+      "command": "cargo build --manifest-path tools/benchmarks/diffsol/a07/Cargo.toml --locked --offline --release --bin component_benchmark",
+      "exit_code": 0,
+      "log": "/tmp/vigilode-all-dag-validation-20261018/research/component_benchmark_20261018/evidence/native_dev/cargo_build_diffsol_release_01.log"
+    },
+    {
+      "command": "cargo test --offline -p rodas5p-core --test matrix_function_contracts --test sparse_direct_contract --test core_contracts --test pp16_complex_shift_contracts --test shared_shift_jet_contracts --no-run",
+      "exit_code": 0,
+      "log": "/tmp/vigilode-all-dag-validation-20261018/research/component_benchmark_20261018/evidence/native_dev/cargo_compile_core_contracts_02.log"
+    },
+    {
+      "command": "cargo test --offline -p rodas5p-krylov --test krylov_contracts --test gcrodr_state_validity_contracts --test block_gmres_contracts --no-run",
+      "exit_code": 0,
+      "log": "/tmp/vigilode-all-dag-validation-20261018/research/component_benchmark_20261018/evidence/native_dev/cargo_compile_krylov_contracts_02.log"
+    },
+    {
+      "command": "cargo test --offline -p rodas5p-integrators --test all_dag_a01_packet --test production_audit_damped_packet --test all_dag_a05_verified --test all_dag_a06_direct --test all_dag_a10_bernstein --test all_dag_a11_verified --test actual_k_homotopy_contracts --test nonlinear_homotopy_contracts --no-run",
+      "exit_code": 0,
+      "log": "/tmp/vigilode-all-dag-validation-20261018/research/component_benchmark_20261018/evidence/native_dev/cargo_compile_integrator_contracts_02.log"
+    }
+  ],
+  "claim_scope": "Build and selected adapter smoke only; 27 component contract binaries compiled without running historical campaigns; no benchmark or scientific admission.",
+  "release_diffsol_smoke": {
+    "request": "/tmp/vigilode-all-dag-validation-20261018/research/component_benchmark_20261018/evidence/native_dev/diffsol_release_scalar.request.json",
+    "output": "/tmp/vigilode-all-dag-validation-20261018/research/component_benchmark_20261018/evidence/native_dev/diffsol_release_scalar_smoke_02.json",
+    "exit_code": 0,
+    "status": "OK",
+    "outputs": 101,
+    "first_capability_probe_preserved": "/tmp/vigilode-all-dag-validation-20261018/research/component_benchmark_20261018/evidence/native_dev/diffsol_release_scalar_smoke.json"
+  }
+}

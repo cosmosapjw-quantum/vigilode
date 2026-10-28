@@ -1,0 +1,30 @@
+{
+  "unit": "A02-TXN-01",
+  "executor": "/root/a03_scalar_rate_impl",
+  "base_HEAD": "178e18ab1e270b4743a4d1c45b6541fc9d0e7848",
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/packet_trajectory.rs": "b884b1d5b0cff1c3b9437a609ad90beaddd36d8423180bb2da679751a529cad7",
+    "crates/rodas5p-integrators/src/packet_curve_output.rs": "864ef1358240e1d53d792204e0355cd24c7cb44c0cd3856ee21f514a5588afc6",
+    "crates/rodas5p-integrators/tests/production_audit_verified_trajectory.rs": "a5631295f7d87fb680aa6d35187bed09e9d69a09c76ceebbc588547214d90898",
+    "crates/rodas5p-integrators/tests/packet_unequal_fraction_oracle.py": "1e89fb1b04c842152075bc3f3fe25a3287c090119002555bc7540e3d268c75b6",
+    "research/production_audit_20261018/A02_VERIFIED_TRAJECTORY_CONTRACT.md": "e15561a9de6a81a31f3ccb8aaf17b69613b605a9a81681064e7ad591c7d7f8d0",
+    "research/production_audit_20261018/evidence/continuation_a02_research/supplement_02/FROZEN_ACCEPTANCE_INPUTS_V2.json": "1679dd7542028d3c103b321ca4293d1fcf4aa4f7622ee663c3cef3ba5557abb3",
+    "research/production_audit_20261018/evidence/continuation_a02_research/supplement_02/AMENDMENT_KO.md": "e0ccbc46d8e35c8866c97b3dd2bb1d3c9b9daccbec127b9864bdea7254325eca",
+    "research/production_audit_20261018/evidence/continuation_a02_research/txn_01/PREREGISTRATION.md": "d8be942717b0b119159b4a7467013a9babe1c5c71054895a4489fb14856fd681",
+    "research/production_audit_20261018/evidence/continuation_a02_research/txn_01/SOURCE_COUNTER_TALLY.json": "1b731e02d102305c3a66666e52246cbeb24cb86f22fc0b5a5bac3f7faa025c38",
+    "research/production_audit_20261018/evidence/continuation_a02_research/txn_01/fraction_oracle.py": "76ea46aaccf0ab5f423422c7332668a2ec75603d8fc614d27511827bfa69b063"
+  },
+  "execution": {
+    "rustfmt": "exit0",
+    "cargo_build": "NOT_RUN",
+    "cargo_test": "NOT_RUN",
+    "numerical_oracle": "NOT_RUN",
+    "bench": "NOT_RUN"
+  },
+  "status": "IMPLEMENTED_PENDING_CONTROLLER_EXEC_SHA_AND_REVIEW",
+  "claim_ceiling": "NO_NUMERICAL_OR_ALLOCATION_ADMISSION",
+  "open_acceptance_plumbing": [
+    "Full exact imported PacketWorkCounters symbolic expansion is not yet asserted by the new tests; imported paths remain separately recorded.",
+    "Optional successful subnormal invalid arms emit observations; the primary Fraction wrapper covers the main frozen fixtures, not these additional invalid-arm observations."
+  ]
+}

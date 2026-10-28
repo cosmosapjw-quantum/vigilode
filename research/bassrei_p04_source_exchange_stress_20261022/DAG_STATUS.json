@@ -1,0 +1,19 @@
+{
+ "schema": "bassrei-dag-status-v1",
+ "node": "P04",
+ "node_dir": "research/bassrei_p04_source_exchange_stress_20261022",
+ "ledger_id": "L-0151",
+ "verdict": "PASS",
+ "gates": {"C1": true, "C2": true, "C3": true, "C4": true, "C5": true, "C6": true, "C7": true, "C8": true, "C9": true},
+ "failed_gates": [],
+ "library_steps": {"L3": "e54fdd62 (accept-control hook; in the tree, not used by P04)"},
+ "deviations_for_user_signoff": ["C2 invariant bound 1e-14 x sum|terms| (P02 C3 bound) instead of the plan's 1e-15",
+                                 "D_gamma/rho_gamma error weighted by photon depletion min(1, E_ref/(1e-3 E_gamma(0)))",
+                                 "Thomson weak in every scenario (tau_T < 0.1); Thomson-dominated regimes gated in P02/P03"],
+ "downstream": {
+  "NCP_C1": "UNBLOCKED (P03 and P04 PASS)",
+  "P05": "UNBLOCKED (P03 and P04 PASS; library step L3 e54fdd62)",
+  "P06": "after P05"
+ },
+ "production": "HOLD"
+}

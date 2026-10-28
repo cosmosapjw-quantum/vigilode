@@ -1,0 +1,87 @@
+{
+  "decision": "PASS_SCOPED_AUDIT_PUBLICATION",
+  "reviewer": {
+    "role": "COSTROUTE01 research-review",
+    "requested_model": "gpt-6-astra",
+    "requested_reasoning_effort": "xhigh",
+    "observed_runtime": "NOT_INDEPENDENTLY_OBSERVED",
+    "implementation_independent": true,
+    "read_only": true
+  },
+  "identities": {
+    "native_problem_source": "45037fc24e8f8101605f309e1fdb3a9a4e3df56d",
+    "adapter_execution_source": "1cf87238ab79ee698621d80bc0a3afd903d2f6ff",
+    "adapter_execution_tree": "13396d7d47e3ecc06af4cd5b7a7fd01ee1be3cee",
+    "report_sha256": "eb4f9c102f2b09ce4e12cd83508d8ce6fbeae4c837ad1622c2a3dbb9c7b745c3",
+    "results_sha256": "eff85f4116b14b0e810a0875f7412938530c72a9c04ae6220fd6500fae4dd626"
+  },
+  "findings": [],
+  "repair_closure": {
+    "EA-001": "CLOSED",
+    "EA-002": "CLOSED",
+    "EA-003": "CLOSED",
+    "EA-004": "CLOSED",
+    "collective_repair_rounds": 1,
+    "original_failure_preserved": true
+  },
+  "verified_evidence": {
+    "frozen_build_command_receipts": 6,
+    "diffsol_protocol_checks": 19,
+    "strict_preflight_passed": 32,
+    "new_configurations": 96,
+    "warmup_records": 96,
+    "timed_records": 288,
+    "new_raw_records_independently_replayed": 384,
+    "new_stdout_stderr_hashes_checked": 768,
+    "merged_comparison_selections_and_ratios_recomputed": 96,
+    "baseline_files_original_and_bundle_verified": 103,
+    "cohort_receipt_mappings_verified": 960,
+    "report_numeric_table_rows_verified": 12,
+    "archive_member_counts": {
+      "external": 768,
+      "merged": 1920,
+      "development": 284,
+      "frozen_tests": 139
+    },
+    "sampled_archive_member_hashes_verified": 90,
+    "hash_mismatches": 0,
+    "original_and_native_checkouts_preserved": true,
+    "native_and_adapter_binary_hashes_match": true
+  },
+  "numerical_decision": {
+    "status": "PASS_FINITE_SAMPLED_REPLAY",
+    "maximum_reference_disagreement": 1.1102230246251565e-16,
+    "eligible_new_comparisons": 46,
+    "unavailable_new_comparisons": 2,
+    "unavailable_reason": "DOPRI5 rapid misses the 1e-8 sampled-error cap; both external comparators meet it.",
+    "equal_requested_tolerance_is_equal_achieved_accuracy": false,
+    "dopri5_cost_losses": 9
+  },
+  "timing_scope": {
+    "authority": "diagnostic_only",
+    "campaign_elapsed_seconds": 2083.6339617650956,
+    "campaign_budget_seconds": 7200,
+    "process_cap_seconds": 45,
+    "cross_cohort_limitations_disclosed": true,
+    "shared_host_and_thread_differences_disclosed": true
+  },
+  "publication": {
+    "approved_scope": "Reviewed adapters and preserved audit evidence, reports and documentation.",
+    "target": "origin/research/nonstiff-explicit-20261023",
+    "transport": "HTTPS",
+    "required_final_checks": [
+      "Generate final audit manifest including this review.",
+      "Publish by fast-forward and verify remote tip.",
+      "Retain execution source identity separately from the publication commit."
+    ],
+    "postfreeze_algorithm_changes": false,
+    "postfreeze_tracked_change": "REPRODUCE.md adds PYTHONDONTWRITEBYTECODE=1."
+  },
+  "claim_ceiling": {
+    "general_production": "HOLD",
+    "statistical_timing_authority": "HOLD",
+    "global_or_uniform_time_error_certificate": "HOLD",
+    "old_campaign_reruns": 0
+  },
+  "serialization_note": "Controller normalized only the misspelled JSON key dop ri5_cost_losses to dopri5_cost_losses. Verbatim reviewer field spelling is preserved in evidence/independent-review/FINAL_REVIEW_RAW.json; no value or decision changed."
+}

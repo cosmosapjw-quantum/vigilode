@@ -1,0 +1,11 @@
+# Independent review of A04, A07, A08
+
+Root reviewed the new admission and dispatch logic independently of its authors. One provenance gap was found and repaired before any new campaign: literal include_str/include_bytes assets, including the actual coefficient snapshot, now enter the source manifest. A second reviewer is checking this root-authored repair. No unresolved admission/accuracy issue was found in A04/A08. The exact file hashes are in the companion JSON.
+
+A04 keeps its successful report immutable and uses a private borrowed token. The requested-budget admission reads the original stored budget. Explicit admission at a different budget is a separate API whose semantics are documented; the router never uses it. Legacy candidate reports remain inadmissible. The existing certified arithmetic kernel is reused, rather than reproved from the new token.
+
+A08 sends the same immutable operator, h, five-vector request and absolute budget to each backend. It only retains outputs from complete-error admission and copies or moves those exact centers into private owned results. Cache reuse cannot change a prior result. The Leja per-attempt certificate count resets before validation. Unsupported degree/domain and failed attempts remain visible. FirstAdmitted saves the unexecuted later work; CompareAll gathers costs and keeps deterministic priority. This is neither a proof that Laguerre is always faster nor admission of the estimate-only Krylov comparator.
+
+A07 freezes source/build/config before execution and checks it again afterward; its gate preserves failed rows, physical tolerances, output count, empirical reference uncertainty, calibrated allocation status and achieved-error matching. Source and binary provenance remain separate from scientific accuracy authority. A valid diagnostic report does not imply matched-error admission or speed promotion. A fresh bounded native campaign must follow the final source freeze.
+
+Evidence: seven Leja native contracts and the compile-fail admission test passed; the router agent supplied six native contracts and eighteen exact Fraction containments; the benchmark harness supplied nine hostile schema/gate/provenance contracts. These tests support the delta and do not replace the underlying arithmetic proofs.

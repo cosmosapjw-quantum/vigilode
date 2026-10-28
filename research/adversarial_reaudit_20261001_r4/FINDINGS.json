@@ -1,0 +1,621 @@
+{
+  "schema": "vigilode.r4.findings.v1",
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "findings": [
+    {
+      "id": "R4-TIME-01",
+      "severity": "P2",
+      "title": "Fixed BDF can solve the wrong time-grid equation under a change of time units",
+      "status": "ACKNOWLEDGED_RESIDUAL_NEW_COUNTEREXAMPLE",
+      "scope": "Public fixed BDF reference implementation, scalar identity-mass constant flow on the preregistered unit grid. No new full-BDF or production-comparator promotion.",
+      "source_locations": [
+        "crates/rodas5p-integrators/src/bdf.rs:384-386",
+        "crates/rodas5p-integrators/src/bdf.rs:475-495",
+        "crates/rodas5p-integrators/src/bdf.rs:530-535"
+      ],
+      "owner_evidence": "time/FINDINGS.json",
+      "details": {
+        "id": "R4-TIME-01",
+        "severity": "P2",
+        "title": "Fixed BDF can solve the wrong time-grid equation under a change of time units",
+        "status": "CONFIRMED_ACKNOWLEDGED_RESIDUAL_WITH_NEW_COUNTEREXAMPLE",
+        "failure_class": "NUMERICAL_IMPLEMENTATION",
+        "novelty": "The absolute same_step floor is explicitly disclosed in R3 closure. The resulting2.08% wrong constant-flow endpoint and the unit-covariance counterexample are newly executed here; not classified as an undisclosed regression.",
+        "evidence_status": [
+          "derived",
+          "numerically checked",
+          "implementation-verified"
+        ],
+        "source_locations": [
+          "crates/rodas5p-integrators/src/bdf.rs:384-386",
+          "crates/rodas5p-integrators/src/bdf.rs:475-495",
+          "crates/rodas5p-integrators/src/bdf.rs:530-535"
+        ],
+        "input": {
+          "boundary_power": 0,
+          "t0": 0.9999999999999991,
+          "tf": 1.0000000000000018,
+          "nominal_h": 1.4988010832439614e-16,
+          "velocity": 375299968947541.3,
+          "initial_y": 0.0
+        },
+        "observed": {
+          "returned_Ok": true,
+          "endpoint": 0.9791691102325774,
+          "rounded_exact_binary64_input_endpoint": 1.0,
+          "max_exact_flow_error": 0.02083088976742259,
+          "unequal_steps_classified_equal": 5,
+          "exact_mixed_branch_endpoint": 0.9791691102325772,
+          "native_vs_wrong_equation_endpoint": 1.1102230246251565e-16
+        },
+        "controls": {
+          "same_dimensionless_failure_powers": [
+            -40,
+            0
+          ],
+          "same_dimensionless_passing_powers": [
+            10,
+            40
+          ],
+          "variable_public_kernel_candidate_powers": [
+            -40,
+            0,
+            10,
+            40
+          ],
+          "candidate_max_error": 1.8318679906315083e-15
+        },
+        "mechanism": "same_step compares the difference with32eps*max(|h|,|previous_h|,1). Distinct tiny represented intervals therefore select equal-step3,-4,1 coefficients. For exact linear flow their residual is v*(h-previous_h), not0. Exact rational replay identifies that wrong residual as the source of the native answer.",
+        "scope": "Public fixed BDF reference implementation, scalar identity-mass constant flow on the preregistered unit grid. No new full-BDF or production-comparator promotion.",
+        "evidence": [
+          "native_raw.jsonl:bdf_unit_boundary",
+          "EXACT_ORACLE.json",
+          "DERIVATIONS_KO.md"
+        ],
+        "remediation": [
+          "R4-TIME-DEV-01"
+        ]
+      }
+    },
+    {
+      "id": "R4-TIME-02",
+      "severity": "P2",
+      "title": "Unequal represented half steps retain an equal-half Richardson divisor",
+      "status": "CONFIRMED_OPEN",
+      "scope": "Executed on native public Radau1 kernels and adaptive observed driver. Dense driver shares the trial by source inspection, not a second native execution. Nonconstant BDF startup is only a followup risk because it also changes order/history; no unchecked transfer of the Radau1 correction.",
+      "source_locations": [
+        "crates/rodas5p-integrators/src/output.rs:212-243",
+        "crates/rodas5p-integrators/src/radau.rs:582-600",
+        "crates/rodas5p-integrators/src/adaptive.rs:397-404"
+      ],
+      "owner_evidence": "time/FINDINGS.json",
+      "details": {
+        "id": "R4-TIME-02",
+        "severity": "P2",
+        "title": "Unequal represented half steps retain an equal-half Richardson divisor",
+        "status": "CONFIRMED_UPDATED_PATH_MISMATCH",
+        "failure_class": "NUMERICAL_METHOD_IMPLEMENTATION",
+        "novelty": "Newly reproduced mismatch between unequal represented halves and the existing equal-half estimator; prior-version correctness on the identical fixture was not executed, so an introduced regression is not established.",
+        "evidence_status": [
+          "derived",
+          "numerically checked",
+          "implementation-verified"
+        ],
+        "source_locations": [
+          "crates/rodas5p-integrators/src/output.rs:212-243",
+          "crates/rodas5p-integrators/src/radau.rs:582-600",
+          "crates/rodas5p-integrators/src/adaptive.rs:397-404"
+        ],
+        "input": {
+          "t0": 1000000000000.0,
+          "span_ulps": 3,
+          "H": 0.0003662109375,
+          "h1": 0.000244140625,
+          "h2": 0.0001220703125,
+          "ode": "y'=2(t-t0)/H^2",
+          "initial_y": 0.0,
+          "method": "Radau IIA one-stage",
+          "atol": 0.5,
+          "rtol": 1e-12
+        },
+        "observed": {
+          "success": true,
+          "accepted_macro_steps": 1,
+          "endpoint": 1.5555555555555554,
+          "exact_endpoint": 1.0,
+          "native_estimator_norm": 0.8888888888861239,
+          "actual_scaled_error": 1.111111111107654,
+          "exact_fine_error": "5/9",
+          "exact_estimator_difference_magnitude": "4/9"
+        },
+        "mechanism": "The divisor2^p-1 assumes equal halves. With eta=(h1/H)^(p+1)+(h2/H)^(p+1), the leading fine-error magnitude is eta/(1-eta)*|fine-coarse|. Here p=1, eta=5/9 and the correct factor is5/4; the relation is exact for the quadratic primitive.",
+        "candidate": {
+          "ratio_factor": "5/4",
+          "candidate_abs_error": 0.5555555555555559,
+          "difference_from_exact_error": 3.3306690738754696e-16,
+          "status": "STANDALONE_CHECKED_NOT_PRODUCTION_PATCHED"
+        },
+        "scope": "Executed on native public Radau1 kernels and adaptive observed driver. Dense driver shares the trial by source inspection, not a second native execution. Nonconstant BDF startup is only a followup risk because it also changes order/history; no unchecked transfer of the Radau1 correction.",
+        "interpretation_limit": "This shows violation of the estimator's geometry assumptions; it does not assume adaptive tolerances are rigorous global error bounds for arbitrary ODEs.",
+        "evidence": [
+          "native_raw.jsonl:doubling_geometry_kernel",
+          "native_raw.jsonl:doubling_geometry_adaptive",
+          "EXACT_ORACLE.json",
+          "DERIVATIONS_KO.md"
+        ],
+        "remediation": [
+          "R4-TIME-DEV-02",
+          "R4-TIME-DEV-03"
+        ]
+      }
+    },
+    {
+      "id": "R4-ARITH-01",
+      "severity": "P2",
+      "title": "Zero exponent ordering erases subunit nilpotent norm and understates transform-error bound",
+      "status": "CONFIRMED_OPEN",
+      "scope": "Research-only public transform_bound helper; not currently called by production fused-phi integrators",
+      "source_locations": [
+        "crates/rodas5p-core/src/transform_bound.rs:298-313"
+      ],
+      "owner_evidence": "polynomial/FINDINGS.json",
+      "details": {
+        "id": "R4-ARITH-01",
+        "severity": "P2",
+        "status": "implementation-verified",
+        "layer": "NUMERICAL_IMPLEMENTATION",
+        "title": "Zero exponent ordering erases subunit nilpotent norm and understates transform-error bound",
+        "scope": "Research-only public transform_bound helper; not currently called by production fused-phi integrators",
+        "source": [
+          "crates/rodas5p-core/src/transform_bound.rs:298-313"
+        ],
+        "witness": "subunit_nilpotent_generated",
+        "inputs": {
+          "A": [
+            [
+              0,
+              0.25
+            ],
+            [
+              0,
+              0
+            ]
+          ],
+          "h": 1000.1,
+          "b0": [
+            0,
+            0
+          ],
+          "b1": [
+            0,
+            0
+          ],
+          "b2": [
+            0,
+            1
+          ],
+          "stored": "actual weight_phi_vectors output"
+        },
+        "observed_error": "1.5071782093206548331317682236877119006582919794292467838980032291353019037447977735947178701026576603632500926759235074197380302929675942428e-9",
+        "claimed_bound": "5.82076609134674072265625e-11",
+        "reason": "ZERO=(mantissa0,exponent0) wins over positive .25 exponent-1 in row/column maxima. The selected nilpotent norm becomes zero, omitting h*A amplification.",
+        "fix_task": "R4-ARITH-DEV-01",
+        "evidence": [
+          "native.jsonl",
+          "ORACLE_RESULTS.json"
+        ],
+        "production_impact_demonstrated": false
+      }
+    },
+    {
+      "id": "R4-ARITH-02",
+      "severity": "P2",
+      "title": "Binary64 factorial overflow invalidates generic high-order phi transform bounds",
+      "status": "CONFIRMED_OPEN",
+      "scope": "Research-only public helper accepts arbitrary vector order; current joint polynomial module only uses orders0..4",
+      "source_locations": [
+        "crates/rodas5p-core/src/transform_bound.rs:274-275",
+        "crates/rodas5p-core/src/transform_bound.rs:316-321",
+        "crates/rodas5p-core/src/transform_bound.rs:344-347"
+      ],
+      "owner_evidence": "polynomial/FINDINGS.json",
+      "details": {
+        "id": "R4-ARITH-02",
+        "severity": "P2",
+        "status": "implementation-verified",
+        "layer": "NUMERICAL_IMPLEMENTATION",
+        "title": "Binary64 factorial overflow invalidates generic high-order phi transform bounds",
+        "scope": "Research-only public helper accepts arbitrary vector order; current joint polynomial module only uses orders0..4",
+        "source": [
+          "crates/rodas5p-core/src/transform_bound.rs:274-275",
+          "crates/rodas5p-core/src/transform_bound.rs:316-321",
+          "crates/rodas5p-core/src/transform_bound.rs:344-347"
+        ],
+        "witnesses": [
+          "order_171",
+          "order_172"
+        ],
+        "inputs": {
+          "A": [
+            [
+              0
+            ]
+          ],
+          "h": 1.1,
+          "nonzero_input": "b_p=[1], all other b_k zero",
+          "stored": "actual weight_phi_vectors output"
+        },
+        "observed_error_p171": "2.0810186525441548770063122530685197033350982977482357772091266470150810280761203512971317104689258548542813294431714027238859791951732860151e-317",
+        "claimed_bound_p171": "2.7792123154561306599774169818722243319125484747723877216973691455126554369107455585770411525147793758418143268306666380677344338321591507366e-330",
+        "reason": "factorial171 overflows to infinity; the reciprocal operation creates a tiny subnormal coefficient rather than an upper bound for1/171!.",
+        "fix_task": "R4-ARITH-DEV-02",
+        "evidence": [
+          "native.jsonl",
+          "ORACLE_RESULTS.json"
+        ],
+        "production_impact_demonstrated": false
+      }
+    },
+    {
+      "id": "R4-ARITH-03",
+      "severity": "P3",
+      "title": "Signed stored-weight mismatch and negative tolerances do not fail closed",
+      "status": "CONFIRMED_OPEN",
+      "scope": "Public helper malformed/externally supplied input; weight_phi_vectors itself always preserves b0",
+      "source_locations": [
+        "crates/rodas5p-core/src/transform_bound.rs:230-236",
+        "crates/rodas5p-core/src/transform_bound.rs:150-161"
+      ],
+      "owner_evidence": "polynomial/FINDINGS.json",
+      "details": {
+        "id": "R4-ARITH-03",
+        "severity": "P3",
+        "status": "implementation-verified",
+        "layer": "IMPLEMENTATION_API_CONTRACT",
+        "title": "Signed stored-weight mismatch and negative tolerances do not fail closed",
+        "scope": "Public helper malformed/externally supplied input; weight_phi_vectors itself always preserves b0",
+        "source": [
+          "crates/rodas5p-core/src/transform_bound.rs:230-236",
+          "crates/rodas5p-core/src/transform_bound.rs:150-161"
+        ],
+        "witnesses": [
+          "signed_stored_order0",
+          "negative_tolerance"
+        ],
+        "observations": [
+          "A=0,h=1,b0=1,stored0=-1 returns zero error bound and admits zero tolerance, although error=2.",
+          "Error bound1 admits tolerance-10 because ExpBound::exact takes absolute value."
+        ],
+        "fix_task": "R4-ARITH-DEV-03",
+        "evidence": [
+          "native.jsonl",
+          "ORACLE_RESULTS.json"
+        ],
+        "production_impact_demonstrated": false
+      }
+    },
+    {
+      "id": "R4-HOM-01",
+      "severity": "P2",
+      "title": "잘못된 inverse witness 내용/내부 shape가 identity 검사 후 인증값으로 소비됨",
+      "status": "CONFIRMED_OPEN",
+      "scope": "public/serde witness interface; native eight-stage target; built-in constructors and published HOM06 campaign are not shown wrong",
+      "source_locations": [
+        {
+          "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+          "lines": [
+            135,
+            143
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+          "lines": [
+            435,
+            467
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+          "lines": [
+            318,
+            323
+          ]
+        }
+      ],
+      "owner_evidence": "homotopy/FINDINGS.json",
+      "details": {
+        "id": "R4-HOM-01",
+        "priority": "P2",
+        "status": "implementation-verified",
+        "classification": "IMPLEMENTATION_CERTIFICATE_INPUT_VALIDATION",
+        "title": "잘못된 inverse witness 내용/내부 shape가 identity 검사 후 인증값으로 소비됨",
+        "scope": "public/serde witness interface; native eight-stage target; built-in constructors and published HOM06 campaign are not shown wrong",
+        "source_refs": [
+          {
+            "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+            "lines": [
+              135,
+              143
+            ]
+          },
+          {
+            "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+            "lines": [
+              435,
+              467
+            ]
+          },
+          {
+            "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+            "lines": [
+              318,
+              323
+            ]
+          }
+        ],
+        "trigger": {
+          "J": [
+            [
+              -1
+            ]
+          ],
+          "y": [
+            1
+          ],
+          "h": 0.0625,
+          "q": [
+            0
+          ],
+          "candidate": "eight zero scalar stages",
+          "witness_variants": [
+            "valid identity plus upper=[[0]]",
+            "valid identity plus upper=[[]]"
+          ]
+        },
+        "observed": {
+          "returned_status": "Ok(StageCertificate)",
+          "first_stage_error_bound": 0,
+          "exact_first_stage_error": "140737488355328/2281627374017361"
+        },
+        "oracle": "exact rational first-stage solve W K_0 = -1/16",
+        "normal_constructor_control": "sound",
+        "not_demonstrated": [
+          "downstream q2 step with corrupt source witness",
+          "wrong bound produced by an unchanged built-in witness constructor",
+          "published campaign admissions invalid"
+        ],
+        "advice": "Seal validated witness fields; deserialize to unverified data; reject malformed shape; verify/rebuild inverse proof before consumption. Hash equality only binds identity."
+      }
+    },
+    {
+      "id": "R4-HOM-02",
+      "severity": "P2",
+      "title": "가변 StageTarget에 고정 3-level doubling을 적용해 9단계 이상 경로를 누락",
+      "status": "CONFIRMED_OPEN",
+      "scope": "public generic StageTarget API with s>8; native Rodas5P eight-stage path passes this control",
+      "source_locations": [
+        {
+          "path": "crates/rodas5p-integrators/src/stage_target.rs",
+          "lines": [
+            47,
+            58
+          ]
+        },
+        {
+          "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+          "lines": [
+            776,
+            786
+          ]
+        }
+      ],
+      "owner_evidence": "homotopy/FINDINGS.json",
+      "details": {
+        "id": "R4-HOM-02",
+        "priority": "P2",
+        "status": "implementation-verified",
+        "classification": "IMPLEMENTATION_GENERALIZED_STAGE_API",
+        "title": "가변 StageTarget에 고정 3-level doubling을 적용해 9단계 이상 경로를 누락",
+        "scope": "public generic StageTarget API with s>8; native Rodas5P eight-stage path passes this control",
+        "source_refs": [
+          {
+            "path": "crates/rodas5p-integrators/src/stage_target.rs",
+            "lines": [
+              47,
+              58
+            ]
+          },
+          {
+            "path": "crates/rodas5p-integrators/src/outward_certificate.rs",
+            "lines": [
+              776,
+              786
+            ]
+          }
+        ],
+        "trigger": {
+          "stages": [
+            9,
+            16
+          ],
+          "gamma": 0,
+          "J": [
+            [
+              1
+            ]
+          ],
+          "y": [
+            1
+          ],
+          "h": 1,
+          "q": [
+            0
+          ],
+          "alpha": "all zero",
+          "coupling": "unit first subdiagonal",
+          "candidate": "all zero",
+          "b": "select last stage"
+        },
+        "observed": {
+          "doubling_output_bounds": [
+            8,
+            8
+          ],
+          "exact_output_errors": [
+            9,
+            16
+          ],
+          "radius_closure": "accepted at radius 0",
+          "serial_bounds": "sound at all 1,2,4,8,9,16 fixtures"
+        },
+        "advice": "Either validate s<=8 with typed unsupported rejection, or derive ceil(log2 s) from the declared structural nilpotency upper bound."
+      }
+    },
+    {
+      "id": "R4-STAT-01",
+      "severity": "P2",
+      "title": "Failed coverage authority is not enforced by machine timing gates",
+      "status": "CONFIRMED_OPEN",
+      "scope": "The library path and published receipt replay were executed. CLI mapping was read; a full fresh CLI performance campaign was not executed. No corruption or overclaim by the prior author is alleged: prose correctly discloses the hold.",
+      "source_locations": [
+        {
+          "path": "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+          "lines": [
+            533,
+            550
+          ]
+        },
+        {
+          "path": "crates/rodas5p-cli/src/main.rs",
+          "lines": [
+            1240,
+            1275
+          ]
+        },
+        {
+          "path": "docs/REAUDIT_R3_CLOSURE_20261001.md",
+          "lines": [
+            60,
+            64
+          ]
+        }
+      ],
+      "owner_evidence": "statistics/RESULT.json",
+      "details": {
+        "id": "R4-STAT-01",
+        "severity": "P2",
+        "title": "Failed coverage authority is not enforced by machine timing gates",
+        "failure_layer": "EVIDENCE_AUTHORITY",
+        "evidence_status": [
+          "implementation-verified",
+          "derived"
+        ],
+        "status": "OPEN",
+        "novelty": "New machine-policy propagation defect; failed population coverage is already acknowledged and is not rediscovered.",
+        "source_locations": [
+          {
+            "path": "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+            "lines": [
+              533,
+              550
+            ]
+          },
+          {
+            "path": "crates/rodas5p-cli/src/main.rs",
+            "lines": [
+              1240,
+              1275
+            ]
+          },
+          {
+            "path": "docs/REAUDIT_R3_CLOSURE_20261001.md",
+            "lines": [
+              60,
+              64
+            ]
+          }
+        ],
+        "witnesses": [
+          "native.stdout.jsonl:valid_control_under_documented_authority_hold",
+          "native.stdout.jsonl:published_replay/poly03/chebyshev-warm"
+        ],
+        "observed": "The valid synthetic one-case six-session receipt and the published warm Chebyshev receipt both return Ok(Promote). The source consumer maps Promote directly to WallCriterion::Passed.",
+        "expected": "A diagnostic numeric decision may be retained, but the documented STATISTICAL_AUTHORITY_HOLD must yield NotEvaluated for a scientific/production timing gate.",
+        "scope_limit": "The library path and published receipt replay were executed. CLI mapping was read; a full fresh CLI performance campaign was not executed. No corruption or overclaim by the prior author is alleged: prose correctly discloses the hold.",
+        "next_step": "R4-STAT-DEV-01"
+      }
+    },
+    {
+      "id": "R4-STAT-02",
+      "severity": "P2",
+      "title": "Malformed later session cells pass full receipt recomputation",
+      "status": "CONFIRMED_OPEN",
+      "scope": "Synthetic malformed-record construction and current public verifier were executed; genuine recorded campaign corruption was not observed. Unauthenticated JSON provenance is a separately acknowledged limitation and is not the finding.",
+      "source_locations": [
+        {
+          "path": "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+          "lines": [
+            238,
+            269
+          ]
+        },
+        {
+          "path": "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+          "lines": [
+            453,
+            509
+          ]
+        }
+      ],
+      "owner_evidence": "statistics/RESULT.json",
+      "details": {
+        "id": "R4-STAT-02",
+        "severity": "P2",
+        "title": "Malformed later session cells pass full receipt recomputation",
+        "failure_layer": "IMPLEMENTATION",
+        "evidence_status": [
+          "implementation-verified",
+          "derived"
+        ],
+        "status": "OPEN",
+        "novelty": "New per-session admission gap after the original R3 raw-case defect was closed.",
+        "source_locations": [
+          {
+            "path": "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+            "lines": [
+              238,
+              269
+            ]
+          },
+          {
+            "path": "crates/rodas5p-fair-ab/src/paired_receipt.rs",
+            "lines": [
+              453,
+              509
+            ]
+          }
+        ],
+        "witnesses": [
+          "native.stdout.jsonl:later_empty_warmups",
+          "native.stdout.jsonl:later_one_warmup",
+          "native.stdout.jsonl:shift_candidate_counts",
+          "native.stdout.jsonl:shift_reference_counts",
+          "native.stdout.jsonl:end_before_start"
+        ],
+        "observed": "Empty/one later-session warmup and 29/31 samples across adjacent sessions pass as Ok(Promote). A reversed timestamp also passes. Candidate/reference flattened arrays can be identical despite invalid cell lengths.",
+        "expected": "Every raw session cell must be complete before merging, with the required warmups and sample count, valid labels/order and first-session-calibrated batch identity.",
+        "cause": "Only first-session warmups survive merging. Per-record loop checks labels/order and warmup value finiteness but omits warmup count and candidate/reference lengths. Global total-length validation cannot detect the 29/31 redistribution.",
+        "scope_limit": "Synthetic malformed-record construction and current public verifier were executed; genuine recorded campaign corruption was not observed. Unauthenticated JSON provenance is a separately acknowledged limitation and is not the finding.",
+        "next_step": "R4-STAT-DEV-02"
+      }
+    }
+  ],
+  "count": 9,
+  "severity_counts": {
+    "P2": 8,
+    "P3": 1
+  },
+  "production_fix_applied": false,
+  "default_rodas_failure_demonstrated": false
+}

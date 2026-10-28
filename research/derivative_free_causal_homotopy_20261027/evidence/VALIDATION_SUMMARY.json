@@ -1,0 +1,118 @@
+{
+  "status": "pass_scoped",
+  "distinct_native_tests": 59,
+  "selected_logs": [
+    {
+      "log": "causal/native_tests.log",
+      "passing_tests": [
+        "adaptive_causal_flow_reaches_observations_with_independent_exact_solution",
+        "budget_failure_preserves_state_and_attempted_work",
+        "cached_parallel_workers_keep_bits_and_observed_callback_counts",
+        "cached_suffix_is_bitwise_identical_on_affine_and_nonlinear_targets",
+        "changing_worker_count_keeps_batched_bits_and_counts",
+        "epoch_change_invalidates_whole_cached_attempt",
+        "forward_saves_work_against_nonlinear_residual_first",
+        "full_residual_refuses_incomplete_basis",
+        "inadequate_basis_still_fails_original_space_residual_screen",
+        "joined_failure_accounts_for_all_scheduled_callbacks_and_preserves_input",
+        "nonlinear_root_uses_no_current_jvp_and_matches_direct_scalar_oracle",
+        "smaller_callback_budget_qualifies_identical_target_with_reuse"
+      ],
+      "count": 12
+    },
+    {
+      "log": "evidence/structural_contracts.stdout.log",
+      "passing_tests": [
+        "all_explicitly_selected_candidate_roots_keep_accuracy_and_work_contracts",
+        "declining_projection_is_bypassed_and_all_attempted_callbacks_are_charged",
+        "direct_protected_route_is_independent_of_candidate_storage_budget",
+        "exact_quotient_retains_arbitrary_transverse_state_and_forcing",
+        "fatal_protected_callback_does_not_become_a_retry_or_candidate_trial",
+        "fifth_order_affine_trajectory_against_closed_form",
+        "invalid_inputs_and_wrong_rate_plan_are_refused",
+        "invalid_policy_and_invalid_protected_inputs_do_no_callback_work",
+        "strict_state_guard_recalibrates_on_the_real_accepted_state_and_keeps_raw_solution",
+        "stronger_structural_baseline_and_parallel_lift_keep_same_target"
+      ],
+      "count": 10
+    },
+    {
+      "log": "evidence/exact_structural_contract.stdout.log",
+      "passing_tests": [
+        "derived_residual_amplification_matches_independent_full_operator_and_is_sharp"
+      ],
+      "count": 1
+    },
+    {
+      "log": "homotopy/exact_constants_contracts.stdout.log",
+      "passing_tests": [
+        "affine_target_uses_values_only_and_recovers_known_root",
+        "budget_is_global_and_charged_before_dispatch",
+        "callback_failure_at_speculative_trial_is_fatal",
+        "degenerate_residual_differences_do_not_dispatch_nan_candidates",
+        "every_homotopy_station_solves_its_own_original_map",
+        "exact_model_plan_derives_the_smallest_dyadic_grid_and_positive_remainder",
+        "exact_zero_solution_needs_no_unearned_error_allowance",
+        "implicit_midpoint_nonlinear_rk_root_matches_monotone_bisection",
+        "inadmissible_anchor_never_enters_callback",
+        "invalid_station_order_is_refused_before_callback",
+        "model_change_during_callback_prevents_success",
+        "model_resource_limits_preserve_attempted_work_and_decline_incomplete_output",
+        "nonlinear_physical_budget_is_verified_on_every_returned_grid_state",
+        "partial_write_is_rejected_and_attempted_work_survives",
+        "residual_dominance_has_no_hidden_heuristic_margin_or_coefficient_cap",
+        "slow_only_avoids_extra_calls_on_a_fast_contraction"
+      ],
+      "count": 16
+    },
+    {
+      "log": "homotopy/rounding_floor_test.stdout.log",
+      "passing_tests": [
+        "interval_polish_refuses_a_budget_below_the_represented_residual_floor"
+      ],
+      "count": 1
+    },
+    {
+      "log": "adapter/seed_helper.log",
+      "passing_tests": [
+        "switching::adaptive_return_productive_contract::entry_checkpoint_seed_uses_only_valid_start_proposal"
+      ],
+      "count": 1
+    },
+    {
+      "log": "adapter/exact_arithmetic.log",
+      "passing_tests": [
+        "switching::comparator_dominance_arithmetic_contract::ceiling_uses_upper_candidate_cost_and_prefix_lower_bound",
+        "switching::comparator_dominance_arithmetic_contract::outward_cost_check_never_promotes_an_inexact_boundary",
+        "switching::comparator_dominance_arithmetic_contract::strict_entry_callback_ceiling_is_exact_and_never_truncates_large_costs",
+        "switching::comparator_dominance_arithmetic_contract::strict_entry_counts_all_existing_work_categories_with_checked_arithmetic",
+        "switching::comparator_dominance_arithmetic_contract::strict_entry_keeps_ties_and_resolves_one_unit_above_float_precision",
+        "switching::comparator_dominance_arithmetic_contract::strict_entry_requires_qualified_completion_of_the_same_accepted_prefix"
+      ],
+      "count": 6
+    },
+    {
+      "log": "adapter/exact_integration.log",
+      "passing_tests": [
+        "carry_removes_repeated_startup_work_without_relaxing_tolerance",
+        "checkpoint_seed_does_not_authorize_a_derivative_callback",
+        "checkpoint_seed_is_an_independent_default_false_option",
+        "completed_window_carries_post_acceptance_proposal_not_terminal_snapshot",
+        "each_entry_pilot_uses_its_own_start_checkpoint_and_same_replay_endpoint",
+        "entry_pilots_are_separated_bounded_and_fully_charged",
+        "evidence_factory_never_grants_derivative_permission",
+        "implicit_advance_invalidates_saved_explicit_proposal",
+        "native_explicit_step_proposal_is_carried_only_from_committed_state",
+        "one_attempt_completed_window_is_success_without_renewing_global_budget",
+        "original_accuracy_and_complete_charged_work_survive_new_seed",
+        "strict_entry_admits_only_a_completed_lower_integer_work_replay"
+      ],
+      "count": 12
+    }
+  ],
+  "notes": [
+    "Initial debug completion is not counted again.",
+    "Older repeated 11-test and seed runs are replaced by their selected extended suites.",
+    "Final all-target compile is separate from test count."
+  ]
+}

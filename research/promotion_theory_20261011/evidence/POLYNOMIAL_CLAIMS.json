@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0",
+  "scope": "theory_only_positive_polynomial_reduction",
+  "baseline_commit_prefix": "8ce9bda",
+  "model_identity": "UNKNOWN",
+  "harness": "GPT-6 Astra v4.0.0 by inherited user preference",
+  "novelty_claim": false,
+  "independent_decision_review": "PENDING",
+  "native_implementation": false,
+  "published_campaigns_rerun": 0,
+  "claims": [
+    {
+      "id": "P1",
+      "title": "Near-annihilator certified phi degree reduction",
+      "evidence_status": ["derived", "numerically checked"],
+      "assumptions": ["X Hermitian, spectrum in [-1,1]", "A=cI+sX, s>0, c+s<=0, h>=0", "q monic degree d with d real nodes in [-1,1], repetitions interpreted as Hermite multiplicities", "current full-space operator witness norm(q(X))<=delta"],
+      "conclusion": "norm(phi_k(hA)-r_k(X)) <= delta*(h*s)^d/(d+k)!",
+      "complexity": "r*(d-1) operator products for r verified input channels; O(r*n+d) extra storage under streaming evaluation, with scalar setup charged separately",
+      "finite_precision": "outward scalar coefficient enclosure + norm(v)*sum coefficient radii + sum local Horner defect norms + input factorization residual + output assembly rounding",
+      "negative_boundary": "Not valid from real eigenvalues alone for nonnormal X; not an ODE global-error theorem",
+      "proof": "POLYNOMIAL.md section 2",
+      "diagnostic": "POLYNOMIAL_EXACT_CHECK.json"
+    },
+    {
+      "id": "P2",
+      "title": "Laguerre quotient compilation",
+      "evidence_status": ["derived", "numerically checked"],
+      "assumptions": ["monic degree-d polynomial q", "stored degree-m Laguerre coefficients with exact target identity", "certified q(X)=0 or near-annihilator bound", "near_bound uses Hermitian X with spectrum in [-1,1], or a separate certificate norm(a_j(X))<=A_j; exact quotient identity does not need Hermitian X"],
+      "conclusion": "Compile three-term recurrence modulo q in O(m*d) scalar arithmetic; exact q(X)=0 preserves polynomial action; vector application costs d-1 products",
+      "near_bound": "norm(P_m(X)-R(X)) <= delta*sum_j abs(c_j)*M_j, M_(j+1)=A_j*M_j+abs(b_j)*M_(j-1)+abs(tau_j)",
+      "finite_precision": "Outward scalar compilation enclosure and new short vector evaluation certificate replace, rather than silently reuse, original degree-m recurrence defects",
+      "negative_boundary": "O(m*d) counts scalar arithmetic, not bounded bit complexity; Chebyshev/Leja/Taylor may use the same reduction; no Laguerre dominance claim",
+      "proof": "POLYNOMIAL.md section 3",
+      "diagnostic": "research/promotion_theory_20261011/EXACT_RESULTS.json",
+      "diagnostic_case_id": "laguerre64_quotient_identity"
+    },
+    {
+      "id": "P3",
+      "title": "Nonnormal finite jet shifted inverse",
+      "evidence_status": ["derived", "numerically checked"],
+      "assumptions": ["A=-kappa*I+N", "N^d=0", "b=1+a*kappa nonzero"],
+      "conclusion": "(I-a*A)^(-1)=b^(-1)*sum_(j<d)((a/b)*N)^j; no norm((a/b)*N)<1 condition",
+      "near_bound": "If eta=(abs(a)/abs(b))^d*norm(N^d)<1, inverse norm <= norm(R)/(1-eta) and truncation norm <= norm(R)*eta/(1-eta)",
+      "finite_precision": "Outward gain plus exact-current-target residual and assembly/JVP rounding; nilpotence binding from full structure, not sampled vectors",
+      "negative_boundary": "Large nonnormal gain may prevent useful binary64 accuracy; direct triangular or structured solve can be cheaper",
+      "proof": "POLYNOMIAL.md section 4",
+      "diagnostic": "research/promotion_theory_20261011/EXACT_RESULTS.json",
+      "diagnostic_case_id": "nonnormal_nilpotent_inverse"
+    },
+    {
+      "id": "P-cost",
+      "title": "Strict total modeled-work improvement gate",
+      "evidence_status": ["derived"],
+      "assumptions": ["identical target/input/current operator/accuracy", "baseline performs r*m operator products", "new path performs r*(d-1) products", "common constant modeled per-application C_X for both paths; if distinct old/new cost bounds are used replace saved-work RHS by r*m*C_old_lower-r*(d-1)*C_new_upper", "setup, scalar, vector, certificate, dispatch, failure and fallback costs have stated upper bounds", "M reuse count is guaranteed or realized"],
+      "conclusion": "S_alg/M+S_coeff+V_new+F_new < r*(m-d+1)*C_X guarantees new total modeled work below baseline operator-only lower bound",
+      "negative_boundary": "No wall-time conclusion without matched measurement; no omitted setup or speculative amortization",
+      "proof": "POLYNOMIAL.md section 7"
+    }
+  ],
+  "implementation_targets": ["crates/rodas5p-core/src/polynomial_action.rs", "proposed private BoundOperatorAlgebra", "proposed CompiledAction", "existing same-vector joint-phi path"],
+  "next_registered_experiments": ["projection family with exact algebra binding and strict rejection of stale operator identity", "bounded-depth nilpotent family versus direct triangular solve", "normalized Horner roundoff and extreme RHS scales", "full-cost comparison against strongest applicable structured formula"],
+  "reused_results": ["L0039 signed Laguerre adjoint", "L0047 symmetric total admission", "PP08 no observed Laguerre selection", "PP09 component attribution limitations"],
+  "promotion_ceiling": {
+    "bounded_theorems": "PENDING_INDEPENDENT_REVIEW",
+    "production": "HOLD",
+    "global_ode_accuracy": "HOLD",
+    "measured_speed": "HOLD"
+  }
+}

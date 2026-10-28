@@ -1,0 +1,79 @@
+    Checking rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+error: very complex type used. Consider factoring parts into `type` definitions
+    --> crates/rodas5p-core/src/leja_action.rs:1198:6
+     |
+1198 | ) -> CoreResult<(Vec<[f64; JOINT_PHI_TERMS]>, Vec<[f64; JOINT_PHI_TERMS]>)> {
+     |      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#type_complexity
+     = note: `-D clippy::type-complexity` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::type_complexity)]`
+
+error: derefed type is same as origin
+    --> crates/rodas5p-core/src/leja_action.rs:1407:37
+     |
+1407 |             if let Some(attempts) = coefficient_setup_attempts.as_deref_mut() {
+     |                                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ help: try: `coefficient_setup_attempts`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_option_as_deref
+     = note: `-D clippy::needless-option-as-deref` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::needless_option_as_deref)]`
+
+error: derefed type is same as origin
+    --> crates/rodas5p-core/src/leja_action.rs:1441:33
+     |
+1441 |             if let Some(work) = work.as_deref_mut() {
+     |                                 ^^^^^^^^^^^^^^^^^^^ help: try: `work`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_option_as_deref
+
+error: this function has too many arguments (8/7)
+    --> crates/rodas5p-core/src/leja_action.rs:1483:5
+     |
+1483 | /     fn insert_certified_with_setup_receipt(
+1484 | |         &mut self,
+1485 | |         center: f64,
+1486 | |         scale: f64,
+...    |
+1491 | |         setup_coverage: SetupCoverage,
+1492 | |     ) {
+     | |_____^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#too_many_arguments
+     = note: `-D clippy::too-many-arguments` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::too_many_arguments)]`
+
+error: derefed type is same as origin
+   --> crates/rodas5p-core/src/leja_setup_work.rs:689:37
+    |
+689 |                         let local = local.as_deref_mut().expect("counted initializer");
+    |                                     ^^^^^^^^^^^^^^^^^^^^ help: try: `local`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_option_as_deref
+
+error: used `assert_eq!` with a literal bool
+   --> crates/rodas5p-core/src/leja_setup_work.rs:722:13
+    |
+722 |             assert_eq!(receipt.leja_points_history_available(), true);
+    |             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#bool_assert_comparison
+    = note: `-D clippy::bool-assert-comparison` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::bool_assert_comparison)]`
+help: replace it with `assert!(..)`
+    |
+722 -             assert_eq!(receipt.leja_points_history_available(), true);
+722 +             assert!(receipt.leja_points_history_available());
+    |
+
+error: derefed type is same as origin
+   --> crates/rodas5p-core/src/leja_setup_work.rs:771:17
+    |
+771 |                 work.as_deref_mut().unwrap().allocation_request(4);
+    |                 ^^^^^^^^^^^^^^^^^^^ help: try: `work`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.94.0/index.html#needless_option_as_deref
+
+error: could not compile `rodas5p-core` (lib) due to 4 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rodas5p-core` (lib test) due to 7 previous errors

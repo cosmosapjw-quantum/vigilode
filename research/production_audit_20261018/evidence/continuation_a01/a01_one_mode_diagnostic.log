@@ -1,0 +1,31 @@
+warning: function `ic_eval_physical` is never used
+   --> crates/rodas5p-integrators/src/packet_window.rs:206:4
+    |
+206 | fn ic_eval_physical(p: &[IComplex], tau: Interval, work: &mut PacketWorkCounters) -> Result<IComplex, PacketError> {
+    |    ^^^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.36s
+     Running tests/production_audit_packet.rs (target/debug/deps/production_audit_packet-1678bd1aadabbee6)
+
+running 1 test
+test outward_one_mode_cubic_radius_contains_exact_midpoint_and_endpoint ... FAILED
+
+failures:
+
+---- outward_one_mode_cubic_radius_contains_exact_midpoint_and_endpoint stdout ----
+
+thread 'outward_one_mode_cubic_radius_contains_exact_midpoint_and_endpoint' (2830736) panicked at crates/rodas5p-integrators/tests/production_audit_packet.rs:60:9:
+t=0.005, center=(-6.289060133412971e-7, 0.0004374995340170195), exact=(0.4999991210940075, 0.0009374994506836903), radius=9.7874439350975e-19, mean=(-6.289060133412971e-7, 0.0004374995340170195), mean_radius=9.7874439350975e-19, candidate=[(0.5, 0.0), (0.0, 0.001875), (-3.515625e-6, 0.0), (0.0, -4.394531249999999e-9), (4.119873046874999e-12, 0.0), (0.0, 3.0899047851562508e-15), (-1.9311904907226597e-18, 0.0), (0.0, -8.999277387346606e-22), (1.0768440450941355e-25, 0.0), (0.0, -3.920056910741879e-28), (6.788778291981703e-31, 0.0)]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    outward_one_mode_cubic_radius_contains_exact_midpoint_and_endpoint
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 18 filtered out; finished in 0.04s
+
+error: test failed, to rerun pass `-p rodas5p-integrators --test production_audit_packet`

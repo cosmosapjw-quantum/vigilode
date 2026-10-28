@@ -1,0 +1,229 @@
+{
+  "schema_version": "1.0",
+  "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+  "source_tree": "182fa306067b84ee10ec1f1b1e5fbad9e769aae1",
+  "created_utc": "2026-09-30T16:01:10.341826+00:00",
+  "source_files": {
+    "crates/rodas5p-core/src/binary_scaling.rs": "7318748693a7accb44b65af8f6686e3d1b36504ee9782132852ff43cf84507cb",
+    "crates/rodas5p-core/src/matrix_functions.rs": "2eb10231cf6ac28b02c83e12b04f4475723a924908592a0394a1008cca500594",
+    "crates/rodas5p-core/src/work.rs": "42fc3559459696bdcb5e1f24bbcd35fe1d3bc672383f2c9b0928c3f000da2d4a",
+    "crates/rodas5p-core/src/coefficients.rs": "fe6417d0e696a836e91d2058dc015d0bcb4e0b6af3f58f648694be1de0d90f73",
+    "crates/rodas5p-integrators/src/exponential.rs": "9f945ee07c09dee08c933fc47351370bec865cde12dbd009eb553055c509fad7",
+    "crates/rodas5p-integrators/src/homotopy_policy.rs": "730bd10b1c81bf56a890ce950b0fa681ff360545198c0a440605f2f1cb7ebc64",
+    "crates/rodas5p-integrators/src/g3_fused_adaptive_gate.rs": "4d9f4ef2795b64b99fcbed77a1a24d0f9e48af3fb95b0fb2073caf29fce6f89a",
+    "crates/rodas5p-integrators/tests/r2_phi_range_contracts.rs": "e8a0ed6cc868a93cfaf9abe4d4bed14211291557d2e3533cece1b98bd0b46419",
+    "crates/rodas5p-integrators/tests/r2_output_budget_contracts.rs": "58b0fcc27c465c86bb4917ce5e4011476a698e2244f183c6c2b982d178070269",
+    "docs/REAUDIT_R2_CLOSURE_20260930.md": "fd1b6e9d4dcaf42c7d57e1a1128b22fcbd5df1f39af5462c4ea8d0263eededcf",
+    "Cargo.lock": "04c7d6c147bf19ebb1a627463705d9dcf27337a3ff228dd1169f19eb73c71400"
+  },
+  "source_files_match_commit": true,
+  "production_changes": 0,
+  "legacy_probe_byte_identity": {
+    "source": "research/adversarial_reaudit_20260930_r2/phi/probe/src/main.rs",
+    "copy": "probe/src/legacy_closure.rs",
+    "sha256": "c298efcb86260d239d722f309c6f07cc4817c423084acd87d030ddad51898eb1",
+    "matches": true
+  },
+  "build_attempts": [
+    {
+      "attempt": 1,
+      "exit_code": 101,
+      "classification": "PROBE_MANIFEST_RELATIVE_PATH_ERROR",
+      "evidence": "build_01_manifest_path_failure.log",
+      "corrected": true
+    },
+    {
+      "attempt": 2,
+      "exit_code": 101,
+      "classification": "RUNTIME_ENVIRONMENT_ZERO_LENGTH_GENERATED_OBJECT",
+      "evidence": "build_02.log"
+    },
+    {
+      "attempt": 3,
+      "exit_code": 0,
+      "classification": "CACHE_RECOVERY_BUILD_SUCCEEDED",
+      "seconds": 25.05,
+      "evidence": "../evidence/runtime/cache_recovery_build.log",
+      "environment_change": "Generated failed cache removed under shared lock; CARGO_INCREMENTAL=0; same production source"
+    }
+  ],
+  "native_execution": {
+    "source_commit": "cc2cd041737e7ff543624d1b59893a3b4397369f",
+    "records": [
+      {
+        "binary": "vigilode-r2-phi-independent-probe",
+        "binary_sha256": "4696a38a6da9637f9faf2dbdbe71c839a64f792ad1ab62c1714930c45456e6c3",
+        "wall_seconds": 0.1355911529972218,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout": "native.jsonl",
+        "stderr": "native.stderr"
+      },
+      {
+        "binary": "legacy_closure",
+        "binary_sha256": "d61e3f3cec88376bce7ea00c046078c6d690bdc076a9b23c14193a4c4a2f12e9",
+        "wall_seconds": 0.22288195799774257,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout": "legacy_closure.jsonl",
+        "stderr": "legacy_closure.stderr"
+      },
+      {
+        "binary": "tableau_bits",
+        "binary_sha256": "1e5e2eae18d91546ba4bf49ea55196cb7e40e3049ea5635a31436415eb1a0792",
+        "wall_seconds": 0.06338236999727087,
+        "exit_code": 0,
+        "timed_out": false,
+        "stdout": "tableau_bits.jsonl",
+        "stderr": "tableau_bits.stderr"
+      }
+    ]
+  },
+  "analysis_executions": [
+    {
+      "command": "python3 r3/arithmetic/exact_oracle.py",
+      "exit_code": 0,
+      "evidence": "exact_oracle.log"
+    },
+    {
+      "command": "python3 r3/arithmetic/analyze_closures.py",
+      "exit_code": 0,
+      "evidence": "closure_analysis.log"
+    },
+    {
+      "command": "temporary-directory prepare_probe.py smoke",
+      "exit_code": 0,
+      "scope": "source hash + dependency path preparation only; native rebuild not repeated",
+      "evidence": "prepare_smoke.log"
+    }
+  ],
+  "rows": {
+    "new_native": 529,
+    "legacy_native": 104,
+    "tableau": 1,
+    "power_exact_oracle_comparisons": 520
+  },
+  "files": {
+    "CLOSURE.json": {
+      "sha256": "031c837a6c8a0850f208b99cf603c22b81c9a407b9a6bd0517903def850aea90",
+      "bytes": 10059
+    },
+    "CONTRACT.md": {
+      "sha256": "7f44a4b33938bac6bb9355eb783a42ab28695163049e8eda01a2bae05dbee226",
+      "bytes": 1073
+    },
+    "EXACT_ORACLES.json": {
+      "sha256": "9c9f1c8e12333fde4f93f68251a82698abeddb39788f2215e1cdcfe900c0df43",
+      "bytes": 130899
+    },
+    "FINDINGS.json": {
+      "sha256": "4ddc53a6e96e60e3533f85de3463807878e76bd8b183f066a33e00570b8c5a5f",
+      "bytes": 4681
+    },
+    "NATIVE_EXECUTION.json": {
+      "sha256": "99157026ba2c95cb17a43cedf024115b99be877f3d6be03cccb7187b5d6f3d14",
+      "bytes": 1008
+    },
+    "NEXT_STEPS.json": {
+      "sha256": "48ebc44ee3049bf3bf6a7241810ee8086df19bf62593bf159af1e85ba125962e",
+      "bytes": 5132
+    },
+    "README_REPRODUCE.md": {
+      "sha256": "03fba726affb295d09b301966e43cebd6ee83dd3d86dee342d4b6a3d6e308e93",
+      "bytes": 1845
+    },
+    "REVIEW_KO.md": {
+      "sha256": "b66fe00e2fe103137ee5ec14bc3cda746d47e81a373bdee1e87d74023a5a3cf5",
+      "bytes": 12093
+    },
+    "analyze_closures.py": {
+      "sha256": "e59cf216231cc1a3cf47228ade871f60770f956e18d524920c9bdd080c612a9b",
+      "bytes": 2608
+    },
+    "build.log": {
+      "sha256": "9f28fb1e2ee30daae22ac2c867f9534c701c6a53cdb74c1f76de9634a5c834e3",
+      "bytes": 204
+    },
+    "build_01_manifest_path_failure.log": {
+      "sha256": "9f28fb1e2ee30daae22ac2c867f9534c701c6a53cdb74c1f76de9634a5c834e3",
+      "bytes": 204
+    },
+    "build_02.log": {
+      "sha256": "454e9607fa3730c88b8ea29161061d5c7adafdb950fe55681e1d05123d241070",
+      "bytes": 384
+    },
+    "closure_analysis.log": {
+      "sha256": "5c493054ab44359c23224da06a708f8756469cad27ea9dbf24ac1b7bff066e7a",
+      "bytes": 627
+    },
+    "exact_oracle.log": {
+      "sha256": "8eee4244ca2a80d6adefa47dbe582b589175221ca39ed167c9b2594d0c287b29",
+      "bytes": 5540
+    },
+    "exact_oracle.py": {
+      "sha256": "46a63b99493b7905b0d16d40b8f8052f3a1607792fa35822c232735e85638b19",
+      "bytes": 4223
+    },
+    "legacy_closure.jsonl": {
+      "sha256": "52aae5144261b2e91c8bf62fa82f33ae7612241c71afaab4ef0dda68154780c0",
+      "bytes": 21351
+    },
+    "legacy_closure.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "native.jsonl": {
+      "sha256": "64a68e86189e23c653ecf4cbcba281b3fe50a8ccace3b43197abd36df5a8dba0",
+      "bytes": 83728
+    },
+    "native.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "native_driver.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "prepare_probe.py": {
+      "sha256": "deaeadea8107545bf47b22daf6c54fb8c7e51aa9dab7e2fead5dedbcf3fff38f",
+      "bytes": 1115
+    },
+    "prepare_smoke.log": {
+      "sha256": "48679e2eaab1df191cacf63937e9f3ceff5f70fdb05da146a70b0747b91e9507",
+      "bytes": 228
+    },
+    "probe/Cargo.lock": {
+      "sha256": "a3b1ebd09188f762c9e79eecff4d68d6e1480553aab0b0080093d2f65624fc37",
+      "bytes": 22354
+    },
+    "probe/Cargo.toml": {
+      "sha256": "a3dc348e9b89934cf57a0c7cbac393c85eff41ab8bae1344fa3995d788883d1f",
+      "bytes": 342
+    },
+    "probe/src/bin/tableau_bits.rs": {
+      "sha256": "b6108976bfba2270f022f963707b16c83bbfd6db03d0c2ab15d781645a583a52",
+      "bytes": 569
+    },
+    "probe/src/legacy_closure.rs": {
+      "sha256": "c298efcb86260d239d722f309c6f07cc4817c423084acd87d030ddad51898eb1",
+      "bytes": 4980
+    },
+    "probe/src/main.rs": {
+      "sha256": "b16e5d5e91f8ea775244b2e70a100d7401853c77340821df966e9c930cc51bd2",
+      "bytes": 4050
+    },
+    "run_native.py": {
+      "sha256": "37ef1019922387717045c5d566b6f3dbbdf248ee65cd9f8c6cd28d05cb2f3f09",
+      "bytes": 1329
+    },
+    "tableau_bits.jsonl": {
+      "sha256": "c9e971d237593bdd011346cbeedceee11e19246e346d7d82a0e07c72ec23bc71",
+      "bytes": 2899
+    },
+    "tableau_bits.stderr": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "claim_ceiling": "Bounded native counterexample and standalone candidate; root independent review required for research promotion; no full-range certificate or speed claim"
+}

@@ -1,0 +1,458 @@
+[
+  {
+    "n": 2048,
+    "threads": 1,
+    "candidate": "quotient-fresh",
+    "median_ratio": 1.8829919612560164,
+    "range": [
+      1.472390631836349,
+      1.9426286662197876
+    ],
+    "block_ratios": [
+      1.472390631836349,
+      1.9219327692017392,
+      1.8829919612560164,
+      1.9426286662197876,
+      1.748340742268578
+    ],
+    "diagnostics": [
+      {
+        "arm": "sequential",
+        "maximum_baseline_difference": 0.0,
+        "maximum_common_grid_error": 2.3975943452825277e-10,
+        "scalar_setup_solves": 0,
+        "work": {
+          "full_state_causal_accumulations": 14680064,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 0,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 1048576,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 1024,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 512
+        }
+      },
+      {
+        "arm": "quotient-fresh",
+        "maximum_baseline_difference": 8.881784197001252e-16,
+        "maximum_common_grid_error": 2.397597120840089e-10,
+        "scalar_setup_solves": 1024,
+        "work": {
+          "full_state_causal_accumulations": 7340032,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 1048576,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 1048576,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 576,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 0
+        }
+      },
+      {
+        "arm": "quotient-reused",
+        "maximum_baseline_difference": 8.881784197001252e-16,
+        "maximum_common_grid_error": 2.397597120840089e-10,
+        "scalar_setup_solves": 16,
+        "work": {
+          "full_state_causal_accumulations": 7340032,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 1048576,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 1048576,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 576,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 0
+        }
+      }
+    ]
+  },
+  {
+    "n": 2048,
+    "threads": 1,
+    "candidate": "quotient-reused",
+    "median_ratio": 1.8906443324045878,
+    "range": [
+      1.697345594931232,
+      2.3231565056696075
+    ],
+    "block_ratios": [
+      2.3231565056696075,
+      1.8048037022885326,
+      1.9525585136433117,
+      1.697345594931232,
+      1.8906443324045878
+    ],
+    "diagnostics": [
+      {
+        "arm": "sequential",
+        "maximum_baseline_difference": 0.0,
+        "maximum_common_grid_error": 2.3975943452825277e-10,
+        "scalar_setup_solves": 0,
+        "work": {
+          "full_state_causal_accumulations": 14680064,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 0,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 1048576,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 1024,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 512
+        }
+      },
+      {
+        "arm": "quotient-fresh",
+        "maximum_baseline_difference": 8.881784197001252e-16,
+        "maximum_common_grid_error": 2.397597120840089e-10,
+        "scalar_setup_solves": 1024,
+        "work": {
+          "full_state_causal_accumulations": 7340032,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 1048576,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 1048576,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 576,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 0
+        }
+      },
+      {
+        "arm": "quotient-reused",
+        "maximum_baseline_difference": 8.881784197001252e-16,
+        "maximum_common_grid_error": 2.397597120840089e-10,
+        "scalar_setup_solves": 16,
+        "work": {
+          "full_state_causal_accumulations": 7340032,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 1048576,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 1048576,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 576,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 0
+        }
+      }
+    ]
+  },
+  {
+    "n": 2048,
+    "threads": 2,
+    "candidate": "quotient-fresh",
+    "median_ratio": 1.5708244583948696,
+    "range": [
+      0.8663293575625818,
+      2.2180194136359974
+    ],
+    "block_ratios": [
+      1.597859229880897,
+      1.3419675557973003,
+      2.2180194136359974,
+      0.8663293575625818,
+      1.5708244583948696
+    ],
+    "diagnostics": [
+      {
+        "arm": "sequential",
+        "maximum_baseline_difference": 0.0,
+        "maximum_common_grid_error": 2.3975943452825277e-10,
+        "scalar_setup_solves": 0,
+        "work": {
+          "full_state_causal_accumulations": 14680064,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 0,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 1048576,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 1024,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 512
+        }
+      },
+      {
+        "arm": "quotient-fresh",
+        "maximum_baseline_difference": 8.881784197001252e-16,
+        "maximum_common_grid_error": 2.397597120840089e-10,
+        "scalar_setup_solves": 1024,
+        "work": {
+          "full_state_causal_accumulations": 7340032,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 1048576,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 1048576,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 576,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 0
+        }
+      },
+      {
+        "arm": "quotient-reused",
+        "maximum_baseline_difference": 8.881784197001252e-16,
+        "maximum_common_grid_error": 2.397597120840089e-10,
+        "scalar_setup_solves": 16,
+        "work": {
+          "full_state_causal_accumulations": 7340032,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 1048576,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 1048576,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 576,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 0
+        }
+      }
+    ]
+  },
+  {
+    "n": 2048,
+    "threads": 2,
+    "candidate": "quotient-reused",
+    "median_ratio": 1.6523181174294526,
+    "range": [
+      1.301831114721679,
+      2.511598438194253
+    ],
+    "block_ratios": [
+      1.80270549941831,
+      1.6523181174294526,
+      1.4535226231530265,
+      2.511598438194253,
+      1.301831114721679
+    ],
+    "diagnostics": [
+      {
+        "arm": "sequential",
+        "maximum_baseline_difference": 0.0,
+        "maximum_common_grid_error": 2.3975943452825277e-10,
+        "scalar_setup_solves": 0,
+        "work": {
+          "full_state_causal_accumulations": 14680064,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 0,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 1048576,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 1024,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 512
+        }
+      },
+      {
+        "arm": "quotient-fresh",
+        "maximum_baseline_difference": 8.881784197001252e-16,
+        "maximum_common_grid_error": 2.397597120840089e-10,
+        "scalar_setup_solves": 1024,
+        "work": {
+          "full_state_causal_accumulations": 7340032,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 1048576,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 1048576,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 576,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 0
+        }
+      },
+      {
+        "arm": "quotient-reused",
+        "maximum_baseline_difference": 8.881784197001252e-16,
+        "maximum_common_grid_error": 2.397597120840089e-10,
+        "scalar_setup_solves": 16,
+        "work": {
+          "full_state_causal_accumulations": 7340032,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 1048576,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 1048576,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 576,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 0
+        }
+      }
+    ]
+  },
+  {
+    "n": 64,
+    "threads": 1,
+    "candidate": "quotient-fresh",
+    "median_ratio": 1.7045926283122685,
+    "range": [
+      1.5709898778615041,
+      1.8403425456387006
+    ],
+    "block_ratios": [
+      1.7045926283122685,
+      1.6628571658111737,
+      1.7101552439119718,
+      1.5709898778615041,
+      1.8403425456387006
+    ],
+    "diagnostics": [
+      {
+        "arm": "sequential",
+        "maximum_baseline_difference": 0.0,
+        "maximum_common_grid_error": 2.3844914931459016e-10,
+        "scalar_setup_solves": 0,
+        "work": {
+          "full_state_causal_accumulations": 458752,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 0,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 32768,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 1024,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 512
+        }
+      },
+      {
+        "arm": "quotient-fresh",
+        "maximum_baseline_difference": 6.661338147750939e-16,
+        "maximum_common_grid_error": 2.384490382922877e-10,
+        "scalar_setup_solves": 1024,
+        "work": {
+          "full_state_causal_accumulations": 229376,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 32768,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 32768,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 576,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 0
+        }
+      },
+      {
+        "arm": "quotient-reused",
+        "maximum_baseline_difference": 6.661338147750939e-16,
+        "maximum_common_grid_error": 2.384490382922877e-10,
+        "scalar_setup_solves": 16,
+        "work": {
+          "full_state_causal_accumulations": 229376,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 32768,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 32768,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 576,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 0
+        }
+      }
+    ]
+  },
+  {
+    "n": 64,
+    "threads": 1,
+    "candidate": "quotient-reused",
+    "median_ratio": 1.5852439534983676,
+    "range": [
+      1.436107708487035,
+      2.061643053304807
+    ],
+    "block_ratios": [
+      1.4929696327264887,
+      1.436107708487035,
+      1.5852439534983676,
+      2.061643053304807,
+      1.6760001978321228
+    ],
+    "diagnostics": [
+      {
+        "arm": "sequential",
+        "maximum_baseline_difference": 0.0,
+        "maximum_common_grid_error": 2.3844914931459016e-10,
+        "scalar_setup_solves": 0,
+        "work": {
+          "full_state_causal_accumulations": 458752,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 0,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 32768,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 1024,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 512
+        }
+      },
+      {
+        "arm": "quotient-fresh",
+        "maximum_baseline_difference": 6.661338147750939e-16,
+        "maximum_common_grid_error": 2.384490382922877e-10,
+        "scalar_setup_solves": 1024,
+        "work": {
+          "full_state_causal_accumulations": 229376,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 32768,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 32768,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 576,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 0
+        }
+      },
+      {
+        "arm": "quotient-reused",
+        "maximum_baseline_difference": 6.661338147750939e-16,
+        "maximum_common_grid_error": 2.384490382922877e-10,
+        "scalar_setup_solves": 16,
+        "work": {
+          "full_state_causal_accumulations": 229376,
+          "jacobian_evaluations": 0,
+          "jvp_evaluations": 0,
+          "lifted_components": 32768,
+          "matrix_factorizations": 0,
+          "newton_updates": 0,
+          "original_space_residual_components": 32768,
+          "physical_linear_actions": 512,
+          "rhs_evaluations": 576,
+          "scalar_stage_solves": 0,
+          "shifted_resolvent_actions": 0
+        }
+      }
+    ]
+  }
+]

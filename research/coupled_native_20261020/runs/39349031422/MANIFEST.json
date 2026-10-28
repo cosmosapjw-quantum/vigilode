@@ -1,0 +1,132 @@
+{
+  "accuracy_gate": {
+    "embedded_difference_wrms": 0.1,
+    "output_wrms_up": 0.1
+  },
+  "affinity": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "arms": [
+    "coupled-1",
+    "coupled-2",
+    "coupled-4",
+    "sequential-mf",
+    "transactional-4"
+  ],
+  "binary_sha256": "b590f7e0048a89a22ec2e076d15547b58d162cf2440b34b98807f0e3aec9bc61",
+  "blocks": 10,
+  "cells": [
+    [
+      "few-mode",
+      96,
+      1.0,
+      0.01
+    ],
+    [
+      "few-mode",
+      96,
+      10.0,
+      0.01
+    ],
+    [
+      "few-mode",
+      384,
+      1.0,
+      0.01
+    ],
+    [
+      "few-mode",
+      384,
+      10.0,
+      0.01
+    ],
+    [
+      "few-mode",
+      12288,
+      1.0,
+      0.01
+    ],
+    [
+      "few-mode",
+      12288,
+      10.0,
+      0.01
+    ],
+    [
+      "few-mode",
+      96,
+      1.0,
+      0.001
+    ],
+    [
+      "few-mode",
+      384,
+      1.0,
+      0.001
+    ],
+    [
+      "few-mode",
+      12288,
+      1.0,
+      0.001
+    ],
+    [
+      "broad",
+      64,
+      0.0,
+      0.02
+    ],
+    [
+      "chain",
+      96,
+      1.0,
+      0.01
+    ],
+    [
+      "chain",
+      384,
+      1.0,
+      0.01
+    ],
+    [
+      "diffusion",
+      96,
+      1.0,
+      0.001
+    ],
+    [
+      "diffusion",
+      96,
+      1.0,
+      0.01
+    ],
+    [
+      "diffusion",
+      384,
+      1.0,
+      0.001
+    ],
+    [
+      "diffusion",
+      384,
+      1.0,
+      0.01
+    ]
+  ],
+  "clock_authority": "diagnostic_shared_runner",
+  "coefficient_sha256": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6",
+  "cost_scope": "fixed-h complete root attempt, not adaptive trajectory",
+  "fixed_input_atol": 1e-10,
+  "fixed_input_rtol": 1e-06,
+  "frozen_sha256": "04db144d2f9408236c8891f44d561fa00b285675524bc4395a27cea68bdeded1",
+  "multiplicity": 64,
+  "numpy": "2.3.5",
+  "preconditioning_baseline": "existing sequential GMRES, not claimed strongest U-form/other library implementation",
+  "reference_kind": "independent Python and Rust raw-U stage recurrence; empirical discrepancy, not continuous exact solution",
+  "resampling_unit": "one fresh process median per arm per paired block",
+  "scipy": "1.16.3",
+  "source_commit": "1e4a993874d6930ea2bb41bb0ff7392f21c33df7"
+}

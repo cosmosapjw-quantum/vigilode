@@ -1,0 +1,112 @@
+{
+  "iteration": 3,
+  "started_utc": "2026-10-27T14:17:39.654781+00:00",
+  "sources": {
+    "crates/vigilode-coupled/src/structural_mean_field.rs": "ebc43ae0ef3faada53764f0895c4b6587645d0ee51497a39bfe77d7fcd347330",
+    "crates/vigilode-coupled/examples/structural_production_bench_20261027.rs": "6f36ea393ef1578d9d0986a7c93e0227b171a79cf5938941c2e0e937a9c875a3",
+    "crates/vigilode-coupled/tests/structural_production_contracts.rs": "51cdbdcf5ca134392a043d0b657619587867217454f57599d25ff78dbfef67e0"
+  },
+  "executions": [
+    {
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "vigilode-coupled",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "--test",
+        "structural_mean_field_contracts",
+        "--test",
+        "structural_production_contracts",
+        "--",
+        "--nocapture"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 21.602682128002925,
+      "output": "correction3_native.log"
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "-p",
+        "vigilode-coupled",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "--example",
+        "structural_production_bench_20261027"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 14.197423921003065,
+      "output": "correction3_build.log"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/structural_production_bench_20261027",
+        "oracle"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 0.003955799002142157,
+      "output": "EXACT_ORACLE_CORRECTION3_INPUT.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/structural_production_bench_20261027",
+        "bench",
+        "1",
+        "64",
+        "5",
+        "1"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 3.846781122003449,
+      "output": "FINAL_BENCH_N1_W1.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/structural_production_bench_20261027",
+        "bench",
+        "64",
+        "64",
+        "5",
+        "1"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 4.524745099006395,
+      "output": "FINAL_BENCH_N64_W1.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/structural_production_bench_20261027",
+        "bench",
+        "2048",
+        "64",
+        "5",
+        "1"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 4.478118014005304,
+      "output": "FINAL_BENCH_N2048_W1.json"
+    },
+    {
+      "command": [
+        "/workspace/scratch/06cfffc081e2/tmp/vigil_target/measurement/examples/structural_production_bench_20261027",
+        "bench",
+        "2048",
+        "64",
+        "5",
+        "2"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 8.951759933996073,
+      "output": "FINAL_BENCH_N2048_W2.json"
+    }
+  ],
+  "finished_utc": "2026-10-27T14:19:44.027465+00:00",
+  "binary_sha256": "c4e03cef7e6dff1b3e99697c6d2bb6a3c1db882ef360fd50445447c0f6d85549"
+}

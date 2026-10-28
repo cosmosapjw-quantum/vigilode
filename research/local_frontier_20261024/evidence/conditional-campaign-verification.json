@@ -1,0 +1,39 @@
+{
+  "schema_version": 1,
+  "scope": "conditional campaign wrapper integrity; native kernel smoke separately identified",
+  "test_count": 12,
+  "test_status": "PASS",
+  "test_log": "evidence/conditional-campaign-tests-final.log",
+  "test_exit": "evidence/conditional-campaign-tests-final.exit",
+  "verified_behaviors": [
+    "source commit/tree, stable build source-after, Cargo.lock, package/example/measurement profile, binary path/hash, build-receipt hash linkage",
+    "host name/platform and CPU topology immutable across resume",
+    "3 independent fixture child processes; internal iterations not independent replicates",
+    "failure stdout/stderr preservation and tamper detection",
+    "nested method status/error/timing and negative guard preservation",
+    "distinct scenario configurations retained; no automatic production dispatch or whole-ODE ranking"
+  ],
+  "source_sha256": {
+    "local/conditional_campaign.py": "dec540a10b0f5b13244af4a12553e6de33f9828bee2880062cb694e69a4457ca",
+    "local/test_conditional_campaign.py": "1cfdd0b25b2a17baea6305800b7ca782a13316fe46876febdc5acb047e9ddb7f",
+    "local/CONDITIONAL_CAMPAIGN_KO.md": "83674ad2a74423627d3c1dc5e597847e0b6cfb793b7bb1bfaa78c03accf8027f",
+    "local/campaign.py": "4fcee60f201fd5097e78c219b4aec5a70c3842f8e45147156c61b5f595db3d7f"
+  },
+  "native_smoke": [
+    {
+      "path": "evidence/conditional-native-final-summary.json",
+      "processes": 12,
+      "raw_rows": 1245,
+      "status": "ALL_PROCESS_COMPLETED",
+      "source_scope": "bounded developer smoke; explicit dirty-source qualification, not clean committed build campaign",
+      "historical_continuation_round2_excluded": true
+    }
+  ],
+  "registered_examples": [
+    "conditional_chart_sweep",
+    "conditional_continuation_sweep",
+    "structured_residual_sweep",
+    "invariant_module_bench"
+  ],
+  "ncp_used": false
+}

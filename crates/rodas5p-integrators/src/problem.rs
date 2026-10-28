@@ -1,18 +1,236 @@
 use std::sync::Arc;
 
 use crate::parallel::ParallelExecution;
+use crate::rodas5p_fast::{BandedJacobian, BandedJacobianFn};
 
 use rodas5p_core::{
     ClosureOperator, CoreError, CoreResult, DenseMatrix, DenseOperator, LinearOperator,
-    WorkCounters,
+    OperatorApplicationWork, WorkCounters,
 };
+
+/// One user JVP callback evaluates one Jacobian-vector product.
+fn jvp_callback_work() -> OperatorApplicationWork {
+    OperatorApplicationWork {
+        jvp_calls: 1,
+        jvp_vectors: 1,
+        ..OperatorApplicationWork::default()
+    }
+}
 
 pub type RhsFn = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
 pub type BatchRhsFn = Arc<dyn Fn(&[f64], &[Vec<f64>]) -> CoreResult<Vec<Vec<f64>>> + Send + Sync>;
 pub type JacobianFn = Arc<dyn Fn(f64, &[f64]) -> CoreResult<DenseMatrix> + Send + Sync>;
+/// Writes the Jacobian into a caller-owned `n x n` matrix; see
+/// [`OdeProblem::with_jacobian_into`] for the contract.
+pub type JacobianIntoFn =
+    Arc<dyn Fn(f64, &[f64], &mut DenseMatrix) -> CoreResult<()> + Send + Sync>;
 pub type JvpFn = Arc<dyn Fn(f64, &[f64], &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
 pub type PartialTFn = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
 pub type ExactFn = Arc<dyn Fn(f64) -> Vec<f64> + Send + Sync>;
+/// A client-owned model generation counter; see [`OdeProblem::with_model_epoch`].
+pub type ModelEpochFn = Arc<dyn Fn() -> u64 + Send + Sync>;
+
+/// The linear-algebra structure a caller declares for its problem (research
+/// node SP03, `research/sp03_declared_structure_routing_20261010`). Only the
+/// opt-in router [`crate::integrate_rodas5p_routed_observed`] reads it; no
+/// other entry point changes with it. Attach it with
+/// [`OdeProblem::with_declared_structure`], which validates it.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "kebab-case", tag = "kind")]
+pub enum ProblemStructure {
+    /// Nothing is declared (the default of every problem).
+    #[default]
+    Unstructured,
+    /// A small problem with an explicit Jacobian, for the dense direct driver.
+    Dense,
+    /// The Jacobian is zero outside `lower` diagonals below and `upper`
+    /// diagonals above the main diagonal, and a band Jacobian callback in the
+    /// layout of [`BandedJacobianFn`] writes it.
+    Banded { lower: usize, upper: usize },
+    /// Declared sparse linear part A and nonlinear callback N (PC01 F3).
+    LinearPart { nnz: usize },
+}
+
+/// A sparse matrix in CSC representation for declared linear parts.
+#[derive(Clone, Debug, PartialEq)]
+pub struct SparseLinearPart {
+    pub nrows: usize,
+    pub ncols: usize,
+    pub col_ptr: Vec<usize>,
+    pub row_idx: Vec<usize>,
+    pub values: Vec<f64>,
+}
+
+impl SparseLinearPart {
+    pub fn new(
+        nrows: usize,
+        ncols: usize,
+        col_ptr: Vec<usize>,
+        row_idx: Vec<usize>,
+        values: Vec<f64>,
+    ) -> CoreResult<Self> {
+        if nrows == 0 || ncols == 0 || col_ptr.len() != ncols.saturating_add(1) {
+            return Err(CoreError::Dimension(
+                "SparseLinearPart: col_ptr length != ncols + 1".into(),
+            ));
+        }
+        if col_ptr[0] != 0 || col_ptr[ncols] != row_idx.len() || values.len() != row_idx.len() {
+            return Err(CoreError::InvalidInput(
+                "SparseLinearPart: inconsistent col_ptr or values length".into(),
+            ));
+        }
+        let result = Self {
+            nrows,
+            ncols,
+            col_ptr,
+            row_idx,
+            values,
+        };
+        result.validate()?;
+        Ok(result)
+    }
+
+    /// Validate even literal/modified public descriptors before using indices.
+    pub fn validate(&self) -> CoreResult<()> {
+        if self.nrows == 0
+            || self.ncols == 0
+            || self.col_ptr.len() != self.ncols.saturating_add(1)
+            || self.col_ptr.first() != Some(&0)
+            || self.col_ptr.last() != Some(&self.row_idx.len())
+            || self.values.len() != self.row_idx.len()
+            || self.col_ptr.windows(2).any(|p| p[0] > p[1])
+        {
+            return Err(CoreError::InvalidInput(
+                "invalid sparse linear CSC shape".into(),
+            ));
+        }
+        for col in 0..self.ncols {
+            let rows = &self.row_idx[self.col_ptr[col]..self.col_ptr[col + 1]];
+            if rows.iter().any(|&row| row >= self.nrows) || rows.windows(2).any(|p| p[0] >= p[1]) {
+                return Err(CoreError::InvalidInput(
+                    "sparse linear rows must be canonical and in range".into(),
+                ));
+            }
+        }
+        if !self.values.iter().all(|v| v.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "sparse linear coefficients contain NaN/Inf".into(),
+            ));
+        }
+        Ok(())
+    }
+
+    pub fn matvec(&self, x: &[f64], y: &mut [f64]) -> CoreResult<()> {
+        self.validate()?;
+        if x.len() != self.ncols || y.len() != self.nrows {
+            return Err(CoreError::Dimension(
+                "sparse linear matvec shape mismatch".into(),
+            ));
+        }
+        if !x.iter().all(|v| v.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "sparse linear input contains NaN/Inf".into(),
+            ));
+        }
+        y.fill(0.0);
+        for (j, &xj) in x.iter().enumerate().take(self.ncols) {
+            for k in self.col_ptr[j]..self.col_ptr[j + 1] {
+                let i = self.row_idx[k];
+                y[i] += self.values[k] * xj;
+            }
+        }
+        if !y.iter().all(|v| v.is_finite()) {
+            return Err(CoreError::NonFinite(
+                "sparse linear product contains NaN/Inf".into(),
+            ));
+        }
+        Ok(())
+    }
+}
+
+pub type NonlinearFn = Arc<dyn Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync>;
+
+/// A structure declaration: the dimension it was written for, the
+/// structure, and optional callbacks.
+#[derive(Clone)]
+pub struct StructureDeclaration {
+    pub dimension: usize,
+    pub structure: ProblemStructure,
+    pub band_jacobian: Option<BandedJacobianFn>,
+}
+
+impl StructureDeclaration {
+    /// No declaration (what every problem carries by default).
+    pub fn unstructured(dimension: usize) -> Self {
+        Self {
+            dimension,
+            structure: ProblemStructure::Unstructured,
+            band_jacobian: None,
+        }
+    }
+
+    /// A dense declaration; the problem must have an explicit Jacobian.
+    pub fn dense(dimension: usize) -> Self {
+        Self {
+            dimension,
+            structure: ProblemStructure::Dense,
+            band_jacobian: None,
+        }
+    }
+
+    /// A band declaration with its band Jacobian callback.
+    pub fn banded(dimension: usize, lower: usize, upper: usize, fill: BandedJacobianFn) -> Self {
+        Self {
+            dimension,
+            structure: ProblemStructure::Banded { lower, upper },
+            band_jacobian: Some(fill),
+        }
+    }
+
+    /// A declared linear part (PC01 F3).
+    pub fn linear_part(dimension: usize, nnz: usize) -> Self {
+        Self {
+            dimension,
+            structure: ProblemStructure::LinearPart { nnz },
+            band_jacobian: None,
+        }
+    }
+}
+
+/// Why a structure declaration was refused. Every variant is raised before
+/// any integration step: the declaration-time variants by
+/// [`OdeProblem::with_declared_structure`], the band-verification variants
+/// by the router at `(t0, y0)`.
+#[derive(Clone, Debug, PartialEq, thiserror::Error)]
+pub enum StructureError {
+    #[error("structure declared for dimension {declared}, problem has dimension {problem}")]
+    DimensionMismatch { declared: usize, problem: usize },
+    #[error(
+        "band (lower {lower}, upper {upper}) lies outside the {dimension} x {dimension} matrix"
+    )]
+    BandOutsideMatrix {
+        lower: usize,
+        upper: usize,
+        dimension: usize,
+    },
+    #[error("a banded declaration needs a band Jacobian callback")]
+    MissingBandCallback,
+    #[error("a band Jacobian callback was given for a non-banded declaration")]
+    UnexpectedBandCallback,
+    #[error("a dense declaration needs an explicit Jacobian")]
+    DenseWithoutExplicitJacobian,
+    #[error(
+        "band verification rejected the declaration: vector {vector}, mismatch {mismatch:e} > {tolerance:e} x reference norm {reference_norm:e}"
+    )]
+    BandVerificationMismatch {
+        vector: usize,
+        mismatch: f64,
+        reference_norm: f64,
+        tolerance: f64,
+    },
+    #[error("band verification could not evaluate the declaration: {0}")]
+    BandVerificationFailed(String),
+}
 
 #[derive(Clone)]
 pub struct OdeProblem {
@@ -21,14 +239,91 @@ pub struct OdeProblem {
     rhs: RhsFn,
     rhs_batch: Option<BatchRhsFn>,
     jacobian: Option<JacobianFn>,
+    jacobian_into: Option<JacobianIntoFn>,
     jvp: Option<JvpFn>,
     partial_t: Option<PartialTFn>,
     pub autonomous: bool,
     pub mass_matrix: Option<DenseMatrix>,
     exact_solution: Option<ExactFn>,
+    model_epoch: Option<ModelEpochFn>,
+    /// Declared structure (SP03); `Unstructured` unless validated by
+    /// [`Self::with_declared_structure`].
+    structure: ProblemStructure,
+    band_jacobian: Option<BandedJacobianFn>,
+    linear_part: Option<Arc<SparseLinearPart>>,
+    nonlinear_callback: Option<NonlinearFn>,
+}
+
+/// Retained callback identities for a frozen matrix-free state. This is an
+/// allocation identity, not a proof that interior mutable callback data stayed
+/// unchanged. Callers changing such data must request a fresh linearization.
+#[derive(Clone)]
+pub(crate) struct MatrixFreeCallbackIdentity {
+    rhs: RhsFn,
+    jvp: Option<JvpFn>,
+    partial_t: Option<PartialTFn>,
+    model_epoch: Option<ModelEpochFn>,
+    autonomous: bool,
+}
+
+impl MatrixFreeCallbackIdentity {
+    pub(crate) fn matches(&self, problem: &OdeProblem) -> bool {
+        fn same<T: ?Sized>(a: &Option<Arc<T>>, b: &Option<Arc<T>>) -> bool {
+            match (a, b) {
+                (None, None) => true,
+                (Some(a), Some(b)) => Arc::ptr_eq(a, b),
+                _ => false,
+            }
+        }
+        Arc::ptr_eq(&self.rhs, &problem.rhs)
+            && same(&self.jvp, &problem.jvp)
+            && same(&self.partial_t, &problem.partial_t)
+            && same(&self.model_epoch, &problem.model_epoch)
+            && self.autonomous == problem.autonomous
+    }
 }
 
 impl OdeProblem {
+    /// Generic point-callback problems do not carry the private immutable
+    /// model/provider owner required for continuous residual authority.
+    /// Construct a supported pair through a model-specific factory instead.
+    pub fn request_continuous_residual_authority(
+        &self,
+    ) -> Result<(), crate::dense_output_v2::DenseOutputError> {
+        let _ = self;
+        Err(crate::dense_output_v2::DenseOutputError::UnsupportedUnboundModel)
+    }
+
+    pub(crate) fn matrix_free_callback_identity(&self) -> MatrixFreeCallbackIdentity {
+        MatrixFreeCallbackIdentity {
+            rhs: self.rhs.clone(),
+            jvp: self.jvp.clone(),
+            partial_t: self.partial_t.clone(),
+            model_epoch: self.model_epoch.clone(),
+            autonomous: self.autonomous,
+        }
+    }
+
+    /// Attach a client-owned model epoch (research node
+    /// `research/rnext07_model_epoch_20261003`). The client must change the
+    /// returned value whenever data read by `rhs`, the Jacobian, `jvp` or
+    /// `partial_t` change, for example parameters behind an `Arc<AtomicU64>`
+    /// or a `Mutex`. Drivers that keep frozen linearization data across calls
+    /// (the U-form matrix-free workspace) then rebuild it when the epoch
+    /// differs from the one it was built under. The epoch is the client's
+    /// promise: the library cannot check it, and neither it nor any callback
+    /// pointer is a proof that the model is unchanged. Without an epoch, such
+    /// changes need `fresh = true` (the manual contract).
+    pub fn with_model_epoch(mut self, epoch: ModelEpochFn) -> Self {
+        self.model_epoch = Some(epoch);
+        self
+    }
+
+    /// The current model epoch, if the client supplied one.
+    pub fn model_epoch(&self) -> Option<u64> {
+        self.model_epoch.as_ref().map(|epoch| epoch())
+    }
+
     #[allow(clippy::too_many_arguments)]
     pub fn new(
         name: impl Into<String>,
@@ -64,12 +359,209 @@ impl OdeProblem {
             rhs,
             rhs_batch,
             jacobian,
+            jacobian_into: None,
             jvp,
             partial_t,
             autonomous,
             mass_matrix,
             exact_solution,
+            model_epoch: None,
+            structure: ProblemStructure::Unstructured,
+            band_jacobian: None,
+            linear_part: None,
+            nonlinear_callback: None,
         })
+    }
+
+    /// Attach a validated structure declaration (research node SP03). The
+    /// declaration must name this problem's dimension; a band must lie
+    /// inside the matrix (`lower, upper < n`) and come with its band
+    /// Jacobian callback; a dense declaration needs an explicit Jacobian; a
+    /// callback without a band is refused. Whether the band callback agrees
+    /// with the problem's Jacobian is checked by the router at `(t0, y0)`.
+    /// Only [`crate::integrate_rodas5p_routed_observed`] reads the
+    /// declaration.
+    pub fn with_declared_structure(
+        mut self,
+        declaration: StructureDeclaration,
+    ) -> Result<Self, StructureError> {
+        let n = self.dimension;
+        if declaration.dimension != n {
+            return Err(StructureError::DimensionMismatch {
+                declared: declaration.dimension,
+                problem: n,
+            });
+        }
+        match &declaration.structure {
+            ProblemStructure::Banded { lower, upper } => {
+                if *lower >= n || *upper >= n {
+                    return Err(StructureError::BandOutsideMatrix {
+                        lower: *lower,
+                        upper: *upper,
+                        dimension: n,
+                    });
+                }
+                if declaration.band_jacobian.is_none() {
+                    return Err(StructureError::MissingBandCallback);
+                }
+            }
+            ProblemStructure::Dense => {
+                if declaration.band_jacobian.is_some() {
+                    return Err(StructureError::UnexpectedBandCallback);
+                }
+                if !self.has_explicit_jacobian_callback() {
+                    return Err(StructureError::DenseWithoutExplicitJacobian);
+                }
+            }
+            ProblemStructure::Unstructured => {
+                if declaration.band_jacobian.is_some() {
+                    return Err(StructureError::UnexpectedBandCallback);
+                }
+            }
+            ProblemStructure::LinearPart { .. } => {
+                if declaration.band_jacobian.is_some() {
+                    return Err(StructureError::UnexpectedBandCallback);
+                }
+            }
+        }
+        self.structure = declaration.structure;
+        self.band_jacobian = declaration.band_jacobian;
+        Ok(self)
+    }
+
+    /// Attach a declared linear part and nonlinear callback (PC01 F3).
+    pub fn with_linear_part(
+        mut self,
+        sparse_a: SparseLinearPart,
+        nonlinear_n: NonlinearFn,
+    ) -> CoreResult<Self> {
+        sparse_a.validate()?;
+        if sparse_a.nrows != self.dimension || sparse_a.ncols != self.dimension {
+            return Err(CoreError::Dimension(format!(
+                "Sparse linear part dimension {}x{} != problem dimension {}",
+                sparse_a.nrows, sparse_a.ncols, self.dimension
+            )));
+        }
+        let nnz = sparse_a.values.len();
+        self.structure = ProblemStructure::LinearPart { nnz };
+        self.linear_part = Some(Arc::new(sparse_a));
+        self.nonlinear_callback = Some(nonlinear_n);
+        Ok(self)
+    }
+
+    /// The declared structure (`Unstructured` unless one was attached).
+    pub fn declared_structure(&self) -> ProblemStructure {
+        self.structure
+    }
+
+    /// The declared linear part, if one was attached.
+    pub fn declared_linear_part(&self) -> Option<Arc<SparseLinearPart>> {
+        self.linear_part.clone()
+    }
+
+    /// The declared nonlinear callback, if one was attached.
+    pub fn declared_nonlinear_callback(&self) -> Option<NonlinearFn> {
+        self.nonlinear_callback.clone()
+    }
+
+    /// Verify the declared linear part at (t0, y0) and one seeded perturbation
+    /// to relative 1e-12 using SP03 scaled norms (`safe_l2`). The verification work is charged.
+    pub fn verify_linear_part(
+        &self,
+        t0: f64,
+        y0: &[f64],
+        counters: &mut WorkCounters,
+    ) -> Result<(), StructureError> {
+        if !t0.is_finite() || y0.len() != self.dimension || !y0.iter().all(|v| v.is_finite()) {
+            return Err(StructureError::BandVerificationFailed(
+                "invalid linear-part verification input".into(),
+            ));
+        }
+        if let ProblemStructure::LinearPart { .. } = self.structure {
+            let lp = self.linear_part.as_ref().ok_or_else(|| {
+                StructureError::BandVerificationFailed("missing linear part".into())
+            })?;
+            let n_fn = self.nonlinear_callback.as_ref().ok_or_else(|| {
+                StructureError::BandVerificationFailed("missing nonlinear callback".into())
+            })?;
+            let n = self.dimension;
+            let mut f_val = vec![0.0f64; n];
+            let mut ay = vec![0.0f64; n];
+            let mut ny = vec![0.0f64; n];
+
+            // 1. Check at (t0, y0)
+            self.eval_rhs_into(t0, y0, &mut f_val, counters)
+                .map_err(|e| StructureError::BandVerificationFailed(e.to_string()))?;
+            lp.matvec(y0, &mut ay)
+                .map_err(|e| StructureError::BandVerificationFailed(e.to_string()))?;
+            (n_fn)(t0, y0, &mut ny)
+                .map_err(|e| StructureError::BandVerificationFailed(e.to_string()))?;
+            let mut diff = vec![0.0f64; n];
+            for i in 0..n {
+                diff[i] = f_val[i] - (ay[i] + ny[i]);
+            }
+            let norm_diff0 = rodas5p_core::safe_l2(&diff);
+            let norm_f0 = rodas5p_core::safe_l2(&f_val).max(1.0);
+            let rel_err0 = norm_diff0 / norm_f0;
+            if !rel_err0.is_finite() || rel_err0 > 1.0e-12 {
+                return Err(StructureError::BandVerificationMismatch {
+                    vector: 0,
+                    mismatch: rel_err0,
+                    reference_norm: norm_f0,
+                    tolerance: 1.0e-12,
+                });
+            }
+
+            // 2. Check at seeded perturbation y0 + delta
+            let mut y_pert = y0.to_vec();
+            for (i, val) in y_pert.iter_mut().enumerate() {
+                let delta = 1.0e-4 * ((i + 1) as f64).sin();
+                *val += delta;
+            }
+            self.eval_rhs_into(t0, &y_pert, &mut f_val, counters)
+                .map_err(|e| StructureError::BandVerificationFailed(e.to_string()))?;
+            lp.matvec(&y_pert, &mut ay)
+                .map_err(|e| StructureError::BandVerificationFailed(e.to_string()))?;
+            (n_fn)(t0, &y_pert, &mut ny)
+                .map_err(|e| StructureError::BandVerificationFailed(e.to_string()))?;
+            for i in 0..n {
+                diff[i] = f_val[i] - (ay[i] + ny[i]);
+            }
+            let norm_diff1 = rodas5p_core::safe_l2(&diff);
+            let norm_f1 = rodas5p_core::safe_l2(&f_val).max(1.0);
+            let rel_err1 = norm_diff1 / norm_f1;
+            if !rel_err1.is_finite() || rel_err1 > 1.0e-12 {
+                return Err(StructureError::BandVerificationMismatch {
+                    vector: 1,
+                    mismatch: rel_err1,
+                    reference_norm: norm_f1,
+                    tolerance: 1.0e-12,
+                });
+            }
+        }
+        Ok(())
+    }
+
+    /// The declared band and its callback, if a band was declared.
+    pub fn declared_band(&self) -> Option<BandedJacobian> {
+        match (self.structure, &self.band_jacobian) {
+            (ProblemStructure::Banded { lower, upper }, Some(fill)) => Some(BandedJacobian {
+                lower,
+                upper,
+                fill: fill.clone(),
+            }),
+            _ => None,
+        }
+    }
+
+    /// An explicit Jacobian callback (allocating or in place) is present.
+    pub(crate) fn has_explicit_jacobian_callback(&self) -> bool {
+        self.jacobian.is_some() || self.jacobian_into.is_some()
+    }
+
+    /// The JVP callback, if any (band verification of SP03).
+    pub fn jvp_callback(&self) -> Option<&JvpFn> {
+        self.jvp.as_ref()
     }
 
     fn eval_rhs_uncounted(&self, t: f64, y: &[f64]) -> CoreResult<Vec<f64>> {
@@ -85,11 +577,38 @@ impl OdeProblem {
         }
     }
 
-    pub fn eval_rhs(&self, t: f64, y: &[f64], counters: &mut WorkCounters) -> CoreResult<Vec<f64>> {
-        let out = self.eval_rhs_uncounted(t, y)?;
+    /// [`Self::eval_rhs`] into a caller-owned buffer, with the same checks
+    /// and counting (the RODAS5P fast driver's allocation-free stages).
+    pub fn eval_rhs_into(
+        &self,
+        t: f64,
+        y: &[f64],
+        out: &mut [f64],
+        counters: &mut WorkCounters,
+    ) -> CoreResult<()> {
+        if y.len() != self.dimension || out.len() != self.dimension {
+            return Err(CoreError::Dimension("RHS state shape mismatch".into()));
+        }
+        // These counters describe attempted callback work. Charge before
+        // entering user code so Err and non-finite outputs remain visible.
         counters.rhs_calls += 1;
         counters.rhs_evaluations += 1;
-        Ok(out)
+        (self.rhs)(t, y, out)?;
+        if !out.iter().all(|v| v.is_finite()) {
+            return Err(CoreError::NonFinite("RHS produced NaN/Inf".into()));
+        }
+        Ok(())
+    }
+
+    pub fn eval_rhs(&self, t: f64, y: &[f64], counters: &mut WorkCounters) -> CoreResult<Vec<f64>> {
+        if y.len() != self.dimension {
+            return Err(CoreError::Dimension("RHS state shape mismatch".into()));
+        }
+        // Count attempted callback work only after library-side shape checks,
+        // but before user code so callback Err/non-finite output remains seen.
+        counters.rhs_calls += 1;
+        counters.rhs_evaluations += 1;
+        self.eval_rhs_uncounted(t, y)
     }
 
     /// Evaluate independent method-stage RHS rows through a bounded execution context.
@@ -130,6 +649,10 @@ impl OdeProblem {
             return Err(CoreError::Dimension("batched RHS shape mismatch".into()));
         }
         if let Some(batch) = &self.rhs_batch {
+            // Count the attempted batch and scheduled scalar evaluations even
+            // if the callback rejects the batch or returns malformed output.
+            counters.rhs_batch_calls += 1;
+            counters.rhs_evaluations += times.len() as u64;
             let out = batch(times, states)?;
             if out.len() != states.len() || out.iter().any(|r| r.len() != self.dimension) {
                 return Err(CoreError::Dimension(
@@ -139,8 +662,6 @@ impl OdeProblem {
             if !out.iter().flatten().all(|v| v.is_finite()) {
                 return Err(CoreError::NonFinite("batched RHS produced NaN/Inf".into()));
             }
-            counters.rhs_batch_calls += 1;
-            counters.rhs_evaluations += times.len() as u64;
             Ok(out)
         } else {
             times
@@ -169,6 +690,90 @@ impl OdeProblem {
             }
             return Err(CoreError::NonFinite("partial_t produced NaN/Inf".into()));
         }
+        self.partial_t_finite_difference(t, y, counters)
+    }
+
+    /// [`Self::eval_partial_t`] into a caller-owned buffer, with the same
+    /// arithmetic, checks and counting (the RODAS5P fast driver's
+    /// allocation-free non-autonomous stages). A supplied `partial_t`
+    /// callback receives a zeroed `out`, as with the allocating form. The
+    /// finite-difference fallback (no callback) still allocates its two RHS
+    /// evaluations; fast drivers use the scratch-aware internal form below.
+    /// On `Err` the contents of `out` are unspecified.
+    pub fn eval_partial_t_into(
+        &self,
+        t: f64,
+        y: &[f64],
+        out: &mut [f64],
+        counters: &mut WorkCounters,
+    ) -> CoreResult<()> {
+        if y.len() != self.dimension || out.len() != self.dimension {
+            return Err(CoreError::Dimension(
+                "partial_t state shape mismatch".into(),
+            ));
+        }
+        counters.ft_calls += 1;
+        out.fill(0.0);
+        if self.autonomous {
+            return Ok(());
+        }
+        if let Some(f) = &self.partial_t {
+            f(t, y, out)?;
+            if out.iter().all(|v| v.is_finite()) {
+                return Ok(());
+            }
+            return Err(CoreError::NonFinite("partial_t produced NaN/Inf".into()));
+        }
+        let fd = self.partial_t_finite_difference(t, y, counters)?;
+        out.copy_from_slice(&fd);
+        Ok(())
+    }
+
+    /// Fast-driver form of `eval_partial_t_into`. The two RHS vectors are
+    /// borrowed from the workspace's stage buffers, so the fallback performs
+    /// no heap allocation.
+    /// Both scratch buffers are reset before their callbacks: `eval_rhs`
+    /// starts from zeros, whereas `eval_rhs_into` intentionally does not.
+    pub(crate) fn eval_partial_t_into_with_scratch(
+        &self,
+        t: f64,
+        y: &[f64],
+        out: &mut [f64],
+        fp: &mut [f64],
+        fm: &mut [f64],
+        counters: &mut WorkCounters,
+    ) -> CoreResult<()> {
+        if y.len() != self.dimension
+            || out.len() != self.dimension
+            || fp.len() != self.dimension
+            || fm.len() != self.dimension
+        {
+            return Err(CoreError::Dimension(
+                "partial_t state shape mismatch".into(),
+            ));
+        }
+        if self.autonomous || self.partial_t.is_some() {
+            return self.eval_partial_t_into(t, y, out, counters);
+        }
+        counters.ft_calls += 1;
+        out.fill(0.0);
+        let eps = f64::EPSILON.sqrt() * t.abs().max(1.0);
+        fp.fill(0.0);
+        self.eval_rhs_into(t + eps, y, fp, counters)?;
+        fm.fill(0.0);
+        self.eval_rhs_into(t - eps, y, fm, counters)?;
+        for ((result, plus), minus) in out.iter_mut().zip(fp).zip(fm) {
+            *result = (*plus - *minus) / (2.0 * eps);
+        }
+        Ok(())
+    }
+
+    fn partial_t_finite_difference(
+        &self,
+        t: f64,
+        y: &[f64],
+        counters: &mut WorkCounters,
+    ) -> CoreResult<Vec<f64>> {
         let eps = f64::EPSILON.sqrt() * t.abs().max(1.0);
         let fp = self.eval_rhs(t + eps, y, counters)?;
         let fm = self.eval_rhs(t - eps, y, counters)?;
@@ -183,6 +788,47 @@ impl OdeProblem {
         self.mass_matrix
             .clone()
             .unwrap_or_else(|| DenseMatrix::identity(self.dimension))
+    }
+
+    /// Add an in-place Jacobian for drivers that keep one matrix across
+    /// steps (the RODAS5P fast driver). The callback receives the matrix it
+    /// last wrote for this problem, all zero on the first call, and must
+    /// write every entry that is nonzero in any Jacobian of the problem;
+    /// entries it never writes must be zero in every Jacobian (a fixed
+    /// sparsity pattern). It must produce the same values as the explicit
+    /// Jacobian, which every other path keeps using.
+    pub fn with_jacobian_into(mut self, jacobian_into: JacobianIntoFn) -> Self {
+        self.jacobian_into = Some(jacobian_into);
+        self
+    }
+
+    /// The Jacobian into `out`, which must be `n x n` and hold the previous
+    /// Jacobian of this problem (or zeros): through the in-place callback
+    /// when there is one, otherwise copied from [`Self::dense_jacobian`].
+    pub fn dense_jacobian_into(
+        &self,
+        t: f64,
+        y: &[f64],
+        out: &mut DenseMatrix,
+        counters: &mut WorkCounters,
+    ) -> CoreResult<()> {
+        if y.len() != self.dimension
+            || out.nrows() != self.dimension
+            || out.ncols() != self.dimension
+        {
+            return Err(CoreError::Dimension("Jacobian state shape mismatch".into()));
+        }
+        match &self.jacobian_into {
+            Some(fill) => {
+                counters.jacobian_builds += 1;
+                fill(t, y, out)
+            }
+            None => {
+                let matrix = self.dense_jacobian(t, y, counters)?;
+                out.as_mut_slice().copy_from_slice(matrix.as_slice());
+                Ok(())
+            }
+        }
     }
 
     pub fn dense_jacobian(
@@ -205,6 +851,10 @@ impl OdeProblem {
             return Ok(matrix);
         }
         let jvp = self.jvp.as_ref().expect("validated JVP");
+        // An attempted build, as the explicit and in-place Jacobian paths
+        // charge it; each column JVP is charged before entering user code so
+        // an Err or non-finite column remains visible.
+        counters.jacobian_builds += 1;
         let mut matrix = DenseMatrix::zeros(self.dimension, self.dimension);
         let mut basis = vec![0.0; self.dimension];
         let mut column = vec![0.0; self.dimension];
@@ -212,9 +862,9 @@ impl OdeProblem {
             basis.fill(0.0);
             basis[j] = 1.0;
             column.fill(0.0);
-            jvp(t, y, &basis, &mut column)?;
             counters.jvp_calls += 1;
             counters.jvp_vectors += 1;
+            jvp(t, y, &basis, &mut column)?;
             if !column.iter().all(|value| value.is_finite()) {
                 return Err(CoreError::NonFinite("JVP produced NaN/Inf".into()));
             }
@@ -222,7 +872,6 @@ impl OdeProblem {
                 matrix[(i, j)] = column[i];
             }
         }
-        counters.jacobian_builds += 1;
         Ok(matrix)
     }
 
@@ -232,16 +881,27 @@ impl OdeProblem {
         y: &[f64],
         counters: &mut WorkCounters,
     ) -> CoreResult<Arc<dyn LinearOperator>> {
+        // Each linearization declares what one application costs, so every
+        // lane counts user JVP callbacks in `jvp_calls` and explicit Jacobian
+        // products in `jacobian_matvecs` (audit F-048, F-022).
         if let Some(j) = &self.jacobian {
             counters.jacobian_builds += 1;
-            return Ok(Arc::new(DenseOperator::new(j(t, y)?)?));
+            return Ok(Arc::new(DenseOperator::with_application_work(
+                j(t, y)?,
+                OperatorApplicationWork {
+                    jacobian_matvecs: 1,
+                    ..OperatorApplicationWork::default()
+                },
+            )?));
         }
         let jvp = self.jvp.clone().expect("validated JVP");
         let state = y.to_vec();
         let n = self.dimension;
-        Ok(Arc::new(ClosureOperator::new(n, move |v, out| {
-            jvp(t, &state, v, out)
-        })))
+        Ok(Arc::new(ClosureOperator::with_application_work(
+            n,
+            move |v, out| jvp(t, &state, v, out),
+            jvp_callback_work(),
+        )))
     }
 
     /// Build a strictly matrix-free linearization operator.
@@ -263,9 +923,11 @@ impl OdeProblem {
         })?;
         let state = y.to_vec();
         let n = self.dimension;
-        Ok(Arc::new(ClosureOperator::new(n, move |v, out| {
-            jvp(t, &state, v, out)
-        })))
+        Ok(Arc::new(ClosureOperator::with_application_work(
+            n,
+            move |v, out| jvp(t, &state, v, out),
+            jvp_callback_work(),
+        )))
     }
 
     pub fn supports_matrix_free_jvp(&self) -> bool {
@@ -285,6 +947,11 @@ impl OdeProblem {
         }
         let mut cloned = self.clone();
         cloned.jacobian = None;
+        cloned.jacobian_into = None;
+        // A declared structure is an explicit-matrix provider: the strict
+        // matrix-free clone carries none (SP03).
+        cloned.structure = ProblemStructure::Unstructured;
+        cloned.band_jacobian = None;
         Ok(cloned)
     }
 
@@ -367,5 +1034,132 @@ impl OdeProblem {
 
     pub fn exact(&self, t: f64) -> Option<Vec<f64>> {
         self.exact_solution.as_ref().map(|f| f(t))
+    }
+}
+
+#[cfg(test)]
+mod time_fd_workspace_tests {
+    use super::*;
+
+    fn problem(autonomous: bool, analytic: bool, fail: Option<&'static str>) -> OdeProblem {
+        OdeProblem::new(
+            "time-fd-scratch-contract",
+            2,
+            Arc::new(move |t, y, out| {
+                if fail == Some("plus") && t > 0.0 {
+                    return Err(CoreError::InvalidInput("plus RHS refused".into()));
+                }
+                if fail == Some("minus") && t < 0.0 {
+                    return Err(CoreError::InvalidInput("minus RHS refused".into()));
+                }
+                if fail == Some("nan-plus") && t > 0.0 {
+                    out[0] = f64::NAN;
+                    return Ok(());
+                }
+                if fail == Some("nan-minus") && t < 0.0 {
+                    out[0] = f64::NAN;
+                    return Ok(());
+                }
+                // Accumulation exposes stale scratch from a previous call.
+                out[0] += t + y[0];
+                out[1] += 2.0 * t - y[1];
+                Ok(())
+            }),
+            None,
+            None,
+            Some(Arc::new(|_, _, v, out| {
+                out.copy_from_slice(v);
+                Ok(())
+            })),
+            analytic.then(|| {
+                Arc::new(|_: f64, _: &[f64], out: &mut [f64]| {
+                    out[0] += 1.0;
+                    out[1] += 2.0;
+                    Ok(())
+                }) as PartialTFn
+            }),
+            autonomous,
+            None,
+            None,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn reused_scratch_matches_public_arithmetic_and_work() {
+        let y = [0.25, -0.75];
+        for (autonomous, analytic) in [(true, false), (false, true), (false, false)] {
+            let model = problem(autonomous, analytic, None);
+            let mut fp = [f64::NAN; 2];
+            let mut fm = [f64::NAN; 2];
+            let mut out = [f64::NAN; 2];
+            for t in [0.0, 1.25, -1.25, f64::MIN_POSITIVE, 0.0] {
+                let mut reference_work = WorkCounters::default();
+                let mut scratch_work = WorkCounters::default();
+                let reference = model.eval_partial_t(t, &y, &mut reference_work).unwrap();
+                model
+                    .eval_partial_t_into_with_scratch(
+                        t,
+                        &y,
+                        &mut out,
+                        &mut fp,
+                        &mut fm,
+                        &mut scratch_work,
+                    )
+                    .unwrap();
+                assert_eq!(reference_work, scratch_work);
+                assert!(
+                    out.iter()
+                        .zip(&reference)
+                        .all(|(a, b)| a.to_bits() == b.to_bits())
+                );
+                out.fill(f64::NAN);
+                fp.fill(f64::NAN);
+                fm.fill(f64::NAN);
+            }
+        }
+    }
+
+    #[test]
+    fn shape_and_either_rhs_refusal_preserve_attempted_work() {
+        let y = [0.25, -0.75];
+        let mut out = [17.0; 2];
+        let mut fp = [19.0; 2];
+        let mut fm = [23.0; 2];
+        let model = problem(false, false, None);
+        let mut work = WorkCounters::default();
+        assert!(matches!(
+            model.eval_partial_t_into_with_scratch(
+                0.0,
+                &y,
+                &mut out,
+                &mut fp[..1],
+                &mut fm,
+                &mut work,
+            ),
+            Err(CoreError::Dimension(_))
+        ));
+        assert_eq!(work, WorkCounters::default());
+        for (failure, expected_rhs) in
+            [("plus", 1), ("minus", 2), ("nan-plus", 1), ("nan-minus", 2)]
+        {
+            let model = problem(false, false, Some(failure));
+            let mut public_work = WorkCounters::default();
+            let mut scratch_work = WorkCounters::default();
+            let public_error = model.eval_partial_t_into(0.0, &y, &mut out, &mut public_work);
+            let scratch_error = model.eval_partial_t_into_with_scratch(
+                0.0,
+                &y,
+                &mut out,
+                &mut fp,
+                &mut fm,
+                &mut scratch_work,
+            );
+            assert_eq!(format!("{public_error:?}"), format!("{scratch_error:?}"));
+            assert_eq!(public_work, scratch_work);
+            assert_eq!(scratch_work.ft_calls, 1);
+            assert_eq!(scratch_work.rhs_calls, expected_rhs);
+            assert_eq!(scratch_work.rhs_evaluations, expected_rhs);
+        }
     }
 }

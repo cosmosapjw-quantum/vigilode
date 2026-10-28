@@ -1,0 +1,28 @@
+   Compiling rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 12.23s
+     Running tests/leja_setup_work_contract.rs (target/debug/deps/leja_setup_work_contract-5280915567ed925e)
+
+running 5 tests
+test counted_action_records_cold_coefficient_table_without_changing_authority ... ok
+test counted_and_legacy_success_preserve_report_and_work_counter_identity ... ok
+test counted_cache_cold_warm_and_refusal_retain_separate_work ... ok
+test counted_cache_history_inherits_legacy_static_dependency_coverage ... FAILED
+test setup_receipt_serialization_is_versioned_and_immutable ... ok
+
+failures:
+
+---- counted_cache_history_inherits_legacy_static_dependency_coverage stdout ----
+
+thread 'counted_cache_history_inherits_legacy_static_dependency_coverage' (4114209) panicked at crates/rodas5p-core/tests/leja_setup_work_contract.rs:170:5:
+assertion `left == right` failed
+  left: Complete
+ right: PartialUnattributed
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    counted_cache_history_inherits_legacy_static_dependency_coverage
+
+test result: FAILED. 4 passed; 1 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.93s
+
+error: test failed, to rerun pass `-p rodas5p-core --test leja_setup_work_contract`

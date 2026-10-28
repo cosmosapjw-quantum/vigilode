@@ -1,0 +1,31 @@
+{
+ "schema": "bassrei-dag-status-v1",
+ "node": "P02",
+ "node_dir": "research/bassrei_p02_fixed_grid_20261021",
+ "ledger_id": "L-0148",
+ "verdict": "FAIL",
+ "gates": {
+  "C1": true,
+  "C2": true,
+  "C3": true,
+  "C4": true,
+  "C5": true,
+  "C6": false,
+  "C7": true,
+  "C8": true,
+  "C9": true,
+  "C10": true
+ },
+ "failed_gates": [
+  "C6"
+ ],
+ "downstream": {
+  "P03": "BLOCKED (depends on P02)",
+  "P04": "BLOCKED (depends on P02)",
+  "P05": "BLOCKED",
+  "P06": "BLOCKED",
+  "NCP_C1": "BLOCKED"
+ },
+ "next": "P02b: new preregistration with C6 reference uncertainty defined from the reference itself (Radau rtol 1e-13 vs 1e-14), the method's tight-tolerance floor reported, everything else unchanged; P02 FAIL is not re-scored",
+ "production": "HOLD"
+}

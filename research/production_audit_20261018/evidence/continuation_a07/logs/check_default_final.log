@@ -1,0 +1,45 @@
+    Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+warning: struct `IComplex` is never constructed
+  --> /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:79:8
+   |
+79 | struct IComplex { re: Interval, im: Interval }
+   |        ^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: associated items `point`, `add`, `mul`, `scale`, and `mag` are never used
+  --> /home/cosmosapjw/vigilode/crates/rodas5p-integrators/src/packet_window.rs:82:8
+   |
+81 | impl IComplex {
+   | ------------- associated items in this implementation
+82 |     fn point(x: (f64, f64)) -> Result<Self, PacketError> {
+   |        ^^^^^
+...
+85 |     fn add(self, b: Self) -> Result<Self, PacketError> { Ok(Self { re: self.re.add(b.re).map_err(|_| PacketError::OutwardRefusal("in...
+   |        ^^^
+86 |     fn mul(self, b: Self) -> Result<Self, PacketError> {
+   |        ^^^
+...
+93 |     fn scale(self, x: Interval) -> Result<Self, PacketError> { Ok(Self { re: self.re.mul(x).map_err(|_| PacketError::OutwardRefusal(...
+   |        ^^^^^
+94 |     fn mag(self) -> f64 { self.re.mag() + self.im.mag() }
+   |        ^^^
+
+warning: `rodas5p-integrators` (lib) generated 2 warnings
+    Checking vigilode-a07 v0.1.0 (/home/cosmosapjw/vigilode/tools/benchmarks/diffsol/a07)
+warning: unused imports: `GlobalAlloc` and `Layout`
+ --> src/main.rs:1:18
+  |
+1 | use std::alloc::{GlobalAlloc, Layout, System};
+  |                  ^^^^^^^^^^^  ^^^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused imports: `AtomicBool`, `AtomicU64`, and `Ordering`
+ --> src/main.rs:2:25
+  |
+2 | use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
+  |                         ^^^^^^^^^^  ^^^^^^^^^  ^^^^^^^^
+
+warning: `vigilode-a07` (bin "vigilode-a07") generated 2 warnings (run `cargo fix --bin "vigilode-a07" -p vigilode-a07` to apply 2 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 13.44s

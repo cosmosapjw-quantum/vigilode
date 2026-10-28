@@ -1,0 +1,125 @@
+{
+  "source_commit": "5913fe062706c820e768b9e150e5cd1c274f7bf9",
+  "source_tree": "7a70caf85569dbe6c77ecb9a53fe666cd40ae618",
+  "started_utc": "2026-10-23T01:27:45.750424+00:00",
+  "platform": "Linux-6.18.55-x86_64-with-glibc2.39",
+  "commands": [
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "dopri5_contracts",
+        "--test",
+        "dopri5_allocation",
+        "--test",
+        "dopri5_dense_contracts",
+        "--test",
+        "affine_error_contracts",
+        "--test",
+        "dopri5_extreme_contracts"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 4.098474437996629,
+      "stdout": "00.stdout.log",
+      "stderr": "00.stderr.log",
+      "stdout_sha256": "6439b0e9579fadf99d53c01337710682915af22d8dd04e8b680394d81ad47e5c",
+      "stderr_sha256": "ede73b2a1d1fd4f11e77ab5f1de2f218017eef83f3373bd25d424e0a9ae4ea4c"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "--test",
+        "explicit_contracts",
+        "--test",
+        "explicit_ensemble_contracts",
+        "--test",
+        "explicit_hardening_contracts"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 3.862324512010673,
+      "stdout": "01.stdout.log",
+      "stderr": "01.stderr.log",
+      "stdout_sha256": "5f065fdbe0eb7739a29fdf97c9a4cdf72bf71dcc25a0bf83e9b65f53c28bff28",
+      "stderr_sha256": "085a36f003ec69cb1183eb2f2d404da36a8c9a4c2d926fcaf793663170369e5e"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--lib",
+        "adaptive_output::tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 51.3426956399926,
+      "stdout": "02.stdout.log",
+      "stderr": "02.stderr.log",
+      "stdout_sha256": "255acb2cc775a5f2366a3091f7950301dac43e853419e73b715154772ddd150c",
+      "stderr_sha256": "31543e821ba2cbfe110314f060a360c7900f1580d31ea0101a069052bb26bffa"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--lib",
+        "dopri5_dense::tests"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.22185305300808977,
+      "stdout": "03.stdout.log",
+      "stderr": "03.stderr.log",
+      "stdout_sha256": "86d6656ffc2be41f647648f3b9b4c378ffb63fd2a21ef8f9297b29ed2746025f",
+      "stderr_sha256": "d04c0e12e3167b980eb2ea44464afcb87ac154a7253486fc6e9d81c6bf4c2c10"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode-coupled",
+        "--test",
+        "adaptive_trajectory"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 6.440295350999804,
+      "stdout": "04.stdout.log",
+      "stderr": "04.stderr.log",
+      "stdout_sha256": "d0b59ac075bc01a9c665a4076e97929b9ed083b9920b7b7eab971dcb21e1df8d",
+      "stderr_sha256": "0f9454ffeb6322e4a2f8af96c611731dafbfd833aef338b48c2b02d29f38cc48"
+    },
+    {
+      "command": [
+        "python3",
+        "research/production_hardening_20261023/test_bench_protocol.py"
+      ],
+      "exit_code": 0,
+      "elapsed_seconds": 0.3113118530018255,
+      "stdout": "05.stdout.log",
+      "stderr": "05.stderr.log",
+      "stdout_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderr_sha256": "74c03fc16fde9a2dfeff03db0ec8f472a5a8dfed04e9e982a912b4b7f64faee3"
+    }
+  ],
+  "ncp_used": false,
+  "all_commands_passed": true,
+  "finished_utc": "2026-10-23T01:28:52.049734+00:00"
+}

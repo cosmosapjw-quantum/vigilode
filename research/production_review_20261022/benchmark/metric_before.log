@@ -1,0 +1,25 @@
+FE.
+======================================================================
+ERROR: test_nonpositive_initial_reference_density_refused (__main__.ReferenceDomain.test_nonpositive_initial_reference_density_refused)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/0dc1e721cf82/vigilode/research/production_review_20261022/benchmark/test_metric_reference_domain.py", line 31, in test_nonpositive_initial_reference_density_refused
+    error, _ = S.bapp_error('S1-G1', [0.0, 1.0], [vacuum, vacuum], [vacuum, vacuum])
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/scratch/0dc1e721cf82/vigilode/external_audits/vigilode_bassrei_ncp_c1_20261022/harness/scenarios.py", line 372, in bapp_error
+    e *= min(1.0, b["rho_gamma"] / (1e-3 * abs(o0["rho_gamma"])))
+                  ~~~~~~~~~~~~~~~^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ZeroDivisionError: float division by zero
+
+======================================================================
+FAIL: test_negative_reference_density_is_never_zero_error (__main__.ReferenceDomain.test_negative_reference_density_is_never_zero_error)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/workspace/scratch/0dc1e721cf82/vigilode/research/production_review_20261022/benchmark/test_metric_reference_domain.py", line 24, in test_negative_reference_density_is_never_zero_error
+    self.assertEqual(error, math.inf)
+AssertionError: 0.0 != inf
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.099s
+
+FAILED (failures=1, errors=1)

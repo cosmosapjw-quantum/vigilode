@@ -1,0 +1,65 @@
+{
+  "schema_version": 1,
+  "lane": "structural",
+  "current_scope": "immutable affine mean-field raw-U solver",
+  "correction_limit": 3,
+  "corrections_used": 3,
+  "nodes": [
+    {
+      "id": "S-CHARGED",
+      "status": "complete",
+      "purpose": "Keep partial attempted work on every return path and join every scheduled row before deterministic failure selection.",
+      "dependencies": ["PR91"],
+      "code": "crates/vigilode-coupled/src/structural_mean_field.rs",
+      "evidence": ["CORRECTION3_EXECUTION.json", "crates/vigilode-coupled/tests/structural_production_contracts.rs"]
+    },
+    {
+      "id": "S-ENCLOSURE",
+      "status": "complete",
+      "purpose": "Verify every represented full-space stage with the exact two-channel residual identity and outward input/mean/lift error envelopes.",
+      "dependencies": ["S-CHARGED"],
+      "code": "MeanFieldPlan::enclosed_screen / MeanFieldEnclosurePlan::step",
+      "evidence": ["THEORY.md", "FINAL_EXACT_ORACLE_RESULTS.json", "FINAL_BENCHMARK_SUMMARY.json"]
+    },
+    {
+      "id": "S-LOCAL-PROFILE",
+      "status": "planned_local",
+      "purpose": "Measure release-profile single- and multi-worker trajectories, allocations, peak RSS, instructions and cycles on the intended deployment CPU.",
+      "dependencies": ["S-ENCLOSURE"],
+      "proposed_pr": "local-structural-release-validation",
+      "inputs": ["pinned current source SHA", "Cargo.lock", "detected CPU topology", "explicit worker count", "existing fixed scientific caps"],
+      "commands": [
+        "cargo test -p vigilode-coupled --release --locked --test structural_mean_field_contracts --test structural_production_contracts",
+        "cargo run -p vigilode-coupled --release --locked --example structural_production_bench_20261027 -- bench 2048 64 5 1",
+        "cargo run -p vigilode-coupled --release --locked --example structural_production_bench_20261027 -- profile 2048 64 enclosed 16 1"
+      ],
+      "acceptance": ["all native contracts pass", "full-grid original caps retained", "source/compiler/flags and raw paired samples recorded", "all failure work charged", "parallel scaling reported separately from same-worker algorithm speedup"],
+      "outputs": ["LOCAL_RELEASE_EXECUTION.json", "paired samples", "allocation/RSS/profile receipts"],
+      "max_correction_loops": 3
+    },
+    {
+      "id": "S-PHYSICAL-ENCLOSURE",
+      "status": "planned_theory_and_code",
+      "purpose": "Compose an outward physical trajectory error bound from full-stage bounds, a rigorous affine RODAS stability/temporal remainder, cumulative residual transport, and endpoint rounding.",
+      "dependencies": ["S-ENCLOSURE"],
+      "proposed_pr": "affine-full-trajectory-certificate",
+      "first_derivation": "Replace ordinary-f64 C_N by outward scalar powers/adjoint enclosures; bound exact affine flow minus the represented raw-U stability map over each spectral rate; add the actual endpoint sum rounding and observation-time representation error.",
+      "preserved_contract": "Same affine model, original tableau and user physical error budget; no hidden safety-factor fitting.",
+      "acceptance": ["complete explicit theorem with all numerical contributions", "exact-rational or high-precision independent oracle", "positive and negative certificate tests including rounding floor", "actual every-grid-point comparison under unchanged physical cap"],
+      "outputs": ["theorem and proof", "accuracy-plan API", "native failure/work contracts", "accuracy-matched benchmark"],
+      "max_correction_loops": 3
+    },
+    {
+      "id": "S-ADAPTIVE-CONSUMER",
+      "status": "planned_code",
+      "purpose": "Connect the charged structural consumer to accepted-prefix adaptive orchestration using only validated immutable model identity.",
+      "dependencies": ["S-CHARGED", "S-PHYSICAL-ENCLOSURE"],
+      "proposed_pr": "charged-structural-adaptive-integration",
+      "first_implementation": "Use StructuralFailure.work for every declined attempt; preserve caller checkpoint and aggregate all scalar-plan, verification and return allocations in the operational cost contract.",
+      "acceptance": ["same start/target for alternative pilots", "all rejected-work counters retained", "no operational-screen substitution for requested certificate", "accepted-prefix preservation on resource or accuracy refusal", "derivative permission remains unused in the structural route"],
+      "outputs": ["typed adapter consumer", "failed-attempt integration tests", "nontrivial full-state trajectory benchmark"],
+      "max_correction_loops": 3
+    }
+  ],
+  "edges": [["S-CHARGED", "S-ENCLOSURE"], ["S-ENCLOSURE", "S-LOCAL-PROFILE"], ["S-ENCLOSURE", "S-PHYSICAL-ENCLOSURE"], ["S-PHYSICAL-ENCLOSURE", "S-ADAPTIVE-CONSUMER"], ["S-CHARGED", "S-ADAPTIVE-CONSUMER"]]
+}

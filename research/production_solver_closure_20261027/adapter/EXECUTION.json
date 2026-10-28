@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "correction_passes_used": 3,
+  "correction_limit": 3,
+  "final_runtime_source_frozen": true,
+  "pass2_change": "initialize observed_entry_h=None in existing private telemetry fixture; no runtime behavior change",
+  "native_distinct_tests": 35,
+  "native_test_groups": {
+    "switching_library": 16,
+    "comparator_dominance_contracts": 3,
+    "entry_checkpoint_seed_contracts": 5,
+    "return_sentinel_contracts": 7,
+    "strict_return_work_contracts": 4
+  },
+  "benchmark_arms": 36,
+  "independent_returned_components": 17440,
+  "seed_checks": 44,
+  "sources": [
+    {
+      "path": "crates/vigilode/src/switching.rs",
+      "sha256": "119f2a70d5d8be82816e9c236f4b06644faffe2df545a93b824deeb6ce356bbf"
+    },
+    {
+      "path": "crates/vigilode/examples/production_return_bench_20261027.rs",
+      "sha256": "2657e4a96ef370eeb1764b19a8bd63ed6590d5a09cae9d8d7f97ddb23ef862d8"
+    },
+    {
+      "path": "crates/vigilode/examples/support/production_return_cases.rs",
+      "sha256": "5934fdb19da9a51939c45f42a68c4a65a46718f312defbbc5c78738fa8495d59"
+    },
+    {
+      "path": "crates/vigilode/tests/strict_return_work_contracts.rs",
+      "sha256": "e852ff7860d9b9ae4f9ae411988ae8d5b99dc3d56b63d6025b0d7842d087e585"
+    }
+  ],
+  "binary_sha256": "c8462ad3b7f83b683a8d0ab01bfe1a361ccd4367375611f1046a9f7b8dc53e62",
+  "environment_corrections": [
+    {
+      "kind": "profile_runtime_path",
+      "receipt": "PROFILE_ENV_CORRECTION.json"
+    },
+    {
+      "kind": "optional_analysis_dependencies",
+      "reason": "mpmath and sympy absent in system and primary runtime; retained failures; rewrote independent oracle using stdlib Decimal and exact Fraction polynomials",
+      "final_execution": "raw/analysis_decimal90_final.log"
+    },
+    {
+      "kind": "concurrent_inherited_example_source_changes",
+      "reason": "Two actual successful commands correctly rejected as stale_source; preserved and requalified after source freeze within correction3.",
+      "receipt": "PASS3_RECEIPT.json"
+    }
+  ],
+  "results": "RESULTS.json",
+  "performance": "PERFORMANCE.json",
+  "source_baseline": "206298b4068d923bb47c7160b111b7439098660c",
+  "independent_review": "../theory/ADAPTER_REVIEW.json",
+  "review_status": "pass_scoped",
+  "completion": "complete_scoped",
+  "claims": {
+    "exact_return_boundary": "implementation-verified and derived",
+    "observed_step_transport": "implementation-verified and derived acceptance preservation",
+    "observed_step_work_improvement": "conditional measured improvement on stiff cubic; adverse other cases retained",
+    "stable_walltime_gain": "not established for adapter changes",
+    "default_production_decision": "RHS-only; selectiveJVP and observedstep require scoped qualification"
+  },
+  "pass3_change": "Two equivalent let-chain rewrites, preserving left-to-right short-circuit evaluation, predicate order, helper invocation count, bodies and error string. rustfmt switching.rs only. No policy, constant, fixture, tolerance or numerical operation change.",
+  "pass3_receipt": "PASS3_RECEIPT.json",
+  "binary_identity_scope": "Final correctness-audit executable; historical performance executable recorded separately.",
+  "historical_performance_binary_sha256": "8671afe3561e0b658c857ca7fe4ee5f892781fcadac69b2d491c21c595680702",
+  "historical_performance_switching_sha256": "ebea1dd7b76da45def13f6d9e1137f693786f23308f2e0cc589debc82b658347",
+  "historical_performance_execution_archive": "raw/pass3/before_EXECUTION.json",
+  "final_correctness_audit": "FINAL_AUDIT.json",
+  "final_non_timing_output_equality": true,
+  "final_equal_state_components": 17440,
+  "oracle_evidence_reuse": "Prior Decimal90/44seed checks apply by exact equality of all oracle inputs; not counted as a second independent oracle execution.",
+  "native_test_scope": "Both focused commands passed under individually stable source snapshots after the switching freeze. Later inherited-example-only CI changes are qualified by the parent final package gate; these are not additional adapter code corrections.",
+  "independent_review_scope": "R1-R4 and pre-style algorithm source ebea1dd7; final style-equivalence record is raw/PASS3_SOURCE_EQUIVALENCE.md."
+}

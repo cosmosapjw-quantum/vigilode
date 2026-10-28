@@ -1,0 +1,17 @@
+{
+  "schema": "vigilode.final-source-delta.v1",
+  "changed_files": [
+    {
+      "path": "crates/vigilode/src/solve.rs",
+      "before_sha256": "d05233df298e206bb096b7e763c280a9248e1ecb8da8cd0c8748b66af2d9f53d",
+      "after_sha256": "e1ad9ea19c0cd948b33fc67e67876b111262a3252ad807cc62af119e2e2331f8"
+    }
+  ],
+  "reason": "Equivalent single-pattern match to if-let rewrite required by strict scoped Clippy single_match lint",
+  "semantic_change_claim": "None: same borrowed pattern, conditions, evaluation order, returns and diagnostics; independent facade review pending",
+  "previous_failures_preserved": [
+    "evidence/final_02/EXECUTION.json",
+    "evidence/final_03/EXECUTION.json"
+  ],
+  "uniform_source_gate": "Repeat full19groupmatrix after actual source edit; no old pass is substituted for final04 result."
+}

@@ -1,0 +1,263 @@
+   Compiling autocfg v1.5.1
+   Compiling proc-macro2 v1.0.107
+   Compiling quote v1.0.47
+   Compiling libm v0.2.16
+   Compiling unicode-ident v1.0.24
+    Checking bytemuck v1.25.2
+    Checking rand_core v0.6.4
+   Compiling version_check v0.9.5
+   Compiling crossbeam-utils v0.8.22
+    Checking cfg-if v1.0.4
+   Compiling crossbeam-epoch v0.9.20
+   Compiling crossbeam-deque v0.8.7
+   Compiling nano-gemm-codegen v0.2.1
+   Compiling paste v1.0.15
+    Checking bitflags v2.13.1
+   Compiling rayon-core v1.13.0
+   Compiling libc v0.2.189
+    Checking either v1.17.0
+    Checking pulp-wasm-simd-flag v0.1.1
+    Checking reborrow v0.5.5
+   Compiling dyn-stack-macros v0.1.3
+   Compiling getrandom v0.3.4
+   Compiling zerocopy v0.8.56
+   Compiling ucd-trie v0.1.7
+   Compiling memchr v2.8.3
+    Checking once_cell v1.21.4
+    Checking rand v0.8.7
+   Compiling syn v1.0.109
+   Compiling seq-macro v0.3.6
+    Checking raw-cpuid v11.6.0
+    Checking nano-gemm-core v0.2.1
+    Checking typenum v1.20.1
+   Compiling defer v0.2.1
+    Checking generativity v1.2.1
+   Compiling thiserror v2.0.19
+   Compiling pulp v0.22.3
+    Checking dyn-stack v0.13.2
+   Compiling generic-array v0.14.7
+    Checking byteorder v1.5.0
+   Compiling equator-macro v0.6.0
+   Compiling serde_core v1.0.229
+   Compiling zmij v1.0.23
+    Checking safe_arch v1.1.0
+   Compiling nano-gemm-c32 v0.2.1
+   Compiling nano-gemm-f32 v0.2.1
+   Compiling num-traits v0.2.19
+   Compiling nano-gemm-f64 v0.2.1
+   Compiling nano-gemm-c64 v0.2.1
+   Compiling matrixmultiply v0.3.11
+   Compiling serde v1.0.229
+   Compiling serde_json v1.0.151
+    Checking itoa v1.0.18
+   Compiling pest v2.8.8
+    Checking crossbeam-queue v0.3.13
+    Checking crossbeam-channel v0.5.16
+    Checking equator v0.6.0
+    Checking rawpointer v0.2.1
+   Compiling diffsol-la v0.1.0
+    Checking cpufeatures v0.2.17
+    Checking equivalent v1.0.2
+    Checking hashbrown v0.17.1
+    Checking hex v0.4.3
+    Checking foldhash v0.1.5
+    Checking fixedbitset v0.5.7
+   Compiling diffsol v0.16.1
+    Checking log v0.4.33
+   Compiling rodas5p-integrators v0.1.0 (/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-integrators)
+    Checking hashbrown v0.15.5
+    Checking wide v1.5.0
+    Checking crossbeam v0.8.4
+   Compiling syn v2.0.119
+   Compiling syn v3.0.3
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+    Checking indexmap v2.14.0
+    Checking digest v0.10.7
+    Checking sha2 v0.10.9
+    Checking rayon v1.12.0
+    Checking atomic-wait v1.1.0
+    Checking num_cpus v1.17.0
+    Checking rand_core v0.9.5
+   Compiling pest_meta v2.8.8
+    Checking petgraph v0.8.3
+    Checking num-complex v0.4.6
+    Checking num-integer v0.1.46
+    Checking approx v0.5.1
+    Checking num-bigint v0.4.8
+    Checking num-rational v0.4.2
+   Compiling thiserror-impl v2.0.19
+   Compiling serde_derive v1.0.229
+   Compiling pest_generator v2.8.8
+    Checking simba v0.10.0
+    Checking ppv-lite86 v0.2.21
+   Compiling equator-macro v0.4.2
+   Compiling equator-macro v0.2.1
+   Compiling nalgebra-macros v0.3.0
+   Compiling interpol v0.2.1
+   Compiling pest_derive v2.8.8
+    Checking rand_chacha v0.9.0
+    Checking py_literal v0.4.0
+    Checking equator v0.2.2
+    Checking equator v0.4.2
+    Checking rand v0.9.5
+   Compiling private-gemm-x86 v0.1.20
+    Checking npyz v0.8.4
+    Checking spindle v0.2.6
+    Checking rand_distr v0.5.1
+    Checking gemm-common v0.19.0
+    Checking qd v0.8.0
+    Checking faer-traits v0.24.0
+    Checking gemm-c64 v0.19.0
+    Checking gemm-f32 v0.19.0
+    Checking gemm-f64 v0.19.0
+    Checking gemm-c32 v0.19.0
+    Checking gemm v0.19.0
+    Checking nalgebra v0.35.0
+    Checking nano-gemm v0.2.2
+    Checking faer v0.24.4
+    Checking rodas5p-core v0.1.0 (/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-core)
+    Checking diffsol-nl v0.1.0
+    Checking rodas5p-krylov v0.1.0 (/tmp/vigilode-all-dag-validation-20261018/crates/rodas5p-krylov)
+    Checking vigilode-a07 v0.1.0 (/tmp/vigilode-all-dag-validation-20261018/tools/benchmarks/diffsol/a07)
+error[E0599]: no method named `as_slice` found for reference `&FaerVec<f64>` in the current scope
+  --> src/bin/component_benchmark.rs:25:55
+   |
+25 |         .rhs_implicit(move |y,_p,t,out| {if c.rhs(t,y.as_slice(),out.as_mut_slice()).is_err(){out.as_mut_slice().fill(f64::NAN);}},
+   |                                                       ^^^^^^^^
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: trait `VectorHost` which provides `as_slice` is implemented but not in scope; perhaps you want to import it
+   |
+ 2 + use diffsol::VectorHost;
+   |
+help: there is a method `as_mut_slice` with a similar name
+   |
+25 |         .rhs_implicit(move |y,_p,t,out| {if c.rhs(t,y.as_mut_slice(),out.as_mut_slice()).is_err(){out.as_mut_slice().fill(f64::NAN);}},
+   |                                                          ++++
+
+error[E0599]: no method named `as_mut_slice` found for mutable reference `&mut FaerVec<f64>` in the current scope
+  --> src/bin/component_benchmark.rs:25:70
+   |
+25 |         .rhs_implicit(move |y,_p,t,out| {if c.rhs(t,y.as_slice(),out.as_mut_slice()).is_err(){out.as_mut_slice().fill(f64::NAN);}},
+   |                                                                      ^^^^^^^^^^^^
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: trait `VectorHost` which provides `as_mut_slice` is implemented but not in scope; perhaps you want to import it
+   |
+ 2 + use diffsol::VectorHost;
+   |
+help: there is a method `as_slice` with a similar name
+   |
+25 -         .rhs_implicit(move |y,_p,t,out| {if c.rhs(t,y.as_slice(),out.as_mut_slice()).is_err(){out.as_mut_slice().fill(f64::NAN);}},
+25 +         .rhs_implicit(move |y,_p,t,out| {if c.rhs(t,y.as_slice(),out.as_slice()).is_err(){out.as_mut_slice().fill(f64::NAN);}},
+   |
+
+error[E0599]: no method named `as_mut_slice` found for mutable reference `&mut FaerVec<f64>` in the current scope
+  --> src/bin/component_benchmark.rs:25:99
+   |
+25 |         .rhs_implicit(move |y,_p,t,out| {if c.rhs(t,y.as_slice(),out.as_mut_slice()).is_err(){out.as_mut_slice().fill(f64::NAN);}},
+   |                                                                                                   ^^^^^^^^^^^^
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: trait `VectorHost` which provides `as_mut_slice` is implemented but not in scope; perhaps you want to import it
+   |
+ 2 + use diffsol::VectorHost;
+   |
+help: there is a method `as_slice` with a similar name
+   |
+25 -         .rhs_implicit(move |y,_p,t,out| {if c.rhs(t,y.as_slice(),out.as_mut_slice()).is_err(){out.as_mut_slice().fill(f64::NAN);}},
+25 +         .rhs_implicit(move |y,_p,t,out| {if c.rhs(t,y.as_slice(),out.as_mut_slice()).is_err(){out.as_slice().fill(f64::NAN);}},
+   |
+
+error[E0599]: no method named `as_mut_slice` found for mutable reference `&mut FaerVec<f64>` in the current scope
+  --> src/bin/component_benchmark.rs:26:81
+   |
+26 | ...   move |y,_p,t,v,out| {let Ok(mut guard)=jvp_scratch.lock() else {out.as_mut_slice().fill(f64::NAN);return;};let (yp,fp,fm)=&mut...
+   |                                                                           ^^^^^^^^^^^^
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: trait `VectorHost` which provides `as_mut_slice` is implemented but not in scope; perhaps you want to import it
+   |
+ 2 + use diffsol::VectorHost;
+   |
+help: there is a method `as_slice` with a similar name
+   |
+26 -             move |y,_p,t,v,out| {let Ok(mut guard)=jvp_scratch.lock() else {out.as_mut_slice().fill(f64::NAN);return;};let (yp,fp,fm)=&mut *guard;let vv=v.as_slice();let yy=y.as_slice();let h=f64::EPSILON.sqrt()/vv.iter().fold(1.0_f64,|a,b|a.max(b.abs()));for i in 0..n{yp[i]=yy[i]+h*vv[i];}let good1=d.rhs(t,yp,fp).is_ok();for i in 0..n{yp[i]=yy[i]-h*vv[i];}let good2=d.rhs(t,yp,fm).is_ok();if good1&&good2{for i in 0..n{out[i]=(fp[i]-fm[i])/(2.0*h);}}else{out.as_mut_slice().fill(f64::NAN);}})
+26 +             move |y,_p,t,v,out| {let Ok(mut guard)=jvp_scratch.lock() else {out.as_slice().fill(f64::NAN);return;};let (yp,fp,fm)=&mut *guard;let vv=v.as_slice();let yy=y.as_slice();let h=f64::EPSILON.sqrt()/vv.iter().fold(1.0_f64,|a,b|a.max(b.abs()));for i in 0..n{yp[i]=yy[i]+h*vv[i];}let good1=d.rhs(t,yp,fp).is_ok();for i in 0..n{yp[i]=yy[i]-h*vv[i];}let good2=d.rhs(t,yp,fm).is_ok();if good1&&good2{for i in 0..n{out[i]=(fp[i]-fm[i])/(2.0*h);}}else{out.as_mut_slice().fill(f64::NAN);}})
+   |
+
+error[E0599]: no method named `as_slice` found for reference `&FaerVec<f64>` in the current scope
+  --> src/bin/component_benchmark.rs:26:156
+   |
+26 | ...fill(f64::NAN);return;};let (yp,fp,fm)=&mut *guard;let vv=v.as_slice();let yy=y.as_slice();let h=f64::EPSILON.sqrt()/vv.iter().fo...
+   |                                                                ^^^^^^^^
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: trait `VectorHost` which provides `as_slice` is implemented but not in scope; perhaps you want to import it
+   |
+ 2 + use diffsol::VectorHost;
+   |
+help: there is a method `as_mut_slice` with a similar name
+   |
+26 |             move |y,_p,t,v,out| {let Ok(mut guard)=jvp_scratch.lock() else {out.as_mut_slice().fill(f64::NAN);return;};let (yp,fp,fm)=&mut *guard;let vv=v.as_mut_slice();let yy=y.as_slice();let h=f64::EPSILON.sqrt()/vv.iter().fold(1.0_f64,|a,b|a.max(b.abs()));for i in 0..n{yp[i]=yy[i]+h*vv[i];}let good1=d.rhs(t,yp,fp).is_ok();for i in 0..n{yp[i]=yy[i]-h*vv[i];}let good2=d.rhs(t,yp,fm).is_ok();if good1&&good2{for i in 0..n{out[i]=(fp[i]-fm[i])/(2.0*h);}}else{out.as_mut_slice().fill(f64::NAN);}})
+   |                                                                                                                                                               ++++
+
+error[E0599]: no method named `as_slice` found for reference `&FaerVec<f64>` in the current scope
+  --> src/bin/component_benchmark.rs:26:176
+   |
+26 | ...n;};let (yp,fp,fm)=&mut *guard;let vv=v.as_slice();let yy=y.as_slice();let h=f64::EPSILON.sqrt()/vv.iter().fold(1.0_f64,|a,b|a.ma...
+   |                                                                ^^^^^^^^
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: trait `VectorHost` which provides `as_slice` is implemented but not in scope; perhaps you want to import it
+   |
+ 2 + use diffsol::VectorHost;
+   |
+help: there is a method `as_mut_slice` with a similar name
+   |
+26 |             move |y,_p,t,v,out| {let Ok(mut guard)=jvp_scratch.lock() else {out.as_mut_slice().fill(f64::NAN);return;};let (yp,fp,fm)=&mut *guard;let vv=v.as_slice();let yy=y.as_mut_slice();let h=f64::EPSILON.sqrt()/vv.iter().fold(1.0_f64,|a,b|a.max(b.abs()));for i in 0..n{yp[i]=yy[i]+h*vv[i];}let good1=d.rhs(t,yp,fp).is_ok();for i in 0..n{yp[i]=yy[i]-h*vv[i];}let good2=d.rhs(t,yp,fm).is_ok();if good1&&good2{for i in 0..n{out[i]=(fp[i]-fm[i])/(2.0*h);}}else{out.as_mut_slice().fill(f64::NAN);}})
+   |                                                                                                                                                                                   ++++
+
+error[E0282]: type annotations needed
+  --> src/bin/component_benchmark.rs:26:237
+   |
+26 | ...=f64::EPSILON.sqrt()/vv.iter().fold(1.0_f64,|a,b|a.max(b.abs()));for i in 0..n{yp[i]=yy[i]+h*vv[i];}let good1=d.rhs(t,yp,fp).is_o...
+   |                                                 ^   - type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+26 |             move |y,_p,t,v,out| {let Ok(mut guard)=jvp_scratch.lock() else {out.as_mut_slice().fill(f64::NAN);return;};let (yp,fp,fm)=&mut *guard;let vv=v.as_slice();let yy=y.as_slice();let h=f64::EPSILON.sqrt()/vv.iter().fold(1.0_f64,|a: /* Type */,b|a.max(b.abs()));for i in 0..n{yp[i]=yy[i]+h*vv[i];}let good1=d.rhs(t,yp,fp).is_ok();for i in 0..n{yp[i]=yy[i]-h*vv[i];}let good2=d.rhs(t,yp,fm).is_ok();if good1&&good2{for i in 0..n{out[i]=(fp[i]-fm[i])/(2.0*h);}}else{out.as_mut_slice().fill(f64::NAN);}})
+   |                                                                                                                                                                                                                                              ++++++++++++
+
+error[E0282]: type annotations needed
+  --> src/bin/component_benchmark.rs:26:239
+   |
+26 | ...::EPSILON.sqrt()/vv.iter().fold(1.0_f64,|a,b|a.max(b.abs()));for i in 0..n{yp[i]=yy[i]+h*vv[i];}let good1=d.rhs(t,yp,fp).is_ok();...
+   |                                               ^       - type must be known at this point
+   |
+help: consider giving this closure parameter an explicit type
+   |
+26 |             move |y,_p,t,v,out| {let Ok(mut guard)=jvp_scratch.lock() else {out.as_mut_slice().fill(f64::NAN);return;};let (yp,fp,fm)=&mut *guard;let vv=v.as_slice();let yy=y.as_slice();let h=f64::EPSILON.sqrt()/vv.iter().fold(1.0_f64,|a,b: /* Type */|a.max(b.abs()));for i in 0..n{yp[i]=yy[i]+h*vv[i];}let good1=d.rhs(t,yp,fp).is_ok();for i in 0..n{yp[i]=yy[i]-h*vv[i];}let good2=d.rhs(t,yp,fm).is_ok();if good1&&good2{for i in 0..n{out[i]=(fp[i]-fm[i])/(2.0*h);}}else{out.as_mut_slice().fill(f64::NAN);}})
+   |                                                                                                                                                                                                                                                ++++++++++++
+
+error[E0599]: no method named `as_mut_slice` found for mutable reference `&mut FaerVec<f64>` in the current scope
+  --> src/bin/component_benchmark.rs:26:463
+   |
+26 | ...od2{for i in 0..n{out[i]=(fp[i]-fm[i])/(2.0*h);}}else{out.as_mut_slice().fill(f64::NAN);}})
+   |                                                              ^^^^^^^^^^^^
+   |
+   = help: items from traits can only be used if the trait is in scope
+help: trait `VectorHost` which provides `as_mut_slice` is implemented but not in scope; perhaps you want to import it
+   |
+ 2 + use diffsol::VectorHost;
+   |
+help: there is a method `as_slice` with a similar name
+   |
+26 -             move |y,_p,t,v,out| {let Ok(mut guard)=jvp_scratch.lock() else {out.as_mut_slice().fill(f64::NAN);return;};let (yp,fp,fm)=&mut *guard;let vv=v.as_slice();let yy=y.as_slice();let h=f64::EPSILON.sqrt()/vv.iter().fold(1.0_f64,|a,b|a.max(b.abs()));for i in 0..n{yp[i]=yy[i]+h*vv[i];}let good1=d.rhs(t,yp,fp).is_ok();for i in 0..n{yp[i]=yy[i]-h*vv[i];}let good2=d.rhs(t,yp,fm).is_ok();if good1&&good2{for i in 0..n{out[i]=(fp[i]-fm[i])/(2.0*h);}}else{out.as_mut_slice().fill(f64::NAN);}})
+26 +             move |y,_p,t,v,out| {let Ok(mut guard)=jvp_scratch.lock() else {out.as_mut_slice().fill(f64::NAN);return;};let (yp,fp,fm)=&mut *guard;let vv=v.as_slice();let yy=y.as_slice();let h=f64::EPSILON.sqrt()/vv.iter().fold(1.0_f64,|a,b|a.max(b.abs()));for i in 0..n{yp[i]=yy[i]+h*vv[i];}let good1=d.rhs(t,yp,fp).is_ok();for i in 0..n{yp[i]=yy[i]-h*vv[i];}let good2=d.rhs(t,yp,fm).is_ok();if good1&&good2{for i in 0..n{out[i]=(fp[i]-fm[i])/(2.0*h);}}else{out.as_slice().fill(f64::NAN);}})
+   |
+
+Some errors have detailed explanations: E0282, E0599.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `vigilode-a07` (bin "component_benchmark") due to 9 previous errors

@@ -1,0 +1,159 @@
+{
+  "schema": "spherical-information.paper-ii-map.v1",
+  "date": "2026-10-23",
+  "paper_zip_sha256": "3aa88e68135a6bbb24121d36e7dea4ff91895ab4fe287f300e63e9a6d2a7bd61",
+  "normalization": {
+    "energy": "x=E/(k_B T_*), z=mc^2/(k_B T_*)",
+    "angular": "domega=dOmega/(4*pi); Z=sqrt(4*pi)*Y",
+    "divergence": "number-density; k_B times divergence is entropy-density",
+    "paper_I_conversion": "Paper-I reference-cell divergence=V_ref*Paper-II density divergence",
+    "fisher_code_conversion": "src/fisher_demo.py consistently uses dOmega and Y; same Gram orthogonality, common prefactor cancels condition number"
+  },
+  "source_links": [
+    {
+      "source": "inputs/paper_II/sections/03_nested_information.tex",
+      "labels": [
+        "eq:entropy-density",
+        "eq:kinetic-bregman",
+        "thm:nested-radial-information"
+      ],
+      "reuse": "Convex entropy, quantum susceptibility, matched moment Pythagorean cancellation",
+      "sha256": "43a87a4c92d40fb78fffffbca685f8722c4d0f08b9ca9690f5d3e03c164ee46d"
+    },
+    {
+      "source": "inputs/paper_II/appendices/I_angular_response_details.tex",
+      "labels": [
+        "eq:Fisher-shell-block",
+        "eq:Fisher-shell-determinant",
+        "eq:ambient-entropy-fisher-pullback"
+      ],
+      "reuse": "2x2 isotropic thermal/chemical block; metric is dual Hessian, not coordinate Hessian of H[f_theta]",
+      "sha256": "480e2503b5d39ff2db0b7437c71971c6f1337150c74eecaf3d326c621bb698e4"
+    },
+    {
+      "source": "inputs/paper_II/appendices/C_global_massive_frame.tex",
+      "labels": [
+        "eq:app-core-Hessian",
+        "eq:app-normalized-recurrence"
+      ],
+      "reuse": "Positive natural Hessian and normalized radial Stieltjes/Laguerre scores",
+      "sha256": "c0e364913e65bb4b5abae8f6e68192492ae846dd05e742f1d9ff20c9f5cac9d9"
+    },
+    {
+      "source": "inputs/paper_II/appendices/F_cutoff_statements.tex",
+      "labels": [
+        "thm:cutoff-certificate",
+        "eq:finite-cutoff-certificate",
+        "eq:finite-kernel-bound"
+      ],
+      "reuse": "Finite MB/FD entropy cutoff bound conditional on positive thermal floor and known tail",
+      "sha256": "171cc05d6c6fd1a79825359bcd43bff464f44e03df8bb99da2a3dcd8c852c42d"
+    },
+    {
+      "source": "inputs/paper_II/appendices/D_resolution_proofs.tex",
+      "labels": [
+        "eq:app-matched-truncation-chain",
+        "thm:large-rank"
+      ],
+      "reuse": "Matched representative beats direct truncation; large-rank asymptotic not a substitute for finite certificate",
+      "sha256": "755244a73819e3366137d05ceb9c7cd58d5ea3394794d98f02b636a66bf57521"
+    },
+    {
+      "source": "inputs/paper_I/appendices/G_poisson_calculus.tex",
+      "labels": [
+        "eq:poisson-harmonic-eigenvalue",
+        "eq:poisson-entropy-contraction",
+        "eq:poisson-composition"
+      ],
+      "reuse": "Positive normalized massive-shell angular operator and v^l multipliers",
+      "sha256": "9ce7fc4766e8d0b75bea807fbf6f5d29dbbd3fd1d02996edb8abbba942e08229"
+    }
+  ],
+  "derived_results": [
+    {
+      "id": "II-D1",
+      "statement": "a H0 <= H <= b H0 from nodewise susceptibility ratio; whitened condition <=b/a independent of L",
+      "basis": [
+        "derived"
+      ],
+      "scope": "finite positive quadrature full rank; same score map and grid"
+    },
+    {
+      "id": "II-D2",
+      "statement": "Centered radial energy score exactly whitens per-mode thermal-chemical block",
+      "basis": [
+        "derived"
+      ],
+      "scope": "positive finite radial variance"
+    },
+    {
+      "id": "II-D3",
+      "statement": "Fixed-reference natural gradient contracts at q=(b-a)/(b+a)",
+      "basis": [
+        "derived"
+      ],
+      "scope": "solution-centered admissible ball with uniform a,b Hessian bound; start in ball"
+    },
+    {
+      "id": "II-D4",
+      "statement": "Relative-entropy projection preserves selected moments and has multiplicative/logit/BE-score form and exact Bregman Pythagorean identity",
+      "basis": [
+        "derived"
+      ],
+      "scope": "finite positive prior grid, strictly feasible target, independent constraints, attained regular minimizer"
+    },
+    {
+      "id": "II-D5",
+      "statement": "Poisson shell truncation has explicit L2 and Linfinity bounds and reduces retained basis count from NE(Lmax+1)^2 to sum_r(Lr+1)^2",
+      "basis": [
+        "derived"
+      ],
+      "scope": "massive v<1 shells, known coefficient-tail norm; positivity margin checked"
+    },
+    {
+      "id": "II-D6",
+      "statement": "Laguerre L_n^(2) normalized radial analysis basis for massless MB",
+      "basis": [
+        "derived",
+        "literature-supported"
+      ],
+      "scope": "x^2 exp(-x)dx measure; higher natural exponent coordinates need separate tail admissibility"
+    }
+  ],
+  "prior_art": [
+    {
+      "authors": [
+        "Graham W. Alldredge",
+        "Cory D. Hauck",
+        "Dianne P. O’Leary",
+        "Andre L. Tits"
+      ],
+      "title": "Adaptive change of basis in entropy-based moment closures for linear kinetic equations",
+      "journal": "Journal of Computational Physics 258 (2014) 489-508",
+      "doi": "10.1016/j.jcp.2013.10.049",
+      "arxiv": "1306.2881",
+      "primary_url": "https://user.eng.umd.edu/~andre/ahot12.pdf",
+      "accessed": "2026-10-23",
+      "tool": "Exa search with author PDF content",
+      "relation": "Hessian/basis whitening already established. Here apply analytic per-harmonic 2x2 blocks and explicit susceptibility comparison bounds."
+    }
+  ],
+  "out_of_scope": [
+    "Full VigilODE trajectory speed",
+    "Global PDE Jacobian condition bound",
+    "Unconditional photon angular suppression from massive v^l factor",
+    "Anisotropic critical BE global existence",
+    "Unfiltered high-energy rate accuracy without tail prior"
+  ],
+  "new_experiment": {
+    "source": "src/spectral_tools_demo.py",
+    "result": "results/spectral_tools_results.json",
+    "receipt": "results/spectral_tools_execution.json",
+    "basis": [
+      "numerically checked",
+      "implementation-verified"
+    ],
+    "scope": "First8Laguerre Gram and knownfiniteL24Poissoncutoff; noPDEtimeclaim",
+    "source_sha256": "73dd3738488eb74178107c5aa183e9f02bc41e0ba684d5a6fe1aa36387ca3952"
+  }
+}

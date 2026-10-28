@@ -1,0 +1,330 @@
+{
+  "schema_version": 1,
+  "source_commit": "78bb8775bf553ad2b514575a0ef4a025446f5d28",
+  "baseline_commit": "206298b4068d923bb47c7160b111b7439098660c",
+  "review_date_kst": "2026-10-28",
+  "scope": "Read-only diagnostic and source comparison; no native build, benchmark, test, runtime or configuration modification.",
+  "native_validation_run": false,
+  "code_changed": false,
+  "ci_all_green": false,
+  "release_qualified": false,
+  "logs": [
+    {
+      "job_id": "122293694407",
+      "canonical_decoded_log_sha256": "613a83f62ee6499aa221c509700d846a5b925d663bb8752fec24a4a1b7927432",
+      "path": "/workspace/scratch/06cfffc081e2/tmp/production_post_ci/logs/122293694407.log"
+    },
+    {
+      "job_id": "122293694991",
+      "canonical_decoded_log_sha256": "687db6d6587124810d85d890aff2a4870dd2041c92828e64a24b5a7fbe3502ac",
+      "path": "/workspace/scratch/06cfffc081e2/tmp/production_post_ci/logs/122293694991.log"
+    },
+    {
+      "job_id": "122293696184",
+      "canonical_decoded_log_sha256": "67ef92fdd8a3e894fd28586f9e890c55722d93aa8ed35fb3d8478a45a8cad892",
+      "path": "/workspace/scratch/06cfffc081e2/tmp/production_post_ci/logs/122293696184.log"
+    },
+    {
+      "job_id": "122293695395",
+      "canonical_decoded_log_sha256": "e9580af0a99cb4a705bc15eafd2b4b185d836b4ccc264391825ff0576ceb57c6",
+      "path": "/workspace/scratch/06cfffc081e2/tmp/production_post_ci/logs/122293695395.log"
+    }
+  ],
+  "bench": {
+    "classification": "inherited build portability defect exposed by runner/package drift",
+    "job_id": "122293696184",
+    "runner_image": "ubuntu-26.04",
+    "package": "libsundials-dev",
+    "installed_version": "7.1.1+dfsg1-10build3",
+    "mpi_dev_package_installed": "libopenmpi-dev 5.0.10-1",
+    "first_observed_failure": "sundials_types.h:57 fatal error: mpi.h: No such file or directory",
+    "first_failure_cause": "hard-coded gcc invocation supplies neither MPI include discovery nor MPI link discovery",
+    "declared_bridge_target": "SUNDIALS CVODE 6.4.1",
+    "cc_env_override_effective": false,
+    "bench_workflow_job_byte_identical_to_baseline": true,
+    "source_identities": [
+      {
+        "path": "crates/vigilode-bench/build.rs",
+        "baseline_sha256": "b75aa931516e40dd4bfcb6eb0adf25dccc5c29696bf6e400a5fbd75aeb35c0b6",
+        "head_sha256": "b75aa931516e40dd4bfcb6eb0adf25dccc5c29696bf6e400a5fbd75aeb35c0b6",
+        "byte_identical": true
+      },
+      {
+        "path": "crates/vigilode-bench/native/bridge/cvode_bridge.c",
+        "baseline_sha256": "bef8fe342bc5381dfb99ae85310d244097c4847ce964b690ea1363fbbf08227a",
+        "head_sha256": "bef8fe342bc5381dfb99ae85310d244097c4847ce964b690ea1363fbbf08227a",
+        "byte_identical": true
+      },
+      {
+        "path": "crates/vigilode-bench/native/SOURCES.json",
+        "baseline_sha256": "061a9edfd03443c4d6ae38400da0ef2cda1d040b915fcbeefaff659b3f132910",
+        "head_sha256": "061a9edfd03443c4d6ae38400da0ef2cda1d040b915fcbeefaff659b3f132910",
+        "byte_identical": true
+      },
+      {
+        "path": "crates/vigilode-bench/Cargo.toml",
+        "baseline_sha256": "206d4030dee849051856f0d7a950143960a44805c356a1ca1bf3cc0649aaca5e",
+        "head_sha256": "206d4030dee849051856f0d7a950143960a44805c356a1ca1bf3cc0649aaca5e",
+        "byte_identical": true
+      },
+      {
+        "path": ".github/workflows/e4-fresh-clone-build.yml",
+        "baseline_sha256": "54ff3fd5a3e33a2de0a7f3e858ee2ecff731d09670258eec2da07a36b41cc1f3",
+        "head_sha256": "54ff3fd5a3e33a2de0a7f3e858ee2ecff731d09670258eec2da07a36b41cc1f3",
+        "byte_identical": true
+      },
+      {
+        "path": ".github/workflows/audit2-stage-certificate-repair-handoff.yml",
+        "baseline_sha256": "b5e32467dbd4450e46441ca40ff85dcec418d42e20efe91f1f4bcbc042052026",
+        "head_sha256": "b5e32467dbd4450e46441ca40ff85dcec418d42e20efe91f1f4bcbc042052026",
+        "byte_identical": true
+      }
+    ],
+    "additional_migration_risks": [
+      "SUNDIALS 7 removed realtype from sundials_types.h; bridge still uses realtype.",
+      "SUNDIALS 7 changed SUNContext_Create communicator argument to SUNComm; non-MPI usage must use SUN_COMM_NULL.",
+      "MPI-enabled SUNDIALS 7 requires both MPI headers and corresponding MPI link dependency even for serial N_Vector."
+    ],
+    "additional_migration_risks_observed_after_first_failure": false,
+    "primary_documentation": [
+      {
+        "url": "https://sundials.readthedocs.io/en/v7.2.0/Changelog_link.html",
+        "section": "Changes to SUNDIALS in release 7.0.0",
+        "retrieval_ref": "turn20search1"
+      },
+      {
+        "url": "https://sundials.readthedocs.io/en/latest/Changelog_link.html",
+        "section": "Changes to SUNDIALS in release 7.0.0",
+        "retrieval_ref": "turn20search0"
+      }
+    ],
+    "local_options": [
+      {
+        "id": "declared-comparator-environment",
+        "purpose": "Reproduce the previously declared 6.4.1 comparator in a version-pinned environment; record compiler/library/precision/build identity and compile/run original bridge tests.",
+        "limits": "A 6.4.1 run does not establish SUNDIALS 7 compatibility; merely changing ubuntu-latest to an old tag without package identity is insufficient."
+      },
+      {
+        "id": "qualified-sundials-6-7-portability",
+        "purpose": "Add explicit compiler/include/link discovery, supported-version check, sunrealtype and version-correct context argument, then qualify both declared 6.4.1 and installed 7.1.1 comparator routes.",
+        "limits": "Do not treat adding one mpi include directory or setting CC=mpicc as a complete fix; current build.rs ignores CC."
+      }
+    ]
+  },
+  "clippy": {
+    "classification": "inherited diagnostic sites; no new numerical-change site identified",
+    "jobs": [
+      "122293694407",
+      "122293694991"
+    ],
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "rodas5p-integrators",
+      "--all-targets",
+      "--locked",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "rustc": "1.94.1 (e408947bf 2026-03-25)",
+    "compiler_summary": {
+      "lib_errors": 17,
+      "lib_test_errors": 22
+    },
+    "printed_unique_diagnostic_sites": 23,
+    "do_not_add_overlapping_compilation_summary_counts": true,
+    "byte_identical_diagnostic_sites": 21,
+    "format_only_diagnostic_sites": 2,
+    "format_equivalence_receipt": "research/production_solver_closure_20261027/evidence/fmt_gate/EXACT_FORMAT_EQUIVALENCE.json",
+    "baseline_clippy_rerun": false,
+    "diagnostics": [
+      {
+        "diagnostic": "variant `EndpointAdmission` is never constructed",
+        "path": "crates/rodas5p-integrators/src/packet_trajectory.rs",
+        "line": 1445,
+        "log_line": 1136,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "the loop variable `degree` is used to index `q`",
+        "path": "crates/rodas5p-integrators/src/bound_pr101.rs",
+        "line": 679,
+        "log_line": 1149,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "large size difference between variants",
+        "path": "crates/rodas5p-integrators/src/physical_error_budget.rs",
+        "line": 466,
+        "log_line": 1164,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "function `prepare` is never used",
+        "path": "crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs",
+        "line": 3,
+        "log_line": 1184,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "function `initial_adapter` is never used",
+        "path": "crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs",
+        "line": 95,
+        "log_line": 1193,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "function `prepare_adapter` is never used",
+        "path": "crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs",
+        "line": 104,
+        "log_line": 1199,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "function `query_adapter` is never used",
+        "path": "crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs",
+        "line": 122,
+        "log_line": 1205,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "function `rejected_tolerance_adapter` is never used",
+        "path": "crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs",
+        "line": 134,
+        "log_line": 1211,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "this function has too many arguments (8/7)",
+        "path": "crates/rodas5p-integrators/src/collective_model.rs",
+        "line": 73,
+        "log_line": 1217,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "items after a test module",
+        "path": "crates/rodas5p-integrators/src/adaptive_output.rs",
+        "line": 24,
+        "log_line": 1233,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "this function has too many arguments (8/7)",
+        "path": "crates/rodas5p-integrators/src/dopri5.rs",
+        "line": 192,
+        "log_line": 1249,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "the loop variable `previous` is used to index `DOPRI5_A`",
+        "path": "crates/rodas5p-integrators/src/dopri5.rs",
+        "line": 278,
+        "log_line": 1263,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "this `if` statement can be collapsed",
+        "path": "crates/rodas5p-integrators/src/dopri5.rs",
+        "line": 1030,
+        "log_line": 1276,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "the loop variable `i` is used to index `DOPRI5_C`",
+        "path": "crates/rodas5p-integrators/src/quotient_flow.rs",
+        "line": 753,
+        "log_line": 1297,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "the loop variable `j` is used to index `DOPRI5_C`",
+        "path": "crates/rodas5p-integrators/src/quotient_flow.rs",
+        "line": 754,
+        "log_line": 1310,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "the loop variable `j` is used to index `DOPRI5_A`",
+        "path": "crates/rodas5p-integrators/src/quotient_flow.rs",
+        "line": 802,
+        "log_line": 1323,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "this function has too many arguments (8/7)",
+        "path": "crates/rodas5p-integrators/src/quotient_flow.rs",
+        "line": 1018,
+        "log_line": 1336,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "the loop variable `i` is used to index `rhs`",
+        "path": "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+        "line": 428,
+        "log_line": 1350,
+        "classification": "exact-rustfmt-of-PR91-confirmed-by-existing-receipt-and-hashes"
+      },
+      {
+        "diagnostic": "this `if` statement can be collapsed",
+        "path": "crates/rodas5p-integrators/src/fixed_point_continuation.rs",
+        "line": 94,
+        "log_line": 1363,
+        "classification": "exact-rustfmt-of-PR91-confirmed-by-existing-receipt-and-hashes"
+      },
+      {
+        "diagnostic": "this function has too many arguments (10/7)",
+        "path": "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+        "line": 482,
+        "log_line": 1385,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "the loop variable `i` is used to index `rhs`",
+        "path": "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+        "line": 751,
+        "log_line": 1399,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "the `Err`-variant returned from this function is very large",
+        "path": "crates/rodas5p-integrators/src/global_budget.rs",
+        "line": 355,
+        "log_line": 1412,
+        "classification": "byte-identical-to-PR91"
+      },
+      {
+        "diagnostic": "the `Err`-variant returned from this function is very large",
+        "path": "crates/rodas5p-integrators/src/global_budget.rs",
+        "line": 387,
+        "log_line": 1423,
+        "classification": "byte-identical-to-PR91"
+      }
+    ],
+    "local_remedy": "Separate inherited lint cleanup with preserved operation order and public API. Move test module, remove genuinely dead test helpers or narrowly cfg-gate, make loop/conditional edits without arithmetic reorder. For argument-count/large-error/large-enum warnings choose documented API/layout policy rather than blanket allow or arbitrary boxing that changes allocation/performance. Re-run the exact broader command, then only affected contracts; do not claim facade/core no-deps Clippy covered this scope."
+  },
+  "semver": {
+    "classification": "introduced public API source compatibility break",
+    "job_id": "122293695395",
+    "failed_lint": "constructible_struct_adds_field",
+    "new_fields": [
+      "SwitchingConfig.strict_return_work_improvement",
+      "SwitchingConfig.reuse_observed_entry_step"
+    ],
+    "legacy_default_for_each_field": false,
+    "workflow_continue_on_error": true,
+    "semver_workflow_job_byte_identical_to_baseline": true,
+    "package_workspace_version": "0.1.0",
+    "published_registry_state_verified": false,
+    "migration": "Existing exhaustive SwitchingConfig literals must add both fields (false reproduces legacy default choice), or intentionally adopt ..SwitchingConfig::default() where appropriate. These source edits do not themselves resolve release version compatibility.",
+    "local_remedy": "Choose a compatibility-preserving API arrangement before release, or explicitly version/document the intended breaking change using the repository release policy. Do not silently raise a version or describe added public fields as purely additive. Re-run cargo-semver-checks against exact PR91 base plus representative downstream literal fixture."
+  },
+  "local_qualification_order": [
+    "Diagnose the inherited Givens fixture under pinned dev/release environments separately; this report does not assess it.",
+    "Resolve comparator environment/bridge portability and inherited broader Clippy in independent branches, preserving frozen measurements.",
+    "Decide and validate public SwitchingConfig migration/version policy.",
+    "Re-run the full intended production/release validation on the qualified environment; only then report release qualification."
+  ],
+  "budget_scope": "These unexecuted local qualification tasks are separate from the completed structural/homotopy/adapter numerical correction budgets (3/1/3). No extra numerical correction claimed."
+}

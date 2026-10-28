@@ -1,0 +1,60 @@
+{
+  "schema": "vigilode.frontier-independent-evidence-audit.v1",
+  "status": "PASS",
+  "scope": "Read stored raw results and summary values; no solver execution, no new timing, no external qualification.",
+  "causal": {
+    "rows": 210,
+    "counts": {
+      "causal_campaign": 126,
+      "causal_campaign_threads2": 84
+    },
+    "successes": 210,
+    "sampled_error_eligible": 195,
+    "all_rows_have_17_physical_observations_and_endpoints": true,
+    "source_commits": [
+      "55ad7ec6af8b127cb90849db56abff4f02b9920b"
+    ]
+  },
+  "switching": {
+    "timed_rows": 120,
+    "warmups": 40,
+    "successes": 114,
+    "sampled_error_eligible": 105
+  },
+  "affine": {
+    "rows": 192,
+    "timed_rows": 144,
+    "warmups": 48,
+    "sampled_error_eligible": 192
+  },
+  "pde": {
+    "rows": 135,
+    "groups": 27,
+    "repeats": 5,
+    "sampled_error_eligible": 135,
+    "hot_allocation_max": 0,
+    "max_error": 9.887949207650591e-06,
+    "max_relative_mass_drift": 7.72715225139109e-14,
+    "summary_medians_match_raw": true
+  },
+  "limitations": [
+    "Different cohorts have different methods, builds, and norms.",
+    "Passing a sampled error cap is not a continuous global error certificate.",
+    "Timing medians do not provide confidence intervals or cross-host speed guarantees.",
+    "Direct declared affine/harmonic actions are not general nonlinear adaptive solvers.",
+    "Native PDE cohort is a fixed linear prototype with calibrated controls and setup excluded."
+  ],
+  "inputs_sha256": {
+    "SUMMARY.json": "1469dec5b6927695427155590a0b8c644a99bffe0c8d33663193d72181162ff7",
+    "results/AFFINE_CAMPAIGN.json": "6714a201f22ad18cf11e23d5477ddc73a17411d9d7c7ec8555f9e8cfc4f0cf36",
+    "results/PDE_NATIVE_BENCHMARK_FINAL.jsonl": "6751e041a9af04f121ec6558fd428f7a640a49ef00d10c85b35cdca9954551a8",
+    "results/PDE_NATIVE_SUMMARY.json": "0ec768bc034afaa043991f559da9bb9f942afb8d81f3009266e512d57bc72be9",
+    "results/CAUSAL_THREADS_AUDIT.json": "e9c4ba25993bae877d7381602bd10932c43c79a333f3b1226fc455a93ef00e4a",
+    "analysis/PRODUCTION_VALIDATION.md": "291805abebb0ac96808574e9b6655489c0d19a54dc502bd934d1beea3da5b6d0",
+    "figures/frontier_performance.png": "3b105a337b4ad96b914e5ce388ac47c12e4c5da6f465667beef28593432070e9",
+    "figures/pde_scalability.png": "7c8addefef88decc4a974bb9a26e0157a2a88fcc08686fc27b84de5705994111",
+    "results/causal_campaign/RAW.tar.gz": "bbeeb5807f32e5d3aa8ce7a54652a8f26766ce5941be89e54e90d238e98d027c",
+    "results/causal_campaign_threads2/RAW.tar.gz": "1a7f7cc1649024821580d46ff814298892eb7383c88edb0a4243a9282b1cb07f",
+    "results/switching_campaign/RAW.tar.gz": "2e4f99678f56eb46c8decd0ec37505825324a8c4c603c573fce9645f6ce064e5"
+  }
+}

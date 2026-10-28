@@ -1,0 +1,64 @@
+{
+  "schema": "vigilode.nonstiff-comparator-inventory.v1",
+  "source_commit": "45037fc24e8f8101605f309e1fdb3a9a4e3df56d",
+  "method": "read-only source inspection; no new comparator build, dependency installation or NCP use",
+  "julia_executable": null,
+  "sources": [
+    {
+      "path": "tools/benchmarks/diffsol/triage/README.md",
+      "sha256": "b560757b4ba062a0b7577552a7e7cff010dd5ce580c029e08ab4fae36419986c"
+    },
+    {
+      "path": "tools/benchmarks/diffsol/triage/src/main.rs",
+      "sha256": "319336ec4b2809d22df3cbf355f756fb76f15d6f5b861aced5d227c4c46754fc"
+    },
+    {
+      "path": "tools/benchmarks/diffsol/a07/src/bin/component_benchmark.rs",
+      "sha256": "f665f270dd0b3f3953c6298554d69636e9aa6f9b50f78c6d59c87d89032117cf"
+    },
+    {
+      "path": "crates/rodas5p-integrators/examples/component_benchmark_support/mod.rs",
+      "sha256": "732a4b474cdb44bf6164983ab0a742fc0e6a8db129b00142b529d2d0b8be1705"
+    },
+    {
+      "path": "tools/component_benchmark/julia_adapter.jl",
+      "sha256": "bf4185025a559b59bb23c3263dbab0846c372784fd66f42d60330d37835c5a56"
+    },
+    {
+      "path": "tools/benchmarks/component_julia/Project.toml",
+      "sha256": "984c9c522f0f032f1e59e03924db24498d1613076e7bfbd47a827dca9c6a3306"
+    },
+    {
+      "path": "tools/benchmarks/component_julia/Manifest.toml",
+      "sha256": "66296b7cb6abab55547b7a8473c9b99475ee54abb54c3f5c4126fe8e54d9ce48"
+    },
+    {
+      "path": "crates/vigilode-hybrid/examples/hybrid_bench.rs",
+      "sha256": "b2dc8c06da71024ddf37c0451c0f6f5e2d0d4467698d9b2daae7d805bdc2f6d1"
+    }
+  ],
+  "diffsol": {
+    "status": "NOT_RUN",
+    "source_present": true,
+    "version": "0.16.1",
+    "existing_component_methods": [
+      "BDF",
+      "TR-BDF2",
+      "ESDIRK34",
+      "TSIT45"
+    ],
+    "reason": "Existing component adapter uses --request PATH and the legacy Case schema, while this preregistered harness requires stdin JSON and full new-fixture replay fields. Existing scalar logistic, two-state rotation/nonnormal models do not implement this campaign variable-rate vector families; diagonal fixtures partly overlap but need an audited schema/timer bridge. No compatible executable adapter was supplied. This is an integration gap, not an assertion that Diffsol source or packages are absent."
+  },
+  "julia": {
+    "status": "NOT_RUN",
+    "source_present": true,
+    "environment_pins_present": true,
+    "reason": "No Julia runtime is present on PATH. Legacy component adapter and project/manifest exist, but the new named vector-family request/response bridge has not been verified."
+  },
+  "vode": {
+    "status": "REQUESTED",
+    "source": "research/nonstiff_explicit_20261023/vode_adapter.py",
+    "implementation": "Existing SciPy Fortran VODE wrapper with Python/NumPy callbacks; Adams ordinary families, BDF functional iteration stiff controls."
+  },
+  "next_step": "Extend existing shared Case registry for vector driven/logistic/paired families, implement bidirectional request/response bridge, verify parity at preregistered probes, freeze adapter/build/JIT receipts, then run all permitted comparators. Retain unavailable results explicitly; do not substitute other solver families."
+}

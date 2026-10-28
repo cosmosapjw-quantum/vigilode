@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "VigilODE same-checkpoint selection measurements",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "data_kind",
+    "rows"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "data_kind": {
+      "enum": [
+        "measured",
+        "synthetic_contract_test"
+      ]
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "window_id",
+          "paired_block_id",
+          "candidate_id",
+          "selected",
+          "identity",
+          "status"
+        ],
+        "properties": {
+          "window_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "paired_block_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "candidate_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "selected": {
+            "type": "boolean"
+          },
+          "identity": {
+            "type": "object",
+            "required": [
+              "problem_sha256",
+              "parameters_sha256",
+              "start_state_sha256",
+              "t_start_hex",
+              "t_end_hex",
+              "physical_metric_sha256",
+              "reference_sha256",
+              "reference_kind",
+              "error_ceiling_hex",
+              "host_sha256",
+              "source_tree_sha256",
+              "build_config_sha256",
+              "output_workload_sha256",
+              "timing_scope_sha256",
+              "environment_epoch"
+            ],
+            "properties": {
+              "problem_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "parameters_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "start_state_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "t_start_hex": {
+                "type": "string"
+              },
+              "t_end_hex": {
+                "type": "string"
+              },
+              "physical_metric_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "reference_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "reference_kind": {
+                "enum": [
+                  "analytic",
+                  "certified",
+                  "empirical"
+                ]
+              },
+              "error_ceiling_hex": {
+                "type": "string"
+              },
+              "host_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "source_tree_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "build_config_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "output_workload_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "timing_scope_sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "environment_epoch": {
+                "type": "integer",
+                "minimum": 0
+              }
+            }
+          },
+          "status": {
+            "enum": [
+              "completed",
+              "solver_failed",
+              "timeout",
+              "interrupted",
+              "not_run",
+              "reference_missing"
+            ]
+          },
+          "final_time_hex": {
+            "type": "string"
+          },
+          "raw_verified": {
+            "type": "boolean"
+          },
+          "receipt_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "binary_sha256": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "reference_admitted": {
+            "type": "boolean"
+          },
+          "physical_error": {
+            "type": "number",
+            "minimum": 0
+          },
+          "reference_uncertainty": {
+            "type": "number",
+            "minimum": 0
+          },
+          "selection_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cost": {
+            "type": "object",
+            "required": [
+              "solve_seconds",
+              "setup_seconds",
+              "probe_seconds",
+              "transition_seconds",
+              "total_seconds",
+              "disjoint_components"
+            ],
+            "properties": {
+              "solve_seconds": {
+                "type": "number",
+                "minimum": 0
+              },
+              "setup_seconds": {
+                "type": "number",
+                "minimum": 0
+              },
+              "probe_seconds": {
+                "type": "number",
+                "minimum": 0
+              },
+              "transition_seconds": {
+                "type": "number",
+                "minimum": 0
+              },
+              "total_seconds": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "disjoint_components": {
+                "const": true
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$comment": "Additional semantic checks live in analyze_selection.py: finite/canonical binary64 hex, exact shared identities, one selected row, completed interval, physical error + uncertainty and disjoint cost sum."
+}

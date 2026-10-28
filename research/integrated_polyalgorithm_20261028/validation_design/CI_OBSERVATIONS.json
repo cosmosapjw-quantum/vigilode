@@ -1,0 +1,201 @@
+{
+  "schema_version": 1,
+  "observed_date_kst": "2026-10-28",
+  "source_commit": "384dba091a3d9e1aac0ecddec264958298239253",
+  "scope": "Read-only remote workflow jobs/logs and local source inspection; no CI rerun/native test",
+  "jobs": [
+    {
+      "run_id": 40609485096,
+      "job_id": 122557234098,
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40609485096/job/122557234098",
+      "name": "E4 fresh-clone build reproducibility",
+      "conclusion": "failure",
+      "failed_step": "Lint the touched integrator crate in default mode",
+      "failed_command": "cargo clippy -p rodas5p-integrators --all-targets --locked -- -D warnings",
+      "existing_gate": "Q-LINT",
+      "distinct_diagnostic_sites": [
+        {
+          "diagnostic": "variant `EndpointAdmission` is never constructed",
+          "path": "crates/rodas5p-integrators/src/packet_trajectory.rs",
+          "line": 1445
+        },
+        {
+          "diagnostic": "the loop variable `degree` is used to index `q`",
+          "path": "crates/rodas5p-integrators/src/bound_pr101.rs",
+          "line": 679
+        },
+        {
+          "diagnostic": "large size difference between variants",
+          "path": "crates/rodas5p-integrators/src/physical_error_budget.rs",
+          "line": 466
+        },
+        {
+          "diagnostic": "this function has too many arguments (8/7)",
+          "path": "crates/rodas5p-integrators/src/collective_model.rs",
+          "line": 73
+        },
+        {
+          "diagnostic": "function `prepare` is never used",
+          "path": "crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs",
+          "line": 3
+        },
+        {
+          "diagnostic": "function `initial_adapter` is never used",
+          "path": "crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs",
+          "line": 95
+        },
+        {
+          "diagnostic": "function `prepare_adapter` is never used",
+          "path": "crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs",
+          "line": 104
+        },
+        {
+          "diagnostic": "function `query_adapter` is never used",
+          "path": "crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs",
+          "line": 122
+        },
+        {
+          "diagnostic": "function `rejected_tolerance_adapter` is never used",
+          "path": "crates/rodas5p-integrators/tests/support/a02_packet_counter_contract.rs",
+          "line": 134
+        },
+        {
+          "diagnostic": "this function has too many arguments (8/7)",
+          "path": "crates/rodas5p-integrators/src/dopri5.rs",
+          "line": 192
+        },
+        {
+          "diagnostic": "the loop variable `previous` is used to index `DOPRI5_A`",
+          "path": "crates/rodas5p-integrators/src/dopri5.rs",
+          "line": 278
+        },
+        {
+          "diagnostic": "this `if` statement can be collapsed",
+          "path": "crates/rodas5p-integrators/src/dopri5.rs",
+          "line": 1030
+        },
+        {
+          "diagnostic": "the loop variable `i` is used to index `DOPRI5_C`",
+          "path": "crates/rodas5p-integrators/src/quotient_flow.rs",
+          "line": 753
+        },
+        {
+          "diagnostic": "the loop variable `j` is used to index `DOPRI5_C`",
+          "path": "crates/rodas5p-integrators/src/quotient_flow.rs",
+          "line": 754
+        },
+        {
+          "diagnostic": "the loop variable `j` is used to index `DOPRI5_A`",
+          "path": "crates/rodas5p-integrators/src/quotient_flow.rs",
+          "line": 802
+        },
+        {
+          "diagnostic": "this function has too many arguments (8/7)",
+          "path": "crates/rodas5p-integrators/src/quotient_flow.rs",
+          "line": 1018
+        },
+        {
+          "diagnostic": "the loop variable `i` is used to index `rhs`",
+          "path": "crates/rodas5p-integrators/src/conditioned_polynomial.rs",
+          "line": 428
+        },
+        {
+          "diagnostic": "items after a test module",
+          "path": "crates/rodas5p-integrators/src/adaptive_output.rs",
+          "line": 24
+        },
+        {
+          "diagnostic": "this `if` statement can be collapsed",
+          "path": "crates/rodas5p-integrators/src/fixed_point_continuation.rs",
+          "line": 94
+        },
+        {
+          "diagnostic": "this function has too many arguments (10/7)",
+          "path": "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+          "line": 482
+        },
+        {
+          "diagnostic": "the loop variable `i` is used to index `rhs`",
+          "path": "crates/rodas5p-integrators/src/polynomial_resolvent.rs",
+          "line": 751
+        },
+        {
+          "diagnostic": "the `Err`-variant returned from this function is very large",
+          "path": "crates/rodas5p-integrators/src/global_budget.rs",
+          "line": 355
+        },
+        {
+          "diagnostic": "the `Err`-variant returned from this function is very large",
+          "path": "crates/rodas5p-integrators/src/global_budget.rs",
+          "line": 387
+        }
+      ],
+      "successful_steps": [
+        "Set up job",
+        "Check out the repository",
+        "Install the pinned Rust toolchain",
+        "Verify the E4 build-mode contracts",
+        "Resolve the default fresh-clone graph",
+        "Compile the default fresh-clone workspace",
+        "Run the touched default-mode contract",
+        "Post Check out the repository",
+        "Complete job"
+      ],
+      "skipped_steps": [
+        "Build an independent Cargo vendor directory",
+        "Resolve the air-gapped dependency graph",
+        "Compare online and offline dependency graphs",
+        "Compile the workspace in explicit offline mode",
+        "Run the touched offline-mode contract",
+        "Check formatting and tracked-source stability"
+      ],
+      "compiler_summaries": [
+        "lib:17 previous errors",
+        "lib test:22 previous errors"
+      ],
+      "interpretation": "Overlapping compiler summaries; default compile success does not cover skipped offline vendor graph/build.",
+      "printed_unique_diagnostic_sites": 23
+    },
+    {
+      "run_id": 40609485121,
+      "job_id": 122557234399,
+      "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40609485121/job/122557234399",
+      "name": "Research ledger and authority references",
+      "conclusion": "failure",
+      "failed_step": "Check authority commit references are published",
+      "failed_command": "python3 tools/check-authority-refs.py",
+      "existing_gate": "Q-LEDGER",
+      "successful_steps": [
+        "Set up job",
+        "Run actions/checkout@v4",
+        "Run actions/setup-python@v5",
+        "Test the research-process checks",
+        "Check research nodes and the append-only ledger",
+        "Post Run actions/checkout@v4",
+        "Complete job"
+      ],
+      "summary": "2026-10-28T00:33:48.5549693Z check-authority-refs: FAIL (10133 citations, 797 distinct SHAs: missing=53, missing+allowlisted=27, non-commit=220, reachable=497)",
+      "counts": {
+        "citations": 10133,
+        "distinct_sha": 797,
+        "missing": 53,
+        "missing_allowlisted": 27,
+        "non_commit": 220,
+        "reachable": 497
+      },
+      "selected_failure_lines": [
+        "2026-10-28T00:33:48.5511800Z FAIL: research/nonstiff_external_adapters_20261023/adapters/julia/Manifest.toml:31: 7063ad1083578215c7c4bf410368150abe8d5524 is missing (no remote branch contains it) [git-tree-sha1 = \"7063ad1083578215c7c4bf410368150abe8d5524\"]",
+        "2026-10-28T00:33:48.5503810Z FAIL: research/ncp_followup_20261021/BASS_REI_RECENCY.json:12: d32cd99fa19c65aa1ca63dbc8aab8741834270e8 is missing (no remote branch contains it) [relevant_current_branches.head]",
+        "2026-10-28T00:33:48.5522720Z FAIL: research/production_frontier_20261023/PUBLISH_MAP.json:14: 55ad7ec6af8b127cb90849db56abff4f02b9920b is missing (no remote branch contains it) [source_equivalence.local_commit]",
+        "2026-10-28T00:33:48.5538257Z FAIL: research/production_reaudit_20261021/BRANCH_INTEGRATION.json:8: 4a5fc656730fe8243f06b6e603cb8aa758b00b2f is missing (no remote branch contains it) [production_integration_base]"
+      ],
+      "scope_correction": "The checkout workflow requests fetch-depth0. At least part of this failure is typed identity/repository confusion or known local/public source-tree equivalence; it cannot all be labeled shallow history.",
+      "open_categories": [
+        "External repository commits require their declared repository authority",
+        "Julia manifest git-tree-sha1 and Git tree/blob identifiers require object-type treatment",
+        "Historical local/public commits require checked mapping to published equal source tree",
+        "Any true unmapped local commit remains unresolved; no broad allowlist remedy"
+      ]
+    }
+  ]
+}

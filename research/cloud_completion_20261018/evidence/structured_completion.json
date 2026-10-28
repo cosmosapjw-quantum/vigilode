@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "unit": "A06_native_all_stage_collective",
+  "workflow_version": "1.0.0",
+  "baseline": "c513f47",
+  "implementation": "complete_scoped",
+  "source_sha256": {
+    "crates/rodas5p-integrators/src/collective_direct.rs": "baee6b60d2020df1f01c0d4fd7955e77eef976fce7940c1a76354bee78361d8e",
+    "crates/rodas5p-integrators/src/collective_rodas5p.rs": "5eebab56e89d26ea553d46eb219e4c9b7f8a7d775c33e9d07d7552a673b506ca",
+    "crates/rodas5p-integrators/tests/collective_rodas5p_contracts.rs": "334dfb61dc3344478c889de715c546691178c787a15011aece41631bfd16e372",
+    "crates/rodas5p-integrators/tests/collective_rodas5p_allocation_contract.rs": "696a17e29f5cfc300a53c9f472b57cf13b64ea0731cdb5695e113178547302fc",
+    "crates/rodas5p-integrators/tests/production_audit_collective_direct.rs": "6882254ee537e31fa5c053eebd5108626115ff4d5c135d7bd1600fc5031a4b91",
+    "crates/rodas5p-integrators/examples/collective_structured_compare.rs": "70ce5d89cb8c692d028407391f2215e201c21877058e1736bc54c2937569dc8d"
+  },
+  "claims": [
+    {
+      "id": "A06_NATIVE_STAGE_EQUIVALENCE",
+      "status": "derived_and_tested",
+      "scope": "same native K tableau, immutable rotating model, invertible frozen matrix",
+      "proof": "STRUCTURED.md#all-stage-equivalence-theorem"
+    },
+    {
+      "id": "A06_LINEAR_COMPLEXITY",
+      "status": "derived",
+      "scope": "fixed8stage O(N) attempt, O(N) retained storage including interval factor checks"
+    },
+    {
+      "id": "A06_ZERO_ALLOCATION",
+      "status": "structural_only_empirical_hold",
+      "reason": "cross-crate positive control measured0 for three nonempty cloned vectors in restored dynamicstdlib runtime",
+      "log": "evidence/structured_allocation_gate.log"
+    },
+    {
+      "id": "A06_SPEED",
+      "status": "not_promoted",
+      "remaining": "optimized equal-achieved-error measurements on local machine"
+    }
+  ],
+  "executions": [
+    {
+      "command": "cargo test --locked --offline -j2 -p rodas5p-integrators --test collective_rodas5p_contracts --test production_audit_collective_direct --test independent_pr101_review --test production_audit_pr101_cloud",
+      "target_dir": "/tmp/vigilode-structured-target",
+      "status": "completed",
+      "exit_code": 0,
+      "tests_passed": 19,
+      "log": "evidence/structured_scoped_numerics.log"
+    },
+    {
+      "command": "cargo test --locked --offline -j2 -p rodas5p-integrators --test collective_rodas5p_allocation_contract",
+      "target_dir": "/tmp/vigilode-structured-target",
+      "status": "failed",
+      "exit_code": 101,
+      "failure_class": "environment_measurement",
+      "log": "evidence/structured_allocation_gate.log"
+    },
+    {
+      "command": "cargo run --locked --offline -j2 -p rodas5p-integrators --example collective_structured_compare -- 8 1",
+      "status": "completed",
+      "exit_code": 0,
+      "profile": "debug",
+      "completed_arms": 6,
+      "successes": 6,
+      "reference_authority": "empirical_two_resolution",
+      "log": "evidence/structured_compare_smoke_calibrated.jsonl"
+    }
+  ],
+  "review_corrections": [
+    {
+      "id": "SR01",
+      "status": "closed",
+      "fix": "checked determinant accessor invalidates authority after failed refactor"
+    },
+    {
+      "id": "SR02",
+      "status": "closed_by_scope_correction",
+      "fix": "positive allocator calibration mandatory; authoritative benchmark fields null on calibration failure"
+    }
+  ],
+  "local_commands": [
+    "cargo test --locked --offline -p rodas5p-integrators --test collective_rodas5p_contracts --test production_audit_collective_direct",
+    "cargo test --locked --offline -p rodas5p-integrators --test collective_rodas5p_allocation_contract",
+    "cargo run --locked --offline --profile measurement -p rodas5p-integrators --example collective_structured_compare -- 32 5",
+    "cargo run --locked --offline --profile measurement -p rodas5p-integrators --example collective_structured_compare -- 128 5"
+  ]
+}

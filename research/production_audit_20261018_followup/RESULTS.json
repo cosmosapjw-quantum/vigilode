@@ -1,0 +1,116 @@
+{
+  "schema_version": 1,
+  "exec_sha": "01c5b93357ec4318e06e36d938deedf1b2db4a3f",
+  "environment": {
+    "rustc": "1.94.1 (e408947bf 2026-03-25)",
+    "cargo": "1.94.1 (29ea6fb6 2026-03-24)",
+    "host": "x86_64-unknown-linux-gnu",
+    "dependency_mode": "--locked --offline",
+    "cargo_manifest_or_lock_changed": false
+  },
+  "registered_runs": [
+    {
+      "id": "core_targets",
+      "command": "cargo test --locked --offline -p rodas5p-core --test leja_total_contract --test damped_moment_enclosure_regressions --test damped_forcing_moment_consumer",
+      "exit_code": 0,
+      "tests_passed": 28,
+      "tests_failed": 0,
+      "log": "core_final.log"
+    },
+    {
+      "id": "integrator_targets",
+      "command": "cargo test --locked --offline -p rodas5p-integrators --test a05_dense_global_output --test a11_gray_scott_log_norm --test packet_trajectory_contracts --test packet_window_contracts --test production_audit_collective_direct --test production_audit_packet --test production_audit_split",
+      "exit_code": 0,
+      "tests_passed": 76,
+      "tests_failed": 0,
+      "log": "integrators_final.log"
+    },
+    {
+      "id": "fair_ab_dense_error_adapter",
+      "command": "cargo test --locked --offline -p rodas5p-fair-ab --lib dense_core_preserves_dense_error_reason_as_invalid_input -- --nocapture",
+      "exit_code": 0,
+      "tests_passed": 1,
+      "tests_failed": 0,
+      "log": "fair_ab_final.log"
+    },
+    {
+      "id": "workspace_all_target_check",
+      "command": "cargo check --locked --offline --workspace --all-targets",
+      "exit_code": 0,
+      "log": "workspace_check_final.log"
+    },
+    {
+      "id": "workspace_fmt",
+      "command": "cargo fmt --all -- --check",
+      "exit_code": 0,
+      "log": "fmt_final.log"
+    },
+    {
+      "id": "workspace_clippy",
+      "command": "cargo clippy --locked --offline --workspace --all-targets -- -D warnings",
+      "exit_code": 0,
+      "log": "clippy_final.log"
+    }
+  ],
+  "retained_campaign": {
+    "identity": "research/production_audit_20261018/evidence/continuation_a07/validated.json",
+    "rerun": false,
+    "problem": "Robertson",
+    "span": [
+      0,
+      40
+    ],
+    "output_points": 101,
+    "rtol": 1e-08,
+    "atol": [
+      1e-11,
+      1e-11,
+      1e-11
+    ],
+    "successful_cold_rows": 20,
+    "paired_cold_units": 10,
+    "successful_warm_rows": 160,
+    "allocator_rows": 2,
+    "native_max_grid_wrms": 0.33753007149457903,
+    "diffsol_max_grid_wrms": 3.3026992500504733,
+    "accuracy_threshold": 0.05,
+    "diffsol_accuracy_gate": false,
+    "timing_authority": "diagnostic_only",
+    "cold_diffsol_over_native_median_ratio": 0.9195676453507838,
+    "warm_diffsol_over_native_median_ratio": 1.4194023547437313,
+    "speed_claim": "HOLD_accuracy_gate_failed"
+  },
+  "scope_decisions": {
+    "A01": "SCOPED_PASS_WITH_HOLD; diagnostic outward linear/unit packet paths only; roundoff_enclosed=false",
+    "A02": "SCOPED_PASS_WITH_HOLD; linear-only trajectory; nonlinear reconstructed residual/global tube remains open",
+    "A03": "SCOPED_PASS_WITH_HOLD; scalar damped forcing moment consumer only; full damped packet remains open",
+    "A04": "SCOPED_PASS_WITH_HOLD; interval replay and report transaction; total Leja arithmetic remains EstimateOnly",
+    "A05": "SCOPED_PASS_WITH_HOLD; represented quartic interval values/derivatives/counters; no continuous ODE residual or global gain",
+    "A06": "SCOPED_PASS_WITH_HOLD; previously reviewed carrier-zero rotating-frame Woodbury scope",
+    "A07": "SCOPED_PASS_WITH_HOLD for retained campaign integrity; accuracy and matched-speed gate HOLD",
+    "A08": "BLOCKED; A04 and A07 prerequisites remain HOLD",
+    "A09": "BLOCKED; A04 and A07 prerequisites remain HOLD",
+    "A10": "SCOPED_PASS_WITH_HOLD; Bernstein helper only; full packet dependency remains open",
+    "A11": "SCOPED_PASS_WITH_HOLD; supplied-box Gray-Scott mu2 only",
+    "A12": "HOLD; no broad production promotion"
+  },
+  "claim_ceiling": "These results establish bounded implementation and test scopes only. They do not certify nonlinear packet trajectories, all-time generic output accuracy, total Leja arithmetic, matched-accuracy speed, or production promotion. Full workspace cargo test was not run.",
+  "prepush_gates": {
+    "command": "bash .agents/skills/vigilode-ledger-ci-gate/scripts/run_prepush_gates.sh de990927d0f9197f0e37fcaeccee33bea6c7b8af",
+    "exit_code": 0,
+    "checks": [
+      "rustfmt",
+      "workspace clippy -D warnings",
+      "research-node append-only ledger",
+      "authority commit refs",
+      "ignored tests CI reachability",
+      "E4 build-mode suite (13 tests)",
+      "E4 final review regressions (5 tests)",
+      "tracked worktree clean"
+    ],
+    "authority_citations": 1542,
+    "distinct_authority_shas": 272,
+    "ignored_tests_reachable": 79,
+    "log": "prepush_gates.log"
+  }
+}

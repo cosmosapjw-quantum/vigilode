@@ -1,0 +1,37 @@
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.20s
+     Running tests/packet_trajectory_contracts.rs (/workspace/scratch/0dc1e721cf82/runtime/final-target/debug/deps/packet_trajectory_contracts-b2b63b4d95d00dce)
+
+running 10 tests
+test linear_outward_fixed_grid_encloses_independent_exact_modes_and_mean ... ok
+test linear_outward_rejected_trial_does_not_shift_accepted_center ... ok
+test linear_outward_rejections_preserve_attempted_work_and_return_typed_refusal ... ok
+test linear_outward_transports_nonzero_initial_disks ... ok
+test test_negative_admission_gates ... ok
+test test_vg1_zero_online_solver_counters_across_trajectory ... ok
+test test_vg2_multiwindow_overlap_and_dahlquist_linear_limit ... ok
+test test_vg3_inherited_radii_propagation ... ok
+test test_vg3_output_policy_separation ... ok
+test test_vg3_transactional_atomicity_on_step_rejection ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.40s
+
+     Running tests/production_audit_packet_center_displacement.rs (/workspace/scratch/0dc1e721cf82/runtime/final-target/debug/deps/production_audit_packet_center_displacement-c10b15cb85e699ed)
+
+running 1 test
+test dc1_same_query_immutable_weighted_center_displacement ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+

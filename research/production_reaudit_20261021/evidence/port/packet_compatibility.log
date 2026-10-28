@@ -1,0 +1,101 @@
+    Blocking waiting for file lock on artifact directory
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode/crates/rodas5p-integrators)
+error[E0463]: can't find crate for `rodas5p_integrators`
+ --> crates/rodas5p-integrators/tests/production_audit_packet_center_displacement.rs:6:5
+  |
+6 | use rodas5p_integrators::packet_window::{
+  |     ^^^^^^^^^^^^^^^^^^^ can't find crate
+
+error[E0463]: can't find crate for `rodas5p_integrators`
+ --> crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs:3:5
+  |
+3 | use rodas5p_integrators::collective_model::CollectiveModel;
+  |     ^^^^^^^^^^^^^^^^^^^ can't find crate
+
+For more information about this error, try `rustc --explain E0463`.
+error: could not compile `rodas5p-integrators` (test "production_audit_packet_center_displacement") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error[E0689]: can't call method `cos` on ambiguous numeric type `{float}`
+  --> crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs:77:23
+   |
+77 |         let c = theta.cos();
+   |                       ^^^
+   |
+help: you must specify a type for this binding, like `f32`
+   |
+76 |         let theta: f32 = width * xi_j * t_end;
+   |                  +++++
+
+error[E0689]: can't call method `sin` on ambiguous numeric type `{float}`
+  --> crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs:78:23
+   |
+78 |         let s = theta.sin();
+   |                       ^^^
+   |
+help: you must specify a type for this binding, like `f32`
+   |
+76 |         let theta: f32 = width * xi_j * t_end;
+   |                  +++++
+
+error[E0282]: type annotations needed
+   --> crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs:153:38
+    |
+153 |             step.modes.as_ref().map(|v| v.len()),
+    |                                      ^  - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+153 |             step.modes.as_ref().map(|v: /* Type */| v.len()),
+    |                                       ++++++++++++
+
+error[E0282]: type annotations needed
+   --> crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs:158:43
+    |
+158 |             step.mode_radii.as_ref().map(|v| v.len()),
+    |                                           ^  - type must be known at this point
+    |
+help: consider giving this closure parameter an explicit type
+    |
+158 |             step.mode_radii.as_ref().map(|v: /* Type */| v.len()),
+    |                                            ++++++++++++
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+   --> crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs:241:60
+    |
+241 |         assert_eq!(input["xi"][j].as_u64().unwrap(), xi[j].to_bits());
+    |                                                            ^^^^^^^
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+   --> crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs:242:70
+    |
+242 |         assert_eq!(input["weights"][j].as_u64().unwrap(), weights[j].to_bits());
+    |                                                                      ^^^^^^^
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+   --> crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs:243:63
+    |
+243 |         assert_eq!(input["z"][j][0].as_u64().unwrap(), z[j].0.to_bits());
+    |                                                               ^^^^^^^
+
+error[E0689]: can't call method `to_bits` on ambiguous numeric type `{float}`
+   --> crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs:244:63
+    |
+244 |         assert_eq!(input["z"][j][1].as_u64().unwrap(), z[j].1.to_bits());
+    |                                                               ^^^^^^^
+
+Some errors have detailed explanations: E0282, E0463, E0689.
+For more information about an error, try `rustc --explain E0282`.
+error: could not compile `rodas5p-integrators` (test "packet_trajectory_contracts") due to 9 previous errors

@@ -1,0 +1,20 @@
+{
+  "node": "A04_R1_report_transaction",
+  "source_identity": {
+    "branch": "audit/production-readiness-20261018",
+    "head_at_capture": "c3036c63da02ca9b04cd39ccf580cd67d00ccb0c",
+    "leja_action_sha256": "2948e41d9f16a2377668a202c752856222a54964c494520f56b87b093a46792c",
+    "leja_total_contract_sha256": "46fa750e1b4bfa2ca7550c3548c0856899e0d85fff07b42053e24a884f43c01f"
+  },
+  "change": "Removed public report vector resizing from scratch-workspace ensure_capacity and removed eager clearing of report.certification_ops. Existing report columns/fused resize and metadata update now occur only after the calculation succeeds, at the report commit point. Scratch buffers and last_certification_ops remain separate from the last successful report.",
+  "regression": "Successful n=2 result, then n=1 operator with wrong-length vector must return Err while preserving complete prior CertifiedLejaReport equality; NaN h rejection also preserves it.",
+  "commands": [
+    {"command":"cargo test --locked --offline -p rodas5p-core --test leja_total_contract test_a04_failed_dimension_change_preserves_last_successful_report -- --nocapture (pre-fix falsifier)","exit_code":101,"log":"a04_report_transaction_first_failure.log","sha256":"b2f2e2dc7cd6675b8468326b6c34fdf4cee68ae2b6e0979ddb1db478653d8408"},
+    {"command":"cargo test --locked --offline -p rodas5p-core --test leja_total_contract -- --nocapture (post-fix and post-format)","exit_code":0,"log":"a04_report_transaction_contract_postfmt.log","sha256":"5c5abe9b5b8da308fe6821cea452ff91b333ef79271532a0ee65f0ac8f0ab122"},
+    {"command":"cargo clippy --locked --offline -p rodas5p-core --all-targets -- -D warnings","exit_code":0,"log":"a04_report_transaction_clippy.log","sha256":"74a88c4df10e4e0486e02213d1824de74c232f2b38bdc5f0baba3af537217b92"},
+    {"command":"rustfmt --edition 2024 --check crates/rodas5p-core/src/leja_action.rs crates/rodas5p-core/tests/leja_total_contract.rs","exit_code":0,"log":"a04_report_transaction_fmt.log","sha256":"1ca4a13146b2891c0e462123ac0cb848f92e6221f18b870a1b78c232d1956c35"},
+    {"command":"git diff --check","exit_code":0,"log":"a04_report_transaction_diffcheck.log","sha256":"1ca4a13146b2891c0e462123ac0cb848f92e6221f18b870a1b78c232d1956c35"}
+  ],
+  "decision": "Scoped implementation repair complete; Leja total arithmetic authority remains EstimateOnly. No formula, threshold, or counter semantics changed. Independent review is pending.",
+  "executor_identity": {"role":"implementation agent", "runtime_model":"not independently observed"}
+}

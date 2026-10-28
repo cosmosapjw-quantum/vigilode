@@ -1,0 +1,1722 @@
+{
+  "schema_version": 1,
+  "unit": "A02-TXN-01",
+  "status": "FROZEN_V2_INPUTS_READY_FOR_FRESH_DELTA_REVIEW",
+  "identity_rule": "bits is authoritative for every binary64 scalar, including decimal source literals; display is informational. Construct with f64::from_bits. Integers are exact. References decode received bits directly to exact rational numbers before any product, subtraction, weight sum, or perturbation. No intermediate binary64 width*xi or global offset.",
+  "common_model_policy": {
+    "omega": "exact_real(width)*exact_real(xi_j)",
+    "carrier": "metadata_only",
+    "kappa": 0,
+    "weight_sum": "exact sum of actual stored weights; never replace by one",
+    "energy_admission": "existing outward S*E_global <= 1"
+  },
+  "tolerance_sources": {
+    "T_FIXED": {
+      "mean": {
+        "bits": "0x3ee4f8b588e368f1",
+        "display": "1e-05"
+      },
+      "mode": {
+        "bits": "0x3ee4f8b588e368f1",
+        "display": "1e-05"
+      },
+      "source": "crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs:216-224",
+      "classification": "unchanged existing fixed-grid physical tolerances"
+    },
+    "T_INHERITED": {
+      "mean": {
+        "bits": "0x3f1a36e2eb1c432d",
+        "display": "0.0001"
+      },
+      "mode": {
+        "bits": "0x3f1a36e2eb1c432d",
+        "display": "0.0001"
+      },
+      "source": "crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs:302-321",
+      "classification": "unchanged existing inherited-uncertainty physical tolerances"
+    },
+    "T_REJECTION": {
+      "mean": {
+        "bits": "0x3f2a36e2eb1c432d",
+        "display": "0.0002"
+      },
+      "mode": {
+        "bits": "0x3f2a36e2eb1c432d",
+        "display": "0.0002"
+      },
+      "source": "crates/rodas5p-integrators/tests/packet_trajectory_contracts.rs:379-389",
+      "classification": "unchanged existing rejection physical tolerances"
+    }
+  },
+  "config_defaults_source": "crates/rodas5p-integrators/src/packet_trajectory.rs:99-112; every resolved field is repeated below rather than inherited from future defaults",
+  "models": {
+    "M_FIXED": {
+      "xi": [
+        {
+          "bits": "0xbfe0000000000000",
+          "display": "-0.5"
+        },
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        },
+        {
+          "bits": "0x3fe0000000000000",
+          "display": "0.5"
+        }
+      ],
+      "weights": [
+        {
+          "bits": "0x3fd0000000000000",
+          "display": "0.25"
+        },
+        {
+          "bits": "0x3fe0000000000000",
+          "display": "0.5"
+        },
+        {
+          "bits": "0x3fd0000000000000",
+          "display": "0.25"
+        }
+      ],
+      "initial_centers": [
+        [
+          {
+            "bits": "0x3fd0000000000000",
+            "display": "0.25"
+          },
+          {
+            "bits": "0xbfc0000000000000",
+            "display": "-0.125"
+          }
+        ],
+        [
+          {
+            "bits": "0x3fc0000000000000",
+            "display": "0.125"
+          },
+          {
+            "bits": "0x3fb0000000000000",
+            "display": "0.0625"
+          }
+        ],
+        [
+          {
+            "bits": "0xbfb0000000000000",
+            "display": "-0.0625"
+          },
+          {
+            "bits": "0x3fd0000000000000",
+            "display": "0.25"
+          }
+        ]
+      ],
+      "width": {
+        "bits": "0x3ff0000000000000",
+        "display": "1.0"
+      },
+      "chi": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "carrier_metadata_only": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "kappa": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      }
+    },
+    "M_ONE_LINEAR": {
+      "xi": [
+        {
+          "bits": "0x3fe0000000000000",
+          "display": "0.5"
+        }
+      ],
+      "weights": [
+        {
+          "bits": "0x3ff0000000000000",
+          "display": "1.0"
+        }
+      ],
+      "initial_centers": [
+        [
+          {
+            "bits": "0x3fd3333333333333",
+            "display": "0.3"
+          },
+          {
+            "bits": "0xbfc999999999999a",
+            "display": "-0.2"
+          }
+        ]
+      ],
+      "width": {
+        "bits": "0x3fe999999999999a",
+        "display": "0.8"
+      },
+      "chi": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "carrier_metadata_only": {
+        "bits": "0x3ff4000000000000",
+        "display": "1.25"
+      },
+      "kappa": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      }
+    },
+    "M_ONE_CUBIC": {
+      "xi": [
+        {
+          "bits": "0x3fe0000000000000",
+          "display": "0.5"
+        }
+      ],
+      "weights": [
+        {
+          "bits": "0x3ff0000000000000",
+          "display": "1.0"
+        }
+      ],
+      "initial_centers": [
+        [
+          {
+            "bits": "0x3fd3333333333333",
+            "display": "0.3"
+          },
+          {
+            "bits": "0xbfc999999999999a",
+            "display": "-0.2"
+          }
+        ]
+      ],
+      "width": {
+        "bits": "0x3fe999999999999a",
+        "display": "0.8"
+      },
+      "chi": {
+        "bits": "0x3fd3333333333333",
+        "display": "0.3"
+      },
+      "carrier_metadata_only": {
+        "bits": "0x3ff4000000000000",
+        "display": "1.25"
+      },
+      "kappa": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      }
+    },
+    "M_UNEQUAL_CHI0": {
+      "xi": [
+        {
+          "bits": "0xbfe8000000000000",
+          "display": "-0.75"
+        },
+        {
+          "bits": "0x3fc0000000000000",
+          "display": "0.125"
+        },
+        {
+          "bits": "0x3ff0000000000008",
+          "display": "1.0000000000000018"
+        }
+      ],
+      "weights": [
+        {
+          "bits": "0x3fc0000000000000",
+          "display": "0.125"
+        },
+        {
+          "bits": "0x3fd8000000000000",
+          "display": "0.375"
+        },
+        {
+          "bits": "0x3fe0000000000800",
+          "display": "0.5000000000002274"
+        }
+      ],
+      "initial_centers": [
+        [
+          {
+            "bits": "0x3fd0000000000000",
+            "display": "0.25"
+          },
+          {
+            "bits": "0xbfc0000000000000",
+            "display": "-0.125"
+          }
+        ],
+        [
+          {
+            "bits": "0xbfc8000000000000",
+            "display": "-0.1875"
+          },
+          {
+            "bits": "0x3fb0000000000000",
+            "display": "0.0625"
+          }
+        ],
+        [
+          {
+            "bits": "0x3fc0000000000000",
+            "display": "0.125"
+          },
+          {
+            "bits": "0x3fc8000000000000",
+            "display": "0.1875"
+          }
+        ]
+      ],
+      "width": {
+        "bits": "0x3fe8000000000000",
+        "display": "0.75"
+      },
+      "chi": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "carrier_metadata_only": {
+        "bits": "0x3ff4000000000000",
+        "display": "1.25"
+      },
+      "kappa": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      }
+    },
+    "M_UNEQUAL_CHIP": {
+      "xi": [
+        {
+          "bits": "0xbfe8000000000000",
+          "display": "-0.75"
+        },
+        {
+          "bits": "0x3fc0000000000000",
+          "display": "0.125"
+        },
+        {
+          "bits": "0x3ff0000000000008",
+          "display": "1.0000000000000018"
+        }
+      ],
+      "weights": [
+        {
+          "bits": "0x3fc0000000000000",
+          "display": "0.125"
+        },
+        {
+          "bits": "0x3fd8000000000000",
+          "display": "0.375"
+        },
+        {
+          "bits": "0x3fe0000000000800",
+          "display": "0.5000000000002274"
+        }
+      ],
+      "initial_centers": [
+        [
+          {
+            "bits": "0x3fd0000000000000",
+            "display": "0.25"
+          },
+          {
+            "bits": "0xbfc0000000000000",
+            "display": "-0.125"
+          }
+        ],
+        [
+          {
+            "bits": "0xbfc8000000000000",
+            "display": "-0.1875"
+          },
+          {
+            "bits": "0x3fb0000000000000",
+            "display": "0.0625"
+          }
+        ],
+        [
+          {
+            "bits": "0x3fc0000000000000",
+            "display": "0.125"
+          },
+          {
+            "bits": "0x3fc8000000000000",
+            "display": "0.1875"
+          }
+        ]
+      ],
+      "width": {
+        "bits": "0x3fe8000000000000",
+        "display": "0.75"
+      },
+      "chi": {
+        "bits": "0x3fd8000000000000",
+        "display": "0.375"
+      },
+      "carrier_metadata_only": {
+        "bits": "0x3ff4000000000000",
+        "display": "1.25"
+      },
+      "kappa": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      }
+    },
+    "M_UNEQUAL_CHIM": {
+      "xi": [
+        {
+          "bits": "0xbfe8000000000000",
+          "display": "-0.75"
+        },
+        {
+          "bits": "0x3fc0000000000000",
+          "display": "0.125"
+        },
+        {
+          "bits": "0x3ff0000000000008",
+          "display": "1.0000000000000018"
+        }
+      ],
+      "weights": [
+        {
+          "bits": "0x3fc0000000000000",
+          "display": "0.125"
+        },
+        {
+          "bits": "0x3fd8000000000000",
+          "display": "0.375"
+        },
+        {
+          "bits": "0x3fe0000000000800",
+          "display": "0.5000000000002274"
+        }
+      ],
+      "initial_centers": [
+        [
+          {
+            "bits": "0x3fd0000000000000",
+            "display": "0.25"
+          },
+          {
+            "bits": "0xbfc0000000000000",
+            "display": "-0.125"
+          }
+        ],
+        [
+          {
+            "bits": "0xbfc8000000000000",
+            "display": "-0.1875"
+          },
+          {
+            "bits": "0x3fb0000000000000",
+            "display": "0.0625"
+          }
+        ],
+        [
+          {
+            "bits": "0x3fc0000000000000",
+            "display": "0.125"
+          },
+          {
+            "bits": "0x3fc8000000000000",
+            "display": "0.1875"
+          }
+        ]
+      ],
+      "width": {
+        "bits": "0x3fe8000000000000",
+        "display": "0.75"
+      },
+      "chi": {
+        "bits": "0xbfd8000000000000",
+        "display": "-0.375"
+      },
+      "carrier_metadata_only": {
+        "bits": "0x3ff4000000000000",
+        "display": "1.25"
+      },
+      "kappa": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      }
+    },
+    "M_INHERITED": {
+      "xi": [
+        {
+          "bits": "0xbfe0000000000000",
+          "display": "-0.5"
+        },
+        {
+          "bits": "0x3fe0000000000000",
+          "display": "0.5"
+        }
+      ],
+      "weights": [
+        {
+          "bits": "0x3fe0000000000000",
+          "display": "0.5"
+        },
+        {
+          "bits": "0x3fe0000000000000",
+          "display": "0.5"
+        }
+      ],
+      "initial_centers": [
+        [
+          {
+            "bits": "0x3fd0000000000000",
+            "display": "0.25"
+          },
+          {
+            "bits": "0x0000000000000000",
+            "display": "0.0"
+          }
+        ],
+        [
+          {
+            "bits": "0x0000000000000000",
+            "display": "0.0"
+          },
+          {
+            "bits": "0x3fc0000000000000",
+            "display": "0.125"
+          }
+        ]
+      ],
+      "width": {
+        "bits": "0x3ff0000000000000",
+        "display": "1.0"
+      },
+      "chi": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "carrier_metadata_only": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "kappa": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      }
+    },
+    "M_STATIONARY_SMALL_W": {
+      "xi": [
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        },
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        },
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        }
+      ],
+      "weights": [
+        {
+          "bits": "0x3d70000000000000",
+          "display": "9.094947017729282e-13"
+        },
+        {
+          "bits": "0x3fe0000000000000",
+          "display": "0.5"
+        },
+        {
+          "bits": "0x3fe0000000000000",
+          "display": "0.5"
+        }
+      ],
+      "initial_centers": [
+        [
+          {
+            "bits": "0x3fd0000000000000",
+            "display": "0.25"
+          },
+          {
+            "bits": "0x0000000000000000",
+            "display": "0.0"
+          }
+        ],
+        [
+          {
+            "bits": "0x0000000000000000",
+            "display": "0.0"
+          },
+          {
+            "bits": "0x3fc0000000000000",
+            "display": "0.125"
+          }
+        ],
+        [
+          {
+            "bits": "0xbfc0000000000000",
+            "display": "-0.125"
+          },
+          {
+            "bits": "0x3fb0000000000000",
+            "display": "0.0625"
+          }
+        ]
+      ],
+      "width": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "chi": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "carrier_metadata_only": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "kappa": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      }
+    },
+    "M_REJECTION": {
+      "xi": [
+        {
+          "bits": "0x3ff0000000000000",
+          "display": "1.0"
+        }
+      ],
+      "weights": [
+        {
+          "bits": "0x3ff0000000000000",
+          "display": "1.0"
+        }
+      ],
+      "initial_centers": [
+        [
+          {
+            "bits": "0x3fd0000000000000",
+            "display": "0.25"
+          },
+          {
+            "bits": "0x0000000000000000",
+            "display": "0.0"
+          }
+        ]
+      ],
+      "width": {
+        "bits": "0x3ff0000000000000",
+        "display": "1.0"
+      },
+      "chi": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "carrier_metadata_only": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "kappa": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      }
+    },
+    "M_OFFSET": {
+      "xi": [
+        {
+          "bits": "0x3fe0000000000000",
+          "display": "0.5"
+        }
+      ],
+      "weights": [
+        {
+          "bits": "0x3ff0000000000000",
+          "display": "1.0"
+        }
+      ],
+      "initial_centers": [
+        [
+          {
+            "bits": "0x3fd0000000000000",
+            "display": "0.25"
+          },
+          {
+            "bits": "0x0000000000000000",
+            "display": "0.0"
+          }
+        ]
+      ],
+      "width": {
+        "bits": "0x3ff0000000000000",
+        "display": "1.0"
+      },
+      "chi": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "carrier_metadata_only": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "kappa": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      }
+    },
+    "M_SUBNORMAL": {
+      "xi": [
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        }
+      ],
+      "weights": [
+        {
+          "bits": "0x3ff0000000000000",
+          "display": "1.0"
+        }
+      ],
+      "initial_centers": [
+        [
+          {
+            "bits": "0x0000000000000001",
+            "display": "5e-324"
+          },
+          {
+            "bits": "0x0000000000000000",
+            "display": "0.0"
+          }
+        ]
+      ],
+      "width": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "chi": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "carrier_metadata_only": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "kappa": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      }
+    }
+  },
+  "configs": {
+    "C_FIXED": {
+      "t_start": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "t_end": {
+        "bits": "0x3fd0000000000000",
+        "display": "0.25"
+      },
+      "initial_h": {
+        "bits": "0x3fb0000000000000",
+        "display": "0.0625"
+      },
+      "min_h": {
+        "bits": "0x3eb0c6f7a0b5ed8d",
+        "display": "1e-06"
+      },
+      "max_h": {
+        "bits": "0x3fc0000000000000",
+        "display": "0.125"
+      },
+      "order": 8,
+      "degree": 10,
+      "sweeps": 4,
+      "causal_table_order": 8,
+      "causal_table_degree": 30,
+      "mean_tolerance": {
+        "bits": "0x3ee4f8b588e368f1",
+        "display": "1e-05"
+      },
+      "mode_tolerance": {
+        "bits": "0x3ee4f8b588e368f1",
+        "display": "1e-05"
+      },
+      "max_steps": 1000,
+      "output_policy": "AllModes"
+    },
+    "C_UNEQUAL": {
+      "t_start": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "t_end": {
+        "bits": "0x3fa0000000000000",
+        "display": "0.03125"
+      },
+      "initial_h": {
+        "bits": "0x3f90000000000000",
+        "display": "0.015625"
+      },
+      "min_h": {
+        "bits": "0x3eb0c6f7a0b5ed8d",
+        "display": "1e-06"
+      },
+      "max_h": {
+        "bits": "0x3f90000000000000",
+        "display": "0.015625"
+      },
+      "order": 4,
+      "degree": 4,
+      "sweeps": 2,
+      "causal_table_order": 4,
+      "causal_table_degree": 12,
+      "mean_tolerance": {
+        "bits": "0x3ee4f8b588e368f1",
+        "display": "1e-05"
+      },
+      "mode_tolerance": {
+        "bits": "0x3ee4f8b588e368f1",
+        "display": "1e-05"
+      },
+      "max_steps": 1000,
+      "output_policy": "AllModes"
+    },
+    "C_INHERITED": {
+      "t_start": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "t_end": {
+        "bits": "0x3fc0000000000000",
+        "display": "0.125"
+      },
+      "initial_h": {
+        "bits": "0x3fb0000000000000",
+        "display": "0.0625"
+      },
+      "min_h": {
+        "bits": "0x3eb0c6f7a0b5ed8d",
+        "display": "1e-06"
+      },
+      "max_h": {
+        "bits": "0x3fc0000000000000",
+        "display": "0.125"
+      },
+      "order": 8,
+      "degree": 10,
+      "sweeps": 4,
+      "causal_table_order": 8,
+      "causal_table_degree": 30,
+      "mean_tolerance": {
+        "bits": "0x3f1a36e2eb1c432d",
+        "display": "0.0001"
+      },
+      "mode_tolerance": {
+        "bits": "0x3f1a36e2eb1c432d",
+        "display": "0.0001"
+      },
+      "max_steps": 1000,
+      "output_policy": "AllModes"
+    },
+    "C_REJECTION": {
+      "t_start": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "t_end": {
+        "bits": "0x3fd0000000000000",
+        "display": "0.25"
+      },
+      "initial_h": {
+        "bits": "0x3fd0000000000000",
+        "display": "0.25"
+      },
+      "min_h": {
+        "bits": "0x3f90000000000000",
+        "display": "0.015625"
+      },
+      "max_h": {
+        "bits": "0x3fe0000000000000",
+        "display": "0.5"
+      },
+      "order": 2,
+      "degree": 3,
+      "sweeps": 4,
+      "causal_table_order": 2,
+      "causal_table_degree": 9,
+      "mean_tolerance": {
+        "bits": "0x3f2a36e2eb1c432d",
+        "display": "0.0002"
+      },
+      "mode_tolerance": {
+        "bits": "0x3f2a36e2eb1c432d",
+        "display": "0.0002"
+      },
+      "max_steps": 1000,
+      "output_policy": "AllModes"
+    },
+    "C_OFFSET": {
+      "t_start": {
+        "bits": "0x3fb999999999999a",
+        "display": "0.1"
+      },
+      "t_end": {
+        "bits": "0x3ff199999999999a",
+        "display": "1.1"
+      },
+      "initial_h": {
+        "bits": "0x3ff0000000000000",
+        "display": "1.0"
+      },
+      "min_h": {
+        "bits": "0x3eb0c6f7a0b5ed8d",
+        "display": "1e-06"
+      },
+      "max_h": {
+        "bits": "0x4000000000000000",
+        "display": "2.0"
+      },
+      "order": 8,
+      "degree": 10,
+      "sweeps": 4,
+      "causal_table_order": 8,
+      "causal_table_degree": 30,
+      "mean_tolerance": {
+        "bits": "0x3ee4f8b588e368f1",
+        "display": "1e-05"
+      },
+      "mode_tolerance": {
+        "bits": "0x3ee4f8b588e368f1",
+        "display": "1e-05"
+      },
+      "max_steps": 1000,
+      "output_policy": "AllModes"
+    },
+    "C_SUBNORMAL": {
+      "t_start": {
+        "bits": "0x0000000000000000",
+        "display": "0.0"
+      },
+      "t_end": {
+        "bits": "0x3fc0000000000000",
+        "display": "0.125"
+      },
+      "initial_h": {
+        "bits": "0x3fb0000000000000",
+        "display": "0.0625"
+      },
+      "min_h": {
+        "bits": "0x3eb0c6f7a0b5ed8d",
+        "display": "1e-06"
+      },
+      "max_h": {
+        "bits": "0x3fc0000000000000",
+        "display": "0.125"
+      },
+      "order": 8,
+      "degree": 10,
+      "sweeps": 4,
+      "causal_table_order": 8,
+      "causal_table_degree": 30,
+      "mean_tolerance": {
+        "bits": "0x3f1a36e2eb1c432d",
+        "display": "0.0001"
+      },
+      "mode_tolerance": {
+        "bits": "0x3f1a36e2eb1c432d",
+        "display": "0.0001"
+      },
+      "max_steps": 1000,
+      "output_policy": "AllModes"
+    }
+  },
+  "fixtures": {
+    "F_FIXED": {
+      "model_id": "M_FIXED",
+      "config_id": "C_FIXED",
+      "requested_times": [
+        {
+          "bits": "0x3fa0000000000000",
+          "display": "0.03125"
+        },
+        {
+          "bits": "0x3fb8000000000000",
+          "display": "0.09375"
+        },
+        {
+          "bits": "0x3fc4000000000000",
+          "display": "0.15625"
+        },
+        {
+          "bits": "0x3fd0000000000000",
+          "display": "0.25"
+        }
+      ],
+      "initial_component_radii": [
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        },
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        },
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        }
+      ],
+      "initial_weighted_seed": "private outward sqrt(sum(w_j*r_j^2)); caller cannot override",
+      "global_energy_seed": "private outward sum(w_j*(abs(c_j)+r_j)^2); preserve across commits"
+    },
+    "F_ONE_LINEAR": {
+      "model_id": "M_ONE_LINEAR",
+      "config_id": "C_FIXED",
+      "requested_times": [
+        {
+          "bits": "0x3fa0000000000000",
+          "display": "0.03125"
+        },
+        {
+          "bits": "0x3fb8000000000000",
+          "display": "0.09375"
+        },
+        {
+          "bits": "0x3fc4000000000000",
+          "display": "0.15625"
+        },
+        {
+          "bits": "0x3fd0000000000000",
+          "display": "0.25"
+        }
+      ],
+      "initial_component_radii": [
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        }
+      ],
+      "initial_weighted_seed": "private outward sqrt(sum(w_j*r_j^2)); caller cannot override",
+      "global_energy_seed": "private outward sum(w_j*(abs(c_j)+r_j)^2); preserve across commits"
+    },
+    "F_ONE_CUBIC": {
+      "model_id": "M_ONE_CUBIC",
+      "config_id": "C_FIXED",
+      "requested_times": [
+        {
+          "bits": "0x3fa0000000000000",
+          "display": "0.03125"
+        },
+        {
+          "bits": "0x3fb8000000000000",
+          "display": "0.09375"
+        },
+        {
+          "bits": "0x3fc4000000000000",
+          "display": "0.15625"
+        },
+        {
+          "bits": "0x3fd0000000000000",
+          "display": "0.25"
+        }
+      ],
+      "initial_component_radii": [
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        }
+      ],
+      "initial_weighted_seed": "private outward sqrt(sum(w_j*r_j^2)); caller cannot override",
+      "global_energy_seed": "private outward sum(w_j*(abs(c_j)+r_j)^2); preserve across commits"
+    },
+    "F_UNEQUAL_0": {
+      "model_id": "M_UNEQUAL_CHI0",
+      "config_id": "C_UNEQUAL",
+      "requested_times": [
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        },
+        {
+          "bits": "0x3f80000000000000",
+          "display": "0.0078125"
+        },
+        {
+          "bits": "0x3f90000000000000",
+          "display": "0.015625"
+        },
+        {
+          "bits": "0x3f98000000000000",
+          "display": "0.0234375"
+        },
+        {
+          "bits": "0x3fa0000000000000",
+          "display": "0.03125"
+        }
+      ],
+      "initial_component_radii": [
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        },
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        },
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        }
+      ],
+      "initial_weighted_seed": "private outward sqrt(sum(w_j*r_j^2)); caller cannot override",
+      "global_energy_seed": "private outward sum(w_j*(abs(c_j)+r_j)^2); preserve across commits"
+    },
+    "F_UNEQUAL_P": {
+      "model_id": "M_UNEQUAL_CHIP",
+      "config_id": "C_UNEQUAL",
+      "requested_times": [
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        },
+        {
+          "bits": "0x3f80000000000000",
+          "display": "0.0078125"
+        },
+        {
+          "bits": "0x3f90000000000000",
+          "display": "0.015625"
+        },
+        {
+          "bits": "0x3f98000000000000",
+          "display": "0.0234375"
+        },
+        {
+          "bits": "0x3fa0000000000000",
+          "display": "0.03125"
+        }
+      ],
+      "initial_component_radii": [
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        },
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        },
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        }
+      ],
+      "initial_weighted_seed": "private outward sqrt(sum(w_j*r_j^2)); caller cannot override",
+      "global_energy_seed": "private outward sum(w_j*(abs(c_j)+r_j)^2); preserve across commits"
+    },
+    "F_UNEQUAL_M": {
+      "model_id": "M_UNEQUAL_CHIM",
+      "config_id": "C_UNEQUAL",
+      "requested_times": [
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        },
+        {
+          "bits": "0x3f80000000000000",
+          "display": "0.0078125"
+        },
+        {
+          "bits": "0x3f90000000000000",
+          "display": "0.015625"
+        },
+        {
+          "bits": "0x3f98000000000000",
+          "display": "0.0234375"
+        },
+        {
+          "bits": "0x3fa0000000000000",
+          "display": "0.03125"
+        }
+      ],
+      "initial_component_radii": [
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        },
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        },
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        }
+      ],
+      "initial_weighted_seed": "private outward sqrt(sum(w_j*r_j^2)); caller cannot override",
+      "global_energy_seed": "private outward sum(w_j*(abs(c_j)+r_j)^2); preserve across commits"
+    },
+    "F_UNEQUAL_U": {
+      "model_id": "M_UNEQUAL_CHIP",
+      "config_id": "C_UNEQUAL",
+      "requested_times": [
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        },
+        {
+          "bits": "0x3f80000000000000",
+          "display": "0.0078125"
+        },
+        {
+          "bits": "0x3f90000000000000",
+          "display": "0.015625"
+        },
+        {
+          "bits": "0x3f98000000000000",
+          "display": "0.0234375"
+        },
+        {
+          "bits": "0x3fa0000000000000",
+          "display": "0.03125"
+        }
+      ],
+      "initial_component_radii": [
+        {
+          "bits": "0x3e10000000000000",
+          "display": "9.313225746154785e-10"
+        },
+        {
+          "bits": "0x3e10000000000000",
+          "display": "9.313225746154785e-10"
+        },
+        {
+          "bits": "0x3e10000000000000",
+          "display": "9.313225746154785e-10"
+        }
+      ],
+      "initial_weighted_seed": "private outward sqrt(sum(w_j*r_j^2)); caller cannot override",
+      "global_energy_seed": "private outward sum(w_j*(abs(c_j)+r_j)^2); preserve across commits"
+    },
+    "F_INHERITED": {
+      "model_id": "M_INHERITED",
+      "config_id": "C_INHERITED",
+      "requested_times": [
+        {
+          "bits": "0x3fa0000000000000",
+          "display": "0.03125"
+        },
+        {
+          "bits": "0x3fc0000000000000",
+          "display": "0.125"
+        }
+      ],
+      "initial_component_radii": [
+        {
+          "bits": "0x3eb0c6f7a0b5ed8d",
+          "display": "1e-06"
+        },
+        {
+          "bits": "0x3ec0c6f7a0b5ed8d",
+          "display": "2e-06"
+        }
+      ],
+      "initial_weighted_seed": "private outward sqrt(sum(w_j*r_j^2)); caller cannot override",
+      "global_energy_seed": "private outward sum(w_j*(abs(c_j)+r_j)^2); preserve across commits"
+    },
+    "F_STATIONARY_SMALL_W": {
+      "model_id": "M_STATIONARY_SMALL_W",
+      "config_id": "C_INHERITED",
+      "requested_times": [
+        {
+          "bits": "0x3fa0000000000000",
+          "display": "0.03125"
+        },
+        {
+          "bits": "0x3fb8000000000000",
+          "display": "0.09375"
+        },
+        {
+          "bits": "0x3fc0000000000000",
+          "display": "0.125"
+        }
+      ],
+      "initial_component_radii": [
+        {
+          "bits": "0x3e10000000000000",
+          "display": "9.313225746154785e-10"
+        },
+        {
+          "bits": "0x3e20000000000000",
+          "display": "1.862645149230957e-09"
+        },
+        {
+          "bits": "0x3e30000000000000",
+          "display": "3.725290298461914e-09"
+        }
+      ],
+      "initial_weighted_seed": "private outward sqrt(sum(w_j*r_j^2)); caller cannot override",
+      "global_energy_seed": "private outward sum(w_j*(abs(c_j)+r_j)^2); preserve across commits"
+    },
+    "F_REJECTION": {
+      "model_id": "M_REJECTION",
+      "config_id": "C_REJECTION",
+      "requested_times": [
+        {
+          "bits": "0x3fc0000000000000",
+          "display": "0.125"
+        },
+        {
+          "bits": "0x3fd0000000000000",
+          "display": "0.25"
+        }
+      ],
+      "initial_component_radii": [
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        }
+      ],
+      "initial_weighted_seed": "private outward sqrt(sum(w_j*r_j^2)); caller cannot override",
+      "global_energy_seed": "private outward sum(w_j*(abs(c_j)+r_j)^2); preserve across commits"
+    },
+    "F_OFFSET": {
+      "model_id": "M_OFFSET",
+      "config_id": "C_OFFSET",
+      "requested_times": [
+        {
+          "bits": "0x3feccccccccccccd",
+          "display": "0.9"
+        },
+        {
+          "bits": "0x3ff199999999999a",
+          "display": "1.1"
+        }
+      ],
+      "initial_component_radii": [
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        }
+      ],
+      "initial_weighted_seed": "private outward sqrt(sum(w_j*r_j^2)); caller cannot override",
+      "global_energy_seed": "private outward sum(w_j*(abs(c_j)+r_j)^2); preserve across commits"
+    },
+    "F_SUBNORMAL": {
+      "model_id": "M_SUBNORMAL",
+      "config_id": "C_SUBNORMAL",
+      "requested_times": [
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        },
+        {
+          "bits": "0x3fb0000000000000",
+          "display": "0.0625"
+        },
+        {
+          "bits": "0x3fc0000000000000",
+          "display": "0.125"
+        }
+      ],
+      "initial_component_radii": [
+        {
+          "bits": "0x0000000000000000",
+          "display": "0.0"
+        }
+      ],
+      "initial_weighted_seed": "private outward sqrt(sum(w_j*r_j^2)); caller cannot override",
+      "global_energy_seed": "private outward sum(w_j*(abs(c_j)+r_j)^2); preserve across commits"
+    }
+  },
+  "fixture_source_bindings": {
+    "F_FIXED": "packet_trajectory_contracts.rs:216-224, same model/config/grid; defaults resolved in C_FIXED",
+    "F_ONE_LINEAR": "one-mode extension using local-certificate source model production_audit_packet_local_certificate.rs:201-207 with chi=0; C_FIXED physical tolerance reused explicitly; new global time/config extension, not a previously executed trajectory",
+    "F_ONE_CUBIC": "production_audit_packet_local_certificate.rs:201-207 exact model retained; C_FIXED global config and physical tolerance explicitly reused from separate fixed-grid fixture, not local certificate",
+    "F_UNEQUAL_0/P/M/U": "production_audit_packet_local_certificate.rs:50-75,96-105 input/oracle reused. That local oracle has NO mean_tolerance/mode_tolerance. C_UNEQUAL introduces multi-window scheduling with unchanged T_FIXED values from packet_trajectory_contracts.rs:222; this cross-fixture gate is an explicit preimplementation contract requiring review, not a claim that the A01 local fixture had physical tolerances.",
+    "F_INHERITED": "packet_trajectory_contracts.rs:302-321 model/radii/config/grid reused exactly",
+    "F_STATIONARY_SMALL_W": "new stationary exact-solution fixture; C_INHERITED and T_INHERITED inherited unchanged; model/radii explicitly fixed here before implementation",
+    "F_REJECTION": "packet_trajectory_contracts.rs:379-389 same model/config/grid, resolved defaults",
+    "F_OFFSET": "new time-subtraction fixture; original C_FIXED order/degree/sweeps/limits and T_FIXED retained; origin/end/h fixed explicitly for subtraction branch",
+    "F_SUBNORMAL": "production_audit_packet_local_certificate.rs:367-381 model retained; C_INHERITED/T_INHERITED global scheduling reused"
+  },
+  "oracles": {
+    "O_ANALYTIC": "Exact Fraction interpretation of original binary64 initial data. For one mode w=1 use z(t)=z0*exp(i*(width*xi+chi*abs(z0)^2)*(t-t_start)); mean equals z(t). Same 17-term sine/cosine rational Taylor bounds as packet_curve_output_fraction_oracle.py; abs(phase)<=1 is asserted, not assumed. Fixed-grid linear modes use exact rotations of each original mode. No binary64 sin/cos is authoritative.",
+    "O_UNEQUAL": {
+      "source": "packet_unequal_fraction_oracle.py:165-238",
+      "orders": [
+        40,
+        48
+      ],
+      "coefficient_identity": "degree40 prefix identical to degree48",
+      "epsilon40_limit": "2^-120",
+      "epsilon48_limit": "2^-160",
+      "epsilon_monotonic": "epsilon48 <= epsilon40",
+      "max_phase": "existing exact oracle bounds retained",
+      "reference_origin": "original global initial values, never restart at binary64 committed centers",
+      "expected_base_disks": 80,
+      "initial_true_uncertain": "F_UNEQUAL_U: exact center + [(2^-30,0),(0,-2^-30),(-2^-30,0)]",
+      "other_true_initials": "unchanged original center",
+      "negative_controls": "arm F_UNEQUAL_P global endpoint: mode0 real center + exact 1, then radius0=0; both must fail slack-free disk containment"
+    },
+    "O_STATIONARY": "For chi=omega=0 each trajectory equals its original initial value. Evaluate the fixed center and the deterministic boundary perturbation [(r0,0),(0,-r1),(-r2,0)] exactly. Proof still supplies the full tube statement; finite probes alone do not."
+  },
+  "acceptance_inputs": {
+    "AT01": {
+      "fixtures": [
+        "F_ONE_LINEAR",
+        "F_ONE_CUBIC"
+      ],
+      "oracle": "O_ANALYTIC",
+      "tolerance_source": "T_FIXED",
+      "minimum_accepted_windows": 2,
+      "extra_queries": "Each accepted window: exact global start, exact physical midpoint encoded by an enclosing offset interval, and physical end; record labels and offset intervals. Query after commit using that window seed."
+    },
+    "AT02": {
+      "fixtures": [
+        "F_UNEQUAL_0",
+        "F_UNEQUAL_P",
+        "F_UNEQUAL_M",
+        "F_UNEQUAL_U"
+      ],
+      "oracle": "O_UNEQUAL",
+      "tolerance_source": "T_FIXED explicitly transported from F_FIXED; local fixture had no physical tolerance",
+      "minimum_accepted_windows": 2,
+      "scheduling": "initial_h=max_h=1/64, original horizon=1/32; rejection may reduce h only; no threshold/order adjustment"
+    },
+    "AT03": {
+      "fixtures": [
+        "F_INHERITED",
+        "F_UNEQUAL_U"
+      ],
+      "oracles": [
+        "O_ANALYTIC",
+        "O_UNEQUAL"
+      ],
+      "tolerance_sources": [
+        "T_INHERITED",
+        "T_FIXED respectively"
+      ],
+      "minimum_accepted_windows": 2,
+      "initial_true_inherited": "M_INHERITED center + [(1e-6,0),(0,-2e-6)] with exact binary64 radius interpreted as a rational; do not round the perturbed reference input"
+    },
+    "AT04": {
+      "fixtures": [
+        "F_STATIONARY_SMALL_W"
+      ],
+      "oracle": "O_STATIONARY",
+      "tolerance_source": "T_INHERITED",
+      "minimum_accepted_windows": 2,
+      "inherited_check": "For chi=0 Duhamel branch is r_k,j analytically. Compare implementation with the source-tallied outward expression, preserving separate e_k. Do not convert marginal local disks back to the sole weighted seed or introduce a sqrt(N) factor."
+    },
+    "AT05": {
+      "fixtures": [
+        "F_OFFSET"
+      ],
+      "oracle": "O_ANALYTIC with exact t_request-t_start",
+      "tolerance_source": "T_FIXED",
+      "required_first_window": "physical origin=bits(0.1), end=bits(1.1); represented H must enclose exact physical span; query bits(0.9) in first window before any advancing state is substituted",
+      "required_branch": "exact rational bits(0.9)-bits(0.1) is not representable by one binary64; outward interval subtraction must be non-singleton, Delta>0",
+      "negative_control": "temporal adapter mutation discards D and evaluates exact-reference target at rounded u as if it were exact global offset; exact offset identity checker must reject this binding. Numerical disk failure is additionally required only if mutation excludes the exact reference; no artificial assertion that the existing generous radius must exclude a one-ulp error.",
+      "exact_offset_witness": {
+        "numerator": "28823037615171175",
+        "denominator": "36028797018963968",
+        "rounded_u": {
+          "bits": "0x3fe999999999999a",
+          "display": "0.8"
+        },
+        "exact_difference_representable": false,
+        "exact_minus_rounded_numerator": "-1",
+        "exact_minus_rounded_denominator": "36028797018963968"
+      }
+    },
+    "AT06": {
+      "fixtures": [
+        "F_REJECTION",
+        "F_FIXED"
+      ],
+      "tolerance_sources": [
+        "T_REJECTION for actual rejection",
+        "T_FIXED for query/refusal seam"
+      ],
+      "actual_rejection": "First h=1/4 trial must be physically tolerance-rejected; retain raw first result; never alter tolerance/order to force this. Retried accepted history uses same original accepted seed and has >=2 commits. A diagnostic direct replay uses the exact resulting accepted window-size sequence, without reusing rejected trial state.",
+      "fault_sites": [
+        {
+          "id": "TXN_FAIL_FIRST",
+          "fixture": "F_FIXED",
+          "private_test_seam_only": "return existing typed OutwardRefusal before query_index=0 requested global bits(1/32); before commit"
+        },
+        {
+          "id": "TXN_FAIL_SECOND",
+          "fixture": "F_FIXED",
+          "private_test_seam_only": "complete query_index=0 requested global bits(1/32), then return existing typed OutwardRefusal before query_index=1 mandatory endpoint bits(1/16); before commit"
+        }
+      ],
+      "fault_scope": "The private test seam proves transaction preservation only; real arithmetic refusals are covered separately in AT08. It is never a public certificate input or successful numerical arm.",
+      "setup_refusal": "F_FIXED wrong radius length [0,0] and bad config order usize::MAX: refuse without accepted mutation; checked allocation bounds before allocation",
+      "observables": "Snapshot time, centers, component radii, e_k, E_global, generation, retained records, cursor before/after each refusal, bitwise; record work before/after including successful partial trial evaluation",
+      "first_window_query_order": [
+        {
+          "query_index": 0,
+          "role": "requested_interior",
+          "global_time_bits": "0x3fa0000000000000",
+          "exact_rational": "1/32"
+        },
+        {
+          "query_index": 1,
+          "role": "mandatory_endpoint",
+          "global_time_bits": "0x3fb0000000000000",
+          "exact_rational": "1/16",
+          "insert_into_requested_grid": false
+        }
+      ]
+    },
+    "AT07": {
+      "fixtures": [
+        "F_FIXED"
+      ],
+      "tolerance_source": "T_FIXED",
+      "output_policies": [
+        "AllModes",
+        "MeanOnly"
+      ],
+      "historical_query_protocol": "Retain immutable window0 and its complete start seed. Query global bits(1/32) after first commit and save all returned bits. Make a second accepted commit (and any later commits), then query window0 at the identical label again; all center/radius/time/identity bits must match the saved result and the original global oracle. Also query window0 start/end, requested grid points and retained interior point after two commits. Query must not read current live state r/e/origin.",
+      "join_protocol": "At a shared join, both adjacent owners may be queried under their own complete seeds; returned disks must independently contain the original global exact flow. Do not assume centers/radii of different owners are bitwise equal."
+    },
+    "AT08": {
+      "base_fixture": "F_FIXED",
+      "tolerance_source": "T_FIXED except subnormal fixture inherits T_INHERITED",
+      "cases": [
+        {
+          "id": "NAN_TIME",
+          "request_bits": "0x7ff8000000000000",
+          "expected": "typed refusal"
+        },
+        {
+          "id": "INF_TIME",
+          "request_bits": "0x7ff0000000000000",
+          "expected": "typed refusal"
+        },
+        {
+          "id": "NEG_RADIUS",
+          "initial_radii_first": {
+            "bits": "0xbeb0c6f7a0b5ed8d",
+            "display": "-1e-06"
+          },
+          "expected": "typed refusal"
+        },
+        {
+          "id": "NAN_RADIUS",
+          "radius_bits": "0x7ff8000000000000",
+          "expected": "typed refusal"
+        },
+        {
+          "id": "INF_RADIUS",
+          "radius_bits": "0x7ff0000000000000",
+          "expected": "typed refusal"
+        },
+        {
+          "id": "BAD_SHAPE",
+          "radii_count": 2,
+          "expected": "typed refusal"
+        },
+        {
+          "id": "HUGE_SIZE",
+          "order": 18446744073709551615,
+          "degree": 18446744073709551615,
+          "expected": "checked-size typed refusal before allocation; bound to 64-bit host"
+        },
+        {
+          "id": "ZERO_H",
+          "initial_h": {
+            "bits": "0x0000000000000000",
+            "display": "0.0"
+          },
+          "expected": "typed refusal"
+        },
+        {
+          "id": "SUBNORMAL_TIME",
+          "fixture": "F_SUBNORMAL",
+          "t_start": {
+            "bits": "0x0000000000000000",
+            "display": "0.0"
+          },
+          "t_end_bits": "0x0000000000000001",
+          "initial_h_bits": "0x0000000000000001",
+          "min_h_bits": "0x0000000000000001",
+          "max_h_bits": "0x0000000000000001",
+          "requested_time_bits": [
+            "0x0000000000000000",
+            "0x0000000000000001"
+          ],
+          "expected": "exact stationary inclusion or typed refusal with no accepted mutation"
+        },
+        {
+          "id": "SUBNORMAL_STATE",
+          "fixture": "F_SUBNORMAL",
+          "expected": "exact stationary inclusion or typed refusal"
+        },
+        {
+          "id": "SUBNORMAL_RADIUS",
+          "fixture": "F_INHERITED",
+          "initial_radius_bits": [
+            "0x0000000000000001",
+            "0x0000000000000001"
+          ],
+          "expected": "exact perturbed linear inclusion or typed refusal; tolerance unchanged T_INHERITED"
+        },
+        {
+          "id": "OVERFLOW_OMEGA",
+          "width_bits": "0x7fefffffffffffff",
+          "xi": [
+            {
+              "bits": "0x3ff0000000000008",
+              "display": "1.0000000000000018"
+            },
+            {
+              "bits": "0x3ff0000000000008",
+              "display": "1.0000000000000018"
+            },
+            {
+              "bits": "0x3ff0000000000008",
+              "display": "1.0000000000000018"
+            }
+          ],
+          "expected": "typed arithmetic refusal; no finite Ok certificate"
+        },
+        {
+          "id": "UNSUPPORTED_DAMPING",
+          "kappa": {
+            "bits": "0x3fc0000000000000",
+            "display": "0.125"
+          },
+          "expected": "typed refusal"
+        },
+        {
+          "id": "OVERFLOW_OMEGA_V1_DOMAIN_REFUSAL",
+          "width_bits": "0x7fefffffffffffff",
+          "xi": [
+            {
+              "bits": "0x4000000000000000",
+              "display": "2.0"
+            },
+            {
+              "bits": "0x4000000000000000",
+              "display": "2.0"
+            },
+            {
+              "bits": "0x4000000000000000",
+              "display": "2.0"
+            }
+          ],
+          "expected": "typed CollectiveAdmissionError::DetuningOutOfRange before multiplication; domain refusal only; not arithmetic overflow coverage or numerical inclusion"
+        }
+      ],
+      "all_failure_obligation": "Preserve accepted snapshot and record attempted work. No test may count refusal as numerical inclusion; report which input is supported and which was refused."
+    },
+    "AT09": {
+      "fixtures": [
+        "F_FIXED"
+      ],
+      "tolerance_source": "T_FIXED",
+      "compile_fail_targets": [
+        "VerifiedTrajectoryState private seed fields",
+        "prepared-window seed/generation/model binding",
+        "retained-window start seed and owner identity",
+        "certified view centers/radii/authority fields"
+      ],
+      "runtime_stale_protocol": "At state epoch0 prepare P0 and Q0 from exactly the same accepted seed. Commit P0 once. Advancing with Q0 must return typed stale-prepared-window refusal before mutating accepted state; retain its attempted identity-check work. Prepare and commit P1 from new epoch1. After two commits query retained window0 as AT07. Replaying P0 for a second commit is also typed refused.",
+      "post_freeze_mutation": "Mutate original candidate in test after owner construction; retained query centers/radii unchanged. No mutation API to retained owner or start seed."
+    },
+    "AT10": {
+      "fixture": "F_FIXED",
+      "tolerance_source": "T_FIXED",
+      "clone_positive_control_min_allocations": 3,
+      "warmed_query_repetitions": 1,
+      "warmed_successful_advance_repetitions": 1,
+      "warmed_required_allocations": 0,
+      "counting_boundary": "Preallocated scratch, output capacity, immutable seed/retained-window slots allocated before count. Charge/record all setup allocation counts separately. Warm successful query/advance once; count next successful operation only, with no JSON/printing/reference computation inside. Each operation starts from a valid generation and prescribed F_FIXED schedule.",
+      "failed_positive_control": "ALLOCATION_UNAVAILABLE; zero-allocation gate cannot PASS"
+    },
+    "AT11": {
+      "fixtures": [
+        "F_FIXED",
+        "F_REJECTION"
+      ],
+      "tolerance_sources": [
+        "T_FIXED",
+        "T_REJECTION"
+      ],
+      "operations": [
+        "prepare success",
+        "query success",
+        "TXN_FAIL_FIRST",
+        "TXN_FAIL_SECOND",
+        "stale Q0 refusal",
+        "physical tolerance rejection",
+        "successful commit",
+        "historical window0 query after epoch2"
+      ],
+      "expected_deltas": "Derive exact integer deltas from final observed source paths before measurement; preserve tally file and source hash as an execution input. No empirical retuning of expected counters after observing a failure without classifying and preserving first mismatch."
+    },
+    "AT12": {
+      "inputs": [
+        "source bindings",
+        "this frozen manifest",
+        "pure preregistration",
+        "prior review handoff"
+      ],
+      "required_authority": "All numerical cases NOT_RUN until source/preregistration EXEC_SHA is posted and inputs hashed; code/run/review decisions remain separate",
+      "historical_ledger": "Preserve historical L-0124 byte mismatch; no rewrite or numerical-failure relabeling"
+    }
+  },
+  "execution_limits": {
+    "future_targeted_test_binary_wall_seconds": 1800,
+    "future_unequal_fraction_oracle_wall_seconds": 600,
+    "future_exact_one_mode_oracle_wall_seconds": 120,
+    "max_steps_each_fixture": 1000,
+    "unequal_oracle_orders_frozen": [
+      40,
+      48
+    ],
+    "no_unregistered_oracle_precision_refinement": true,
+    "retry_policy": "Preserve first failure; one diagnosed bounded repair requires independent scope approval, no blind relaunch and no tolerance widening",
+    "current_supplement_execution": "metadata assembly/readback only; no Rust/Python solver tests or builds run"
+  },
+  "acceptance_input_version": 2,
+  "amendment_binding": {
+    "unit": "A02-CONTRACT-SUPPLEMENT-02",
+    "previous_input": "../supplement_01/FROZEN_ACCEPTANCE_INPUTS.json",
+    "previous_input_sha256": "5a867fc2ee80db7afe29834681f50819305d59cb37d9b802d48223a14a31837d",
+    "contract_overlay": "AMENDMENT_KO.md",
+    "numerical_input_changes": "Only three xi values in AT08 OVERFLOW_OMEGA are replaced by bits 0x3ff0000000000008; all other original numerical inputs are unchanged.",
+    "historical_case": "AT08 OVERFLOW_OMEGA_V1_DOMAIN_REFUSAL keeps the original width/xi input with domain-refusal classification.",
+    "unchanged_proof_section_2_through_6_sha256": "ecc8841db6ad2b2f40c7245102372e31e31120e38ecdb68b91ed0cfa4ddcdcb5",
+    "implementation_approved": false
+  },
+  "implementation_choices": {
+    "DC1": {
+      "choice": "narrow immutable accessor; original section6 option(a)",
+      "accessors": [
+        "PacketCurveOutputView::weighted_center_displacement(&self) -> f64",
+        "PacketCertifiedView::weighted_center_displacement(&self) -> f64"
+      ],
+      "definition": "private delta_w = sqrt_up(sum_j_outward(w_j * delta_j^2)); reuse each same-query delta_j enclosing exact represented Y_j minus same returned binary64 C_j",
+      "summation_order": "stored j=0..N-1; initialize exact zero; mul_up(delta_j,delta_j), mul_up(w_j,square), add_up(accumulator,term), final sqrt_up",
+      "existing_weighted_radius_semantics": "unchanged base T1 radius around exact frozen polynomial; excludes returned-center displacement",
+      "getter_cost": "immutable field read, no recomputation or allocation",
+      "new_success_helper_calls": "3*N+1 curve_output_certificate_ops under current helper-call accounting; failed attempted helpers also charged",
+      "required_future_checks": [
+        "outward displacement enclosure",
+        "existing centers/mode-radii/mean-radius bit identity",
+        "private immutable fields compile-fail",
+        "typed arithmetic refusal",
+        "source-derived exact work deltas"
+      ]
+    }
+  }
+}

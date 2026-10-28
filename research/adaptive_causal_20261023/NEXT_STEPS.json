@@ -1,0 +1,209 @@
+{
+  "schema": "vigilode.adaptive-causal-next-steps.v1",
+  "source_commit": "d4e8623bf8add9f505ec018532c4602e5a838a41",
+  "constraints": {
+    "ncp": false,
+    "default_derivatives": "forbidden",
+    "derivative_provider_selection": "Only where measured fully derivative-free performance is worse; not yet guaranteed by current authorized heuristic",
+    "reuse_unchanged_science": true
+  },
+  "tasks": [
+    {
+      "id": "SW01",
+      "status": "done",
+      "priority": "P0",
+      "depends_on": [],
+      "files": [
+        "crates/vigilode/src/switching.rs"
+      ],
+      "title_ko": "기본 RHS-only 세션 지속",
+      "implementation": "One observed DOPRI session retains FSAL/controller/workspace",
+      "acceptance": [
+        "108 exact raw parity pairs including failures",
+        "Zero derivative and linear work"
+      ],
+      "evidence": "results/rhs_persistent_campaign/RHS_PARITY.json"
+    },
+    {
+      "id": "SW02",
+      "status": "planned",
+      "priority": "P0",
+      "depends_on": [
+        "SW01"
+      ],
+      "files": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/src/explicit.rs"
+      ],
+      "title_ko": "허용된 implicit/explicit 세션 지속",
+      "implementation": "Introduce checkpointable native sessions and cache invalidation on method/provider/epoch changes; accepted state is sole commit boundary",
+      "acceptance": [
+        "Bitwise unchanged single-method output/counters",
+        "Recoverable/fatal/partial-state tests",
+        "Account cache rebuilds and rejected pilots"
+      ],
+      "evidence": "analysis/SWITCHING_BENCHMARK_KO.md"
+    },
+    {
+      "id": "SW03",
+      "status": "planned",
+      "priority": "P0",
+      "depends_on": [
+        "SW02"
+      ],
+      "files": [
+        "crates/vigilode/src/switching.rs",
+        "crates/vigilode/examples/adaptive_causal_bench.rs"
+      ],
+      "title_ko": "비용 기반 전환과 진동 구별",
+      "implementation": "Compare bounded real implicit pilot with persistent explicit from same accepted checkpoint; measure elapsed/provider work, accepted physical progress, phase/amplitude and rejection cause; hysteresis and explicit override",
+      "acceptance": [
+        "Retain rapid JVP32.5x failure as regression",
+        "Same achieved-error complete trajectories",
+        "Report pilot overhead and worst-case regret",
+        "Do not infer stiffness from work pressure alone"
+      ],
+      "evidence": "results/switching_campaign/SUMMARY.json"
+    },
+    {
+      "id": "QF01",
+      "status": "planned",
+      "priority": "P1",
+      "depends_on": [],
+      "files": [
+        "crates/rodas5p-integrators/src/quotient_flow.rs",
+        "crates/vigilode/src/lawson.rs"
+      ],
+      "title_ko": "정확 affine forcing action",
+      "implementation": "Add e^(hA)y+h*phi1(hA)b for declared constant forcing; use stable near-zero series/expm1 and singular-block chart; derive extension for polynomial forcing before implementation",
+      "acceptance": [
+        "Constant-forcing exact references",
+        "A-to-zero continuity",
+        "Large damping and representable underflow regression",
+        "Same-error improvement on stiff-forcing control; preserve slow control"
+      ],
+      "evidence": "results/quotient_summary.json"
+    },
+    {
+      "id": "CF01",
+      "status": "planned",
+      "priority": "P0",
+      "depends_on": [],
+      "files": [
+        "crates/vigilode-coupled/src/adaptive.rs",
+        "crates/vigilode-coupled/examples/causal_bench.rs"
+      ],
+      "title_ko": "인과적 제거의 전체 궤적 검증",
+      "implementation": "Benchmark integrate_causal_observed against residual-first with identical root/error norms and adaptive options; measure accepted physical progress and projection expansion",
+      "acceptance": [
+        "Analytic Riccati plus Robertson/nonlinear oscillatory clients within actual support",
+        "Full residual and embedded checks unchanged",
+        "Phase/amplitude/mass at common observation times",
+        "No rejected fixed-step timing presented as trajectory gain"
+      ],
+      "evidence": "analysis/CAUSAL_IMPLEMENTATION_KO.md"
+    },
+    {
+      "id": "CP01",
+      "status": "planned",
+      "priority": "P2",
+      "depends_on": [
+        "CF01"
+      ],
+      "files": [
+        "crates/vigilode-coupled/src/causal.rs"
+      ],
+      "title_ko": "작은 장비에 맞춘 stage batching",
+      "implementation": "Benchmark Forward versus BatchedPicard across RHS costs; reuse per-stage storage; batch/vectorize before spawning more threads",
+      "acceptance": [
+        "1/2/4-thread deterministic outputs",
+        "Full serial and parallel overhead charged",
+        "Demonstrated crossover, not assumed parallel speedup"
+      ],
+      "evidence": "results/causal_benchmark_summary.json"
+    },
+    {
+      "id": "QA01",
+      "status": "planned",
+      "priority": "P1",
+      "depends_on": [],
+      "files": [
+        "crates/rodas5p-integrators/src/quotient_flow.rs"
+      ],
+      "title_ko": "일반 낮은 차수 polynomial provider",
+      "implementation": "Define declared annihilator/action interface with exact or full-space norm witness; compile existing Laguerre/Chebyshev recurrence and synthetic resolvent coefficients",
+      "acceptance": [
+        "Repeated/Jordan roots and resolvent-pole distinction",
+        "d-1 action count verified",
+        "Original-space residual plus witness bound",
+        "No inferred exact relation from a few probes"
+      ],
+      "evidence": "analysis/ALGEBRAIC_TRANSFER_KO.md"
+    },
+    {
+      "id": "DV01",
+      "status": "planned",
+      "priority": "P1",
+      "depends_on": [
+        "SW03"
+      ],
+      "files": [
+        "crates/vigilode/src/switching.rs"
+      ],
+      "title_ko": "선택적 JVP/AD 성능 계약",
+      "implementation": "Separate provider permission from dispatch evidence; require derivative-free degradation plus bounded measured provider advantage before use; cache by model epoch",
+      "acceptance": [
+        "No hidden FD for ProvidedOnly nonautonomous input",
+        "Provider cost/failure telemetry",
+        "RHS-only override always available",
+        "Document absent proof of universal speed selection"
+      ],
+      "evidence": "DECISIONS.json"
+    },
+    {
+      "id": "SG01",
+      "status": "planned",
+      "priority": "P1",
+      "depends_on": [
+        "QF01",
+        "CF01"
+      ],
+      "files": [
+        "research/spherical_information_20261023/README.md",
+        "crates/vigilode/src/lawson.rs"
+      ],
+      "title_ko": "구면 물리 client와 정보기하 결합",
+      "implementation": "Fixed-grid collision/carrier first, then physical Fisher norm/preconditioner and accepted-step conservative remap with cumulative Hellinger budget",
+      "acceptance": [
+        "Joint photon-number/energy conservation",
+        "Positivity and entropy tests",
+        "Full residual unchanged",
+        "Remap/time/spatial error separated",
+        "Actual PDE trajectory work-precision"
+      ],
+      "evidence": "../spherical_information_20261023/README.md"
+    },
+    {
+      "id": "PB01",
+      "status": "planned",
+      "priority": "P0",
+      "depends_on": [
+        "SW03",
+        "CF01"
+      ],
+      "files": [
+        "research/adaptive_causal_20261023/BENCHMARK_PLAN.json"
+      ],
+      "title_ko": "범용 production 판정 확대",
+      "implementation": "Run local single-thread broad suite and external VODE/DVODE, diffsol, Julia cohorts with common references and outputs",
+      "acceptance": [
+        "All raw failures retained",
+        "No mixed hardware/build timing pools",
+        "Long-time phase and nonnormal transient",
+        "Events/restarts and callback adversarial cases",
+        "Distribution of matched-error speed ratios with worst losses"
+      ],
+      "evidence": "BENCHMARK_PLAN.json"
+    }
+  ]
+}

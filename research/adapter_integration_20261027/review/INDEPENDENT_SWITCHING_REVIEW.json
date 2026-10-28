@@ -1,0 +1,136 @@
+{
+  "schema": "vigilode.independent_switching_source_review.v1",
+  "date": "2026-10-27",
+  "reviewer": "current_evidence_audit subagent; separate from implementation",
+  "scope": "One fresh-context source review of merged switching and its tests; no solver compilation or execution by this reviewer. Parent validates runtime.",
+  "baseline_commits": [
+    "e8572eac8f6b1e019d8bf3dcb6d8b957fc1d1824",
+    "9b062e812b821a20dfcb40dfa0340a9df41e835e"
+  ],
+  "reviewed_files": [
+    {
+      "path": "crates/vigilode/src/switching.rs",
+      "sha256": "77dca39a7b1d2af6266ee73a051e7fa7e3219a05c42b45090deb84fca207f5cc"
+    },
+    {
+      "path": "crates/vigilode/src/selection_evidence.rs",
+      "sha256": "4f4fdc05f24a34fd1b3e300a098841c191021d412a1680f83d1030296474421f"
+    },
+    {
+      "path": "crates/vigilode/tests/switching_integration_contracts.rs",
+      "sha256": "240f6874431c5098e0c1e10a5158b6b95d6ad2d43d65f15f29c4ff955d8889bd"
+    },
+    {
+      "path": "crates/vigilode/tests/adaptive_entry_contracts.rs",
+      "sha256": "6764bf0dda1fd372a4282bb276545fb734179024b4c2b04960bb41173f226ec4"
+    },
+    {
+      "path": "crates/vigilode/tests/switching_economy_contracts.rs",
+      "sha256": "005c4880bd9fadb20711838b68f9c31f7f5e5df224beaf7cc49f8c41b74aa353"
+    },
+    {
+      "path": "crates/vigilode/tests/switching_contracts.rs",
+      "sha256": "a931e36030fcb66b1bd02860ce926c257e60b9b0b51c07c35f478a1f11ec5301"
+    },
+    {
+      "path": "crates/vigilode/tests/switching_persistent_explicit.rs",
+      "sha256": "aaace3967ef470750d13af251af530f1f8abab9474ffca37f3002ffd39d9094e"
+    }
+  ],
+  "blocking_defects_found": 0,
+  "conclusion": "No new commit-state, callback-fatal, or attempt-budget defect found in this source pass. Runtime validation is separate.",
+  "checks": [
+    {
+      "id": "R01",
+      "subject": "Productive same-window implicit comparator",
+      "result": "SOURCE_REVIEW_PASS",
+      "evidence": "Replay begins at result.final_state/start before either trial commits; charge() occurs once; successful losing explicit trial is uncommitted; successful implicit replay commits once, updates rate/seed, and increments implicit_windows and since_probe by one.",
+      "coverage": "private stale_old_rate_cannot_replace_a_cheaper_same_window_implicit_candidate contract"
+    },
+    {
+      "id": "R02",
+      "subject": "Fatal comparator path",
+      "result": "SOURCE_REVIEW_PASS",
+      "evidence": "Replay is charged before fatal check. Both trial records remain uncommitted. The last checkpoint is retained and windows terminate.",
+      "coverage": "fatal_return_comparator_does_not_publish_the_discarded_probe_state"
+    },
+    {
+      "id": "R03",
+      "subject": "Shared attempt budget",
+      "result": "SOURCE_REVIEW_PASS",
+      "evidence": "All trial max_steps values are min(global remaining, local budget). Remaining is recomputed after explicit and replay charges. Zero remaining prevents replay/advance.",
+      "coverage": "exhausted_return_comparison_budget_keeps_previous_committed_state and adaptive_probes_remain_inside_global_attempt_budget"
+    },
+    {
+      "id": "R04",
+      "subject": "Legacy and adaptive entry scheduling",
+      "result": "SOURCE_REVIEW_PASS",
+      "evidence": "Legacy rate rearm and legacy discard bookkeeping are conditioned on adaptation=None. Adaptive memory handles entry scheduling otherwise. Legacy implicit-return backoff remains shared by design.",
+      "coverage": "adaptive_entry_does_not_stack_legacy_rate_rearm_or_backoff"
+    },
+    {
+      "id": "R05",
+      "subject": "Latest native economy implementation retained",
+      "result": "SOURCE_REVIEW_PASS",
+      "evidence": "Callback entry ceiling, return RHS ceiling, implicit coalescing/mean-step seed, snapshot-based persistent explicit records, static decision strings and native contract files remain present.",
+      "coverage": "switching_economy_contracts requires parent runtime confirmation"
+    },
+    {
+      "id": "R06",
+      "subject": "Tiny explicit tail repair",
+      "result": "SOURCE_REVIEW_PASS",
+      "evidence": "Top-level validate() validates user h0 before any clamping. Valid DOPRI proposal is no longer preclipped into invalid short-tail h0; native output clipping handles landing.",
+      "coverage": "legacy_explicit_tiny_representable_span_uses_native_endpoint_clipping"
+    },
+    {
+      "id": "R07",
+      "subject": "Incomplete comparator",
+      "result": "SOURCE_REVIEW_PASS",
+      "evidence": "compare_qualified_costs requires both records admissible; unsuccessful implicit replay cannot authorize explicit win, is uncommitted, and its work remains charged. A subsequent productive implicit run can retry only when global budget remains."
+    },
+    {
+      "id": "R08",
+      "subject": "No unauthorized derivative permission",
+      "result": "SOURCE_REVIEW_PASS",
+      "evidence": "Factories preserve derivative permission; Forbidden path bypasses competition and uses pure native explicit solve; validation still rejects invalid input before callback."
+    }
+  ],
+  "findings": [
+    {
+      "id": "F01",
+      "severity": "MEDIUM_NONBLOCKING",
+      "status": "DOCUMENT_OR_RESEARCH",
+      "location": "crates/vigilode/src/switching.rs: return_ceiling and economical prefilter before same-window replay; solve() rustdoc",
+      "issue": "The old coalesced rate still screens and bounds adaptive explicit rechecks. Same-window qualification prevents false-positive return choices among screened candidates, but it does not prevent false-negative misses. The general phrase Neither bound changes a decision is too broad if read relative to the new same-window target decision.",
+      "exact_arithmetic_counterexample": {
+        "return_ratio": 0.8,
+        "span": 1.0,
+        "previous_implicit_work": 10,
+        "current_explicit_work": 20,
+        "current_implicit_work": 100,
+        "old_rate_filter_accepts": false,
+        "actual_same_window_accepts": true
+      },
+      "minimal_fix": "Document that the old-rate gate is a conservative scheduling heuristic with possible missed returns; scope decision-preserving bound claim to that gate. For a future release, occasionally run a finite-budget paired sentinel without the historical-rate ceiling, measuring benefit before default adoption.",
+      "suggested_validation": "Adversarial time-dependent transition where previous implicit cost is low but current implicit cost rises; compare selected method against matched checkpoint/window alternative including all trial costs."
+    },
+    {
+      "id": "F02",
+      "severity": "LOW_NONBLOCKING",
+      "status": "TEST_STRENGTHENING",
+      "location": "crates/vigilode/src/switching.rs: private productive comparator contract; crates/vigilode/tests/adaptive_entry_contracts.rs return tests",
+      "issue": "Productive comparator test reconciles attempts and RHS but does not directly assert aggregate Jacobian/JVP/dfdt/linear-solve fields or accepted/rejected sum. Shared charge() makes implementation look correct, yet new branch-specific coverage is narrower than the complete-accounting claim.",
+      "minimal_fix": "Extend the existing productive comparator fixture with equality for every SwitchingStats work field and assert final t/y consistency. Do not add a duplicate benchmark.",
+      "suggested_validation": "For attempts, accepts, rejects, RHS, Jacobian, JVP, dfdt and linear solves, compare aggregate with sum of all segment records; success is independent of whether segment committed."
+    },
+    {
+      "id": "F03",
+      "severity": "LOW_NONBLOCKING",
+      "status": "REPORT_SEMANTICS",
+      "location": "crates/vigilode/src/switching.rs: SwitchingSegment.is_probe and ImplicitPreferredOnSameWindow",
+      "issue": "A productive return comparator now intentionally has is_probe=true and committed=true. Reports that count every probe as wasted will misclassify useful implicit work, beyond the baseline advisory-pilot labeling issue.",
+      "minimal_fix": "Use committed first, then evidence/disposition to classify trial cost; include successful advisory entry separately from discarded losing/incomplete trials.",
+      "suggested_validation": "Analyzer fixture with productive implicit comparator, successful uncommitted entry advisory, failed entry, and committed explicit recheck, all counted once."
+    }
+  ]
+}

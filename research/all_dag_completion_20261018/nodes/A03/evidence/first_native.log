@@ -1,0 +1,24 @@
+    Blocking waiting for file lock on artifact directory
+   Compiling crossbeam-utils v0.8.22
+   Compiling crossbeam-epoch v0.9.20
+   Compiling crossbeam-deque v0.8.7
+   Compiling rayon-core v1.13.0
+   Compiling either v1.17.0
+   Compiling rodas5p-integrators v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-readonly/crates/rodas5p-integrators)
+   Compiling rodas5p-krylov v0.1.0 (/workspace/scratch/0dc1e721cf82/vigilode-readonly/crates/rodas5p-krylov)
+   Compiling rayon v1.12.0
+error[E0432]: unresolved imports `crate::PacketCurveOutput`, `crate::RepresentedPacketCurve`
+  --> crates/rodas5p-integrators/src/nonlinear_homotopy.rs:22:37
+   |
+22 |     CausalWeights, CollectiveModel, PacketCurveOutput, PacketWorkCounters,
+   |                                     ^^^^^^^^^^^^^^^^^ no `PacketCurveOutput` in the root
+23 |     RepresentedPacketCurve, compile_packet, generate_candidate,
+   |     ^^^^^^^^^^^^^^^^^^^^^^ no `RepresentedPacketCurve` in the root
+   |
+   = help: consider importing this struct through its public re-export instead:
+           crate::packet_window::PacketCurveOutput
+   = help: consider importing this struct through its public re-export instead:
+           crate::packet_window::RepresentedPacketCurve
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `rodas5p-integrators` (lib) due to 1 previous error

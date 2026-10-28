@@ -1,0 +1,204 @@
+{
+  "schema": "vigilode.production_reaudit.next_steps.v1",
+  "fixed_scientific_contract": {
+    "preserve_original_tolerances": true,
+    "preserve_failed_rows": true,
+    "no_blanket_revalidation_of_unchanged_published_proofs": true
+  },
+  "tasks": [
+    {
+      "id": "N01",
+      "priority": 0,
+      "depends_on": [],
+      "title": "Final integration and stable facade boundary",
+      "files": [
+        "crates/vigilode/src/solution.rs",
+        "crates/vigilode/src/solve.rs",
+        ".github/workflows/production.yml"
+      ],
+      "acceptance": "All existing and new tests pass at the published source; failed runs retained; semver/output schema checked; unsupported routes remain typed.",
+      "status": "CODE_IMPLEMENTED_TARGETED_VALIDATION_PASS",
+      "future_research": "Stable Rust API/semver review and unsupported vector-atol/DAE/JVP route development are separate future scopes. No such implementation is assigned to the low-budget executor.",
+      "delivered_files": [
+        "crates/vigilode/src/records.rs",
+        "crates/vigilode/src/capabilities.rs"
+      ],
+      "delivered_scope": "Facade-owned recursive Stats, exhaustive conversions, typed executable support query; deferred numerical combinations stay explicitly unsupported.",
+      "low_budget_executor_action": "Run the fixed validation/benchmark recipe and return original receipts; do not implement new methods or relax gates.",
+      "validation_authority": "EXECUTION.json; corresponding NEXT_N implementation report; native full bench and NCP campaign are pending",
+      "final_matrix_status": "PASS_TARGETED"
+    },
+    {
+      "id": "N02",
+      "priority": 0,
+      "depends_on": [
+        "N01"
+      ],
+      "title": "Source-bound independent comparator harness",
+      "files": [
+        "crates/vigilode-bench/build.rs",
+        "crates/vigilode-bench/src/harness.rs"
+      ],
+      "acceptance": "Stale binary and dirty external path dependency are refused; raw failures/status/work remain; reference criterion defined before measurement; all41 exact missing packages restored.",
+      "status": "CODE_IMPLEMENTED_NATIVE_BENCH_VALIDATION_PENDING",
+      "future_research": "Run full native crate compile/link and frozen independent-reference campaign with exact dependencies; extend corpus only in a separately preregistered campaign.",
+      "delivered_files": [
+        "crates/vigilode-bench/build.rs",
+        "crates/vigilode-bench/src/source_identity.rs",
+        "crates/vigilode-bench/protocols/n02_independent_reference_v1.json"
+      ],
+      "delivered_scope": "Build-source closure verification and strict independent RADAU5/CVODE refinement; exact dependencies/native toolchain still required for full linking.",
+      "low_budget_executor_action": "Run the fixed validation/benchmark recipe and return original receipts; do not implement new methods or relax gates.",
+      "validation_authority": "EXECUTION.json; corresponding NEXT_N implementation report; native full bench and NCP campaign are pending",
+      "final_matrix_status": "PASS_TARGETED"
+    },
+    {
+      "id": "N03",
+      "priority": 0,
+      "depends_on": [
+        "N01"
+      ],
+      "title": "GlobalBudget on sealed continuous providers",
+      "files": [
+        "crates/rodas5p-integrators/src/generic_verified.rs",
+        "crates/rodas5p-integrators/src/gray_scott_verified.rs",
+        "crates/rodas5p-integrators/src/packet_verified_trajectory.rs"
+      ],
+      "acceptance": "Original grid/tolerance preserved; exact contractive/expansive cases and nonzero inherited radius contained; false model binding refuses; arbitrary callbacks remain unverified.",
+      "status": "CODE_IMPLEMENTED_TARGETED_VALIDATION_PASS",
+      "future_research": "Extend sealed global-budget ownership to additional bound models after validating each full residual/tube/norm authority; arbitrary RHS remains uncertified.",
+      "delivered_files": [
+        "crates/rodas5p-integrators/src/global_budget.rs",
+        "crates/rodas5p-integrators/src/generic_verified.rs"
+      ],
+      "delivered_scope": "Sealed run-bound global replay, outward full-horizon error/jump/query charge, failure preserves original run/work; global L2 absolute semantics explicit.",
+      "low_budget_executor_action": "Run the fixed validation/benchmark recipe and return original receipts; do not implement new methods or relax gates.",
+      "validation_authority": "EXECUTION.json; corresponding NEXT_N implementation report; native full bench and NCP campaign are pending",
+      "final_matrix_status": "PASS_TARGETED"
+    },
+    {
+      "id": "N04",
+      "priority": 1,
+      "depends_on": [
+        "N03"
+      ],
+      "title": "Local/global defect decomposition and G2 allocation",
+      "files": [
+        "crates/vigilode-bench/src/harness.rs",
+        "crates/rodas5p-integrators/src/dense_output_v2.rs"
+      ],
+      "acceptance": "Classify existing20/30 excess-global-error rows without changing thresholds; nearzero errors produce no invalid ratios; all rejected work and certificate cost retained.",
+      "status": "ALGEBRAIC_ALLOCATOR_IMPLEMENTED_MODEL_BINDING_SCOPED",
+      "future_research": "Bind algebraic A_j,c_j to actual ODE local-error/cost laws and accepted-step traces; decompose the historical20/30 global-error violations without threshold changes.",
+      "delivered_files": [
+        "crates/rodas5p-integrators/src/global_budget.rs"
+      ],
+      "delivered_scope": "Outward validated integer work allocation, bounded refinement/refusal. Caller algebraic constants do not automatically certify an ODE local error law.",
+      "low_budget_executor_action": "Run the fixed validation/benchmark recipe and return original receipts; do not implement new methods or relax gates.",
+      "validation_authority": "EXECUTION.json; corresponding NEXT_N implementation report; native full bench and NCP campaign are pending",
+      "final_matrix_status": "PASS_TARGETED"
+    },
+    {
+      "id": "N05",
+      "priority": 1,
+      "depends_on": [
+        "N01"
+      ],
+      "title": "Theorem-bound residual targets and cheaper structured resolvent",
+      "files": [
+        "crates/rodas5p-integrators/src/rodas5p_lagged.rs",
+        "crates/rodas5p-krylov/src/gmres_into.rs"
+      ],
+      "acceptance": "Same original accuracy and B1 gates; count extra solves/formation/certification; no routing until independent full-cost matched-error promotion; imaginary-axis counterexamples stay tests.",
+      "status": "SCOPED_POLICY_AND_DIAGONAL_ROUTE_IMPLEMENTED",
+      "future_research": "Integrate adaptive residual targets into a declared nonlinear drift enclosure; extend diagonal witness to certified band/low-rank structure. Current planner is not the general adaptive driver.",
+      "delivered_files": [
+        "crates/rodas5p-integrators/src/stage_target_policy.rs",
+        "crates/rodas5p-integrators/src/rodas5p_lagged.rs"
+      ],
+      "delivered_scope": "Immutable matrix/norm witness, output and estimator residual charges, outward assessment; diagonal resolvent avoids n inverse-construction solves, non-diagonal refuses/falls back.",
+      "low_budget_executor_action": "Run the fixed validation/benchmark recipe and return original receipts; do not implement new methods or relax gates.",
+      "validation_authority": "EXECUTION.json; corresponding NEXT_N implementation report; native full bench and NCP campaign are pending",
+      "final_matrix_status": "PASS_TARGETED"
+    },
+    {
+      "id": "N06",
+      "priority": 1,
+      "depends_on": [
+        "N03",
+        "N02"
+      ],
+      "title": "Polynomial selection inside one trajectory owner",
+      "files": [
+        "crates/rodas5p-core/src/polynomial_router.rs",
+        "crates/rodas5p-integrators/src/generic_verified.rs"
+      ],
+      "acceptance": "No rebudgeting after failure; finite/nonnormal scope enforced; compare same achieved output accuracy against protected and Krylov arms.",
+      "status": "OWNED_TRAJECTORY_COMPARISON_IMPLEMENTED",
+      "future_research": "Extend owned diagonal endpoint comparison to declared nonnormal or nonlinear models and prove new full-trajectory contracts before automatic routing.",
+      "delivered_files": [
+        "crates/rodas5p-integrators/examples/reaudit_comparison.rs",
+        "crates/rodas5p-integrators/examples/reaudit_comparison_support/mod.rs"
+      ],
+      "delivered_scope": "Same original IVP/budget polynomial-priority routing, endpoint oracle, failed candidate and fallback work preserved; analytic diagonal exp baseline is labelled explicitly.",
+      "low_budget_executor_action": "Run the fixed validation/benchmark recipe and return original receipts; do not implement new methods or relax gates.",
+      "validation_authority": "EXECUTION.json; corresponding NEXT_N implementation report; native full bench and NCP campaign are pending",
+      "final_matrix_status": "PASS_TARGETED"
+    },
+    {
+      "id": "N07",
+      "priority": 1,
+      "depends_on": [
+        "N03",
+        "N02"
+      ],
+      "title": "Nonlinear homotopy full-cost comparison",
+      "files": [
+        "crates/rodas5p-integrators/src/nonlinear_homotopy.rs",
+        "crates/rodas5p-integrators/src/actual_k_homotopy.rs"
+      ],
+      "acceptance": "Actual upper-beta coefficients retained; schedule ends exactly1; resource caps and failed work present; no endpoint-only claim promoted to fullcurve; predeclared paired timing gate.",
+      "status": "DIRECT_CONTINUATION_COMPARISON_IMPLEMENTED",
+      "future_research": "Construct and measure independent-window parallel scheduling with full setup/rollback/certification work; current direct/continuation clients do not prove universal parallel speedup.",
+      "delivered_files": [
+        "crates/rodas5p-integrators/examples/reaudit_comparison.rs"
+      ],
+      "delivered_scope": "Direct lambda1 versus continuation on identical endpoint or stage contracts; full solver transaction and outer process timing separated.",
+      "low_budget_executor_action": "Run the fixed validation/benchmark recipe and return original receipts; do not implement new methods or relax gates.",
+      "validation_authority": "EXECUTION.json; corresponding NEXT_N implementation report; native full bench and NCP campaign are pending",
+      "final_matrix_status": "PASS_TARGETED"
+    },
+    {
+      "id": "N08",
+      "priority": 2,
+      "depends_on": [
+        "N01",
+        "N02",
+        "N03",
+        "N05",
+        "N06",
+        "N07"
+      ],
+      "title": "Broader production scope and release",
+      "files": [
+        "docs/plan/PRODUCTION_PLAN_20261020.md",
+        "crates/vigilode",
+        "crates/vigilode-bench"
+      ],
+      "acceptance": "All15workstreams carry explicit status; exact scope gates close; controlled-host matched-accuracy advantage only where demonstrated.",
+      "status": "EXECUTION_AND_RESULT_CONSUMER_IMPLEMENTED_RELEASE_HOLD",
+      "future_research": "Close remaining numerical routes, external review, stable release, independent full-cost and broader accuracy gates; positive scoped receipts alone do not close them.",
+      "delivered_files": [
+        "tools/run_ncp_reaudit.py",
+        "tools/production_promotion_gate.py"
+      ],
+      "delivered_scope": "Fixed preflight/verification/NCP commands, exact-source resume and raw result consumer. A completed process cannot promote broad production or full-curve accuracy.",
+      "low_budget_executor_action": "Run the fixed validation/benchmark recipe and return original receipts; do not implement new methods or relax gates.",
+      "validation_authority": "EXECUTION.json; corresponding NEXT_N implementation report; native full bench and NCP campaign are pending",
+      "final_matrix_status": "PASS_TARGETED"
+    }
+  ],
+  "handoff_mode": "CODEX_6_LUNA_LOW_EXECUTION_ONLY",
+  "fixed_execution_entrypoint": "tools/run_ncp_reaudit.py",
+  "final_validation_authority": "EXECUTION.json and node-specific source-bound receipts, not the planning status above"
+}

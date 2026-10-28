@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "worktree": "/home/cosmosapjw/vigilode-cloud-completion-20261018",
+  "source_commit": "4cb795d2b4d3d1cc43ac1ede37d48e4f4daaac3b",
+  "checks": [
+    {
+      "id": "research_node_check",
+      "argv": [
+        "python3",
+        "tools/check-research-node.py",
+        "--base",
+        "c513f478f952068b91e3da368fb2cb156d942b28"
+      ],
+      "exit_code": 1,
+      "combined_output_observed": [
+        "FAIL: research/LEDGER.jsonl:124: L-0124 output research/production_audit_20261018/CONTINUATION_DAG.json sha256 mismatch",
+        "FAIL: research/LEDGER.jsonl:124: L-0124 output research/production_audit_20261018/CONTINUATION_FINDINGS.json sha256 mismatch",
+        "check-research-node: FAIL (138 ledger rows, base=c513f478f952068b91e3da368fb2cb156d942b28, new nodes=['cloud_completion_20261018'])"
+      ],
+      "classification": "INHERITED_BASELINE_HASH_MISMATCH_ONLY; no new append-only or cloud node error reported",
+      "evidence": "research/cloud_completion_20261018/evidence/publication_checks.json"
+    },
+    {
+      "id": "authority_refs_check",
+      "argv": [
+        "python3",
+        "tools/check-authority-refs.py"
+      ],
+      "exit_code": 0,
+      "combined_output_observed": [
+        "check-authority-refs: PASS (1635 citations, 292 distinct SHAs: missing+allowlisted=26, non-commit=50, reachable=215, unreachable+allowlisted=1)"
+      ],
+      "classification": "PASS"
+    }
+  ],
+  "stderr_separately_captured": false,
+  "historical_ledger_rows_modified": false
+}

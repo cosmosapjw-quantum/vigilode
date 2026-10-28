@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "review_base": "555e71e03fe31e6c9b21961c8e2d263b1794eb6f",
+  "status": "targeted_checks_pass",
+  "general_production": "HOLD",
+  "new_ncp_runs": 0,
+  "rust": {
+    "passed": 19,
+    "failed": 0,
+    "source_reports": [
+      "CODE_AUDIT.json",
+      "LOW_RANK_IMPLEMENTATION.json"
+    ]
+  },
+  "python": {
+    "passed": 3,
+    "failed": 0,
+    "source_report": "benchmark/METRIC_DOMAIN_AUDIT.json"
+  },
+  "c99": {
+    "finite_cases_passed": 10,
+    "negative_controls_passed": 5,
+    "source_report": "LIFTED_NORM_REPLAY.json"
+  },
+  "imports": {
+    "files": 2532,
+    "mismatches": 0,
+    "source_report": "BRANCH_IMPORT_VERIFY.json"
+  },
+  "historical_aggregate_audit": {
+    "manifest_files_checked": 44,
+    "matched_rung_selections": 233,
+    "paired_groups": 51,
+    "disagreements": 0,
+    "full_trajectory_recomputation": false
+  },
+  "not_run": [
+    "full workspace test suite",
+    "new NCP campaign",
+    "full production qualification",
+    "new wrapper end-to-end ODE timing",
+    "run_targeted_checks.py end-to-end replay"
+  ],
+  "protocol": {
+    "kind": "exploratory audit and regression repair",
+    "preregistration_committed_before_tests": false,
+    "limitation": "The review scope was recorded locally but not committed before all tests. No new confirmatory speed or broad production claim is admitted. Historical evidence retains its original source and protocol."
+  }
+}

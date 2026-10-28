@@ -1,0 +1,91 @@
+{
+  "schema": "vigilode.r4.time.next_steps.v1",
+  "source_commit": "1c54194123ee6abc6daa512e8574922f510b4e2c",
+  "production_modified": false,
+  "nodes": [
+    {
+      "id": "R4-TIME-DEV-01",
+      "priority": "P2",
+      "title": "Use actual BDF step ratios without an absolute time-unit floor",
+      "depends_on": [],
+      "targets": ["crates/rodas5p-integrators/src/bdf.rs:same_step", "crates/rodas5p-integrators/src/bdf.rs:bdf_step_impl"],
+      "implementation": [
+        "Allow the constant-coefficient shortcut only when successive positive finite represented steps are exactly equal, or use variable_bdf2_coefficients unconditionally.",
+        "Keep stability restart on the actual ratio; an equality heuristic must not bypass the ratio limit.",
+        "Retain actual represented step sizes in history and preserve the indexed clock."
+      ],
+      "acceptance": [
+        "For boundary powers -40, 0, 10, 40 and the preregistered grid, constant-flow error at every stored state is at most 1e-12 against exact binary64-input rational arithmetic.",
+        "Power-of-two unit changes preserve the dimensionless solution within roundoff and do not change equal/unequal geometry classification.",
+        "An exactly equal-step control keeps its existing coefficient path; unequal steps exercise the variable coefficients; ratio above 1+sqrt(2) exercises restart.",
+        "Fixed, fixed observed, and fixed dense BDF wrappers inherit the same kernel rule."
+      ],
+      "candidate": "probe/src/main.rs:bdf_boundary uses public bdf_step_variable on the exact native fixed-driver time list; no production patch",
+      "oracle": "exact_oracle.py independent rational three-node differentiation",
+      "failure_policy": "Do not call an unequal-step constant-coefficient solve successful merely because Newton solves that different residual.",
+      "claim_ceiling": "Time-geometry consistency for the reference BDF implementation; not production-comparator promotion."
+    },
+    {
+      "id": "R4-TIME-DEV-02",
+      "priority": "P2",
+      "title": "Bind Richardson error estimation to represented substep geometry",
+      "depends_on": [],
+      "targets": ["crates/rodas5p-integrators/src/radau.rs:adaptive_radau_trial", "crates/rodas5p-integrators/src/adaptive.rs:step_doubling_wrms_error", "crates/rodas5p-integrators/src/output.rs:split_clock"],
+      "implementation": [
+        "Add a geometry-aware estimator receiving h1 and h2, or reject materially unequal splits until its assumptions are satisfied.",
+        "For Radau1, use eta/(1-eta) with eta=(h1/H)^2+(h2/H)^2 under the stated smooth local-error model; record both actual intervals.",
+        "Keep no-representable-midpoint failures explicit; ensure denominator and finite arithmetic checks fail closed.",
+        "Document that the estimate is asymptotic except on declared exact families, not a rigorous ODE-error certificate."
+      ],
+      "acceptance": [
+        "The fixed 3-ULP quadratic-primitive witness has analytic fine error 5/9 and estimator-difference magnitude 4/9; the new estimate is 5/9 within binary64 roundoff.",
+        "At atol=0.5 and rtol=1e-12 the witness is rejected or explicitly fails on time resolution, rather than accepting the old 8/9 normalized estimate.",
+        "Equal halves reproduce the previous 1/(2^p-1) formula, and near-equal halves have a continuous correction.",
+        "Both clipped and dense adaptive Radau1 wrappers use the same corrected trial geometry."
+      ],
+      "candidate": "probe/src/main.rs:doubling_geometry, scalar ratio correction; not integrated",
+      "oracle": "DERIVATIONS_KO.md section2; exact_oracle.py rational implicit-Euler calculation",
+      "failure_policy": "Typed invalid/unresolvable split; do not transfer equal-half estimator authority to an unequal partition.",
+      "claim_ceiling": "Radau1 local estimator geometry; global tolerance or arbitrary nonlinear-LTE certification remains out of scope."
+    },
+    {
+      "id": "R4-TIME-DEV-03",
+      "priority": "P2",
+      "title": "Derive BDF startup estimates for actual order and history on unequal halves",
+      "depends_on": ["R4-TIME-DEV-01", "R4-TIME-DEV-02"],
+      "targets": ["crates/rodas5p-integrators/src/bdf.rs:adaptive_bdf_trial"],
+      "implementation": [
+        "Separate BDF1+BDF1 startup from the BDF1+BDF2 sequence used by the default order-two configuration.",
+        "Derive the coarse/fine defect relation on the actual nodes and expose the geometry/order identity in estimator metadata.",
+        "Do not copy the Radau1 correction to mixed-order BDF startup without that derivation."
+      ],
+      "acceptance": [
+        "Exact polynomial primitives of degrees one, two and three distinguish geometry, startup order and predictor effects.",
+        "Equal-step existing contracts pass; odd-ULP and power-of-two unit transformations give the declared asymptotic behavior.",
+        "Record rejected and unresolvable startup trials without advancing history."
+      ],
+      "failure_policy": "Keep this item unresolved until the mixed-order derivation and native tests exist.",
+      "claim_ceiling": "Source-level shared-estimator risk only in this audit; no newly executed nonconstant BDF-startup counterexample."
+    },
+    {
+      "id": "R4-TIME-DEV-04",
+      "priority": "P3",
+      "title": "Make max_step semantics explicit and test the selected cap policy",
+      "depends_on": [],
+      "targets": ["crates/rodas5p-integrators/src/output.rs:represent", "crates/rodas5p-integrators/src/adaptive.rs:AdaptiveStepConfig", "crates/rodas5p-integrators/tests/r3_represented_clock_contracts.rs"],
+      "implementation": [
+        "Choose and name StrictRepresentedCap versus AllowClockResolutionSlack; do not document the latter as a hard maximum.",
+        "Under the strict policy return a typed time-resolution failure when no represented advancing endpoint fits the cap.",
+        "Under a slack policy report the actual excess and state that a sub-ULP max_step may become a full-ULP step.",
+        "Replace the current acceptance helper with separate endpoint and cap assertions so a correct endpoint does not satisfy a cap-refusal test."
+      ],
+      "acceptance": [
+        "The 0.49,0.75,1,1.5,2 ULP cap grid records success, actual accepted h, and h/max_step.",
+        "Strict policy has no accepted h above cap; slack policy enforces its exact documented allowance.",
+        "Decimal-grid controls remain accurate; a roundoff microstep is not used to disguise policy changes."
+      ],
+      "failure_policy": "Treat a policy ambiguity as such, separately from a wrong state value.",
+      "claim_ceiling": "The current one-resolution slack is disclosed in closure notes; this is an API-contract recommendation."
+    }
+  ]
+}

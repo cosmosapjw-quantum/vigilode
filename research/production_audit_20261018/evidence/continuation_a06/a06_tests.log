@@ -1,0 +1,17 @@
+   Compiling rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+error[E0432]: unresolved imports `rodas5p_core::Interval`, `rodas5p_core::add_up`, `rodas5p_core::div_up`, `rodas5p_core::mul_up`, `rodas5p_core::sqrt_up`
+ --> crates/rodas5p-integrators/src/gray_scott.rs:3:43
+  |
+3 | use rodas5p_core::{CoreError, CoreResult, Interval, add_up, div_up, mul_up, sqrt_up};
+  |                                           ^^^^^^^^  ^^^^^^  ^^^^^^  ^^^^^^  ^^^^^^^ no `sqrt_up` in the root
+  |                                           |         |       |       |
+  |                                           |         |       |       no `mul_up` in the root
+  |                                           |         |       no `div_up` in the root
+  |                                           |         no `add_up` in the root
+  |                                           no `Interval` in the root
+  |
+  = help: consider importing this struct instead:
+          rodas5p_core::directed::Interval
+
+For more information about this error, try `rustc --explain E0432`.
+error: could not compile `rodas5p-integrators` (lib) due to 1 previous error

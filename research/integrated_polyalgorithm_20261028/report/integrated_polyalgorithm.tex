@@ -1,0 +1,842 @@
+\documentclass[aps,pra,reprint,onecolumn,10pt,notitlepage,nofootinbib]{revtex4-2}
+\usepackage{amsmath,amssymb,graphicx,booktabs,array}
+\usepackage[colorlinks=true,linkcolor=blue,citecolor=blue,urlcolor=blue]{hyperref}
+\hypersetup{pdftitle={An integrated VigilODE polyalgorithm},
+ pdfauthor={VigilODE research synthesis},
+ pdfsubject={Physical error composition, quotient compilation, and cumulative validation}}
+\newcommand{\norm}[1]{\left\|#1\right\|}
+\newcommand{\eps}{\varepsilon}
+\newcommand{\R}{\mathbb R}
+\newcommand{\remp}{\operatorname{rem}}
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\emergencystretch=2em
+\begin{document}
+\title{An integrated VigilODE polyalgorithm:\texorpdfstring{\\}{ }
+Physical error composition, quotient stage compilation, and independent cumulative validation}
+\author{VigilODE research synthesis}
+\noaffiliation
+\date{28 October 2026, Korea Standard Time}
+\begin{abstract}
+We consolidate the numerical implementations and mathematical constructions of
+PR90--93 into a target-preserving solver design. The principal new connections
+are a selection-independent physical error induction with two distinct valid
+anchors, an output-specific quotient compiler for complete affine raw-$U$ stage
+systems, and a precision-aware near-inverse correction rule. The compiler
+reduces a requested endpoint to one polynomial of degree below the declared
+operator-relation degree, while an explicit original-target residual extends
+the construction to near structure, stored coefficients, and bounded nonlinear
+remainders. A finite-menu error allocator and complete-session continuation
+contract connect these local methods to the adapter. Two source-registered
+exact-rational programs pass nine compiler fixtures and six physical-error
+check groups, together with correction and refusal controls. These checks
+support the written derivations; they do not validate new binary64 kernels or
+measure native performance. The report also specifies how a separate PR can
+include and validate all four preceding PRs without waiting for their merger.
+Its coverage records 73 changed crate/workflow paths, preserves seven unresolved
+qualification tasks and prior negative controls, and distinguishes source
+inclusion, scientific verification, and release readiness.
+\end{abstract}
+\maketitle
+
+\section{Scientific question and cumulative source}
+
+The goal is to exploit VigilODE's polyalgorithm: retain several faithful
+realizations of the same numerical target, remove work when declared structure
+permits it, and select an admitted candidate under a common accuracy and cost
+contract. The intended character is derivative-free first, with explicitly
+supplied JVP/AD capabilities used selectively where justified. An action can
+be matrix-free and still use a derivative; neither a polynomial basis nor a
+callback name establishes derivative freedom.
+
+The four source PRs retain their own reports and receipts\cite{pr90,pr91,pr92,pr93}.
+The source inspected here is the cumulative PR93 commit
+\par\noindent\texttt{384dba091a3d9e1aac0ecddec264958298239253}.
+\par Exact ancestry checks establish the chain from the pre-conversation
+implementation through PR90, PR91, PR92 and PR93. This research performs the
+requested assumption alignment, constructive derivation, and computational
+connection, corresponding to R3/R5/R9 of PhysMath Research Loop 1.3.0. The
+requested future independent-PR handoff is an execution design, not a completed
+native solver campaign.
+
+\begin{table}[h]
+\caption{Prior contributions retained in the synthesis. Existing implementation
+and historical measurements retain their original source and qualification scope.}
+\begin{tabular}{L{0.09\linewidth}L{0.44\linewidth}L{0.34\linewidth}}
+\toprule
+PR & Contribution already present & Integration role\\
+\midrule
+90 & Conservative dominated-comparator stopping; aligned LU scratch;
+into-buffer and borrowed-row operations; conditional error/work theory &
+Same-target selection and inexpensive execution primitives\\
+91 & Causal input/prefix reuse; two-channel structural stages;
+RHS-only cubic planning; checked-integer entry comparison &
+Reusable model algebra, original residual and physical-budget leaves\\
+92 & Charged structural failure and residual enclosure; scalar/rational roots;
+production configuration; physical-work repair; profiles and qualification plan &
+Arithmetic ownership, failure accounting, deployment and adverse controls\\
+93 & Fused Clenshaw; $1/12$ cubic defect and rational decay;
+variable-step transport; continuation and residence constructions &
+Local proof ingredients and seventeen pending implementation alternatives\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Earlier polynomial, conditioned-resolvent, and coupled-stage work is also
+reused. Joint Chebyshev/Laguerre actions, signed output-adjoint Laguerre
+certification, and guarded Leja/Chebyshev/Laguerre routing already exist.
+The coupled solver already shares one projected diagonal factorization across
+eight stages. The finite nilpotent causal majorant and the two-channel sharp
+adjoint norm are established project results. None is presented as a new
+algorithm in this report. The current guarded polynomial provider is dense
+symmetric; an opaque matrix-free replacement needs its own action-error,
+domain, norm, and identity evidence.
+
+In particular, PR93's fused Clenshaw identity changes five distinct degree-$m$
+actions to one fused-only action. Its Laguerre defect transfer uses the
+established $|L_k(x)|\le e^{x/2}$ bound\cite{dlmf}; Chebyshev uses a unit
+factor on a verified self-adjoint chart in $[-1,1]$. This changes execution
+direction and its local defects, not merely the name of a certificate.
+Fixed polynomial preconditioning must retain its linearity contract\cite{wathen}.
+
+The current production facade covers smooth forward identity-mass IVPs with
+endpoint observations. Its default remains persistent RHS-only DOPRI5.
+A declaration of stronger physical certification must be justified by the
+additional contracts below; a successful local-tolerance solve does not
+automatically acquire that guarantee.
+
+\section{One target, several admissible realizations}
+
+Each request fixes its model and provider epoch, input state and time,
+observations, norm, domain, arithmetic, callback permissions, and mathematical
+target. Four targets must remain distinguishable:
+\begin{enumerate}
+\item an original shifted linear system, checked by its original residual;
+\item a represented fused $\varphi$ combination, checked by complete action error;
+\item an original nonlinear stage/root, checked by residual, domain and branch;
+\item a physical step, checked by temporal, algebraic, representation and clock
+      errors under a valid propagation argument.
+\end{enumerate}
+A polynomial-action admission is a useful leaf of a physical-step certificate,
+but it is not the latter. Similarly, a quotient-stage endpoint below has the
+same discrete Rosenbrock target while still needing a temporal-error argument.
+Private adapters around existing result types can enforce these connections;
+the synthesis does not require replacing the solver hierarchy with a new
+general certificate framework.
+
+\subsection{Physical induction independent of selector smoothness}
+
+Let the original ODE have a unique flow $\Phi(t,s,x)$ on a certified tube.
+Use one physical norm $\norm{\cdot}_*$. The accepted times
+$t_0<\cdots<t_N$ may depend on the computed history. Rejected attempts do
+not advance the physical state. At the realized accepted step, assume
+\begin{align}
+ \norm{\Phi(t_{n+1},t_n,x)-\Phi(t_{n+1},t_n,z)}_*
+   &\le \Lambda_n\norm{x-z}_*,\label{eq:flowstab}\\
+ \norm{\widehat y_{n+1}-\Phi(t_{n+1},t_n,\widehat y_n)}_*
+   &\le d_n,\label{eq:localflow}
+\end{align}
+on the required tube, with $\Lambda_n,d_n\ge0$.
+
+\textbf{Proposition 1.} If $E_0$ bounds the initial physical error, an outward
+recurrence
+\begin{equation}
+ E_{n+1}\ge\Lambda_nE_n+d_n                                    \label{eq:induction}
+\end{equation}
+bounds every committed physical error. The candidate selector may be
+discontinuous or history-dependent.
+
+\emph{Proof.} Add and subtract the same exact flow at $\widehat y_n$ in
+$\widehat y_{n+1}-y_{n+1}$. Apply Eqs.~\eqref{eq:flowstab} and
+\eqref{eq:localflow}, then induct along the realized accepted grid. The proof
+never evaluates the selector at a second perturbed input, so no selector
+derivative or Lipschitz constant is required. \hfill$\square$
+
+Unrolling gives a product-weighted sum of local defects. For an unknown future
+adaptive grid those future products are an a posteriori expression, not an
+online budget reservation. Prefix accuracy also does not guarantee termination,
+adequate remaining resources, or discovery of another admitted candidate.
+Failed probes need transactional rollback or an explicit state-change defect;
+their work remains charged even when their physical state is discarded.
+
+One concrete RHS-only route to $d_n$ uses a differentiable reconstruction
+$v(t)$ and residual $R(t)=v'(t)-f(t,v(t))$. In a fixed Hilbert norm, suppose
+\begin{equation}
+ \langle f(t,x)-f(t,z),x-z\rangle
+ \le\mu(t)\norm{x-z}^2.
+\end{equation}
+The energy inequality gives $\Lambda_n=\exp(\int_{t_n}^{t_{n+1}}\mu)$ and,
+for matching reconstruction endpoints,
+\begin{equation}
+ d_n\le\int_{t_n}^{t_{n+1}}
+       \exp\!\left(\int_s^{t_{n+1}}\mu(r)\,dr\right)
+       \norm{R(s)}\,ds.                                      \label{eq:residualflow}
+\end{equation}
+The derivative of a polynomial reconstruction is algebraic; it requires no
+Jacobian callback. Rigorous integration still requires a valid residual and
+domain enclosure, not a few residual samples. Ranocha--Giesselmann give the
+relevant one-sided Lipschitz estimate and distinguish reliability of an error
+estimator from stability of its step-size controller\cite{RG2024}. Adjoint
+methods provide another global-error/conditioning perspective\cite{CP2004},
+but their general derivative-dependent adjoint machinery is not assumed to
+be available from a derivative-free provider.
+
+\subsection{Two valid anchors and a concrete invalid combination}
+
+Let $\Psi_{n,b}$ be the exact-arithmetic discrete recipe selected for this
+step, with its stored coefficients, frozen carrier, chart and norm held fixed.
+Suppose
+\begin{equation}
+ \norm{\widehat y_{n+1}-\Psi_{n,b}(\widehat y_n)}_*
+ \le a_n.                                                   \label{eq:algebraicleaf}
+\end{equation}
+There are two valid sufficient contracts:
+\begin{align}
+ \tau_n^{\rm num}&\ge\norm{\Psi_{n,b}(\widehat y_n)
+                   -\Phi(t_{n+1},t_n,\widehat y_n)}_*,\nonumber\\
+ \text{F:}\quad E_{n+1}&\ge\Lambda_nE_n+a_n+\tau_n^{\rm num},\label{eq:F}\\
+ \tau_n^{\rm exact}&\ge\norm{\Psi_{n,b}(y_n)
+                    -\Phi(t_{n+1},t_n,y_n)}_* ,\nonumber\\
+ \text{D:}\quad E_{n+1}&\ge L_nE_n+a_n+\tau_n^{\rm exact}.    \label{eq:D}
+\end{align}
+For D, $L_n$ is a discrete-map Lipschitz bound between the exact and numerical
+inputs. For F, $\Lambda_n$ is the exact-flow stability factor. The two proofs
+insert different intermediate points. In particular, the selected carrier
+must not silently be rebuilt at $y_n$ while calling the result the same
+function $\Psi_{n,b}$.
+
+Take $\Phi(x)=x/2$, $\Psi(x)=x$, $y_n=0$, and $\widehat y_n=e>0$.
+There is no implementation error and the exact-input truncation is zero.
+The next physical error is $e$. Combining the flow factor $1/2$ with that
+zero truncation would give the false bound $e/2$. D uses $L_n=1$ and is exact;
+F includes $\tau_n^{\rm num}=e/2$ and is also exact.
+
+This matters for PR93's cubic planner. Its $1/12$ local estimate and rational
+decay sum are evaluated along the \emph{exact} decaying trajectory. Its valid
+propagation uses nonexpansiveness of the midpoint discrete map, D with $L_n=1$.
+Adding a stronger exact-flow contraction while leaving that truncation term
+unchanged is not justified. The counterexample identifies a possible
+integration mistake; it does not refute the existing PR93 proof.
+
+\section{Error ownership, physical norms and clocks}
+
+A useful certificate is a path between explicit physical-space anchors:
+\begin{equation}
+ x^{(0)}=\Phi(t_{n+1},t_n,\widehat y_n),\quad
+ x^{(1)},\ldots,x^{(r)}=\widehat y_{n+1}.
+\end{equation}
+If every edge has a bound
+$\norm{x^{(j+1)}-x^{(j)}}_*\le\eps_j$, telescoping gives
+$d_n\le\sum_j\eps_j$. Model transformation, clock conversion, temporal
+method, algebraic solve and endpoint assembly are possible edges. A coarse
+certificate covering several consecutive edges is an alternative cover of
+that subpath. It is not an additional mandatory charge on top of the same
+individual edges.
+
+For example, PR92's represented structural residual already encloses computed
+RHS, mean and lift errors. A subsequent residual-to-endpoint map transports
+those errors; it need not add them again as though absent. Endpoint accumulation
+outside that certificate still requires its own allowance. Conversely, a
+single direct physical-flow defect may cover the entire path.
+
+For a reconstruction $\mathcal R$ with Lipschitz bound $K_{\mathcal R}$,
+a coordinate discrepancy $\eta$ contributes at most $K_{\mathcal R}\eta$
+plus separate reconstruction arithmetic. In the weighted infinity norm
+$\norm{x}_w=\max_i|x_i|/w_i$, $w_i>0$,
+\begin{equation}
+ \norm{x}_\infty\le\max_iw_i\norm{x}_w,
+ \qquad
+ \norm{x}_v\le\max_i\frac{w_i}{v_i}\norm{x}_w.               \label{eq:norms}
+\end{equation}
+The constants are sharp by concentrating on a maximizing component. A changed
+norm epoch therefore needs the appropriate conversion or a new physical
+evaluation. Identical scalar types do not identify physical norms.
+
+Two clock conventions are consistent. Under the physical-label convention,
+the canonical time is the exact real value of stored $t_n$, so any difference
+between engine $h_n$ and $t_{n+1}-t_n$ belongs to the local defect. Under the
+internal-clock convention, exact internal times $\tau_n$ are distinct from
+reported labels $t_n$. If $\norm{y'(s)}_*\le M_n$ between the two times,
+\begin{equation}
+ E_n^{\rm obs}\le E_n^{\rm int}+M_n|t_n-\tau_n|.             \label{eq:clock}
+\end{equation}
+This observation-only displacement is not reinjected into every later
+internal recurrence. For $y'=1$ with exact internal states, the observation
+error is the current label gap, not the sum of earlier gaps. For a
+nonautonomous shifted vector field, endpoint speed alone does not enclose
+the whole shifted step; time regularity and the corresponding sensitivity
+or exact-flow estimate are also needed.
+
+\section{Compile complete affine stages in a finite operator algebra}
+
+The next result connects the existing conditioned resolvent to the whole
+causal stage target. Let $s$ be the stage count, $s=8$ in the current consumer,
+and let $\tau=h\gamma$, $h,\gamma>0$. With the actual represented tableau,
+consider the autonomous/frozen-time raw-$U$ equations
+\begin{equation}
+ WU_i=\tau f\!\left(y+\sum_{j<i}a_{ij}U_j\right)
+       +\gamma\sum_{j<i}c_{ij}U_j,
+ \qquad W=I-\tau J_0.                                      \label{eq:raw}
+\end{equation}
+A different mass matrix, stage time or partial-time term requires its matching
+equation; Eq.~\eqref{eq:raw} is not changed implicitly.
+
+Declare one whole-space chart and relation in a fixed induced norm:
+\begin{equation}
+ Z=\tau J_0=cI+\sigma C,\quad \sigma>0,\quad
+ \norm{C}\le M,\quad\norm{\pi(C)}\le\rho,\quad\deg\pi=d\ge1. \label{eq:chart}
+\end{equation}
+The provider identity includes this chart, relation, norm and model epoch.
+Sampling a few vector actions does not establish Eq.~\eqref{eq:chart}.
+Set $z(x)=c+\sigma x$, $w_0(x)=1-z(x)$ and
+$\zeta=(1-c)/\sigma$. If $\pi(\zeta)\ne0$, the existing quotient inverse is
+\begin{equation}
+ v(x)=\frac{\pi(\zeta)-\pi(x)}
+             {\sigma\pi(\zeta)(\zeta-x)},
+ \qquad w_0(x)v(x)=1-\frac{\pi(x)}{\pi(\zeta)}.              \label{eq:inverse}
+\end{equation}
+It has degree $d-1$. For $\rho=0$, $v(C)=W^{-1}$. More generally,
+$\theta_\pi=\rho/|\pi(\zeta)|<1$ yields
+\begin{equation}
+ \norm{W^{-1}}\le\frac{\norm{v(C)}}{1-\theta_\pi}
+ \le\frac{\sum_{k<d}|v_k|M^k}{1-\theta_\pi}.                \label{eq:inversebound}
+\end{equation}
+The actual stored-polynomial preparation defect must be included in the native
+version, as in the existing conditioned implementation. A sensitive denominator
+can make this route unfavorable even when the original problem is solvable.
+
+\textbf{Theorem 2 (quotient stage compiler).} Assume $\rho=0$ and the
+declared affine identity $f(y+u)=f_0+J_0u$ on the stage domain. Define
+$B_{ij}(x)=a_{ij}z(x)+\gamma c_{ij}$ and degree-$<d$ representatives
+\begin{equation}
+ r_i=\remp_\pi\left[v\left(1+\sum_{j<i}B_{ij}r_j\right)\right].
+                                                                    \label{eq:compile}
+\end{equation}
+Then the unique solution of Eq.~\eqref{eq:raw} and its endpoint are
+\begin{equation}
+ U_i=\tau r_i(C)f_0,\qquad
+ y_+=y+\tau p_\beta(C)f_0,\qquad
+ p_\beta=\sum_i\beta_i r_i,\quad\deg p_\beta<d.               \label{eq:compiledoutput}
+\end{equation}
+
+\emph{Proof.} Equation~\eqref{eq:inverse} makes $v$ the inverse of $w_0$
+modulo $\pi$. Evaluate Eq.~\eqref{eq:compile} at $C$; every multiple of
+$\pi(C)$ vanishes. Multiplication by $\tau f_0$ gives the original affine
+stage equations. Invertibility of $W$ and strict causality give uniqueness by
+stage induction. Applying the endpoint weights gives
+Eq.~\eqref{eq:compiledoutput}. Normality and diagonalization are not needed.
+\hfill$\square$
+
+After scalar preparation, an endpoint-only request uses at most $d-1$
+full-space $C$ actions by Horner evaluation, plus vector assembly and a base
+RHS if unavailable. Straightforward scalar preparation is
+$O(sd^2+s^2d)$ and is reusable at the same $h$/tableau/chart epoch. This is
+an operation bound, not measured speed. A requested embedded error or fixed
+dense-output linear functional gets its own polynomial. Several outputs can
+share one power sequence, but that power basis may have worse rounding than
+separate conditioned/Clenshaw evaluations. Complete error and total cost decide.
+
+An endpoint-only implementation must not claim that it produced stage vectors.
+Dense/event consumers, stage diagnostics, FSAL or effectful callbacks may require
+more information or actual calls. Their contracts constrain the shortcut.
+The existing two-channel direct formula can be cheaper than this general
+compiler and remains a comparator, as does the shared projected factorization.
+
+\section{Near structure and stored coefficients preserve the original target}
+
+For any actually stored degree-$<d$ polynomials $r_i$, form
+\begin{equation}
+ s_i=w_0r_i-1-\sum_{j<i}B_{ij}r_j
+     =\alpha_i\pi+e_i,\qquad\deg e_i<d.                     \label{eq:respoly}
+\end{equation}
+Because $\deg s_i\le d$, the quotient $\alpha_i$ is a \emph{scalar}:
+\begin{equation}
+ \alpha_i=-\frac{\sigma}{\pi_d}
+     \left(r_{i,d-1}+\sum_{j<i}a_{ij}r_{j,d-1}\right).        \label{eq:alpha}
+\end{equation}
+For exact compilation $e_i=0$. Outward coefficient arithmetic bounds $e_i$
+for stored coefficients, using $E_i(M)=\sum_{k<d}|e_{ik}|M^k$. This avoids
+creating an unnecessarily high-degree polynomial merely to certify each
+logical stage residual.
+
+Let $\norm{\widehat f_0-f(y)}\le\eps_0$ and define virtual stages
+$V_i=\tau r_i(C)\widehat f_0$ and $q_i=\sum_{j<i}a_{ij}V_j$.
+Assume a truthful nonlinear remainder bound
+\begin{equation}
+ \norm{f(y+q_i)-f(y)-J_0q_i}\le\mu_i.                        \label{eq:nonlinrem}
+\end{equation}
+Their original raw-$U$ residual is exactly
+\begin{align}
+ R_i=\tau\bigl[& (\alpha_i\pi(C)+e_i(C))\widehat f_0
+   +(\widehat f_0-f(y))\nonumber\\
+   &-(f(y+q_i)-f(y)-J_0q_i)\bigr],                          \label{eq:fullres}
+\end{align}
+and hence
+\begin{equation}
+ \norm{R_i}\le b_i:=|\tau|
+  \left[(|\alpha_i|\rho+E_i(M))\norm{\widehat f_0}
+        +\eps_0+\mu_i\right].                              \label{eq:resbound}
+\end{equation}
+
+Let $\norm{W^{-1}}\le\omega$ and suppose $f$ is $L_i$-Lipschitz on the
+segments joining virtual and exact target stage arguments. The existing
+strictly causal majorant is
+\begin{equation}
+ K_{ij}=\omega\bigl(|\tau|L_i|a_{ij}|+|\gamma c_{ij}|\bigr) (j<i),
+ \qquad H=\omega\sum_{\ell=0}^{s-1}K^\ell.                  \label{eq:causal}
+\end{equation}
+Since $K^s=0$, no global condition $\norm{K}<1$ is required. If the actual
+endpoint evaluation differs from $y+\sum_i\beta_iV_i$ by at most
+$\eps_{\rm eval}$, subtraction of original stage equations gives
+\begin{equation}
+ \norm{\widehat y_+-\Psi_h(y)}
+ \le |\beta|^T H b+\eps_{\rm eval}.                         \label{eq:compilerleaf}
+\end{equation}
+Here $\Psi_h(y)$ is the exact discrete stage target at the \emph{same actual
+numerical input}. This is Eq.~\eqref{eq:algebraicleaf}; temporal and clock errors
+remain separate under F or D. The proof is componentwise
+$\mathrm{error}\le\omega b+K\,\mathrm{error}$ followed by the finite sum.
+
+The evaluation allowance includes output-coefficient assembly, basis conversion,
+operator action defects, recurrence arithmetic, multiplication by $\tau$ and
+endpoint addition. PR93's backward polynomial defect identities can be used
+here. Terms already enclosed in $e_i$ or $\eps_0$ keep their original owner.
+
+Omitted RHS calls require a model-domain witness. A virtual argument radius is
+\begin{equation}
+ \norm{q_i}\le|\tau|\sum_{j<i}|a_{ij}|
+       \left(\sum_{k<d}|r_{jk}|M^k\right)\norm{\widehat f_0}.
+\end{equation}
+For $f(x)=-kx-gx^3$, $g\ge0$, and declared carrier $J_0=-k$, a radius $R$
+gives the remainder bound $g(3|y|^2R+3|y|R^2+R^3)$. This can be too loose,
+in which case evaluate the original RHS/residual or take another route.
+The Lipschitz domain also has to cover exact target stage arguments; a bound
+only on the virtual point does not establish it.
+
+\subsection{Signed transport of correlated structure defects}
+
+For exact coefficients and an affine model, $R_i=\tau\alpha_i\pi(C)f_0$.
+The residual blocks share one vector and need not be treated as independent.
+If $C$ is self-adjoint in the declared Hilbert norm, with spectrum in a
+certified interval $I$ on which $w_0\ne0$, let $L(x)$ be lower triangular
+with diagonal $w_0(x)$ and lower entries $-B_{ij}(x)$. Then
+\begin{equation}
+ \sum_i\beta_i(V_i-U_i)
+ =\tau g_\beta(C)\pi(C)f_0,\qquad
+ g_\beta(x)=\beta^TL(x)^{-1}\alpha,                          \label{eq:signed}
+\end{equation}
+so the endpoint error is at most
+$|\tau|\rho\norm{f_0}\sup_{x\in I}|g_\beta(x)|$.
+This follows from the affine block error equation and the spectral theorem.
+It is an alternative to Eq.~\eqref{eq:compilerleaf}, with stronger assumptions.
+A denominator enclosure and signed scalar-envelope preparation must be charged.
+For the two-projector model it reduces to the existing two scalar adjoints.
+
+The adverse case $C=\left(\begin{smallmatrix}\delta&1\\0&-\delta\end{smallmatrix}\right)$,
+$\pi(x)=x^2$, has $\pi(C)=\delta^2I$. Treating that near relation as exact
+omits a nonzero original residual. Equation~\eqref{eq:fullres} exposes the
+missing term directly. Independently, a nonnormal matrix can have a narrow
+eigenvalue set without a useful spectral-theorem bound. Numerical-range
+polynomial bounds, when actually certified, can use the established
+$1+\sqrt2$ constant\cite{crouzeix}; no such witness is inferred here.
+
+\section{Precision-aware refinement with a derived stopping budget}
+
+Let $r_k=f-Ax_k$, $\norm{I-AP}\le\theta<1$ and $\norm{A}\le a$.
+Represent the residual, correction and update by
+\begin{equation}
+ \begin{aligned}
+ \widehat r_k&=r_k+e_k,\quad d_k=P\widehat r_k+z_k,\quad
+ x_{k+1}=x_k+d_k+u_k,\\
+ \norm{e_k}&\le\eta_k,\quad\norm{z_k}\le\zeta_k,\quad
+ \norm{u_k}\le\upsilon_k.
+ \end{aligned}
+\end{equation}
+Direct substitution gives
+\begin{align}
+ r_{k+1}&=(I-AP)r_k-APe_k-A(z_k+u_k),\label{eq:refineidentity}\\
+ R_{k+1}&\le\theta R_k+\kappa_k,\qquad
+ \kappa_k=(1+\theta)\eta_k+a(\zeta_k+\upsilon_k).             \label{eq:refinebound}
+\end{align}
+No commutation between $A$ and $P$ is required. A sharper independent bound on
+$\norm{AP}$ may replace $1+\theta$.
+
+For uniform $\kappa_k\le\kappa$,
+\begin{equation}
+ R_m\le\theta^mR_0+
+       \kappa\frac{1-\theta^m}{1-\theta},\qquad
+ F=\frac{\kappa}{1-\theta}.                                 \label{eq:floor}
+\end{equation}
+When $0<\theta<1$ and $R_0>\eps>F$, the least sufficient correction count
+for this bound is the least integer $m$ such that
+\begin{equation}
+ \theta^m\le\frac{\eps-F}{R_0-F}.                           \label{eq:miniter}
+\end{equation}
+Outward integer verification decides the boundary. If $0<\theta<1$,
+$R_0>\eps$ and $\eps\le F$, repeating this uniform bound cannot certify
+a finite success. This limits the chosen enclosure, not every algorithm or
+representable solution. If $\theta=0$, zero corrections suffice when
+$R_0\le\eps$; otherwise one correction is certified when $\kappa\le\eps$,
+including equality. If $\kappa>\eps$, repetition of that same uniform bound
+does not establish success.
+
+The exact example $\theta=1/4$, $a=1$, $\eta=1/10000$,
+$\zeta=\upsilon=1/20000$ has $F=3/10000$. With $R_0=1$ and
+$\eps=1/1000$, Eq.~\eqref{eq:miniter} selects six corrections. The registered
+check includes a scalar construction attaining the bound for twelve updates,
+a noncommuting matrix example, and the $\theta=0$ equality case.
+
+Standalone refinement may use varying certified $P_k$, with the corresponding
+product-weighted sum of $\theta_k$ and $\kappa_k$. This does not justify a
+changing preconditioner inside an outer algorithm assuming fixed linearity;
+freeze that plan or use a separately qualified flexible method. The current
+native defaults $\texttt{maximum\_relation\_ratio}=0.5$ and
+$\texttt{stagnation\_ratio}=0.95$ are operational policies. The derived rule
+can determine mathematical feasibility and the required work without treating
+those numbers as theorem constants. Explicit resource caps, failure charging
+and original-residual-controlled commit remain.
+
+\section{Allocate the remaining budget without a fixed arbitrary split}
+
+For a fixed request and valid tube, let component $i$ have finitely many
+admitted options $j$, errors $e_{ij}\ge0$ and costs $c_{ij}\ge0$ in one
+declared unit. Let $W\ge0$ map component errors into required observation
+bounds, $r$ contain already-owned errors, and $\epsilon$ be the budgets.
+The planner solves
+\begin{equation}
+ \begin{aligned}
+ &\min_{j_1,\ldots,j_s}\sum_i c_{ij_i},\\
+ &\text{subject to}\quad
+ r+W(e_{1j_1},\ldots,e_{sj_s})^T\le\epsilon.
+ \end{aligned}                                             \label{eq:menu}
+\end{equation}
+Extend partial error/cost labels one component at a time. A label can be
+removed when another has no greater cost and no greater error in every
+observation coordinate, with at least one strict inequality. Equal labels
+must retain a representative. Completing a dominated label and its retained
+replacement with the same future options preserves dominance, proving that
+the least-cost feasible final label solves Eq.~\eqref{eq:menu}.
+
+Shared setup changes this rule. Labels must carry a continuation state that
+determines future admissible choices, errors and costs. Prune only within
+that state, or under a proved simulation relation. A cold label costing zero
+now and 100 later does not dominate a warm label costing one now and zero
+later. Equal numerical errors do not make different factorization caches,
+coefficient plans or sessions interchangeable.
+
+For weights $(2,1)$ and budget $3/10$, let the error/cost menus be
+\[
+ \begin{aligned}
+ A &: (e,c)\in\{(1/10,4),(1/20,7)\},\\
+ B &: (e,c)\in\{(1/5,1),(1/10,3),(1/20,6)\}.
+ \end{aligned}
+\]
+The exact optimum has error $3/10$ and cost 7.
+An equal physical split requires cost 10. These are declared toy work units,
+not native VigilODE measurements.
+
+A continuous initializer is available for a stated work model
+$C_i(\eta_i)=a_i\log(B_i/\eta_i)$, $a_i,B_i>0$, with
+$\sum_iw_i\eta_i\le B$. At an interior optimum, strict convexity and
+stationarity give
+\begin{equation}
+ \eta_i=\frac{Ba_i}{w_i\sum_j a_j}.                          \label{eq:kkt}
+\end{equation}
+For positive bounds $\ell_i\le\eta_i\le u_i$, first check
+$B\ge\sum_iw_i\ell_i$. Take all upper bounds if they fit; otherwise use the
+clipped multiplier solution in its valid logarithmic range. The actual
+integer degree/iteration still needs its original outward test and finite
+comparison. A measured cost table makes this optimum conditional on that
+table; hardware latency is not a numerical-analysis constant.
+
+An upper arithmetic allowance consuming the entire budget establishes
+infeasibility of that decomposition, not a universal precision impossibility.
+A true representability obstruction needs a lower distance: on the fixed
+lattice $(1/8)\mathbb Z$, the nearest value to $1/3$ is $3/8$, at distance
+$1/24$. Tolerance $1/100$ is impossible there. A loose upper allowance of one
+for the exactly representable value $1/2$ proves nothing comparable.
+
+\section{Session continuation and complete work conservation}
+
+Three reuse mechanisms require different invalidation rules. Storage capacity
+may survive many target changes after initialization. Algebraic objects need
+their stated operator, step, chart, norm, model and arithmetic identities.
+Proof reuse needs its valid domain and anchor; a theorem can permit semantic
+reuse across different input bytes. These mechanisms should not be controlled
+by one undifferentiated cache-hit boolean. In particular, keep root workspace
+capacity while invalidating Anderson history when its map changes.
+
+The current switching probe extracts an endpoint and proposed step inside
+\texttt{with\_session}, then returns from the closure. The native session
+ceases to exist. Its existing state already includes workspace, controller,
+FSAL, complete output schedule, cursor, cumulative attempt budget and terminal
+state. Retaining that object can avoid rebuilding the winner.
+
+\textbf{Proposition 3 (retained-session continuation).} For a deterministic
+transition system, pausing an execution at an accepted checkpoint and then
+continuing the same full state under the same callback response law and
+external controls preserves subsequent states, decisions, outputs and native
+callback trace. Work is the sum of the two disjoint trace segments.
+
+\emph{Proof.} The first states after the pause are identical; induction over
+future transition inputs gives identical states and emitted events.
+\hfill$\square$ This does not follow from copying $(t,y,h)$, and it does not
+claim identical host bookkeeping or elapsed time. Provider state affected by
+callbacks must be included or isolated; diagnostic counters can remain charged.
+
+The schedule is a concrete integration condition. A session may land only at
+registered observations. A winning-capable probe should therefore receive
+the complete intended remaining schedule at construction and continue inside
+the same closure. Adding a new earlier landing can change the first-window
+trace and needs a new comparison. Reaching an endpoint and retaining enough
+global attempt budget to continue are separate states.
+
+For requested invocations $A$, admitted entries $E$, pre-entry refusals $R$,
+completed entries $C$, failed entries $F$, and pending entries $P$,
+\begin{equation}
+ A=E+R,\qquad E=C+F+P.                                      \label{eq:accounting}
+\end{equation}
+All scheduled workers must be joined/accounted before setting $P=0$.
+These are not physical callback identities; each entered callback/action has
+its own ledger. Thus Q-FAIR-AB's attempted-versus-admitted distinction and
+PR92's entered-versus-charged physical-work repair are different obligations.
+
+A completed admissible competitor of cost $C$ dominates an unfinished trial
+whose proved final-cost lower bound is already $L\ge C$, when ties prefer
+the completed result. For integer costs strict improvement is equivalent to
+final cost at most $C-1$. A fixed nonnegative linear work functional supplies
+a monotone accumulated lower bound. This is a same-window statement and
+does not predict unexecuted fatal callbacks or future-regime costs. RHS counts,
+instructions and elapsed seconds remain different units. PR93's residence
+theorem still requires a future variation certificate; session reuse does
+not supply that missing assumption.
+
+\section{Recorded supporting calculations}
+
+Both checker programs and their protocol were published before execution at
+\par\noindent\texttt{af7f3e9f55d652554042d2386bf07abb7d857d75}.
+\par The two exact-rational programs exited successfully. Source/input hashes,
+stdout, stderr and commands are preserved in their receipts. A preceding
+Wolfram KKT calculation remains exploratory; its symbolic-variable warning
+is retained. One bounded complementary review clarified the zero-contraction
+boundary, strict frontier dominance, bounded-log feasibility and the cubic
+sign assumption before source registration. No recursive review was performed.
+
+\begin{table}[h]
+\caption{Nine compiler checks. $n$, $s$ and $d$ denote dimension, stage count
+and annihilator degree. The fixtures use small synthetic rational tableaus;
+they do not test native RODAS coefficients or floating arithmetic. Errors and
+causal infinity-norm bounds are rounded here for presentation; admission uses
+the complete exact rationals in the JSON output. Every row passed.}
+\begin{tabular}{L{0.36\linewidth}rrrcc}
+\toprule
+Fixture & $n$ & $s$ & $d$ & Endpoint error & Causal bound\\
+\midrule
+Exact scalar &1&3&1&0&0\\
+Exact nonnormal nilpotent &2&8&2&0&0\\
+Exact three-channel relation &3&3&3&0&0\\
+Near annihilator &2&3&2&$1.201448\,10^{-4}$&$1.915502\,10^{-4}$\\
+Self-adjoint signed-defect check &2&3&2&$1.201448\,10^{-4}$&$1.335575\,10^{-4}$\\
+Ignoring structure defect: adverse control &2&1&2&$1.230769\,10^{-4}$&$1.846154\,10^{-4}$\\
+Stored coefficient defect &2&3&2&$3.333333\,10^{-6}$&$7.038578\,10^{-6}$\\
+Near-affine original target &2&3&2&$9.908213\,10^{-9}$&$1.464143\,10^{-8}$\\
+Base-RHS representation defect &2&3&2&$3.988874\,10^{-5}$&$5.949902\,10^{-5}$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The self-adjoint fixture separately checks the signed identity and its
+Hilbert-norm inequality; the displayed bound is its causal infinity-norm
+bound. Additional algebra checks cover denominator refusal, a noncommuting
+right defect $1/20$, the minimum correction count six, varying certified
+correction plans and the $\theta=0$ floor equality.
+
+\begin{table}[h]
+\caption{Six physical-error check groups, all passing exact assertions.
+These finite examples support the general written proofs.}
+\begin{tabular}{L{0.24\linewidth}L{0.63\linewidth}}
+\toprule
+Group & Discriminating exact result\\
+\midrule
+Selection induction & Eight selected steps satisfy the bound; a positive
+defect family saturates its product-weighted sum\\
+Two anchors & Actual error and each valid bound $1/5$; invalid mixed bound $1/10$\\
+Representation and clock & Coordinate norm1 versus physical norm1000;
+current clock gap $1/100$ stays observation-only\\
+Finite menu & Exhaustive and pruned optimum cost7 versus equal-split cost10;
+warm-state total1 versus cold-state total100\\
+Continuous allocation & $(\eta_1,\eta_2)=(1/16,3/8)$; both KKT multipliers equal8\\
+Precision distinction & Lattice distance $1/24$; loose upper enclosure
+does not imply impossibility\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+No native solver tests, benchmarks, profiles or new binary64 kernels were
+executed in this theory supplement. PR93's prior $5m\to m$ fused action and
+$512\to256$ cubic planning example retain their original mathematical scope.
+Neither those counts nor the present $d-1$ compiler bound are measured
+wall-time speedups. Existing negative controls remain useful: nonnormal
+spectral traps, wrong-root residual ambiguity, the unstable product of
+individually stable Verlet steps, unsuccessful polynomial scaling, and the
+historical W-filtered cost failure.
+
+\section{An independent PR that validates the cumulative implementation}
+
+The separate validation branch should start from the final delivered integration
+commit and target \texttt{main}, after recording main's then-current full SHA.
+The observed main in this research is
+\par\noindent\texttt{8d0c79184e09efb5bdadc24a6315c60a71a44264}.
+\par It is an ancestor of the inspected cumulative source. No earlier PR merger
+is required to include their content. Reapplying nested PR heads by cherry-pick
+would duplicate already inherited changes. If main advances or diverges,
+reconcile it in the new worktree and qualify the resolved tree, not an old head.
+
+The conversation range has 73 unique changed crate/workflow paths. Per-PR
+counts are 13, 20, 44 and 0 for PR90--93; overlap explains their sum.
+The machine-readable coverage maps every path to semantic gates and source
+hashes. Three scopes must be reported separately: source inclusion by ancestry,
+current-tree behavior covering the conversation's changes, and inherited/release
+qualification. Ancestry alone does not prevent a later revert or prove behavior.
+The main-target diff also contains substantial older work, which is not newly
+attributed to this conversation.
+
+\subsection{Current remote failures and the positive path forward}
+
+PR93's fresh-clone run 40609485096 passed its default dependency graph,
+workspace compilation and touched default contract. Integrator Clippy then
+failed at the same 23 sites already diagnosed by PR92. Later vendor/offline
+stages were skipped. Q-LINT therefore includes completing those stages after
+the actual lint repair; default build success is not offline qualification.
+
+The authority run 40609485121 passed checker unit tests and append-only
+research-node validation, then failed the full authority scan. Its 10,133
+citations and 797 distinct object strings include 53 missing, 27 missing
+allowlisted, 220 non-commit and 497 reachable classifications. The workflow
+uses full-depth checkout, so the failures cannot all be called shallow history.
+Julia package tree hashes, repository-qualified external commits, and
+published equal-tree mappings have different identity semantics. Q-LEDGER
+needs typed resolution and explicit mapping evidence while preserving genuine
+unresolved authorities; a blanket allowlist is not the correction.
+
+\begin{table}[h]
+\caption{Inherited qualification obligations remain open. The new plan supplies
+their cumulative scope and positive next actions, not passing native results.}
+\begin{tabular}{L{0.17\linewidth}L{0.70\linewidth}}
+\toprule
+Gate & Required action\\
+\midrule
+Q-GIVENS & Export exact inputs and independently check every returned residual
+before changing the historical expected status; \texttt{Ok(3640)} alone is
+not evidence of false convergence\\
+Q-FAIR-AB & Reconcile attempted/admitted/refused work and independent callbacks;
+keep this separate from the repaired physical-entry ledger\\
+Q-BENCH & Qualify the actual SUNDIALS/compiler/MPI environment and comparator
+physics; version changes are recorded factors\\
+Q-LINT & Repair actual sites, preserve numerical/API semantics, then complete
+the skipped vendor/offline stages\\
+Q-API & Test exhaustive downstream literals and enum use against the relevant
+predecessors; choose compatibility or an explicit migration\\
+Q-NEGATIVE & Preserve the historical $15/7>1.3$ failure and inaccurate Off arm;
+record expected-negative and other ignored tests with their actual outcomes\\
+Q-LEDGER & Validate typed authority and equal-tree mappings without rewriting
+historical execution identities or hiding unresolved scientific source\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The future PR needs whole-package gates and cross-PR interactions: winning
+session versus rejection and observations; cache reuse versus step/provider/norm
+epochs; refusal, callback failure and joined workers; physical budget versus
+polynomial/root/lift/clock errors; distinct/same-vector and fused/column outputs;
+planner/backend factorial comparisons; exact/near structure and nonlinear
+remainders; and retained adverse cases. Test, measurement and actual release/LTO
+profiles must be distinguished for floating/branch-sensitive fixtures.
+
+Baseline and candidate builds require separate target directories and source/
+binary identity. Replays of old scripts that write beside themselves belong in
+a disposable mirror/worktree, with new outputs captured separately. The final
+tree needs fresh behavior checks even when historical receipts are preserved.
+Conversely, old expensive campaigns need not all be rerun when the unique
+behavior is already covered under an explicit identity/reuse relation.
+
+The existing 23-node/34-edge DAG, eight native suites and correction budgets
+remain intact. Builds, native tests, timings and profiles share the existing
+execution lock. Old structural and adapter correction loops are already 3/3;
+new alternatives do not reset them. The positive deployment path remains
+release qualification, matched-accuracy hardware measurements and actual-client
+qualification. An independently reproducible branch also needs independent
+oracles: a full original-equation solve or exact/high-precision derivation,
+not merely the same routine run from a different branch.
+
+\section{Implementation decisions and unresolved theory}
+
+The immediate implementation sequence is to qualify the cumulative existing
+code, then measure N01 fused action and N02 planner changes independently,
+followed by N04 retained-session continuation. The quotient compiler is a
+focused N03/N05 extension on declared low-degree models. Its remainder and
+domain providers precede general near-affine omission. N06 residence retains
+its future-variation obligation.
+
+Allocation, scratch reuse, output fusion and complete-session lifetime can be
+improved through code while preserving their stated mathematical targets.
+Outward preparation and defect kernels require implementation-level arithmetic
+proofs and native checks. General nonlinear carrier order, stiffness-uniform
+accuracy, physical branch control, arbitrary domain certification and future
+cost variation require additional theory. No local failed candidate establishes
+a universal impossibility of the project's original construction.
+
+The inherited references preserve these distinctions. Algebraic-geometry
+regularization and nonlinear root certification\cite{robust,nonlinear} do not
+by themselves select the original physical branch or provide a derivative-free
+implementation. The DAE symmetry construction has its stated reduction and
+linear-system scope\cite{dae}. Geometric RK/composition identities\cite{eth}
+still require separate treatment of adaptive selection and inexact stages.
+
+The integrated design therefore selects among eligible structures and targets,
+transports each admitted local result through a correctly anchored physical
+contract, and charges every attempted computation. Proof-derived constants
+determine admissibility and precision feasibility. Declared resource budgets
+and measured service costs determine the economic choice within that region.
+The complete derivations, exact outputs, provenance, coverage and handoff are
+stored under \nolinkurl{research/integrated_polyalgorithm_20261028/}.
+
+\begin{thebibliography}{99}
+\bibitem{pr90} VigilODE PR90, \textit{Reduce qualified solver work and add rigorous
+theory/performance audit}, \href{https://github.com/cosmosapjw-quantum/vigilode/pull/90}{repository PR} (2026).
+\bibitem{pr91} VigilODE PR91, \textit{Derive exact error/work constants and implement
+derivative-free causal/homotopy improvements},
+\href{https://github.com/cosmosapjw-quantum/vigilode/pull/91}{repository PR} (2026).
+\bibitem{pr92} VigilODE PR92, \textit{Close scoped derivative-free solver paths with
+rigorous bounds, profiles, and production setup},
+\href{https://github.com/cosmosapjw-quantum/vigilode/pull/92}{repository PR} (2026).
+\bibitem{pr93} VigilODE PR93, \textit{Fused polynomial actions and proof-derived
+polyalgorithm extensions},
+\href{https://github.com/cosmosapjw-quantum/vigilode/pull/93}{repository PR} (2026).
+\bibitem{RG2024} H. Ranocha and J. Giesselmann, \textit{Stability of step size control
+based on a posteriori error estimates},
+\href{https://doi.org/10.1007/s44207-024-00001-0}{DOI:10.1007/s44207-024-00001-0} (2024), Secs.~2.1 and 3.
+\bibitem{CP2004} Y. Cao and L. Petzold, \textit{A Posteriori Error Estimation and
+Global Error Control for Ordinary Differential Equations by the Adjoint Method},
+\href{https://doi.org/10.1137/S1064827503420969}{DOI:10.1137/S1064827503420969} (2004),
+\href{https://people.cs.vt.edu/~ycao/publication/siam_42096.pdf}{author manuscript}.
+\bibitem{crouzeix} M. Crouzeix and C. Palencia, \textit{The numerical range as a
+spectral set}, \href{https://arxiv.org/abs/1702.00668}{arXiv:1702.00668} (2017).
+\bibitem{dlmf} NIST Digital Library of Mathematical Functions,
+\href{https://dlmf.nist.gov/18.14.E8}{Laguerre inequality 18.14.8} and
+\href{https://dlmf.nist.gov/18.12.E13}{generating function 18.12.13}.
+\bibitem{wathen} A. J. Wathen and T. Rees, \textit{Chebyshev semi-iteration in
+Preconditioning}, Oxford Report 08/14,
+\href{https://www.cs.ox.ac.uk/files/1540/NA-08-14.pdf}{primary report} (2008).
+\bibitem{robust} E. R. Cobian, J. D. Hauenstein, and C. W. Wampler,
+\textit{Robust Numerical Algebraic Geometry},
+\href{https://arxiv.org/pdf/2403.18749}{arXiv:2403.18749}.
+\bibitem{nonlinear} D. J. Bates et al., \textit{Numerical Nonlinear Algebra},
+\href{https://arxiv.org/html/2302.08585v2}{arXiv:2302.08585v2}.
+\bibitem{dae} P. Kunkel and V. Mehrmann, \textit{Discretization of inherent ODEs
+and the geometric integration of DAEs with symmetries},
+\href{https://arxiv.org/pdf/2205.08105}{arXiv:2205.08105}.
+\bibitem{eth} H. Ammari, \textit{Geometrical numerical integration methods for
+differential equations},
+\href{https://people.math.ethz.ch/~grsam/FS18/NAII/files/slides/ODE-Lecture5.pdf}{ETH Lecture 5}.
+\end{thebibliography}
+\end{document}

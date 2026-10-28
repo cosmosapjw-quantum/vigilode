@@ -1,0 +1,168 @@
+{
+ "schema": "vigilode-pp05-check-v1",
+ "cases": [
+  {
+   "case": "resonance",
+   "ok": true,
+   "reference": "mpmath odefun 30 digits",
+   "steps": 4,
+   "counts": {
+    "candidate_builds": 8,
+    "candidate_rejections": 4,
+    "rhs_calls": 24,
+    "step_halvings": 0
+   },
+   "worst_error_over_bound": 0.1806889045222596,
+   "worst_interior_error_over_bound": 0.12582013156176966,
+   "native_over_source_error_min": 1.0000245284429121,
+   "native_over_source_error_max": 1.0000542366480605,
+   "final_error_bound": 7.078867866408782e-12,
+   "max_physical_error": 1.226095880468671e-11
+  },
+  {
+   "case": "unit",
+   "ok": true,
+   "reference": "mpmath odefun 30 digits",
+   "steps": 4,
+   "counts": {
+    "candidate_builds": 8,
+    "candidate_rejections": 4,
+    "rhs_calls": 24,
+    "step_halvings": 0
+   },
+   "worst_error_over_bound": 0.1103372347684832,
+   "worst_interior_error_over_bound": 0.07380476822446057,
+   "native_over_source_error_min": 1.0000064010101224,
+   "native_over_source_error_max": 1.0000170670338795,
+   "final_error_bound": 2.76688225489253e-11,
+   "max_physical_error": 4.792544096345177e-11
+  },
+  {
+   "case": "forty",
+   "ok": true,
+   "reference": "mpmath odefun 30 digits",
+   "steps": 4,
+   "counts": {
+    "candidate_builds": 8,
+    "candidate_rejections": 4,
+    "rhs_calls": 24,
+    "step_halvings": 0
+   },
+   "worst_error_over_bound": 0.08285887015763699,
+   "worst_interior_error_over_bound": 0.06196898639199918,
+   "native_over_source_error_min": 1.0001719340684407,
+   "native_over_source_error_max": 1.0007709803922986,
+   "final_error_bound": 2.8925401457239183e-12,
+   "max_physical_error": 5.013880843296368e-12
+  },
+  {
+   "case": "negative",
+   "ok": true,
+   "reference": "mpmath odefun 30 digits",
+   "steps": 4,
+   "counts": {
+    "candidate_builds": 8,
+    "candidate_rejections": 4,
+    "rhs_calls": 24,
+    "step_halvings": 0
+   },
+   "worst_error_over_bound": 0.08285887015763699,
+   "worst_interior_error_over_bound": 0.06196898639199918,
+   "native_over_source_error_min": 1.0001719340684407,
+   "native_over_source_error_max": 1.0007709803922986,
+   "final_error_bound": 2.8925401457239183e-12,
+   "max_physical_error": 5.013880843296368e-12
+  },
+  {
+   "case": "fast",
+   "ok": true,
+   "reference": "scipy DOP853 rtol 8e-14 (difference to 2e-13 run reported)",
+   "reference_difference": 1.0418029728095927e-14,
+   "steps": 4,
+   "counts": {
+    "candidate_builds": 8,
+    "candidate_rejections": 4,
+    "rhs_calls": 24,
+    "step_halvings": 0
+   },
+   "worst_error_over_bound": 0.10789924882067524,
+   "worst_interior_error_over_bound": 0.06892344118093452,
+   "native_over_source_error_min": 1.0002202938262297,
+   "native_over_source_error_max": 1.0011063370865194,
+   "final_error_bound": 2.2026386428211665e-12,
+   "max_physical_error": 3.820503685124399e-12
+  },
+  {
+   "case": "forty_tight",
+   "ok": true,
+   "reference": "mpmath odefun 30 digits",
+   "steps": 8,
+   "counts": {
+    "candidate_builds": 30,
+    "candidate_rejections": 22,
+    "rhs_calls": 90,
+    "step_halvings": 7
+   },
+   "worst_error_over_bound": 0.0806194653012754,
+   "worst_interior_error_over_bound": 0.044462691494923365,
+   "native_over_source_error_min": 1.0008814983348537,
+   "native_over_source_error_max": 1.0111592852552476,
+   "final_error_bound": 5.319757451117336e-13,
+   "max_physical_error": 9.25265179748184e-13
+  }
+ ],
+ "negative_controls": {
+  "independent_scalar": {
+   "actual_error": 0.00012607870204188942,
+   "bound": 0.0007061722359037456,
+   "bound_encloses": true,
+   "committed": false,
+   "fail_closed": true
+  },
+  "wrong_phase": {
+   "actual_error": 8.08325711136522e-06,
+   "bound": 7.157099585478653e-05,
+   "bound_encloses": true,
+   "committed": false,
+   "fail_closed": true
+  },
+  "cyclic_alias": {
+   "actual_error": 2.8401331740268267e-14,
+   "bound": 6.196638931781153e-13,
+   "bound_encloses": true,
+   "committed": true,
+   "fail_closed": false
+  },
+  "stale_binding": {
+   "fail_closed": true,
+   "other_epoch_refused": true,
+   "other_h_refused": true,
+   "other_path_refused": true,
+   "other_state_refused": true
+  },
+  "initial_mismatch": {
+   "fail_closed": true,
+   "start_mismatch": 0.0010000000000001674
+  },
+  "noncontractive_slab": {
+   "fail_closed": true
+  },
+  "domain_b_above_one": {
+   "fail_closed": true,
+   "reason": "CANDIDATE_DOMAIN"
+  }
+ },
+ "two_pi_constants": {
+  "d": "6.5785e-26",
+  "ulp_b": "8.27181e-25",
+  "ok": true
+ },
+ "gate": {
+  "g1_enclosure": true,
+  "g2_source_parity": false,
+  "g3_negative_controls": false,
+  "two_pi_split_verified": true,
+  "g4": "contract test pp05_fourier_client::driver_unit_case_commits_and_binds, fmt, clippy"
+ },
+ "verdict": "FAIL"
+}

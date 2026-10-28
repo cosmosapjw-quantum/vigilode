@@ -1,0 +1,106 @@
+   Compiling rodas5p-fair-ab v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-fair-ab)
+    Checking rodas5p-integrators v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-integrators)
+warning: fields `prepared_centers`, `prepared_radii`, `prepared_times`, `prepared_count`, `radii`, and `prepared_valid` are never read
+   --> crates/rodas5p-integrators/src/output.rs:706:5
+    |
+698 | pub(crate) struct OutputCollector {
+    |                   --------------- fields in this struct
+...
+706 |     prepared_centers: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^^^
+707 |     prepared_radii: Vec<Vec<f64>>,
+    |     ^^^^^^^^^^^^^^
+708 |     prepared_times: Vec<f64>,
+    |     ^^^^^^^^^^^^^^
+709 |     prepared_count: usize,
+    |     ^^^^^^^^^^^^^^
+710 |     radii: Vec<Vec<f64>>,
+    |     ^^^^^
+711 |     prepared_valid: bool,
+    |     ^^^^^^^^^^^^^^
+    |
+    = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: struct `DenseOutputPreparationWork` is never constructed
+   --> crates/rodas5p-integrators/src/output.rs:716:19
+    |
+716 | pub(crate) struct DenseOutputPreparationWork {
+    |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: methods `with_verified_radii`, `prepare_dense_interval_with_radii`, `prepare_dense_interval_inner`, `commit_prepared_dense_interval`, `prepared_dense_radii`, and `committed_output_radii` are never used
+    --> crates/rodas5p-integrators/src/output.rs:766:19
+     |
+ 722 | impl OutputCollector {
+     | -------------------- methods in this implementation
+...
+ 766 |     pub(crate) fn with_verified_radii(mut self, initial_radius: &[f64]) -> CoreResult<Self> {
+     |                   ^^^^^^^^^^^^^^^^^^^
+...
+1035 |     pub(crate) fn prepare_dense_interval_with_radii<C, R>(
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1070 |     fn prepare_dense_interval_inner<C, R>(
+     |        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1162 |     pub(crate) fn commit_prepared_dense_interval(&mut self) {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+1176 |     pub(crate) fn prepared_dense_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^
+...
+1180 |     pub(crate) fn committed_output_radii(&self) -> &[Vec<f64>] {
+     |                   ^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `rodas5p-integrators` (lib) generated 3 warnings
+error[E0004]: non-exhaustive patterns: `DenseOutputError::UnsupportedUnboundModel` and `DenseOutputError::BoundModelMismatch` not covered
+   --> crates/rodas5p-fair-ab/src/adaptive_global_error.rs:466:34
+    |
+466 |     result.map_err(|error| match error {
+    |                                  ^^^^^ patterns `DenseOutputError::UnsupportedUnboundModel` and `DenseOutputError::BoundModelMismatch` not covered
+    |
+note: `DenseOutputError` defined here
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:26:1
+    |
+ 26 | pub enum DenseOutputError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+ 34 |     UnsupportedUnboundModel,
+    |     ----------------------- not covered
+ 35 |     #[error("ODE problem no longer matches its immutable continuous-model binding")]
+ 36 |     BoundModelMismatch,
+    |     ------------------ not covered
+    = note: the matched value is of type `DenseOutputError`
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern, a match arm with multiple or-patterns as shown, or multiple match arms
+    |
+476 ~         ),
+477 ~         DenseOutputError::UnsupportedUnboundModel | DenseOutputError::BoundModelMismatch => todo!(),
+    |
+
+error[E0004]: non-exhaustive patterns: `rodas5p_integrators::DenseOutputError::UnsupportedUnboundModel` and `rodas5p_integrators::DenseOutputError::BoundModelMismatch` not covered
+   --> crates/rodas5p-fair-ab/src/adaptive_global_error.rs:466:34
+    |
+466 |     result.map_err(|error| match error {
+    |                                  ^^^^^ patterns `rodas5p_integrators::DenseOutputError::UnsupportedUnboundModel` and `rodas5p_integrators::DenseOutputError::BoundModelMismatch` not covered
+    |
+note: `rodas5p_integrators::DenseOutputError` defined here
+   --> crates/rodas5p-integrators/src/dense_output_v2.rs:26:1
+    |
+ 26 | pub enum DenseOutputError {
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^
+...
+ 34 |     UnsupportedUnboundModel,
+    |     ----------------------- not covered
+ 35 |     #[error("ODE problem no longer matches its immutable continuous-model binding")]
+ 36 |     BoundModelMismatch,
+    |     ------------------ not covered
+    = note: the matched value is of type `rodas5p_integrators::DenseOutputError`
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern, a match arm with multiple or-patterns as shown, or multiple match arms
+    |
+476 ~         ),
+477 ~         rodas5p_integrators::DenseOutputError::UnsupportedUnboundModel | rodas5p_integrators::DenseOutputError::BoundModelMismatch => todo!(),
+    |
+
+For more information about this error, try `rustc --explain E0004`.
+error: could not compile `rodas5p-fair-ab` (lib test) due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `rodas5p-fair-ab` (lib) due to 1 previous error

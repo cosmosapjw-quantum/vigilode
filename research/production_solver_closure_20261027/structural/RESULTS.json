@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "status": "complete_scoped",
+  "runtime_source_sha256": "ebc43ae0ef3faada53764f0895c4b6587645d0ee51497a39bfe77d7fcd347330",
+  "native_distinct_contracts_passed": 11,
+  "new_contracts_passed": 6,
+  "reused_contracts_passed": 5,
+  "exact_oracle": {
+    "cells": 21,
+    "stage_bounds": 168,
+    "full_residual_components": 728,
+    "all_pass": true,
+    "exponent_radius_checks_reused": 8184
+  },
+  "corrections_used": 3,
+  "corrections_allowed": 3,
+  "final_timing_receipt": "FINAL_BENCHMARK_SUMMARY.json",
+  "profile": {
+    "status": "completed",
+    "instructions_per_repetition": {
+      "pr91": 347516244.75,
+      "fused": 309511284.25,
+      "enclosed": 130256982.0
+    },
+    "ratio_to_first_arm": {
+      "pr91": 1.0,
+      "fused": 0.8906383195774332,
+      "enclosed": 0.3748227139531439
+    },
+    "binary_unchanged": true,
+    "source_changes_during_profile": [],
+    "interpretation": "guest instruction count; startup subtracted; not native wall time"
+  },
+  "public_api": [
+    "MeanFieldPlan::step_charged",
+    "MeanFieldAffine::sequential_step_charged",
+    "MeanFieldAffine::enclosure_plan",
+    "MeanFieldPlan::enclosed_screen",
+    "MeanFieldEnclosurePlan::step",
+    "StructuralFailure",
+    "EnclosedStructuralCandidate"
+  ],
+  "limitations": [
+    "immutable affine mean-field model",
+    "IEEE binary64 nearest/gradual underflow/no unsafe reassociation",
+    "stage certificate; global physical certificate is a separate planned local task",
+    "direct fused walltime gain is not stable across measured cells"
+  ],
+  "next_prs_file": "LOCAL_TASKS.json",
+  "review": "../theory/STRUCTURAL_REVIEW.json",
+  "publication_owned_by": "/root"
+}

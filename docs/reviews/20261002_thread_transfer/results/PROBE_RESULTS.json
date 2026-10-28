@@ -1,0 +1,352 @@
+{
+  "schema": "vigilode-thread-transfer-probes-v1",
+  "source_commit": "d1e9ba3b0125ee478c28d0b2c280ca0869289c15",
+  "preregistration_commit": "f2797d8891eb7201da31576080f2118bb23b7b1b",
+  "environment": {
+    "python": "3.13.5",
+    "sympy": "1.14.0",
+    "native_cargo": "not available in runtime PATH"
+  },
+  "scope": "isolated exact-real review probes; no native solver, timing, holdout or CI campaign",
+  "test_summary": "54 passed in 4.22s",
+  "source_selection_sha256": "26ea295b435fb2a3d69af3d8cbefe5fa8c7d1acf73704a13908f84c56efc7aa0",
+  "rows": [
+    {
+      "dimension": 1,
+      "existing_six_point_schedule": [
+        {
+          "radius": 0.001,
+          "closes": false
+        },
+        {
+          "radius": 0.004,
+          "closes": false
+        },
+        {
+          "radius": 0.016,
+          "closes": false
+        },
+        {
+          "radius": 0.064,
+          "closes": true
+        },
+        {
+          "radius": 0.256,
+          "closes": true
+        },
+        {
+          "radius": 1.024,
+          "closes": true
+        }
+      ],
+      "certified_safe_radius_interval_approx": [
+        0.01941474853881766,
+        75214.71821273342
+      ],
+      "certified_safe_radius_interval_exact": [
+        "36908/1901029",
+        "75553635733/1004506"
+      ],
+      "zero_radius_majorant_B": 0.019414334565921742,
+      "two_B_binary64_radius": 0.038828669131843484,
+      "two_B_bits": "0x1.3e159f0230ed3p-5",
+      "two_B_exact_recheck": true,
+      "max_state_bound_at_two_B": 0.01941516251290589,
+      "max_projection_width_ratio_to_existing_serial_algebra": 1.0000447373851025,
+      "stage_projection_term_WRMS_diagnostic": 21407.873959223652,
+      "WRMS_scope": "stage-bound term only; not a full native certificate, ODE LTE or acceptance",
+      "sum_matrix_nonzero_work": {
+        "mul": 216,
+        "add": 408
+      },
+      "action_first_nonzero_work": {
+        "mul": 135,
+        "add": 159
+      },
+      "work_scope": "reference scalar arithmetic, common skip-zero policy; excludes H/residual/witness construction, pool, rounding and allocation cost",
+      "native_Rust_rounding_validation": "not_run"
+    },
+    {
+      "dimension": 2,
+      "existing_six_point_schedule": [
+        {
+          "radius": 0.001,
+          "closes": false
+        },
+        {
+          "radius": 0.004,
+          "closes": false
+        },
+        {
+          "radius": 0.016,
+          "closes": false
+        },
+        {
+          "radius": 0.064,
+          "closes": false
+        },
+        {
+          "radius": 0.256,
+          "closes": true
+        },
+        {
+          "radius": 1.024,
+          "closes": true
+        }
+      ],
+      "certified_safe_radius_interval_approx": [
+        0.08903161020403541,
+        20824.59419244267
+      ],
+      "certified_safe_radius_interval_exact": [
+        "251619/2826176",
+        "38505486821/1849039"
+      ],
+      "zero_radius_majorant_B": 0.0890144342484861,
+      "two_B_binary64_radius": 0.1780288684969722,
+      "two_B_bits": "0x1.6c9a663f81cd8p-3",
+      "two_B_exact_recheck": true,
+      "max_state_bound_at_two_B": 0.08904878673053081,
+      "max_projection_width_ratio_to_existing_serial_algebra": 1.0004067914903416,
+      "stage_projection_term_WRMS_diagnostic": 65486.75100108377,
+      "WRMS_scope": "stage-bound term only; not a full native certificate, ODE LTE or acceptance",
+      "sum_matrix_nonzero_work": {
+        "mul": 432,
+        "add": 816
+      },
+      "action_first_nonzero_work": {
+        "mul": 270,
+        "add": 318
+      },
+      "work_scope": "reference scalar arithmetic, common skip-zero policy; excludes H/residual/witness construction, pool, rounding and allocation cost",
+      "native_Rust_rounding_validation": "not_run"
+    },
+    {
+      "dimension": 4,
+      "existing_six_point_schedule": [
+        {
+          "radius": 0.001,
+          "closes": false
+        },
+        {
+          "radius": 0.004,
+          "closes": false
+        },
+        {
+          "radius": 0.016,
+          "closes": false
+        },
+        {
+          "radius": 0.064,
+          "closes": false
+        },
+        {
+          "radius": 0.256,
+          "closes": false
+        },
+        {
+          "radius": 1.024,
+          "closes": true
+        }
+      ],
+      "certified_safe_radius_interval_approx": [
+        0.3950353774582502,
+        9460.504458061943
+      ],
+      "certified_safe_radius_interval_exact": [
+        "607056/1536713",
+        "25033488149/2646105"
+      ],
+      "zero_radius_majorant_B": 0.39486944811303293,
+      "two_B_binary64_radius": 0.7897388962260659,
+      "two_B_bits": "0x1.9458a81757162p-1",
+      "two_B_exact_recheck": true,
+      "max_state_bound_at_two_B": 0.39520131446270085,
+      "max_projection_width_ratio_to_existing_serial_algebra": 1.0029829688110716,
+      "stage_projection_term_WRMS_diagnostic": 207511.65662534322,
+      "WRMS_scope": "stage-bound term only; not a full native certificate, ODE LTE or acceptance",
+      "sum_matrix_nonzero_work": {
+        "mul": 864,
+        "add": 1632
+      },
+      "action_first_nonzero_work": {
+        "mul": 540,
+        "add": 636
+      },
+      "work_scope": "reference scalar arithmetic, common skip-zero policy; excludes H/residual/witness construction, pool, rounding and allocation cost",
+      "native_Rust_rounding_validation": "not_run"
+    },
+    {
+      "dimension": 8,
+      "existing_six_point_schedule": [
+        {
+          "radius": 0.001,
+          "closes": false
+        },
+        {
+          "radius": 0.004,
+          "closes": false
+        },
+        {
+          "radius": 0.016,
+          "closes": false
+        },
+        {
+          "radius": 0.064,
+          "closes": false
+        },
+        {
+          "radius": 0.256,
+          "closes": false
+        },
+        {
+          "radius": 1.024,
+          "closes": false
+        }
+      ],
+      "certified_safe_radius_interval_approx": [
+        2.298379458288447,
+        5868.673700064857
+      ],
+      "certified_safe_radius_interval_exact": [
+        "4663867/2029198",
+        "4632871867/789424"
+      ],
+      "zero_radius_majorant_B": 2.287646916895893,
+      "two_B_binary64_radius": 4.575293833791786,
+      "two_B_bits": "0x1.24d19d3a6e79cp+2",
+      "two_B_exact_recheck": true,
+      "max_state_bound_at_two_B": 2.309111493103969,
+      "max_projection_width_ratio_to_existing_serial_algebra": 1.0194512725510267,
+      "stage_projection_term_WRMS_diagnostic": 800498.156816976,
+      "WRMS_scope": "stage-bound term only; not a full native certificate, ODE LTE or acceptance",
+      "sum_matrix_nonzero_work": {
+        "mul": 1728,
+        "add": 3264
+      },
+      "action_first_nonzero_work": {
+        "mul": 1080,
+        "add": 1272
+      },
+      "work_scope": "reference scalar arithmetic, common skip-zero policy; excludes H/residual/witness construction, pool, rounding and allocation cost",
+      "native_Rust_rounding_validation": "not_run"
+    },
+    {
+      "dimension": 16,
+      "existing_six_point_schedule": [
+        {
+          "radius": 0.001,
+          "closes": false
+        },
+        {
+          "radius": 0.004,
+          "closes": false
+        },
+        {
+          "radius": 0.016,
+          "closes": false
+        },
+        {
+          "radius": 0.064,
+          "closes": false
+        },
+        {
+          "radius": 0.256,
+          "closes": false
+        },
+        {
+          "radius": 1.024,
+          "closes": false
+        }
+      ],
+      "certified_safe_radius_interval_approx": [
+        14.986503255349723,
+        2568.481236649224
+      ],
+      "certified_safe_radius_interval_exact": [
+        "23393467/1560969",
+        "3189974073/1241969"
+      ],
+      "zero_radius_majorant_B": 14.775725380125582,
+      "two_B_binary64_radius": 29.551450760251164,
+      "two_B_bits": "0x1.d8d2be084a212p+4",
+      "two_B_exact_recheck": true,
+      "max_state_bound_at_two_B": 15.196675658165168,
+      "max_projection_width_ratio_to_existing_serial_algebra": 1.139077540008206,
+      "stage_projection_term_WRMS_diagnostic": 3689548.9646899113,
+      "WRMS_scope": "stage-bound term only; not a full native certificate, ODE LTE or acceptance",
+      "sum_matrix_nonzero_work": {
+        "mul": 3456,
+        "add": 6528
+      },
+      "action_first_nonzero_work": {
+        "mul": 2160,
+        "add": 2544
+      },
+      "work_scope": "reference scalar arithmetic, common skip-zero policy; excludes H/residual/witness construction, pool, rounding and allocation cost",
+      "native_Rust_rounding_validation": "not_run"
+    }
+  ],
+  "arithmetic_ratio_action_to_sum_matrix": 0.47115384615384615,
+  "nonmonotone_radius_example": {
+    "p": "29/100+(4/5)D^2",
+    "feasible_interval": "[(1-sqrt(9/125))/(8/5), (1+sqrt(9/125))/(8/5)]",
+    "old_schedule_closes": false,
+    "rational_witness": "1/2",
+    "witness_margin": "1/100"
+  },
+  "fast_driver_static_lower_bounds": [
+    {
+      "n": 8,
+      "pivot_comparisons": 28,
+      "multiplier_zero_tests": 28,
+      "fast_J_plus_W_f64_slots": 128,
+      "diagonal_certificate_J_plus_dense_U_slots": 128
+    },
+    {
+      "n": 100,
+      "pivot_comparisons": 4950,
+      "multiplier_zero_tests": 4950,
+      "fast_J_plus_W_f64_slots": 20000,
+      "diagonal_certificate_J_plus_dense_U_slots": 20000
+    },
+    {
+      "n": 400,
+      "pivot_comparisons": 79800,
+      "multiplier_zero_tests": 79800,
+      "fast_J_plus_W_f64_slots": 320000,
+      "diagonal_certificate_J_plus_dense_U_slots": 320000
+    },
+    {
+      "n": 10000,
+      "pivot_comparisons": 49995000,
+      "multiplier_zero_tests": 49995000,
+      "fast_J_plus_W_f64_slots": 200000000,
+      "diagonal_certificate_J_plus_dense_U_slots": 200000000
+    }
+  ],
+  "Amdahl_instruction_only": {
+    "selected_clock_share": 0.09039871926231877,
+    "perfect_removal_ceiling": 1.0993827968107146,
+    "not_a_wall_time_prediction": true
+  },
+  "homotopy_equal_W_model": {
+    "P_at_least_8_margin": "1+p1-8*pf",
+    "p1_0p7_pf_0p2_margin": 0.1,
+    "costs_excluded": [
+      "RHS",
+      "certificate",
+      "synchronization",
+      "fallback overhead",
+      "pool"
+    ]
+  },
+  "forbidden_inferences": [
+    "no native radius admission claim",
+    "no ODE error certificate claim",
+    "no real-wall-speedup claim",
+    "no claim that current Q2 uses doubling",
+    "no general RVJ replacement",
+    "no claim of bitwise equivalence of reordered floating point operations"
+  ]
+}

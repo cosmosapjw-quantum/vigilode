@@ -1,0 +1,103 @@
+{
+  "unit": "A02-CONTRACT-SUPPLEMENT-02",
+  "started_utc": "2026-10-18T11:06:45.428361+00:00",
+  "completed_utc": "2026-10-18T11:06:46.174874+00:00",
+  "scope": "contract amendment and metadata assembly/readback only; no Rust/tests/build/solver execution",
+  "assembly_command": {
+    "argv": [
+      "python3",
+      "research/production_audit_20261018/evidence/continuation_a02_research/supplement_02/assemble_metadata.py"
+    ],
+    "exit_code": 0,
+    "source_sha256": "434413dd158588aa6f12d908b1c17d1b695723464fc70f63a3086e291d940c73",
+    "exit_code_observation": "success tool return and final RUN_RECORD creation; if script raises, this success record is not produced"
+  },
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "exit_code": 0,
+      "stdout": "git_head.stdout.txt",
+      "stderr": "git_head.stderr.txt",
+      "kind": "METADATA_ONLY_READ"
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "HEAD^{tree}"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "exit_code": 0,
+      "stdout": "git_tree.stdout.txt",
+      "stderr": "git_tree.stderr.txt",
+      "kind": "METADATA_ONLY_READ"
+    },
+    {
+      "argv": [
+        "git",
+        "branch",
+        "--show-current"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "exit_code": 0,
+      "stdout": "git_branch.stdout.txt",
+      "stderr": "git_branch.stderr.txt",
+      "kind": "METADATA_ONLY_READ"
+    },
+    {
+      "argv": [
+        "git",
+        "status",
+        "--short"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "exit_code": 0,
+      "stdout": "git_status.stdout.txt",
+      "stderr": "git_status.stderr.txt",
+      "kind": "METADATA_ONLY_READ"
+    },
+    {
+      "argv": [
+        "git",
+        "remote",
+        "-v"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "exit_code": 0,
+      "stdout": "git_remotes.stdout.txt",
+      "stderr": "git_remotes.stderr.txt",
+      "kind": "METADATA_ONLY_READ"
+    },
+    {
+      "argv": [
+        "git",
+        "rev-parse",
+        "refs/remotes/origin/audit/production-readiness-20261018"
+      ],
+      "cwd": "/home/cosmosapjw/vigilode",
+      "exit_code": 0,
+      "stdout": "git_remote_tracking_ref.stdout.txt",
+      "stderr": "git_remote_tracking_ref.stderr.txt",
+      "kind": "METADATA_ONLY_READ"
+    }
+  ],
+  "source_identity": "SOURCE_IDENTITY.json",
+  "input_hashes": "INPUT_HASHES.json",
+  "metadata_readback": "METADATA_READBACK.json",
+  "result": "READY_FOR_FRESH_DELTA_REVIEW",
+  "implementation_approved": false,
+  "scientific_test_exit_codes": [],
+  "scientific_tests": "NOT_RUN",
+  "builds": "NOT_RUN",
+  "solver_reference_execution": "NOT_RUN",
+  "source_or_input_mismatches": [],
+  "past_failures_preserved": true,
+  "first_failure_in_this_metadata_unit": "NONE_OBSERVED",
+  "output_manifest": "SHA256SUMS.txt",
+  "output_manifest_sha256": "215581002462e807114c4a840a1684466f2ae098115d08b868bb034a074a7036"
+}

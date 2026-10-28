@@ -1,0 +1,61 @@
+{
+  "schema": "spherical-information.fisher-execution.v1",
+  "created_utc": "2026-10-23T02:19:49.854963+00:00",
+  "executions": [
+    {
+      "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 src/test_fisher.py",
+      "exit_code": 0,
+      "elapsed_seconds": 1.3131078439910198,
+      "stdout": "results/fisher_tests.stdout.log",
+      "stderr": "results/fisher_tests.stderr.log"
+    },
+    {
+      "command": "OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 python3 src/fisher_demo.py",
+      "exit_code": 0,
+      "elapsed_seconds": 2.5296183850005036,
+      "stdout": "results/fisher_demo.stdout.log",
+      "stderr": "results/fisher_demo.stderr.log"
+    }
+  ],
+  "files": [
+    {
+      "path": "src/fisher_demo.py",
+      "bytes": 13739,
+      "sha256": "9cb5c05c7c3721992110f76f0203fedf8041ba268553279c3c70c81fce9ce742"
+    },
+    {
+      "path": "src/test_fisher.py",
+      "bytes": 2300,
+      "sha256": "19da4afd67d997fa7b87fb19e1464bcdbe4af3ba958eafa781048cd3035adf4d"
+    },
+    {
+      "path": "results/fisher_results.json",
+      "bytes": 32411,
+      "sha256": "810802ee1a89dcdba37cd9f5798482bdb406443374796ed924a888eb1b2f590d"
+    },
+    {
+      "path": "results/fisher_tests.stdout.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "results/fisher_tests.stderr.log",
+      "bytes": 746,
+      "sha256": "b2b1bb9b45f0edeb9084a7a138446627b8559c2735a91538e79e065f13f42476"
+    },
+    {
+      "path": "results/fisher_demo.stdout.log",
+      "bytes": 271,
+      "sha256": "6576476bf9bf7c40391e11be9e9533dc80146d93e0c5c9902b0682afc6547f8b"
+    },
+    {
+      "path": "results/fisher_demo.stderr.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ],
+  "probes_preserved": {
+    "results/fisher_initial_general_weight_probe.json": "Valid arbitrary positive-weight Gram probe; superseded by actual retained-family displacement for tighter applicability. No mathematical failure.",
+    "results/fisher_initial_single_solve_timings.json": "Scientific results unchanged; single-solve microtimings superseded by short batched measurements."
+  }
+}

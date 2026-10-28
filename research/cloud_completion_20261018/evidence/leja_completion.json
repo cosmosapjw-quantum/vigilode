@@ -1,0 +1,91 @@
+{
+  "schema": "vigilode-cloud-leja-completion-v1",
+  "unit": "A04_L1_L2_L3",
+  "decision": "PROMOTE_SCOPED_REPRESENTED_DENSE_SYMMETRIC_FUSED_ACTION",
+  "api": "rodas5p_core::leja_action::leja_phi_action_enclosed_with_workspace",
+  "public_schema": "vigilode-leja-enclosed-dense-symmetric-v1",
+  "premises": [
+    "immutable represented dense symmetric matrix",
+    "outward Gershgorin verified nonpositive spectrum",
+    "finite represented inputs and successful operation",
+    "IEEE-754 binary64 round-to-nearest with gradual underflow",
+    "reused directed.rs and exp_interval outward contracts"
+  ],
+  "claim": "Euclidean error of returned fused vector <= TotalErrorStatus::Certified.bound; budget convergence checked separately",
+  "legacy_authority": "EstimateOnly preserved",
+  "production_global_ode_promoted": false,
+  "wall_clock_speed_promoted": false,
+  "independent_review": {
+    "reviewer": "/root/independent_review",
+    "decision": "PASS_SCOPED",
+    "method": "full L1-L3 derivation, complete source replay, public authority boundary, rational oracle source",
+    "integrated_review_path": "research/cloud_completion_20261018/REVIEW.md"
+  },
+  "source_sha256": {
+    "crates/rodas5p-core/src/leja_action.rs": "25d34a89ecc2f81bb0158b0dc94c2f402f5d590501eeb56c212d6296d7974bf4",
+    "crates/rodas5p-core/tests/leja_total_contract.rs": "2cfbd06abcb39b43faaccdc4953fa1c7611efc026e9c733be97a2cf29e927371",
+    "crates/rodas5p-core/tests/leja_total_holdout.rs": "573f6ec571fdf101ac534d373b8c80029aeda51eb901d26466869797e3f78468",
+    "crates/rodas5p-core/tests/leja_enclosed_contract.rs": "2400432b14ed9f808ba4d79e49c0ee34e482772225791a867e9896fee1346846",
+    "research/cloud_completion_20261018/LEJA.md": "b18916dd0f0e9f77b06ff17f83371ce0696a59564c9dfa0f085ea595b1aeea1f",
+    "research/cloud_completion_20261018/leja_fraction_oracle.py": "bf9f1913fa138b28686f8aa72ec05252d4e00b7e81df84d5848cdd91f4768ad9"
+  },
+  "evidence_sha256": {
+    "leja_enclosure_contract.log": "b22aed27cffbe4b6a103ff811ace2970351f9374c4897141c6dd9e92f64beb48",
+    "leja_enclosure_runs.json": "fc8fb8d26d7e2f53a92cde78702884a77e278efc09ccb579f59fc4c83039e297",
+    "leja_fraction_check.json": "f4fbdf2e511dcaac7f16b3b8e637670530d76cbd3cf1de42ca7393bc9f0fc5af",
+    "leja_unit.log": "fa6a98db0608a406161a56a049e4f183392e14faefeb6a901ea7d0b92ba87a5b",
+    "leja_existing_contracts.log": "95d9feaebff25f95ecd1e085c8cb0e34f03e90c4c9e33d16e582e7acb937e649",
+    "leja_doctests.log": "d8008a9ae95d5c6a057dbd29b04ae55c790770a0d1f34fdc7ebb8be57d74ba0e",
+    "leja_clippy.log": "5501dc0fb8d10bea25cfb6e6acd9afce2170799a99ade3df705c2969a6f54c18",
+    "leja_enclosure_export_path_initial.log": "795a9275aa3a62b7f67ccb544db1998dfaccb48f1c5ded20b89d82cd8cf47131",
+    "leja_doctest_loader_initial.log": "f4fb8493a4275933b5fb7f8176a90f58def122c62915d1fee3a40c80331d292d",
+    "leja_legacy_reason_assertion_initial.log": "19ba3442f669a701ce33df28414e706e0541fd49b27c935172f1202d1969da71"
+  },
+  "validation": {
+    "native_contract_tests_passed": 2,
+    "exact_fraction_cases_passed": 18,
+    "new_unit_tests_passed": 2,
+    "total_contract_tests_passed": 19,
+    "setup_contract_tests_passed": 5,
+    "holdout_smoke_tests_passed": 1,
+    "large_holdout_exporter_executed": false,
+    "compile_fail_doctests_passed": 4,
+    "core_all_targets_clippy": "PASS"
+  },
+  "complexity": {
+    "prefix_interval_products_before": 1073280,
+    "prefix_interval_products_after": 16512,
+    "prefix_product_reduction_factor": 65,
+    "truncation_scalar_operations_before": "5*m*m+35*m",
+    "truncation_scalar_operations_after": "10*m+5",
+    "coefficient_radius_accumulation_before": "O(m^2)",
+    "coefficient_radius_accumulation_after": "O(m)",
+    "suffix_transport_unchanged": "O(m^2)",
+    "dense_replay_unchanged": "O(m*n^2)"
+  },
+  "failures_resolved": [
+    {
+      "class": "environment",
+      "cause": "relative output path resolved against crate cwd",
+      "repair": "repo-root-relative path resolution in exporter",
+      "initial_log": "leja_enclosure_export_path_initial.log"
+    },
+    {
+      "class": "environment",
+      "cause": "merged doctest missing target libstd dynamic library path",
+      "repair": "LD_LIBRARY_PATH target lib dir",
+      "initial_log": "leja_doctest_loader_initial.log"
+    },
+    {
+      "class": "test_contract",
+      "cause": "old pending-review reason assertion remained after scoped review completed",
+      "repair": "assert legacy EstimateOnly and explicit enclosed API guidance",
+      "initial_log": "leja_legacy_reason_assertion_initial.log"
+    }
+  ],
+  "followup": [
+    "sparse/callback operator enclosure contract if those domains are requested",
+    "equivalent-accuracy measured performance with total replay and cold/warm setup",
+    "local compile and targeted integration against actual latest tree; reuse closed proof and unchanged fixtures"
+  ]
+}

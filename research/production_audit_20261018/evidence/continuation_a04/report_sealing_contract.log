@@ -1,0 +1,25 @@
+   Compiling rodas5p-core v0.1.0 (/home/cosmosapjw/vigilode/crates/rodas5p-core)
+error[E0616]: field `fused` of struct `CertifiedLejaReport` is private
+   --> crates/rodas5p-core/tests/leja_total_contract.rs:207:19
+    |
+207 |     assert!((warm.fused[0] - reference[0]).abs() <= 2.0 * f64::EPSILON);
+    |                   ^^^^^ private field
+    |
+help: a method `fused` also exists, call it with parentheses
+    |
+207 |     assert!((warm.fused()[0] - reference[0]).abs() <= 2.0 * f64::EPSILON);
+    |                        ++
+
+error[E0616]: field `converged` of struct `CertifiedLejaReport` is private
+   --> crates/rodas5p-core/tests/leja_total_contract.rs:784:25
+    |
+784 |     assert!(!rep_capped.converged);
+    |                         ^^^^^^^^^ private field
+    |
+help: a method `converged` also exists, call it with parentheses
+    |
+784 |     assert!(!rep_capped.converged());
+    |                                  ++
+
+For more information about this error, try `rustc --explain E0616`.
+error: could not compile `rodas5p-core` (test "leja_total_contract") due to 2 previous errors

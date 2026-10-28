@@ -1,0 +1,492 @@
+{
+  "schema_version": 1,
+  "kind": "curated_literature_provenance",
+  "prepared_utc_date": "2026-10-27",
+  "research_node": "research/production_solver_closure_20261027",
+  "scope": "Only retrieval and review records created for this production-closure node; no older PR91 retrieval payloads are copied.",
+  "method": {
+    "activity": "Read existing receipts and project derivations; no new search, native test, benchmark, or profile.",
+    "content_policy": "Bibliographic facts, source URLs, retained query metadata, hashes, and brief original paraphrases only. No external abstract, paper passage, or raw fetched tool text is reproduced.",
+    "evidence_limits": [
+      "A discovery result is not a verified theorem input.",
+      "Unavailable exact query strings and DOIs are null rather than reconstructed.",
+      "A source receipt hash establishes the identity of a locally retained response, not the truth or applicability of its contents.",
+      "Source metadata marked primary_verified was checked against the actual primary page/PDF or a source-specific primary-reading review record."
+    ]
+  },
+  "queries": [
+    {
+      "id": "Q-SCISPACE-INITIAL",
+      "tool_service": "SciSpace",
+      "operation": "paper search",
+      "query": "Which rigorous derivative-free methods solve strongly monotone scalar equations with known convexity and bracket invariance, and how do safeguarded secant or inverse interpolation methods compare with Picard and Anderson acceleration in implicit Runge Kutta stage solves?",
+      "query_provenance": "Exact structuredContent.searchTerm in receipt R-SCISPACE-INITIAL.",
+      "receipt_id": "R-SCISPACE-INITIAL",
+      "result_count": 10,
+      "curated_source_ids": [
+        "JIN-WANG-DENG-2025"
+      ],
+      "outcome": "The monotone projection/Anderson paper was checked at its primary arXiv record. Other discovery hits were not imported as solver guarantees."
+    },
+    {
+      "id": "Q-EXA-INITIAL",
+      "tool_service": "Exa",
+      "operation": "search",
+      "query": null,
+      "query_provenance": "The retained response-only receipt does not include the exact search request.",
+      "receipt_id": "R-EXA-INITIAL",
+      "result_count": 5,
+      "curated_source_ids": [
+        "VAN-DER-HOUWEN-SOMMEIJER-1990",
+        "SOMMEIJER-1993"
+      ],
+      "outcome": "Located original parallel-iteration papers; primary PDFs were subsequently opened."
+    },
+    {
+      "id": "Q-PRIMARY-OPEN",
+      "tool_service": "web retrieval",
+      "operation": "open",
+      "query": {
+        "open_urls": [
+          "https://arxiv.org/abs/2403.14924",
+          "https://ir.cwi.nl/pub/1663/1663D.pdf",
+          "https://ir.cwi.nl/pub/2308/2308D.pdf"
+        ]
+      },
+      "query_provenance": "Exact source-open URLs are present in the retained retrieval output.",
+      "receipt_id": "R-PRIMARY-SOURCES",
+      "curated_source_ids": [
+        "JIN-WANG-DENG-2025",
+        "VAN-DER-HOUWEN-SOMMEIJER-1990",
+        "SOMMEIJER-1993"
+      ],
+      "outcome": "Verified authors, titles, publication metadata, and the scope of parallel or monotone-equation constructions."
+    },
+    {
+      "id": "Q-EXA-CUBIC",
+      "tool_service": "Exa",
+      "operation": "search",
+      "query": null,
+      "query_provenance": "The retained response-only receipt does not include the exact search request.",
+      "receipt_id": "R-HOMOTOPY-EXA",
+      "result_count": 5,
+      "curated_source_ids": [
+        "KAHAN-1986"
+      ],
+      "outcome": "Original-author notes supplied cubic evaluation context. Other returned cubic candidates were not adopted as proof."
+    },
+    {
+      "id": "Q-EXA-STRUCTURAL",
+      "tool_service": "Exa",
+      "operation": "search",
+      "query": null,
+      "query_provenance": "The retained mixed response receipt does not include the exact Exa search request.",
+      "receipt_id": "R-STRUCTURAL-MIXED",
+      "result_count": 3,
+      "curated_source_ids": [
+        "RUMP-DIRECTED-ROUNDING-CONTEXT"
+      ],
+      "discovery_only_source_ids": [
+        "RUMP-OGITA-2024-LEAD",
+        "RUMP-JEANNEROD-2014-LEAD"
+      ],
+      "outcome": "Provided verified-arithmetic context and the Ogita-Rump-Oishi citation; no general matrix-factorization theorem was used as the new structural certificate."
+    },
+    {
+      "id": "Q-OGITA-PRIMARY-REVIEW",
+      "tool_service": "Exa",
+      "operation": "search and fetch, as documented by the independent structural review",
+      "query": null,
+      "query_provenance": "The review records service, primary URL, and sections read; the exact search request and separate fetch response were not retained in this node.",
+      "primary_url": "https://www.tuhh.de/ti3/paper/rump/OgRuOi05.pdf",
+      "receipt_id": "R-STRUCTURAL-REVIEW",
+      "curated_source_ids": [
+        "OGITA-RUMP-OISHI-2005"
+      ],
+      "outcome": "Checked FastTwoSum and its arithmetic conditions against the compensated-mean implementation."
+    }
+  ],
+  "sources": [
+    {
+      "id": "OGITA-RUMP-OISHI-2005",
+      "title": "Accurate Sum and Dot Product",
+      "authors": [
+        "Takeshi Ogita",
+        "Siegfried M. Rump",
+        "Shin'ichi Oishi"
+      ],
+      "year": 2005,
+      "publication": {
+        "journal": "SIAM Journal on Scientific Computing",
+        "volume": "26",
+        "issue": "6",
+        "pages": "1955-1988"
+      },
+      "doi": "10.1137/030601818",
+      "urls": [
+        "https://doi.org/10.1137/030601818",
+        "https://www.tuhh.de/ti3/paper/rump/OgRuOi05.pdf"
+      ],
+      "verification_status": "primary_read_documented_by_source_specific_review",
+      "receipt_ids": [
+        "R-STRUCTURAL-REVIEW",
+        "R-STRUCTURAL-BIBLIOGRAPHY",
+        "R-STRUCTURAL-MIXED"
+      ],
+      "sections_used": [
+        "Algorithm 1.1",
+        "Section 2",
+        "Section 3"
+      ],
+      "relevant_assumptions": [
+        "Magnitude ordering of the FastTwoSum inputs.",
+        "Binary round-to-nearest, finite arithmetic, and gradual underflow under the cited error-free transformation conditions."
+      ],
+      "own_paraphrase": "Error-free addition transformations can expose local rounding residuals for a rigorous summation analysis.",
+      "adopted": "FastTwoSum's published local identity. This node separately derives the scaled compensated-mean envelope and its composition with full-stage defects.",
+      "not_applied": "No claim that the paper by itself certifies this solver's stages, temporal discretization, or complete physical trajectory.",
+      "local_mapping": [
+        "structural/THEORY.md:S3",
+        "theory/STRUCTURAL_REVIEW.json",
+        "crates/vigilode-coupled/src/structural_mean_field.rs:enclosed_mean"
+      ]
+    },
+    {
+      "id": "JIN-WANG-DENG-2025",
+      "title": "Anderson acceleration of derivative-free projection methods for constrained monotone nonlinear equations",
+      "authors": [
+        "Jiachen Jin",
+        "Hongxia Wang",
+        "Kangkang Deng"
+      ],
+      "year": 2025,
+      "publication": {
+        "journal": "Journal of Optimization Theory and Applications"
+      },
+      "arxiv": {
+        "id": "2403.14924",
+        "version": "v2",
+        "version_date": "2025-05-07",
+        "first_submission_date": "2024-03-22"
+      },
+      "doi": "10.1007/s10957-025-02841-y",
+      "urls": [
+        "https://arxiv.org/abs/2403.14924v2",
+        "https://doi.org/10.1007/s10957-025-02841-y"
+      ],
+      "verification_status": "primary_verified",
+      "receipt_ids": [
+        "R-SCISPACE-INITIAL",
+        "R-PRIMARY-SOURCES"
+      ],
+      "metadata_correction": "The discovery result duplicated author entries; the primary arXiv record identifies the three authors listed here.",
+      "relevant_assumptions": [
+        "Constrained monotone nonlinear equations and the paper's projection/relaxation/iteration construction.",
+        "Additional convergence-rate hypotheses must be checked before transferring any rate claim."
+      ],
+      "own_paraphrase": "Anderson acceleration is analyzed for a particular derivative-free projection algorithm on monotone equations.",
+      "adopted": "A relevant alternative and a reminder to identify the actual monotonicity and safeguarding hypotheses.",
+      "not_applied": "No convergence theorem, fitted parameter, or universal work advantage is imported into scalar Picard, generic homotopy, or arbitrary ODE stage solves.",
+      "local_mapping": [
+        "report/production_solver_closure.tex:literature scope",
+        "homotopy/THEORY.md",
+        "DEVELOPMENT_PLAN.json:PR-N04"
+      ]
+    },
+    {
+      "id": "VAN-DER-HOUWEN-SOMMEIJER-1990",
+      "title": "Parallel iteration of high-order Runge-Kutta methods with stepsize control",
+      "authors": [
+        "P. J. van der Houwen",
+        "B. P. Sommeijer"
+      ],
+      "year": 1990,
+      "publication": {
+        "journal": "Journal of Computational and Applied Mathematics",
+        "volume": "29",
+        "pages": "111-127"
+      },
+      "doi": null,
+      "doi_status": "Not established from the retained primary-page/PDF metadata; original PDF URL is retained.",
+      "urls": [
+        "https://ir.cwi.nl/pub/1663/1663D.pdf"
+      ],
+      "verification_status": "primary_verified",
+      "receipt_ids": [
+        "R-EXA-INITIAL",
+        "R-PRIMARY-SOURCES"
+      ],
+      "relevant_assumptions": [
+        "The investigated functional-iteration construction is scoped to nonstiff ODEs.",
+        "Implicit corrector stability does not automatically survive a finite predictor-corrector iteration."
+      ],
+      "own_paraphrase": "Parallel stage iteration can expose concurrency while changing the method's effective order, work, and stability.",
+      "adopted": "Separate finite-iteration algebra, order, stability, and hardware work/span comparisons.",
+      "not_applied": "No historical timing or implicit-corrector stability property is transferred to the present truncated causal solver.",
+      "local_mapping": [
+        "report/production_solver_closure.tex:causal parallelism",
+        "DEVELOPMENT_PLAN.json:PR-N05"
+      ]
+    },
+    {
+      "id": "SOMMEIJER-1993",
+      "title": "Parallel-iterated Runge-Kutta methods for stiff ordinary differential equations",
+      "authors": [
+        "B. P. Sommeijer"
+      ],
+      "year": 1993,
+      "publication": {
+        "journal": "Journal of Computational and Applied Mathematics",
+        "volume": "45",
+        "pages": "151-168"
+      },
+      "doi": null,
+      "doi_status": "Not established from the retained primary-page/PDF metadata; original PDF URL is retained.",
+      "urls": [
+        "https://ir.cwi.nl/pub/2308/2308D.pdf"
+      ],
+      "verification_status": "primary_verified",
+      "receipt_ids": [
+        "R-EXA-INITIAL",
+        "R-PRIMARY-SOURCES"
+      ],
+      "relevant_assumptions": [
+        "A diagonally implicit construction with chosen iteration parameters and iteration count.",
+        "The described stiff scheme uses an LU factorization per step per processor."
+      ],
+      "own_paraphrase": "Stiff parallel iteration requires a specific implicit construction and stability analysis, not concurrency alone.",
+      "adopted": "A historical stiff comparator and explicit separation of parallelism from derivative-free execution.",
+      "not_applied": "Not cited as a Jacobian-, matrix-, or Newton-free theorem; its algorithm and performance guarantees are not transplanted.",
+      "local_mapping": [
+        "report/production_solver_closure.tex:literature scope",
+        "DEVELOPMENT_PLAN.json:PR-N05"
+      ]
+    },
+    {
+      "id": "KAHAN-1986",
+      "title": "To Solve a Real Cubic Equation",
+      "subtitle": "Lecture Notes for a Numerical Analysis Course",
+      "authors": [
+        "W. Kahan"
+      ],
+      "year": 1986,
+      "document_date": "1986-11-10",
+      "doi": null,
+      "doi_status": "No DOI in the retained lecture-note metadata.",
+      "urls": [
+        "https://people.eecs.berkeley.edu/~wkahan/Math128/Cubic.pdf"
+      ],
+      "verification_status": "primary_read_documented_in_homotopy_theory",
+      "receipt_ids": [
+        "R-HOMOTOPY-EXA",
+        "R-HOMOTOPY-THEORY"
+      ],
+      "relevant_assumptions": [
+        "Rounding, cancellation, scaling, and evaluation of the original cubic residual require explicit treatment.",
+        "A formula for a root is not by itself a floating-point certificate."
+      ],
+      "own_paraphrase": "General cubic formulas need numerical care; the original polynomial residual remains central to assessing a computed root.",
+      "adopted": "Numerical context for the positive-sum inverse and a strict separation between candidate generation and residual certification.",
+      "not_applied": "The restricted H1/H4 identities and acceptance budget are derived in this node, without borrowing a general-cubic stability guarantee or claiming novelty for Cardano's algebra.",
+      "local_mapping": [
+        "homotopy/THEORY.md:H1",
+        "homotopy/THEORY.md:H4",
+        "crates/vigilode-coupled/src/rhs_homotopy.rs"
+      ]
+    },
+    {
+      "id": "RUMP-DIRECTED-ROUNDING-CONTEXT",
+      "title": "Accurate Solution of Dense Linear Systems, Part II: Algorithms Using Directed Rounding",
+      "authors": [
+        "Siegfried M. Rump"
+      ],
+      "year": null,
+      "doi": null,
+      "metadata_limit": "Title and original-author URL are retained; this node did not establish complete publication metadata.",
+      "urls": [
+        "https://www.tuhh.de/ti3/paper/rump/Ru12a.pdf"
+      ],
+      "verification_status": "contextual_source_not_a_transferred_theorem",
+      "receipt_ids": [
+        "R-STRUCTURAL-MIXED",
+        "R-STRUCTURAL-THEORY"
+      ],
+      "relevant_assumptions": [
+        "A dense-linear-system verification setting; applicability to this model-specific stage enclosure is not assumed."
+      ],
+      "own_paraphrase": "Directed arithmetic is established verification machinery for numerical linear algebra.",
+      "adopted": "General context only.",
+      "not_applied": "No dense inverse or factorization procedure is introduced into the derivative-free mean-field path.",
+      "local_mapping": [
+        "structural/THEORY.md:literature context"
+      ]
+    }
+  ],
+  "discovery_only_leads": [
+    {
+      "id": "RUMP-OGITA-2024-LEAD",
+      "title": "Verified Error Bounds for Matrix Decompositions",
+      "authors": [
+        "Siegfried M. Rump",
+        "Takeshi Ogita"
+      ],
+      "year": 2024,
+      "doi": "10.1137/24m165096x",
+      "urls": [
+        "https://doi.org/10.1137/24m165096x"
+      ],
+      "receipt_ids": [
+        "R-STRUCTURAL-MIXED"
+      ],
+      "status": "Discovery metadata only; no theorem imported.",
+      "adopted": false,
+      "reason_not_applied": "The present certificate is derived directly for the sealed mean-field residual; a general factorization-verification theorem is not a premise."
+    },
+    {
+      "id": "RUMP-JEANNEROD-2014-LEAD",
+      "title": "Improved Backward Error Bounds for LU and Cholesky Factorizations",
+      "authors": [
+        "Siegfried M. Rump",
+        "Claude-Pierre Jeannerod"
+      ],
+      "year": 2014,
+      "doi": "10.1137/130927231",
+      "urls": [
+        "https://doi.org/10.1137/130927231"
+      ],
+      "receipt_ids": [
+        "R-STRUCTURAL-MIXED"
+      ],
+      "status": "Discovery metadata only; no theorem imported.",
+      "adopted": false,
+      "reason_not_applied": "No LU/Cholesky error constant is substituted for the directly derived original-stage enclosure."
+    }
+  ],
+  "receipt_inventory": [
+    {
+      "id": "R-SCISPACE-INITIAL",
+      "path": "research/production_solver_closure_20261027/evidence/SCISPACE_INITIAL.json",
+      "sha256": "7838932c5fc18e4b7911101ad83889f1a0e11518b16b8e613ded4c7b248f9e1d",
+      "kind": "raw_external_retrieval",
+      "public_disposition": "exclude_original_retain_locally"
+    },
+    {
+      "id": "R-EXA-INITIAL",
+      "path": "research/production_solver_closure_20261027/evidence/EXA_INITIAL.json",
+      "sha256": "c5ab2ea3fe5c12566c24bb40d4ec90a0ea5d02e5e72129bfc68cb2305f3df2b7",
+      "kind": "raw_external_retrieval",
+      "public_disposition": "exclude_original_retain_locally"
+    },
+    {
+      "id": "R-PRIMARY-SOURCES",
+      "path": "research/production_solver_closure_20261027/evidence/PRIMARY_SOURCES.json",
+      "sha256": "4390c0503cb46a51ea6f60a86b56accfd58e2d56549271ea2f1ad8cbc30b42b9",
+      "kind": "raw_external_retrieval",
+      "public_disposition": "exclude_original_retain_locally"
+    },
+    {
+      "id": "R-HOMOTOPY-EXA",
+      "path": "research/production_solver_closure_20261027/homotopy/EXA_RECEIPT.json",
+      "sha256": "7b963606dab37e2d875ef0a5841a36c460f4d59f22389272e694a3fa5e0f34f8",
+      "kind": "raw_external_retrieval",
+      "public_disposition": "exclude_original_retain_locally"
+    },
+    {
+      "id": "R-STRUCTURAL-MIXED",
+      "path": "research/production_solver_closure_20261027/structural/EXTERNAL_RESEARCH_RECEIPTS.json",
+      "sha256": "6b46d4b83591c227fdb3691e85bfb013f4f5153af8de8e5d9a9ad135c46a3ad0",
+      "kind": "mixed_external_retrieval_and_project_math",
+      "public_disposition": "exclude_original_after_separately_preserving_own_math"
+    },
+    {
+      "id": "R-STRUCTURAL-REVIEW",
+      "path": "research/production_solver_closure_20261027/theory/STRUCTURAL_REVIEW.json",
+      "sha256": "8430ef3e8d7fb0fabdc47e0f5cf96ff047c3346f40183fa0b6cefbfca859e536",
+      "kind": "project_review_and_source_metadata",
+      "public_disposition": "retain"
+    },
+    {
+      "id": "R-STRUCTURAL-BIBLIOGRAPHY",
+      "path": "research/production_solver_closure_20261027/structural/references.bib",
+      "sha256": "edcade7158fb0a8be6e2edd2af07833f7444ae1597e2e011f69e074851155774",
+      "kind": "bibliographic_metadata",
+      "public_disposition": "retain"
+    },
+    {
+      "id": "R-HOMOTOPY-THEORY",
+      "path": "research/production_solver_closure_20261027/homotopy/THEORY.md",
+      "sha256": "1a865fc505f4cca8ff734d808f3a4ca96d59e2d57c032a8bad775e65dcd6301f",
+      "kind": "project_derivations_and_own_paraphrase",
+      "public_disposition": "retain"
+    },
+    {
+      "id": "R-STRUCTURAL-THEORY",
+      "path": "research/production_solver_closure_20261027/structural/THEORY.md",
+      "sha256": "bec0a344d8e7150d8ac6b65ca509d368262c0a3d1d4b13c1b2d40819335ba064",
+      "kind": "project_derivations_and_own_paraphrase",
+      "public_disposition": "retain"
+    }
+  ],
+  "exclude_from_public_bundle": [
+    {
+      "path": "research/production_solver_closure_20261027/evidence/SCISPACE_INITIAL.json",
+      "reason": "Contains externally authored abstracts and fetched text; publish this curated map instead."
+    },
+    {
+      "path": "research/production_solver_closure_20261027/evidence/EXA_INITIAL.json",
+      "reason": "Contains externally authored fetched passages; preserve local receipt identity via the hash above."
+    },
+    {
+      "path": "research/production_solver_closure_20261027/evidence/PRIMARY_SOURCES.json",
+      "reason": "Contains substantial primary-page/PDF retrieval text; publish metadata, URLs, and applicability notes instead."
+    },
+    {
+      "path": "research/production_solver_closure_20261027/homotopy/EXA_RECEIPT.json",
+      "reason": "Contains external cubic-paper/lecture-note excerpts; publish curated metadata and derivation links."
+    },
+    {
+      "path": "research/production_solver_closure_20261027/structural/EXTERNAL_RESEARCH_RECEIPTS.json",
+      "reason": "Mixed record contains fetched external text; retain original locally and separately publish only the project-owned Wolfram subrecords.",
+      "requires_own_math_preservation": true
+    }
+  ],
+  "preserve_project_math": {
+    "retained_files": [
+      {
+        "path": "research/production_solver_closure_20261027/evidence/WOLFRAM_ROOT_IDENTITY.json",
+        "sha256": "54440de953c30060a7dfb919b7af006ef3e76d848e9503c58d37ecdefc44e17c"
+      },
+      {
+        "path": "research/production_solver_closure_20261027/evidence/WOLFRAM_REVIEW2.json",
+        "sha256": "7650e399960328950ae94a26d93c23bbae27a2287bcdb58dfccc8f5612923cdb"
+      },
+      {
+        "path": "research/production_solver_closure_20261027/homotopy/WOLFRAM_RECEIPT.json",
+        "sha256": "1ba53081e58d412129674bfe42bf71cd6844422dc1a2eb1bb5d1a91fa64b98f2"
+      },
+      {
+        "path": "research/production_solver_closure_20261027/homotopy/WOLFRAM_RATIONAL_RECEIPT.json",
+        "sha256": "21018356d2c02dcbdeb56fa7be5dee78b654176898d272ee342f7e3f823dd24f"
+      }
+    ],
+    "mixed_receipt_extraction": {
+      "source_path": "research/production_solver_closure_20261027/structural/EXTERNAL_RESEARCH_RECEIPTS.json",
+      "action": "Integrator should preserve the following two subrecords in a separate public own-math receipt before excluding the mixed original. This map does not claim that extraction has already occurred.",
+      "canonical_subrecord_hash_method": "SHA-256 of UTF-8 json.dumps(value, sort_keys=True, separators=(',', ':'), ensure_ascii=False).",
+      "subrecords": [
+        {
+          "json_pointer": "/exploratory_wolfram",
+          "canonical_sha256": "0f6aa75decc158bc0af9ebf3121459b9a999eb84b909885a8dfa81fd2df5ceb2",
+          "scope": "Exploratory symbolic expansion of the project's structural expression."
+        },
+        {
+          "json_pointer": "/factorized_identity_wolfram",
+          "canonical_sha256": "28d6d3cbb93931abdab8539a452f65ba963e2626a28ea15320df74d876a3c2ad",
+          "scope": "Project-derived represented-stage identity checked symbolically."
+        }
+      ]
+    },
+    "interpretation": "These are checks of project-derived algebra, not imported literature proofs or floating-point certificates. Retain raw numerical, failure, timing, profiling, and exact-oracle evidence under their own manifests."
+  },
+  "package_note": "The proposed exclusions apply to public bundle membership only. Original receipts remain locally retained and hash-identifiable. No files are deleted or extracted by creation of this map."
+}

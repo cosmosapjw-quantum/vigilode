@@ -1,0 +1,15 @@
+{
+  "argv": [
+    "ssh",
+    "-i",
+    "/home/cosmosapjw/.ssh/ncp_key",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ConnectTimeout=10",
+    "root@49.50.142.2",
+    "python3 - <<'REMOTE'\nimport os,json,subprocess,time,pathlib\np=pathlib.Path\ncpu0=list(map(int,p('/proc/stat').read_text().splitlines()[0].split()[1:]));time.sleep(1);cpu1=list(map(int,p('/proc/stat').read_text().splitlines()[0].split()[1:]))\nd=[b-a for a,b in zip(cpu0,cpu1)];mem={line.split(':')[0]:line.split(':')[1].strip() for line in p('/proc/meminfo').read_text().splitlines()}\nprint(json.dumps({'host':os.uname().nodename,'cpus':os.cpu_count(),'allowed_affinity':sorted(os.sched_getaffinity(0)),'loadavg':p('/proc/loadavg').read_text().strip(),'cpu_active_fraction':1-(d[3]+d[4])/sum(d),'steal_fraction':d[7]/sum(d),'mem_total':mem['MemTotal'],'mem_available':mem['MemAvailable'],'cgroup_cpu_max':p('/sys/fs/cgroup/cpu.max').read_text().strip() if p('/sys/fs/cgroup/cpu.max').exists() else None,'cgroup_memory_max':p('/sys/fs/cgroup/memory.max').read_text().strip() if p('/sys/fs/cgroup/memory.max').exists() else None}))\nsubprocess.run(['ps','-eo','pid,ppid,comm,pcpu,rss','--sort=-pcpu'])\nsubprocess.run(['lscpu','-J'])\nREMOTE"
+  ],
+  "exit_code": 0,
+  "elapsed_seconds": 1.7179113919846714
+}

@@ -1,0 +1,16 @@
+   Compiling rodas5p-integrators v0.1.0 (/tmp/vigilode-frontier.RpGaP4E3/checkout/crates/rodas5p-integrators)
+warning: variant `EndpointAdmission` is never constructed
+    --> crates/rodas5p-integrators/src/packet_trajectory.rs:1445:5
+     |
+1443 | enum VerifiedTrialFault {
+     |      ------------------ variant in this enum
+1444 |     BeforeQuery(usize),
+1445 |     EndpointAdmission,
+     |     ^^^^^^^^^^^^^^^^^
+     |
+     = note: `VerifiedTrialFault` has a derived impl for the trait `Clone`, but this is intentionally ignored during dead code analysis
+     = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `rodas5p-integrators` (lib) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 03s
+     Running tests/frontier_polynomial_provider.rs (/mnt/extdrive/vigilode-frontier-20261023/target/debug/deps/frontier_polynomial_provider-8d45b0b327a372d8)

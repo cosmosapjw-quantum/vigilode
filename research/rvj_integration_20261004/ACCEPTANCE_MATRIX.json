@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.0.0",
+  "source_commit": "699a7adc6dba5fc45d4da01a5456f10f25dcf210",
+  "criteria": [
+    {
+      "id": "AC01",
+      "requirement": "Exact current dissipativity witness and input binding",
+      "implementation": [
+        "crates/rodas5p-core/src/shared_shift_jet.rs"
+      ],
+      "evidence": [
+        "evidence/core.stdout",
+        "evidence/exact_oracle.json"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "AC02",
+      "requirement": "Native normalized jet preserves every supplied RHS",
+      "implementation": [
+        "crates/rodas5p-core/src/shared_shift_jet.rs"
+      ],
+      "evidence": [
+        "evidence/native_study.json",
+        "evidence/exact_oracle.json"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "AC03",
+      "requirement": "Every reported residual encloses exact target error; accepted outputs satisfy fixed tolerance",
+      "implementation": [
+        "verify_exact.py"
+      ],
+      "evidence": [
+        "evidence/exact_oracle.json"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "AC04",
+      "requirement": "Unsupported inputs, wrong candidates, under-resolution and budgets fail closed",
+      "implementation": [
+        "crates/rodas5p-core/tests/shared_shift_jet_contracts.rs"
+      ],
+      "evidence": [
+        "evidence/core.stdout",
+        "evidence/native_study.json"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "AC05",
+      "requirement": "NaN/provider shape/nonprogress boundaries repaired",
+      "implementation": [
+        "crates/rodas5p-integrators/src/stage_chart_candidate.rs",
+        "crates/rodas5p-integrators/src/chart_transport.rs"
+      ],
+      "evidence": [
+        "evidence/chart_boundaries_red.log",
+        "evidence/chart.stdout"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "AC06",
+      "requirement": "Fresh changed-source fmt/clippy/related regressions",
+      "implementation": [
+        "evidence/COMMANDS.jsonl"
+      ],
+      "evidence": [
+        "evidence/COMMANDS.jsonl"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "AC07",
+      "requirement": "Independent decision for scoped research admission",
+      "implementation": [
+        "evidence/independent_decision.json"
+      ],
+      "evidence": [
+        "evidence/independent_decision.json"
+      ],
+      "status": "PASS",
+      "decision": "ACCEPT_NATIVE_RESEARCH"
+    },
+    {
+      "id": "AC08",
+      "requirement": "All historical campaigns reused without broad rerun",
+      "implementation": [
+        "REUSE_POLICY.json"
+      ],
+      "evidence": [
+        "evidence/history_matrix.json",
+        "evidence/archive_claims.json"
+      ],
+      "status": "PASS"
+    },
+    {
+      "id": "AC09",
+      "requirement": "Generic solver activation and speedup",
+      "implementation": [
+        "NEXT_DEVELOPMENT_DAG.json"
+      ],
+      "evidence": [],
+      "status": "NOT_EVALUATED"
+    }
+  ]
+}

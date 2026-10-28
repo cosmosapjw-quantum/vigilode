@@ -1,0 +1,94 @@
+{
+  "schema": "vigilode.independent-ncp-gate-review.v1",
+  "date": "2026-10-21",
+  "status": "NO_REMAINING_BLOCKER_FOUND_IN_BOUNDED_REVIEW",
+  "broad_production": "HOLD",
+  "native_campaign_executed": false,
+  "cargo_invoked": false,
+  "source_frozen": true,
+  "test_result": {
+    "targeted_gate_tests_passed": 13,
+    "failed": 0,
+    "fixture_scope": "synthetic receipt contracts, not scientific evidence"
+  },
+  "mutation_validation": {
+    "removed_guards": 2,
+    "expected_regression_failures": 2,
+    "observed_regression_failures": 2,
+    "errors": 0,
+    "historical_native_failure_claim": false
+  },
+  "evidence": [
+    {
+      "path": "research/production_reaudit_20261021/evidence/n08/promotion_final_contracts.log",
+      "sha256": "9c9e8037a295b809b34359d24781f61981a432feae30a405e7b2bfdefd20949f"
+    },
+    {
+      "path": "research/production_reaudit_20261021/evidence/n08/final_check_mutation_replay.log",
+      "sha256": "312a632458511412ba4f32bc6727a652117e36b8f2a023cc4f2eca03ef6cf49f"
+    },
+    {
+      "path": "research/production_reaudit_20261021/evidence/n08/final_check_mutation_replay.json",
+      "sha256": "6d2222e9c9d01ddcac86dc9af1f33cba230bc6a322a29373f539399c8c2fd0ef"
+    },
+    {
+      "path": "research/production_reaudit_20261021/evidence/n02/promotion_initial_missing_levels.json",
+      "sha256": "04d4a4c9b1cb6b95d5224540e2b4ce410200d12979f81efb28a2bfedbff77b6d"
+    }
+  ],
+  "files": [
+    {
+      "path": "tools/production_promotion_gate.py",
+      "sha256": "6855f3a8f852de8a8fdbc345f5a3245c13ca37423f0767ba21f8bc7b5ecd5892"
+    },
+    {
+      "path": "tools/tests/test_production_promotion_gate.py",
+      "sha256": "a92f353d0a35edcb0c5ded238a92876914ffffa1e8bb2400fea86b695bc9f57c"
+    },
+    {
+      "path": "tools/run_ncp_reaudit.py",
+      "sha256": "ffa045eae0866163a8e591a0fbb02c04e6a0c75c613d64a4de2539e18e879393"
+    },
+    {
+      "path": "tools/tests/test_run_ncp_reaudit.py",
+      "sha256": "fcdbfcc492a06dd01bbbe04856d5fbdfe377f5946b231a185c2a684740c749e7"
+    },
+    {
+      "path": "research/production_reaudit_20261021/NCP_CONFIG.json",
+      "sha256": "4058852bce5961a0f18a58cd403d7eddc1be9bd1739777a631d561729f07cacc"
+    }
+  ],
+  "independence": {
+    "initial_runner_and_gate_author": "other agents",
+    "reviewer": "benchmark_audit",
+    "reviewer_authored_final_changes": [
+      "corpus locked hash equality",
+      "comparison executable binding path equality",
+      "three end-to-end synthetic regression fixtures"
+    ],
+    "independent_post_fix_code_review_of_these_two_changes": false,
+    "separate_final_matrix_owner": "runtime_restore"
+  },
+  "resolved_findings": [
+    "unbound build binary on resume",
+    "stale unreceipted raw output",
+    "missing mandatory N02 tier CLI flags",
+    "unbound symlink target bytes",
+    "unbound dynamic-library replacement",
+    "runtime loader/environment omissions",
+    "PASS label without refinement ladder",
+    "self-declared reduced coverage",
+    "raw not tied to own command receipt",
+    "cross-arm/case/thread substitution",
+    "top-level integrity PASS despite bad raw receipt",
+    "self-consistent corpus substitution outside config lock",
+    "valid-other-build executable rebinding"
+  ],
+  "remaining_limitations": [
+    "no native or NCP scientific campaign executed by reviewer",
+    "boundary checks require quiescent checkout; not continuous monitoring",
+    "ldd covers resolved shared libraries, not arbitrary dlopen/data resources",
+    "scope-specific solver certificates are not general production qualification",
+    "consumer checks cannot replace trusted-host execution or mathematical proof verification"
+  ]
+}

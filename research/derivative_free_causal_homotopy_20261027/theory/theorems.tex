@@ -1,0 +1,427 @@
+\section{Constructive mathematical results}
+
+The original autonomous identity-mass raw-stage target is
+\begin{equation}
+ (I-h\gamma J_0)U_i=h\gamma f\left(y+\sum_{j<i}a_{ij}U_j\right)
+ +\gamma\sum_{j<i}c_{ij}U_j.\label{eq:df-target}
+\end{equation}
+Both coefficient arrays are strictly lower triangular. Stage increments
+have state units, whereas $h$ has time units and $J_0$ inverse-time units.
+The following constructions preserve this target or state explicitly the
+different fixed-point target they solve.
+
+Parallel iterated Runge--Kutta methods already distinguish the total number
+of stages from the sequential iteration depth~\cite{vdH1991}.
+Depth-one Anderson extrapolation is a standard construction~\cite{pollock2021}.
+The present contribution is the exact reuse/specialization and actual-residual
+screen below. For changed frozen operators, order cannot be inherited solely
+from the old tableau; this is consistent with the coupled approximation/order
+analysis of Rosenbrock--Krylov methods~\cite{tranquilli2014}.
+
+\subsection{Exact reuse of represented causal work}
+
+\paragraph{Theorem A.}
+Fix the arithmetic environment, operation order, basis, frozen action,
+coefficients, physical state, time, and model epoch. Suppose callbacks are
+pure and deterministic. A cache keyed by every bit of
+$x_i=\operatorname{fl}(\sum_{j<i}a_{ij}z_j)$ may reuse the represented
+projected remainder at stage $i$ without changing any numerical result.
+For a fixed block-lower-triangular affine matrix and deterministic diagonal
+solve, the maximal unchanged prefix of RHS blocks may likewise reuse its
+previous solution prefix.
+
+\paragraph{Proof.}
+The complete projected input key fixes the lift, frozen action, physical
+state, callback result, subtraction, and projection. For the affine solve,
+block zero is identical when its RHS is identical. Induction proves that
+an unchanged RHS prefix has an identical represented solution prefix;
+the same ordered suffix calculations then reproduce a full solve. This
+proves equality of every Picard iterate and residual decision. The full
+space check remains unchanged. Budgets may differ because fewer operations
+are executed.\hfill$\square$
+
+A physical-state-only key would not necessarily fix the frozen action.
+The native cache therefore uses the entire represented projected precursor
+and is not carried across a basis or physical-step change.
+
+\subsection{Finite causal propagation and residual transport}
+
+\paragraph{Theorem B.}
+For a finite acyclic block map $G_i(x_{<i})$, simultaneous Picard iteration
+propagates exact root values by one dependency depth per update. If source
+blocks are exact initially, the entire root is exact after at most the
+maximum graph depth. A global contraction factor is unnecessary.
+
+\paragraph{Proof.}
+The value at a source is independent of the iterate. Once every predecessor
+of a node is exact, its next evaluation equals its unique causal-root value.
+Induction on graph depth gives the claim.\hfill$\square$
+
+For a chain of $s$ stages, repeated evaluation before each update and at
+the final screen costs at most $s(s-1)$ nontrivial callbacks. Exact caching
+of settled precursors reduces the corresponding bound to
+$s(s-1)/2$. For $s=8$, the independent rational example gives $56$ and $28$.
+Native floating behavior is measured using actual identical keys; the
+finite exact-arithmetic bound is not substituted for observed work.
+
+\paragraph{Theorem C.}
+Suppose the candidate and root are in a domain where
+\begin{equation}
+ \|G_i(x)-G_i(z)\|\le\sum_{j<i}L_{ij}\|x_j-z_j\|,
+ \qquad L_{ij}\ge0.
+\end{equation}
+With block residual norms $\rho_i=\|G_i(x)-x_i\|$, the block root error obeys
+\begin{equation}
+ e\le (I-L)^{-1}\rho
+   =\sum_{k=0}^{s-1}L^k\rho.\label{eq:df-causal-majorant}
+\end{equation}
+
+\paragraph{Proof.}
+Adding and subtracting $G_i(x)$ gives $e\le\rho+Le$.
+Iterate this inequality $s$ times and use $L^s=0$.\hfill$\square$
+
+For $G_\lambda(x)=(1-\lambda)a+\lambda G(x)$, replace $L$ by
+$\lambda L$. Root motion satisfies
+\begin{equation}
+ |x^*_\mu-x^*_\lambda|_{\rm block}
+ \le(\mu-\lambda)(I-\mu L)^{-1}|G(x^*_\lambda)-a|_{\rm block}.
+\end{equation}
+This provides a finite causal bound even when an unweighted norm of $L$
+exceeds one. Whole-domain Lipschitz constants and domain membership are
+the required assumptions; a sampled slope does not establish them.
+
+\subsection{Exact two-scalar-tableau physical specialization}
+
+Consider the immutable family
+\begin{equation}
+ f(y)=b-dy+\kappa P y,\quad Pv=\operatorname{mean}(v)\boldsymbol{1},
+ \quad d\ge\kappa\ge0.
+\end{equation}
+Let $Q=I-P$, $\delta_c=d-\kappa$, and $\delta_t=d$.
+The projectors are orthogonal in Euclidean norm and
+\begin{equation}
+ J=-\delta_cP-\delta_tQ,\qquad
+ (I-h\gamma J)^{-1}=
+ \frac{P}{1+h\gamma\delta_c}+\frac{Q}{1+h\gamma\delta_t}.
+\end{equation}
+
+\paragraph{Theorem D.}
+For arbitrary state and forcing vectors, define $f_0=f(y)$ and
+\begin{equation}
+ t_i(\delta)=\frac{h\gamma+
+ \sum_{j<i}(\gamma c_{ij}-h\gamma\delta a_{ij})t_j(\delta)}
+ {1+h\gamma\delta}.
+\end{equation}
+The unique original-stage root is
+\begin{equation}
+ U_i=t_i(\delta_c)P f_0+t_i(\delta_t)Q f_0.
+\end{equation}
+
+\paragraph{Proof.}
+Since $f(y+v)=f_0+Jv$, project Eq.~\eqref{eq:df-target} onto the two invariant
+subspaces. The projected operator acts by one scalar on each subspace;
+causal induction gives the displayed recurrence and lift. Both shifted
+denominators are at least one, giving uniqueness.\hfill$\square$
+
+The stage construction costs $O(s^2+sn)$ with no derivative callback,
+matrix construction, or Newton step. The retained direct original-space
+screen costs an additional $O(s^2n)$ and is charged in both native arms.
+For the fixed eight-stage method the complete cost remains linear in $n$.
+The original RODAS temporal order is inherited because its exact target and
+derivative are preserved. Different floating evaluation orders are compared
+with explicit residual and observation tolerances.
+
+For scalar coefficient defects $\epsilon_i(\delta)$ obtained by substituting
+the represented coefficients into their recurrence, the exact lifted
+stage residual is
+\begin{equation}
+ \rho_i=\epsilon_i(\delta_c)P f_0+
+         \epsilon_i(\delta_t)Q f_0.
+\end{equation}
+Its squared Euclidean norm separates into the two orthogonal squared terms.
+Lifting, initial-RHS, and residual-evaluation rounding require additional
+allowances for a rigorous floating enclosure. The current full-space
+screen reports an operational residual.
+
+\subsection{Screened vector-only homotopy}
+
+\paragraph{Theorem E.}
+Let $G_\lambda:D\to D$ be a contraction of factor $q_\lambda<1$ on a
+closed invariant domain. For $r_\lambda(x)=G_\lambda(x)-x$, compute
+$p=G_\lambda(x)$. Accept an admissible extrapolate $e$ only when its actual
+residual satisfies
+\begin{equation}
+ \|r_\lambda(e)\|\le\eta\|r_\lambda(p)\|,
+ \qquad 0\le\eta\le1.
+\end{equation}
+Otherwise choose $p$. Then
+\begin{equation}
+ \|r_\lambda(x^+)\|\le q_\lambda\|r_\lambda(x)\|,
+ \qquad \|x-x_\lambda^*\|\le
+ \frac{\|r_\lambda(x)\|}{1-q_\lambda}.
+\end{equation}
+
+\paragraph{Proof.}
+The Picard residual is $G_\lambda(G_\lambda(x))-G_\lambda(x)$, bounded
+by $q_\lambda\|r_\lambda(x)\|$. The screen chooses a residual no larger
+than that value. Adding and subtracting $G_\lambda(x)$ in the root error
+and absorbing the contraction term proves the second claim.\hfill$\square$
+
+The implemented trial is depth-one Anderson extrapolation:
+\begin{equation}
+ \alpha=\frac{\langle r,r-r_{old}\rangle}{\|r-r_{old}\|^2},\qquad
+ e=G_\lambda(x)-\alpha[G_\lambda(x)-G_\lambda(x_{old})].
+\end{equation}
+Only map evaluations, vectors, and scalar products are used. Degenerate or
+inadmissible trials are skipped; rejected evaluated trials are charged.
+History is reset at each parameter station. The runtime performs no
+Jacobian/JVP/AD request or Newton linear solve.
+
+For the cubic damping implicit-midpoint consumer,
+\begin{equation}
+ F_\lambda(K)=K+\lambda h[k(y+K/2)+g(y+K/2)^3],
+ \quad k>0,\ g\ge0,
+\end{equation}
+global monotonicity gives $F'_\lambda\ge1+\lambda hk/2$ and hence
+\begin{equation}
+ |K-K^*_{\lambda}|\le
+ \frac{|F_\lambda(K)|}{1+\lambda hk/2}.
+\end{equation}
+This consumer-specific root bound remains valid when its fixed-point map
+is noncontractive. It does not remove midpoint's temporal truncation
+error or the need for floating evaluation allowances.
+
+The complete proofs, assumptions, branch-motion and inexact-evaluation
+bounds, source comparison, and executed rational/CAS checks are retained
+in \texttt{theory/THEORY.md} and its associated receipts.
+
+\subsection{Same-checkpoint entry-pilot proposal reuse}
+
+The adapter's optional repair replaces a replay pilot's cold proposal $h_0$
+with
+\begin{equation}
+ h_{\rm entry}=\min\{H,\max(h_0,h_e)\},
+\end{equation}
+where $H$ is the same accepted replay span
+and $h_e$ is the explicit proposal recorded before advancing that batch.
+The native configuration keeps its minimum-step floor and clips the actual
+attempt to the endpoint. All ODE data, tolerances, acceptance tests, callback
+ceilings, attempt caps, and final same-window cost comparisons are unchanged.
+
+\paragraph{Proposition.}
+Under those conditions the pilot retains its original target and
+qualification contract. Route selection still requires an actually
+completed, qualified, cheaper replay, and all rejected or discarded pilot
+work remains charged.
+
+\paragraph{Proof.}
+Only a trial-step proposal changes. Each resulting native trial faces the
+unchanged error and budget checks; the replay begins at the same state and
+ends at the same target. The unchanged route predicate therefore still
+requires the original qualification and observed cost inequality. Failed
+pilots retain their recorded cost.\hfill$\square$
+
+This preserves the comparison contract, not an adaptive mesh or a promised
+speedup. A simple startup bound explains the mechanism: if the first accepted
+step is at most $h_s$ and accepted steps grow by at most $g>1$, covering $H$
+requires $m$ satisfying
+\begin{equation}
+ H\le h_s\frac{g^m-1}{g-1}.
+\end{equation}
+Reusing a larger available proposal reduces this startup lower bound;
+actual rejection costs and the accuracy-qualified result are measured.
+
+\subsection{Derived constants for the cubic physical accuracy budget}
+
+Let $\phi(z)=kz+gz^3$, $k>0$, $g\ge0$, and $a=\lambda h/2$.
+Writing $m=y+K/2$ gives $F_\lambda(K)=K+2a\phi(m)$ and the unique
+root equation $m+a\phi(m)=y$. For $y\ge0$ the midpoint root lies in
+$[0,y]$ and the increment root lies in $[-2y,0]$; negative inputs follow
+by odd symmetry. On $|m|\le Y$ the sharp derivative bounds are
+\begin{equation}
+ k\le\phi'(m)\le L_Y=k+3gY^2,
+ \qquad F'_\lambda(K)\ge D_\lambda=1+ak.
+\end{equation}
+The increment map has exact Lipschitz constant $aL_Y$ on that interval.
+For $y\ne0$ its analytic root bracket is invariant precisely when
+$a(k+gy^2)\le1$; $aL_Y<1$ with $|y|\le Y$ implies both invariance and
+contraction. A root bracket alone does not establish a Picard self-map.
+
+Polynomial factorization, for any trial and exact root, gives
+\begin{equation}
+ F_\lambda(K)=(K-K_*)
+ \{1+a[k+g(m^2+mm_*+m_*^2)]\}.
+\end{equation}
+The quadratic is nonnegative. It proves the global sharp-divisor bound
+\begin{equation}
+ |K-K_*|\le \frac{|F_\lambda(K)|}{1+ak},
+\end{equation}
+including trials outside the contraction domain.
+
+\paragraph{Theorem F.}
+Let the true solution of $u'=-\phi(u)$ start in $[0,Y]$. Put
+\begin{equation}
+ \Phi=\phi(Y),\quad L=k+3gY^2,\quad
+ C=\frac{L^2\Phi}{8},\quad D=1+hk/2.
+\end{equation}
+The exact implicit-midpoint map $\Psi_h$ is globally nonexpansive and
+has local truncation error at most $\tau=Ch^3/D$.
+
+\paragraph{Proof.}
+If $m+(h/2)\phi(m)=y$, then
+\begin{equation}
+ \Psi_h(y)=2m-y,\qquad
+ \Psi'_h(y)=\frac{1-(h/2)\phi'(m)}{1+(h/2)\phi'(m)},
+ \qquad |\Psi'_h(y)|\le1.
+\end{equation}
+For the true increment $\Delta=u(h)-u(0)$, put
+$z=[u(0)+u(h)]/2$ and $v=u(h/2)$. Its target residual is
+\begin{align}
+ F(\Delta)&=A-B,\\
+ A&=h[\phi(z)-\phi(v)],\\
+ B&=\int_0^h\phi(u(t))\,dt-h\phi(v).
+\end{align}
+Both defects are nonnegative, since $u$ and $\phi(u)$ are convex.
+On the true orbit, $u''\le M_2=L\Phi$ and
+$(\phi(u))''\le M_3=6gY\Phi^2+L^2\Phi$. Taylor and midpoint quadrature
+remainders give $A\le h^3LM_2/8$ and $B\le h^3M_3/24$. The identity
+\begin{equation}
+ 2L^2-\phi''(Y)\Phi=2k^2+6kgY^2+12g^2Y^4\ge0
+\end{equation}
+implies $M_3\le3LM_2$, hence $|A-B|\le Ch^3$. The global residual
+divisor $D$ proves the local-error bound.\hfill$\square$
+
+The truncation constant $C$ is a proved upper bound, without a claim of
+optimality. If a computed endpoint has certified error $a_j$ relative to
+$\Psi_h(\widehat y_j)$, nonexpansivity gives
+\begin{equation}
+ |\widehat y_j-u(jh)|\le j\tau+\sum_{\ell<j}a_\ell.
+\end{equation}
+For requested physical error $\epsilon$, choose the smallest admitted
+dyadic $N$, with exact represented $h=T/N$ and $Nh=T$, such that
+\begin{equation}
+ E_{\rm tr}=\frac{CT^3}{N(N+kT/2)}<\epsilon,
+ \qquad \frac{T[k+3g(Y+\epsilon)^2]}{2N}<1.
+\end{equation}
+Then assign the entire remaining budget by
+\begin{equation}
+ a_{\rm step}=\frac{\epsilon-E_{\rm tr}}{N},\qquad
+ \rho_{\rm stage}=D a_{\rm step}.
+\end{equation}
+There is no discretionary fractional budget split. The second condition
+is justified inductively by $|\widehat y_j|\le Y+\epsilon$; the true
+orbit used in the truncation proof still lies in $[0,Y]$.
+
+The implementation computes these constants outward. For represented
+inputs, let $\mathcal R$ enclose the original polynomial residual and
+let $0<D_{\rm lo}\le D$. If $z=\operatorname{fl}(\widehat y+K)$ and
+$e_{\rm add}$ encloses its addition displacement, then
+\begin{equation}
+ |z-\Psi_h(\widehat y)|\le
+ \frac{\operatorname{mag}(\mathcal R)}{D_{\rm lo}}+e_{\rm add}.
+\end{equation}
+This bound authorizes an accepted step. Value-only monotone bisection can
+polish a candidate; unresolved interval sign or a representability floor
+produces a recorded failure. All polishing and rejected trial work is
+charged. Observation time rounding is included separately through
+$\Phi|\widehat t-jh|$. These are sealed-model certificates, not generic
+certificates for an arbitrary callback.
+
+\subsection{Residual dominance with no fitted acceptance constant}
+
+Theorem E holds with $\eta=1$: any admissible candidate whose actual
+residual does not exceed the computed Picard candidate's residual
+inherits the exact contraction inequality. The new
+\texttt{ResidualDominance} mode therefore needs no empirical gain margin,
+coefficient cap, observed-rate threshold, or rejection-count threshold.
+Normalize the two residual vectors by their common maximum magnitude
+before forming the scalar Anderson quotient. A zero represented
+denominator, nonfinite coefficient, or inadmissible trial skips the
+proposal. No discretionary near-zero epsilon is required; a finite
+poorly conditioned proposal must still pass the actual residual screen.
+This preserves the selected-update proof but does not guarantee that the
+extra map call reduces total work. Floating screening remains operational;
+the cubic interval bound above supplies the physical accuracy decision.
+
+\subsection{Sharp accumulated residual gain of the structural quotient}
+
+For a scalar channel rate $r$, define the raw-stage operator
+\begin{equation}
+ M(r)_{ii}=1+h\gamma r,\qquad
+ M(r)_{ij}=h\gamma r a_{ij}-\gamma c_{ij}\quad(j<i).
+\end{equation}
+Solve $M(r)^T w(r)=b_{\rm code}$ by reverse scalar recurrence. With
+$w_t=w(d)$, $w_c=w(d-\kappa)$, define
+\begin{equation}
+ T_i=w_{t,i}Q+w_{c,i}P,\quad S=R_tQ+R_cP,\quad
+ R_r=1-r\sum_i b_i t_i(r).
+\end{equation}
+For any real scalars $t,c$, put
+\begin{equation}
+ \nu_n(t,c)=\left|t+\frac{c-t}{n}\right|
+ +(n-1)\left|\frac{c-t}{n}\right|.
+\end{equation}
+
+\paragraph{Theorem G.}
+The sharp one-step stage-residual and propagation infinity norms are
+\begin{equation}
+ A_n=\sum_i\nu_n(w_{t,i},w_{c,i}),\qquad
+ G_n=\nu_n(R_t,R_c).
+\end{equation}
+For $N$ equal steps of the same autonomous model, the sharp accumulated
+norm from independent original-stage residuals is
+\begin{equation}
+ C_N=\sum_{j=0}^{N-1}\sum_i
+       \nu_n(R_t^j w_{t,i},R_c^j w_{c,i}).
+\end{equation}
+If all those residuals have infinity norm at most $\delta$ and the
+initial states agree, the algebraic discrete-trajectory error at every
+grid index $m\le N$ is at most $C_N\delta$. Thus, for positive gain,
+$\delta=\epsilon_{\rm alg}/C_N$ derives the residual tolerance.
+
+\paragraph{Proof.}
+The exact stage-error equation is $M(r)E=R$, so the endpoint error is
+$b_{\rm code}^TE=w(r)^TR$ in each channel. The homogeneous propagation
+is $S$ by the exact scalar quotient. A matrix $tQ+cP$ has diagonal
+$t+(c-t)/n$ and off-diagonal $(c-t)/n$, giving the absolute row sum
+$\nu_n$. With zero initial error,
+\begin{equation}
+ e_N=\sum_{\ell=0}^{N-1}\sum_i
+       S^{N-1-\ell}T_iR_{\ell,i}.
+\end{equation}
+The projector identities give
+$S^jT_i=R_t^jw_{t,i}Q+R_c^jw_{c,i}P$. Summing the absolute row
+entries of the concatenated independent inputs gives $C_N$. Choosing
+each input sign to align with a fixed output row attains equality;
+invertibility of the triangular stage systems realizes those residuals.
+Nonnegativity of the terms gives $C_m\le C_N$.\hfill$\square$
+
+Submultiplicativity also yields
+$C_N\le A_n\sum_{j=0}^{N-1}G_n^j$, without assuming $G_n<1$.
+Equality can hold, including in the present audited fixture. Scalar
+powers and finite sums avoid a singular expression at $G_n=1$.
+The native budget evaluates the formula in binary64 and reports an
+operational derived tolerance. It does not include temporal truncation,
+endpoint rounding, coefficient error, or an interval residual enclosure.
+
+\subsection{Exact integer preference for enabled entry pilots}
+
+Use the existing work objective before floating conversion,
+\begin{equation}
+ W=N_{\rm RHS}+N_{\rm JVP}+N_{f_t}+nN_J+N_{\rm solve}.
+\end{equation}
+The optional strict policy accepts a successful same-checkpoint,
+same-endpoint pilot precisely when its checked integer $W$ is smaller
+than the accepted explicit prefix's $E$. Ties retain the explicit route.
+Any running callback-prefix count $L\ge E$ rules out a strict win,
+because final work is at least $L$. Since the native guard charges the
+crossing callback and stops on $L>\mathrm{cap}$, the exact early ceiling
+is $E-1$ for $E>0$. Integer overflow or an unrepresentable ceiling
+declines that evidence instead of truncating the count. All attempted
+pilot work remains charged.
+
+This replaces a fitted entry margin only for enabled pilots. Zero pilot
+budget retains the existing pressure-only direct-entry mode, and the
+pressure, retry, and return heuristics remain separate. The conclusion
+is a local choice in the stated work objective; whole-trajectory and
+wall-clock gains are measured separately.

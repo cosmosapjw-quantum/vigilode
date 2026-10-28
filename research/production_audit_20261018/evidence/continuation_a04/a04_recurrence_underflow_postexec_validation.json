@@ -1,0 +1,25 @@
+{
+  "schema_version": 1,
+  "exec_sha": "0179e3e7750cbb053d95f8f519a28037b3494195",
+  "runs": [
+    {
+      "id": "focused_additive_underflow_unit",
+      "command": "cargo test --locked --offline -p rodas5p-core recurrence_interval_replay_covers_subnormal_additive_underflow",
+      "exit_code": 0,
+      "passed": 1,
+      "failed": 0,
+      "log_archive": "research/production_audit_20261018/evidence/continuation_a04/a04_recurrence_underflow_postexec_unit.log.gz"
+    },
+    {
+      "id": "leja_total_contract",
+      "command": "cargo test --locked --offline -p rodas5p-core --test leja_total_contract",
+      "exit_code": 0,
+      "passed": 16,
+      "failed": 0,
+      "log_archive": "research/production_audit_20261018/evidence/continuation_a04/a04_leja_contract_postexec.log.gz"
+    }
+  ],
+  "independent_review": "SCOPED_PASS",
+  "full_a04": "HOLD",
+  "authority": "EstimateOnly"
+}

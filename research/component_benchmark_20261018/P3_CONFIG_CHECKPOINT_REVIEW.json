@@ -1,0 +1,46 @@
+{
+  "checkpoint_conditions": [
+    "commit and push only reviewed materializer, selection, config, receipt, materialization logs, and this review",
+    "bind published EXEC SHA separately before P3 launch",
+    "archive completion and closed old campaign queues required before launch",
+    "current source, config, driver, ledger and live resource admission required before launch"
+  ],
+  "config_sha256": "f816e72ed1d08131cd9d6ff72b25210f4e9f3b7c63a0908f768fb1965e79a675",
+  "first_materialization_failure": {
+    "classification": "PROBE_RECEIPT_DIGEST_KIND_MISMATCH",
+    "path": "research/component_benchmark_20261018/p3_freeze_01/materialization_01.json",
+    "preserved_without_rerun": true
+  },
+  "materializer_sha256": "5971eb0dde1f2e826a7db615584a76e80319cebdd8fc7d7ffb61b67e87331ff8",
+  "observed_runtime_identity": "NOT_INDEPENDENTLY_OBSERVED",
+  "p3_launch_admission": "HOLD_PENDING_SEPARATE_EXEC_BINDING_APPROVAL",
+  "production_admission": "HOLD",
+  "requested_model": "gpt-6-astra",
+  "requested_reasoning_effort": "ultra",
+  "review_status": "PASS_SOURCE_CHECKPOINT",
+  "reviewed_identity": {
+    "all_critical": true,
+    "canonical_cases": 15,
+    "comparison_scopes": {
+      "matched_achieved": 13,
+      "same_target": 3
+    },
+    "global_multiplicity": 16,
+    "panel_pairs": 16,
+    "random_seed": 20261018,
+    "rounds": 17,
+    "screening_arms": 32,
+    "sum_screened_lane_memory_reservations_mib": 16932
+  },
+  "reviewer_role": "independent Astra-tier research review",
+  "schema": "vigilode-component-p3-config-checkpoint-review-v1",
+  "scope": "exact P3 reviewer selection, config materialization and source-only checkpoint",
+  "selection_receipt_sha256": "e516e80124d16ae782cc9bd9132980ef6f465d594efc234ebad5369e72bb8e7d",
+  "selection_sha256": "0c49bda22f94457dc08854a95c2437c717f141d7f61540fc0128d29678bfda98",
+  "source_binding_sha256": "53ae19c911a99a718024c56bd9a5ff711e1f637bc6660a31c836870d134945ce",
+  "successful_materialization": {
+    "path": "research/component_benchmark_20261018/p3_freeze_01/materialization_02.json",
+    "status": "FROZEN_PENDING_REVIEW"
+  },
+  "timing_authority": "diagnostic_only"
+}

@@ -1,0 +1,97 @@
+{
+  "node": "A04_SUBNORMAL_RECURRENCE_REPLAY",
+  "base_head": "6c0c1ed2e04b3436fd9cb06c68afa9785d6c50a3",
+  "branch": "audit/production-readiness-20261018",
+  "source_identity": {
+    "source": {
+      "path": "crates/rodas5p-core/src/leja_action.rs",
+      "sha256": "29231f26a2502cc697b3fed0e9fddf11f072c71275ea36db348ef9c2d8d4aa0f"
+    },
+    "contract_tests": {
+      "path": "crates/rodas5p-core/tests/leja_total_contract.rs",
+      "sha256": "46fa750e1b4bfa2ca7550c3548c0856899e0d85fff07b42053e24a884f43c01f"
+    }
+  },
+  "witness": {
+    "min_subnormal": "2^-1074",
+    "inputs": {
+      "h": "2^-1074",
+      "operator_product": "1",
+      "center": "0",
+      "old_state": "1",
+      "scale": "2",
+      "node": "0"
+    },
+    "rounded_update": "0 by ties-to-even underflow",
+    "exact_real_update": "2^-1075",
+    "conclusion": "relative-only residual proportional to |rounded_update| is zero, while outward interval replay has positive distance bound and contains the exact half-minimum-subnormal update"
+  },
+  "implementation": [
+    "factored the already-existing directed recurrence expression into recurrence_interval_next",
+    "charges 48 certification work proxies before fallible interval operations",
+    "production recurrence path uses the helper; no threshold, coefficient formula, or authority changed"
+  ],
+  "validation": {
+    "first_legacy_bound_falsifier": {
+      "path": "a04_recurrence_underflow_first_failure.log.gz",
+      "sha256": "8ad33ad73a738b0a18ade7fdd7b6fe5daf48587c3e6fbe90da41892aedf5a0ed",
+      "exit_code": 101,
+      "archive_path": "a04_recurrence_underflow_first_failure.log.gz",
+      "archive_sha256": "90bd3edee40d55b56dd655b5fbe7877e82aedb55d6509d1d8e845c02e88e75ec",
+      "uncompressed_sha256": "8ad33ad73a738b0a18ade7fdd7b6fe5daf48587c3e6fbe90da41892aedf5a0ed"
+    },
+    "intermediate_interval_endpoint_assertion_failure": {
+      "path": "a04_recurrence_underflow_interval_assertion_failure.log.gz",
+      "sha256": "e0f82dee662566ac5f1df15bbccdf946e82a15c02e3e9c1442cb03ef0f25348c",
+      "exit_code": 101,
+      "archive_path": "a04_recurrence_underflow_interval_assertion_failure.log.gz",
+      "archive_sha256": "7ffed057db00210227de693d1fe9ba457b7db48fcd118fad92512a22d3edbe39",
+      "uncompressed_sha256": "e0f82dee662566ac5f1df15bbccdf946e82a15c02e3e9c1442cb03ef0f25348c"
+    },
+    "focused_unit": {
+      "path": "a04_recurrence_underflow_unit_final.log.gz",
+      "sha256": "a003dc8bfebd4feeb31511695857ecafe539ffed5090b14a09a0a0972872c6a2",
+      "exit_code": 0,
+      "archive_path": "a04_recurrence_underflow_unit_final.log.gz",
+      "archive_sha256": "6b0fb6a84eedfeb811b0001cb1e6d190a1e44eb8f99ea1976465d2d213782f9c",
+      "uncompressed_sha256": "a003dc8bfebd4feeb31511695857ecafe539ffed5090b14a09a0a0972872c6a2"
+    },
+    "focused_contract": {
+      "path": "a04_recurrence_underflow_contract.log.gz",
+      "sha256": "e164117450d98ba649ad0a1bc9d703e0d300930ade081c4108d5f7379e2ede74",
+      "exit_code": 0,
+      "archive_path": "a04_recurrence_underflow_contract.log.gz",
+      "archive_sha256": "fe296c6ae550aa25d0780ea3d1f8b38f6eaf0e8fed64841d70df606b7d7e7477",
+      "uncompressed_sha256": "e164117450d98ba649ad0a1bc9d703e0d300930ade081c4108d5f7379e2ede74"
+    },
+    "clippy": {
+      "path": "a04_recurrence_underflow_clippy.log.gz",
+      "sha256": "9e51f4d1c6d085812cddecde690b0af9604156b2e669756812fa8d7e64b2be24",
+      "exit_code": 0,
+      "archive_path": "a04_recurrence_underflow_clippy.log.gz",
+      "archive_sha256": "daacf74982cf3f542f0040f91251f8ba8fd32f8a199d6f7f142d1bf38fa37483",
+      "uncompressed_sha256": "9e51f4d1c6d085812cddecde690b0af9604156b2e669756812fa8d7e64b2be24"
+    },
+    "rustfmt": {
+      "path": "a04_recurrence_underflow_fmt.log.gz",
+      "sha256": "1ca4a13146b2891c0e462123ac0cb848f92e6221f18b870a1b78c232d1956c35",
+      "exit_code": 0,
+      "archive_path": "a04_recurrence_underflow_fmt.log.gz",
+      "archive_sha256": "97541d71d1a09756859581411ffd62fad9de1eec79880c5e931752b24a6ae14e",
+      "uncompressed_sha256": "1ca4a13146b2891c0e462123ac0cb848f92e6221f18b870a1b78c232d1956c35"
+    },
+    "diff_check": {
+      "path": "a04_recurrence_underflow_diffcheck.log.gz",
+      "sha256": "1ca4a13146b2891c0e462123ac0cb848f92e6221f18b870a1b78c232d1956c35",
+      "exit_code": 0,
+      "archive_path": "a04_recurrence_underflow_diffcheck.log.gz",
+      "archive_sha256": "97541d71d1a09756859581411ffd62fad9de1eec79880c5e931752b24a6ae14e",
+      "uncompressed_sha256": "1ca4a13146b2891c0e462123ac0cb848f92e6221f18b870a1b78c232d1956c35"
+    }
+  },
+  "decision": "Scoped additive-underflow recurrence replay regression and helper extraction PASS. Full A04 remains HOLD / EstimateOnly pending independent review and the full A04 arithmetic-domain/coefficient-tail proof.",
+  "executor_identity": {
+    "role": "implementation agent",
+    "runtime_model": "not independently observed"
+  }
+}

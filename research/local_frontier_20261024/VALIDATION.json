@@ -1,0 +1,182 @@
+{
+  "schema_version": 1,
+  "scope": "Development tests and bounded local-container experiments. Not the user-host campaign and not broad production qualification.",
+  "tests": [
+    {
+      "unit": "conditioned chart/provider",
+      "passed": 37,
+      "composition": "11 new +26 existing related",
+      "evidence": "evidence/n1n2-round2-tests.receipt.json"
+    },
+    {
+      "unit": "fixed P continuation",
+      "passed": 15,
+      "evidence": "evidence/n4-round2-tests.receipt.json"
+    },
+    {
+      "unit": "invariant module",
+      "passed": 21,
+      "composition": "15 new +6 existing shared-shift",
+      "evidence": "evidence/N6_tests_round3.json"
+    },
+    {
+      "unit": "coupled cost guard and example",
+      "passed": 88,
+      "evidence": "evidence/runs/n3-round2-tests.receipt.json",
+      "note": "Final curved model has1 additional rerun, counted separately in its receipt, not an extra distinct test."
+    },
+    {
+      "unit": "final curved nonlinear RHS",
+      "passed": 1,
+      "evidence": "evidence/runs/n3-final-model-tests.receipt.json",
+      "is_targeted_rerun": true
+    },
+    {
+      "unit": "24 benchmark models",
+      "passed": 9,
+      "evidence": "evidence/model-final-verification.log"
+    },
+    {
+      "unit": "exact offline conditional work planner",
+      "passed": 7,
+      "evidence": "evidence/conditional-budget-tests.log"
+    },
+    {
+      "unit": "independent exact planner holdouts",
+      "passed": 91,
+      "composition": "64 exhaustive allocation comparisons +3 floor boundaries +24 causal identities",
+      "evidence": "analysis/CONDITIONAL_BUDGET_REVIEW.json"
+    },
+    {
+      "unit": "conditional chart sweep",
+      "passed": 3,
+      "evidence": "analysis/CONDITIONAL_CHART.json"
+    },
+    {
+      "unit": "conditional continuation sweep",
+      "passed": 5,
+      "evidence": "analysis/CONDITIONAL_CONTINUATION.json"
+    },
+    {
+      "unit": "structured residual prototype",
+      "passed": 2,
+      "evidence": "analysis/CONDITIONAL_STRUCTURED_CERTIFICATION.json"
+    },
+    {
+      "unit": "local campaign controllers and external model contracts",
+      "passed": 42,
+      "composition": "30 primary/external +12 conditional",
+      "evidence": "evidence/local-runner-tests-freeze/RECEIPT.json"
+    }
+  ],
+  "native_scoped_experiments": [
+    {
+      "unit": "chart benchmark",
+      "rows": 18,
+      "passed": 18,
+      "evidence": "analysis/CONDITIONED_CHART_BENCHMARK.json"
+    },
+    {
+      "unit": "fixed P benchmark",
+      "configurations": 6,
+      "repeats_per_method": 101,
+      "methods": 2,
+      "evidence": "analysis/N4_FIXED_P.json"
+    },
+    {
+      "unit": "invariant module",
+      "rows": 150,
+      "warmup_rows": 15,
+      "measurement_rows": 135,
+      "all_certified": true,
+      "evidence": "analysis/N6_BENCHMARK_SUMMARY.json"
+    },
+    {
+      "unit": "cost reference guard",
+      "timed_samples": 231,
+      "passed": 231,
+      "evidence": "analysis/N3_REGIME_COST.json"
+    },
+    {
+      "unit": "meaningful callback stage parallelism",
+      "timed_samples": 48,
+      "passed": 48,
+      "evidence": "analysis/N5_PARALLEL_CALLBACKS.json"
+    },
+    {
+      "unit": "24-model executable smoke",
+      "processes": 56,
+      "process_exit_zero": 56,
+      "PASS_SCOPED": 33,
+      "UNVALIDATED_REFERENCE": 22,
+      "REFUSED_DIMENSION": 1,
+      "evidence": "analysis/BENCHMARK_MODELS.json"
+    },
+    {
+      "unit": "conditional chart accuracy/cost",
+      "timed_rows": 384,
+      "PASS_SCOPED": 336,
+      "HOLD_UNRESOLVED_ERROR_BOUND": 48,
+      "evidence": "analysis/CONDITIONAL_CHART.json"
+    },
+    {
+      "unit": "conditional continuation",
+      "timed_solves": 1488,
+      "numeric_cases": 16,
+      "branch_guard": 1,
+      "evidence": "analysis/CONDITIONAL_CONTINUATION.json",
+      "note": "Expected refusals preserved; all assertions passed does not mean every solve succeeded."
+    },
+    {
+      "unit": "structured residual prototype",
+      "measurement_rows": 81,
+      "negative_controls": 30,
+      "evidence": "analysis/CONDITIONAL_STRUCTURED_CERTIFICATION.json"
+    },
+    {
+      "unit": "conditional independent-process developer smoke",
+      "processes": 12,
+      "COMPLETED": 12,
+      "raw_rows": 1245,
+      "evidence": "evidence/conditional-native-final-summary.json",
+      "note": "Dirty development source, explicitly exploratory; not user-host timing evidence."
+    },
+    {
+      "unit": "local controller end-to-end",
+      "processes": 18,
+      "evidence": "analysis/LOCAL_CAMPAIGN.json",
+      "note": "Two bounded9-process runs retained; final suite binary bound by hash."
+    },
+    {
+      "unit": "matched external developer smoke",
+      "processes": 20,
+      "PASS_SCOPED": 15,
+      "UNVALIDATED_REFERENCE": 5,
+      "evidence": "analysis/LOCAL_CAMPAIGN.json"
+    }
+  ],
+  "symbolic_checks": {
+    "new_geometry_exact_rational": 6,
+    "evidence": "analysis/GEOMETRY_EXACT_CHECKS.json",
+    "wolfram": "evidence/WOLFRAM_ATTACHMENT_CHECK.json"
+  },
+  "independent_reviews": [
+    "analysis/N3_INDEPENDENT_REVIEW.md",
+    "analysis/N6_INDEPENDENT_REVIEW.md",
+    "analysis/BENCHMARK_INDEPENDENT_REVIEW.md",
+    "analysis/LOCAL_RUNNER_INDEPENDENT_REVIEW.md",
+    "analysis/CONDITIONAL_BUDGET_REVIEW.md",
+    "analysis/CONDITIONAL_CHART_INDEPENDENT_REVIEW.md",
+    "analysis/CONDITIONAL_CONTINUATION_INDEPENDENT_REVIEW.md",
+    "analysis/CONDITIONAL_STRUCTURED_INDEPENDENT_REVIEW.md"
+  ],
+  "known_limitations": [
+    "User-host full campaign NOT_RUN.",
+    "Julia and diffsol native external comparison not executed here.",
+    "Seventeen benchmark models lack embedded independent endpoint references.",
+    "Kernel benchmarks do not establish whole-ODE speedup.",
+    "Some preliminary failures corrected; raw histories retained."
+  ],
+  "broad_production": "HOLD_UNCHANGED",
+  "ncp_used": false
+}
