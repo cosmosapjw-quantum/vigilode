@@ -104,8 +104,13 @@ def main():
     ap.add_argument("--output", required=True); ap.add_argument("--cpu", type=int, default=0)
     ap.add_argument("--repeats", type=int, default=64, help="fixed per-process solve repetitions")
     ap.add_argument("--profile-repeats", default="4,12")
+    ap.add_argument("--process-timeout", type=float, default=90.0, help="per-child timeout in seconds, capped at 90")
     a=ap.parse_args()
     global _STARTED
+    global TIMEOUT
+    if not (0 < a.process_timeout <= 90):
+        raise SystemExit("--process-timeout must be in (0, 90]")
+    TIMEOUT=a.process_timeout
     out=Path(a.output)
     out.mkdir(parents=True, exist_ok=False)
     bins={"baseline":str(Path(a.baseline).resolve()),"candidate":str(Path(a.candidate).resolve())}
@@ -141,7 +146,8 @@ def main():
             pair["allocation_observation"]={"baseline":baseline,"candidate":candidate,"candidate_minus_baseline":delta,"candidate_over_baseline":ratio,"interpretation":"observed optimization target; differences are retained, not treated as parity failure"}
         return pair
     def accuracy_check(case, mode, span, param, pair):
-        for k, item in pair.items():
+        for k in ("baseline", "candidate"):
+            item=pair[k]
             value=item["value"]
             if value is None: continue
             for i,s in enumerate(value.get("samples", [])):
