@@ -15,6 +15,7 @@ mod a1_two_arm_receipt;
 mod adaptive;
 mod adaptive_exponential;
 mod adaptive_output;
+pub mod affine_event_certificate;
 pub mod affine_transport;
 mod bdf;
 mod block;
