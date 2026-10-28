@@ -100,9 +100,9 @@ fn reproduced_center(t: [f64; 2], y: [f64; 2], h: [[f64; 8]; 3], u: [f64; 8], ti
         return y[0];
     }
     let mut d = [0.0; 3];
-    for r in 0..3 {
-        for j in 0..8 {
-            d[r] += h[r][j] * u[j];
+    for (value, row) in d.iter_mut().zip(&h) {
+        for (&coefficient, &stage) in row.iter().zip(&u) {
+            *value += coefficient * stage;
         }
     }
     let complement = 1.0 - theta;

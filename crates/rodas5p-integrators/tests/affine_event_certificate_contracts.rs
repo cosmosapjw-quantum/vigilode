@@ -39,8 +39,8 @@ fn packet(
     index: usize,
 ) -> RepresentedAffineSegment {
     let mut h = [[0.0; 8]; 3];
-    for r in 0..3 {
-        h[r][r] = 1.0;
+    for (r, row) in h.iter_mut().enumerate() {
+        row[r] = 1.0;
     }
     let mut u = [0.0; 8];
     u[..3].copy_from_slice(&d);
