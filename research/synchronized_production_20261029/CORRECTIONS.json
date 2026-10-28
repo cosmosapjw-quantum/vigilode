@@ -1,7 +1,7 @@
 {
   "schema": "vigilode.synchronized-corrections.v1",
   "global_maximum": 3,
-  "global_used": 2,
+  "global_used": 3,
   "episodes": [
     {
       "id": 1,
@@ -24,7 +24,7 @@
         "explicit missing accuracy cap and composed identity checks",
         "source-bound runner status/identity/budget gates"
       ],
-      "execution": "not_run_at_registration"
+      "execution": "completed_source7fce"
     },
     {
       "id": 2,
@@ -54,7 +54,35 @@
       "native_solver_changed": false,
       "first_receipt_root": "lane-checks01",
       "build_receipts": "runtime/build_candidate and runtime/build_candidate_isolated",
-      "execution": "pending_source2"
+      "execution": "completed_sourceef84;checks02andbenchreceipts"
+    },
+    {
+      "id": 3,
+      "scope": "Final data-driven harness isolation and postprocessing; no production arithmetic changes",
+      "source_before": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "diagnosis": [
+        "process-global LIVE_BYTES measured concurrently by three allocator tests",
+        "analyzer subtotal omitted failed first checks and serial diagnostic",
+        "cold first process solve differs from later repeats; equal-allocation guard rejected valid data",
+        "initial figure legend overlap/title clipping found by rendered review"
+      ],
+      "changes": [
+        "samepublishedsource serial allocator target:3/3PASS; originalparallelFAIL preserved",
+        "cumulativecampaign total491.539190153s retained alongside currentphase subtotal",
+        "allallocationrepeatvalues retained; first/later marked separately",
+        "tightbounding export and externallegends; no resampling"
+      ],
+      "owners": {
+        "Q-BENCH": {
+          "before": 0,
+          "after": 1
+        },
+        "SP02_allocator_test": "execution isolation only; source unchanged"
+      },
+      "native_solver_changed": false,
+      "analysis_failure": "lane-analysis03/FAILURE.json",
+      "execution": "completed; serial.164976829s; analyzerreceipt and immutable native raws",
+      "budget_after": "3/3; no further campaign solver corrections"
     }
   ],
   "inherited_counters": [
@@ -157,7 +185,7 @@
       "id": "Q-BENCH",
       "maximum": 3,
       "source": "cumulative_validation_20261028/SUMMARY.json",
-      "used": 0,
+      "used": 1,
       "used_at_baseline": 0
     },
     {

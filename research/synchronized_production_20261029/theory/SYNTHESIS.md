@@ -132,10 +132,14 @@ R3 states S1's complete domain/epoch assumptions; R4 selects residual-first
 composition; R5 proves S1–S4; R6 requests independent source/math review;
 R7 executes exact triangular and mutation tests after source publication;
 R8 admits only scoped claims; R9 supplies the code/native handoff; R10 freezes
-results and remaining obligations. R6/R7 are pending until their receipts.
+results and remaining obligations. R6 is completed in reviews/SYNTHESIS_CODE_REVIEW.md and reviews/FINAL_INDEPENDENT_REVIEW.md. R7 executed four stage-transfer methods within the25-method published-source suite at ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc; all passed. Final stage dispositions and handoff are in WORKFLOW_FINAL.json.
 
 The coding loop follows that contract: C1 source pins; C2 functions and bounds;
 C3 exact Fraction consumer design; C4 bounded runner; C5 implementation;
 C6/C7 exact and native tests; C8 matched diagnostic measurements; C9 independent
 diff/data review; C10 one published delivery and local handoff. Step completion
 is recorded only with its actual evidence, not by this enumeration.
+
+## Late PR102 join
+
+The final remote survey adds PR102 native scalar-affine provider as an existing conditional specialization (Gamma=deltaJ=0), reviewed at8357faa5b42724a8be24609d4d2f16aec8a6eb3a/code0d722b4ed71413926c76bc0037f02f3a6bbdd362. Its accepted quartic/Bernstein/Dini and pointwise query-rounding mechanisms are reusable; no combined-tree execution occurred. Query displacement rho is added only to the returned observation, not repeatedly to physical endpoint carry. Caller source identity assertions and initial error remain premises; nonlinear/clock-fiber providers remain open. See reviews/PR102_REUSE_REVIEW.md. This source synthesis changes no proved theorem or frozen native execution.

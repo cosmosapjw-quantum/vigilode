@@ -112,13 +112,13 @@
       "id": "D1-D10",
       "statement": "D1 hypotheses and D4 rational radius imply whole-slab solution enclosure and chronological transfer/event predicates",
       "basis": [
-        "derived"
+        "derived",
+        "implementation-verified"
       ],
       "evidence_refs": [
         "DEFECT.md"
       ],
       "obligations": [
-        "Exact oracle implementation and tests",
         "Actual full provider binding and outward native arithmetic for production"
       ]
     }
@@ -132,6 +132,17 @@
         "defect_external_evidence.json"
       ],
       "reason": "Factorization, majorant difference, radius/decay and chronological transfer identities"
+    },
+    {
+      "id": "exact-consumer",
+      "domain": "implementation",
+      "result": "pass_scoped",
+      "execution_ref": "proof-oracles-ef84",
+      "evidence_refs": [
+        "/workspace/scratch/f9615df1ce94/lane-checks02/RUN.json",
+        "/workspace/scratch/f9615df1ce94/lane-checks02/proof-oracles/stderr.txt"
+      ],
+      "reason": "12DEFECTmethods and25total proof-oracle methods PASS; source unchanged against ef84 for helper/tests"
     }
   ],
   "failures": [
@@ -155,8 +166,34 @@
     }
   ],
   "next_actions": [
-    "Publish source before exact oracle tests",
-    "Run code/test_defect_composition.py",
-    "Independent code review and parent synchronized lane"
-  ]
+    "Conditional theory/oracle complete; actual source/norm/corridor provider remains OPEN",
+    "Native endpoint reuse remains deferred under inherited PR-N05budget3/3",
+    "Local application must authenticate all D1 source/clock/norm premises and outward arithmetic"
+  ],
+  "evidence_execution": {
+    "id": "proof-oracles-ef84",
+    "status": "completed",
+    "source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+    "tree": "2989f07fb04134aa7bab38e38d7272e45d6a0917",
+    "command": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "/workspace/scratch/f9615df1ce94/vigilode/research/synchronized_production_20261029/code",
+      "-p",
+      "test_*.py",
+      "-v"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 0.11423135599943635,
+    "child_cpu_seconds": 0.070223,
+    "raw_run": "/workspace/scratch/f9615df1ce94/lane-checks02/RUN.json",
+    "stderr": "/workspace/scratch/f9615df1ce94/lane-checks02/proof-oracles/stderr.txt",
+    "stderr_sha256": "82c82aa5045e684acd6d6ef1a567b0aae5ee35933b32c3fae09bc513beb4eedd",
+    "total_test_methods": 25,
+    "defect_test_methods": 12,
+    "scope": "exact scalar composition, quotient and triangular-stage research consumers; no actual physical provider execution"
+  }
 }

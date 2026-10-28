@@ -1,0 +1,763 @@
+{
+  "phases": {
+    "lane-checks01": {
+      "sha256": "df05ccc45316e0a4d3763ed8318eb0b533e00e6b34c2fb3aba53a3ff87886a67",
+      "source": "7fce5a4cbf5e1de3dd25de3b247f638bc551be24",
+      "wall": 190.73295297200002,
+      "mismatches": []
+    },
+    "lane-checks02": {
+      "sha256": "70004fdf605436b740ab5f7796799b4e1977aa48d805bde487ef0da5b93d75ff",
+      "source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "wall": 299.09396159100015,
+      "mismatches": []
+    },
+    "lane-charge03": {
+      "sha256": "cc25bb93a933e5577442e826bedd2975b5133625a1b2958f7ccce19d55375854",
+      "source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "wall": 0.1649768289998974,
+      "mismatches": []
+    },
+    "lane-bench02": {
+      "sha256": "22606ebfb658388b1023fa59f58cce2e9aea131d73807f3dd9254a8c97c247e1",
+      "source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "wall": 1.5182665900001666,
+      "mismatches": []
+    },
+    "lane-deployment02": {
+      "sha256": "2337f9d53c451428b0c5962b5ba1773c5e2d6be91b82b07aa038477efdaa427e",
+      "source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "wall": 0.029032170999926166,
+      "mismatches": []
+    }
+  },
+  "pairs": {
+    "dense-fd-probe": {
+      "n": 3,
+      "all_equal": true,
+      "all_success_finite_below_cap": true,
+      "alloc_baseline": [
+        null,
+        null,
+        null
+      ],
+      "alloc_candidate": [
+        null,
+        null,
+        null
+      ],
+      "endpoint_max": 6.944889108240204e-12
+    },
+    "dense-fd-alloc": {
+      "n": 3,
+      "all_equal": true,
+      "all_success_finite_below_cap": true,
+      "alloc_baseline": [
+        324,
+        68,
+        68
+      ],
+      "alloc_candidate": [
+        315,
+        59,
+        59
+      ],
+      "endpoint_max": 6.944889108240204e-12
+    },
+    "banded-fd-probe": {
+      "n": 3,
+      "all_equal": true,
+      "all_success_finite_below_cap": true,
+      "alloc_baseline": [
+        null,
+        null,
+        null
+      ],
+      "alloc_candidate": [
+        null,
+        null,
+        null
+      ],
+      "endpoint_max": 7.354006292814574e-12
+    },
+    "banded-fd-alloc": {
+      "n": 3,
+      "all_equal": true,
+      "all_success_finite_below_cap": true,
+      "alloc_baseline": [
+        318,
+        62,
+        62
+      ],
+      "alloc_candidate": [
+        314,
+        58,
+        58
+      ],
+      "endpoint_max": 7.354006292814574e-12
+    },
+    "time-jvp-probe": {
+      "n": 3,
+      "all_equal": true,
+      "all_success_finite_below_cap": true,
+      "alloc_baseline": [
+        null,
+        null,
+        null
+      ],
+      "alloc_candidate": [
+        null,
+        null,
+        null
+      ],
+      "endpoint_max": 4.4617096683907675e-09
+    },
+    "time-jvp-alloc": {
+      "n": 3,
+      "all_equal": true,
+      "all_success_finite_below_cap": true,
+      "alloc_baseline": [
+        386,
+        129,
+        129
+      ],
+      "alloc_candidate": [
+        358,
+        101,
+        101
+      ],
+      "endpoint_max": 4.4617096683907675e-09
+    },
+    "autonomous-jvp-probe": {
+      "n": 3,
+      "all_equal": true,
+      "all_success_finite_below_cap": true,
+      "alloc_baseline": [
+        null,
+        null,
+        null
+      ],
+      "alloc_candidate": [
+        null,
+        null,
+        null
+      ],
+      "endpoint_max": 2.0572032966015286e-10
+    },
+    "autonomous-jvp-alloc": {
+      "n": 3,
+      "all_equal": true,
+      "all_success_finite_below_cap": true,
+      "alloc_baseline": [
+        389,
+        133,
+        133
+      ],
+      "alloc_candidate": [
+        361,
+        105,
+        105
+      ],
+      "endpoint_max": 2.0572032966015286e-10
+    }
+  },
+  "timing": {
+    "dense-fd": {
+      "ratios": [
+        1.0215615962984383,
+        0.9960131854425587,
+        0.9432683977876007,
+        0.9654923704555187,
+        0.9389349165857733,
+        1.0368164466724923,
+        0.9641788378221448
+      ],
+      "median": 0.9654923704555187,
+      "min": 0.9389349165857733,
+      "max": 1.0368164466724923
+    },
+    "banded-fd": {
+      "ratios": [
+        0.9511978336930036,
+        0.9133960568625965,
+        0.9714624389942547,
+        0.9641515744474729,
+        0.9741848981074335,
+        0.9801250231238824,
+        0.8900926844952679
+      ],
+      "median": 0.9641515744474729,
+      "min": 0.8900926844952679,
+      "max": 0.9801250231238824
+    },
+    "time-jvp": {
+      "ratios": [
+        1.0265057297889455,
+        1.118594261461413,
+        0.9889137753084276,
+        0.9822436256346055,
+        1.012794279329609,
+        1.0148618184190137,
+        1.050069832509648
+      ],
+      "median": 1.0148618184190137,
+      "min": 0.9822436256346055,
+      "max": 1.118594261461413
+    },
+    "autonomous-jvp": {
+      "ratios": [
+        1.0104865171557613,
+        1.0266812132898626,
+        0.9779192804685096,
+        1.0352120098777329,
+        1.0165731253026096,
+        1.0001219154155823,
+        0.9980909225969395
+      ],
+      "median": 1.0104865171557613,
+      "min": 0.9779192804685096,
+      "max": 1.0352120098777329
+    }
+  },
+  "ownership": {
+    "dense": [
+      {
+        "repeat": 0,
+        "equal": true,
+        "alloc_baseline": 318,
+        "alloc_candidate": 309,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 4,
+          "event": 0,
+          "nested": 0,
+          "rhs": 32
+        }
+      },
+      {
+        "repeat": 1,
+        "equal": true,
+        "alloc_baseline": 62,
+        "alloc_candidate": 53,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 4,
+          "event": 0,
+          "nested": 0,
+          "rhs": 32
+        }
+      },
+      {
+        "repeat": 2,
+        "equal": true,
+        "alloc_baseline": 62,
+        "alloc_candidate": 53,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 4,
+          "event": 0,
+          "nested": 0,
+          "rhs": 32
+        }
+      }
+    ],
+    "jvp": [
+      {
+        "repeat": 0,
+        "equal": true,
+        "alloc_baseline": 94,
+        "alloc_candidate": 82,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 128,
+          "event": 0,
+          "nested": 0,
+          "rhs": 32
+        }
+      },
+      {
+        "repeat": 1,
+        "equal": true,
+        "alloc_baseline": 94,
+        "alloc_candidate": 82,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 128,
+          "event": 0,
+          "nested": 0,
+          "rhs": 32
+        }
+      },
+      {
+        "repeat": 2,
+        "equal": true,
+        "alloc_baseline": 94,
+        "alloc_candidate": 82,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 128,
+          "event": 0,
+          "nested": 0,
+          "rhs": 32
+        }
+      }
+    ],
+    "declared-band": [
+      {
+        "repeat": 0,
+        "equal": true,
+        "alloc_baseline": 78,
+        "alloc_candidate": 69,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 6,
+          "event": 0,
+          "nested": 0,
+          "rhs": 32
+        }
+      },
+      {
+        "repeat": 1,
+        "equal": true,
+        "alloc_baseline": 78,
+        "alloc_candidate": 69,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 6,
+          "event": 0,
+          "nested": 0,
+          "rhs": 32
+        }
+      },
+      {
+        "repeat": 2,
+        "equal": true,
+        "alloc_baseline": 78,
+        "alloc_candidate": 69,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 6,
+          "event": 0,
+          "nested": 0,
+          "rhs": 32
+        }
+      }
+    ],
+    "vector-atol": [
+      {
+        "repeat": 0,
+        "equal": true,
+        "alloc_baseline": 60,
+        "alloc_candidate": 56,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 4,
+          "event": 0,
+          "nested": 0,
+          "rhs": 32
+        }
+      },
+      {
+        "repeat": 1,
+        "equal": true,
+        "alloc_baseline": 60,
+        "alloc_candidate": 56,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 4,
+          "event": 0,
+          "nested": 0,
+          "rhs": 32
+        }
+      },
+      {
+        "repeat": 2,
+        "equal": true,
+        "alloc_baseline": 60,
+        "alloc_candidate": 56,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 4,
+          "event": 0,
+          "nested": 0,
+          "rhs": 32
+        }
+      }
+    ],
+    "max-steps": [
+      {
+        "repeat": 0,
+        "equal": true,
+        "alloc_baseline": 62,
+        "alloc_candidate": 53,
+        "status": {
+          "kind": "max-steps-reached",
+          "max_steps": 2,
+          "status": "failed"
+        },
+        "callbacks": {
+          "derivative": 2,
+          "event": 0,
+          "nested": 0,
+          "rhs": 16
+        }
+      },
+      {
+        "repeat": 1,
+        "equal": true,
+        "alloc_baseline": 62,
+        "alloc_candidate": 53,
+        "status": {
+          "kind": "max-steps-reached",
+          "max_steps": 2,
+          "status": "failed"
+        },
+        "callbacks": {
+          "derivative": 2,
+          "event": 0,
+          "nested": 0,
+          "rhs": 16
+        }
+      },
+      {
+        "repeat": 2,
+        "equal": true,
+        "alloc_baseline": 62,
+        "alloc_candidate": 53,
+        "status": {
+          "kind": "max-steps-reached",
+          "max_steps": 2,
+          "status": "failed"
+        },
+        "callbacks": {
+          "derivative": 2,
+          "event": 0,
+          "nested": 0,
+          "rhs": 16
+        }
+      }
+    ],
+    "fatal": [
+      {
+        "repeat": 0,
+        "equal": true,
+        "alloc_baseline": 67,
+        "alloc_candidate": 58,
+        "status": {
+          "callback": "rhs",
+          "kind": "callback-failed",
+          "message": "ownership probe injected fatal",
+          "status": "failed",
+          "t": 0.060000000000000005
+        },
+        "callbacks": {
+          "derivative": 2,
+          "event": 0,
+          "nested": 0,
+          "rhs": 15
+        }
+      },
+      {
+        "repeat": 1,
+        "equal": true,
+        "alloc_baseline": 67,
+        "alloc_candidate": 58,
+        "status": {
+          "callback": "rhs",
+          "kind": "callback-failed",
+          "message": "ownership probe injected fatal",
+          "status": "failed",
+          "t": 0.060000000000000005
+        },
+        "callbacks": {
+          "derivative": 2,
+          "event": 0,
+          "nested": 0,
+          "rhs": 15
+        }
+      },
+      {
+        "repeat": 2,
+        "equal": true,
+        "alloc_baseline": 67,
+        "alloc_candidate": 58,
+        "status": {
+          "callback": "rhs",
+          "kind": "callback-failed",
+          "message": "ownership probe injected fatal",
+          "status": "failed",
+          "t": 0.060000000000000005
+        },
+        "callbacks": {
+          "derivative": 2,
+          "event": 0,
+          "nested": 0,
+          "rhs": 15
+        }
+      }
+    ],
+    "zero-span": [
+      {
+        "repeat": 0,
+        "equal": true,
+        "alloc_baseline": 57,
+        "alloc_candidate": 50,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 0,
+          "event": 0,
+          "nested": 0,
+          "rhs": 0
+        }
+      },
+      {
+        "repeat": 1,
+        "equal": true,
+        "alloc_baseline": 57,
+        "alloc_candidate": 50,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 0,
+          "event": 0,
+          "nested": 0,
+          "rhs": 0
+        }
+      },
+      {
+        "repeat": 2,
+        "equal": true,
+        "alloc_baseline": 57,
+        "alloc_candidate": 50,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 0,
+          "event": 0,
+          "nested": 0,
+          "rhs": 0
+        }
+      }
+    ],
+    "dense-event": [
+      {
+        "repeat": 0,
+        "equal": true,
+        "alloc_baseline": 77,
+        "alloc_candidate": 77,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 4,
+          "event": 10,
+          "nested": 0,
+          "rhs": 36
+        }
+      },
+      {
+        "repeat": 1,
+        "equal": true,
+        "alloc_baseline": 77,
+        "alloc_candidate": 77,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 4,
+          "event": 10,
+          "nested": 0,
+          "rhs": 36
+        }
+      },
+      {
+        "repeat": 2,
+        "equal": true,
+        "alloc_baseline": 77,
+        "alloc_candidate": 77,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 4,
+          "event": 10,
+          "nested": 0,
+          "rhs": 36
+        }
+      }
+    ],
+    "event-nonfinite": [
+      {
+        "repeat": 0,
+        "equal": true,
+        "alloc_baseline": 72,
+        "alloc_candidate": 72,
+        "status": {
+          "kind": "event-function-non-finite",
+          "status": "failed"
+        },
+        "callbacks": {
+          "derivative": 4,
+          "event": 7,
+          "nested": 0,
+          "rhs": 36
+        }
+      },
+      {
+        "repeat": 1,
+        "equal": true,
+        "alloc_baseline": 72,
+        "alloc_candidate": 72,
+        "status": {
+          "kind": "event-function-non-finite",
+          "status": "failed"
+        },
+        "callbacks": {
+          "derivative": 4,
+          "event": 7,
+          "nested": 0,
+          "rhs": 36
+        }
+      },
+      {
+        "repeat": 2,
+        "equal": true,
+        "alloc_baseline": 72,
+        "alloc_candidate": 72,
+        "status": {
+          "kind": "event-function-non-finite",
+          "status": "failed"
+        },
+        "callbacks": {
+          "derivative": 4,
+          "event": 7,
+          "nested": 0,
+          "rhs": 36
+        }
+      }
+    ],
+    "fd": [
+      {
+        "repeat": 0,
+        "equal": true,
+        "alloc_baseline": 68,
+        "alloc_candidate": 59,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 0,
+          "event": 0,
+          "nested": 0,
+          "rhs": 44
+        }
+      },
+      {
+        "repeat": 1,
+        "equal": true,
+        "alloc_baseline": 68,
+        "alloc_candidate": 59,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 0,
+          "event": 0,
+          "nested": 0,
+          "rhs": 44
+        }
+      },
+      {
+        "repeat": 2,
+        "equal": true,
+        "alloc_baseline": 68,
+        "alloc_candidate": 59,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 0,
+          "event": 0,
+          "nested": 0,
+          "rhs": 44
+        }
+      }
+    ],
+    "rhs-reentrant": [
+      {
+        "repeat": 0,
+        "equal": true,
+        "alloc_baseline": 126,
+        "alloc_candidate": 110,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 4,
+          "event": 0,
+          "nested": 1,
+          "rhs": 32
+        }
+      },
+      {
+        "repeat": 1,
+        "equal": true,
+        "alloc_baseline": 126,
+        "alloc_candidate": 110,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 4,
+          "event": 0,
+          "nested": 1,
+          "rhs": 32
+        }
+      },
+      {
+        "repeat": 2,
+        "equal": true,
+        "alloc_baseline": 126,
+        "alloc_candidate": 110,
+        "status": {
+          "status": "success"
+        },
+        "callbacks": {
+          "derivative": 4,
+          "event": 0,
+          "nested": 1,
+          "rhs": 32
+        }
+      }
+    ]
+  },
+  "aggregate_wall": 491.53919015300016
+}

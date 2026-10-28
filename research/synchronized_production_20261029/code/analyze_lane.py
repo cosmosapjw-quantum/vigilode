@@ -36,7 +36,14 @@ def main():
                 counts=[tuple(map(int,m)) for m in re.findall(r'test result: .*? (\d+) passed; (\d+) failed; (\d+) ignored',log)]
                 py=re.search(r'Ran (\d+) tests?',log)
                 result['checks'].append(dict(label=cmd['label'],exit_code=cmd['exit_code'],rust_counts=counts,python_tests=int(py[1]) if py else None))
-    result['aggregate_phase_wall_seconds']=sum(x['wall_seconds'] for x in result['phases'])
+    result['current_phase_subtotal_wall_seconds']=sum(x['wall_seconds'] for x in result['phases'])
+    # The deployment receipt includes failed checks01 and the serial allocator
+    # control as prior runs. Do not erase their cost by summing only current phases.
+    deployment_run=json.loads((a.deployment/'RUN.json').read_text())
+    result['aggregate_campaign_wall_seconds']=deployment_run['aggregate_wall_seconds']
+    result['campaign_prior_runs']=deployment_run['prior_runs']
+    if result['aggregate_campaign_wall_seconds'] < result['current_phase_subtotal_wall_seconds']:
+        raise ValueError('campaign total omits current phases')
     for case in cases:
         rows=[x for x in timings if x['case']==case]
         if len(rows)!=7: raise ValueError('seven paired blocks required')
@@ -60,7 +67,7 @@ def main():
     import matplotlib
     matplotlib.use('Agg')
     import matplotlib.pyplot as plt
-    plt.rcParams.update({'font.size':8,'axes.labelsize':8,'axes.titlesize':9,'legend.fontsize':7,'savefig.dpi':300})
+    plt.rcParams.update({'font.size':8,'axes.labelsize':8,'axes.titlesize':9,'legend.fontsize':7,'savefig.dpi':300,'savefig.bbox':'tight','savefig.pad_inches':.05})
     labels=['Dense FD','Banded FD','Time JVP','Autonomous JVP']
     fig,ax=plt.subplots(figsize=(3.54,2.6),layout='constrained')
     for i,case in enumerate(cases):
@@ -74,18 +81,23 @@ def main():
     fig,ax=plt.subplots(figsize=(3.54,2.6),layout='constrained')
     for i,case in enumerate(cases):
         row=result['cases'][case]
-        for vals in (row['baseline_allocations'],row['candidate_allocations']):
-            if len(set(vals))!=1: raise ValueError('allocation repetitions differ')
-        ax.barh(i-.17,row['baseline_allocations'][0],height=.30,color='#899baa',label='Baseline' if i==0 else None)
-        ax.barh(i+.17,row['candidate_allocations'][0],height=.30,color='#39776c',label='Candidate' if i==0 else None)
-    ax.set(yticks=range(4),yticklabels=labels,xlabel='Allocations per complete solve',title='Three repeated allocation observations')
-    ax.legend(loc='lower right');fig.savefig(a.output/'allocations.png');fig.savefig(a.output/'allocations.pdf');plt.close(fig)
+        for arm,offset,color in [('baseline',-.16,'#899baa'),('candidate',.16,'#39776c')]:
+            vals=row[arm+'_allocations']
+            if len(vals)!=3: raise ValueError('three allocation observations required')
+            ax.plot(vals[0],i+offset,'s',color=color,markersize=4,label=arm.title()+' first' if i==0 else None)
+            # Keep both subsequent observations, including any disagreement.
+            ax.scatter(vals[1:],[i+offset-.04,i+offset+.04],marker='o',s=13,
+                       facecolors='none',edgecolors=color,label=arm.title()+' later' if i==0 else None)
+    ax.set(yticks=range(4),yticklabels=labels,xlabel='Allocations per complete solve',title='First and later solves kept separately')
+    ax.legend(loc='upper center',bbox_to_anchor=(.5,-.34),ncol=2,fontsize=7)
+    fig.set_figheight(3.05);fig.savefig(a.output/'allocations.png');fig.savefig(a.output/'allocations.pdf');plt.close(fig)
     fig,ax=plt.subplots(figsize=(3.54,2.6),layout='constrained')
     errors=[result['cases'][x]['endpoint_error'] for x in cases]
     ax.semilogx(errors,range(4),'o',label='Both arms (exact parity)',markersize=4)
     ax.axvline(1e-5,color='#b14b33',linestyle='--',label='Diagnostic cap')
-    ax.set(yticks=range(4),yticklabels=labels,xlabel='Endpoint max absolute error',title='Analytic binary64 reference; no enclosure')
-    ax.legend(loc='lower right');fig.savefig(a.output/'endpoint_errors.png');fig.savefig(a.output/'endpoint_errors.pdf');plt.close(fig)
+    ax.set(yticks=range(4),yticklabels=labels,xlabel='Endpoint max absolute error',title='Binary64 reference; no enclosure')
+    ax.legend(loc='upper center',bbox_to_anchor=(.5,-.34))
+    fig.set_figheight(3.05);fig.savefig(a.output/'endpoint_errors.png');fig.savefig(a.output/'endpoint_errors.pdf');plt.close(fig)
     (a.output/'ANALYSIS.json').write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps(result,indent=2))
 

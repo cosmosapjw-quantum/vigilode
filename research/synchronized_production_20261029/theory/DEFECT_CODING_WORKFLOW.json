@@ -5,7 +5,7 @@
   "unit_id": "SYNC-DEFECT-COMPOSITION-CODE",
   "objective": "Implement exact rational consumer of D1-D10 without native physical-provider promotion",
   "scope": "Conditional scalar bound admission and chronological transport only",
-  "status": "in_progress",
+  "status": "complete",
   "stages": [
     {
       "id": "C1",
@@ -59,21 +59,39 @@
     },
     {
       "id": "C6",
-      "status": "pending",
-      "evidence_refs": [],
-      "reason": "Initial execution failed in Decimal diagnostic reference; corrected test-only reference awaits published-source rerun"
+      "status": "complete",
+      "evidence_refs": [
+        "DEFECT.md",
+        "../code/defect_composition.py",
+        "../code/test_defect_composition.py",
+        "/workspace/scratch/f9615df1ce94/lane-checks02/RUN.json",
+        "/workspace/scratch/f9615df1ce94/lane-checks02/proof-oracles/stderr.txt"
+      ],
+      "reason": "Published-source execution passed all12 DEFECT methods; integrated proof-oracle total25/25"
     },
     {
       "id": "C7",
-      "status": "pending",
-      "evidence_refs": [],
-      "reason": "Await published-source execution/independent code review"
+      "status": "complete",
+      "evidence_refs": [
+        "DEFECT.md",
+        "../code/defect_composition.py",
+        "../code/test_defect_composition.py",
+        "/workspace/scratch/f9615df1ce94/lane-checks02/RUN.json",
+        "/workspace/scratch/f9615df1ce94/lane-checks02/proof-oracles/stderr.txt"
+      ],
+      "reason": "Exact nonlinear reference x=t/(1+t), source/carrier omissions, domain/zero/tangency and transfer/event controls passed; full physical provider remains OPEN"
     },
     {
       "id": "C8",
-      "status": "pending",
-      "evidence_refs": [],
-      "reason": "Retained exact stationary equality failure; no epsilon allowance added; rerun pending"
+      "status": "complete",
+      "evidence_refs": [
+        "DEFECT.md",
+        "../code/defect_composition.py",
+        "../code/test_defect_composition.py",
+        "/workspace/scratch/f9615df1ce94/lane-checks02/RUN.json",
+        "/workspace/scratch/f9615df1ce94/lane-checks02/proof-oracles/stderr.txt"
+      ],
+      "reason": "Exact Fraction bound tests and Decimal80 diagnostics passed after retained test-only reference correction; no numerical tolerance relaxed"
     },
     {
       "id": "C9",
@@ -81,15 +99,23 @@
       "evidence_refs": [
         "DEFECT.md",
         "../code/defect_composition.py",
-        "../code/test_defect_composition.py"
+        "../code/test_defect_composition.py",
+        "/workspace/scratch/f9615df1ce94/lane-checks02/RUN.json",
+        "/workspace/scratch/f9615df1ce94/lane-checks02/proof-oracles/stderr.txt"
       ],
-      "reason": "Independent state_audit code-read ACCEPT_SCOPED; early Slab type validation added for typed error consistency, one badsecondslab control added; execution still pending"
+      "reason": "Independent state_audit source/proof review and episode2 test correction review ACCEPT_SCOPED; root execution and independent result reading confirm receipt"
     },
     {
       "id": "C10",
-      "status": "pending",
-      "evidence_refs": [],
-      "reason": "Await published-source execution/independent code review"
+      "status": "complete",
+      "evidence_refs": [
+        "DEFECT.md",
+        "../code/defect_composition.py",
+        "../code/test_defect_composition.py",
+        "/workspace/scratch/f9615df1ce94/lane-checks02/RUN.json",
+        "/workspace/scratch/f9615df1ce94/lane-checks02/proof-oracles/stderr.txt"
+      ],
+      "reason": "Scoped conditional consumer complete; native transplantation requires outward arithmetic and authenticated source/norm/clock/corridor premises; local handoff carries these obligations"
     }
   ],
   "implementation_files": [
@@ -100,35 +126,61 @@
   "native_rust_changes": false,
   "original_residual_double_count_rule": "residual is direct original residual OR a separately proved reconstruction budget, not their sum",
   "execution": {
-    "status": "failed",
-    "source": "7fce5a4cbf5e1de3dd25de3b247f638bc551be24",
-    "command": "python3 -m unittest discover -s research/synchronized_production_20261029/code -p test_*.py -v",
-    "exit_code": 1,
-    "result": "24 total methods,23 pass; DEFECT10/11pass, one Decimal diagnostic failure",
-    "raw_stderr": "/workspace/scratch/f9615df1ce94/lane-checks01/proof-oracles/stderr.txt"
+    "id": "proof-oracles-ef84",
+    "status": "completed",
+    "source": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+    "tree": "2989f07fb04134aa7bab38e38d7272e45d6a0917",
+    "command": [
+      "/opt/codex/runtimes/codex-primary-runtime/dependencies/python/bin/python3",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "/workspace/scratch/f9615df1ce94/vigilode/research/synchronized_production_20261029/code",
+      "-p",
+      "test_*.py",
+      "-v"
+    ],
+    "exit_code": 0,
+    "wall_seconds": 0.11423135599943635,
+    "child_cpu_seconds": 0.070223,
+    "raw_run": "/workspace/scratch/f9615df1ce94/lane-checks02/RUN.json",
+    "stderr": "/workspace/scratch/f9615df1ce94/lane-checks02/proof-oracles/stderr.txt",
+    "stderr_sha256": "82c82aa5045e684acd6d6ef1a567b0aae5ee35933b32c3fae09bc513beb4eedd",
+    "total_test_methods": 25,
+    "defect_test_methods": 12,
+    "scope": "exact scalar composition, quotient and triangular-stage research consumers; no actual physical provider execution"
   },
   "checks": [
     {
       "id": "nonlinear-oracle",
       "domain": "math",
-      "result": "not_run",
-      "reason": "Exact x=t/(1+t) solves x'= (1-x)^2; rational evaluations test scalar certificate"
+      "result": "pass_scoped",
+      "reason": "Exact rational nonlinear solution and differential identity checked in executable controls; continuum theorem proven in DEFECT.md",
+      "execution_ref": "proof-oracles-ef84",
+      "evidence_refs": [
+        "/workspace/scratch/f9615df1ce94/lane-checks02/proof-oracles/stderr.txt"
+      ]
     },
     {
       "id": "decimal-decay",
       "domain": "numerics",
-      "result": "fail",
-      "reason": "Decimal80 rounding at stationary comparison; corrected exact boundary branch pending rerun"
+      "result": "pass_scoped",
+      "reason": "Decimal80 exponential diagnostics pass; stationary equality is exact Fraction authority, with2^-300 corruptions rejected exactly",
+      "execution_ref": "proof-oracles-ef84",
+      "evidence_refs": [
+        "/workspace/scratch/f9615df1ce94/lane-checks02/proof-oracles/stderr.txt"
+      ]
     }
   ],
   "claims": [
     {
       "statement": "Algebraic consistency of supplied scalar bounds checked exactly",
       "basis": [
-        "derived"
+        "derived",
+        "implementation-verified"
       ],
       "obligations": [
-        "Executed tests",
         "Native outward arithmetic if transplanted",
         "Actual model/source/norm/corridor authentication"
       ]
@@ -153,7 +205,31 @@
       "correction": "exact stationary branch; exact Fraction amplitude E0-delta/beta before Decimal conversion; new exact stationary mutation rejects endpoint/whole underbound2^-300 invisible to Decimal80",
       "physical_criteria_changed": false,
       "helper_arithmetic_changed": false,
-      "rerun_status": "not_run; await corrected source publication"
+      "rerun_status": "resolved_scoped: corrected published-source25/25PASS, DEFECT12/12; first failure retained",
+      "first_stderr_sha256": "57e842dce0ba75d3e92533a3db86f492382d960c8c76df52d3fc7dfab6e302f4"
     }
+  ],
+  "prior_execution": {
+    "status": "failed",
+    "source": "7fce5a4cbf5e1de3dd25de3b247f638bc551be24",
+    "command": "python3 -m unittest discover -s research/synchronized_production_20261029/code -p test_*.py -v",
+    "exit_code": 1,
+    "result": "24 total methods,23 pass; DEFECT10/11pass, one Decimal diagnostic failure",
+    "raw_stderr": "/workspace/scratch/f9615df1ce94/lane-checks01/proof-oracles/stderr.txt"
+  },
+  "implementation_sha256": {
+    "research/synchronized_production_20261029/code/defect_composition.py": "6362fd090f4b374b197568eea0eebb349b3805fc8fffcaa6e1361b21441810a5",
+    "research/synchronized_production_20261029/code/test_defect_composition.py": "f583cbe018e9e7de665be4b8e49ed6c702a102d43a20ca193f99cd573611bd8d"
+  },
+  "native_status_distinction": {
+    "defect_native_code_changed": false,
+    "whole_lane": "separate RUN receipts; Krylov contract exit101 remains recorded; successful scalar oracle does not close it",
+    "physical_provider": "OPEN",
+    "production": "HOLD"
+  },
+  "next_actions": [
+    "Supply source-authenticated D1 constants in one physical norm and clock",
+    "Port exact consumer to directed arithmetic with independent enclosure tests only under remaining applicable budget",
+    "Use chronological transport and direct-residual/no-double-count contract in local synchronized lane"
   ]
 }

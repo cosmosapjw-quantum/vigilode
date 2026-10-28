@@ -16,6 +16,11 @@
       "id": "PR93-THEORY",
       "identity": "384dba091a3d9e1aac0ecddec264958298239253",
       "description": "Existing polynomial/resolvent derivations reused with unchanged target semantics"
+    },
+    {
+      "id": "NATIVE-SOURCE",
+      "identity": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc",
+      "description": "Published K1 implementation and exact K3 oracle execution source; source7fce first compile failure retained"
     }
   ],
   "evidence": [
@@ -36,6 +41,16 @@
       "scope": "Exact rational8 cases; Wolfram6 symbolic degrees; primary-literature record",
       "dependency_ids": [
         "SOURCE"
+      ]
+    },
+    {
+      "id": "NATIVE-CODING",
+      "kind": "implementation",
+      "locator": "theory/KRYLOV_CODING_WORKFLOW.json",
+      "scope": "K1 native differential tests and K3 exact oracle execution, with retained failures and benchmark limitations",
+      "dependency_ids": [
+        "SOURCE",
+        "NATIVE-SOURCE"
       ]
     }
   ],
@@ -177,14 +192,15 @@
       "statement": "Omitting unused directions preparation preserves GMRES-into arithmetic and callback trace under listed machine-state assumptions",
       "scope": "Unaugmented into/monitored paths; resource telemetry intentionally distinct",
       "basis": [
-        "derived"
+        "derived",
+        "implementation-verified"
       ],
       "evidence_refs": [
-        "PROOFS"
+        "PROOFS",
+        "NATIVE-CODING"
       ],
       "obligations": [
-        "Independent root/agent review before source mutation",
-        "Native differential verification of mixed workspace reuse"
+        "Deployment-hardware qualification and full production gates remain under parent campaign; no MGS/QR replacement claimed"
       ]
     },
     {
@@ -193,14 +209,15 @@
       "scope": "D nonzero, sigma nonnegative, frozen J/v/metric, alpha positive; exact arithmetic plus stated roundoff owners",
       "basis": [
         "derived",
-        "numerically checked"
+        "numerically checked",
+        "implementation-verified"
       ],
       "evidence_refs": [
         "PROOFS",
-        "CHECKS"
+        "CHECKS",
+        "NATIVE-CODING"
       ],
       "obligations": [
-        "Oracle implementation and adversarial tests",
         "Native directed residual/provider contract before solver dispatch adoption"
       ]
     },
@@ -252,11 +269,16 @@
     {
       "action": "root admitted K1 and opt-in K3 oracle before source edits",
       "reason": "Independent theory/source review accepted scoped proof contracts"
+    },
+    {
+      "action": "close scoped theory-to-code unit with actual execution evidence",
+      "reason": "K1 unit+integration tests and K3 nine exact oracle tests passed at pinned source; full parallel allocator test failure retained separately"
     }
   ],
   "overrides": [],
   "failures": [],
   "next_actions": [
-    "Complete coding C6–C10 on published source and preserve source-bound receipts"
+    "Reuse proven K1 and tested exact K3 oracle; native directed K3 provider is the next numerical obligation",
+    "Use parent standalone handoff for target-hardware A/A and factorial K1/A1 performance isolation; retain broad production HOLD"
   ]
 }
