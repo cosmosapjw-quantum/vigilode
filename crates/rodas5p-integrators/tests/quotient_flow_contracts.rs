@@ -227,8 +227,10 @@ fn callback_failure_preserves_accepted_state_and_work() {
 }
 #[test]
 fn malformed_callback_is_fatal_even_when_recoverable_protocol_enabled() {
-    let mut config = Dopri5Config::default();
-    config.recover_nonfinite_rhs = true;
+    let config = Dopri5Config {
+        recover_nonfinite_rhs: true,
+        ..Dopri5Config::default()
+    };
     let result = integrate_lawson_dopri5_observed(
         &flow(0.0, 1.0),
         &|_, _, out: &mut [f64]| {
@@ -255,8 +257,10 @@ fn invalid_inputs_refused_before_callback_and_large_damping_stays_finite() {
         .is_err()
     );
     let calls = Cell::new(0);
-    let mut config = Dopri5Config::default();
-    config.atol = Some(vec![1e-8]);
+    let config = Dopri5Config {
+        atol: Some(vec![1e-8]),
+        ..Dopri5Config::default()
+    };
     assert!(
         integrate_lawson_dopri5_observed(
             &flow(0.0, 1.0),
@@ -285,7 +289,7 @@ fn underflowing_exponential_coefficient_does_not_erase_large_state() {
     let f = flow(1000.0, 0.0);
     let mut y = [0.0; 2];
     f.apply_into(1.0, &[1e308, 0.0], &mut y).unwrap();
-    let reference = 5.0759588975494567653e-127;
+    let reference = 5.075_958_897_549_457e-127;
     assert!((y[0] / reference - 1.0).abs() < 2e-15, "{:?}", y);
     let mut ws = Workspace::new(f).unwrap();
     let mut e = [0.0; 2];
@@ -321,6 +325,6 @@ fn subnormal_coefficient_is_scaled_before_large_state() {
     flow(744.0, 0.0)
         .apply_into(1.0, &[1e308, 0.0], &mut y)
         .unwrap();
-    let reference = 7.67194470417997907395e-16;
+    let reference = 7.671_944_704_179_979e-16;
     assert!((y[0] / reference - 1.0).abs() < 2e-15, "{:?}", y);
 }

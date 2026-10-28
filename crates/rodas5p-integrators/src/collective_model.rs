@@ -70,6 +70,10 @@ pub(crate) struct CollectiveAdmissionWork {
 
 /// Shared borrowed admission preserves the constructor's check order, ordinary
 /// summation order and thresholds. It allocates only for existing error strings.
+#[expect(
+    clippy::too_many_arguments,
+    reason = "preserves borrowed admission inputs and counter order"
+)]
 fn validate_borrowed_model(
     xi: &[f64],
     weights: &[f64],

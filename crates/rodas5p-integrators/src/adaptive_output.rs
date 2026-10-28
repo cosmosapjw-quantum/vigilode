@@ -21,6 +21,10 @@ pub struct AdaptiveOutputTrial {
 }
 
 #[cfg(test)]
+#[expect(
+    clippy::items_after_test_module,
+    reason = "keeps transaction tests beside the trial type"
+)]
 mod tests {
     use super::*;
     use crate::{MaxStepPolicy, rodas_next_step_after_attempt};

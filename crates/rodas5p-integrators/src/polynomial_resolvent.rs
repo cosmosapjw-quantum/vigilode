@@ -479,6 +479,10 @@ impl BoundPolynomialResolvent {
     pub fn relation_defect_ratio(&self) -> f64 {
         self.plan.relation_defect_ratio()
     }
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "public checked provider API keeps caller-owned output, workspace and work ledger"
+    )]
     pub fn apply_provider_checked(
         &self,
         provider: &ExchangeCollisionProvider,
@@ -748,8 +752,8 @@ impl DeclaredPolynomialResolvent {
         }
         work.operator_actions_completed = work.operator_actions_completed.saturating_add(1);
         let mut norm = 0.0_f64;
-        for i in 0..rhs.len() {
-            ws.residual[i] = (rhs[i] - ws.candidate[i]) + ws.action[i];
+        for (i, &rhs_value) in rhs.iter().enumerate() {
+            ws.residual[i] = (rhs_value - ws.candidate[i]) + ws.action[i];
             if !ws.residual[i].is_finite() {
                 return Err(PolynomialResolventError::NonFinite);
             }

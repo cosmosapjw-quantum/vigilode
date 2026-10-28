@@ -462,6 +462,11 @@ impl<const N: usize> PreparedPhysicalCandidate<'_, N> {
     }
 }
 
+// The prepared value is kept inline to preserve allocation-free candidate admission.
+#[expect(
+    clippy::large_enum_variant,
+    reason = "boxing would allocate on candidate admission"
+)]
 #[derive(Debug)]
 pub enum PhysicalCandidatePreparation<'a, const N: usize> {
     LocalRejected,

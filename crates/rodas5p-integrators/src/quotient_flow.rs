@@ -750,11 +750,10 @@ impl LawsonDopri5Workspace {
     ) -> Result<(), Failure> {
         let n = y.len();
         for (g, &b) in self.flow.groups.iter().enumerate() {
-            for i in 0..7 {
-                for j in 0..=i {
+            for (i, &ci) in DOPRI5_C.iter().enumerate() {
+                for (j, &cj) in DOPRI5_C.iter().enumerate().take(i + 1) {
                     self.factors[g][slot(i, j)] =
-                        Factor::new_scaled(b, h, DOPRI5_C[i] - DOPRI5_C[j])
-                            .map_err(Failure::numerical)?;
+                        Factor::new_scaled(b, h, ci - cj).map_err(Failure::numerical)?;
                     work.coefficient_pairs = work.coefficient_pairs.saturating_add(1);
                 }
             }
@@ -799,8 +798,7 @@ impl LawsonDopri5Workspace {
             work.applied_block_actions = work
                 .applied_block_actions
                 .saturating_add(self.flow.indices.len() as u64);
-            for j in 0..i {
-                let a = DOPRI5_A[i][j];
+            for (j, &a) in DOPRI5_A[i].iter().enumerate().take(i) {
                 if a != 0.0 {
                     for (k, &g) in self.flow.indices.iter().enumerate() {
                         // Scale by h first, retaining increments on tiny subnormal h.
@@ -1015,6 +1013,10 @@ pub fn integrate_lawson_dopri5_observed_with_norm<
         None,
     )
 }
+#[expect(
+    clippy::too_many_arguments,
+    reason = "private integration adapter preserves distinct borrowed controls"
+)]
 fn integrate_impl<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized>(
     flow: &DampedRotationFlow,
     residual: &F,

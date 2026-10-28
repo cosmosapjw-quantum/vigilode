@@ -50,7 +50,7 @@ fn diagonal_witness_encloses_row_bound_and_refuses_unproved_structure() {
     }
     // Entire fixture is exactly dyadic: hp=h=gamma=1 => T=diag(1/2,1/5)(J-Jp).
     let q = rodas5p_diagonal_staleness_bound(1., 1., 1., &j, &jp, &[1., 2.]);
-    assert!(q >= 0.625 && q <= 0.625 + 2e-15);
+    assert!((0.625..=0.625 + 2e-15).contains(&q));
     let bad = DenseMatrix::from_rows(&[&[-1., 1.], &[0., -4.]]).unwrap();
     assert_eq!(
         rodas5p_diagonal_staleness_bound(1., 1., 1., &j, &bad, &[1., 2.]),

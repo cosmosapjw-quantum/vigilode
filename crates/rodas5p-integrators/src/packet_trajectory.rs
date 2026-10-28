@@ -1442,6 +1442,7 @@ pub fn advance_verified(
 #[derive(Clone, Copy, PartialEq)]
 enum VerifiedTrialFault {
     BeforeQuery(usize),
+    #[cfg(test)]
     EndpointAdmission,
 }
 fn advance_verified_impl(

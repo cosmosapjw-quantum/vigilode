@@ -227,8 +227,10 @@ fn approximate_relation_refines_and_counts_paid_actions() {
     let mut w = ChartWork::default();
     let plan = ConditionedPolynomialPlan::prepare(&p.d, 1e-12, &mut w).unwrap();
     let mut out = [11.0; 2];
-    let mut policy = Policy::default();
-    policy.max_corrections = 8;
+    let policy = Policy {
+        max_corrections: 8,
+        ..Policy::default()
+    };
     let r = apply(&p, &plan, &[1.0, 2.0], &mut out, policy, &mut w).unwrap();
     assert!(r.accepted);
     assert!(r.corrections >= 2);
@@ -353,8 +355,10 @@ fn budgets_and_residual_refusal_remain_transactional() {
     );
     let mut w = ChartWork::default();
     let plan = ConditionedPolynomialPlan::prepare(&p.d, 1e-12, &mut w).unwrap();
-    let mut policy = Policy::default();
-    policy.max_operator_actions = 1;
+    let mut policy = Policy {
+        max_operator_actions: 1,
+        ..Policy::default()
+    };
     let mut out = [41.0];
     let r = apply(&p, &plan, &[1.0], &mut out, policy, &mut w).unwrap();
     assert_eq!(r.stop, Stop::ActionBudget);

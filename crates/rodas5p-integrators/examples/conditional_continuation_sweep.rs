@@ -507,10 +507,11 @@ fn main() -> Result<(), String> {
         );
         return Ok(());
     }
-    if let Some(id) = &selected {
-        if !all.iter().any(|c| c.id == *id) && id != "disjoint_branch_refusal" {
-            return Err("unknown case".into());
-        }
+    if let Some(id) = &selected
+        && !all.iter().any(|c| c.id == *id)
+        && id != "disjoint_branch_refusal"
+    {
+        return Err("unknown case".into());
     }
     println!(
         "{}",

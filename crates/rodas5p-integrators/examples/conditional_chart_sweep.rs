@@ -398,7 +398,7 @@ fn options() -> Options {
             _ => panic!("unknown option {key}"),
         }
     }
-    assert!(o.n >= 2 && o.n <= 1024 && o.n % 2 == 0);
+    assert!(o.n >= 2 && o.n <= 1024 && o.n.is_multiple_of(2));
     assert!((1..=20).contains(&o.repeats) && (1..=50).contains(&o.min_ms));
     assert!(o.corrections <= 32 && o.cap.is_finite() && (1.0..=10.0).contains(&o.cap));
     assert!(

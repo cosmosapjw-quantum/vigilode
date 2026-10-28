@@ -676,11 +676,11 @@ fn residual_polynomial(
         charge(work, 1);
         result[degree] = result[degree].sub(cosine_poly[degree])?;
     }
-    for degree in 0_usize..5 {
+    for (degree, coefficient) in q.iter().enumerate() {
         let derivative_degree = degree.saturating_sub(1);
         if degree > 0 {
             charge(work, 1);
-            let scaled = q[degree].scale(degree as f64)?;
+            let scaled = coefficient.scale(degree as f64)?;
             charge(work, 1);
             let derivative = scaled.div(delta)?;
             charge(work, 1);

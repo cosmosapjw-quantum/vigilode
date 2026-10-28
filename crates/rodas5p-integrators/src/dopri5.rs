@@ -189,6 +189,10 @@ impl Dopri5Workspace {
 
     /// An uncommitted fixed step. On `Err`, both output buffers are scratch
     /// and must not be accepted. No FSAL cache crosses this public call.
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "public in-place step API uses caller-owned buffers and counters"
+    )]
     pub fn step_into<F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized>(
         &mut self,
         rhs: &F,
@@ -275,8 +279,7 @@ impl Dopri5Workspace {
             self.stage_state.copy_from_slice(y);
             // Unit-stride state updates permit vectorization without assuming
             // that different state components of the RHS are independent.
-            for previous in 0..stage {
-                let coefficient = DOPRI5_A[stage][previous];
+            for (previous, &coefficient) in DOPRI5_A[stage].iter().enumerate().take(stage) {
                 if coefficient != 0.0 {
                     let derivative = &self.stages[previous * self.n..(previous + 1) * self.n];
                     if tiny_step {
@@ -1027,10 +1030,10 @@ impl<'a, F: Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + ?Sized> Dopri5Sessio
                     }
                 },
                 Err(failure) => {
-                    if failure.retryable {
-                        if let Some(attempt) = self.last_attempt.as_mut() {
-                            attempt.error_norm = Dopri5AttemptErrorNorm::NonFinite;
-                        }
+                    if failure.retryable
+                        && let Some(attempt) = self.last_attempt.as_mut()
+                    {
+                        attempt.error_norm = Dopri5AttemptErrorNorm::NonFinite;
                     }
                     self.rejected_steps += 1;
                     self.counters.rejected_steps = self.counters.rejected_steps.saturating_add(1);

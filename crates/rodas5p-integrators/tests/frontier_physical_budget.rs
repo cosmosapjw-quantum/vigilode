@@ -533,22 +533,23 @@ fn prepared_token_drop_preserves_checkpoint_and_controller_shadow_and_commit_adv
         assert_eq!(ctx.candidate_state, [0.125]);
         Ok(1)
     };
-    let prepared = prepare_physical_candidate(
-        &mut budget,
-        &mut work,
-        binding(1),
-        &mut time,
-        &mut state,
-        0.5,
-        &next,
-        true,
-        PhysicalAdmissionMode::BoundedRequired,
-        &mut scratch,
-        &mut provider,
-    )
-    .unwrap();
-    // A rejected downstream output operation drops the prepared checkpoint.
-    drop(prepared);
+    {
+        let _prepared = prepare_physical_candidate(
+            &mut budget,
+            &mut work,
+            binding(1),
+            &mut time,
+            &mut state,
+            0.5,
+            &next,
+            true,
+            PhysicalAdmissionMode::BoundedRequired,
+            &mut scratch,
+            &mut provider,
+        )
+        .unwrap();
+        // A rejected downstream output operation drops the prepared checkpoint.
+    }
     assert_eq!(budget, before_budget);
     assert_eq!(state, [0.0]);
     assert_eq!(time, 0.0);

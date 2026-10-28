@@ -94,12 +94,11 @@ impl DeclaredFixedPointPatch {
         if let Ok(product_upper) = mul_up(
             b.inverse_action_norm_upper,
             b.inverse_action_inverse_norm_upper,
-        ) {
-            if product_upper < 1.0 {
-                return Err(FixedPointContinuationError::Input(
-                    "inverse norm bounds are inconsistent",
-                ));
-            }
+        ) && product_upper < 1.0
+        {
+            return Err(FixedPointContinuationError::Input(
+                "inverse norm bounds are inconsistent",
+            ));
         }
         Ok(Self {
             identity,

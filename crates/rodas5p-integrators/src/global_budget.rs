@@ -352,6 +352,10 @@ impl<'a> VerifiedGlobalBudget<'a> {
             }
         }
     }
+    #[expect(
+        clippy::result_large_err,
+        reason = "failure retains the full inline snapshot and work ledger"
+    )]
     pub fn finish(self) -> Result<GlobalBudgetCertificate, GlobalBudgetFailure> {
         if !self.source.source_complete
             || self.snapshot.time != self.source.source_span.1
@@ -381,6 +385,10 @@ impl<'a> VerifiedGlobalBudget<'a> {
 
 /// Certify the immutable source at its original absolute L2 budget or a smaller
 /// requested budget. Relaxing the original budget is explicitly refused.
+#[expect(
+    clippy::result_large_err,
+    reason = "failure retains the full inline snapshot and work ledger"
+)]
 pub fn certify_global_run(
     source: &VerifiedResidualRun,
     budget: f64,

@@ -1,5 +1,6 @@
 // Source-only integer tally. No solver/reference numerical evaluation occurs
 // here; formulas expand every charged counter on successful delegated paths.
+#[allow(dead_code)] // Each including test target uses a different subset of this shared support.
 pub fn prepare(n: usize, o: usize, d: usize, sweeps: usize) -> PacketWorkCounters {
     let (n, o, d, s) = (n as u64, o as u64, d as u64, sweeps as u64);
     let b = o + 1;
@@ -92,6 +93,7 @@ pub fn admission(n: usize) -> PacketWorkCounters {
         ..PacketWorkCounters::default()
     }
 }
+#[allow(dead_code)] // Each including test target uses a different subset of this shared support.
 pub fn initial_adapter(n: usize, g: usize) -> VerifiedTrajectoryWork {
     VerifiedTrajectoryWork {
         validation_items: (12 + g + 4 * n) as u64,
@@ -101,6 +103,7 @@ pub fn initial_adapter(n: usize, g: usize) -> VerifiedTrajectoryWork {
         ..VerifiedTrajectoryWork::default()
     }
 }
+#[allow(dead_code)] // Each including test target uses a different subset of this shared support.
 pub fn prepare_adapter(
     n: usize,
     o: usize,
@@ -119,6 +122,7 @@ pub fn prepare_adapter(
         ..VerifiedTrajectoryWork::default()
     }
 }
+#[allow(dead_code)] // Each including test target uses a different subset of this shared support.
 pub fn query_adapter(n: usize, o: usize, d: usize) -> VerifiedTrajectoryWork {
     VerifiedTrajectoryWork {
         packet: query(n, o, d, 1),
@@ -131,6 +135,7 @@ pub fn query_adapter(n: usize, o: usize, d: usize) -> VerifiedTrajectoryWork {
 }
 // `completed` queries pass tolerance; optional final failed query's mode
 // determines the exact source-defined short-circuit validation count.
+#[allow(dead_code)] // Each including test target uses a different subset of this shared support.
 pub fn rejected_tolerance_adapter(
     n: usize,
     o: usize,
@@ -188,6 +193,7 @@ pub fn commit_adapter(n: usize, o: usize, d: usize, g: usize, k: usize) -> Verif
         ..VerifiedTrajectoryWork::default()
     }
 }
+#[allow(dead_code)] // Each including test target uses a different subset of this shared support.
 pub fn admission_rejection_adapter(
     n: usize,
     o: usize,

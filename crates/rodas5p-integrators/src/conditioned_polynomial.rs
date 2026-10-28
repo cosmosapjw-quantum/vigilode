@@ -425,8 +425,8 @@ impl ConditionedPolynomialPlan {
             }
             work.actions_completed = work.actions_completed.saturating_add(1);
             let mut norm = 0.0_f64;
-            for i in 0..n {
-                ws.residual[i] = (rhs[i] - ws.candidate[i]) + ws.action[i];
+            for (i, &rhs_value) in rhs.iter().enumerate().take(n) {
+                ws.residual[i] = (rhs_value - ws.candidate[i]) + ws.action[i];
                 if !ws.residual[i].is_finite() {
                     return Err(Error::NonFinite);
                 }

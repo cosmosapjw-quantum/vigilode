@@ -82,6 +82,10 @@ impl FixedPointHomotopyProvider for Quadratic {
     }
 }
 
+#[expect(
+    clippy::too_many_arguments,
+    reason = "fixture helper mirrors the fixed point bound inputs"
+)]
 fn patch(
     number: u64,
     left: f64,

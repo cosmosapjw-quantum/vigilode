@@ -100,8 +100,10 @@ fn krylov_client_preserves_driver_owned_linear_solve_counter() {
     for two_level in [false, true] {
         let mut solver = solver(two_level);
         let mut rhs = vec![1.0; solver.dimension()];
-        let mut counters = WorkCounters::default();
-        counters.linear_solves = 13;
+        let mut counters = WorkCounters {
+            linear_solves: 13,
+            ..WorkCounters::default()
+        };
         solver.solve_with(&mut rhs, &mut counters).unwrap();
         assert_eq!(counters.linear_solves, 13);
         assert!(counters.linear_iterations > 0);
