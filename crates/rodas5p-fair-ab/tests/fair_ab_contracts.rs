@@ -57,7 +57,9 @@ fn external_certificate_and_hard_budget_cover_diagnostic_work() {
     assert_eq!(result.status, SolveStatus::BudgetExhausted);
     assert!(!result.certificate.passed);
     assert_eq!(result.ledger.budget_exhaustions, 1);
-    assert!(result.ledger.operator_total() <= 1);
+    // One admitted callback and one refused request: attempts may exceed B,
+    // while the independent entry controls in adapters.rs enforce E <= B.
+    assert_eq!(result.ledger.operator_total(), 2);
 }
 
 #[test]

@@ -5,8 +5,11 @@
 //! either kernel's success semantics is visible, and checks that every Ok
 //! result satisfies the same recomputed true-residual threshold.
 
+use std::{fs::File, io::Write, path::PathBuf};
+
 use rodas5p_core::{
-    DenseMatrix, DenseOperator, JacobiPreconditioner, LinearSolveReport, WorkCounters, safe_l2,
+    DenseMatrix, DenseOperator, ExactPreconditionerIdentity, JacobiPreconditioner,
+    LinearSolveReport, Preconditioner, WorkCounters, safe_l2,
 };
 use rodas5p_krylov::{GmresConfig, solve_gmres, solve_gmres_givens};
 
@@ -69,14 +72,124 @@ fn build_a(n: usize, s: f64, dmax: f64, rng: &mut Lcg) -> DenseMatrix {
     q.matmul(&inner).unwrap().matmul(&q.transpose()).unwrap()
 }
 
+/// Independent row accumulation and norm: do not call the operator, its matvec,
+/// or use the report's residual. The exported exact inputs additionally permit
+/// a high-precision oracle outside this binary64 diagnostic.
 fn true_residual(a: &DenseMatrix, b: &[f64], x: &[f64]) -> f64 {
-    let ax = a.matvec(x).unwrap();
-    safe_l2(
-        &b.iter()
-            .zip(&ax)
-            .map(|(bi, yi)| bi - yi)
-            .collect::<Vec<_>>(),
-    )
+    assert_eq!(a.nrows(), b.len());
+    assert_eq!(a.ncols(), x.len());
+    let mut norm = 0.0_f64;
+    for (row, right) in b.iter().enumerate() {
+        let mut sum = 0.0;
+        let mut correction = 0.0;
+        for (column, value) in x.iter().enumerate() {
+            let product = a[(row, column)] * value;
+            let next = sum + product;
+            correction += if sum.abs() >= product.abs() {
+                (sum - next) + product
+            } else {
+                (product - next) + sum
+            };
+            sum = next;
+        }
+        norm = norm.hypot((right - sum) - correction);
+    }
+    norm
+}
+
+fn check_true_residual(a: &DenseMatrix, b: &[f64], report: &LinearSolveReport, threshold: f64) {
+    let residual = true_residual(a, b, &report.x);
+    assert!(
+        residual.is_finite() && residual <= threshold,
+        "independent true residual {residual:e} exceeds {threshold:e}"
+    );
+    assert!(report.converged);
+}
+
+/// Optional create-only export. Each hexadecimal word is the exact binary64
+/// payload, never a decimal reconstruction. The caller records build/profile
+/// identity next to this fixture and performs the separate precision check.
+fn oracle_directory() -> Option<PathBuf> {
+    std::env::var_os("Q_GIVENS_ORACLE_DIR").map(PathBuf::from)
+}
+
+fn write_bits(file: &mut File, name: &str, values: &[f64]) {
+    write!(file, "{name} {}", values.len()).unwrap();
+    for value in values {
+        write!(file, " {:016x}", value.to_bits()).unwrap();
+    }
+    writeln!(file).unwrap();
+}
+
+fn export_fixture(
+    a: &DenseMatrix,
+    b_unit: &[f64],
+    pc: &JacobiPreconditioner,
+    config: &GmresConfig,
+) {
+    if let Some(directory) = oracle_directory() {
+        let mut file = File::create_new(directory.join("fixture.bits")).unwrap();
+        writeln!(file, "q-givens-exact-bits-v1").unwrap();
+        writeln!(file, "dimension {}", a.nrows()).unwrap();
+        writeln!(file, "restart {}", config.restart).unwrap();
+        writeln!(file, "max_arnoldi {}", config.max_arnoldi).unwrap();
+        write_bits(&mut file, "rtol", &[config.rtol]);
+        write_bits(&mut file, "atol", &[config.atol]);
+        write_bits(&mut file, "a_row_major", a.as_slice());
+        write_bits(&mut file, "b_unit", b_unit);
+        let Some(ExactPreconditionerIdentity::Jacobi {
+            inverse_diagonal_bits,
+        }) = pc.exact_identity()
+        else {
+            panic!("the fixture must retain the actual Jacobi inverse diagonal");
+        };
+        let inverse: Vec<_> = inverse_diagonal_bits
+            .into_iter()
+            .map(f64::from_bits)
+            .collect();
+        write_bits(&mut file, "jacobi_inverse_diagonal", &inverse);
+    }
+}
+
+fn export_result(
+    label: &str,
+    scale: f64,
+    b: &[f64],
+    threshold: f64,
+    result: &Result<LinearSolveReport, rodas5p_core::CoreError>,
+) {
+    if let Some(directory) = oracle_directory() {
+        let mut file = File::create_new(directory.join(format!("{label}-{scale:e}.bits"))).unwrap();
+        writeln!(file, "q-givens-result-bits-v1").unwrap();
+        write_bits(&mut file, "scale", &[scale]);
+        write_bits(&mut file, "b", b);
+        write_bits(&mut file, "binary64_threshold", &[threshold]);
+        match result {
+            Ok(report) => {
+                writeln!(file, "status ok").unwrap();
+                writeln!(file, "iterations {}", report.iterations).unwrap();
+                write_bits(&mut file, "x", &report.x);
+                write_bits(&mut file, "reported_residual", &[report.residual_norm]);
+            }
+            Err(error) => writeln!(file, "status error {error}").unwrap(),
+        }
+    }
+}
+
+fn run_exact_oracle(scale: f64) {
+    if let Some(script) = std::env::var_os("Q_GIVENS_ORACLE_SCRIPT") {
+        let directory = oracle_directory().expect("the exact oracle requires Q_GIVENS_ORACLE_DIR");
+        let status = std::process::Command::new("python3")
+            .arg(script)
+            .arg(directory.join("fixture.bits"))
+            .arg(directory.join(format!("gmres-{scale:e}.bits")))
+            .arg(directory.join(format!("gmres-givens-candidate-{scale:e}.bits")))
+            .arg("--output")
+            .arg(directory.join(format!("oracle-{scale:e}.json")))
+            .status()
+            .expect("start independent exact-rational residual oracle");
+        assert!(status.success(), "independent exact residual oracle failed");
+    }
 }
 
 #[test]
@@ -105,6 +218,8 @@ fn candidate_and_production_outcomes_are_pinned_on_the_e05_nonnormal_jacobi_rows
         atol: 0.0,
     };
 
+    export_fixture(&a, &b_unit, &pc, &config);
+
     // (RHS scale, production Ok?, candidate Ok?) observed in E-05 at b3e8165.
     let pinned = [
         (1.0e-14, true, false),
@@ -118,6 +233,13 @@ fn candidate_and_production_outcomes_are_pinned_on_the_e05_nonnormal_jacobi_rows
         let production = solve_gmres(&op, &pc, &b, None, &config, &mut work);
         let mut work = WorkCounters::default();
         let candidate = solve_gmres_givens(&op, &pc, &b, None, &config, &mut work);
+        export_result("gmres", scale, &b, threshold, &production);
+        export_result("gmres-givens-candidate", scale, &b, threshold, &candidate);
+        run_exact_oracle(scale);
+        // Check both returned solutions before any historical status assertion.
+        for report in [&production, &candidate].into_iter().flatten() {
+            check_true_residual(&a, &b, report, threshold);
+        }
         let check = |label: &str, result: &Result<LinearSolveReport, _>, expected_ok: bool| {
             assert_eq!(
                 result.is_ok(),
@@ -125,12 +247,26 @@ fn candidate_and_production_outcomes_are_pinned_on_the_e05_nonnormal_jacobi_rows
                 "{label} at RHS scale {scale:e}: {:?}",
                 result.as_ref().map(|report| report.iterations)
             );
-            if let Ok(report) = result {
-                assert!(report.converged);
-                assert!(true_residual(&a, &b, &report.x) <= threshold);
-            }
         };
         check("gmres", &production, production_ok);
         check("gmres-givens-candidate", &candidate, candidate_ok);
     }
+}
+
+#[test]
+#[should_panic(expected = "independent true residual")]
+fn a_corrupted_ok_solution_cannot_certify_itself_with_its_reported_residual() {
+    let a = DenseMatrix::identity(2);
+    let report = LinearSolveReport {
+        x: vec![1.0, 9.0],
+        converged: true,
+        info: 0,
+        residual_norm: 0.0,
+        relative_residual: 0.0,
+        iterations: 1,
+        matvecs: 1,
+        preconditioner_apps: 0,
+        method: "corrupted-negative-control".into(),
+    };
+    check_true_residual(&a, &[1.0, 2.0], &report, 1.0e-10);
 }

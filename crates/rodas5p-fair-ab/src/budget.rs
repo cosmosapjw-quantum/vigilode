@@ -11,6 +11,7 @@ pub const BUDGET_EXHAUSTED_MARKER: &str = "fair operator budget exhausted";
 pub struct OperatorBudget {
     limit: u64,
     used: AtomicU64,
+    refused: AtomicU64,
 }
 
 impl OperatorBudget {
@@ -18,17 +19,25 @@ impl OperatorBudget {
         Self {
             limit,
             used: AtomicU64::new(0),
+            refused: AtomicU64::new(0),
         }
     }
 
+    /// Admitted inner callbacks, including callbacks that return an error.
     pub fn used(&self) -> u64 {
         self.used.load(Ordering::Relaxed)
+    }
+
+    /// Applications refused before entering the inner callback.
+    pub fn refused(&self) -> u64 {
+        self.refused.load(Ordering::Relaxed)
     }
 
     fn reserve(&self) -> CoreResult<()> {
         let mut current = self.used.load(Ordering::Relaxed);
         loop {
             if current >= self.limit {
+                self.refused.fetch_add(1, Ordering::Relaxed);
                 return Err(CoreError::LinearSolve(BUDGET_EXHAUSTED_MARKER.into()));
             }
             match self.used.compare_exchange_weak(
