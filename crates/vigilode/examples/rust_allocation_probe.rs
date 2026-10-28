@@ -11,7 +11,7 @@ use std::{
     },
     time::Instant,
 };
-use vigilode::{Atol, Jacobian, Options, Problem, Rodas5p};
+use vigilode::{Atol, Jacobian, Options, Problem, Rodas5p, Status};
 
 struct ProbeAlloc;
 thread_local! {
@@ -276,7 +276,9 @@ fn run() -> Result<(), String> {
     if !["probe", "timing", "alloc"].contains(&mode.as_str()) {
         return Err("mode must be probe, timing or alloc".into());
     }
-    let repeats: usize = get("--repeats", "1").parse().map_err(|_| "bad --repeats")?;
+    let repeats: usize = get("--repeats", "64")
+        .parse()
+        .map_err(|_| "bad --repeats")?;
     if repeats == 0 {
         return Err("repeats must be positive".into());
     }
@@ -298,15 +300,22 @@ fn run() -> Result<(), String> {
     let setup_ns = setup_start.elapsed().as_nanos();
     ALLOCS.with(|x| x.set(0));
     let mut samples = Vec::with_capacity(repeats);
+    let mut timing_failed = false;
     for _ in 0..repeats {
         if mode == "timing" {
             let t0 = Instant::now();
             let sol =
                 Rodas5p::solve(&problem, (0.0, span), &y0, &opts).map_err(|e| e.to_string())?;
             let solver_ns = t0.elapsed().as_nanos();
+            let status_ok = matches!(&sol.status, Status::Success);
+            let status = sol.status.clone();
             drop(sol);
-            samples
-                .push(json!({"solver_ns":solver_ns,"solve_plus_drop_ns":t0.elapsed().as_nanos()}));
+            let solve_plus_drop_ns = t0.elapsed().as_nanos();
+            if !status_ok {
+                timing_failed = true;
+            }
+            let status = serde_json::to_value(&status).map_err(|e| e.to_string())?;
+            samples.push(json!({"solver_ns":solver_ns,"solve_plus_drop_ns":solve_plus_drop_ns,"status":status,"success":status_ok}));
             continue;
         }
         if mode == "alloc" {
@@ -364,5 +373,10 @@ fn run() -> Result<(), String> {
         "{}",
         serde_json::to_string(&out).map_err(|e| e.to_string())?
     );
+    if timing_failed {
+        return Err(
+            "one or more timed repeats returned failed status; raw statuses are in stdout".into(),
+        );
+    }
     Ok(())
 }

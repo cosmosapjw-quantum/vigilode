@@ -26,8 +26,9 @@ endpoint max absolute error against the analytic oracle, status, complete
 serialized `Stats` including both work-counter records, and actual RHS/JVP/time
 derivative callback counts. Allocation is strictly counted inside
 `Rodas5p::solve` by a thread-local flag. Timing mode emits only `solver_ns` and
-`solve_plus_drop_ns`; it performs no snapshot clone, oracle, or serialization
-inside the measured interval. Model/options setup is separately recorded as
+`solve_plus_drop_ns`; it performs no state/stats snapshot clone, oracle, or
+serialization inside the measured interval. It checks success and copies the
+typed status before dropping the result. Model/options setup is separately recorded as
 `setup_ns`. Endpoint error cap is fixed at `1e-5`; exceeding it or a failed
 solver status is retained as a failure. The runner probes/allocates all four primary cases plus both validation-only
 controls before any timing. It runs the five-block timing only for the four
@@ -50,8 +51,10 @@ or parity failure remains a failure and is never filtered.
 The runner-wide child-process and Callgrind-annotation cap is 1200 seconds;
 each child is capped at 90 seconds. Cargo and native build locking remain the
 controller's responsibility: this script does not acquire the shared Cargo
-lock and never builds. Allocation mode is a separate paired run and is not
-mixed into timing. If
+lock and never builds. Allocation counts are reported as baseline, candidate,
+delta, and ratio; equal allocation counts are not required because reductions
+are the optimization target. Allocation mode is a separate paired run and is
+not mixed into timing. If
 Callgrind is installed, profile mode runs each binary at two fixed repeat
 levels (default 4 and 12) and retains raw Callgrind files, command logs, and
 self/inclusive function summaries plus the fixed-overhead-subtracted `Ir`

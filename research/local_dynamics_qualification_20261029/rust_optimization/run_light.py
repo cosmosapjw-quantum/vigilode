@@ -91,6 +91,10 @@ def invoke(binpath, case, mode, repeats, outdir, tag, cpu, span=0.25, model_para
            "--span", str(span), "--model-param", str(model_param)]
     return execute(cmd, outdir/tag, TIMEOUT, cpu)
 
+def failure_kind(record):
+    if record.get("status") == "EXITED": return "PROCESS_EXIT_NONZERO"
+    return record.get("status", "PROCESS_FAILURE")
+
 def main():
     ap=argparse.ArgumentParser()
     ap.add_argument("--baseline", required=True); ap.add_argument("--baseline-sha", required=True)
@@ -98,7 +102,7 @@ def main():
     ap.add_argument("--candidate", required=True); ap.add_argument("--candidate-sha", required=True)
     ap.add_argument("--candidate-binary-sha", required=True)
     ap.add_argument("--output", required=True); ap.add_argument("--cpu", type=int, default=0)
-    ap.add_argument("--repeats", type=int, default=1, help="fixed per-process solve repetitions")
+    ap.add_argument("--repeats", type=int, default=64, help="fixed per-process solve repetitions")
     ap.add_argument("--profile-repeats", default="4,12")
     a=ap.parse_args()
     global _STARTED
@@ -124,15 +128,17 @@ def main():
             rec,val=invoke(bins[k],case,mode,repeats,out,f"{tag}-{k}",a.cpu,span,model_param)
             pair[k]={"receipt":rec,"value":val}
             if rec.get("status") != "EXITED" or rec.get("exit_code") != 0:
-                manifest["failures"].append({"case":case,"mode":mode,"kind":rec.get("status","PROCESS_FAILURE"),"binary":k,"receipt":rec})
+                manifest["failures"].append({"case":case,"mode":mode,"kind":failure_kind(rec),"binary":k,"receipt":rec})
         if any(x["value"] is None for x in pair.values()):
             manifest["failures"].append({"case":case,"mode":mode,"kind":"PROCESS_OR_JSON_FAILURE","pair":{k:v["receipt"] for k,v in pair.items()}})
         elif comparable(pair["baseline"]["value"]) != comparable(pair["candidate"]["value"]):
             manifest["failures"].append({"case":case,"mode":mode,"kind":"EXACT_PARITY_FAILURE","baseline":pair["baseline"]["value"],"candidate":pair["candidate"]["value"]})
         elif mode=="alloc":
             ba=pair["baseline"]["value"].get("samples",[]); ca=pair["candidate"]["value"].get("samples",[])
-            if [s.get("solve_allocations") for s in ba] != [s.get("solve_allocations") for s in ca]:
-                manifest["failures"].append({"case":case,"mode":mode,"kind":"ALLOCATION_COUNT_MISMATCH","baseline":[s.get("solve_allocations") for s in ba],"candidate":[s.get("solve_allocations") for s in ca]})
+            baseline=[s.get("solve_allocations") for s in ba]; candidate=[s.get("solve_allocations") for s in ca]
+            delta=[None if b is None or c is None else c-b for b,c in zip(baseline,candidate)]
+            ratio=[None if b in (None,0) or c is None else c/b for b,c in zip(baseline,candidate)]
+            pair["allocation_observation"]={"baseline":baseline,"candidate":candidate,"candidate_minus_baseline":delta,"candidate_over_baseline":ratio,"interpretation":"observed optimization target; differences are retained, not treated as parity failure"}
         return pair
     def accuracy_check(case, mode, span, param, pair):
         for k, item in pair.items():
@@ -172,7 +178,7 @@ def main():
         for row in rows:
             rec=row["receipt"]
             if rec.get("status")!="EXITED" or rec.get("exit_code")!=0:
-                manifest["failures"].append({"case":case,"mode":"timing","kind":rec.get("status","PROCESS_FAILURE"),"receipt":rec})
+                manifest["failures"].append({"case":case,"mode":"timing","kind":failure_kind(rec),"receipt":rec})
         manifest["cases"][case]=rows; save()
     valgrind=shutil.which("valgrind"); annotate=shutil.which("callgrind_annotate")
     if not valgrind or not annotate:
@@ -189,7 +195,7 @@ def main():
                     cmd=[valgrind,"--tool=callgrind",f"--callgrind-out-file={cg}",bins[k],"--case",case,"--mode","timing","--repeats",str(n),"--span","0.25","--model-param","0.2"]
                     rec,val=execute(cmd,out/f"profile-{case}-{k}-r{n}",TIMEOUT,a.cpu)
                     if rec.get("status")!="EXITED" or rec.get("exit_code")!=0:
-                        manifest["failures"].append({"case":case,"mode":"callgrind","kind":rec.get("status","PROCESS_FAILURE"),"binary":k,"repeats":n,"receipt":rec})
+                        manifest["failures"].append({"case":case,"mode":"callgrind","kind":failure_kind(rec),"binary":k,"repeats":n,"receipt":rec})
                     ann=out/f"annotate-inclusive-{case}-{k}-r{n}.txt"
                     if rec.get("exit_code")==0 and cg.exists():
                         for inclusive, label in (("yes","inclusive"),("no","self")):
