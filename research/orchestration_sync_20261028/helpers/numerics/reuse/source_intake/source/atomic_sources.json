@@ -1,0 +1,197 @@
+{
+  "schema": "rec.atomic.sources.v1",
+  "sources": [
+    {
+      "id": "VF1996_photo",
+      "paper": "Verner, Ferland, Korista & Yakovlev1996, ApJ465487",
+      "doi": "10.1086/177435",
+      "url": "https://www.pa.uky.edu/~verner/photo.html",
+      "table_url": "https://www.pa.uky.edu/~verner/dima/photo/photo.dat",
+      "role": "ground-state H/He/Li photo fits; near-threshold resonances averaged",
+      "retrieval": "Numeric selected rows read through web, not byte-identical HTTP payload"
+    },
+    {
+      "id": "VY1995_PH1",
+      "paper": "Verner & Yakovlev1995, A&AS109125",
+      "url": "https://www.pa.uky.edu/~verner/photo.html",
+      "provider_url": "https://www.pa.uky.edu/~verner/dima/photo/phfit2.f",
+      "provider_version": "1996-03-25",
+      "provider_sha256_from_pinned_REI151": "8df982535a4a2b952e33ca2ffb6d81600e156d7373fbf547a0c0170c1cecc296",
+      "role": "LiI 1s and above-edge 2s partial absorption fits",
+      "domain_note": "Author index describes partial fits up to100keV. This run uses only5..200eV; prior T6 validation ended91.83842857919419eV and is not extended as a validation claim.",
+      "charge_yield": "NOT_PROVIDED; q+1 is this pilot explicit model assumption"
+    },
+    {
+      "id": "VF1996_RR",
+      "paper": "Verner & Ferland1996, ApJS103467",
+      "doi": "10.1086/192284",
+      "url": "https://www.pa.uky.edu/~verner/rec.html",
+      "table_url": "https://www.pa.uky.edu/~verner/dima/rec/table1.dat",
+      "role": "H+ and He+/He++ radiative recombination; HeI fit a <=1e6K"
+    },
+    {
+      "id": "Badnell_RR_20230511",
+      "paper": "Badnell2006, ApJS167334",
+      "doi": "10.1086/508465",
+      "url": "https://amdpp.phys.strath.ac.uk/tamoc/DATA/RR/",
+      "table_url": "https://amdpp.phys.strath.ac.uk/tamoc/DATA/RR/clist_K",
+      "role": "Li q1..3 RR; author table via byte-verified existing REI source"
+    },
+    {
+      "id": "Badnell_DR_20230512",
+      "url": "https://amdpp.phys.strath.ac.uk/tamoc/DATA/DR/",
+      "table_url": "https://amdpp.phys.strath.ac.uk/tamoc/DATA/DR/clist_K",
+      "role": "He+ and Li+/Li++ DR. Signed fit amplitudes retained; total is positive."
+    },
+    {
+      "id": "PDG2024_neutron",
+      "paper": "S.Navas et al.2024, Phys.Rev.D110030001",
+      "url": "https://pdg.lbl.gov/2024/listings/rpp2024-list-n.pdf",
+      "role": "mean lifetime878.4s"
+    },
+    {
+      "id": "Khatri_Sunyaev2011",
+      "paper": "Khatri & Sunyaev2011",
+      "doi": "10.1134/S1063773711060041",
+      "url": "https://arxiv.org/abs/1009.3932",
+      "role": "T half-life12.32yr; primordial7Be/T decay occurs far beforez20"
+    },
+    {
+      "id": "Galli_Palla1998",
+      "paper": "Galli & Palla1998, A&A335403",
+      "url": "https://arxiv.org/abs/astro-ph/9803315",
+      "role": "Reviewed additional Li charge exchange and negative-ion chemistry; not part of selected active network"
+    },
+    {
+      "id": "Van_Loan1978",
+      "paper": "Van Loan1978, Computing Integrals Involving the Matrix Exponential",
+      "doi": "10.1109/TAC.1978.1101743",
+      "url": "https://www.olemartin.no/artikler/vanloan.pdf",
+      "role": "Constant-generator block exponential for integrated reaction observables; no claim nonlinear system solved exactly"
+    }
+  ],
+  "reused_files": [
+    {
+      "label": "REI150",
+      "repo": "cosmosapjw-quantum/rei_bianchi",
+      "pin": "fd9a21c4d3886a495540b51d780a83b608e72ea2",
+      "path": "research/flrw_rate_table_acceleration_20261016/data/lithium_coefficients.json",
+      "remote_git_blob": "34256e37425fecb6f9efdd586377aac0e1d4b82f",
+      "url": "https://github.com/cosmosapjw-quantum/rei_bianchi/blob/fd9a21c4d3886a495540b51d780a83b608e72ea2/research/flrw_rate_table_acceleration_20261016/data/lithium_coefficients.json",
+      "encoding": "utf-8",
+      "local_path": "/workspace/scratch/36ad4bc67b35/li_sandbox_survey/sources/REI150/research/flrw_rate_table_acceleration_20261016/data/lithium_coefficients.json",
+      "bytes": 3528,
+      "sha256": "cb171718019b2851060625b7794314876dadded8bc258378b4321a37f26bd11d",
+      "local_git_blob": "34256e37425fecb6f9efdd586377aac0e1d4b82f",
+      "remote_git_match": true,
+      "path_in_deliverable": "vendor/atomic_reused/lithium_coefficients.json"
+    },
+    {
+      "label": "REI150",
+      "repo": "cosmosapjw-quantum/rei_bianchi",
+      "pin": "fd9a21c4d3886a495540b51d780a83b608e72ea2",
+      "path": "research/flrw_rate_table_acceleration_20261016/data/badnell_lithium_rr_rows.txt",
+      "remote_git_blob": "75a51b3fcbfda53c1260d47dffeed04d282c9b86",
+      "url": "https://github.com/cosmosapjw-quantum/rei_bianchi/blob/fd9a21c4d3886a495540b51d780a83b608e72ea2/research/flrw_rate_table_acceleration_20261016/data/badnell_lithium_rr_rows.txt",
+      "encoding": "utf-8",
+      "local_path": "/workspace/scratch/36ad4bc67b35/li_sandbox_survey/sources/REI150/research/flrw_rate_table_acceleration_20261016/data/badnell_lithium_rr_rows.txt",
+      "bytes": 200,
+      "sha256": "56aa1a9333669a685b0b2a4e67646151cb6ef323ac2936646defdcc331a14a43",
+      "local_git_blob": "75a51b3fcbfda53c1260d47dffeed04d282c9b86",
+      "remote_git_match": true,
+      "path_in_deliverable": "vendor/atomic_reused/badnell_lithium_rr_rows.txt"
+    },
+    {
+      "label": "REI150",
+      "repo": "cosmosapjw-quantum/rei_bianchi",
+      "pin": "fd9a21c4d3886a495540b51d780a83b608e72ea2",
+      "path": "research/flrw_rate_table_acceleration_20261016/data/badnell_lithium_dr_rows.txt",
+      "remote_git_blob": "2710cd57a5d88b0c2a8eb58bfc9aeffe2697ac9e",
+      "url": "https://github.com/cosmosapjw-quantum/rei_bianchi/blob/fd9a21c4d3886a495540b51d780a83b608e72ea2/research/flrw_rate_table_acceleration_20261016/data/badnell_lithium_dr_rows.txt",
+      "encoding": "utf-8",
+      "local_path": "/workspace/scratch/36ad4bc67b35/li_sandbox_survey/sources/REI150/research/flrw_rate_table_acceleration_20261016/data/badnell_lithium_dr_rows.txt",
+      "bytes": 184,
+      "sha256": "b47c7ba77f723aaee0f20eb349f66dec5b278ce9cd35a96d700f7826f1c825f7",
+      "local_git_blob": "2710cd57a5d88b0c2a8eb58bfc9aeffe2697ac9e",
+      "remote_git_match": true,
+      "path_in_deliverable": "vendor/atomic_reused/badnell_lithium_dr_rows.txt"
+    },
+    {
+      "repo": "cosmosapjw-quantum/rei_bianchi",
+      "pin": "8a4f5df46f6e3058f5e685b85cc1cf3c20926368",
+      "upstream_path": "research/microphysics_r9_20261015/unit7_physical_bridges_20261016/spec/LI_PHOTO_CONTRACT.json",
+      "path_in_deliverable": "vendor/atomic_reused/LI_PHOTO_CONTRACT.json",
+      "sha256": "2428928d7e5f2d95254a97e0332492c03d13ac7dc3c22c1208e97ae257a253bf",
+      "bytes": 6113
+    },
+    {
+      "repo": "cosmosapjw-quantum/rei_bianchi",
+      "pin": "8a4f5df46f6e3058f5e685b85cc1cf3c20926368",
+      "upstream_path": "research/microphysics_r9_20261015/unit7_physical_bridges_20261016/results/laneA/provider_reconstruction.json",
+      "path_in_deliverable": "vendor/atomic_reused/provider_reconstruction.json",
+      "sha256": "85b2e1eda2fbac6d3d24cb56eb29bc712c83312ab7f8ef845acea53ac6c2c39e",
+      "bytes": 1082
+    },
+    {
+      "repo": "cosmosapjw-quantum/rei_bianchi",
+      "pin": "8a4f5df46f6e3058f5e685b85cc1cf3c20926368",
+      "upstream_path": "research/microphysics_r9_20261015/unit7_physical_bridges_20261016/inputs/verner/SOURCE_MANIFEST.json",
+      "path_in_deliverable": "vendor/atomic_reused/SOURCE_MANIFEST.json",
+      "sha256": "e27d9fcec8b43151bd13d2847005855e0600d591755644638a48966d3a7da561",
+      "bytes": 761
+    }
+  ],
+  "attribution": "Third-party numerical coefficients retain author/source attribution. No new blanket license claim is made for the author tables. Runtime formulas are independently implemented from the cited equations.",
+  "files": [
+    {
+      "path": "data/atomic_coefficients.json",
+      "bytes": 6086,
+      "sha256": "38397e6b560f463f09a5923eaa5902a24312e5246abc158694451c631cd4d6bc"
+    },
+    {
+      "path": "data/atomic_model.json",
+      "bytes": 3085,
+      "sha256": "9cc399e9e33ece544109f442f50b00c463cde96e406965e796240eaabd49c614"
+    },
+    {
+      "path": "vendor/atomic_primary/selected_HHe_RR_DR_rows.json",
+      "bytes": 1141,
+      "sha256": "6465165d46ae94f25c66b528d8dbd02bdc61093a698e5fbd59c1e8991ebbdf35"
+    },
+    {
+      "path": "vendor/atomic_primary/selected_photo_rows.txt",
+      "bytes": 488,
+      "sha256": "37656d122002a758bd0dc6e468d39492a13da6d4cc719ee944ca99c953254d76"
+    },
+    {
+      "path": "vendor/atomic_reused/LI_PHOTO_CONTRACT.json",
+      "bytes": 6113,
+      "sha256": "2428928d7e5f2d95254a97e0332492c03d13ac7dc3c22c1208e97ae257a253bf"
+    },
+    {
+      "path": "vendor/atomic_reused/SOURCE_MANIFEST.json",
+      "bytes": 761,
+      "sha256": "e27d9fcec8b43151bd13d2847005855e0600d591755644638a48966d3a7da561"
+    },
+    {
+      "path": "vendor/atomic_reused/badnell_lithium_dr_rows.txt",
+      "bytes": 184,
+      "sha256": "b47c7ba77f723aaee0f20eb349f66dec5b278ce9cd35a96d700f7826f1c825f7"
+    },
+    {
+      "path": "vendor/atomic_reused/badnell_lithium_rr_rows.txt",
+      "bytes": 200,
+      "sha256": "56aa1a9333669a685b0b2a4e67646151cb6ef323ac2936646defdcc331a14a43"
+    },
+    {
+      "path": "vendor/atomic_reused/lithium_coefficients.json",
+      "bytes": 3528,
+      "sha256": "cb171718019b2851060625b7794314876dadded8bc258378b4321a37f26bd11d"
+    },
+    {
+      "path": "vendor/atomic_reused/provider_reconstruction.json",
+      "bytes": 1082,
+      "sha256": "85b2e1eda2fbac6d3d24cb56eb29bc712c83312ab7f8ef845acea53ac6c2c39e"
+    }
+  ]
+}

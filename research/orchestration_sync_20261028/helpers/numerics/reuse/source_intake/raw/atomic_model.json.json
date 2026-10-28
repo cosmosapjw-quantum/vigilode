@@ -1,0 +1,21 @@
+{
+  "repository": "cosmosapjw-quantum/bass",
+  "ref": "cc602e209e7deeb511ab2a1f3b2268d55206c43c",
+  "path": "research/rei_hheli_compact_pilot_20261022/vendor/rec_hheli/data/atomic_model.json",
+  "response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Action completed."
+      }
+    ],
+    "structuredContent": {
+      "content": "{\n  \"schema\": \"rec.atomic.model.v1\",\n  \"state_convention\": \"Y_i=n_i/n_b, A dot Y = 1; free electron n_e=n_b q dot Y\",\n  \"species_order\": [\n    \"n\",\n    \"H1I\",\n    \"H1II\",\n    \"DI\",\n    \"DII\",\n    \"TI\",\n    \"TII\",\n    \"He3I\",\n    \"He3II\",\n    \"He3III\",\n    \"He4I\",\n    \"He4II\",\n    \"He4III\",\n    \"Li6I\",\n    \"Li6II\",\n    \"Li6III\",\n    \"Li6IV\",\n    \"Li7I\",\n    \"Li7II\",\n    \"Li7III\",\n    \"Li7IV\"\n  ],\n  \"inventory_number_ratios_to_H1\": {\n    \"n\": 0.0,\n    \"H1\": 1.0,\n    \"D\": 2.5e-05,\n    \"T\": 0.0,\n    \"He3\": 1e-05,\n    \"He4\": 0.08112582781456953,\n    \"Li6\": 1e-14,\n    \"Li7\": 5e-10\n  },\n  \"inventory_status\": \"Conditional pilot inputs, not an inferred BBN posterior or isotope-resolved atomic-rate measurement\",\n  \"initial_H1_D_ionized_fraction\": 0.0002,\n  \"initial_helium_charge\": 0,\n  \"initial_lithium_charge\": 1,\n  \"zero_inventory_scale\": 1e-20,\n  \"isotope_rate_policy\": \"ElementalElectronicEquality explicitly enabled for H1/D/T, He3/He4, Li6/Li7; no isotope shift or isotope-resolved fit claimed\",\n  \"photon_field\": {\n    \"energy_min_eV\": 5.0,\n    \"energy_max_eV\": 200.0,\n    \"base_log_bins\": 64,\n    \"number_power_index\": -2.5,\n    \"late_Gamma_HI_s\": 1e-12,\n    \"frame\": \"External local isotropic number flux, bin-integrated m^-2 s^-1; flux is c times photon number density\",\n    \"quadrature\": \"Split base logarithmic bins at all thresholds and LiI inner-shell edge; geometric bin-centre cross sections times exact integrated number power law\",\n    \"ion_yield\": \"Every absorbed photon creates one electron and advances q by one. For neutral Li inner-shell absorption this is explicit coarse-graining, not source-validated final charge/Auger/fluorescence yield.\",\n    \"radiative_transfer\": \"Prescribed optically thin UV; no attenuation or recombination-photon feedback\"\n  },\n  \"weak_decay\": {\n    \"neutron_mean_lifetime_s\": 878.4,\n    \"neutron_source\": \"PDG2024 neutron listing; mean lifetime, not half-life\",\n    \"tritium_half_life_years\": 12.32,\n    \"julian_year_s\": 31557600.0,\n    \"tritium_source\": \"Khatri and Sunyaev2011, arXiv1009.3932\",\n    \"maps\": [\n      \"n -> H1II + e + anti_nu\",\n      \"TI -> He3II + e + anti_nu\",\n      \"TII -> He3III + e + anti_nu\"\n    ],\n    \"ion_electron_spectator_approximation\": \"T retains its pre-existing bound electron count; no shake-off or bound-state beta branching\",\n    \"pilot_initial_n_T\": \"zero, hence actual pilot decay populations and flux are zero\"\n  },\n  \"excluded_processes\": [\n    \"collisional ionization of every element\",\n    \"charge exchange\",\n    \"negative ions and molecules\",\n    \"nuclear fusion\",\n    \"photonuclear reactions above the finite UV support\",\n    \"Be7 active state (standard prehistory conversion to Li7 is represented by chosen initial Li7 inventory)\",\n    \"excited-level population kinetics\",\n    \"Auger/direct double photoionization and fluorescence yields\",\n    \"secondary ionization\",\n    \"thermal or radiation energy closure\"\n  ],\n  \"flags\": {\n    \"physical\": \"CONDITIONAL_PRELIMINARY_ONLY\",\n    \"global_convergence\": \"NOT_RUN\",\n    \"production\": \"NOT_APPROVED\",\n    \"old_REC_U5_HOLD\": \"UNCHANGED\"\n  }\n}\n",
+      "encoding": "utf-8",
+      "sha": "73285c1585f8edca92487effe95e68448f3163b8",
+      "display_url": "https://github.com/cosmosapjw-quantum/bass/blob/cc602e209e7deeb511ab2a1f3b2268d55206c43c/research/rei_hheli_compact_pilot_20261022/vendor/rec_hheli/data/atomic_model.json",
+      "display_title": "atomic_model.json"
+    },
+    "isError": false
+  }
+}

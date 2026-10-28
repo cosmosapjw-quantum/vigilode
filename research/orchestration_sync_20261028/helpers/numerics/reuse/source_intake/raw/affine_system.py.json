@@ -1,0 +1,21 @@
+{
+  "repository": "cosmosapjw-quantum/bass",
+  "ref": "cc602e209e7deeb511ab2a1f3b2268d55206c43c",
+  "path": "research/sandbox_affine_chemistry_20261022/code/affine_system.py",
+  "response": {
+    "content": [
+      {
+        "type": "text",
+        "text": "Action completed."
+      }
+    ],
+    "structuredContent": {
+      "content": "\"\"\"Opt-in 30-coordinate restriction of the pinned 33-coordinate H--Li model.\n\nThe three eliminated neutral fractions are reconstructed from conserved totals.\nNo positivity clipping or rate change is performed. Adaptive error control must\nuse the lifted full33 error if its original norm is to be retained.\n\"\"\"\nfrom __future__ import annotations\nimport math\nimport numpy as np\n\nBLOCKS = ((23, 24), (25, 26, 27), (28, 29, 30, 31))\nNEUTRAL = np.array([b[0] for b in BLOCKS])\nKEEP = np.array([i for i in range(33) if i not in NEUTRAL])\nSELECT = np.eye(33)[KEEP]\nLIFT = SELECT.T.copy()\nfor block in BLOCKS:\n    for charged in block[1:]:\n        LIFT[block[0], np.flatnonzero(KEEP == charged)[0]] = -1.\nfor a in (NEUTRAL, KEEP, SELECT, LIFT):\n    a.setflags(write=False)\n\n\nclass AffineSystem:\n    \"\"\"Wrap an already validated CompactSystem; preserve its source and IC scope.\"\"\"\n    size = 30\n\n    def __init__(self, compact):\n        if getattr(compact, 'size', None) != 33:\n            raise ValueError('expected validated CompactSystem of size 33')\n        initial = np.asarray(compact.y0, dtype=float)\n        if initial.shape != (33,) or not np.isfinite(initial).all():\n            raise ValueError('finite full33 initial state required')\n        if np.any(initial[23:32] < 0):\n            raise ValueError('initial fractions must be nonnegative')\n        self.compact = compact\n        self.totals = np.array([math.fsum(initial[list(b)]) for b in BLOCKS])\n        if np.any(self.totals <= 0):\n            raise ValueError('positive elemental fraction totals required')\n        self.totals.setflags(write=False)\n        self.y0 = self.restrict(initial)\n\n    @staticmethod\n    def restrict(full):\n        full = np.asarray(full)\n        if full.ndim < 1 or full.shape[0] != 33:\n            raise ValueError('expected leading full33 axis')\n        return full[KEEP].copy()\n\n    def lift(self, reduced):\n        reduced = np.asarray(reduced)\n        if reduced.ndim < 1 or reduced.shape[0] != 30:\n            raise ValueError('expected leading reduced30 axis')\n        full = np.zeros((33,) + reduced.shape[1:], dtype=np.result_type(reduced, float))\n        full[KEEP] = reduced\n        for total, block in zip(self.totals, BLOCKS):\n            full[block[0]] = total - np.sum(full[list(block[1:])], axis=0)\n        return full\n\n    @staticmethod\n    def lift_tangent(direction):\n        direction = np.asarray(direction)\n        if direction.ndim < 1 or direction.shape[0] != 30:\n            raise ValueError('expected leading reduced30 tangent axis')\n        return LIFT @ direction\n\n    def rhs(self, x, reduced):\n        return self.restrict(self.compact.rhs(x, self.lift(reduced)))\n\n    def jac(self, x, reduced):\n        full_jac = self.compact.jac(x, self.lift(reduced))\n        return full_jac[KEEP] @ LIFT\n\n    def full62(self, reduced):\n        # Import belongs to the unchanged owner package selected by the caller.\n        from compact_system import lift\n        return lift(self.lift(reduced))\n",
+      "encoding": "utf-8",
+      "sha": "baa8272d507375cdbcb11ec89af1a6282dca6b0b",
+      "display_url": "https://github.com/cosmosapjw-quantum/bass/blob/cc602e209e7deeb511ab2a1f3b2268d55206c43c/research/sandbox_affine_chemistry_20261022/code/affine_system.py",
+      "display_title": "affine_system.py"
+    },
+    "isError": false
+  }
+}
