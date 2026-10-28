@@ -2,7 +2,7 @@
   "schema": "sym02.stages.v1",
   "core_dag": "7/23",
   "central_dag": "28/88",
-  "auxiliary": "0/1",
+  "auxiliary": "1/1 PASS_SCOPED_AFFINE_NATIVE",
   "stages": [
     {
       "id": "R1",
@@ -239,8 +239,23 @@
       "utc": "2026-10-28T23:20:35.904418+00:00",
       "core": "7/23",
       "central": "28/88"
+    },
+    {
+      "id": "C10",
+      "status": "complete",
+      "reason": "Admit scoped native affine unit and preserve reproducible final handoff",
+      "evidence": [
+        "ADMISSION.json",
+        "REPORT_KO.md",
+        "NEXT_THREAD_HANDOFF_KO.md",
+        "VERIFICATION.json",
+        "DELIVERY_THROUGH_C9.json"
+      ],
+      "utc": "2026-10-28T23:25:19.013126+00:00",
+      "core": "7/23",
+      "central": "28/88"
     }
   ],
-  "workflow_complete": 19,
+  "workflow_complete": 20,
   "workflow_total": 20
 }
