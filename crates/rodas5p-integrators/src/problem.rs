@@ -698,7 +698,8 @@ impl OdeProblem {
     /// allocation-free non-autonomous stages). A supplied `partial_t`
     /// callback receives a zeroed `out`, as with the allocating form. The
     /// finite-difference fallback (no callback) still allocates its two RHS
-    /// evaluations. On `Err` the contents of `out` are unspecified.
+    /// evaluations; fast drivers use the scratch-aware internal form below.
+    /// On `Err` the contents of `out` are unspecified.
     pub fn eval_partial_t_into(
         &self,
         t: f64,
@@ -725,6 +726,44 @@ impl OdeProblem {
         }
         let fd = self.partial_t_finite_difference(t, y, counters)?;
         out.copy_from_slice(&fd);
+        Ok(())
+    }
+
+    /// Fast-driver form of `eval_partial_t_into`. The two RHS vectors are
+    /// prepared by the workspace, so the fallback performs no heap allocation.
+    /// Both scratch buffers are reset before their callbacks: `eval_rhs`
+    /// starts from zeros, whereas `eval_rhs_into` intentionally does not.
+    pub(crate) fn eval_partial_t_into_with_scratch(
+        &self,
+        t: f64,
+        y: &[f64],
+        out: &mut [f64],
+        fp: &mut [f64],
+        fm: &mut [f64],
+        counters: &mut WorkCounters,
+    ) -> CoreResult<()> {
+        if y.len() != self.dimension
+            || out.len() != self.dimension
+            || fp.len() != self.dimension
+            || fm.len() != self.dimension
+        {
+            return Err(CoreError::Dimension(
+                "partial_t state shape mismatch".into(),
+            ));
+        }
+        if self.autonomous || self.partial_t.is_some() {
+            return self.eval_partial_t_into(t, y, out, counters);
+        }
+        counters.ft_calls += 1;
+        out.fill(0.0);
+        let eps = f64::EPSILON.sqrt() * t.abs().max(1.0);
+        fp.fill(0.0);
+        self.eval_rhs_into(t + eps, y, fp, counters)?;
+        fm.fill(0.0);
+        self.eval_rhs_into(t - eps, y, fm, counters)?;
+        for ((result, plus), minus) in out.iter_mut().zip(fp).zip(fm) {
+            *result = (*plus - *minus) / (2.0 * eps);
+        }
         Ok(())
     }
 
@@ -994,5 +1033,132 @@ impl OdeProblem {
 
     pub fn exact(&self, t: f64) -> Option<Vec<f64>> {
         self.exact_solution.as_ref().map(|f| f(t))
+    }
+}
+
+#[cfg(test)]
+mod time_fd_workspace_tests {
+    use super::*;
+
+    fn problem(autonomous: bool, analytic: bool, fail: Option<&'static str>) -> OdeProblem {
+        OdeProblem::new(
+            "time-fd-scratch-contract",
+            2,
+            Arc::new(move |t, y, out| {
+                if fail == Some("plus") && t > 0.0 {
+                    return Err(CoreError::InvalidInput("plus RHS refused".into()));
+                }
+                if fail == Some("minus") && t < 0.0 {
+                    return Err(CoreError::InvalidInput("minus RHS refused".into()));
+                }
+                if fail == Some("nan-plus") && t > 0.0 {
+                    out[0] = f64::NAN;
+                    return Ok(());
+                }
+                if fail == Some("nan-minus") && t < 0.0 {
+                    out[0] = f64::NAN;
+                    return Ok(());
+                }
+                // Accumulation exposes stale scratch from a previous call.
+                out[0] += t + y[0];
+                out[1] += 2.0 * t - y[1];
+                Ok(())
+            }),
+            None,
+            None,
+            Some(Arc::new(|_, _, v, out| {
+                out.copy_from_slice(v);
+                Ok(())
+            })),
+            analytic.then(|| {
+                Arc::new(|_: f64, _: &[f64], out: &mut [f64]| {
+                    out[0] += 1.0;
+                    out[1] += 2.0;
+                    Ok(())
+                }) as PartialTFn
+            }),
+            autonomous,
+            None,
+            None,
+        )
+        .unwrap()
+    }
+
+    #[test]
+    fn reused_scratch_matches_public_arithmetic_and_work() {
+        let y = [0.25, -0.75];
+        for (autonomous, analytic) in [(true, false), (false, true), (false, false)] {
+            let model = problem(autonomous, analytic, None);
+            let mut fp = [f64::NAN; 2];
+            let mut fm = [f64::NAN; 2];
+            let mut out = [f64::NAN; 2];
+            for t in [0.0, 1.25, -1.25, f64::MIN_POSITIVE, 0.0] {
+                let mut reference_work = WorkCounters::default();
+                let mut scratch_work = WorkCounters::default();
+                let reference = model.eval_partial_t(t, &y, &mut reference_work).unwrap();
+                model
+                    .eval_partial_t_into_with_scratch(
+                        t,
+                        &y,
+                        &mut out,
+                        &mut fp,
+                        &mut fm,
+                        &mut scratch_work,
+                    )
+                    .unwrap();
+                assert_eq!(reference_work, scratch_work);
+                assert!(
+                    out.iter()
+                        .zip(&reference)
+                        .all(|(a, b)| a.to_bits() == b.to_bits())
+                );
+                out.fill(f64::NAN);
+                fp.fill(f64::NAN);
+                fm.fill(f64::NAN);
+            }
+        }
+    }
+
+    #[test]
+    fn shape_and_either_rhs_refusal_preserve_attempted_work() {
+        let y = [0.25, -0.75];
+        let mut out = [17.0; 2];
+        let mut fp = [19.0; 2];
+        let mut fm = [23.0; 2];
+        let model = problem(false, false, None);
+        let mut work = WorkCounters::default();
+        assert!(matches!(
+            model.eval_partial_t_into_with_scratch(
+                0.0,
+                &y,
+                &mut out,
+                &mut fp[..1],
+                &mut fm,
+                &mut work,
+            ),
+            Err(CoreError::Dimension(_))
+        ));
+        assert_eq!(work, WorkCounters::default());
+        for (failure, expected_rhs) in
+            [("plus", 1), ("minus", 2), ("nan-plus", 1), ("nan-minus", 2)]
+        {
+            let model = problem(false, false, Some(failure));
+            let mut public_work = WorkCounters::default();
+            let mut scratch_work = WorkCounters::default();
+            let public_error = model.eval_partial_t_into(0.0, &y, &mut out, &mut public_work);
+            let scratch_error = model.eval_partial_t_into_with_scratch(
+                0.0,
+                &y,
+                &mut out,
+                &mut fp,
+                &mut fm,
+                &mut scratch_work,
+            );
+            assert_eq!(format!("{public_error:?}"), format!("{scratch_error:?}"));
+            assert_eq!(public_work, scratch_work);
+            assert_eq!(scratch_work.ft_calls, 1);
+            assert_eq!(scratch_work.rhs_calls, expected_rhs);
+            assert_eq!(scratch_work.rhs_evaluations, expected_rhs);
+        }
     }
 }

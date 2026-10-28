@@ -21,7 +21,7 @@ use rodas5p_integrators::{
 
 use crate::{
     error::{SolveError, Unsupported},
-    fd::{Guard, band_groups, banded_fd_fill, dense_fd_jacobian, dense_from_band},
+    fd::{Guard, band_groups, banded_fd_fill, dense_fd_fill, dense_fd_jacobian, dense_from_band},
     options::{Atol, InteriorError, Options, Tier},
     problem::{Jacobian, Problem},
     solution::{
@@ -846,6 +846,11 @@ fn build(
         }
         (Jacobian::FiniteDifference, None) => {
             jacobian = Some(Arc::new(dense_fd_jacobian(
+                guard.clone(),
+                problem.rhs.clone(),
+                n,
+            )));
+            jacobian_into = Some(Arc::new(dense_fd_fill(
                 guard.clone(),
                 problem.rhs.clone(),
                 n,

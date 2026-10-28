@@ -1,7 +1,7 @@
 //! The callback guard of one solve and the finite-difference Jacobians.
 
 use std::sync::{
-    Arc, Mutex,
+    Arc, Mutex, TryLockError,
     atomic::{AtomicBool, AtomicU64, Ordering},
 };
 
@@ -239,28 +239,49 @@ fn increment(yj: f64) -> (f64, f64) {
     (shifted, shifted - yj)
 }
 
-/// Dense forward differences: `n + 1` RHS calls per build.
-pub(crate) fn dense_fd_jacobian(
-    guard: Arc<Guard>,
-    rhs: RhsFn,
-    n: usize,
-) -> impl Fn(f64, &[f64]) -> CoreResult<DenseMatrix> + Send + Sync + 'static {
-    move |t, y| {
+/// One solve owns this scratch. The lock covers a complete build, so another
+/// caller cannot observe the shifted vector half restored. A reentrant or
+/// concurrent call uses separate scratch rather than waiting for an RHS
+/// callback that may itself have entered this Jacobian provider.
+struct DenseFdScratch {
+    f0: Vec<f64>,
+    shifted: Vec<f64>,
+    f1: Vec<f64>,
+}
+
+impl DenseFdScratch {
+    fn new(n: usize) -> Self {
+        Self {
+            f0: vec![0.0; n],
+            shifted: vec![0.0; n],
+            f1: vec![0.0; n],
+        }
+    }
+
+    fn fill(
+        &mut self,
+        guard: &Guard,
+        rhs: &RhsFn,
+        t: f64,
+        y: &[f64],
+        matrix: &mut DenseMatrix,
+    ) -> CoreResult<()> {
+        // The driver's matrix can contain the previous build. A failed
+        // callback must not leave those entries looking current.
+        matrix.as_mut_slice().fill(0.0);
         guard.fd_builds.fetch_add(1, Ordering::Relaxed);
-        let mut f0 = vec![0.0; n];
-        guard.fd_rhs(&rhs, t, y, &mut f0)?;
-        let mut shifted = y.to_vec();
-        let mut f1 = vec![0.0; n];
-        let mut matrix = DenseMatrix::zeros(n, n);
-        for j in 0..n {
+        self.f0.fill(0.0);
+        guard.fd_rhs(rhs, t, y, &mut self.f0)?;
+        self.shifted.copy_from_slice(y);
+        for j in 0..y.len() {
             let (yj_shifted, delta) = increment(y[j]);
-            shifted[j] = yj_shifted;
-            f1.fill(0.0);
-            let outcome = guard.fd_rhs(&rhs, t, &shifted, &mut f1);
-            shifted[j] = y[j];
+            self.shifted[j] = yj_shifted;
+            self.f1.fill(0.0);
+            let outcome = guard.fd_rhs(rhs, t, &self.shifted, &mut self.f1);
+            self.shifted[j] = y[j];
             outcome?;
-            for i in 0..n {
-                let entry = (f1[i] - f0[i]) / delta;
+            for i in 0..y.len() {
+                let entry = (self.f1[i] - self.f0[i]) / delta;
                 if !entry.is_finite() {
                     return Err(CoreError::NonFinite(
                         "finite-difference Jacobian entry overflowed".into(),
@@ -269,7 +290,120 @@ pub(crate) fn dense_fd_jacobian(
                 matrix[(i, j)] = entry;
             }
         }
+        Ok(())
+    }
+}
+
+fn fill_dense_with_scratch(
+    scratch: &Mutex<DenseFdScratch>,
+    n: usize,
+    guard: &Guard,
+    rhs: &RhsFn,
+    t: f64,
+    y: &[f64],
+    matrix: &mut DenseMatrix,
+) -> CoreResult<()> {
+    match scratch.try_lock() {
+        Ok(mut scratch) => scratch.fill(guard, rhs, t, y, matrix),
+        Err(TryLockError::Poisoned(e)) => e.into_inner().fill(guard, rhs, t, y, matrix),
+        Err(TryLockError::WouldBlock) => {
+            // A callback may reenter on the same thread. Waiting on the
+            // mutex would deadlock; isolated fallback preserves the call.
+            DenseFdScratch::new(n).fill(guard, rhs, t, y, matrix)
+        }
+    }
+}
+
+/// Dense forward differences: `n + 1` RHS calls per build.
+pub(crate) fn dense_fd_jacobian(
+    guard: Arc<Guard>,
+    rhs: RhsFn,
+    n: usize,
+) -> impl Fn(f64, &[f64]) -> CoreResult<DenseMatrix> + Send + Sync + 'static {
+    let scratch = Mutex::new(DenseFdScratch::new(n));
+    move |t, y| {
+        let mut matrix = DenseMatrix::zeros(n, n);
+        fill_dense_with_scratch(&scratch, n, &guard, &rhs, t, y, &mut matrix)?;
         Ok(matrix)
+    }
+}
+
+/// The fast dense driver's in-place callback; no matrix or scratch allocation
+/// is needed for an uncontended build after the solve has been constructed.
+pub(crate) fn dense_fd_fill(
+    guard: Arc<Guard>,
+    rhs: RhsFn,
+    n: usize,
+) -> impl Fn(f64, &[f64], &mut DenseMatrix) -> CoreResult<()> + Send + Sync + 'static {
+    let scratch = Mutex::new(DenseFdScratch::new(n));
+    move |t, y, matrix| fill_dense_with_scratch(&scratch, n, &guard, &rhs, t, y, matrix)
+}
+
+#[derive(Clone, Copy)]
+struct BandShape {
+    n: usize,
+    lower: usize,
+    upper: usize,
+}
+
+struct BandedFdScratch {
+    f0: Vec<f64>,
+    shifted: Vec<f64>,
+    f1: Vec<f64>,
+    deltas: Vec<f64>,
+}
+
+impl BandedFdScratch {
+    fn new(n: usize) -> Self {
+        Self {
+            f0: vec![0.0; n],
+            shifted: vec![0.0; n],
+            f1: vec![0.0; n],
+            deltas: vec![0.0; n],
+        }
+    }
+
+    fn fill(
+        &mut self,
+        guard: &Guard,
+        rhs: &RhsFn,
+        t: f64,
+        y: &[f64],
+        band: &mut [f64],
+        shape: BandShape,
+    ) -> CoreResult<()> {
+        let BandShape { n, lower, upper } = shape;
+        let width = lower + upper + 1;
+        let groups = band_groups(n, lower, upper);
+        guard.fd_builds.fetch_add(1, Ordering::Relaxed);
+        self.f0.fill(0.0);
+        guard.fd_rhs(rhs, t, y, &mut self.f0)?;
+        self.shifted.copy_from_slice(y);
+        for group in 0..groups {
+            for j in (group..n).step_by(width) {
+                let (yj_shifted, delta) = increment(y[j]);
+                self.shifted[j] = yj_shifted;
+                self.deltas[j] = delta;
+            }
+            self.f1.fill(0.0);
+            let outcome = guard.fd_rhs(rhs, t, &self.shifted, &mut self.f1);
+            for j in (group..n).step_by(width) {
+                self.shifted[j] = y[j];
+            }
+            outcome?;
+            for j in (group..n).step_by(width) {
+                for i in j.saturating_sub(upper)..=(j + lower).min(n - 1) {
+                    let entry = (self.f1[i] - self.f0[i]) / self.deltas[j];
+                    if !entry.is_finite() {
+                        return Err(CoreError::NonFinite(
+                            "finite-difference band entry overflowed".into(),
+                        ));
+                    }
+                    band[i * width + (j + lower - i)] = entry;
+                }
+            }
+        }
+        Ok(())
     }
 }
 
@@ -287,42 +421,14 @@ pub(crate) fn banded_fd_fill(
     lower: usize,
     upper: usize,
 ) -> impl Fn(f64, &[f64], &mut [f64]) -> CoreResult<()> + Send + Sync + 'static {
-    let width = lower + upper + 1;
-    let groups = band_groups(n, lower, upper);
-    move |t, y, band| {
-        guard.fd_builds.fetch_add(1, Ordering::Relaxed);
-        let mut f0 = vec![0.0; n];
-        guard.fd_rhs(&rhs, t, y, &mut f0)?;
-        let mut shifted = y.to_vec();
-        let mut f1 = vec![0.0; n];
-        let mut deltas = vec![0.0; n];
-        for group in 0..groups {
-            for j in (group..n).step_by(width) {
-                let (yj_shifted, delta) = increment(y[j]);
-                shifted[j] = yj_shifted;
-                deltas[j] = delta;
-            }
-            f1.fill(0.0);
-            let outcome = guard.fd_rhs(&rhs, t, &shifted, &mut f1);
-            for j in (group..n).step_by(width) {
-                shifted[j] = y[j];
-            }
-            outcome?;
-            // Columns of one group are `width` apart, so their row ranges
-            // `[j - upper, j + lower]` are disjoint.
-            for j in (group..n).step_by(width) {
-                for i in j.saturating_sub(upper)..=(j + lower).min(n - 1) {
-                    let entry = (f1[i] - f0[i]) / deltas[j];
-                    if !entry.is_finite() {
-                        return Err(CoreError::NonFinite(
-                            "finite-difference band entry overflowed".into(),
-                        ));
-                    }
-                    band[i * width + (j + lower - i)] = entry;
-                }
-            }
+    let shape = BandShape { n, lower, upper };
+    let scratch = Mutex::new(BandedFdScratch::new(n));
+    move |t, y, band| match scratch.try_lock() {
+        Ok(mut scratch) => scratch.fill(&guard, &rhs, t, y, band, shape),
+        Err(TryLockError::Poisoned(e)) => e.into_inner().fill(&guard, &rhs, t, y, band, shape),
+        Err(TryLockError::WouldBlock) => {
+            BandedFdScratch::new(n).fill(&guard, &rhs, t, y, band, shape)
         }
-        Ok(())
     }
 }
 
@@ -342,6 +448,209 @@ pub(crate) fn dense_from_band(values: &[f64], n: usize, lower: usize, upper: usi
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn dense_into_matches_returned_matrix_bits_and_counters() {
+        let n = 7;
+        let y = [0.1, -0.3, 0.6, 0.2, -0.8, 0.5, 1.1];
+        let first = Arc::new(Guard::default());
+        let second = Arc::new(Guard::default());
+        let rhs = tridiagonal(n);
+        let allocating = dense_fd_jacobian(first.clone(), rhs.clone(), n);
+        let into = dense_fd_fill(second.clone(), rhs, n);
+        let expected = allocating(0.4, &y).unwrap();
+        let mut actual = DenseMatrix::zeros(n, n);
+        actual.as_mut_slice().fill(-99.0);
+        into(0.4, &y, &mut actual).unwrap();
+        assert_eq!(
+            expected
+                .as_slice()
+                .iter()
+                .map(|x| x.to_bits())
+                .collect::<Vec<_>>(),
+            actual
+                .as_slice()
+                .iter()
+                .map(|x| x.to_bits())
+                .collect::<Vec<_>>()
+        );
+        assert_eq!(first.fd_work(), second.fd_work());
+        into(0.4, &y, &mut actual).unwrap();
+    }
+
+    fn original_dense_reference(rhs: &RhsFn, n: usize, t: f64, y: &[f64]) -> DenseMatrix {
+        // Exact pre-change arithmetic and column traversal, kept only as a
+        // local regression oracle for the changed storage strategy.
+        let mut f0 = vec![0.0; n];
+        rhs(t, y, &mut f0).unwrap();
+        let mut shifted = y.to_vec();
+        let mut f1 = vec![0.0; n];
+        let mut matrix = DenseMatrix::zeros(n, n);
+        for j in 0..n {
+            let (yj_shifted, delta) = increment(y[j]);
+            shifted[j] = yj_shifted;
+            f1.fill(0.0);
+            rhs(t, &shifted, &mut f1).unwrap();
+            shifted[j] = y[j];
+            for i in 0..n {
+                matrix[(i, j)] = (f1[i] - f0[i]) / delta;
+            }
+        }
+        matrix
+    }
+
+    #[test]
+    fn fd_workspace_preserves_original_dense_bits() {
+        let n = 7;
+        let y = [0.1, -0.3, 0.6, 0.2, -0.8, 0.5, 1.1];
+        let rhs = tridiagonal(n);
+        let original = original_dense_reference(&rhs, n, 0.25, &y);
+        let optimized = dense_fd_jacobian(Arc::new(Guard::default()), rhs, n)(0.25, &y).unwrap();
+        assert_eq!(
+            original
+                .as_slice()
+                .iter()
+                .map(|x| x.to_bits())
+                .collect::<Vec<_>>(),
+            optimized
+                .as_slice()
+                .iter()
+                .map(|x| x.to_bits())
+                .collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn recoverable_fd_failure_restores_shift_and_preserves_charges() {
+        let guard = Arc::new(Guard::default());
+        let calls = Arc::new(AtomicU64::new(0));
+        let seen = Arc::new(Mutex::new(Vec::<Vec<u64>>::new()));
+        let rhs: RhsFn = {
+            let (calls, seen) = (calls.clone(), seen.clone());
+            Arc::new(move |_, y, out| {
+                seen.lock()
+                    .unwrap()
+                    .push(y.iter().map(|v| v.to_bits()).collect());
+                let call = calls.fetch_add(1, Ordering::Relaxed);
+                if call == 1 {
+                    return Err(CallbackError::Recoverable("once".into()));
+                }
+                out.copy_from_slice(y);
+                Ok(())
+            })
+        };
+        let jac = dense_fd_jacobian(guard.clone(), rhs, 2);
+        let y = [0.5, -1.5];
+        assert!(matches!(jac(0.0, &y), Err(CoreError::NonFinite(_))));
+        let matrix = jac(0.0, &y).unwrap();
+        assert_eq!(matrix[(0, 0)].to_bits(), 1.0f64.to_bits());
+        assert_eq!(matrix[(1, 1)].to_bits(), 1.0f64.to_bits());
+        assert_eq!(guard.fd_work().jacobian_builds, 2);
+        assert_eq!(guard.fd_work().rhs_calls, 5);
+        assert_eq!(guard.callback_work().recoverable_errors, 1);
+        let seen = seen.lock().unwrap();
+        assert_eq!(seen[0], seen[2]);
+        assert_eq!(seen[2], y.map(f64::to_bits));
+    }
+
+    #[test]
+    fn fatal_fd_error_enters_callback_once_then_short_circuits() {
+        let guard = Arc::new(Guard::default());
+        let calls = Arc::new(AtomicU64::new(0));
+        let rhs: RhsFn = {
+            let calls = calls.clone();
+            Arc::new(move |_, _, _| {
+                calls.fetch_add(1, Ordering::Relaxed);
+                Err(CallbackError::Fatal("stop".into()))
+            })
+        };
+        let jac = banded_fd_fill(guard.clone(), rhs, 2, 0, 0);
+        let mut band = [0.0; 2];
+        assert!(matches!(
+            jac(0.0, &[1.0, 2.0], &mut band),
+            Err(CoreError::FatalCallback(_))
+        ));
+        assert!(matches!(
+            jac(0.0, &[1.0, 2.0], &mut band),
+            Err(CoreError::FatalCallback(_))
+        ));
+        assert_eq!(calls.load(Ordering::Relaxed), 1);
+        assert_eq!(guard.fd_work().jacobian_builds, 2);
+        assert_eq!(guard.fd_work().rhs_calls, 2);
+        assert_eq!(guard.callback_work().fatal_errors, 1);
+        assert_eq!(guard.callback_work().short_circuited_rhs_calls, 1);
+    }
+
+    #[test]
+    fn recoverable_band_failure_restores_group_shift_before_retry() {
+        let guard = Arc::new(Guard::default());
+        let calls = Arc::new(AtomicU64::new(0));
+        let seen = Arc::new(Mutex::new(Vec::<Vec<u64>>::new()));
+        let rhs: RhsFn = {
+            let (calls, seen) = (calls.clone(), seen.clone());
+            Arc::new(move |_, y, out| {
+                seen.lock()
+                    .unwrap()
+                    .push(y.iter().map(|v| v.to_bits()).collect());
+                if calls.fetch_add(1, Ordering::Relaxed) == 1 {
+                    return Err(CallbackError::Recoverable("once".into()));
+                }
+                out.copy_from_slice(y);
+                Ok(())
+            })
+        };
+        let jac = banded_fd_fill(guard.clone(), rhs, 4, 1, 1);
+        let y = [0.5, -1.5, 2.25, 0.1];
+        let mut band = [0.0; 12];
+        assert!(matches!(
+            jac(0.0, &y, &mut band),
+            Err(CoreError::NonFinite(_))
+        ));
+        jac(0.0, &y, &mut band).unwrap();
+        let seen = seen.lock().unwrap();
+        assert_eq!(seen[0], seen[2]);
+        assert_eq!(seen[2], y.map(f64::to_bits));
+        assert_eq!(guard.fd_work().jacobian_builds, 2);
+        assert_eq!(guard.fd_work().rhs_calls, 6);
+        assert_eq!(guard.callback_work().recoverable_errors, 1);
+    }
+
+    #[test]
+    fn concurrent_build_uses_isolated_scratch_without_waiting_on_callback() {
+        use std::time::{Duration, Instant};
+
+        let base_calls = Arc::new(AtomicU64::new(0));
+        let rhs: RhsFn = {
+            let base_calls = base_calls.clone();
+            Arc::new(move |_, y, out| {
+                // Both f0 evaluations must enter before either can return.
+                // A blocking mutex would time out here instead of hanging CI.
+                if base_calls.fetch_add(1, Ordering::Relaxed) < 2 {
+                    let deadline = Instant::now() + Duration::from_secs(2);
+                    while base_calls.load(Ordering::Relaxed) < 2 {
+                        if Instant::now() >= deadline {
+                            return Err(CallbackError::Fatal("blocked build".into()));
+                        }
+                        std::thread::yield_now();
+                    }
+                }
+                out.copy_from_slice(y);
+                Ok(())
+            })
+        };
+        let guard = Arc::new(Guard::default());
+        let jac = dense_fd_jacobian(guard.clone(), rhs, 2);
+        std::thread::scope(|scope| {
+            let a = scope.spawn(|| jac(0.0, &[0.25, 0.5]).unwrap());
+            let b = scope.spawn(|| jac(0.0, &[0.75, 1.5]).unwrap());
+            for result in [a.join().unwrap(), b.join().unwrap()] {
+                assert_eq!(result[(0, 0)], 1.0);
+                assert_eq!(result[(1, 1)], 1.0);
+            }
+        });
+        assert_eq!(guard.fd_work().jacobian_builds, 2);
+        assert_eq!(guard.fd_work().rhs_calls, 6);
+    }
 
     fn tridiagonal(n: usize) -> RhsFn {
         Arc::new(move |_t, y, dy| {

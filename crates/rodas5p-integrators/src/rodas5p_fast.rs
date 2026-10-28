@@ -743,6 +743,9 @@ pub(crate) struct Workspace {
     pub(crate) lu_chosen: bool,
     pub(crate) f0: Vec<f64>,
     pub(crate) ft: Vec<f64>,
+    /// Prepared RHS buffers for the non-autonomous finite-difference f_t.
+    ft_fp: Vec<f64>,
+    ft_fm: Vec<f64>,
     pub(crate) u: Vec<f64>,
     pub(crate) stage_state: Vec<f64>,
     pub(crate) stage_rhs: Vec<f64>,
@@ -846,6 +849,8 @@ impl Workspace {
             lu_chosen: false,
             f0: vec![0.0; n],
             ft: vec![0.0; n],
+            ft_fp: vec![0.0; n],
+            ft_fm: vec![0.0; n],
             u: vec![0.0; s * n],
             stage_state: vec![0.0; n],
             stage_rhs: vec![0.0; n],
@@ -1146,7 +1151,14 @@ impl Workspace {
             if !problem.autonomous {
                 // A failed evaluation leaves `ft` unspecified; the driver then
                 // rebuilds the state (`fresh_state = false`) before reuse.
-                problem.eval_partial_t_into(t, y, &mut self.ft, counters)?;
+                problem.eval_partial_t_into_with_scratch(
+                    t,
+                    y,
+                    &mut self.ft,
+                    &mut self.ft_fp,
+                    &mut self.ft_fm,
+                    counters,
+                )?;
             }
         }
         self.factor(h, counters)?;
