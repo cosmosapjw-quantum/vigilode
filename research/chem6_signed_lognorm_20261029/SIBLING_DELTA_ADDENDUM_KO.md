@@ -1,0 +1,12 @@
+# VigilODE 2026-10-29 latest sibling delta addendum
+
+이 문서는 CHEM6-MU01 본 연구의 source/code를 변경하지 않고, 최종 원격 조사에서 추가로 확인한 독립 작업의 authority 경계를 기록한다.
+
+1. `cosmosapjw-quantum/vigilode` 전체 branch 목록을 4 pages 끝까지 조회한 결과 **242 branches**, cursor exhausted. PR103 `d0a07e955f4bf5a6ca8ec7560cb5032c445e9bdc`는 PR102 `8357faa5...` 위의 Draft, 47 commits/38 changed paths, compare status ahead, no main merge. 원본 DAG는 `7/23 inherited scoped`, production HOLD.
+2. `research/synchronized-production-20261029`는 PR102 기준 **ahead4 / behind23, diverged**. Krylov GMRES/workspace, integrator time finite-difference, vigilode solve, source ledger와 audit 등 19 changed paths가 있고, CHEM6-MU01 branch에 자동 통합되지 않았다. 별도 `research/synchronized-baseline-20261029`는 PR102 기준 ahead2/behind23이다. 따라서 PR102/103와 synchronized-production의 native 실행 결과를 서로 이전하거나, 어느 쪽을 단일 최신 production tree로 취급하지 않는다.
+3. Synchronized branch `CURRENT_STATE.json`에는 **Q-LEDGER 3/3, PR-N05 3/3, R-STRUCT 3/3, R-ADAPT 3/3** exhausted correction budgets, PR-N04 2/3, Q-API 1/3, Q-LINT 2/3 등이 명시되어 있다. 이전 snapshot과 현재 episode를 구별하며 이름 변경으로 예산을 초기화하지 않는다.
+4. 미해결 source/CI 사항: `time_fd_workspace_contracts.rs:112` clone-on-copy lint, RHS 1e14 Givens `Ok(3640)` vs historical expected Err (exact residual 검증 선행), Q-API E0063/E0004 breaking fixtures, `cargo-semver-checks` package discovery, SUNDIALS 7.1.1 `mpi.h` provider, WFiltered/Off 비용 15/7>1.3와 unequal accuracy, 22 inherited nodes/40 ledger diagnostics, full authority missing. 이번 CHEM6 실험은 이 CI 결과를 고치거나 통과시켰다고 주장하지 않는다.
+5. 다른 repo delta: `rei_bianchi` PR261 six-moment UVB nonlinear confidence envelope, `bass` PR240 MPFR tabulated source/time error, `rec_bianchi` PR155 HD LAMDA line-centre, `bass_cr` PR120 Hall frontier, `BASS_HE` PR105 EXFOR, `WU088_HH` PR155 reactive HD, `htt_base` PR564 finite report-first. 이들은 최신 원격 PR metadata를 확인한 결과이며, frozen CHEM6 source commit과 binding에 대한 **실제 equivalence witness가 없어** 이번 branch에 자동 import하지 않았다.
+6. 기존 다른 대화의 원문 전체와 사용자의 실행 중 로컬 WIP는 접근 가능한 범위 밖이다. 이전 handoff, GitHub 최신 메타데이터, Drive/Dropbox 백업 ACK와 관련 원문을 대조했지만, 모든 과거 branch의 전체 소스 라인을 새로 감사했다고 주장하지 않는다.
+
+다음 local Codex는 synchronized-production과 PR103을 별도 worktree로 fetch하고, actual source/epoch/clock/metric와 dependency ancestry를 확인한 뒤 필요한 기능만 독립적인 validation branch에서 결합하라. CHEM6-MU01은 standalone source-structured certificate이며 root Cargo.lock, production dispatcher, default solver를 변경하지 않았다. 핵심 결과·검증·백업의 기준은 PR103 `REPORT_KO.md`, `RESULTS.json`, `DELIVERY_RECEIPTS.json`, `NEXT_THREAD_HANDOFF_KO.md`다.
