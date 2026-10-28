@@ -1,0 +1,99 @@
+diff --git a/tools/check-authority-refs.py b/tools/check-authority-refs.py
+index b555ad16..7319d9c9 100644
+--- a/tools/check-authority-refs.py
++++ b/tools/check-authority-refs.py
+@@ -71,6 +71,11 @@ GITHUB_OBJECT_RE = re.compile(
+     r"https://(?:api\.)?github\.com/(?:repos/)?([\w.-]+/[\w.-]+)/"
+     r"(?:commit|commits|tree|blob)/([0-9a-f]{40})(?![0-9a-fA-F])"
+ )
++DEPENDENCY_REVISION_KEY_RE = re.compile(r"^(.+)_git_revision$")
++DEPENDENCY_REPOSITORIES = {
++    "numpy": "numpy/numpy",
++    "scipy": "scipy/scipy",
++}
+ ALLOW_LINE_RE = re.compile(r"^([0-9a-f]{40})\s+(\S.*)$")
+ 
+ 
+@@ -109,6 +114,15 @@ def canonical_repository(value: str) -> str | None:
+     return name if re.fullmatch(r"[\w.-]+/[\w.-]+", name) else None
+ 
+ 
++def dependency_revision_repository(key: str, inherited_repository: str) -> str:
++    """Bind dependency-qualified revisions to their own repository fail-closed."""
++    match = DEPENDENCY_REVISION_KEY_RE.fullmatch(key)
++    if match is None:
++        return inherited_repository
++    dependency = match.group(1).casefold()
++    return DEPENDENCY_REPOSITORIES.get(dependency, "<invalid-repository>")
++
++
+ @dataclass(frozen=True)
+ class SourceMapping:
+     repository: str
+@@ -198,9 +212,10 @@ def json_value_citations(
+                     continue
+                 # A second authority is a second obligation.  It must not
+                 # inherit a weaker relation such as object-exists.
++                child_repository = dependency_revision_repository(str(key), primary.repository)
+                 out.extend(json_value_citations(
+                     path, sub, key_path + [str(key)], text, line_offset,
+-                    primary.repository, "git-object", "published-source", False,
++                    child_repository, "git-object", "published-source", False,
+                     github_capture,
+                 ))
+             return out
+@@ -208,8 +223,9 @@ def json_value_citations(
+         if isinstance(named_repo, str):
+             repository = canonical_repository(named_repo) or "<invalid-repository>"
+         for key, sub in value.items():
++            child_repository = dependency_revision_repository(str(key), repository)
+             out.extend(json_value_citations(path, sub, key_path + [str(key)], text, line_offset,
+-                                            repository, object_kind, required_relation, typed_record, github_capture))
++                                            child_repository, object_kind, required_relation, typed_record, github_capture))
+     elif isinstance(value, list):
+         for sub in value:
+             out.extend(json_value_citations(path, sub, key_path, text, line_offset,
+diff --git a/tools/test_check_authority_refs.py b/tools/test_check_authority_refs.py
+index db7d2da9..9f715015 100644
+--- a/tools/test_check_authority_refs.py
++++ b/tools/test_check_authority_refs.py
+@@ -354,6 +354,39 @@ class AuthorityRefsTests(unittest.TestCase):
+         self.assertIn("source.source_blob", proc.stdout)
+         self.assertNotIn("reachable", proc.stdout)
+ 
++    def test_dependency_qualified_revisions_override_parent_repository(self):
++        self.write("research/node/receipt.json", json.dumps({"runner": {
++            "source_repository": "scipy/scipy",
++            "runtime": {"identity": {
++                "numpy_git_revision": self.published,
++                "scipy_git_revision": self.local_only,
++            }},
++        }}))
++        self.commit_all()
++        proc = self.check("--list")
++        self.assertEqual(proc.returncode, 1, proc.stdout)
++        self.assertIn("runner.runtime.identity.numpy_git_revision", proc.stdout)
++        self.assertIn("repository=numpy/numpy", proc.stdout)
++        self.assertIn("runner.runtime.identity.scipy_git_revision", proc.stdout)
++        self.assertIn("repository=scipy/scipy", proc.stdout)
++        self.assertNotIn("numpy_git_revision; repository=scipy/scipy", proc.stdout)
++
++    def test_unknown_dependency_revision_fails_closed(self):
++        self.write("research/node/receipt.json", json.dumps({"runner": {
++            "source_repository": "scipy/scipy",
++            "runtime": {"identity": {
++                "mystery_git_revision": ABSENT,
++                "untrusted_package_git_revision": self.published,
++            }},
++        }}))
++        self.commit_all()
++        proc = self.check("--list")
++        self.assertEqual(proc.returncode, 1, proc.stdout)
++        self.assertIn("runner.runtime.identity.mystery_git_revision", proc.stdout)
++        self.assertIn("runner.runtime.identity.untrusted_package_git_revision", proc.stdout)
++        self.assertIn("invalid-repository", proc.stdout)
++        self.assertIn("repository=<invalid-repository>", proc.stdout)
++
+     def test_markdown_github_commit_url_binds_external_repository(self):
+         self.write("docs/NOTE.md", f"Source https://github.com/test/external/commit/{self.published}\n")
+         self.commit_all()

@@ -1,0 +1,23 @@
+test_dependency_qualified_revisions_override_parent_repository (tools.test_check_authority_refs.AuthorityRefsTests.test_dependency_qualified_revisions_override_parent_repository) ... FAIL
+test_unknown_dependency_revision_fails_closed (tools.test_check_authority_refs.AuthorityRefsTests.test_unknown_dependency_revision_fails_closed) ... FAIL
+
+======================================================================
+FAIL: test_dependency_qualified_revisions_override_parent_repository (tools.test_check_authority_refs.AuthorityRefsTests.test_dependency_qualified_revisions_override_parent_repository)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/cosmosapjw/vigilode-local-20261028T170155Z/tools/test_check_authority_refs.py", line 369, in test_dependency_qualified_revisions_override_parent_repository
+    self.assertIn("repository=numpy/numpy", proc.stdout)
+AssertionError: 'repository=numpy/numpy' not found in 'repository-unavailable   94eeeacaca48cb67b709570c9267b193f305bab5 research/node/receipt.json:1 [runner.runtime.identity.numpy_git_revision; repository=scipy/scipy; object_kind=commit; required_relation=published-source] supply --repository NAME=PATH with matching origin identity\nrepository-unavailable   57d85cfa6f10d2110314bbb882d53dd5038e04e5 research/node/receipt.json:1 [runner.runtime.identity.scipy_git_revision; repository=scipy/scipy; object_kind=commit; required_relation=published-source] supply --repository NAME=PATH with matching origin identity\nFAIL: research/node/receipt.json:1: 94eeeacaca48cb67b709570c9267b193f305bab5 is repository-unavailable (supply --repository NAME=PATH with matching origin identity) [runner.runtime.identity.numpy_git_revision; repository=scipy/scipy; object_kind=commit; required_relation=published-source]\nFAIL: research/node/receipt.json:1: 57d85cfa6f10d2110314bbb882d53dd5038e04e5 is repository-unavailable (supply --repository NAME=PATH with matching origin identity) [runner.runtime.identity.scipy_git_revision; repository=scipy/scipy; object_kind=commit; required_relation=published-source]\ncheck-authority-refs: FAIL (2 citations, 2 distinct authority identities: repository-unavailable=2)\n'
+
+======================================================================
+FAIL: test_unknown_dependency_revision_fails_closed (tools.test_check_authority_refs.AuthorityRefsTests.test_unknown_dependency_revision_fails_closed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/cosmosapjw/vigilode-local-20261028T170155Z/tools/test_check_authority_refs.py", line 383, in test_unknown_dependency_revision_fails_closed
+    self.assertIn("invalid-repository", proc.stdout)
+AssertionError: 'invalid-repository' not found in 'repository-unavailable   1234567890abcdef1234567890abcdef12345678 research/node/receipt.json:1 [runner.runtime.identity.mystery_git_revision; repository=scipy/scipy; object_kind=commit; required_relation=published-source] supply --repository NAME=PATH with matching origin identity\nFAIL: research/node/receipt.json:1: 1234567890abcdef1234567890abcdef12345678 is repository-unavailable (supply --repository NAME=PATH with matching origin identity) [runner.runtime.identity.mystery_git_revision; repository=scipy/scipy; object_kind=commit; required_relation=published-source]\ncheck-authority-refs: FAIL (1 citations, 1 distinct authority identities: repository-unavailable=1)\n'
+
+----------------------------------------------------------------------
+Ran 2 tests in 0.189s
+
+FAILED (failures=2)

@@ -1,0 +1,35 @@
+{
+  "schema": "q-givens-exact-residual-oracle-v1",
+  "returned_solutions_checked": 1,
+  "oracle_sha256": "61fb7d14143c1a0d5f95ee583526d506f866188647afe5f224859e7ea4f1a09b",
+  "fixture_sha256": "2f29b75dd1d294772c7caf1b66ecd52dce0d362621b4e622f405b3a51b375bbe",
+  "fixture_dimension": 256,
+  "jacobi_inverse_matches_fixture": true,
+  "rows": [
+    {
+      "file": "gmres-1e-14.bits",
+      "sha256": "c864d8327b00a74263e415b00f7a6100eb41c92f600086338c82c93bd3162071",
+      "status": "ok",
+      "iterations": 3200,
+      "acceptance_arithmetic": "exact_rational_squared_norm",
+      "decimal_display_precision": 120,
+      "exact_residual_norm_decimal": "7.61188979167154614141993764562789461781343675510260069733274431225066858416787061844416793939102485164182672702443742313E-25",
+      "exact_requested_threshold_decimal": "1.00000000000000030338135315704066865562821500629671809323272525765000721795113207566305301975961417694904503845185858809E-24",
+      "binary64_solver_threshold_decimal": "1.00000000000000010737149186768524775141514583945729598608356261061486103258744151389691978693008422851562500000000000000E-24",
+      "exact_residual_le_requested_threshold": true,
+      "exact_residual_le_binary64_solver_threshold": true,
+      "corrupted_x_rejected": true,
+      "corrupted_x_rejected_at_binary64_threshold": true,
+      "corrupted_residual_norm_decimal": "105.119569051944961604404436168844549391687452735466084288397389465932980478931948418552416118898238282243719431724872405",
+      "verdict": "PASS_SCOPED"
+    },
+    {
+      "file": "gmres-givens-candidate-1e-14.bits",
+      "sha256": "c9cdc96f67573551cf6e30f19090d968a46469da1288fe1be8b18ebf9d905581",
+      "status": "error linear solve failed: GMRES-Givens exhausted 4000 Arnoldi vectors",
+      "verdict": "NO_RETURNED_SOLUTION"
+    }
+  ],
+  "claim_ceiling": "exact represented linear-system residual only; no physical/global convergence claim",
+  "verdict": "PASS_SCOPED"
+}
