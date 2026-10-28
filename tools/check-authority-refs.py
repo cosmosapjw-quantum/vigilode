@@ -1,38 +1,33 @@
 #!/usr/bin/env python3
-"""Fail when research/docs cite a commit SHA as authority that no remote ref contains.
+"""Check typed research authority without conflating repository or Git object identity.
 
-Audit finding F-025 (research/adversarial_audit_20260927): any document that names a
-commit as source authority must cite a commit reachable from a remote ref, so that an
-independent auditor can rebuild the state it describes from a fresh clone.
+Tracked Markdown/JSON/JSONL/TOML under research/ and docs/ retain the legacy
+40-hex/authority-keyword extraction rule. Opaque JSON body/content/diagnostic
+payloads and Julia Manifest git-tree-sha1 package hashes do not declare local
+commit authority. Structured source_commit fields remain checked.
 
-Extraction rule (documented in docs/RESEARCH_LEDGER.md):
+Each citation records repository, object kind, identifier and required relation.
+Explicit repo/repository fields, GitHub URLs and repository-prefixed dependency
+fields qualify external objects. Use --repository owner/name=/checkout to resolve
+an external repository offline; its origin identity must match. Missing external
+checkouts fail rather than silently passing or consulting VigilODE objects.
 
-* Scope: tracked files under the scanned paths (default ``research`` and ``docs``) whose
-  suffix is ``.md``, ``.json``, ``.jsonl`` or ``.toml``.
-* A candidate is a 40-character lowercase hex token that is not part of a longer hex run
-  (so SHA-256 digests are never mistaken for Git object ids).
-* JSON/JSONL: a candidate inside a string value is an authority citation when a token of
-  the key path (keys split on ``_``, ``-``, ``.``, spaces and camelCase) or a word of the
-  string itself is an authority keyword.  Unparseable JSON falls back to the text rule.
-* Markdown/TOML/other text: a candidate is an authority citation when its own line or the
-  line before it contains an authority keyword as a word.
-* Authority keywords: authority, commit, head, parent, base, revision, rev, checkpoint,
-  merge, sealed, source, tip, sha, ref, anchor, main, branch.
+Commits require remote reachability. Tree/blob citations require an object of the
+right kind; a missing local tree remains a failure. Legacy ambiguous object
+citations retain the non-commit classification. Explicit object_kind/identifier/
+required_relation records support published-source, remote-reachable and
+object-exists. The research ledger's commit always requires remote-reachable.
 
-Each citation is then resolved in the local object database:
+A missing historical source may report tree-equivalent only through a recognized
+publication-map schema (or SOURCE_IDENTITY.json v1 local/remote/tree tuple), whose
+exact bytes occur in remote branch history. The target must be a reachable commit
+with the recorded whole tree; an available local commit must match that tree too.
+This supports source reuse and retains the original commit identity. It does not
+satisfy a remote-reachable relation. Invalid or unpublished mappings fail closed.
 
-* object is a tree or blob: not a commit, reported as ``non-commit`` and skipped;
-* object is a commit and ``git branch -r --contains <sha>`` is non-empty: ``reachable``;
-* otherwise (commit with no remote branch, or object absent): ``unreachable`` / ``missing``,
-  which fails unless the SHA is listed in the allowlist.
-
-Allowlist (default ``tools/authority_refs_allowlist.txt``): one ``<40-hex sha> <reason>``
-per line; ``#`` starts a comment.  Every entry must carry a non-empty reason.  The
-allowlist freezes historical citations that are known to be unreachable, so the check
-passes on the current tree and fails on any new unreachable citation.
-
-CI must check out full history of all branches (``fetch-depth: 0``) so that remote refs
-exist locally.
+The existing reasoned allowlist applies only to missing/unreachable local commit
+citations. It cannot exempt external repositories, missing trees, kind mismatches
+or invalid mappings. CI needs complete remote branch history (fetch-depth: 0).
 """
 
 from __future__ import annotations
@@ -42,7 +37,7 @@ import json
 import re
 import subprocess
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 
 DEFAULT_PATHS = ("research", "docs")
@@ -70,6 +65,7 @@ KEYWORDS = frozenset(
     }
 )
 SHA_RE = re.compile(r"(?<![0-9a-fA-F])([0-9a-f]{40})(?![0-9a-fA-F])")
+GITHUB_RE = re.compile(r"https://(?:api\.)?github\.com/(?:repos/)?([\w.-]+/[\w.-]+)(?:/|$)")
 ALLOW_LINE_RE = re.compile(r"^([0-9a-f]{40})\s+(\S.*)$")
 
 
@@ -79,6 +75,18 @@ class Citation:
     path: str
     line: int
     context: str
+    repository: str = "local"
+    object_kind: str = "git-object"
+    required_relation: str = "published-source"
+
+
+@dataclass(frozen=True)
+class SourceMapping:
+    repository: str
+    source: str
+    target: str
+    tree: str
+    path: str
 
 
 def words(text: str) -> set[str]:
@@ -100,13 +108,26 @@ def text_citations(path: str, text: str) -> list[Citation]:
     out: list[Citation] = []
     lines = text.splitlines()
     for idx, line in enumerate(lines):
+        # Julia package content hashes are not VigilODE commit authorities.
+        if Path(path).name == "Manifest.toml" and re.match(r'\s*git-tree-sha1\s*=', line):
+            continue
         if not SHA_RE.search(line):
             continue
         prev = lines[idx - 1] if idx > 0 else ""
         if not (has_keyword(line) or has_keyword(prev)):
             continue
         for match in SHA_RE.finditer(line):
-            out.append(Citation(match.group(1), path, idx + 1, line.strip()[:120]))
+            prefix = line[:match.start()]
+            clause = re.split(r"[.;]", prefix)[-1]
+            kind = "tree" if re.search(r"\b(?:source[_ -]?)?tree\s*[:=]?\s*[`\"]?$", clause, re.I) else "git-object"
+            if kind == "git-object" and re.search(r"\b(?:tree[_ -]?)?(?:commit|ref)\s*[:=]?\s*[`\"]?$", clause, re.I):
+                kind = "commit"
+            url = GITHUB_RE.search(line)
+            url_end = line.find(" ", url.start()) if url else -1
+            if url and url_end < 0:
+                url_end = len(line)
+            named = url.group(1) if url and url.start() <= match.start() < url_end else "local"
+            out.append(Citation(match.group(1), path, idx + 1, line.strip()[:120], named, kind))
     return out
 
 
@@ -116,24 +137,72 @@ def _line_of(text: str, sha: str) -> int:
 
 
 def json_value_citations(
-    path: str, value: object, key_path: list[str], text: str, line_offset: int
+    path: str, value: object, key_path: list[str], text: str, line_offset: int,
+    repository: str = "local", object_kind: str = "git-object",
+    required_relation: str = "published-source", typed_record: bool = False,
+    github_capture: bool = False,
 ) -> list[Citation]:
     out: list[Citation] = []
     if isinstance(value, dict):
+        if not key_path:
+            github_capture = "pulls" in value or (
+                Path(path).name.lower().startswith("github") and "structuredContent" in value
+            )
+        typed_record = "object_kind" in value or "required_relation" in value
+        named_repo = value.get("repository", value.get("repo", value.get("source_repository")))
+        if isinstance(named_repo, str):
+            github = GITHUB_RE.search(named_repo + "/")
+            if github:
+                repository = github.group(1)
+            elif re.fullmatch(r"[\w.-]+/[\w.-]+", named_repo):
+                repository = named_repo
+        if "object_kind" in value:
+            object_kind = str(value["object_kind"])
+        if isinstance(value.get("required_relation"), str):
+            required_relation = value["required_relation"]
         for key, sub in value.items():
-            out.extend(json_value_citations(path, sub, key_path + [str(key)], text, line_offset))
+            out.extend(json_value_citations(path, sub, key_path + [str(key)], text, line_offset,
+                                            repository, object_kind, required_relation, typed_record, github_capture))
     elif isinstance(value, list):
         for sub in value:
-            out.extend(json_value_citations(path, sub, key_path, text, line_offset))
-    elif isinstance(value, str) and SHA_RE.search(value):
+            out.extend(json_value_citations(path, sub, key_path, text, line_offset,
+                                            repository, object_kind, required_relation, typed_record, github_capture))
+    elif isinstance(value, str) and (SHA_RE.search(value) or (typed_record and key_path and key_path[-1] == "identifier")):
+        # Quoted PR prose, serialized API responses and captured diagnostics are
+        # evidence payloads, not declarations that their substrings are authority.
+        if key_path and key_path[-1] in {"body", "content"} and github_capture and (
+            "pulls" in key_path or "structuredContent" in key_path
+        ):
+            return out
+        if key_path and key_path[-1] == "selected_failure_lines":
+            return out
         key_words: set[str] = set()
         for key in key_path:
             key_words |= words(key)
-        if key_words & KEYWORDS or has_keyword(value):
+        if key_words & KEYWORDS or has_keyword(value) or (key_path and key_path[-1] == "identifier"):
             dotted = ".".join(key_path) or "<root>"
-            for match in SHA_RE.finditer(value):
-                sha = match.group(1)
-                out.append(Citation(sha, path, line_offset + _line_of(text, sha), dotted[:120]))
+            leaf = words(key_path[-1]) if key_path else set()
+            kind = object_kind
+            if kind == "git-object":
+                if "tree" in leaf and not (leaf & {"commit", "ref"}):
+                    kind = "tree"
+                    if not SHA_RE.fullmatch(value) and re.search(r"\b(?:base|commit)\s+[0-9a-f]{40}\b", value):
+                        kind = "commit"
+                elif "blob" in leaf:
+                    kind = "blob"
+                elif leaf & {"commit", "head", "parent", "revision", "ref"}:
+                    kind = "commit"
+            relation = required_relation
+            if path == "research/LEDGER.jsonl" and key_path == ["commit"]:
+                relation = "remote-reachable"
+            identifiers = [m.group(1) for m in SHA_RE.finditer(value)]
+            if typed_record and key_path and key_path[-1] == "identifier" and not SHA_RE.fullmatch(value):
+                identifiers = [value]
+            for sha in identifiers:
+                url = GITHUB_RE.search(value)
+                named = url.group(1) if url else repository
+                out.append(Citation(sha, path, line_offset + _line_of(text, sha), dotted[:120],
+                                    named, kind, relation))
     return out
 
 
@@ -190,11 +259,134 @@ def resolve(repo: Path, sha: str) -> str:
     return "unreachable"
 
 
+def repository_identity(repo: Path) -> str:
+    remote = git(repo, "remote", "get-url", "origin", check=False)
+    match = re.search(r"github\.com[:/]([\w.-]+/[\w.-]+?)(?:\.git)?$", remote.stdout.strip())
+    return match.group(1) if match else "local"
+
+
+def published_file(repo: Path, path: str) -> bool:
+    """Require this exact mapping blob at this path in a remote branch history."""
+    blob = git(repo, "hash-object", "--", path).stdout.strip()
+    history = git(repo, "log", "--remotes", "--format=%H", "--", path).stdout.splitlines()
+    return any(git(repo, "rev-parse", f"{commit}:{path}", check=False).stdout.strip() == blob
+               for commit in history)
+
+
+def load_mappings(repo: Path, documents: dict[str, str], local_name: str) -> tuple[dict[tuple[str, str], SourceMapping], list[str]]:
+    mappings: dict[tuple[str, str], SourceMapping] = {}
+    errors: list[str] = []
+    for path, text in documents.items():
+        if Path(path).suffix != ".json":
+            continue
+        try:
+            data = json.loads(text)
+        except ValueError:
+            continue
+        if not isinstance(data, dict):
+            continue
+        schema = data.get("schema")
+        if schema == "vigilode.git-publication-map.v1":
+            entries = data.get("mappings")
+            fields = ("local_evidence_commit", "remote_equivalent_commit", "identical_tree_sha")
+        elif schema == "vigilode.frontier.publication-map.v1":
+            entries = data.get("source_equivalence")
+            fields = ("local_commit", "github_commit", "whole_tree")
+        elif Path(path).name == "SOURCE_IDENTITY.json" and data.get("schema_version") == 1 and any(
+            key in data for key in ("source_local_commit", "source_remote_commit")
+        ):
+            entries = [data]
+            fields = ("source_local_commit", "source_remote_commit", "source_tree")
+        else:
+            continue
+        if data.get("repository", local_name) != local_name:
+            errors.append(f"{path}: mapping repository does not match {local_name}")
+            continue
+        if not isinstance(entries, list) or not entries:
+            errors.append(f"{path}: malformed publication mapping list")
+            continue
+        if not published_file(repo, path):
+            errors.append(f"{path}: mapping is not published unchanged")
+            continue
+        for entry in entries:
+            if not isinstance(entry, dict) or any(
+                not isinstance(entry.get(field), str) or not SHA_RE.fullmatch(entry[field]) for field in fields
+            ):
+                errors.append(f"{path}: malformed mapping identifiers")
+                continue
+            source, target, tree = (entry[field] for field in fields)
+            if resolve(repo, target) != "reachable":
+                errors.append(f"{path}: mapping target is not a remote-reachable commit: {target}")
+                continue
+            if git(repo, "rev-parse", f"{target}^{{tree}}").stdout.strip() != tree:
+                errors.append(f"{path}: mapping target tree mismatch: {target}")
+                continue
+            local_kind = git(repo, "cat-file", "-t", source, check=False)
+            if local_kind.returncode == 0 and (
+                local_kind.stdout.strip() != "commit" or
+                git(repo, "rev-parse", f"{source}^{{tree}}", check=False).stdout.strip() != tree
+            ):
+                errors.append(f"{path}: mapping local tree mismatch: {source}")
+                continue
+            item = SourceMapping(local_name, source, target, tree, path)
+            key = (local_name, source)
+            previous = mappings.get(key)
+            if previous and (previous.target, previous.tree) != (target, tree):
+                errors.append(f"{path}: conflicting publication mapping: {source}")
+                mappings.pop(key, None)
+                continue
+            mappings[key] = item
+    return mappings, errors
+
+
+def qualify(citation: Citation, documents: dict[str, str], aliases: dict[str, str]) -> Citation:
+    if citation.repository != "local":
+        return citation
+    # A repository-prefixed field is explicit provenance. Nearby prose is not.
+    if Path(citation.path).suffix == ".md":
+        return citation
+    leaf = citation.context.split(".")[-1]
+    prefix = re.split(r"[_\s]", leaf.lower())[0]
+    if prefix in aliases:
+        return replace(citation, repository=aliases[prefix])
+    return citation
+
+
+def resolve_citation(citation: Citation, repositories: dict[str, Path], mappings: dict[tuple[str, str], SourceMapping]) -> tuple[str, str]:
+    if not SHA_RE.fullmatch(citation.sha):
+        return "invalid-identifier", "expected a 40-hex Git object identifier"
+    if citation.object_kind not in {"git-object", "commit", "tree", "blob"}:
+        return "invalid-kind", citation.object_kind
+    if citation.required_relation not in {"published-source", "remote-reachable", "object-exists"}:
+        return "invalid-relation", citation.required_relation
+    repo = repositories.get(citation.repository)
+    if repo is None:
+        return "repository-unavailable", "supply --repository NAME=PATH with matching origin identity"
+    kind = git(repo, "cat-file", "-t", citation.sha, check=False)
+    actual = kind.stdout.strip() if kind.returncode == 0 else None
+    if actual and citation.object_kind not in {"git-object", actual}:
+        return "object-kind-mismatch", f"expected {citation.object_kind}, found {actual}"
+    if actual in {"tree", "blob"}:
+        if citation.required_relation == "remote-reachable":
+            return "object-kind-mismatch", "remote-reachable requires a commit"
+        return "non-commit", f"verified {actual} object exists"
+    state = resolve(repo, citation.sha)
+    if state in {"missing", "unreachable"} and citation.object_kind in {"git-object", "commit"} and citation.required_relation == "published-source":
+        mapping = mappings.get((citation.repository, citation.sha))
+        if mapping:
+            return "tree-equivalent", f"{mapping.path}: target={mapping.target} tree={mapping.tree}; commit identity retained"
+    if actual and citation.required_relation == "object-exists":
+        return "object-present", ""
+    return state, "no remote branch contains it" if state in {"missing", "unreachable"} else ""
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     parser.add_argument("--repo", type=Path, default=None, help="repository root (default: current toplevel)")
     parser.add_argument("--paths", nargs="+", default=list(DEFAULT_PATHS), help="paths to scan (default: research docs)")
     parser.add_argument("--allowlist", default=DEFAULT_ALLOWLIST, help="allowlist file relative to the repo root")
+    parser.add_argument("--repository", action="append", default=[], metavar="NAME=PATH",
+                        help="external GitHub repository identity and local checkout; never fetched automatically")
     parser.add_argument("--list", action="store_true", help="print every citation and its status")
     args = parser.parse_args(argv)
 
@@ -206,45 +398,81 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     allow, allow_errors = load_allowlist(repo / args.allowlist)
+    local_name = repository_identity(repo)
+    repositories = {local_name: repo, "local": repo}
+    for supplied in args.repository:
+        name, separator, location = supplied.partition("=")
+        if not separator or not name or not location:
+            print(f"check-authority-refs: expected --repository NAME=PATH: {supplied}", file=sys.stderr)
+            return 2
+        checkout = Path(location)
+        actual_name = repository_identity(checkout)
+        if actual_name != name or name in repositories:
+            print(f"check-authority-refs: repository identity mismatch or duplicate: {name} != {actual_name}", file=sys.stderr)
+            return 2
+        repositories[name] = checkout
     citations: list[Citation] = []
+    documents: dict[str, str] = {}
     for rel in sorted(p for p in tracked if p and Path(p).suffix in SUFFIXES):
         file_path = repo / rel
         if not file_path.is_file():
             continue
         text = file_path.read_text(encoding="utf-8", errors="replace")
+        documents[rel] = text
         citations.extend(file_citations(rel, text))
 
-    status: dict[str, str] = {}
-    for sha in sorted({c.sha for c in citations}):
-        status[sha] = resolve(repo, sha)
-
-    failures: list[str] = list(allow_errors)
+    names = {c.repository for c in citations if c.repository != "local"} | set(repositories)
+    aliases: dict[str, str] = {}
+    for name in sorted(names):
+        if name not in {local_name, "local"}:
+            short = name.rsplit("/", 1)[-1]
+            for alias in {short, short.split("_", 1)[0]}:
+                if alias in aliases and aliases[alias] != name:
+                    aliases.pop(alias)
+                else:
+                    aliases[alias] = name
+    citations = [qualify(c, documents, aliases) for c in citations]
+    citations = [replace(c, repository=local_name) if c.repository == "local" else c for c in citations]
+    mappings, mapping_errors = load_mappings(repo, documents, local_name)
+    status: dict[tuple[str, str, str, str], tuple[str, str]] = {}
+    def identity(cit: Citation) -> tuple[str, str, str, str]:
+        return cit.repository, cit.object_kind, cit.sha, cit.required_relation
     for cit in citations:
-        state = status[cit.sha]
-        allowed = cit.sha in allow
+        key = identity(cit)
+        if key not in status:
+            status[key] = resolve_citation(cit, repositories, mappings)
+
+    failures: list[str] = list(allow_errors) + mapping_errors
+    for cit in citations:
+        state, detail = status[identity(cit)]
+        allowed = cit.repository == local_name and cit.object_kind in {"git-object", "commit"} and cit.sha in allow
         label = state
-        if state in ("missing", "unreachable"):
-            if allowed:
+        if state not in {"reachable", "non-commit", "tree-equivalent", "object-present"}:
+            if allowed and state in {"missing", "unreachable"}:
                 label = f"{state}+allowlisted"
             else:
                 failures.append(
                     f"{cit.path}:{cit.line}: {cit.sha} is {state} "
-                    f"(no remote branch contains it) [{cit.context}]"
+                    f"({detail}) [{cit.context}; repository={cit.repository}; "
+                    f"object_kind={cit.object_kind}; required_relation={cit.required_relation}]"
                 )
         if args.list:
-            print(f"{label:24} {cit.sha} {cit.path}:{cit.line} [{cit.context}]")
+            print(f"{label:24} {cit.sha} {cit.path}:{cit.line} [{cit.context}; "
+                  f"repository={cit.repository}; object_kind={cit.object_kind}; "
+                  f"required_relation={cit.required_relation}]" + (f" {detail}" if detail else ""))
 
     if args.list:
-        cited = set(status)
+        cited = {c.sha for c in citations if c.repository == local_name}
         for sha, reason in sorted(allow.items()):
             if sha not in cited:
                 print(f"{'allowlist-not-cited':24} {sha} (in scanned paths) {reason}")
-            elif status[sha] == "reachable":
+            elif resolve(repo, sha) == "reachable":
                 print(f"{'allowlist-now-reachable':24} {sha} {reason}")
 
     counts: dict[str, int] = {}
-    for sha, state in status.items():
-        key = f"{state}+allowlisted" if state in ("missing", "unreachable") and sha in allow else state
+    for (name, kind, sha, relation), (state, detail) in status.items():
+        allowed = name == local_name and kind in {"git-object", "commit"} and sha in allow
+        key = f"{state}+allowlisted" if state in ("missing", "unreachable") and allowed else state
         counts[key] = counts.get(key, 0) + 1
     summary = ", ".join(f"{k}={v}" for k, v in sorted(counts.items())) or "none"
     for failure in failures:
@@ -252,7 +480,7 @@ def main(argv: list[str] | None = None) -> int:
     verdict = "FAIL" if failures else "PASS"
     print(
         f"check-authority-refs: {verdict} ({len(citations)} citations, "
-        f"{len(status)} distinct SHAs: {summary})"
+        f"{len(status)} distinct authority identities: {summary})"
     )
     return 1 if failures else 0
 
