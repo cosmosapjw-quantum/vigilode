@@ -1,0 +1,22 @@
+{
+  "production_files": [
+    {
+      "path": "crates/rodas5p-integrators/src/affine_event_certificate.rs",
+      "reviewed_source_after_rustfmt_equals_current": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/rodas5p_fast_dense.rs",
+      "reviewed_source_after_rustfmt_equals_current": true
+    },
+    {
+      "path": "crates/rodas5p-integrators/src/lib.rs",
+      "reviewed_source_after_rustfmt_equals_current": true
+    }
+  ],
+  "test_repair": "3x8 identity H construction by enumerate is equivalent; original loop order unchanged",
+  "probe_repair": "ordered nested iteration retains H/u accumulation order",
+  "all6_native_and_declared_records_unchanged_after_repair": true,
+  "final_code_commit": "0d722b4ed71413926c76bc0037f02f3a6bbdd362",
+  "post_repair_tests": "21PASS;Clippy-DwarningsPASS;independent381PASS",
+  "review_disposition": "Existing independent scientific/static and result/figure reviews remain applicable; only test/probe iteration and formatting changed."
+}

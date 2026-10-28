@@ -183,6 +183,75 @@ impl FastDenseSegments {
         &self.stages[k * width..(k + 1) * width]
     }
 
+    fn affine_scalar_packet(
+        &self,
+        k: usize,
+    ) -> CoreResult<crate::affine_event_certificate::RepresentedAffineSegment> {
+        if self.n != 1 || k >= self.len() {
+            return Err(CoreError::InvalidInput(
+                "affine event certificate needs one scalar accepted segment".into(),
+            ));
+        }
+        let mut stages = [0.0; STAGES];
+        stages.copy_from_slice(self.stage_rows(k));
+        crate::affine_event_certificate::RepresentedAffineSegment::from_native(
+            [self.t_old(k), self.t_new(k)],
+            [self.state(k)[0], self.state(k + 1)[0]],
+            self.dense_h,
+            stages,
+            k,
+        )
+    }
+
+    /// Opt-in whole-slab scalar-affine event certificate from the stored
+    /// accepted native segment. The caller supplies the source/equation
+    /// binding and a justified incoming exact-IVP error; the adaptive local
+    /// error estimate supplies neither of these premises.
+    pub fn certify_affine_scalar_segment(
+        &self,
+        k: usize,
+        spec: &crate::affine_event_certificate::AffineEventSpec,
+        initial_error: f64,
+    ) -> CoreResult<crate::affine_event_certificate::AffineEventCertificate> {
+        crate::affine_event_certificate::AffineEventCertificate::certify(
+            self.affine_scalar_packet(k)?,
+            spec,
+            initial_error,
+        )
+    }
+
+    /// Carry a prior scalar certificate's endpoint error to an adjacent
+    /// accepted segment. Source, clock, model, event and epoch must agree.
+    pub fn certify_affine_scalar_segment_with_carry(
+        &self,
+        k: usize,
+        spec: &crate::affine_event_certificate::AffineEventSpec,
+        carry: &crate::affine_event_certificate::AffineEventCarry,
+    ) -> CoreResult<crate::affine_event_certificate::AffineEventCertificate> {
+        carry.certify_next(self.affine_scalar_packet(k)?, spec)
+    }
+
+    /// Certify the actual native returned center, after verifying this
+    /// segment's complete represented input bits against its certificate.
+    pub fn query_affine_scalar_certificate(
+        &self,
+        certificate: &crate::affine_event_certificate::AffineEventCertificate,
+        spec: &crate::affine_event_certificate::AffineEventSpec,
+        t: f64,
+    ) -> CoreResult<crate::affine_event_certificate::AffineEventQuery> {
+        crate::affine_event_certificate::check_affine_event_arithmetic()?;
+        certificate.check_segment(&self.affine_scalar_packet(certificate.segment_index())?)?;
+        let [t0, t1] = certificate.times();
+        if !(t.is_finite() && t0 <= t && t <= t1) {
+            return Err(CoreError::InvalidInput(
+                "affine event query is outside its certified segment".into(),
+            ));
+        }
+        let mut center = [0.0];
+        self.evaluate_into(t, &mut center)?;
+        certificate.query(spec, t, center[0])
+    }
+
     /// Keep the first `steps` steps and drop the rest (no-op when
     /// `steps >= len()`).
     pub fn truncate(&mut self, steps: usize) {
@@ -257,7 +326,7 @@ fn dense_rows(dense_h: &[[f64; STAGES]; 3], u: &[f64], n: usize, c: usize) -> [f
     d
 }
 
-/// The RODAS5P third-degree continuous extension at `theta` in `(0, 1)`:
+/// The RODAS5P quartic continuous extension at `theta` in `(0, 1)`:
 /// `(1 - θ) y_old + θ (y_new + (1 - θ)(d0 + θ (d1 + θ d2)))`.
 fn polynomial_into(
     dense_h: &[[f64; STAGES]; 3],

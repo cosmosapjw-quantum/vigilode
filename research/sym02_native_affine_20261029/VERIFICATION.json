@@ -1,0 +1,43 @@
+{
+  "scope": "PASS_SCOPED native scalar-affine accepted segment provider",
+  "tests": {
+    "new_contracts": 13,
+    "fast_dense_regressions": 8,
+    "result": "PASS",
+    "log": "evidence/C8_POST_LINT_FIX.log"
+  },
+  "exact_native_bits": {
+    "checks": 381,
+    "records": 6,
+    "queries": 42,
+    "native_steps": 2,
+    "native_queries": 14,
+    "declared_queries": 28,
+    "source": "BIT_ORACLE_RESULTS.json"
+  },
+  "theory": {
+    "rational_cases": 324,
+    "exact_algebra_assertions": 16524,
+    "decimal90_diagnostics": 11016,
+    "result": "PASS_SCOPED",
+    "source": "MATH_RESULTS.json"
+  },
+  "independent_review": {
+    "math_and_code": "INDEPENDENT_CODE_REVIEW.md",
+    "results_and_figure": "INDEPENDENT_RESULT_FIGURE_REVIEW.md",
+    "blocking_findings": 0
+  },
+  "code_commit": "0d722b4ed71413926c76bc0037f02f3a6bbdd362",
+  "clippy": "PASS after safe iterator repair; log evidence/C8_POST_LINT_FIX.log",
+  "dag_basis": "DAG_BASIS.json",
+  "core_inherited_scoped": "7/23",
+  "core_delta": 0,
+  "central": "28/88",
+  "auxiliary": "0/1 before C10",
+  "reproduction": {
+    "build": "Rust1.94.1, --locked --offline, Cargo.lock hash in SOURCE_IDENTITY.json",
+    "source": "all5 source files match fetched immutable Git blobs",
+    "seed": "deterministic, none"
+  },
+  "numerical_claim": "Conditional affine whole-slab enclosure and pointwise actual-output certificate; no solver speed/convergence-order claim"
+}

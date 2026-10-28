@@ -1,0 +1,69 @@
+{
+  "schema": "vigilode.sym02.corrections.v1",
+  "entries": [
+    {
+      "id": "ENV-EXEC",
+      "class": "environment",
+      "result": "SERVICE_ERROR",
+      "observed": "exec-server transport disconnected once",
+      "repair": "fresh current-turn python probe returned PYTHON_PASS; work continued"
+    },
+    {
+      "id": "ENV-WOLFRAM",
+      "class": "environment",
+      "result": "SERVICE_ERROR",
+      "observed": "WolframContext internal error",
+      "repair": "Wolfram evaluator independently executed quartic and Bernstein/Dini checks successfully"
+    },
+    {
+      "id": "ENV-COMPONENT",
+      "class": "environment",
+      "result": "PACKAGE_MISSING",
+      "observed": "cargo clippy command unavailable in selected local component install",
+      "repair": "installed supplied bundled clippy-preview; subsequent strict check passed"
+    },
+    {
+      "id": "STYLE-TEST",
+      "class": "implementation",
+      "result": "fail_then_repaired",
+      "observed": "Clippy needless_range_loop in new identity-H test helper",
+      "repair": "equivalent enumerate; probe sum uses unchanged ordered iterator;21tests/Clippy/381 checks rerun"
+    },
+    {
+      "id": "PUBLISH-GIT",
+      "class": "environment",
+      "observed": "git push HTTPS credentials not available",
+      "repair": "existing authorized GitHub API connector published with expected_sha and force=false; no scope escalation"
+    },
+    {
+      "id": "BACKUP-R4",
+      "class": "environment",
+      "observed": "Dropbox source FETCH_FAILED; no destination object created",
+      "repair": "metadata NOT_FOUND; identical-byte fresh-path upload once; actual completed ACK"
+    },
+    {
+      "id": "BACKUP-C9",
+      "class": "environment",
+      "observed": "Dropbox source FETCH_FAILED; no destination object created",
+      "repair": "metadata NOT_FOUND; identical-byte fresh-path upload once; actual completed ACK"
+    },
+    {
+      "id": "TRANSPORT-PAYLOAD",
+      "class": "environment",
+      "observed": "large text tool output truncated stage tree payload",
+      "repair": "chunked payload reads; resumed same stage identity without duplicate completion"
+    },
+    {
+      "id": "SOURCE-QUARTIC",
+      "class": "implementation_documentation",
+      "observed": "native comment third-degree conflicts with generic -d2 quartic term",
+      "repair": "corrected comment, retained native arithmetic; independent CAS and quartic negative control"
+    },
+    {
+      "id": "DAG-SEMANTICS",
+      "class": "input_provenance",
+      "observed": "core7/23 inherited status differs from current-evidence qualification",
+      "repair": "DAG_BASIS.json retains source histogram and broad HOLD; no new original core completion"
+    }
+  ]
+}
