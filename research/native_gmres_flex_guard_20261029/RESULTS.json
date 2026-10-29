@@ -1,0 +1,73 @@
+{
+  "schema": "vigilode.n00f.github-results.v1",
+  "date": "2026-10-29",
+  "prereg_commit": "4939cf8460171c7a2e07a7c1e58147e471488174",
+  "native_gmres_blob": "90bfaaa62afeda9dec27b3dfd594e67cd3034da1",
+  "scope": "isolated synthetic only; not native full-IVP",
+  "rust_tests": {
+    "pass": 6,
+    "fail": 0,
+    "clippy": "PASS",
+    "fmt": "PASS",
+    "first_clippy_fail_preserved": true
+  },
+  "independent_fraction_binary64": {
+    "rows": 208,
+    "pass": 208,
+    "fail": 0,
+    "physical_source": "NOT_RUN"
+  },
+  "benchmark": {
+    "loops_used": 1,
+    "loops_cap": 3,
+    "paired_blocks_each_dimension": 7,
+    "solutions_total": 84,
+    "arms_both_incremental_givens": true,
+    "matched_bits": true,
+    "by_n": [
+      {
+        "n": 16,
+        "columns": 16,
+        "backsolve_always": 16,
+        "backsolve_trigger": 1,
+        "median": 1.4359131441,
+        "min": 1.4118200766,
+        "max": 1.4438987791
+      },
+      {
+        "n": 64,
+        "columns": 35,
+        "backsolve_always": 35,
+        "backsolve_trigger": 1,
+        "median": 1.3434232975,
+        "min": 1.0309839077,
+        "max": 1.7859828171
+      },
+      {
+        "n": 128,
+        "columns": 39,
+        "backsolve_always": 39,
+        "backsolve_trigger": 1,
+        "median": 1.4490524308,
+        "min": 0.9001843767,
+        "max": 1.9972376305
+      }
+    ]
+  },
+  "exact_counterexample": {
+    "projected_residual": "0",
+    "naive_original": "3",
+    "flexible_original": "0"
+  },
+  "dag": {
+    "vigilode": "7/23",
+    "rei": "28/88",
+    "successor": "0/12",
+    "audit_N00F": "1/1 scoped"
+  },
+  "production": "HOLD",
+  "original_full_results_sha256": "46e9cb8ad10f5a2603621a517d496f6e0c937f5748467a1ce859801c54e2935c",
+  "archive_sha256": "c05bf14dc5ca3916710663caa77608eb37da2946d24c1b9bd453277a58437d2b",
+  "archive_size": 77957,
+  "archive_members": 22
+}
