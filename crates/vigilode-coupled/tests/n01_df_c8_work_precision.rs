@@ -123,7 +123,7 @@ fn run_rodas(case:Case,n:usize){
  let mut y=Y0;let mut work=WorkCounters::default();let h=case.t_end/(n as f64);
  let source=match owner(case,Y0){Ok(v)=>Arc::new(v),Err(e)=>{println!("C8_FAIL {}",json!({"case":case.id,"method":"RODAS5P-direct-oracle","n":n,"error":e.to_string()}));return}};
  let problem=ref_problem(source);
- let mut max_r=0.;let mut max_alg=0.;let mut certificate_fail=None;let mut passed=0;
+ let mut max_r: f64=0.;let mut max_alg: f64=0.;let mut certificate_fail=None;let mut passed=0;
  for step in 0..n{
   match sequential_step(&problem,step as f64*h,&y,h,&LinearSolverConfig::default(),None,1e-10,1e-7,true,&mut work){
    Ok(res)=>{
