@@ -1,0 +1,30 @@
+{
+  "schema": "vigilode.n01.df.c6.native.red.v1",
+  "date": "2026-10-30 KST",
+  "source_parent_pr": 119,
+  "source_parent_head": "d10a3996da47d15a24c567d28e634c7c9cf9f281",
+  "first_ci_workflow_commit": "77737ce741b6eccbc6672f42ff82ec901fd1a1dc",
+  "workflow_run_id": 40906363901,
+  "job_id": 123562098192,
+  "run_url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40906363901",
+  "observed": {
+    "cargo_test_native_n01": "PASS 6/6",
+    "cargo_test_native_PR91_rhs_homotopy": "PASS (command exit 0, individual filter counts vary)",
+    "cargo_clippy_strict": "FAIL test n01_df_value_stage_contract.rs:81-82 clippy::field_reassign_with_default; no numerical source error reported",
+    "cargo_fmt_focused": "NOT_RUN (stopped on clippy)",
+    "remote_run": "completed failure"
+  },
+  "repair": "Replace mut default config + field assignment with a struct initializer using ..Default::default(); preserve budget value 1, fail guard and work counts; targeted rerun; no numerical source mutation.",
+  "separate_prior_failures": {
+    "production_core_allocation": "rodas5p-core allocation_contracts shifted_operator_apply allocated 144 bytes; not within N01 changed surface; cause not yet classified as inherited baseline",
+    "production_fmt": "PR119 full job fails several source modules and also unrelated fixtures; separate from focused C6 path"
+  },
+  "official_dag": {
+    "vigilode": "7/23",
+    "rei": "28/88",
+    "successor": "0/12 admitted",
+    "c6": "0/1 until clean targeted native",
+    "production": "HOLD"
+  },
+  "review": "One bounded repair episode, independent personnel R6/C9 NOT_RUN"
+}
