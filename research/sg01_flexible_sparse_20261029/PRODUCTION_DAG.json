@@ -1,0 +1,143 @@
+{
+  "schema": "vigilode.sg01.production_dag.v1",
+  "date": "2026-10-29",
+  "original_core": {
+    "completed_scoped": 7,
+    "total": 23,
+    "status": "inherited no delta"
+  },
+  "rei": {
+    "completed": 28,
+    "total": 88
+  },
+  "prefix01": {
+    "completed": 0,
+    "total": 1
+  },
+  "prefix02": {
+    "completed": 0,
+    "total": 1
+  },
+  "cmode01": {
+    "research_completed": 8,
+    "research_total": 10,
+    "native_admitted": 0
+  },
+  "SG01": {
+    "standalone_tested": 1,
+    "standalone_total": 1,
+    "native_admitted": 0,
+    "native_total": 12,
+    "production": "HOLD"
+  },
+  "performance_loops": {
+    "used": 3,
+    "cap": 3
+  },
+  "nodes": [
+    {
+      "id": "N01",
+      "name": "Source/path reality and PR104 audit",
+      "deps": [],
+      "status": "scoped reviewed"
+    },
+    {
+      "id": "N02",
+      "name": "FGMRES residual norm/lognorm and stage-certificate theory",
+      "deps": [
+        "N01"
+      ],
+      "status": "standalone checked, not native admitted"
+    },
+    {
+      "id": "N03",
+      "name": "Opt-in native Givens-trigger before candidate assembly",
+      "deps": [
+        "N01",
+        "N02"
+      ],
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "N04",
+      "name": "Store Z_j or enforce fixed/stationary PC trait contract",
+      "deps": [
+        "N03"
+      ],
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "N05",
+      "name": "Native point/interval original residual bound + same norm",
+      "deps": [
+        "N03",
+        "N04"
+      ],
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "N06",
+      "name": "Native sparse cache source/clock/epoch ownership",
+      "deps": [
+        "N05"
+      ],
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "N07",
+      "name": "Callback/physical33 JVP and norm transport error",
+      "deps": [
+        "N05"
+      ],
+      "status": "BLOCKED owner evidence"
+    },
+    {
+      "id": "N08",
+      "name": "RODAS full-stage triangular original-residual error transport",
+      "deps": [
+        "N05",
+        "N07"
+      ],
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "N09",
+      "name": "ODE symbolic route/event whole-slab certified guards",
+      "deps": [
+        "N08"
+      ],
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "N10",
+      "name": "Native matched-achieved full-IVP 7-block ABBA/BAAB",
+      "deps": [
+        "N06",
+        "N08"
+      ],
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "N11",
+      "name": "Independent scientific code review + 8 suites / 10 interactions",
+      "deps": [
+        "N09",
+        "N10"
+      ],
+      "status": "NOT_RUN"
+    },
+    {
+      "id": "N12",
+      "name": "Authority CI, Q gates, user-controlled production promotion",
+      "deps": [
+        "N11"
+      ],
+      "status": "BLOCKED no production approval"
+    }
+  ],
+  "no_implicit_promotions": [
+    "PR107 checkpoint",
+    "PR108 CMODE01",
+    "SG01 standalone"
+  ]
+}
