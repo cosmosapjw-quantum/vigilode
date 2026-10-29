@@ -1,0 +1,19 @@
+# VIGILODE N02-FLEX-TRIGGER: preregistration (before new code/test)
+Date 2026-10-29. Parent PR109 HEAD `2d430a7aa81070da17a7a5dba60a2d56639b82db`, native `gmres_into.rs` blob `90bfaaa62afeda9dec27b3dfd594e67cd3034da1`. Work is **opt-in research** in isolated child branch, no main merge/force push/default dispatcher or production promotion. Inherited original VigilODE 7/23, REI 28/88, proposed successor 0/12 admitted; N01 18/20 scoped, R6/C9 native independent NOT_RUN. PR108 is sibling (not merged).
+
+## Target
+Implement a right-preconditioned GMRES *flexible* candidate path with stored per-column preconditioned directions Z=[z_j], operator Arnoldi A Z=V Hbar + F and x=x_cycle+Zy. Cheap incremental Givens projected residual must run *before* expensive prefix least-squares/backsolve/candidate. Projected residual is only a trigger; original-residual monitor always owns acceptance. Enforce output transaction and monitor/callback failure counters. Existing public entry point, options, default dispatcher and users remain unaffected.
+
+## H1/H2 and kill tests
+H1: Variable preconditioner counterexample A=I,b=(1,1),P0^-1=diag(1,2),P1^-1=2I yields flexible x=b but fixed reconstruction (5/3,1) with original residual (-2/3,0). Exact rational Wolfram and independently derived Fraction reference before timing.
+H2: For fixed or variable right preconditioning, stored Z with A Z=V Hbar ensures the exact arithmetic original residual decomposition and monitors only at projected-trigger or cycle-end; full monitor output/WorkCounters/callback semantics preserved when monitor accepts. Trigger disabled at 0 must still force one candidate at cycle-end. An intentionally cheap projected residual may be false positive; monitor refuses.
+H3: Eliminating per-column candidate materialization decreases least-squares/candidate/preconditioner work versus always-build negative control at same Arnoldi count/achieved error in a synthetic test, but native full-IVP speedup remains unclaimed.
+
+## Test plan, order, boundaries
+R stages: source/literature, left/right derivation, exact counterexample, implementation contract; independent R6 NOT_RUN without actual native agent. C stages: construct an isolated no-external-crate Rust harness and test variable-PC positive/negative controls, warm start, restart, false projected success, callback failed/partial writes, output unchanged and work accounting; exact Fraction oracle; then port **additive opt-in** function to native `gmres_into.rs` and additive export `lib.rs`. Native repository build/test only when exact full repo and cargo deps available. Do not mislabel standalone harness as native verified. All regressions and source errors preserved. No tolerance expansion. Use bounded 7 paired-block synthetic microbenchmark only if new path actually runs; negative-cost matched-output control mandatory.
+
+## Scientific constraints
+The trait `Preconditioner::apply` may be nonstationary or nonlinear, so do not move the preconditioner outside the Krylov combination. Apply only the existing original-residual monitor; N01 source-owned delta_J/delta_b/eta_eval/physical33 norm binding remains upstream and NOT implemented by this function. Strict source/clock/epoch callbacks must be supplied by the caller, not invented. Left-preconditioned native path remains separate unless directly verified.
+
+## Evidence, publication and backups
+Use actual command argv, exit and hashes. GitHub stage checkpoints should include all 20 stage statuses in source commits; the R6/C9 independent review remains NOT_RUN if no real dispatch capability. Backup each meaningful phase as a Git commit and an aggregate immutable local ZIP; Drive+Dropbox count as acknowledged only with provider returned IDs and, if available, checksum/size. Preserve root Q-LEDGER/Q-API/Q-GIVENS, 8 suites/10 interactions and full authority FAIL.
