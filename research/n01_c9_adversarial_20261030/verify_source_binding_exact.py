@@ -128,7 +128,6 @@ report={
  'schema':'vigilode.n01.c9.adversarial_source_binding_exact.v1',
  'parent_C8_source_blob':'e6a33b66ba80055cae9439cf683a1715ca77c5a2',
  'seed':20261039,'pinned_C8_source_git_blob':'e6a33b66ba80055cae9439cf683a1715ca77c5a2',
- 'c9_additive_native_test_present':marker in source_text,
  'checks':{'exact_positive_state_j_norm':norm_checks,
            'conditional_Neumann_inverse_norm':resolvent_checks,
            'exact_causal_nilpotent_transfer':tri_cases},
