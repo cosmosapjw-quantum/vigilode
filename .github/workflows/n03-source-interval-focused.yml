@@ -1,0 +1,23 @@
+name: N03 source-box interval stage focused native
+on:
+  pull_request:
+    branches:
+      - research/n02-flex-right-trigger-20261029
+
+permissions:
+  contents: read
+
+jobs:
+  n03-focused:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Frozen Rust 1.94.1
+        run: rustup toolchain install 1.94.1 --profile minimal --component clippy --component rustfmt
+      - name: N03 Rustfmt
+        run: cargo +1.94.1 fmt --check -p rodas5p-krylov
+      - name: N03 conditional interval contracts
+        run: cargo +1.94.1 test --locked -p rodas5p-krylov --test n03_stage_interval_contracts --test n03_n02_guard_integration -- --nocapture
+      - name: N03 native strict Clippy
+        run: cargo +1.94.1 clippy --locked -p rodas5p-krylov --all-targets -- -D warnings
