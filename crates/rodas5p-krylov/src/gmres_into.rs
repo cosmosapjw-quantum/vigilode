@@ -382,7 +382,7 @@ fn cycle_right(
 /// Which product an Arnoldi column applies to `v_j`: `P^{-1} A v_j` (left)
 /// or `A P^{-1} v_j` (right).
 #[derive(Clone, Copy)]
-enum ColumnSide {
+pub(crate) enum ColumnSide {
     Left,
     Right,
 }
@@ -420,7 +420,7 @@ fn run_cycle(
 
 /// Size the Arnoldi workspace for `steps` columns and set `v_0 = start /
 /// ||start||`.
-fn begin_cycle(
+pub(crate) fn begin_cycle(
     arnoldi: &mut ArnoldiWorkspace,
     start: &[f64],
     n: usize,
@@ -437,7 +437,7 @@ fn begin_cycle(
 /// Arnoldi column `j`: the product (by `side`) into `v_{j+1}`, two-pass MGS,
 /// Hessenberg column `j`, and the breakdown test; `v_{j+1}` is normalized,
 /// or zeroed on a happy breakdown (returned `true`).
-fn arnoldi_column(
+pub(crate) fn arnoldi_column(
     op: &dyn LinearOperator,
     pc: &dyn Preconditioner,
     side: ColumnSide,
