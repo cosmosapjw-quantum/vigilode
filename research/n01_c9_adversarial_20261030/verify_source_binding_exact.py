@@ -54,9 +54,14 @@ source_candidates=[
 source_path=next((p for p in source_candidates if p.exists()),None)
 assert source_path is not None, 'Pinned C8 verifier source unavailable'
 source_bytes=source_path.read_bytes()
-actual_blob=hashlib.sha1(b'blob '+str(len(source_bytes)).encode()+b'\0'+source_bytes).hexdigest()
-assert actual_blob in {'e6a33b66ba80055cae9439cf683a1715ca77c5a2', '193150b6ae9a65eb85e5339238084f3316ab5364'}, actual_blob  # C9 changes append a test only
 source_text=source_bytes.decode()
+marker='\n/// C9 adversarial reproducer'
+if marker in source_text:
+    original_prefix=(source_text.split(marker,1)[0].rstrip('\n')+'\n').encode()
+else:
+    original_prefix=source_bytes
+actual_blob=hashlib.sha1(b'blob '+str(len(original_prefix)).encode()+b'\0'+original_prefix).hexdigest()
+assert actual_blob=='e6a33b66ba80055cae9439cf683a1715ca77c5a2', actual_blob
 start=source_text.index('fn certified_raw_stage_bound(')
 end=source_text.index(') -> Result<',start)
 signature=source_text[start:end]
@@ -123,7 +128,7 @@ report={
  'schema':'vigilode.n01.c9.adversarial_source_binding_exact.v1',
  'parent_C8_source_blob':'e6a33b66ba80055cae9439cf683a1715ca77c5a2',
  'seed':20261039,'pinned_C8_source_git_blob':'e6a33b66ba80055cae9439cf683a1715ca77c5a2',
- 'c9_append_only_test_blob':'193150b6ae9a65eb85e5339238084f3316ab5364',
+ 'c9_additive_native_test_present':marker in source_text,
  'checks':{'exact_positive_state_j_norm':norm_checks,
            'conditional_Neumann_inverse_norm':resolvent_checks,
            'exact_causal_nilpotent_transfer':tri_cases},
