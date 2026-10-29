@@ -1,0 +1,21 @@
+name: N02 focused native flexible-right GMRES
+on:
+  pull_request:
+    branches:
+      - research/prefix-n01-robust-residual-20261029
+
+permissions:
+  contents: read
+
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install frozen Rust 1.94.1
+        run: rustup toolchain install 1.94.1 --profile minimal --component clippy
+      - name: N02 native focused tests only
+        run: cargo +1.94.1 test --locked -p rodas5p-krylov --test n02_flexible_trigger_contracts -- --nocapture
+      - name: N02 native strict Clippy
+        run: cargo +1.94.1 clippy -p rodas5p-krylov --all-targets --locked -- -D warnings

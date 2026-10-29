@@ -1,0 +1,64 @@
+{
+  "schema": "vigilode.n02.terminal-native-ci-readback.v1",
+  "observed_date": "2026-10-29",
+  "verified_current_head_before_receipt": "c15c34d52f09689bd37400443c1f7e328fc51729",
+  "verified_runs": [
+    {
+      "run_id": 40836690956,
+      "job_id": 123323013855,
+      "command": "cargo +1.94.1 test --locked -p rodas5p-krylov --test n02_flexible_trigger_contracts -- --nocapture",
+      "result": "3 passed 0 failed",
+      "exit_code": 0
+    },
+    {
+      "run_id": 40837168008,
+      "job_id": 123324556161,
+      "command": "cargo +1.94.1 clippy -p rodas5p-krylov --all-targets --locked -- -D warnings",
+      "result": "PASS",
+      "exit_code": 0
+    },
+    {
+      "run_id": 40837408483,
+      "job_id": 123325338481,
+      "commands": [
+        "cargo +1.94.1 test --locked -p rodas5p-krylov --test n02_flexible_trigger_contracts -- --nocapture",
+        "cargo +1.94.1 clippy -p rodas5p-krylov --all-targets --locked -- -D warnings"
+      ],
+      "result": "focused job PASS; three tests passed",
+      "exit_code": 0
+    }
+  ],
+  "inherited_or_separate_failures": {
+    "full_production_ci": 40837408314,
+    "authority": 40837408385,
+    "ignored_long": 40837408393,
+    "other_audit": 40837408356,
+    "nonlinear_source_owner": "NOT_CERTIFIED",
+    "physical33": "NOT_RUN",
+    "full_ivp": "NOT_RUN"
+  },
+  "status": {
+    "N02_scoped": "16/20",
+    "vigilode_core": "7/23 inherited scoped",
+    "rei_central": "28/88",
+    "successor": "0/12 admitted",
+    "R6": "NOT_RUN",
+    "C9": "NOT_RUN",
+    "production": "HOLD"
+  },
+  "frozen_archive": {
+    "name": "VIGILODE_N02_FLEX_NATIVE_20261029_SOURCE.zip",
+    "size": 477185,
+    "sha256": "d07af6e280a6d23a91abde8719bdddfc8ecc6c84544d6698005c16f2b3675e39",
+    "zip_crc": "PASS",
+    "drive_id": "1Bn2xAeqJIFPKWb-EauQL0DnGDKkHYXcc",
+    "dropbox_id": "id:BSpOijBcT10AAAAAAEHVbA",
+    "source_archive_precedes_receipt": true
+  },
+  "constraints": [
+    "do not promote production",
+    "no main merge or force push",
+    "do not call independent reviewer complete",
+    "source/physical owner remains unresolved"
+  ]
+}
