@@ -5,7 +5,7 @@ This is an exact 3x3 reference, never a J-free production algorithm.
 from fractions import Fraction as F
 from pathlib import Path
 import json,random
-p=Path(__file__).resolve().parents[1]
+p=Path(__file__).resolve().parent
 def jac(k,z):
  k1,k2,k3=k;a,b,c=z
  return [[-k1,k2*c,k2*b],[k1,-k2*c-2*k3*b,-k2*b],[F(0),2*k3*b,F(0)]]
@@ -49,5 +49,5 @@ assert mat[1][2]==-F(1,4)
 assert res==F(19,15) and trigger>1
 assert not fails, fails
 report={'schema':'vigilode.c8.exact_fraction_resolvent.v1','seed':20261030,'cases':checked,'neumann_conditional_passes':admitted,'identity_assertions_at_least':checked*6+3,'counterexample':{'k':[str(x) for x in k],'z':[str(x) for x in z],'tau':'2','mu1':'1/2','inverse_l1_norm':str(res),'J23':str(mat[1][2]),'neumann_margin_nonpositive':trigger>1},'claim':'Positive mass-conserving chemistry is not Metzler, no unconditional l1 resolvent contraction; source-specific small 3x3 Fraction oracle only','result':'PASS'}
-(p/'results/exact_resolvent.json').write_text(json.dumps(report,indent=2)+'\n')
+(p/'exact_resolvent.json').write_text(json.dumps(report,indent=2)+'\n')
 print(json.dumps(report,indent=2))
