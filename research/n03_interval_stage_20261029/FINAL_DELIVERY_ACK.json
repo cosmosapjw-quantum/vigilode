@@ -1,0 +1,97 @@
+{
+  "schema": "vigilode.n03.final-delivery-receipt.v1",
+  "date": "2026-10-29",
+  "n03_pr": 112,
+  "n03_branch": "research/n03-physical-interval-stage-certificate-20261029",
+  "base_pr110": "6c99864b9826070adfaf4da759efa5328f54f45a",
+  "pre_registration": "d90f28dc3f6465882e8ce294a78adfdf9cfb96f4",
+  "native_tested_source_commit": "8ee28f79dae36a1649ba34e7c90c34e895e1952b",
+  "documentation_commit_before_receipt": "6228eda52a6aa0bf5b7a66981a2b831b575b925b",
+  "native_source_equivalence": {
+    "tested_source_unchanged_after_docs": true,
+    "compare_base": "8ee28f79dae36a1649ba34e7c90c34e895e1952b",
+    "compare_head": "6228eda52a6aa0bf5b7a66981a2b831b575b925b",
+    "changed_paths": [
+      "research/LEDGER.jsonl",
+      "research/n03_interval_stage_20261029/HANDOFF_NEXT_THREAD_KO.md",
+      "research/n03_interval_stage_20261029/NUMERICAL_SUMMARY.json",
+      "research/n03_interval_stage_20261029/REPORT_KO.md",
+      "research/n03_interval_stage_20261029/RESULTS.json",
+      "research/n03_interval_stage_20261029/SOURCE_IDENTITY.json",
+      "research/n03_interval_stage_20261029/STAGE_LEDGER.json",
+      "research/n03_interval_stage_20261029/THEORY_KO.md"
+    ],
+    "native_crate_changed": false
+  },
+  "native_ci": {
+    "run_id": 40854556822,
+    "job_id": 123382165982,
+    "conclusion": "success",
+    "rustfmt": "PASS",
+    "native_tests": "13/13 PASS",
+    "strict_clippy": "PASS",
+    "original_failures": [
+      {
+        "run": 40853674030,
+        "failure": "format; repaired"
+      },
+      {
+        "run": 40854021844,
+        "failure": "strict Clippy redundant closure; repaired"
+      }
+    ],
+    "verified_source_revision": "8ee28f79dae36a1649ba34e7c90c34e895e1952b"
+  },
+  "local": {
+    "rust_version": "1.94.1",
+    "tests_pass": 11,
+    "strict_clippy_exit": 0,
+    "fmt_exit": 0,
+    "fraction_cases": 64,
+    "fraction_inequalities": "768/768",
+    "wolfram_exact": "PASS"
+  },
+  "archive": {
+    "name": "VIGILODE_N03_INTERVAL_STAGE_20261029_SOURCE.zip",
+    "bytes": 1288140,
+    "members": 26,
+    "sha256": "b4d624cbb63ac63f17fe0e203b24e75aeb45d71e76c9383e740acea678f6f4a8",
+    "crc": "PASS",
+    "sha_inside_manifest": "ALL_MATCH"
+  },
+  "backup": {
+    "github_source_and_docs_readback": "PASS",
+    "github_ledger": "L-0193 append-only 190 rows verified",
+    "stage_snapshots": "20 entries GitHub consolidated ledger; historical 16/20 state",
+    "chatgpt_library_file_id": "libfile_b638e65d277c8191879e591be716ed5a",
+    "chatgpt_library_raw_restore_sha256": "b4d624cbb63ac63f17fe0e203b24e75aeb45d71e76c9383e740acea678f6f4a8",
+    "new_google_drive_binary_ack": "NOT_RUN",
+    "new_dropbox_binary_ack": "NOT_RUN",
+    "individual_stage_provider_ack": "NOT_RUN"
+  },
+  "current_stage_view": {
+    "N03_scoped_completed": 17,
+    "N03_total": 20,
+    "R6": "NOT_RUN independent",
+    "C7": "BLOCKED_SOURCE_MISMATCH physical BASS/REI",
+    "C9": "NOT_RUN independent",
+    "VigilODE": "7/23 inherited scoped",
+    "REI_central": "28/88",
+    "successor": "0/12 admitted",
+    "N02": "16/20 scoped",
+    "production": "HOLD"
+  },
+  "retained_gates": [
+    "full authority FAIL",
+    "Q-LEDGER",
+    "Q-API",
+    "Q-GIVENS",
+    "8 suites",
+    "10 interactions",
+    "correction budget",
+    "full-IVP and matched-achieved-error NOT_RUN"
+  ],
+  "no_main_merge": true,
+  "no_force_push": true,
+  "no_production_promotion": true
+}

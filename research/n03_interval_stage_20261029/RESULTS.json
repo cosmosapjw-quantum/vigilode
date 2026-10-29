@@ -1,0 +1,70 @@
+{
+  "schema": "vigilode.n03.results.v1",
+  "date": "2026-10-29",
+  "pr": 112,
+  "prereg_before_execution": "d90f28dc3f6465882e8ce294a78adfdf9cfb96f4",
+  "actual_local_tests": {
+    "command": "cargo test --locked --offline --all-targets",
+    "exit": 0,
+    "tests_pass": 11,
+    "tests_fail": 0,
+    "strict_clippy_exit": 0,
+    "fmt_exit": 0,
+    "initial_compile_and_clippy_failures": "PRESERVED, syntactic float literal and ambiguous method name"
+  },
+  "independent_exact_oracle": {
+    "command": "python3 oracle_fraction.py",
+    "exit": 0,
+    "cases": 64,
+    "inequalities_pass": 768,
+    "inequalities_fail": 0
+  },
+  "wolfram_exact": {
+    "mu_up": "-31/32",
+    "C_wp": "2",
+    "K_up": "128/159",
+    "max_corner_rho": "235/20992",
+    "max_corner_physical_error": "1645/107502",
+    "physical_bound": "235/13038",
+    "inequality": true
+  },
+  "numerical": {
+    "cases": 64,
+    "independent_fraction_inequalities_pass": 768,
+    "max_exact_physical_error": 0.0060357995215090205,
+    "max_physical_bound": 0.006929561638300846,
+    "min_physical_headroom": 8.340211989867043e-16,
+    "max_bound_over_exact_error": 16.400000000000027,
+    "max_exact_corner_residual": 0.004325054767655108,
+    "max_original_residual_bound": 0.004325054767655297,
+    "status": "numerically_checked_repr_binary64_source_membership_conditional"
+  },
+  "native_ci": {
+    "initial_fmt_run": 40853674030,
+    "after_fmt_run": 40854021844,
+    "rustfmt": "PASS",
+    "two_native_tests": "13 PASS",
+    "strict_clippy": "FAILED_REDUNDANT_CLOSURE_THEN_FIXED",
+    "final_correction_commit": "8ee28f79dae36a1649ba34e7c90c34e895e1952b",
+    "final_focused_run": 40854556822,
+    "last_observed": "QUEUED",
+    "overall": "NOT_VERIFIED_YET"
+  },
+  "dag": {
+    "vigilode_original": "7/23 inherited scoped",
+    "rei_central": "28/88",
+    "successor": "0/12 admitted",
+    "n02_scoped": "16/20",
+    "n03_scoped": "PENDING_FINAL_CI",
+    "R6": "NOT_RUN",
+    "C7": "BLOCKED_PHYSICAL_SOURCE",
+    "C9": "NOT_RUN",
+    "production": "HOLD"
+  },
+  "limitations": [
+    "true source interval membership not proven by tokens or constructor",
+    "physical33 source/clock/rate/inventory unresolved; REI-BASS PR265 mismatch",
+    "no native full-IVP benchmark or global error enclosure",
+    "root authority and other CI failures retained"
+  ]
+}

@@ -13,6 +13,7 @@ mod kernels;
 mod lgmres;
 mod lgmres_into;
 mod small;
+mod stage_interval_certificate;
 mod workspace;
 
 pub use accounting::ResidualAccounting;
@@ -60,4 +61,8 @@ pub use lgmres_into::{
 /// `least_squares` is exported as the bitwise reference of
 /// `LeastSquaresWorkspace` (research node `research/spd04_ls_workspace_20261007`).
 pub use small::{LeastSquaresWorkspace, least_squares};
+pub use stage_interval_certificate::{
+    ConditionalStageVerdict, Interval as CertifiedInterval, SourceStamp as N03SourceStamp,
+    StageIntervalBox, check_arithmetic as check_n03_arithmetic,
+};
 pub use workspace::{GcrodrWorkspace, GmresWorkspace, LgmresWorkspace};
