@@ -1,0 +1,38 @@
+name: C8 source-matched original raw-U and Newton-free work-precision
+on:
+  push:
+    branches:
+      - research/n01-df-c8-work-precision-20261030
+    paths:
+      - crates/vigilode-coupled/tests/n01_df_c8_work_precision.rs
+      - .github/workflows/n01-c8-work-precision.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  c8-numerical:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: clippy,rustfmt
+      - name: Fetch pinned dependencies
+        run: cargo fetch --locked
+      - name: Rust1.94.1 native C8 original-physics work-precision
+        run: cargo test --locked --offline -p vigilode-coupled --test n01_df_c8_work_precision -- --nocapture
+      - name: Existing native C7 and C6 scientific contracts
+        run: cargo test --locked --offline -p vigilode-coupled --test n01_df_c7_original_raw_u_contract --test n01_df_value_stage_contract
+      - name: PR91 original causal and RHS-only homotopy contracts
+        run: cargo test --locked --offline -p vigilode-coupled --test rhs_homotopy_contracts --test causal_contracts --test causal_reuse_contracts
+      - name: C8 strict Clippy
+        run: cargo clippy --locked --offline -p vigilode-coupled --test n01_df_c8_work_precision -- -D warnings
+      - name: C8 focused rustfmt
+        run: rustfmt --check --edition 2024 crates/vigilode-coupled/tests/n01_df_c8_work_precision.rs
+      - name: Source pin
+        if: always()
+        run: git rev-parse HEAD
