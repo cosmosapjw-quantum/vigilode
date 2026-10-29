@@ -1,0 +1,98 @@
+{
+  "schema": "vigilode.n01.derivative_free.rk_c5.scoped.v1",
+  "date": "2026-10-30",
+  "source_base_pr": 117,
+  "source_base_head": "0032b7bd7a0d5092eac26ad9408b9a261df2916e",
+  "branch": "research/n01-df-value-map-c5-20261030",
+  "draft_pr": 119,
+  "objective": "opt-in source-bound RhsOnlyMap for single Robertson diagonal implicit RK/BE stage, derivative-free primary",
+  "not_original_8_stage_RODAS5P": true,
+  "verified_models": "f=(-k1 a+k2 b c,k1 a-k2 b c-k3 b^2,k3 b^2), k_i>=0, y>=0,tau>=0",
+  "algorithm": "G(b)=clip(b-F(b)/L,[0,M_upper]), L_up>=1+La+Lc; actual source trial+epoch owned; original full stage residual and p error outward certified before transactional commit",
+  "scope": "C5 implementation with actual Rust 1.94.1 interface mirror and independent exact rational oracle; full native still pending",
+  "source": {
+    "file": "crates/vigilode-coupled/src/n01_derivative_free.rs",
+    "git_blob": "7c2cd365bb830b778910e98fb29be4c36f4cfd8e",
+    "sha256": "40e54d5e36603117d0197177f6059372d8de4984d41103ef2f48bc88583f05f5",
+    "bytes": 10494
+  },
+  "native_test_source": {
+    "file": "crates/vigilode-coupled/tests/n01_df_value_stage_contract.rs",
+    "git_blob": "ef0d575ec40ee0e35016ad91e6522eaf6c769691",
+    "sha256": "47d3db32f58adf6c11049477c16baa794cf0169b281e1f73554e68ecc6f1181a",
+    "bytes": 3102,
+    "tests": "published to GitHub, not exercised natively"
+  },
+  "source_owner_api": {
+    "commit": "c26885979abc0f36316832b0e35ada40a2b54038",
+    "new_blob": "de603d54cee2d7434174b8a133964249ee4c3579"
+  },
+  "tests": {
+    "rust_version": "1.94.1",
+    "runtime_status": "PYTHON_PASS",
+    "rust_mirror_pass": 10,
+    "rust_mirror_fail": 0,
+    "clippy": "PASS",
+    "fmt": "PASS",
+    "native_workspace": "NOT_RUN",
+    "fraction_records": 256,
+    "fraction_checks": 1280,
+    "fraction_fail": 0,
+    "fraction_max_exact_p_upper_to_cert": 0.9999771161217686,
+    "performance_loop_count": 0,
+    "full_ivp": "NOT_RUN",
+    "independent_r6_c9": "NOT_RUN",
+    "native_subagent": "NOT_RUN"
+  },
+  "negative_evidence": {
+    "first_compile": "FAIL Rust literal .25 syntax in mirror test fixture, corrected",
+    "clippy": "FAIL shim style/unused and nested if, corrected",
+    "certificate_error": "initially swallowed certificate error, now typed separate error and repaired",
+    "github_research_process_first_run": "FAIL missing PREREGISTRATION.md, RESULTS.json and LEDGER row; remediation posted after experiment not backdated"
+  },
+  "not_admitted": [
+    "original 8 stage RODAS5P raw-U",
+    "full nonlinear IVP/physics BASS physical33",
+    "parallel multi-cell throughput",
+    "fallback JVP/FGMRES N02",
+    "independent R6/C9",
+    "production"
+  ],
+  "dag": {
+    "vigilode": {
+      "complete": 7,
+      "total": 23,
+      "delta": 0
+    },
+    "rei": {
+      "complete": 28,
+      "total": 88,
+      "delta": 0
+    },
+    "successor": {
+      "admitted": 0,
+      "total": 12,
+      "delta": 0
+    },
+    "n00f_audit": {
+      "complete": 1,
+      "total": 1,
+      "scope": "scoped"
+    },
+    "r5_robertson_exact": {
+      "complete": 1,
+      "total": 1,
+      "scope": "scoped"
+    },
+    "n01_df_c5_mirror": {
+      "complete": 1,
+      "total": 1,
+      "scope": "scoped implementation"
+    },
+    "native_admission": {
+      "complete": 0,
+      "total": 1
+    }
+  },
+  "production": "HOLD"
+}
