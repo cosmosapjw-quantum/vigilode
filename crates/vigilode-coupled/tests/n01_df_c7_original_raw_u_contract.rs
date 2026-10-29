@@ -125,44 +125,44 @@ fn actual_native_eight_stage_rodas_reconstruction_is_mass_neutral_and_original_r
     let c = rodas5p_coefficients().unwrap();
     assert_eq!(c.stages(), 8);
     assert_eq!(result.stages.len(), 8);
-    let mut u = vec![[0.0_f64; 3]; 8];
-    for i in 0..8 {
+    let mut u = [[0.0_f64; 3]; 8];
+    for (i, u_i) in u.iter_mut().enumerate() {
         for j in 0..=i {
             let gamma_ij = if i == j {
                 c.gamma
             } else {
                 c.gamma_matrix[(i, j)]
             };
-            for k in 0..3 {
-                u[i][k] += gamma_ij * result.stages[j][k];
+            for (k, u_ik) in u_i.iter_mut().enumerate() {
+                *u_ik += gamma_ij * result.stages[j][k];
             }
         }
     }
     let j0 = owner.jacobian_at(&y).unwrap();
     let mut max_original_residual = 0.0_f64;
     let mut max_stage_mass_defect = 0.0_f64;
-    for i in 0..8 {
+    for (i, u_i) in u.iter().enumerate() {
         let mut state = y;
         let mut mix = [0.0; 3];
-        for j in 0..i {
-            for k in 0..3 {
-                state[k] += c.a[(i, j)] * u[j][k];
-                mix[k] += c.c_matrix[(i, j)] * u[j][k];
+        for (j, u_j) in u[..i].iter().enumerate() {
+            for (k, state_k) in state.iter_mut().enumerate() {
+                *state_k += c.a[(i, j)] * u_j[k];
+                mix[k] += c.c_matrix[(i, j)] * u_j[k];
             }
         }
         let mut f = [0.0; 3];
         owner.rhs_at(&state, &mut f).unwrap();
-        for k in 0..3 {
-            let jv: f64 = (0..3).map(|jj| j0[k][jj] * u[i][jj]).sum();
-            let residual = u[i][k] - h * c.gamma * jv - c.gamma * mix[k] - h * c.gamma * f[k];
+        for (k, &f_k) in f.iter().enumerate() {
+            let jv: f64 = (0..3).map(|jj| j0[k][jj] * u_i[jj]).sum();
+            let residual = u_i[k] - h * c.gamma * jv - c.gamma * mix[k] - h * c.gamma * f_k;
             max_original_residual = max_original_residual.max(residual.abs());
         }
-        max_stage_mass_defect = max_stage_mass_defect.max(u[i].iter().sum::<f64>().abs());
+        max_stage_mass_defect = max_stage_mass_defect.max(u_i.iter().sum::<f64>().abs());
     }
     let mut y_raw = y;
-    for i in 0..8 {
-        for k in 0..3 {
-            y_raw[k] += c.b_code[i] * u[i][k];
+    for (i, u_i) in u.iter().enumerate() {
+        for (k, y_k) in y_raw.iter_mut().enumerate() {
+            *y_k += c.b_code[i] * u_i[k];
         }
     }
     let max_native_output_difference = (0..3)
