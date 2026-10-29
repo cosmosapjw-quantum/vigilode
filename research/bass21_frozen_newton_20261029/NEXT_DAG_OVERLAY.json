@@ -1,0 +1,14 @@
+{
+  "schema":"vigilode.bass21.frozen-stage.next-dag.v1",
+  "date":"2026-10-29",
+  "baseline":{"vigilode_original":{"done":7,"total":23,"delta":0},"n03_scoped":{"done":17,"total":20,"delta":0},"rei_central":{"done":28,"total":88,"delta":0},"rei_working":{"done":33,"total":88,"delta":0},"successor":{"admitted":0,"total":12}},
+  "current_unit":{"name":"BASS21_FROZEN_NEWTON_BOX","scoped_done":18,"scoped_total":20,"r6_independent":"NOT_RUN","c9_independent":"NOT_RUN","native_subagent":"NOT_RUN","source_byte_repro":"129 native coeff numeric values only, Git raw source not complete","production":"HOLD"},
+  "new_nodes":[
+    {"id":"BASS21_FROZEN_RATE_JF_BOX","status":"VERIFIED_SCOPED_CONDITIONAL","depends":["BASS_PR234_SOURCE","REI_PR269_NUMERIC_RATE_PROJECTION"],"admission_delta":0},
+    {"id":"BASS21_ONE_NEWTON_N03_INTERVAL","status":"VERIFIED_SCOPED_NOT_RODAS","depends":["BASS21_FROZEN_RATE_JF_BOX","VIGILODE_PR112_N03_LIBRARY"],"admission_delta":0},
+    {"id":"ACTUAL_RODAS_STAGE_RHS_AND_ATOMIC_EPOCH_BIND","status":"NEXT_BLOCKED_SOURCE_OWNER","depends":["VIGILODE_NATIVE_RODAS_TABLEAU","BASS_FULL_STATE_MAP","CLOCK_AND_SOURCE_TUBE","OWNER_EPOCH_LOCK"],"run_new_ivp":false},
+    {"id":"N01_N02_N03_PHYSICAL_TRANSACTION","status":"BLOCKED","depends":["ACTUAL_RODAS_STAGE_RHS_AND_ATOMIC_EPOCH_BIND","R6_INDEPENDENT","C9_INDEPENDENT"],"admission_delta":0},
+    {"id":"MATCHED_ACCURACY_FULL_IVP","status":"NOT_RUN_NO_NEW_IVP_AUTHORIZATION","depends":["N01_N02_N03_PHYSICAL_TRANSACTION","NEW_EXPLICIT_IVP_BUDGET"],"admission_delta":0}
+  ],
+  "forbidden":["main_merge","force_push","production_promotion","REI17_is_BASS21","physical33 claim","tolerance_drift","new_IVP","invalidating_negative_evidence"]
+}
