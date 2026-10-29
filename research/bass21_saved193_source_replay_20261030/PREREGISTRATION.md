@@ -1,0 +1,15 @@
+# BASS21 original saved-trajectory replay, source-first science (2026-10-30 KST)
+
+Authority: cosmosapjw-quantum/bass@cc602e209e7deeb511ab2a1f3b2268d55206c43c, original `research/rei_hheli_compact_pilot_20261022/results/pilot_v2/cases/s00_m00_r00/trajectory.npz` Git blob 57a5375c5183f83d3eb3dd094cac31a212c39de3, source RESULT.json expected SHA256 37d1bab173e81449cf474b21a678077edd0150cf0b2cb386d014764580678086, 254301 B.
+
+**Honest timing:** Git metadata, base64 source read and .npz directory/array names and six sample diagnostics were explored in this conversation **before** creating this preregistration. This pre-run contract applies only to the *subsequent, full 193-sample physics calculations, assertions and publication*, not to that exploratory source inspection.
+
+Bounded objective: extract all 193 true saved BASS epochs without new IVP and generate raw-source charge/baryon/opacity/geometry time histories; compare dτ_T/dx with Γ_T/H and integrated τ_T; tabulate source-native photo absorption, energy components, Li event ledger without confusing these with thermal heating. At least one actual nontrivial new data result, not another administrative gate. Full 21-state F/J replay conditional on byte-exact Y+source and verified same-owner evaluation, not required for the basic history replay node.
+
+Conventions: x=ln(a/a_start), a_start=1/21, z=21*exp(-x)-1; H=d ln a/dt proper s^-1; Y_i=n_i/n_b, charge q; n_e=n_b q·Y; Γ_T/H=(c σ_T n_e)/H; cumulative τ_T(x)=∫0^x Γ_T/H dx' (not past-light-cone τ from today). At non-tilted homogeneous electron rest frame σ_T constant and no directional tilt correction. Compare 193 stored diagnostic epochs; do NOT infer unique Li photo rates or radiation transport from six H/He moments alone (REI PR270).
+
+Predeclared tests: 193 monotone x/z and x(0)=0; check charge/mass conservation using source arrays, roundoff bound 1e-11, opacity equality relative 2e-12, endpoint identity against previously published s00_m00_r00 at z=2 (τ_T=0.06934076449489847); direct 193-point trap and Simpson quadratures with recorded differences, no numerical acceptance from their mere mutual agreement. Test parent source file identity exact Git blob, original binary SHA where available; audit any extraction divergence. No new IVP, no production, no merge/force-push, no tolerance weakening, no physical fit.
+
+Claim admission: physics model-generated conditional saved-history data and scoped verification, not observational likelihood or production IVP. Original VigilODE 7/23, REI central 28/88, successor 0/12 admitted, production HOLD. A fresh auxiliary node is scoped only upon true data emission, source checks, and restored verification; independent-author R6/C9 must remain NOT_RUN unless actually dispatched.
+
+Stage-boundary: R1–R10 and C1–C10 as a single bounded replay unit, with R6/C9 independent unavailable = NOT_RUN. At every meaningful stage checkpoint use an immutable file and publish verified commits/backup receipts; no fabricated contemporaneous stage-time ACKs. Stop on verified science output; no recursive meta loops.
