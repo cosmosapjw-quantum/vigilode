@@ -77,6 +77,9 @@ impl N01PointOwner {
             .explicit()
             .ok_or_else(|| CoreError::InvalidInput("N01_REQUIRES_NATIVE_DENSE_OPERATOR".into()))?;
         let n = b0.len();
+        if !f64::from_bits(stamp.clock_bits).is_finite() {
+            return Err(CoreError::NonFinite("N01 physical clock".into()));
+        }
         if n == 0 || j0.nrows() != n || j0.ncols() != n || w.len() != n || p.len() != n {
             return Err(CoreError::Dimension("N01 represented-point shapes".into()));
         }
@@ -275,6 +278,27 @@ mod tests {
         assert!(!rep.accepted);
     }
     #[test]
+    fn rejected_physical_gate_keeps_output() {
+        let (stamp, op, b, w, p, owner) = sample();
+        let mut output = vec![11.0, 22.0];
+        let rep = owner
+            .try_commit_point(
+                stamp,
+                &op,
+                &b,
+                0.25,
+                &w,
+                &p,
+                &[-2.399999, -1.6],
+                1e-5,
+                1e-10,
+                &mut output,
+            )
+            .unwrap();
+        assert!(!rep.accepted);
+        assert_eq!(output, [11.0, 22.0]);
+    }
+    #[test]
     fn stale_epoch_clock_and_source_refuse_transactionally() {
         let (stamp, j, b, w, p, o) = sample();
         let mut output = vec![321.0, 654.0];
@@ -397,6 +421,9 @@ mod tests {
         assert!(o.refuse_unverified_jvp(0.0, 0.0).is_err());
         assert!(o.certify_point(&[f64::NAN, 0.0], 1.0, 1.0).is_err());
         assert!(o.certify_point(&[1.0, 1.0], f64::INFINITY, 1.0).is_err());
+        let mut forged = o.stamp;
+        forged.clock_bits = f64::NAN.to_bits();
+        assert!(N01PointOwner::new(forged, &j, &b, 0.25, &w, &p).is_err());
     }
     #[test]
     fn resolvent_margin_and_no_output_mutation() {
