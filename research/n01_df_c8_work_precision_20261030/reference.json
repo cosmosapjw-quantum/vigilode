@@ -1,0 +1,117 @@
+{
+  "schema": "vigilode.c8.scipy_reference.v1",
+  "python_library": "scipy",
+  "scipy_version": "1.17.0",
+  "numpy_version": "2.3.5",
+  "rtol": 5e-13,
+  "atol": 1e-14,
+  "cases": [
+    {
+      "id": "mild",
+      "rates": [
+        0.5,
+        1.0,
+        0.5
+      ],
+      "initial": [
+        0.75,
+        0.125,
+        0.125
+      ],
+      "end": 0.1,
+      "step_counts": [
+        8,
+        16,
+        32,
+        64,
+        128
+      ],
+      "reference": {
+        "Radau": [
+          0.7151635811301923,
+          0.15882156961691407,
+          0.12601484925289375
+        ],
+        "BDF": [
+          0.7151635811300566,
+          0.15882156961680371,
+          0.12601484925313955
+        ]
+      },
+      "reference_cross_difference_linf": 2.4580337765200966e-13,
+      "reference_unity_mass_deviation": 1.1102230246251565e-16,
+      "reference_uncertainty_claim": "diagnostic cross-method discrepancy only; not certified exact IVP bound"
+    },
+    {
+      "id": "moderate",
+      "rates": [
+        0.5,
+        10.0,
+        200.0
+      ],
+      "initial": [
+        0.75,
+        0.125,
+        0.125
+      ],
+      "end": 0.02,
+      "step_counts": [
+        8,
+        16,
+        32,
+        64,
+        128
+      ],
+      "reference": {
+        "Radau": [
+          0.7455691300866653,
+          0.08644827616003373,
+          0.16798259375330118
+        ],
+        "BDF": [
+          0.7455691300867482,
+          0.08644827616167569,
+          0.16798259375157593
+        ]
+      },
+      "reference_cross_difference_linf": 1.7252588246918776e-12,
+      "reference_unity_mass_deviation": 2.220446049250313e-16,
+      "reference_uncertainty_claim": "diagnostic cross-method discrepancy only; not certified exact IVP bound"
+    },
+    {
+      "id": "stiff_negative_control",
+      "rates": [
+        0.04,
+        10000.0,
+        30000000.0
+      ],
+      "initial": [
+        0.75,
+        0.125,
+        0.125
+      ],
+      "end": 0.001,
+      "step_counts": [
+        8,
+        16,
+        32,
+        64
+      ],
+      "reference": {
+        "Radau": [
+          0.7505416014060802,
+          1.5418063384174988e-05,
+          0.24944298053053524
+        ],
+        "BDF": [
+          0.7505416014064438,
+          1.5418063484057228e-05,
+          0.24944298053007266
+        ]
+      },
+      "reference_cross_difference_linf": 4.625744232100715e-13,
+      "reference_unity_mass_deviation": 4.440892098500626e-16,
+      "reference_uncertainty_claim": "diagnostic cross-method discrepancy only; not certified exact IVP bound"
+    }
+  ]
+}
