@@ -8,12 +8,12 @@ mod gmres;
 mod gmres_givens;
 mod gmres_into;
 mod gmres_into_triggered;
-mod stage_interval_certificate;
 mod gmres_staged;
 mod kernels;
 mod lgmres;
 mod lgmres_into;
 mod small;
+mod stage_interval_certificate;
 mod workspace;
 
 pub use accounting::ResidualAccounting;
@@ -44,10 +44,6 @@ pub use gmres_into::{
     solve_gmres_into_with_options,
 };
 pub use gmres_into_triggered::solve_gmres_into_right_flexible_triggered_monitored;
-pub use stage_interval_certificate::{
-    ConditionalStageVerdict, Interval as CertifiedInterval, SourceStamp as N03SourceStamp,
-    StageIntervalBox, check_arithmetic as check_n03_arithmetic,
-};
 pub use gmres_staged::{
     HeuristicGain, STAGED_EXHAUSTION_FLOOR, STAGED_GUARD_Q_ABORT, STAGED_STALL_CONTRACTION,
     STAGED_STALL_FACTOR, StagedAcceptanceReason, StagedGmresConfig, StagedGmresFailure,
@@ -65,4 +61,8 @@ pub use lgmres_into::{
 /// `least_squares` is exported as the bitwise reference of
 /// `LeastSquaresWorkspace` (research node `research/spd04_ls_workspace_20261007`).
 pub use small::{LeastSquaresWorkspace, least_squares};
+pub use stage_interval_certificate::{
+    ConditionalStageVerdict, Interval as CertifiedInterval, SourceStamp as N03SourceStamp,
+    StageIntervalBox, check_arithmetic as check_n03_arithmetic,
+};
 pub use workspace::{GcrodrWorkspace, GmresWorkspace, LgmresWorkspace};
