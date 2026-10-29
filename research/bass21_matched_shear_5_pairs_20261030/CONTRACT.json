@@ -1,0 +1,108 @@
+{
+  "schema": "vigilode.bass21.match-shear-source-lock.v1",
+  "unit": "BASS21_MATCHED_SHEAR_OPACITY_5_PAIRS_20261030",
+  "selected_pairs": [
+    "m00_r00",
+    "m02_r02",
+    "m04_r04",
+    "m00_r04",
+    "m04_r00"
+  ],
+  "exhaustive_for_25_pairs": false,
+  "posthoc_selection": true,
+  "source_repo": "cosmosapjw-quantum/bass",
+  "source_commit": "cc602e209e7deeb511ab2a1f3b2268d55206c43c",
+  "parent_repo": "cosmosapjw-quantum/vigilode",
+  "parent_PR": 121,
+  "parent_HEAD": "53933d370c4bcc020dc03a6fce276f7b1fa2950b",
+  "source_inputs": {
+    "s00_m00_r00": {
+      "path": "original/trajectory.npz",
+      "sha256": "37d1bab173e81449cf474b21a678077edd0150cf0b2cb386d014764580678086",
+      "git_blob": "57a5375c5183f83d3eb3dd094cac31a212c39de3"
+    },
+    "s04_m00_r00": {
+      "path": "s04_m00_r00_trajectory.npz",
+      "sha256": "c770ba3182af6df6e4239971cc453783622a99cbf1f5a0b967a16c124a8f7d00",
+      "git_blob": "528294868d295bc1ced7d62611714fbc321ba693"
+    },
+    "s00_m02_r02": {
+      "path": "s00_m02_r02_trajectory.npz",
+      "sha256": "840b19b75c6008770e4f393f198deac1b6beea55e7b351ad5f531b50cf3f1a4f",
+      "git_blob": "5390e0607f89e03611fe0974c53fb427e2bb7ab1"
+    },
+    "s04_m02_r02": {
+      "path": "s04_m02_r02_trajectory.npz",
+      "sha256": "53ecf9e65b6fda8c45b22c9d275288c2c77d0b0d29c198bc6c315ee51759928e",
+      "git_blob": "be73d39ce615683d5c285efa83d4be7b13ea2390"
+    },
+    "s00_m04_r04": {
+      "path": "s00_m04_r04_trajectory.npz",
+      "sha256": "ad33e06a96795db196ca88be0e45b785ccfa47d2adb3692f0c57b527ec6432a8",
+      "git_blob": "ef3162b87ef74ebc6c911e833705a924fd5fc9e5"
+    },
+    "s04_m04_r04": {
+      "path": "s04_m04_r04_trajectory.npz",
+      "sha256": "5cda620f703d167de03e0ef9776085dcea6e0bf21ddcbfd1562a1a7cf0821fb8",
+      "git_blob": "17bbc5d0d20a4822d4395462855ea49b6f4ac846"
+    },
+    "s00_m00_r04": {
+      "path": "s00_m00_r04_trajectory.npz",
+      "sha256": "cb707cd487efc019d28ba47f949bb6d95be7394f7097e3be38e456e9c3e232c7",
+      "git_blob": "3cbd7013eff59a9c3e625f3deec93ce3fc8d4c59"
+    },
+    "s04_m00_r04": {
+      "path": "s04_m00_r04_trajectory.npz",
+      "sha256": "bb6374688b3618d3ab4e0f928d71d769d03b28ad8eb843e63db03759b715d500",
+      "git_blob": "a478f23a84320e553bd751df1ea7044ea300baad"
+    },
+    "s00_m04_r00": {
+      "path": "s00_m04_r00_trajectory.npz",
+      "sha256": "18ad2934761f19ca35b5c478ced50fad97527592378e26d033008b9672230106",
+      "git_blob": "86b7a9140537f98cafaa5ed7e2e9ffda38c6ff24"
+    },
+    "s04_m04_r00": {
+      "path": "s04_m04_r00_trajectory.npz",
+      "sha256": "f8736f261228b2216212860ad86f86a1fa36105020fde05cb417341a00aa0b59",
+      "git_blob": "d44106dc699878a76078826074c85d93e5e09b4a"
+    }
+  },
+  "counts": {
+    "raw_histories": 10,
+    "epochs_each": 193,
+    "evaluate_calls": 1930,
+    "new_ivps": 0,
+    "new_auxiliary_scope": "1/1"
+  },
+  "clock": {
+    "x": "ln(a/a_start)",
+    "z": "21 exp(-x)-1",
+    "H": "proper BASS mean H/s",
+    "tau": "forward from source initial z20; not backward observed from present"
+  },
+  "protected": {
+    "NO_MORE_IVPS": true,
+    "NO_MAIN_MERGE": true,
+    "NO_FORCE_PUSH": true,
+    "NO_PRODUCTION_PROMOTION": true,
+    "NO_TOLERANCE_WEAKENING": true,
+    "PR117_DF_RHS_VALUE_ONLY_PRIORITY": true,
+    "SOURCE_OWNER_EXACT": true,
+    "REI_BASS_SAME_SOURCE": false,
+    "PRE_REGISTRATION_RETROACTIVE": false
+  },
+  "CI": {
+    "PR118_research_ledger": "FAIL_UNCHANGED",
+    "R6_distinct_author": "NOT_RUN",
+    "C9_distinct_author": "NOT_RUN"
+  },
+  "original_DAG": {
+    "VigilODE": "7/23",
+    "REI_central": "28/88",
+    "REI_working": "33/88",
+    "successor": "0/12",
+    "F4": "PARTIAL",
+    "L4": false
+  },
+  "claim_gate": "SCOPED_DATA_ONLY_INDEPENDENT_REVIEW_HOLD"
+}
