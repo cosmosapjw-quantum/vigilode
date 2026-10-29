@@ -1,0 +1,55 @@
+{
+  "schema": "vigilode.n01.df.r5.results.v1",
+  "date": "2026-10-29",
+  "source_parent_pr": 115,
+  "source_parent_head": "8555b68a8053fc081be1195b0a40024d994d5798",
+  "script_blob": "622d45a7c2f3c909bdf1827b3effb8aca4a69d48",
+  "script_sha256": "85b7a23932695b9eef86a2504c8b33f9904311eef21d2eb246089b9be89d6a6b",
+  "test": "python3 exact_monotone_oracle.py",
+  "python_version": "3.13.5",
+  "actual_exit": 0,
+  "deterministic_seed": 20261029,
+  "random_fraction_cases": 384,
+  "assertions_pass": 3456,
+  "assertions_fail": 0,
+  "reference_bracket_iterations": 144,
+  "root_bracket_iterations": 60,
+  "exact_manufactured": {
+    "state": [
+      "1/2",
+      "1/4",
+      "1/4"
+    ],
+    "carrier": [
+      "35/64",
+      "27/128",
+      "31/128"
+    ],
+    "rates": [
+      "1/2",
+      "1",
+      "1/2"
+    ],
+    "tau": "1/4"
+  },
+  "initial_negative": {
+    "exit": 1,
+    "kind": "test_expectation_sign",
+    "finding": "intermediate state residual is (0,F(b),0), NOT (0,-F(b),0) and its sum is F(b)",
+    "fix": "correct assertions only; source and tolerances unchanged"
+  },
+  "wolfram": {
+    "symbolic_residual_identity": "True",
+    "derivative_formula_identity": "True",
+    "manufactured_root": "True"
+  },
+  "scope": "source-specific nonnegative diagonal implicit-RK / BE stage only; no native RODAS5P or full-IVP",
+  "backend": "exact Python Fraction; no native Rust integration",
+  "native_subagent": "NOT_RUN",
+  "independent_r6_c9": "NOT_RUN",
+  "core": "7/23",
+  "rei": "28/88",
+  "successor": "0/12 admitted",
+  "auxiliary_r5": "1/1 scoped",
+  "production": "HOLD"
+}
