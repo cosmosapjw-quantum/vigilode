@@ -1,0 +1,82 @@
+{
+  "schema": "vigilode.n02.results.v1",
+  "date": "2026-10-29",
+  "parent_head": "2d430a7aa81070da17a7a5dba60a2d56639b82db",
+  "prereg_before_experiment": "3f04fe7d0fabd7911c22bd2ee774f7d66947e8f3",
+  "native_patch_source_sha": "9c5fc0389b3b42fa5e8ed66d974619049198cb8c",
+  "native_tests_source_sha": "fe9d7f0c0552c849605cf23dd6ec205cb523fcbc",
+  "theory": {
+    "literature": "Saad 1993 DOI 10.1137/0914028",
+    "exact_wolfram": "PASS",
+    "independent_fraction": {
+      "passed": 14,
+      "failed": 0
+    },
+    "flexible_solution": [
+      "1",
+      "1"
+    ],
+    "incorrect_fixed_solution": [
+      "5/3",
+      "1"
+    ],
+    "incorrect_original_residual": [
+      "-2/3",
+      "0"
+    ]
+  },
+  "execution": {
+    "rust_version": "1.94.1",
+    "standalone_rust_tests_pass": 11,
+    "standalone_rust_test_exit": 0,
+    "standalone_clippy_strict_exit": 0,
+    "standalone_fmt_exit": 0,
+    "synthetic_bench_exit": 0,
+    "paired_blocks": 7,
+    "paired_rows": 21,
+    "original_native_tests": "NOT_RUN"
+  },
+  "synthetic_matched_output": {
+    "n16": {
+      "ratio_always_over_trigger_median": 1.22548864,
+      "always_backsolves": 12,
+      "trigger_backsolves": 1,
+      "arnoldi_columns": 12
+    },
+    "n64": {
+      "ratio_always_over_trigger_median": 1.16249377,
+      "always_backsolves": 12,
+      "trigger_backsolves": 1,
+      "arnoldi_columns": 12
+    },
+    "n128": {
+      "ratio_always_over_trigger_median": 1.14028703,
+      "always_backsolves": 12,
+      "trigger_backsolves": 1,
+      "arnoldi_columns": 12
+    },
+    "all_output_bitidentical": true,
+    "full_ivp": false
+  },
+  "ci": {
+    "initial_fmt": "FAIL_REPAIRED",
+    "corrected_fmt": "PASS",
+    "production_overall": "CANCELLED",
+    "native_krylov_test": "NOT_RUN",
+    "a2a3": "FAIL_INHERITED_GIVENS_RHS_1E14",
+    "bench_env": "MPI_H_MISSING",
+    "authority": "FAIL_INHERITED"
+  },
+  "dag": {
+    "vigilode_original": "7/23 inherited scoped",
+    "rei": "28/88",
+    "successor": "0/12 admitted",
+    "n02_scoped": "15/20",
+    "R6": "NOT_RUN",
+    "C9": "NOT_RUN",
+    "C5": "PARTIAL_NATIVE_CODE_PUBLISHED",
+    "C6": "PARTIAL_NATIVE_REGRESSION",
+    "C7": "BLOCKED_PHYSICAL_SOURCE"
+  },
+  "production": "HOLD"
+}
