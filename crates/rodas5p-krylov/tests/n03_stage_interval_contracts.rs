@@ -1,5 +1,8 @@
+use rodas5p_krylov::{
+    CertifiedInterval as Interval, ConditionalStageVerdict, N03SourceStamp as SourceStamp,
+    StageIntervalBox,
+};
 use std::cell::Cell;
-use rodas5p_krylov::{ConditionalStageVerdict, CertifiedInterval as Interval, N03SourceStamp as SourceStamp, StageIntervalBox};
 fn stamp() -> SourceStamp {
     SourceStamp {
         model: "point-J".into(),
