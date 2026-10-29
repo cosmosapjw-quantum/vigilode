@@ -1,0 +1,51 @@
+{
+  "schema": "vigilode.n02.postci-native-addendum.v1",
+  "date": "2026-10-29",
+  "evidence_type": "ACTUAL_NATIVE_RUST_GITHUB_RUN",
+  "tested_source_commit": "1cda611e605f6d9077d74401ebbf039c6ac1729c",
+  "prereg": "3f04fe7d0fabd7911c22bd2ee774f7d66947e8f3",
+  "run_id": 40836690956,
+  "job_id": 123323013855,
+  "run_url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40836690956",
+  "command": "cargo +1.94.1 test --locked -p rodas5p-krylov --test n02_flexible_trigger_contracts -- --nocapture",
+  "job_conclusion": "success",
+  "command_exit": 0,
+  "passed": 3,
+  "failed": 0,
+  "rust_version": "1.94.1",
+  "tests": [
+    "a_monitor_error_cannot_mutate_output",
+    "variable_right_preconditioner_stores_z_and_recovers_original",
+    "zero_trigger_versus_always_build_gives_same_final_candidate"
+  ],
+  "claim_scope": "native right flexible-GMRES opt-in entry point compiled and three focused integration contracts passed; not full physical33/full-IVP, not all legacy suites",
+  "strict_native_clippy": {
+    "run_id": 40837168008,
+    "status": "QUEUED_AT_LAST_CHECK",
+    "conclusion": "NOT_RUN_YET",
+    "source_algorithm_unchanged": true
+  },
+  "prior_ci": {
+    "inherited_givens": "FAIL RHS1e14 run40834721997",
+    "authority": "FAIL inherited",
+    "prior_bench_mpi": "PACKAGE_MISSING mpi.h"
+  },
+  "updated_current_view": {
+    "n02_scoped": "16/20",
+    "historical_stage_snapshots": "15/20 at pre-CI aggregate backup",
+    "C5": "SCOPED_IMPLEMENTATION_VERIFIED_NATIVE_FOCUSED",
+    "C6": "PARTIAL_BROADER_REGRESSION_OPEN",
+    "C7": "BLOCKED_PHYSICAL_SOURCE",
+    "R6": "NOT_RUN",
+    "C9": "NOT_RUN",
+    "original_vigilode": "7/23 inherited",
+    "rei": "28/88",
+    "successor": "0/12 admitted",
+    "production": "HOLD"
+  },
+  "backup": {
+    "historical_source_zip_sha256": "d07af6e280a6d23a91abde8719bdddfc8ecc6c84544d6698005c16f2b3675e39",
+    "historical_aggregate_zip_counts": "15/20 snapshots at creation",
+    "new_addendum_after_source_zip": true
+  }
+}
