@@ -1,0 +1,333 @@
+{
+  "schema": "vigilode.sg01.benchmark.v2",
+  "scope": "standalone dense represented-J vs exact structural-zero sparse snapshot, linear stage only",
+  "paired_design": "7 ABBA/BAAB blocks per n/backend, 6 repetitions per arm per appearance, same physical-equation residual acceptance",
+  "timed_rows": 1008,
+  "summary": [
+    {
+      "n": 16,
+      "backend": "dense",
+      "paired_blocks": 7,
+      "ratio_always_over_trigger_median": 1.1155701754385965,
+      "ratio_range": [
+        1.0677191694203076,
+        1.1275584957598899
+      ],
+      "all_blocks_faster": true,
+      "median_time_ns": {
+        "always": 12777.0,
+        "trigger": 11435.5
+      },
+      "work": {
+        "always": {
+          "columns": 11.0,
+          "candidate_builds": 11.0,
+          "original_checks": 1.0,
+          "operator_apps": 12.0,
+          "pc_apps": 11.0,
+          "achieved_inf": 1.2320011677502407e-10,
+          "stage_bound": 3.2810473914510357e-10
+        },
+        "trigger": {
+          "columns": 11.0,
+          "candidate_builds": 1.0,
+          "original_checks": 1.0,
+          "operator_apps": 12.0,
+          "pc_apps": 11.0,
+          "achieved_inf": 1.2320011677502407e-10,
+          "stage_bound": 3.2810473914510357e-10
+        }
+      },
+      "ratios_by_block": [
+        1.0677191694203076,
+        1.121653337969402,
+        1.118049801578649,
+        1.1155701754385965,
+        1.0919934073560027,
+        1.1275584957598899,
+        1.1029599331486124
+      ]
+    },
+    {
+      "n": 16,
+      "backend": "sparse",
+      "paired_blocks": 7,
+      "ratio_always_over_trigger_median": 1.1892304338347504,
+      "ratio_range": [
+        1.1768810243130485,
+        1.192195690157251
+      ],
+      "all_blocks_faster": true,
+      "median_time_ns": {
+        "always": 8169.5,
+        "trigger": 6893.5
+      },
+      "work": {
+        "always": {
+          "columns": 11.0,
+          "candidate_builds": 11.0,
+          "original_checks": 1.0,
+          "operator_apps": 12.0,
+          "pc_apps": 11.0,
+          "achieved_inf": 1.2320011677502407e-10,
+          "stage_bound": 3.281045276740512e-10
+        },
+        "trigger": {
+          "columns": 11.0,
+          "candidate_builds": 1.0,
+          "original_checks": 1.0,
+          "operator_apps": 12.0,
+          "pc_apps": 11.0,
+          "achieved_inf": 1.2320011677502407e-10,
+          "stage_bound": 3.281045276740512e-10
+        }
+      },
+      "ratios_by_block": [
+        1.189365936878021,
+        1.1856052344601964,
+        1.1892304338347504,
+        1.1768810243130485,
+        1.190597667638484,
+        1.192195690157251,
+        1.177475390851187
+      ]
+    },
+    {
+      "n": 64,
+      "backend": "dense",
+      "paired_blocks": 7,
+      "ratio_always_over_trigger_median": 1.030022830324267,
+      "ratio_range": [
+        1.0205421659994798,
+        1.570476743305656
+      ],
+      "all_blocks_faster": true,
+      "median_time_ns": {
+        "always": 81390.5,
+        "trigger": 79021.0
+      },
+      "work": {
+        "always": {
+          "columns": 8.0,
+          "candidate_builds": 8.0,
+          "original_checks": 1.0,
+          "operator_apps": 9.0,
+          "pc_apps": 8.0,
+          "achieved_inf": 9.783673871055497e-11,
+          "stage_bound": 1.4697618783408152e-10
+        },
+        "trigger": {
+          "columns": 8.0,
+          "candidate_builds": 1.0,
+          "original_checks": 1.0,
+          "operator_apps": 9.0,
+          "pc_apps": 8.0,
+          "achieved_inf": 9.783673871055497e-11,
+          "stage_bound": 1.4697618783408152e-10
+        }
+      },
+      "ratios_by_block": [
+        1.1324696927691105,
+        1.4853992367076492,
+        1.570476743305656,
+        1.0207369495884124,
+        1.0205421659994798,
+        1.030022830324267,
+        1.0248471676770758
+      ]
+    },
+    {
+      "n": 64,
+      "backend": "sparse",
+      "paired_blocks": 7,
+      "ratio_always_over_trigger_median": 1.126027029746135,
+      "ratio_range": [
+        1.111988801119888,
+        1.1404592453336915
+      ],
+      "all_blocks_faster": true,
+      "median_time_ns": {
+        "always": 16840.0,
+        "trigger": 15027.5
+      },
+      "work": {
+        "always": {
+          "columns": 8.0,
+          "candidate_builds": 8.0,
+          "original_checks": 1.0,
+          "operator_apps": 9.0,
+          "pc_apps": 8.0,
+          "achieved_inf": 9.783673871055497e-11,
+          "stage_bound": 1.469736501814537e-10
+        },
+        "trigger": {
+          "columns": 8.0,
+          "candidate_builds": 1.0,
+          "original_checks": 1.0,
+          "operator_apps": 9.0,
+          "pc_apps": 8.0,
+          "achieved_inf": 9.783673871055497e-11,
+          "stage_bound": 1.469736501814537e-10
+        }
+      },
+      "ratios_by_block": [
+        1.1145888071466106,
+        1.126027029746135,
+        1.1135956472695907,
+        1.1372037758267872,
+        1.1273134228636332,
+        1.1404592453336915,
+        1.111988801119888
+      ]
+    },
+    {
+      "n": 128,
+      "backend": "dense",
+      "paired_blocks": 7,
+      "ratio_always_over_trigger_median": 1.082208270895623,
+      "ratio_range": [
+        0.8348779238836663,
+        1.3591811741543076
+      ],
+      "all_blocks_faster": false,
+      "median_time_ns": {
+        "always": 347187.5,
+        "trigger": 322276.5
+      },
+      "work": {
+        "always": {
+          "columns": 7.0,
+          "candidate_builds": 7.0,
+          "original_checks": 1.0,
+          "operator_apps": 8.0,
+          "pc_apps": 7.0,
+          "achieved_inf": 3.511158030988781e-11,
+          "stage_bound": 4.3931789423232895e-11
+        },
+        "trigger": {
+          "columns": 7.0,
+          "candidate_builds": 1.0,
+          "original_checks": 1.0,
+          "operator_apps": 8.0,
+          "pc_apps": 7.0,
+          "achieved_inf": 3.511158030988781e-11,
+          "stage_bound": 4.3931789423232895e-11
+        }
+      },
+      "ratios_by_block": [
+        0.8348779238836663,
+        1.3591811741543076,
+        1.2933271843513727,
+        0.9487191424481197,
+        1.1494780976668086,
+        1.082208270895623,
+        1.0451478682768274
+      ]
+    },
+    {
+      "n": 128,
+      "backend": "sparse",
+      "paired_blocks": 7,
+      "ratio_always_over_trigger_median": 1.087612463454425,
+      "ratio_range": [
+        1.0722078254471,
+        1.8916757835124525
+      ],
+      "all_blocks_faster": true,
+      "median_time_ns": {
+        "always": 33807.0,
+        "trigger": 30976.0
+      },
+      "work": {
+        "always": {
+          "columns": 7.0,
+          "candidate_builds": 7.0,
+          "original_checks": 1.0,
+          "operator_apps": 8.0,
+          "pc_apps": 7.0,
+          "achieved_inf": 3.511158030988781e-11,
+          "stage_bound": 4.392882882850053e-11
+        },
+        "trigger": {
+          "columns": 7.0,
+          "candidate_builds": 1.0,
+          "original_checks": 1.0,
+          "operator_apps": 8.0,
+          "pc_apps": 7.0,
+          "achieved_inf": 3.511158030988781e-11,
+          "stage_bound": 4.392882882850053e-11
+        }
+      },
+      "ratios_by_block": [
+        1.1305979563517095,
+        1.087612463454425,
+        1.0741655767088116,
+        1.097075739165654,
+        1.8916757835124525,
+        1.0722078254471,
+        1.084935503433807
+      ]
+    }
+  ],
+  "sparse_vs_dense": [
+    {
+      "n": 16,
+      "dense_over_sparse_trigger_median": 1.6663759901169972,
+      "range": [
+        1.6397058823529411,
+        1.7424651691782769
+      ],
+      "ratios_by_block": [
+        1.7424651691782769,
+        1.6727008360596147,
+        1.6663759901169972,
+        1.640051791109193,
+        1.680466472303207,
+        1.6397058823529411,
+        1.6457006369426752
+      ]
+    },
+    {
+      "n": 64,
+      "dense_over_sparse_trigger_median": 5.258177957667042,
+      "range": [
+        5.21242774566474,
+        5.395284885475704
+      ],
+      "ratios_by_block": [
+        5.21242774566474,
+        5.395284885475704,
+        5.258177957667042,
+        5.236451250907651,
+        5.265818133226431,
+        5.278870686182355,
+        5.244875512448755
+      ]
+    },
+    {
+      "n": 128,
+      "dense_over_sparse_trigger_median": 10.11903954528573,
+      "range": [
+        9.009629842915187,
+        13.518559984861865
+      ],
+      "ratios_by_block": [
+        13.518559984861865,
+        11.026442035891389,
+        10.11903954528573,
+        9.743750506277845,
+        9.89230323701654,
+        9.009629842915187,
+        11.053482158954942
+      ]
+    }
+  ],
+  "limits": [
+    "Full-IVP not run",
+    "Native VigilODE not modified",
+    "Same achieved error per fixture and candidate trigger, not a general production claim",
+    "Amortized sparse precomputation excluded from stage runtime; caller must justify reuse",
+    "All arms use identical acceptance trigger; always arm computes otherwise unnecessary candidate prefixes",
+    "Source/clock/physical33 not certified"
+  ]
+}
