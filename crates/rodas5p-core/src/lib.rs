@@ -17,6 +17,7 @@ mod matrix;
 mod matrix_functions;
 pub mod nonnormal_certificate;
 pub mod n01_source_owner;
+pub mod n01_affine_owner;
 mod norms;
 mod operator;
 pub mod polynomial_action;
