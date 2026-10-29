@@ -24,7 +24,26 @@ jobs:
       - name: Fetch pinned dependencies
         run: cargo fetch --locked
       - name: Rust1.94.1 native C8 original-physics work-precision
-        run: cargo test --locked --offline -p vigilode-coupled --test n01_df_c8_work_precision -- --nocapture
+        shell: bash
+        run: |
+          set -o pipefail
+          cargo test --locked --offline -p vigilode-coupled --test n01_df_c8_work_precision -- --nocapture | tee research/n01_df_c8_work_precision_20261030/native.stdout.log
+      - name: Derive achieved-error rows and preserve refusals against independent physical reference
+        run: |
+          python3 research/n01_df_c8_work_precision_20261030/parse_native.py research/n01_df_c8_work_precision_20261030/native.stdout.log
+          python3 research/n01_df_c8_work_precision_20261030/exact_resolvent_oracle.py
+          git diff --exit-code -- research/n01_df_c8_work_precision_20261030/exact_resolvent.json
+      - name: Preserve native raw output, matched-achieved error and original refusals
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vigilode-c8-workprecision-20261030
+          path: |
+            research/n01_df_c8_work_precision_20261030/native.stdout.log
+            research/n01_df_c8_work_precision_20261030/work_precision.csv
+            research/n01_df_c8_work_precision_20261030/work_precision_summary.json
+          if-no-files-found: warn
+          retention-days: 14
       - name: Existing native C7 and C6 scientific contracts
         run: cargo test --locked --offline -p vigilode-coupled --test n01_df_c7_original_raw_u_contract --test n01_df_value_stage_contract
       - name: PR91 original causal and RHS-only homotopy contracts
