@@ -1,0 +1,39 @@
+name: N01 C7 scientific original raw-U validation
+on:
+  push:
+    branches:
+      - research/n01-df-c7-raw-u-physics-20261030
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  c7-physical-validation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: clippy,rustfmt
+      - name: Fetch locked dependencies
+        run: cargo fetch --locked
+      - name: Execute native C7 BE-versus-rawU physics and actual eight-stage oracle
+        run: cargo test --locked --offline -p vigilode-coupled --test n01_df_c7_original_raw_u_contract -- --nocapture
+      - name: Preserve C6 auxiliary source-bound contract
+        run: cargo test --locked --offline -p vigilode-coupled --test n01_df_value_stage_contract -- --nocapture
+      - name: Preserve original PR91 RHS-only causal and homotopy regressions
+        run: cargo test --locked --offline -p vigilode-coupled --test rhs_homotopy_contracts --test causal_contracts --test causal_reuse_contracts
+      - name: Strict Clippy of new C7 scientific native test
+        run: cargo clippy --locked --offline -p vigilode-coupled --test n01_df_c7_original_raw_u_contract -- -D warnings
+      - name: Focused format
+        run: rustfmt --check --edition 2024 crates/vigilode-coupled/tests/n01_df_c7_original_raw_u_contract.rs
+      - name: Independent binary64 exact rational audit
+        run: |
+          python3 research/n01_df_c7_raw_u_20261030/verify_fraction.py
+          git diff --exit-code -- research/n01_df_c7_raw_u_20261030/results_fraction.json
+      - name: Exact source commit
+        if: always()
+        run: git rev-parse HEAD
