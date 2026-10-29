@@ -18,6 +18,8 @@ mod matrix_functions;
 pub mod nonnormal_certificate;
 pub mod n01_source_owner;
 pub mod n01_affine_owner;
+pub mod n01_mass_action_owner;
+pub use n01_mass_action_owner::{N01MassActionOwner,N01MassActionTrial,N01MassActionReport,N01MassActionJvpReport};
 mod norms;
 mod operator;
 pub mod polynomial_action;

@@ -1,0 +1,18 @@
+{
+ "schema":"vigilode.n01.robertson.scoped.v1",
+ "date":"2026-10-29",
+ "source_parent":"a62c4215fa2c329c6a48be2ccf544ac056b747a5",
+ "preregistration":"99aabee75957e349b3fea525f072c84b9c296757",
+ "source_class":"nonlinear Robertson-type mass-action ODE, exact-real polynomial from represented binary64",
+ "rust_toolchain":"rustc 1.94.1", "runtime":"PYTHON_PASS, RUST toolchain PASS",
+ "mirror_tests":{"passed":28,"failed":0,"run":"cargo test --locked --offline --all-targets"},
+ "fmt":{"status":"PASS","run":"cargo fmt --all -- --check"},
+ "clippy":{"status":"PASS","run":"cargo clippy --locked --offline --all-targets -- -D warnings"},
+ "fraction_oracle":{"rows":128,"checks_per_row":10,"passed":1280,"failed":0,"source":"oracle/oracle.csv","result":"oracle/fraction_result.json"},
+ "wolfram":{"symbolic_jacobian":"PASS","mass_conservation":"PASS","rho_bound":"PASS","stage_error_bound":"PASS"},
+ "native_core_full_workspace":"NOT_RUN - git clone DNS resolution failure", "full_adaptive_IVP":"NOT_RUN",
+ "native_subagent":"NOT_RUN - no spawn/delegate agent exposed", "independent_R6_C9":"NOT_RUN",
+ "first_failures":["cargo --locked without new Cargo.lock EXIT101 (fixed generate-lockfile offline)","mirror-only Interval Neg missing E0600 (fixed)","Clippy needless_range_loop in test (fixed)","mirror-only OdeProblem lint type-complexity (scoped shim suppression)"],
+ "benchmark_loops_used":0,"benchmark_claim":"NONE",
+ "DAG":{"vigilode":"7/23","rei":"28/88","successor":"0/12 admitted"},"production":"HOLD"
+}
