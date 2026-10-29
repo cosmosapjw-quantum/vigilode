@@ -59,6 +59,10 @@ use rodas5p_krylov::{
 };
 use serde::Serialize;
 
+use crate::directional_quadratic::{
+    DirectionalQuadraticProposal, DirectionalQuadraticStatistics, DirectionalQuadraticWorkspace,
+    try_directional_quadratic,
+};
 use crate::{
     AdaptiveControllerState, AdaptiveFailureKind, AdaptiveStepConfig, DriverPartial, KrylovState,
     ObservedIntegrationResult, OdeProblem, OutputSchedule, output::OutputCollector,
@@ -1234,6 +1238,10 @@ pub struct Rodas5pMfFastWorkspace {
     /// Research switch (R-NEXT-02): GMRES stage solves through
     /// `solve_gmres_into`, writing into the stage storage.
     gmres_into: bool,
+    /// Explicit numerical proposal for J^2 approximately a J + b I.
+    /// The original shifted-system residual remains the acceptance gate.
+    directional_quadratic: Option<DirectionalQuadraticProposal>,
+    directional_quadratic_workspace: DirectionalQuadraticWorkspace,
     /// Research switch (SAFE-RECYCLE): the GCRO-DR recycle policy.
     gcrodr_policy: GcrodrRecyclePolicy,
     /// Stages and step of the last accepted step, kept only for the
@@ -1388,6 +1396,8 @@ impl Clone for Rodas5pMfFastWorkspace {
             cached_y: self.cached_y.clone(),
             cached_epoch: self.cached_epoch,
             gmres_into: self.gmres_into,
+            directional_quadratic: self.directional_quadratic,
+            directional_quadratic_workspace: self.directional_quadratic_workspace.clone(),
             gcrodr_policy: self.gcrodr_policy,
             step_u: self.step_u.clone(),
             step_h: self.step_h,
@@ -1483,6 +1493,8 @@ impl Rodas5pMfFastWorkspace {
             cached_y: vec![0.0; n],
             cached_epoch: None,
             gmres_into: false,
+            directional_quadratic: None,
+            directional_quadratic_workspace: DirectionalQuadraticWorkspace::default(),
             gcrodr_policy: GcrodrRecyclePolicy::Legacy,
             step_u: Vec::new(),
             step_h: 0.0,
@@ -1576,6 +1588,11 @@ impl Rodas5pMfFastWorkspace {
     /// the coupled ones compute the transfer constants here, from the
     /// coefficient snapshot, and need [`Self::set_stage_target_span`].
     pub fn set_stage_target(&mut self, options: StageTargetOptions) -> CoreResult<()> {
+        if self.directional_quadratic.is_some() && options.policy.is_staged() {
+            return Err(CoreError::InvalidInput(
+                "directional quadratic proposals require an unstaged target".into(),
+            ));
+        }
         if options.policy == StageTargetPolicy::DupFix && self.config.method != LinearMethod::Gmres
         {
             return Err(CoreError::InvalidInput(
@@ -1935,6 +1952,58 @@ impl Rodas5pMfFastWorkspace {
     /// fewer allocations. Off by default.
     pub fn set_gmres_into(&mut self, on: bool) {
         self.gmres_into = on;
+    }
+
+    /// Enable an explicit directional quadratic stage proposal before GMRES.
+    ///
+    /// `(a, b)` suggests `J^2 = a J + b I`; it is neither a structural
+    /// certificate nor an inference about the opaque callback. A candidate
+    /// is accepted only after the original `(I - h gamma J)` residual meets
+    /// the unchanged GMRES tolerance. Numerical refusal uses the original
+    /// GMRES initial guess, and all attempted callback work stays charged.
+    /// Callback errors propagate rather than triggering hidden fallback.
+    ///
+    /// Off by default. Requires GMRES-into, an identity preconditioner and
+    /// an unstaged target; this driver already refuses nonidentity mass.
+    /// This opt-in changes callback order/count and floating-point results.
+    pub fn set_directional_quadratic_proposal(
+        &mut self,
+        coefficients: Option<(f64, f64)>,
+    ) -> CoreResult<()> {
+        let proposal = coefficients
+            .map(|(a, b)| DirectionalQuadraticProposal::new(a, b))
+            .transpose()?;
+        if proposal.is_some() {
+            self.validate_directional_quadratic_configuration()?;
+        }
+        self.directional_quadratic = proposal;
+        Ok(())
+    }
+
+    fn validate_directional_quadratic_configuration(&self) -> CoreResult<()> {
+        if !self.gmres_into
+            || self.config.method != LinearMethod::Gmres
+            || self.config.preconditioner != PreconditionerKind::None
+            || self.stage_target.policy.is_staged()
+        {
+            return Err(CoreError::InvalidInput(
+                "directional quadratic proposals require unstaged GMRES-into with no preconditioner"
+                    .into(),
+            ));
+        }
+        Ok(())
+    }
+
+    /// Cumulative proposal work, including refusals and callback failures.
+    /// Separate from GMRES cycle counts; no proposal action is an Arnoldi step.
+    pub fn directional_quadratic_statistics(&self) -> DirectionalQuadraticStatistics {
+        self.directional_quadratic_workspace.statistics()
+    }
+
+    /// Additional retained proposal scratch, separate from Krylov workspace
+    /// bytes. The default-disabled option allocates no proposal scratch.
+    pub fn directional_quadratic_workspace_bytes(&self) -> usize {
+        self.directional_quadratic_workspace.retained_bytes()
     }
 
     /// Solve the small least-squares problem of the `gmres_into` stage
@@ -2614,6 +2683,9 @@ impl Rodas5pMfFastWorkspace {
     ) -> CoreResult<f64> {
         let (n, s, gamma) = (self.n, self.s, self.gamma);
         validate_strict(problem, &self.config)?;
+        if self.directional_quadratic.is_some() {
+            self.validate_directional_quadratic_configuration()?;
+        }
         if problem.dimension != n {
             return Err(CoreError::Dimension(
                 "matrix-free workspace/problem dimensions differ".into(),
@@ -2855,23 +2927,44 @@ impl Rodas5pMfFastWorkspace {
                         }
                     }
                 };
-                let report = solve_gmres_into_with_accounting(
-                    &shifted,
-                    &self.preconditioner,
-                    &self.stage_rhs,
-                    x0,
-                    &gmres_config,
-                    None,
-                    stage,
-                    &mut self.gmres,
-                    GmresCapacity::unbounded(),
-                    GmresIntoOptions {
-                        skip_final_residual: dup_fix,
-                    },
-                    self.residual_accounting,
-                    counters,
-                )?;
-                if report.workspace_grew {
+                let proposal_report = if let Some(proposal) = self.directional_quadratic {
+                    try_directional_quadratic(
+                        &shifted,
+                        hg,
+                        proposal,
+                        &self.stage_rhs,
+                        x0,
+                        &gmres_config,
+                        None,
+                        stage,
+                        &mut self.directional_quadratic_workspace,
+                        counters,
+                    )?
+                } else {
+                    None
+                };
+                let used_proposal = proposal_report.is_some();
+                let report = if let Some(report) = proposal_report {
+                    report
+                } else {
+                    solve_gmres_into_with_accounting(
+                        &shifted,
+                        &self.preconditioner,
+                        &self.stage_rhs,
+                        x0,
+                        &gmres_config,
+                        None,
+                        stage,
+                        &mut self.gmres,
+                        GmresCapacity::unbounded(),
+                        GmresIntoOptions {
+                            skip_final_residual: dup_fix,
+                        },
+                        self.residual_accounting,
+                        counters,
+                    )?
+                };
+                if !used_proposal && report.workspace_grew {
                     self.gmres_growth_events += 1;
                 }
                 self.gmres_into_cycles += report.cycles;
@@ -3435,4 +3528,222 @@ pub fn integrate_rodas5p_mf_fast_observed_with_residual_accounting(
         accounting,
         solve_log: solve_log.unwrap_or_default(),
     })
+}
+
+#[cfg(test)]
+mod directional_quadratic_integration_tests {
+    use super::*;
+
+    fn rotation() -> OdeProblem {
+        OdeProblem::new(
+            "quadratic-integration-rotation",
+            2,
+            Arc::new(|_, y, out| {
+                out[0] = -3.0 * y[1];
+                out[1] = 3.0 * y[0];
+                Ok(())
+            }),
+            None,
+            None,
+            Some(Arc::new(|_, _, v, out| {
+                out[0] = -3.0 * v[1];
+                out[1] = 3.0 * v[0];
+                Ok(())
+            })),
+            None,
+            true,
+            None,
+            None,
+        )
+        .unwrap()
+    }
+
+    fn workspace(problem: &OdeProblem, start: InitialGuess) -> Rodas5pMfFastWorkspace {
+        let config = LinearSolverConfig {
+            x0_strategy: start,
+            ..crate::RoutingOptions::default().matrix_free
+        };
+        let mut work = Rodas5pMfFastWorkspace::new(problem, &config).unwrap();
+        work.set_krylov_workspace(KrylovWorkspaceOptions::ls_workspace())
+            .unwrap();
+        work
+    }
+
+    #[test]
+    fn directional_quadratic_option_refuses_incompatible_configuration() {
+        let problem = rotation();
+        let config = crate::RoutingOptions::default().matrix_free;
+        let mut work = Rodas5pMfFastWorkspace::new(&problem, &config).unwrap();
+        assert_eq!(work.directional_quadratic_workspace_bytes(), 0);
+        assert!(
+            work.set_directional_quadratic_proposal(Some((0.0, -9.0)))
+                .is_err()
+        );
+        assert!(work.directional_quadratic.is_none());
+        work.set_gmres_into(true);
+        work.set_directional_quadratic_proposal(Some((0.0, -9.0)))
+            .unwrap();
+        assert!(
+            work.set_stage_target(StageTargetOptions::new(StageTargetPolicy::ProjL2))
+                .is_err()
+        );
+        assert_eq!(work.stage_target().policy, StageTargetPolicy::Legacy);
+        work.set_gmres_into(false);
+        let mut counters = WorkCounters::default();
+        assert!(matches!(
+            work.attempt(
+                &problem,
+                0.0,
+                &[1.0, 0.0],
+                0.01,
+                true,
+                None,
+                1e-10,
+                1e-7,
+                &mut counters
+            ),
+            Err(CoreError::InvalidInput(_))
+        ));
+        assert_eq!(counters, WorkCounters::default());
+        work.set_directional_quadratic_proposal(None).unwrap();
+    }
+
+    #[test]
+    fn directional_quadratic_refusal_preserves_previous_start_fallback() {
+        let problem = rotation();
+        let mut baseline = workspace(&problem, InitialGuess::Previous);
+        let mut candidate = baseline.clone();
+        let h = 0.1;
+        candidate
+            .set_directional_quadratic_proposal(Some((1.0 / (h * candidate.gamma), 0.0)))
+            .unwrap();
+        let mut baseline_work = WorkCounters::default();
+        let mut candidate_work = WorkCounters::default();
+        let e0 = baseline
+            .attempt(
+                &problem,
+                0.0,
+                &[1.0, 0.0],
+                h,
+                true,
+                None,
+                1e-10,
+                1e-7,
+                &mut baseline_work,
+            )
+            .unwrap();
+        let e1 = candidate
+            .attempt(
+                &problem,
+                0.0,
+                &[1.0, 0.0],
+                h,
+                true,
+                None,
+                1e-10,
+                1e-7,
+                &mut candidate_work,
+            )
+            .unwrap();
+        assert_eq!(e0.to_bits(), e1.to_bits());
+        assert_eq!(
+            baseline.u.iter().map(|x| x.to_bits()).collect::<Vec<_>>(),
+            candidate.u.iter().map(|x| x.to_bits()).collect::<Vec<_>>()
+        );
+        assert_eq!(baseline_work, candidate_work);
+        assert_eq!(
+            candidate.directional_quadratic_statistics().refused,
+            candidate.s as u64
+        );
+        assert_eq!(
+            candidate
+                .directional_quadratic_statistics()
+                .operator_actions,
+            0
+        );
+    }
+
+    #[test]
+    fn directional_quadratic_full_ivp_preserves_accuracy_and_reports_clone_storage() {
+        let problem = rotation();
+        let adaptive = AdaptiveStepConfig {
+            atol: 1e-10,
+            rtol: 1e-7,
+            ..AdaptiveStepConfig::default()
+        };
+        let times: Vec<f64> = (0..=16).map(|i| i as f64 / 64.0).collect();
+        let output = OutputSchedule::new(times.clone()).unwrap();
+        for start in [InitialGuess::Zero, InitialGuess::Previous] {
+            let mut work = workspace(&problem, start);
+            work.set_directional_quadratic_proposal(Some((0.0, -9.0)))
+                .unwrap();
+            work.set_solve_log(true);
+            let (run, _, _, log) = work
+                .integrate_observed_with_observer(
+                    &problem,
+                    (0.0, 0.25),
+                    &[1.0, 0.0],
+                    &adaptive,
+                    &output,
+                    &mut |_, _, _, _, _| {},
+                )
+                .unwrap();
+            assert!(run.observed.success);
+            assert_eq!(run.observed.t, times);
+            for (&t, y) in run.observed.t.iter().zip(&run.observed.y) {
+                let (s, c) = (3.0 * t).sin_cos();
+                assert!((y[0] - c).abs().max((y[1] - s).abs()) <= 1e-5);
+            }
+            let statistics = work.directional_quadratic_statistics();
+            assert!(statistics.accepted > 0);
+            assert_eq!(
+                run.observed.counters.linear_solves as usize,
+                log.unwrap().len()
+            );
+            assert!(run.observed.counters.jvp_vectors >= statistics.operator_actions);
+            let mut cloned = work.clone();
+            assert_eq!(cloned.directional_quadratic, work.directional_quadratic);
+            assert_eq!(cloned.directional_quadratic_statistics(), statistics);
+            // Vec::clone need not retain spare capacity. Both own enough
+            // scratch for their two vectors and preserve solve semantics.
+            let minimum_bytes = 2 * problem.dimension * std::mem::size_of::<f64>();
+            assert!(cloned.directional_quadratic_workspace_bytes() >= minimum_bytes);
+            assert!(work.directional_quadratic_workspace_bytes() >= minimum_bytes);
+            let y = run.observed.y.last().unwrap();
+            let mut original_counters = WorkCounters::default();
+            let mut cloned_counters = WorkCounters::default();
+            let original_error = work
+                .attempt(
+                    &problem,
+                    0.25,
+                    y,
+                    0.01,
+                    true,
+                    None,
+                    1e-10,
+                    1e-7,
+                    &mut original_counters,
+                )
+                .unwrap();
+            let cloned_error = cloned
+                .attempt(
+                    &problem,
+                    0.25,
+                    y,
+                    0.01,
+                    true,
+                    None,
+                    1e-10,
+                    1e-7,
+                    &mut cloned_counters,
+                )
+                .unwrap();
+            assert_eq!(original_error.to_bits(), cloned_error.to_bits());
+            assert_eq!(original_counters, cloned_counters);
+            assert_eq!(
+                work.u.iter().map(|x| x.to_bits()).collect::<Vec<_>>(),
+                cloned.u.iter().map(|x| x.to_bits()).collect::<Vec<_>>()
+            );
+        }
+    }
 }

@@ -39,6 +39,11 @@ mod comparator_fidelity;
 pub mod conservative_remap;
 mod controller_telemetry;
 mod dense_output_v2;
+pub mod directional_quadratic;
+pub use directional_quadratic::{
+    DirectionalQuadraticProposal, DirectionalQuadraticStatistics, DirectionalQuadraticWorkspace,
+    try_directional_quadratic,
+};
 mod dopri5;
 mod dopri5_dense;
 mod quotient_flow;

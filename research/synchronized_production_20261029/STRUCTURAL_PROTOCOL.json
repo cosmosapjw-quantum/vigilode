@@ -1,0 +1,228 @@
+{
+  "schema": "vigilode.structural-quadratic-protocol.v1",
+  "status": "preregistered_before_native_execution",
+  "source": "actual_published_pin_supplied_at_execution",
+  "baseline_numeric_design": "ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc ordinary GMRES-into; same new executable with proposal disabled",
+  "package": "vigilode",
+  "example": "structural_quadratic_probe",
+  "same_binary": true,
+  "scientific_wall_cap_seconds": 900,
+  "inherited_phase1_wall_seconds": 491.53919015300016,
+  "inherited_results_path": "research/synchronized_production_20261029/RESULTS.json",
+  "remaining_at_registration_seconds": 408.46080984699984,
+  "compile_preparation": "separate; root compiles only after exact source publication",
+  "span": 0.25,
+  "output_grid": [
+    0.0,
+    0.015625,
+    0.03125,
+    0.046875,
+    0.0625,
+    0.078125,
+    0.09375,
+    0.109375,
+    0.125,
+    0.140625,
+    0.15625,
+    0.171875,
+    0.1875,
+    0.203125,
+    0.21875,
+    0.234375,
+    0.25
+  ],
+  "max_abs_error_cap": 1e-05,
+  "accuracy_scope": "Every returned requested grid state, binary64 analytic diagnostic, not rigorous reference uncertainty or whole-slab enclosure. Matched precision/controller/initial state/tolerances; algorithms may produce different adaptive trajectories.",
+  "timing_scope": "workspace construction plus full 8-stage ODE solve plus owned result/workspace/log drop; independent error audit and JSON serialization excluded in both arms",
+  "arms": [
+    "gmres",
+    "proposal"
+  ],
+  "correctness_starts": [
+    "zero",
+    "previous"
+  ],
+  "timing_start": "previous",
+  "probe_repeats": 3,
+  "warmup_solves": 16,
+  "paired_blocks": 7,
+  "timed_solves_per_child": 16,
+  "pair_order": "Even ABBA, odd BAAB; A=gmres B=proposal",
+  "ratio": "Sum of two child-median GMRES solve+drop ns divided by sum of two proposal child medians in same block; retain all7 ratios,min,max,median; range is not CI",
+  "benchmark_command_timeout_seconds": 90,
+  "cases": [
+    {
+      "case": "rotation",
+      "dimension": 16,
+      "classification": "quadratic relation target,16-block amplitude fixture"
+    },
+    {
+      "case": "rotation-large",
+      "dimension": 4096,
+      "classification": "same16-block amplitudes repeated; dimension scaling target"
+    },
+    {
+      "case": "damped-rotation",
+      "dimension": 16,
+      "classification": "shifted quadratic relation target"
+    },
+    {
+      "case": "time-jvp",
+      "dimension": 16,
+      "classification": "16-distinct-rate adverse control; no claimeddegree2relation"
+    },
+    {
+      "case": "badcoeff",
+      "dimension": 16,
+      "classification": "incorrect coefficients; paid proposal-refusal/fallback adverse control"
+    }
+  ],
+  "expected_solves": {
+    "correctness": 60,
+    "warmup": 160,
+    "timed": 2240,
+    "total": 2460
+  },
+  "checks": [
+    {
+      "label": "mf-structural-unit-contracts",
+      "argv": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--lib",
+        "directional_quadratic",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "timeout_seconds": 300,
+      "requires_nonzero_test_count": true
+    },
+    {
+      "label": "kernel-and-mf-contracts",
+      "argv": [
+        "cargo",
+        "test",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--test",
+        "directional_quadratic_contracts",
+        "--test",
+        "matrix_free_problem_contracts",
+        "--test",
+        "spd07_mf_step_warm_start",
+        "--test",
+        "time_fd_workspace_contracts",
+        "--no-fail-fast",
+        "--",
+        "--test-threads=1",
+        "--nocapture"
+      ],
+      "timeout_seconds": 300,
+      "requires_nonzero_test_count": true
+    },
+    {
+      "label": "native-bit-oracle",
+      "argv": [
+        "python3",
+        "research/synchronized_production_20261029/code/verify_structural_bits.py",
+        "--input",
+        "{output}/kernel-and-mf-contracts/stdout.txt",
+        "--expected-source",
+        "{source}",
+        "--output",
+        "{output}/NATIVE_BIT_ORACLE.json"
+      ],
+      "timeout_seconds": 30
+    },
+    {
+      "label": "integrator-focused-clippy",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "rodas5p-integrators",
+        "--lib",
+        "--test",
+        "directional_quadratic_contracts",
+        "--no-deps",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "timeout_seconds": 300
+    },
+    {
+      "label": "probe-focused-clippy",
+      "argv": [
+        "cargo",
+        "clippy",
+        "--profile",
+        "measurement",
+        "--locked",
+        "--offline",
+        "-p",
+        "vigilode",
+        "--lib",
+        "--example",
+        "structural_quadratic_probe",
+        "--no-deps",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "timeout_seconds": 300
+    }
+  ],
+  "accounting": "All proposal/validation/fallback JVP calls and whole solve WorkCounters retained. No reduction claims from only accepted proposals. Strict cost and walltime separate.",
+  "gates": "Checks and exact bit oracle must pass before timings. Every probe/warm/timed sample must succeed, be finite and pass unchanged1e-5 grid diagnostic cap. Retain every failed execution and adverse case.",
+  "new_user_scope": "Native structural-quadratic research continuation after phase1 checkpoint; inherited counters and prior scientific wall charge preserved; root separately records authorization/correction ownership.",
+  "production": "HOLD",
+  "execution": "not_run",
+  "expected_new_native_tests": {
+    "directional_kernel_methods": 8,
+    "matrix_free_inline_methods": 3,
+    "emitted_native_bits_records": 8,
+    "accepted_native_bits": 6,
+    "refused_native_bits": 2,
+    "note": "Counts are preregistered expectations; actual stdout parsed and retained, not assumed pass."
+  },
+  "required_environment": {
+    "VIGILODE_SOURCE_COMMIT": "actual published SHA supplied by runner",
+    "CARGO_BUILD_JOBS": 2,
+    "RAYON_NUM_THREADS": 1,
+    "OMP_NUM_THREADS": 1,
+    "OPENBLAS_NUM_THREADS": 1
+  },
+  "tolerances": {
+    "rtol": 1e-07,
+    "atol": 1e-10,
+    "linear_rtol": 1e-10,
+    "linear_atol": 1e-14,
+    "h0": 0.001
+  },
+  "ownership": {
+    "task": "PR-N01",
+    "used_before": 2,
+    "used_after_initial_native_implementation": 3,
+    "maximum": 3,
+    "initial_implementation": "Previously unimplemented K3 math-to-native contract, explicitly requested after allocation phase",
+    "earlier_correction_episodes": 3,
+    "additional_numerical_repair_iterations": 0,
+    "no_reset": true
+  }
+}
