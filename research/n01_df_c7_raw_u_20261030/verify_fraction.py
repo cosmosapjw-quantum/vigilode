@@ -4,7 +4,7 @@ All dyadics treated as exact represented binary64 reals. No full-IVP claim."""
 import csv,json,random
 from fractions import Fraction as F
 from pathlib import Path
-root=Path(__file__).resolve().parents[1];rng=random.Random(20261030)
+root=Path(__file__).resolve().parent;rng=random.Random(20261030)
 zero=F(0)
 def ff(z,k):
  a,b,c=z;k1,k2,k3=k
@@ -46,8 +46,8 @@ for it in range(256):
 assert cases==256
 assert any(x['max_raw_u0']>0 for x in rows)
 report={"schema":"vigilode.c7.be_original_u0_fraction.v1","seed":20261030,"cases":cases,"assertions":cases*7+7,"all_exact_rational":True,"false_admission_cases":sum(x['max_raw_u0']>0 for x in rows),"first_stage_original_residual_max":max(x['max_raw_u0'] for x in rows),"manufactured":manufactured,"result":"PASS","scope":"auxiliary exact BE vs original first RODAS5P raw-U; no full-IVP"}
-(root/'analysis/results_fraction.json').write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n')
-with (root/'analysis/oracle_rows.csv').open('w',newline='') as f:
+(root/'results_fraction.json').write_text(json.dumps(report,indent=2,ensure_ascii=False)+'\n')
+with (root/'oracle_rows.csv').open('w',newline='') as f:
  w=csv.writer(f);w.writerow(['case','tau','max_raw_u0','be_residual'])
  for i,r in enumerate(rows):w.writerow([i,r['tau'],format(r['max_raw_u0'],'.17g'),r['be_residual']])
 print(json.dumps(report,indent=2))
