@@ -1,0 +1,17 @@
+# 다음 스레드 복사용: vigilode native FGMRES original-residual integration
+
+$physmath-research-loop $scispace $exa $wolfram
+PROJECT=cosmosapjw-quantum/vigilode
+INHERITED=PR104 #104; PR105 #105; PR106 #106; PR107 #107; PR108 #108 (CMODE01, sibling)
+NEW_UNIT=SG01 standalone flexible-right-GMRES, sparse interval residual and regular itinerary
+SCOPE=PROTOTYPE_PASS; NATIVE_INTEGRATION=NOT_RUN; PRODUCTION=HOLD
+INHERITED_CORE=7/23; REI=28/88; PREFIX01=0/1; PREFIX02=0/1; SG01_NATIVE_PLAN=0/12
+
+1. Extract SG01 source/evidence ZIP and run offline Rust1.94.1: `cargo test --offline --all-targets; cargo clippy --offline --all-targets -- -D warnings; cargo fmt --all -- --check; cargo run --offline --release --bin sg01_oracle > evidence/oracle.txt; python evidence/verify_fraction.py; cargo run --offline --release --bin sg01_bench > evidence/bench.csv; python evidence/analyze.py`. 16 tests, 2560 Fraction comparisons are the recorded acceptance scope. CPU timing values vary; do not insist exact equality.
+2. Read PR104 exact source `crates/rodas5p-krylov/src/gmres_into.rs` blob 90bfaaa62afeda9dec27b3dfd594e67cd3034da1 and PR107 checkpoint. The native `solve_gmres_into_right_monitored` reconstructs a candidate every Arnoldi column; implement an opt-in trigger-before-backsolve path with no default dispatch or public API change. Need separately stored `z_j` for nonstationary/flexible preconditioning or fail-closed enforce fixed, linear preconditioner. Keep all GmresMonitoredProgress and WorkCounters fields transactionally unchanged unless tested.
+3. Verify exact model: `A=I−σJ`, weighted lognorm, original residual `r=b−x+σJx` with source/epoch/clock and physical-parameter roundoff. Projected residual only a trigger; accept when `rho<=tau_orig && K_up*rho<=eps_stage`, then native tolerance/observer gates. Treat WRMS and weighted infinity separately. Never substitute represented rounded A residual without added assembly error.
+4. Bind sparse snapshot to immutable owner source+clock+norm epoch and source-derived exact zeros; if J changes in time/ODE, rebuild or invalidate. Validate source mutations before/after callbacks and commit, machine word/ABI/reentrant channels. For changing PC, store per-column Z or use fixed-PC guard; no silent reapplication of PC to an Arnoldi combination.
+5. Test negative controls: left preconditioned false convergence, variable right PC repeated apply, nonnormal, rate/epoch change, callback error, warm start/restart, zero PC, happy breakdown, NaN/overflow/subnormals, full physical 33 norm, output no mutation. Compare native full-IVP accuracy and work on identical source, trajectory grid, tolerance and achieved errors. 7 paired ABBA/BAAB blocks, preserve per-block negatives. Performance rounds per node <=3.
+6. Independent R6/C9 review and full project authority/Q-LEDGER/Q-API/Q-GIVENS and 8 suites/10 interactions are external blockers. No main merge/force push or production claim until owners approve. If GitHub/Drive/Dropbox backup not actually ACK'd, label NOT_RUN.
+
+NEXT_NODE: SG01-N03 native opt-in triggered flexible right-GMRES, guarded stage solver path; implement only after owner source identity + work-accounting API reconfirmed. The independent standalone source archive is suitable as an algorithmic reference, not as production implementation proof.
