@@ -1,0 +1,481 @@
+{
+  "schema": "vigilode.n01.c8.scoped_numeric_final.v1",
+  "date_KST": "2026-10-30",
+  "stage": "C8",
+  "source": {
+    "repo": "cosmosapjw-quantum/vigilode",
+    "parent_pr": 123,
+    "parent_head": "2d3d1ef3dce11fbc3c9168bfc69ab16240e40dc6",
+    "work_branch": "research/n01-df-c8-work-precision-20261030",
+    "native_test_blob": "e6a33b66ba80055cae9439cf683a1715ca77c5a2",
+    "original_tableau_sha256": "211255f6125b648c6955833c3da537d9c031ec78168b2918563c29fa88c8bce6",
+    "native_tested_head": "a20a9f6c6a8a60e19ea1f46f0dcab50c1b139125"
+  },
+  "native_ci": {
+    "run_id": 40952770745,
+    "artifact_id": 12931054380,
+    "artifact_provider_digest": "sha256:9351306465cba74ebd9a3bf188e52b66507355df17448bc72f94a36194f32235",
+    "native_C8_tests": "2/2 PASS",
+    "prior_C7": "3/3 PASS",
+    "prior_C6": "6/6 PASS",
+    "prior_PR91": "29/29 PASS",
+    "total_native": "40/40 PASS",
+    "strict_clippy": "PASS",
+    "focused_rustfmt": "PASS",
+    "fraction_oracle": "256/256 PASS",
+    "raw_csv_replay": "BYTE_IDENTICAL",
+    "raw_json_replay": "BYTE_IDENTICAL"
+  },
+  "science": {
+    "mu1": "2*k2*b",
+    "J_negative_offdiag": "J[2,3]=-k2*b",
+    "noncontractive_exact_inverse_l1": "19/15",
+    "neumann_conditional": "tau*2*max(k1,(k2+2*k3)*M_tube)<1",
+    "causal_transfer": "(I+L+...+L^7) D only for strictly lower stage L",
+    "original_raw_u_interval": true,
+    "whole_ivp_global_bound": false,
+    "source_specific_tube": "M_tube=1.1 M (declared research domain)",
+    "source_trajectory_epoch_transaction": false
+  },
+  "observations": {
+    "successful_grid_rows": 38,
+    "negative_rows": 12,
+    "reference_cross_not_exact_bound": {
+      "mild": 2.4580337765200966e-13,
+      "moderate": 1.7252588246918776e-12,
+      "stiff_negative_control": 4.625744232100715e-13
+    },
+    "work_precision_summary": [
+      {
+        "case": "mild",
+        "method": "RODAS5P-direct-oracle",
+        "completed": 5,
+        "refused": 0,
+        "coarsest_error_l1": 2.070565940925917e-14,
+        "finest_error_l1": 6.661338147750939e-16,
+        "max_mass_error": 8.881784197001252e-16,
+        "local_stage_algebraic_certified_steps": 5,
+        "caps": {
+          "1e-03": {
+            "n": 8,
+            "achieved_l1": 2.070565940925917e-14,
+            "rhs": 64,
+            "jac": 8,
+            "linear_solves": 64,
+            "map_attempted": null
+          },
+          "1e-04": {
+            "n": 8,
+            "achieved_l1": 2.070565940925917e-14,
+            "rhs": 64,
+            "jac": 8,
+            "linear_solves": 64,
+            "map_attempted": null
+          },
+          "1e-05": {
+            "n": 8,
+            "achieved_l1": 2.070565940925917e-14,
+            "rhs": 64,
+            "jac": 8,
+            "linear_solves": 64,
+            "map_attempted": null
+          },
+          "1e-06": {
+            "n": 8,
+            "achieved_l1": 2.070565940925917e-14,
+            "rhs": 64,
+            "jac": 8,
+            "linear_solves": 64,
+            "map_attempted": null
+          },
+          "1e-08": {
+            "n": 8,
+            "achieved_l1": 2.070565940925917e-14,
+            "rhs": 64,
+            "jac": 8,
+            "linear_solves": 64,
+            "map_attempted": null
+          }
+        }
+      },
+      {
+        "case": "mild",
+        "method": "BE-Picard-value-only",
+        "completed": 7,
+        "refused": 0,
+        "coarsest_error_l1": 0.000320385863033984,
+        "finest_error_l1": 5.028736147938417e-06,
+        "max_mass_error": 9.50270973021361e-10,
+        "local_stage_algebraic_certified_steps": 0,
+        "caps": {
+          "1e-03": {
+            "n": 8,
+            "achieved_l1": 0.000320385863033984,
+            "rhs": null,
+            "jac": 0,
+            "linear_solves": null,
+            "map_attempted": 48
+          },
+          "1e-04": {
+            "n": 32,
+            "achieved_l1": 8.036170258785003e-05,
+            "rhs": null,
+            "jac": 0,
+            "linear_solves": null,
+            "map_attempted": 160
+          },
+          "1e-05": {
+            "n": 512,
+            "achieved_l1": 5.028736147938417e-06,
+            "rhs": null,
+            "jac": 0,
+            "linear_solves": null,
+            "map_attempted": 1536
+          },
+          "1e-06": null,
+          "1e-08": null
+        }
+      },
+      {
+        "case": "mild",
+        "method": "BE-Homotopy-value-only",
+        "completed": 7,
+        "refused": 0,
+        "coarsest_error_l1": 0.0003203858582690178,
+        "finest_error_l1": 5.028736147938417e-06,
+        "max_mass_error": 9.50270973021361e-10,
+        "local_stage_algebraic_certified_steps": 0,
+        "caps": {
+          "1e-03": {
+            "n": 8,
+            "achieved_l1": 0.0003203858582690178,
+            "rhs": null,
+            "jac": 0,
+            "linear_solves": null,
+            "map_attempted": 48
+          },
+          "1e-04": {
+            "n": 32,
+            "achieved_l1": 8.036155517252008e-05,
+            "rhs": null,
+            "jac": 0,
+            "linear_solves": null,
+            "map_attempted": 128
+          },
+          "1e-05": {
+            "n": 512,
+            "achieved_l1": 5.028736147938417e-06,
+            "rhs": null,
+            "jac": 0,
+            "linear_solves": null,
+            "map_attempted": 1536
+          },
+          "1e-06": null,
+          "1e-08": null
+        }
+      },
+      {
+        "case": "moderate",
+        "method": "RODAS5P-direct-oracle",
+        "completed": 5,
+        "refused": 0,
+        "coarsest_error_l1": 9.639533615768414e-10,
+        "finest_error_l1": 1.9984014443252818e-15,
+        "max_mass_error": 3.3306690738754696e-16,
+        "local_stage_algebraic_certified_steps": 5,
+        "caps": {
+          "1e-03": {
+            "n": 8,
+            "achieved_l1": 9.639533615768414e-10,
+            "rhs": 64,
+            "jac": 8,
+            "linear_solves": 64,
+            "map_attempted": null
+          },
+          "1e-04": {
+            "n": 8,
+            "achieved_l1": 9.639533615768414e-10,
+            "rhs": 64,
+            "jac": 8,
+            "linear_solves": 64,
+            "map_attempted": null
+          },
+          "1e-05": {
+            "n": 8,
+            "achieved_l1": 9.639533615768414e-10,
+            "rhs": 64,
+            "jac": 8,
+            "linear_solves": 64,
+            "map_attempted": null
+          },
+          "1e-06": {
+            "n": 8,
+            "achieved_l1": 9.639533615768414e-10,
+            "rhs": 64,
+            "jac": 8,
+            "linear_solves": 64,
+            "map_attempted": null
+          },
+          "1e-08": {
+            "n": 8,
+            "achieved_l1": 9.639533615768414e-10,
+            "rhs": 64,
+            "jac": 8,
+            "linear_solves": 64,
+            "map_attempted": null
+          }
+        }
+      },
+      {
+        "case": "moderate",
+        "method": "BE-Picard-value-only",
+        "completed": 7,
+        "refused": 0,
+        "coarsest_error_l1": 0.0024987968270474142,
+        "finest_error_l1": 4.0968676818756156e-05,
+        "max_mass_error": 1.3874998927576598e-09,
+        "local_stage_algebraic_certified_steps": 0,
+        "caps": {
+          "1e-03": {
+            "n": 32,
+            "achieved_l1": 0.0006478296146237156,
+            "rhs": null,
+            "jac": 0,
+            "linear_solves": null,
+            "map_attempted": 384
+          },
+          "1e-04": {
+            "n": 256,
+            "achieved_l1": 8.18719588289718e-05,
+            "rhs": null,
+            "jac": 0,
+            "linear_solves": null,
+            "map_attempted": 1536
+          },
+          "1e-05": null,
+          "1e-06": null,
+          "1e-08": null
+        }
+      },
+      {
+        "case": "moderate",
+        "method": "BE-Homotopy-value-only",
+        "completed": 7,
+        "refused": 0,
+        "coarsest_error_l1": 0.0024987967808181577,
+        "finest_error_l1": 4.0968319550915844e-05,
+        "max_mass_error": 1.0590983645641927e-09,
+        "local_stage_algebraic_certified_steps": 0,
+        "caps": {
+          "1e-03": {
+            "n": 32,
+            "achieved_l1": 0.0006478295345172663,
+            "rhs": null,
+            "jac": 0,
+            "linear_solves": null,
+            "map_attempted": 192
+          },
+          "1e-04": {
+            "n": 256,
+            "achieved_l1": 8.187234127603193e-05,
+            "rhs": null,
+            "jac": 0,
+            "linear_solves": null,
+            "map_attempted": 1129
+          },
+          "1e-05": null,
+          "1e-06": null,
+          "1e-08": null
+        }
+      },
+      {
+        "case": "stiff_negative_control",
+        "method": "RODAS5P-direct-oracle",
+        "completed": 0,
+        "refused": 4,
+        "coarsest_error_l1": null,
+        "finest_error_l1": null,
+        "max_mass_error": null,
+        "local_stage_algebraic_certified_steps": 0,
+        "caps": {
+          "1e-03": null,
+          "1e-04": null,
+          "1e-05": null,
+          "1e-06": null,
+          "1e-08": null
+        }
+      },
+      {
+        "case": "stiff_negative_control",
+        "method": "BE-Picard-value-only",
+        "completed": 0,
+        "refused": 4,
+        "coarsest_error_l1": null,
+        "finest_error_l1": null,
+        "max_mass_error": null,
+        "local_stage_algebraic_certified_steps": 0,
+        "caps": {
+          "1e-03": null,
+          "1e-04": null,
+          "1e-05": null,
+          "1e-06": null,
+          "1e-08": null
+        }
+      },
+      {
+        "case": "stiff_negative_control",
+        "method": "BE-Homotopy-value-only",
+        "completed": 0,
+        "refused": 4,
+        "coarsest_error_l1": null,
+        "finest_error_l1": null,
+        "max_mass_error": null,
+        "local_stage_algebraic_certified_steps": 0,
+        "caps": {
+          "1e-03": null,
+          "1e-04": null,
+          "1e-05": null,
+          "1e-06": null,
+          "1e-08": null
+        }
+      }
+    ],
+    "failure_rows": [
+      {
+        "case": "stiff_negative_control",
+        "error": "invalid numerical input: N01_MASS_RHS_PHYSICAL_STATE",
+        "jac": 1,
+        "linear_solves": 1,
+        "method": "RODAS5P-direct-oracle",
+        "n": 8,
+        "rhs": 2,
+        "steps_completed": 0
+      },
+      {
+        "case": "stiff_negative_control",
+        "error": "invalid numerical input: N01_MASS_RHS_PHYSICAL_STATE",
+        "jac": 1,
+        "linear_solves": 1,
+        "method": "RODAS5P-direct-oracle",
+        "n": 16,
+        "rhs": 2,
+        "steps_completed": 0
+      },
+      {
+        "case": "stiff_negative_control",
+        "error": "invalid numerical input: N01_MASS_RHS_PHYSICAL_STATE",
+        "jac": 1,
+        "linear_solves": 1,
+        "method": "RODAS5P-direct-oracle",
+        "n": 32,
+        "rhs": 2,
+        "steps_completed": 0
+      },
+      {
+        "case": "stiff_negative_control",
+        "error": "invalid numerical input: N01_MASS_RHS_PHYSICAL_STATE",
+        "jac": 1,
+        "linear_solves": 1,
+        "method": "RODAS5P-direct-oracle",
+        "n": 64,
+        "rhs": 2,
+        "steps_completed": 0
+      },
+      {
+        "case": "stiff_negative_control",
+        "error": "map evaluation budget exhausted before dispatch",
+        "map_attempted": 128,
+        "map_completed": 128,
+        "method": "BE-Picard-value-only",
+        "n": 8,
+        "speculative_trials": 0,
+        "steps_completed": 0
+      },
+      {
+        "case": "stiff_negative_control",
+        "error": "ORIGINAL_OR_PHYSICAL_CERTIFICATE_REJECTED",
+        "map_attempted": 24,
+        "map_completed": 24,
+        "method": "BE-Homotopy-value-only",
+        "n": 8,
+        "speculative_trials": 11,
+        "steps_completed": 0
+      },
+      {
+        "case": "stiff_negative_control",
+        "error": "map evaluation budget exhausted before dispatch",
+        "map_attempted": 128,
+        "map_completed": 128,
+        "method": "BE-Picard-value-only",
+        "n": 16,
+        "speculative_trials": 0,
+        "steps_completed": 0
+      },
+      {
+        "case": "stiff_negative_control",
+        "error": "ORIGINAL_OR_PHYSICAL_CERTIFICATE_REJECTED",
+        "map_attempted": 22,
+        "map_completed": 22,
+        "method": "BE-Homotopy-value-only",
+        "n": 16,
+        "speculative_trials": 10,
+        "steps_completed": 0
+      },
+      {
+        "case": "stiff_negative_control",
+        "error": "map evaluation budget exhausted before dispatch",
+        "map_attempted": 128,
+        "map_completed": 128,
+        "method": "BE-Picard-value-only",
+        "n": 32,
+        "speculative_trials": 0,
+        "steps_completed": 0
+      },
+      {
+        "case": "stiff_negative_control",
+        "error": "ORIGINAL_OR_PHYSICAL_CERTIFICATE_REJECTED",
+        "map_attempted": 22,
+        "map_completed": 22,
+        "method": "BE-Homotopy-value-only",
+        "n": 32,
+        "speculative_trials": 10,
+        "steps_completed": 0
+      },
+      {
+        "case": "stiff_negative_control",
+        "error": "map evaluation budget exhausted before dispatch",
+        "map_attempted": 128,
+        "map_completed": 128,
+        "method": "BE-Picard-value-only",
+        "n": 64,
+        "speculative_trials": 0,
+        "steps_completed": 0
+      },
+      {
+        "case": "stiff_negative_control",
+        "error": "ORIGINAL_OR_PHYSICAL_CERTIFICATE_REJECTED",
+        "map_attempted": 20,
+        "map_completed": 20,
+        "method": "BE-Homotopy-value-only",
+        "n": 64,
+        "speculative_trials": 9,
+        "steps_completed": 0
+      }
+    ]
+  },
+  "red_evidence": [
+    "GitHub workflow 40951235044 Rust E0689",
+    "GitHub workflow 40951552412 strict Clippy test style",
+    "full GitHub repository production/authority CI NOT asserted"
+  ],
+  "gates": {
+    "original_vigilode": "7/23",
+    "rei_central": "28/88",
+    "successor_admitted": "0/12",
+    "C8": "1/1 scoped",
+    "production": "HOLD",
+    "independent_author_C9": "NOT_RUN",
+    "actual_original_eight_stage_derivative_free_production": "NOT_RUN"
+  },
+  "scope_warning": "3-component Robertson, forced fixed-grid original direct n3 comparator vs auxiliary BE RHS-map; no combined cost units or speedup and no IVP error theorem"
+}
