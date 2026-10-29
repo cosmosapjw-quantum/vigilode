@@ -10,15 +10,15 @@
 #![forbid(unsafe_code)]
 mod adaptive;
 mod algebra;
-mod fallback;
-mod solver;
-mod switching;
-pub mod rhs_homotopy;
-pub mod n01_derivative_free;
-pub mod structural_mean_field;
 pub mod cyclic_closure;
-pub mod trace_quotient;
+mod fallback;
+pub mod n01_derivative_free;
+pub mod rhs_homotopy;
+mod solver;
+pub mod structural_mean_field;
+mod switching;
 pub mod trace_certificate;
+pub mod trace_quotient;
 pub use adaptive::{
     COUPLED_ADAPTIVE_DRIVER_ID, CoupledIntegrationResult, CoupledTrajectoryAttempt,
     integrate_causal_observed, integrate_coupled_observed, integrate_sequential_raw_observed,
@@ -29,7 +29,10 @@ pub use fallback::{
 };
 use rodas5p_integrators::{OdeProblem, ParallelExecution};
 use serde::Serialize;
-pub use switching::{CandidateRoute, CausalReferenceGuard, CausalSwitchPolicy, CausalSwitchReceipt, CausalWorkWeights};
+pub use switching::{
+    CandidateRoute, CausalReferenceGuard, CausalSwitchPolicy, CausalSwitchReceipt,
+    CausalWorkWeights,
+};
 
 pub const TARGET_ID: &str = "rodas5p-raw-u-coupled-operational-v1";
 
