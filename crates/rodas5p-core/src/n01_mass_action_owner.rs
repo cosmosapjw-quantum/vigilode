@@ -595,7 +595,6 @@ mod tests {
     }
 }
 
-
 /// Source-verified immutable input for a derivative-free, *single-stage*
 /// diagonal-implicit RK/BE auxiliary. The rates, state and both physical
 /// metrics are read from the same owner as RHS and its opaque trial.

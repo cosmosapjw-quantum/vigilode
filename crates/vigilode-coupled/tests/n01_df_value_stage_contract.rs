@@ -78,8 +78,10 @@ fn budget_exhaustion_preserves_output_and_failed_work() {
     let source = model();
     let trial = source.freeze();
     let map = N01ValueStage::new(&source, &trial, 0.25).unwrap();
-    let mut cfg = RhsHomotopyConfig::default();
-    cfg.max_map_evaluations = 1;
+    let cfg = RhsHomotopyConfig {
+        max_map_evaluations: 1,
+        ..RhsHomotopyConfig::default()
+    };
     let mut out = [101.0; 3];
     let report = map.solve(&cfg, 1.0e-12, 1.0e-12, &mut out);
     assert!(!report.admitted);
