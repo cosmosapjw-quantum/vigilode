@@ -223,6 +223,19 @@
     "initial_implementation": "Previously unimplemented K3 math-to-native contract, explicitly requested after allocation phase",
     "earlier_correction_episodes": 3,
     "additional_numerical_repair_iterations": 0,
-    "no_reset": true
-  }
+    "no_reset": true,
+    "Q_LINT_used_before": 2,
+    "Q_LINT_used_after": 3,
+    "prebenchmark_static_lint_repair": 1,
+    "postbenchmark_numerical_or_performance_repair_iterations": 0
+  },
+  "registered_prior_source_runs": [
+    {
+      "source": "cdbee50feb6b7b5d60bd36a278caaf93fa60f665",
+      "receipt_sha256": "8d8034dbc05b8f0ae038e6efb28106263b9e57353e01adeb2e710326188fd36b",
+      "wall_seconds": 45.13034320800034,
+      "checks_result": "fail",
+      "reason": "Probe-only equivalent parity-style Clippy fixes; integrator/kernel unchanged. Failed original checks remain charged, no prior failure authorizes timing."
+    }
+  ]
 }

@@ -79,7 +79,7 @@ fn model(case: &str) -> CoreResult<Model> {
         .map(|i| {
             if time_dependent {
                 1.0 + i as f64 / 16.0
-            } else if i % 2 == 0 {
+            } else if i.is_multiple_of(2) {
                 // Repeat the original n=16 model's amplitudes, also at n=4096.
                 1.0 + (i % 16) as f64 / 32.0
             } else {
@@ -110,7 +110,7 @@ fn exact(model: &Model, t: f64, i: usize) -> f64 {
     } else {
         let (s, c) = (3.0 * t).sin_cos();
         let amplitude = model.y0[(i / 2) * 2];
-        (-model.damping * t).exp() * amplitude * if i % 2 == 0 { c } else { s }
+        (-model.damping * t).exp() * amplitude * if i.is_multiple_of(2) { c } else { s }
     }
 }
 
@@ -271,7 +271,7 @@ fn run() -> Result<(), String> {
         "--repeats",
         "--span",
     ];
-    if (args.len() - 1) % 2 != 0 {
+    if !(args.len() - 1).is_multiple_of(2) {
         return Err("each option requires a value".into());
     }
     let mut seen = std::collections::HashSet::new();

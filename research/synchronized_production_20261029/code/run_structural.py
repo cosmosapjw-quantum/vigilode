@@ -98,13 +98,27 @@ def main() -> int:
         data = load_json(path)
         if data['schema'] != 'vigilode.structural-quadratic-run.v1':
             raise ValueError('only structural phase receipts belong in --prior-run; phase1 is charged once by protocol')
-        if data['source'] != args.source_sha:
-            raise ValueError('prior structural run source differs; explicitly preregister a source-transition continuation')
-        prior.append({'path': str(path), 'sha256': sha256(path), 'wall_seconds': data['wall_seconds'], 'checks_result': data.get('checks_result')})
+        receipt_digest = sha256(path)
+        finite_number(data['wall_seconds'], 'prior run wall', True)
+        same_source = data['source'] == args.source_sha
+        if not same_source:
+            matches = [record for record in protocol.get('registered_prior_source_runs', [])
+                       if record['source'] == data['source']
+                       and record['receipt_sha256'] == receipt_digest
+                       and record['wall_seconds'] == data['wall_seconds']
+                       and record['checks_result'] == data.get('checks_result')]
+            if len(matches) != 1:
+                raise ValueError('prior source receipt not exactly preregistered')
+            subprocess.run(['git', 'merge-base', '--is-ancestor', data['source'], args.source_sha], cwd=repo, check=True)
+        prior.append({'path': str(path), 'sha256': receipt_digest, 'wall_seconds': data['wall_seconds'],
+                      'source': data['source'], 'same_source': same_source, 'checks_result': data.get('checks_result')})
+    for record in protocol.get('registered_prior_source_runs', []):
+        if sum(row['sha256'] == record['receipt_sha256'] for row in prior) != 1:
+            raise ValueError('registered prior source cost must be charged exactly once')
     used_before = protocol['inherited_phase1_wall_seconds'] + sum(row['wall_seconds'] for row in prior)
     if used_before >= protocol['scientific_wall_cap_seconds']:
         raise ValueError('cumulative campaign wall budget exhausted')
-    if args.phase == 'bench' and not any(row['checks_result'] == 'pass_scoped' for row in prior):
+    if args.phase == 'bench' and not any(row['same_source'] and row['checks_result'] == 'pass_scoped' for row in prior):
         raise ValueError('bench-only needs a source-matched passing structural checks receipt')
 
     binding_packet = load_json(binding_path)
