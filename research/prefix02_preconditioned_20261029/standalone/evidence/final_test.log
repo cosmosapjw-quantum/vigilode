@@ -1,0 +1,57 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.03s
+     Running unittests src/lib.rs (target/debug/deps/vigilode_prefix02-8c0d094ad6e5b327)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/precond_bench.rs (target/debug/deps/precond_bench-65883d16dcff4db1)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running unittests src/bin/precond_bits.rs (target/debug/deps/precond_bits-f505bca5f50e774a)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/legacy_contracts.rs (target/debug/deps/legacy_contracts-c18c1c99a8cc1f6b)
+
+running 9 tests
+test event_sign_uses_dual_radius ... ok
+test invalid_model_and_margin_refuse ... ok
+test no_mutation_on_dimension_or_nonfinite_failure ... ok
+test lognorm_negative_and_exact_diagonal ... ok
+test scalar_resolvent_and_original_residual ... ok
+test scalar_zero_shift ... ok
+test warm_start_exact_enough_needs_no_arnoldi ... ok
+test always_trigger_cannot_force_false_accept ... ok
+test prefix_accepts_with_fewer_columns_than_full ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+     Running tests/preconditioned_contracts.rs (target/debug/deps/preconditioned_contracts-0bf0ab10e4763771)
+
+running 16 tests
+test invalid_logarithmic_margin_refuses ... ok
+test changed_epoch_at_final_commit_refuses ... ok
+test invalid_preconditioner_refuses_without_output_mutation ... ok
+test left_projected_small_does_not_accept_original_large ... ok
+test nonnormal_upper_triangular_both_sides ... ok
+test refusal_at_restart_does_not_mutate_output ... ok
+test left_jacobi_one_column_original_residual ... ok
+test source_clock_and_norm_identity_refuse ... ok
+test stale_epoch_refuses_transactionally ... ok
+test underflowed_left_preconditioned_residual_cannot_be_success ... ok
+test warm_start_certified_without_arnoldi ... ok
+test right_jacobi_one_column_original_residual ... ok
+test identity_preconditioner_both_sides ... ok
+test zero_shift_both_sides ... ok
+test wrong_projected_zero_budget_never_commits ... ok
+test restart_continues_without_false_accept ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s
+
+TEST_EXIT=0

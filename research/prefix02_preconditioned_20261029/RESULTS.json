@@ -1,0 +1,84 @@
+{
+  "bench": {
+    "128": {
+      "ratio_id_left_median": 1.3960619396580491,
+      "ratio_id_left_range": [
+        1.3369748468510094,
+        1.560993305525651
+      ],
+      "ratio_id_right_median": 1.410904299239834,
+      "ratio_id_right_range": [
+        1.3380157836484872,
+        1.5769708276914949
+      ]
+    },
+    "16": {
+      "ratio_id_left_median": 1.1507710412702934,
+      "ratio_id_left_range": [
+        1.0460457181036285,
+        1.346286067128493
+      ],
+      "ratio_id_right_median": 1.2028821448439615,
+      "ratio_id_right_range": [
+        1.0624799731967005,
+        1.5721105401271551
+      ]
+    },
+    "64": {
+      "ratio_id_left_median": 1.2905451159641104,
+      "ratio_id_left_range": [
+        0.9587352391901066,
+        1.4252237283498252
+      ],
+      "ratio_id_right_median": 1.2645160885990951,
+      "ratio_id_right_range": [
+        1.1683712580081351,
+        1.3634818081498745
+      ]
+    }
+  },
+  "dag": {
+    "prefix01_aux_completed": 0,
+    "prefix01_aux_total": 1,
+    "prefix02_aux_completed": 0,
+    "prefix02_aux_total": 1,
+    "rei_central_completed": 28,
+    "rei_central_total": 88,
+    "vigilode_core_completed": 7,
+    "vigilode_core_total": 23
+  },
+  "date": "2026-10-29",
+  "execution": {
+    "binary64_records": 40,
+    "clippy": "PASS",
+    "fraction_inequalities_fail": 0,
+    "fraction_inequalities_pass": 360,
+    "paired_blocks": 7,
+    "rust": "1.94.1",
+    "rust_tests_fail": 0,
+    "rust_tests_pass": 25,
+    "rustfmt": "PASS",
+    "timed_linear_solves": 2520
+  },
+  "independent_C9": "NOT_RUN",
+  "independent_R6": "NOT_RUN",
+  "limitations": [
+    "point dense exact represented matrix only",
+    "diagonal preconditioner only",
+    "native integration NOT_RUN",
+    "not matched achieved error",
+    "no physical callback error enclosure"
+  ],
+  "math": {
+    "false_convergence_example": {
+      "left_preconditioned_residual": 1e-12,
+      "original_residual": 1
+    },
+    "left_identity": "M^-1 r=V(beta e1-Hy)+g0-Fy-M^-1 A e_rec",
+    "resolvent": "K<=1/(1-sigma*mu_w(J)), sigma>=0, sigma*mu<1",
+    "right_identity": "r=V(beta e1-Hy)+g0-Fy-A e_rec"
+  },
+  "native_production": "HOLD",
+  "schema": "vigilode.prefix02.results.v1",
+  "source_base": "2a815e98a277c3b9ee807f6098f3d1950bf81985"
+}
