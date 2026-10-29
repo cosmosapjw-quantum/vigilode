@@ -1,0 +1,40 @@
+{
+  "schema": "vigilode.c7.native_red.v1",
+  "date": "2026-10-30 KST",
+  "parent_pr": 120,
+  "parent_head": "f022c4c5593b8d3f1f4ee7ba3efa56fd800dd413",
+  "run_id": 40913125750,
+  "job_id": 123586126441,
+  "url": "https://github.com/cosmosapjw-quantum/vigilode/actions/runs/40913125750",
+  "head": "1728db438bfa1fb83bfdac3f9de6c9e7c57be7f9",
+  "observed": {
+    "c7_scientific_native_tests": "PASS 3/3",
+    "c6_native_contracts": "PASS 6/6",
+    "pr91_causes_and_homotopy": "PASS 6+6+17=29/29",
+    "clippy": "FAIL 5 style errors in new C7 test only: four needless_range_loop, one useless_vec; mathematical/numerical assertions already GREEN",
+    "independent_python": "SKIPPED after clippy failure",
+    "rustfmt": "SKIPPED after clippy failure",
+    "native_metrics": {
+      "manufactured_BE_original_raw_u0_residual": [
+        0.0000762939453125,
+        -0.00026702880859375,
+        0.00019073486328125
+      ],
+      "manufactured_max": 0.00026702880859375,
+      "eight_stage_original_raw_residual": 7.697835424647081e-18,
+      "eight_stage_mass_defect": 2.180262806232569e-18,
+      "eight_stage_endpoint_mass_defect": 0,
+      "raw_vs_native_K_endpoint": 2.7755575615628914e-17,
+      "linear_solves": 8
+    }
+  },
+  "resolution": "One local repair only, same arithmetic order replacing indexed loops with iterators; no model/tolerance/scientific bound change; retain this RED receipt.",
+  "claim": "Native staged value-only BE vs original 8-stage comparator is a scoped physics validation and counterexample, not a new production method or matched full-IVP.",
+  "dag": {
+    "core": "7/23",
+    "rei": "28/88",
+    "successor": "0/12 admitted",
+    "c7": "0/1 until strict full focused verification",
+    "production": "HOLD"
+  }
+}

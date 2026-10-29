@@ -1,0 +1,28 @@
+{
+  "schema": "vigilode.c7.ci_oracle_relative_path_red.v1",
+  "date": "2026-10-30 KST",
+  "run_id": 40913805580,
+  "job_id": 123588549913,
+  "source_head": "9688a8307a7687df7dd48301e1c44cbb8384a389",
+  "status": {
+    "native_c7": "PASS 3/3",
+    "native_c6": "PASS 6/6",
+    "pr91_regressions": "PASS 29/29",
+    "strict_clippy": "PASS",
+    "rustfmt": "PASS",
+    "fraction_oracle": "FAIL FileNotFoundError: attempted to write research/analysis/results_fraction.json from research/n01_df_c7_raw_u_20261030/verify_fraction.py; mathematical assertions before write succeeded, no saved CI result",
+    "source": "Local script moved from analysis/verify_fraction.py into repo research/n01_df_c7_raw_u_20261030/verify_fraction.py but used parents[1] and /analysis/ path."
+  },
+  "minimal_fix": "Use Path(__file__).resolve().parent, write results_fraction.json and oracle_rows.csv as sibling files; same for tau_scaling.py. Re-run exact oracle and byte compare tracked JSON; do not modify rates, samples, residual formula, thresholds, negative evidence.",
+  "independent_local_replay": {
+    "fraction_results_sha256": "38a988d235e972fe8c5effeb17c94baa58b327125ef3a1668b711152c4e97a54",
+    "tau_results_sha256": "b6e775214056604e8f0763957020591972716da9682d4e4bac65c534fda8ce0d"
+  },
+  "dag": {
+    "vigilode": "7/23",
+    "rei": "28/88",
+    "successor": "0/12 admitted",
+    "c7": "PARTIAL until final all-green",
+    "production": "HOLD"
+  }
+}
