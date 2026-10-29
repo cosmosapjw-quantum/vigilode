@@ -476,3 +476,44 @@ fn mass_conservation_is_not_a_contractive_linearization_certificate() {
         json!({"source":"Robertson","mu1":mu1,"resolvent_l1":norm1,"contraction_false":true})
     );
 }
+
+
+/// C9 adversarial reproducer: the C8 research-only verifier computes a correct
+/// bound for the caller's freely supplied case, not an authenticated owner.
+/// This must NEVER be interpreted as a certified physical-source admission.
+#[test]
+fn c9_forged_source_parameters_make_false_physical_authority() {
+    let y = [0.75, 0.125, 0.125];
+    let fake = Case {
+        id: "forged-parameter-negative-control",
+        k: [0.0, 0.0, 0.0],
+        t_end: 0.005,
+    };
+    let stage_k = vec![vec![0.0_f64; 3]; 8];
+    let (fake_residual, bound, status) =
+        certified_raw_stage_bound(fake, y, 0.005, &stage_k, &y).unwrap();
+    assert_eq!(status, "PROVED_CONDITIONAL_TUBE");
+    assert!(fake_residual < 1.0e-20, "fake zero equation should have zero residual");
+    assert!(bound.is_some_and(|x| x < 1.0e-20));
+
+    // The true owner is a DIFFERENT physical ODE, although the fake checker
+    // never receives its identity, rates, clock, state or trial.
+    let true_source = owner(
+        Case {
+            id: "physical-source",
+            k: [0.5, 10.0, 200.0],
+            t_end: 0.005,
+        },
+        y,
+    )
+    .unwrap();
+    let mut f_true = [0.0; 3];
+    true_source.rhs_at(&y, &mut f_true).unwrap();
+    let tau = 0.005 * rodas5p_coefficients().unwrap().gamma;
+    let actual_first_stage_residual =
+        f_true.iter().map(|x| (tau * x).abs()).fold(0.0_f64, f64::max);
+    assert!(actual_first_stage_residual > 1.0e-6);
+    println!(
+        "C9_WRONG_SOURCE_VULNERABILITY fake_residual={fake_residual:.17e} fake_bound={bound:?} true_residual={actual_first_stage_residual:.17e}"
+    );
+}
