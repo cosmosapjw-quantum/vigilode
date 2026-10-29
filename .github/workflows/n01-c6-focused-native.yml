@@ -1,0 +1,35 @@
+name: N01 derivative-free C6 focused native verification
+on:
+  push:
+    branches:
+      - research/n01-df-c6-native-validation-20261030
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-c6:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: clippy,rustfmt
+      - name: Fetch pinned source dependencies
+        run: cargo fetch --locked
+      - name: N01 original native stage contract
+        run: cargo test --locked --offline -p vigilode-coupled --test n01_df_value_stage_contract -- --nocapture
+      - name: PR91 derivative-free homotopy native regressions
+        run: cargo test --locked --offline -p vigilode-coupled rhs_homotopy -- --nocapture
+      - name: N01 native strict Clippy
+        run: cargo clippy --locked --offline -p vigilode-coupled --test n01_df_value_stage_contract -- -D warnings
+      - name: Focused source rustfmt
+        run: |
+          rustfmt --check --edition 2024 crates/vigilode-coupled/src/n01_derivative_free.rs
+          rustfmt --check --edition 2024 crates/vigilode-coupled/tests/n01_df_value_stage_contract.rs
+      - name: Print current source HEAD
+        if: always()
+        run: git rev-parse HEAD
