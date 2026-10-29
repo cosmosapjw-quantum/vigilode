@@ -3,6 +3,14 @@ on:
   push:
     branches:
       - research/n01-df-c6-native-validation-20261030
+    paths:
+      - .github/workflows/n01-c6-focused-native.yml
+      - crates/rodas5p-core/src/lib.rs
+      - crates/rodas5p-core/src/n01_mass_action_owner.rs
+      - crates/rodas5p-integrators/src/lib.rs
+      - crates/vigilode-coupled/src/lib.rs
+      - crates/vigilode-coupled/src/n01_derivative_free.rs
+      - crates/vigilode-coupled/tests/n01_df_value_stage_contract.rs
   workflow_dispatch:
 
 permissions:
@@ -23,11 +31,15 @@ jobs:
       - name: N01 original native stage contract
         run: cargo test --locked --offline -p vigilode-coupled --test n01_df_value_stage_contract -- --nocapture
       - name: PR91 derivative-free homotopy native regressions
-        run: cargo test --locked --offline -p vigilode-coupled rhs_homotopy -- --nocapture
+        run: cargo test --locked --offline -p vigilode-coupled --test rhs_homotopy_contracts --test causal_contracts --test causal_reuse_contracts -- --nocapture
       - name: N01 native strict Clippy
         run: cargo clippy --locked --offline -p vigilode-coupled --test n01_df_value_stage_contract -- -D warnings
       - name: Focused source rustfmt
         run: |
+          rustfmt --check --edition 2024 --config skip_children=true crates/rodas5p-core/src/lib.rs
+          rustfmt --check --edition 2024 crates/rodas5p-core/src/n01_mass_action_owner.rs
+          rustfmt --check --edition 2024 --config skip_children=true crates/rodas5p-integrators/src/lib.rs
+          rustfmt --check --edition 2024 --config skip_children=true crates/vigilode-coupled/src/lib.rs
           rustfmt --check --edition 2024 crates/vigilode-coupled/src/n01_derivative_free.rs
           rustfmt --check --edition 2024 crates/vigilode-coupled/tests/n01_df_value_stage_contract.rs
       - name: Print current source HEAD
