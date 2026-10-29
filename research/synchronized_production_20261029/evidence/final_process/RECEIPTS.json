@@ -1,0 +1,49 @@
+{
+  "head": "0a2a8eb9b9b0b775561f42f42cf36b1ef6e96f4b",
+  "staged_tree": "1c133b64cf9b4acfd3ec3c1c90c8ea9310eac609",
+  "scope": "finalreport/artifactindex beforeaddingthisreceipt; nativeunchangedfromhead",
+  "environment_overrides": {
+    "GIT_NO_LAZY_FETCH": "1"
+  },
+  "commands": [
+    {
+      "name": "node-pr101",
+      "argv": [
+        "python3",
+        "tools/check-research-node.py",
+        "--base",
+        "bc5ddbe42b24b1a6364bf653c3e2d6d938ca4087"
+      ],
+      "exit_code": 0,
+      "wall_seconds": 2.1938053829999262,
+      "stdout_sha256": "8ca3c5bc6d9c50b08febcb583d856c2e48090031d4d5491868a350490a09bcaa",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "node-main",
+      "argv": [
+        "python3",
+        "tools/check-research-node.py",
+        "--base",
+        "origin/main"
+      ],
+      "exit_code": 1,
+      "wall_seconds": 5.87527362199944,
+      "stdout_sha256": "c2c72a01a257ecf2a644975c74df13ef8f207da7b5665c2b3beeeac2747a4c62",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "name": "authority-node",
+      "argv": [
+        "python3",
+        "tools/check-authority-refs.py",
+        "--paths",
+        "research/synchronized_production_20261029"
+      ],
+      "exit_code": 1,
+      "wall_seconds": 1.4555137190000096,
+      "stdout_sha256": "7667357f7c15854558af11ab65dfd8fcdcc4165282b1851ff0f91b047d94c54b",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

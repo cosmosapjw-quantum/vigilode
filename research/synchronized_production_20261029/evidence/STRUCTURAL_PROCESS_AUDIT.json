@@ -1,0 +1,128 @@
+{
+  "native_audit_source": "0a2a8eb9b9b0b775561f42f42cf36b1ef6e96f4b",
+  "initial": {
+    "source": "cdbee50feb6b7b5d60bd36a278caaf93fa60f665",
+    "native_scientific_execution": false,
+    "research_node_vs_pr101": {
+      "result": "PASS",
+      "exit_code": 0,
+      "ledger_rows": 185,
+      "new_nodes": [
+        "synchronized_production_20261029"
+      ]
+    },
+    "research_node_vs_main": {
+      "result": "FAIL",
+      "exit_code": 1,
+      "failure_diagnostics": 40,
+      "ours": 0,
+      "classification": "inherited missing preregistration / ledger coverage in older nodes"
+    },
+    "authority_ours": {
+      "result": "FAIL",
+      "exit_code": 1,
+      "citations": 191,
+      "distinct_identities": 53,
+      "status_counts": {
+        "missing+allowlisted": 1,
+        "non-commit": 10,
+        "reachable": 39,
+        "unreachable": 3
+      },
+      "failure_diagnostics": 4,
+      "classification": [
+        {
+          "identifier": "b89508a60c69e62367486f17dd967201836fc475",
+          "scope": "raw GitHub PR101 synthetic merge_commit_sha metadata, not solver execution authority",
+          "diagnostics": 1
+        },
+        {
+          "identifier": "9ebeb123315ec9ac8a6ceb56b559d8c98f6c0cbb",
+          "scope": "raw GitHub PR102 synthetic merge_commit_sha metadata, not solver execution authority",
+          "diagnostics": 2
+        },
+        {
+          "identifier": "30087c16fc351231f5d5fc4e82399df197cd9f94",
+          "scope": "historical local source label in runtime_preparation_only environment probe; solver build/tests/benchmark explicitly not_run",
+          "diagnostics": 1
+        }
+      ],
+      "note": "These are actual scoped checker failures; do not reclassify checker verdict as pass or silently alter captured evidence."
+    },
+    "authority_full": {
+      "result": "NOT_ESTABLISHED",
+      "execution": "interrupted_unknown_exit",
+      "exit_code": null,
+      "stdout_bytes": 0,
+      "stderr_bytes": 0,
+      "tool_interruption": "write_stdin failed: Unified exec process failed: network approval was cancelled before a decision was returned",
+      "note": "Prior historical full-authority counts remain historical, not a completed result from this attempted run."
+    },
+    "production": "HOLD"
+  },
+  "cached_object_run": {
+    "source_at_start": "0a2a8eb9b9b0b775561f42f42cf36b1ef6e96f4b",
+    "commands": [
+      {
+        "label": "authority-ours",
+        "argv": [
+          "python3",
+          "tools/check-authority-refs.py",
+          "--paths",
+          "research/synchronized_production_20261029"
+        ],
+        "source_at_start": "0a2a8eb9b9b0b775561f42f42cf36b1ef6e96f4b",
+        "timeout_seconds": 300,
+        "environment_overrides": {
+          "GIT_NO_LAZY_FETCH": "1",
+          "GIT_TERMINAL_PROMPT": "0"
+        },
+        "cwd": "/workspace/scratch/f9615df1ce94/vigilode",
+        "exit_code": 1,
+        "timed_out": false,
+        "exception": null,
+        "wall_seconds": 1.3175638600005186,
+        "stdout_sha256": "ca6815ca6358e285667ac7f0583dc4f6494aaf1c5520585bbe9ba6fb4d8f21d1",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "checker_sha256": "28299181c915178a9a90ee5b786d14050bbb01ee4fee2dd641581918e148464e",
+        "scope": "read-only process audit; no lazy fetching; not native scientific execution"
+      },
+      {
+        "label": "authority-full",
+        "argv": [
+          "python3",
+          "tools/check-authority-refs.py"
+        ],
+        "source_at_start": "0a2a8eb9b9b0b775561f42f42cf36b1ef6e96f4b",
+        "timeout_seconds": 300,
+        "environment_overrides": {
+          "GIT_NO_LAZY_FETCH": "1",
+          "GIT_TERMINAL_PROMPT": "0"
+        },
+        "cwd": "/workspace/scratch/f9615df1ce94/vigilode",
+        "exit_code": 1,
+        "timed_out": false,
+        "exception": null,
+        "wall_seconds": 36.62740940100048,
+        "stdout_sha256": "8bd032cf34a79b7254f21bd78ed094f6182f9923352bfde90e59a054002d2b37",
+        "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "checker_sha256": "28299181c915178a9a90ee5b786d14050bbb01ee4fee2dd641581918e148464e",
+        "scope": "read-only process audit; no lazy fetching; not native scientific execution"
+      }
+    ]
+  },
+  "scope_failure_counts": {
+    "missing": 1,
+    "unreachable": 3,
+    "diagnostics": 6
+  },
+  "full_failure_counts": {
+    "missing": 59,
+    "repository_unavailable": 16,
+    "invalid_repository": 11,
+    "unreachable": 3,
+    "diagnostics": 178
+  },
+  "production": "HOLD",
+  "missing_semantics": "localobjectabsence underGIT_NO_LAZY_FETCH=1;notremoteabsence"
+}

@@ -1,127 +1,126 @@
-# VigilODE: 증명 우선 병목 연구와 단일 후보 lane
+# VigilODE: 구조적 stage solver와 증명 우선 병목 연구
 
-세 병목 단위를 subagent로 병렬 연구하고 각 이론 R1–R10 뒤에 코딩 C1–C10을 수행했다. 마지막에는 stage residual에서 연속 궤적 인증까지 연결하는 합성 정리를 도출했다. 이번 native 변경은 GMRES의 사용하지 않는 방향 저장소 준비와 facade 반환값 복사를 제거한다. 실제 반환 관측은 유지됐고 할당은 줄었다. 짧은 시간 측정에서는 dense/banded 경로의 지연 증가도 관찰되어, 일반적인 속도 향상과 production 승격은 주장하지 않는다. **전체 production 판정은 HOLD**다.
+이번에는 할당 감소에서 더 나아가 **방향별 quadratic resolvent 후보를 실제 8-stage RODAS matrix-free 경로에 이식**했다. 원래 선형계의 live residual을 기존 허용오차로 검사하고, 통과한 stage에서 Arnoldi/MGS/QR를 생략한다. 같은 실행 파일에서 기존 GMRES와 비교한 결과는 **회전16차원3.43배, 회전4096차원1.97배, 감쇠 회전3.17배,16-rate time-JVP1.19배의 paired 시간비를 얻었다. 잘못된 계수 대조군은 시간비0.804로 느려졌다**이다. 이 성과는 명시된 모델·입력·정확도 범위에 묶여 있으며 **전체 production 판정은 HOLD**다.
 
-## 1. 재개·조사 범위와 출처
+## 수학적 근거와 실제 구조 변경
 
-- baseline solver: PR101 `bc5ddbe42b24b1a6364bf653c3e2d6d938ca4087`.
-- 실제 최종 native 실행: `ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc`, tree `2989f07fb04134aa7bab38e38d7272e45d6a0917`.
-- preregistration: `c41caffa68d9f4eb9d1976422f7f74ec7e764cca`. 첫 실행 `7fce5a4c…`의 실패도 보존했다.
-- main은 최종 확인에서도 `8d0c79184e09efb5bdadc24a6315c60a71a44264`다. PR99/100 및 최신 PR102는 별도 연구 입력이다.
-- 최종 원격 재조회에서 PR102 `8357faa5b42724a8be24609d4d2f16aec8a6eb3a`를 발견해 검토에 추가했다. 그 native code pin은 `0d722b4ed71413926c76bc0037f02f3a6bbdd362`다. 현재 실행 source에 병합된 것으로 세지 않는다.
+configured warm start `x0`를 유지한 채 `A=I−σJ`, `v=f−Ax0`를 두고
 
-이전 PR90–101의 source-bound 연구 기록, PR98→101 변경 목록, 현재 실패 CI, 관련 native 경로, 첨부 RVJ/NAG 및 연구 프로토콜을 재사용했다. Exa·SciSpace·Wolfram의 원응답과 사용 범위는 theory/evidence에 보존했다. 역사적 모든 source line 및 사용자 local 파일을 읽었다는 의미의 전수조사는 아니다. 원격에서 확인 가능한 변경·의존성·실패 gate의 inventory와 이 작업의 관련 코드 경로를 조사했다.
+\[
+D=1-a\sigma-b\sigma^2,\qquad
+q=\frac{(1-a\sigma)v+\sigma Jv}{D}
+\]
 
-원래 23-node/34-edge DAG, 73 paths, 8 suites, 10 interaction, negative evidence와 누적 correction budget을 보존했다. 새 검증을 과거 8-suite 전체 재실행이나 core DAG 진척으로 바꾸지 않았다. 기존 7/23 scoped와 신규 보조 정리는 구분한다.
+를 구성했다. 직접 계수 소거로
 
-## 2. 병목 분류와 코드에 연결한 수학
+\[
+v-Aq=\frac{\sigma^2}{D}(J^2v-aJv-bv)
+\]
 
-| 병목 | 분류 | 이번에 확립한 근거와 처리 |
+가 성립한다. 따라서 **현재 방향**에 `J²v=aJv+bv`가 성립하면 exact-real stage correction을 얻는다. 관계가 근사적이면 우변이 그 잔차를 정량화한다. 전체 공간의 다항식 항등식이나 다른 stage의 관계는 요구하거나 추론하지 않는다.
+
+native 구현은 `q=((2−aσ)v−Av)/D`를 이용해 실제 shifted operator를 호출한다. 후보 생성 후 `f−A(x0+q)`를 새로 계산해 기존 `max(linear_atol,linear_rtol*||f||₂)`를 통과할 때만 채택한다. 분모·범위·잔차 거절은 기존 warm start의 GMRES fallback으로 연결하며 이미 발생한 작업량을 보존한다. 실제 callback 실패와 불완전/nonfinite 출력은 오류로 전달한다. 옵션은 기본 off이며 ordinary MF-fast 경로에서 명시적으로 켠다.
+
+비자명한 nonzero-shift 성공에는 zero start에서2회, nonzero start에서3회 action과 O(n) vector 작업이 필요하고 Arnoldi columns/MGS/QR는0이다. 실제 이득 조건은 `(m_base−m_accept)C_J+C_K>C_V`다. 거절 가능성이 있으면 `p(C_base−C_accept)>(1−p)C_refusal`도 만족해야 한다. 이 조건 때문에 exact relation 양성군뿐 아니라 다중 rate·잘못된 계수 대조군을 함께 측정했다.
+
+회전 모델에서는 `J²=−9I`, `D=1+9σ²≥1`이고
+
+\[
+(I-\sigma J)^T(I-\sigma J)=(1+9\sigma^2)I,
+\qquad
+\|(I-\sigma J)^{-1}\|_2=(1+9\sigma^2)^{-1/2}
+\]
+
+다. 이 resolvent 항등식은 잔차에서 stage error로의 안정된 전달 근거다. 16개 distinct rates의 대각 time-JVP 모델은 일반적으로 exact degree2 관계를 만족하지 않는다. `p(z)=(z+2)(z+31/8)` 후보에 대해 정규 대각성 및 완전제곱으로 `||p(J)||₂≤225/256`을 얻어 작은 shift의 근사 후보를 정당화했다. 이 spectral norm 결론을 nonnormal J에 일반화하지 않는다.
+
+자세한 가정, 증명, 반례, floating-point 한계와 식–코드 대응은 [STRUCTURAL_NATIVE](theory/STRUCTURAL_NATIVE.md)에 있다. generic floating residual PASS는 물리 오차의 outward certificate와 다르다. residual 평가오차 `η_eval`과 inverse bound `K`가 별도로 확보되어야 `||x−x*||≤K(τ+η_eval)`가 정당화된다.
+
+## 병목별 연구와 합성
+
+| 병목 | 분류 | 완료한 연구·이식 및 남은 경계 |
 |---|---|---|
-| GMRES-into의 directions pool 준비 | 저장소 구현 | K1: 읽기·쓰기 상태의 귀납적 동치. 실제 사용하지 않는 저장소만 준비하지 않는다. public reserve와 augmented 경로는 유지 |
-| MGS/Arnoldi/QR 비용 | 알고리즘·수치 | K2–K4: residual gap, 방향별 다항식 resolvent, shifted recycle image의 오차 계약. 새로운 native dispatch는 아직 도입하지 않음 |
-| RoutedRun/Observed 반환 복사 | adapter 소유권 | A1: 값을 소비해서 옮겨도 시간/상태/실패/metadata와 effectful callback 관측을 보존. clone 제거 이식 완료 |
-| strict/RHS reentrant 손실 | switcher·선택 및 모델 동역학 | A2–A4: discarded work를 포함한 비용 비교; clock–fiber contraction과 clock defect 전달. 서로 다른 수치 궤적의 비용비를 순수 wrapper 비용으로 해석하지 않음 |
-| whole-slab 및 물리 event 인증 | 수치 이론·입력 provider | D1–D11: 원래 방정식의 defect, quadratic remainder, carrier mismatch, 불변 반경, norm/reset/event 합성. 정확 Fraction 소비자 구현 |
-| CI·API·authority | 구현/환경/계약/외부 입력 | Copy lint 수정 및 focused 재검증. API breaking fixture, 다른 profile의 Givens, SUNDIALS/MPI, authority 실패는 별도로 보존 |
+| Arnoldi/MGS/QR | 알고리즘·수치 | K3 quotient와 원래 residual 식을 native quadratic 제안으로 이식. 적합 모델에서 실제 Krylov 작업 제거. 일반 모델의 admission·선택 이득은 별도 |
+| GMRES unused directions pool | 저장소 구현 | K1 live-state 동치에 근거한 준비 생략. phase1에서 이미 검증 |
+| facade 반환 복사 | adapter 소유권 | A1 반환값·효과 관측의 동치로 move 이식. phase1에서 이미 검증 |
+| strict/RHS reentrant 비용 | switcher·동역학 | discarded work를 포함한 비용 조건과 neutral clock/fiber forcing 증명. 자동 selection 승격 없음 |
+| whole-slab 및 event 인증 | 수치 이론·provider | nonlinear invariant tube, norm/reset/event의 시간순 합성, triangular stage 전달 증명. 실제 nonlinear outward provider는 OPEN |
+| release/API/authority | 계약·환경·입력 | 현재 실패의 source별 분류와 원자료 보존. scoped numerical PASS로 대체하지 않음 |
 
-### K: 현재 RHS 방향에서만 필요한 resolvent 관계
+이론 R1–R10을 먼저 수행한 병목별 연구를 코딩 C1–C10으로 넘기고, 별도 subagent의 코드·수학 검토를 거쳤다. 최종 합성은 `방향별 stage 후보 → 원래 residual → 연속 구간 defect/tube → event/route-word → 반환 관측`이다.
 
-monic polynomial \(p(z)=\sum_{j=0}^d p_jz^j\)에 대해
-\(D_\sigma=\sum_jp_j\sigma^{d-j}\),
-\(Q_\sigma(z)=\sum_{k=0}^{d-1}(\sum_{j>k}p_j\sigma^{d-j+k})z^k\)라 두면 계수 소거로
+stage inverse margins와 RHS Lipschitz 상계가 검증되면 strict lower-triangular `T`에 대해 stage error는 `B=(I+T+⋯+T^(s−1))D`로 전달된다. reconstruction의 원래 residual을 직접 인증하면 이 stage error 항을 다시 더하지 않는다. nonlinear `D+E≤−αE+ΓE²+δ`에서는 `E0≤R`, `ΓR²−αR+δ≤0`와 실제 compact-domain 전제가 invariant tube를 준다. clock–fiber 문제에서는 neutral clock error와 `rho_j−g' rho0` forcing를 지우지 않았다. symbolic controller word 동치와 물리 event word 인증도 구분했다.
 
-\[
-(1-\sigma z)Q_\sigma(z)=D_\sigma-\sigma^dp(z).
-\]
+PR102의 native scalar-affine accepted quartic/Bernstein/query/carry는 `Γ=δJ=0` 특수 경우로 재사용할 수 있다. 이번에 read-only 검토했으며 현재 structural source에 병합하거나 재실행한 결과로 세지 않았다. 실제 nonlinear source/clock/rate/domain은 별도 provider 의무다. 최신 PR103 head `1845e1d8bdfda222bf77637e8d38d5076743f238`의 signed weighted-infinity logarithmic norm 연구도 별도로 검토했다: **정확 signed-row/vertex/rate-endpoint 정리는 scoped static 수용했다. 다만 일반 isotope 입력의 electron coefficient outward 준비, event-dual arithmetic guard, public interval 유효성 경계가 미완료여서 native 일반 입력 재사용은 HOLD다**. 조건부 bound14.2857% tightening은 실행시간 개선이 아니며 양의 mu는 contraction을 뜻하지 않는다. vector quartic/nonlinear defect와 metric transport의 재사용 입력으로 연결하고 원본 R6/C9 미실행을 보존한다.
 
-따라서 \(D_\sigma\ne0\)일 때 제안값 \(x=Q_\sigma(J)v/D_\sigma\)의 원래 시스템 잔차는
-\(r=v-(I-\sigma J)x=\sigma^dp(J)v/D_\sigma\)다.
-이는 전체 공간에서 \(p(J)=0\)을 요구하지 않는다. 현재 stage RHS에 대한 관계면 충분하며, 다른 stage RHS로 자동 이전할 수 없다.
-가중 내적의 logarithmic norm으로 \(\alpha=1-\sigma\mu_W(J)>0\)가 검증되면 coercivity와 Cauchy–Schwarz로 \(\|x-x_*\|_W\le\|r\|_W/\alpha\)를 얻는다.
-실제 코드에는 coefficient/action/rounding/domain/epoch 및 pole 처리와 원래 잔차의 outward bound가 필요하다. 이것이 작은 방향 공간에서 Arnoldi/MGS 작업을 줄일 수 있는 구체적 이식 근거이며, 실행시간 개선 자체의 증명은 아니다.
+## 실제 native 검증과 전체 IVP 비교
 
-### A: reentrant fixture의 clock–fiber 분해
+구조적 native source는 `0a2a8eb9b9b0b775561f42f42cf36b1ef6e96f4b`, tree는 `5795e928f78fe3e99bfa91a4e7d10eaa7540c4db`다. 소스 publication/fetch 확인 후 빌드했고 실행 전후 native hashes와 binary/build binding을 검사했다. baseline arm과 proposal arm은 **동일 실행 파일**이다.
 
-실제 모델의 \(x_0'=1\), \(e_j=x_j-g(x_0)\)는
-\(e_j'=-\lambda(x_0)(e_j+e_j^3/2)\)를 준다.
-공통 원래 시간에서 clock 오차 \(C+s\delta_0\)를 별도로 운반하고, fiber residual에 \(\rho_j-g'\rho_0\)를 포함했다. \(\lambda\ge1\), 실제 \(\lambda',g'\)의 상계를 사용한 convolution bound를 유도했다. 원래 좌표로 복귀할 때도 \(G(C+s\delta_0)\)를 더한다. clock 오차를 0으로 지워 얻는 잘못된 contraction 주장을 배제했다.
-
-### D: nonlinear tube와 시간순 인증
-
-\(D^+E\le-\alpha E+\Gamma E^2+\delta\),
-\(\alpha=\lambda_{carrier}-\delta_J\), \(\delta=\delta_{residual}+\epsilon_{source}\)에 대해
-
-\[
-E_0\le R,\qquad \Gamma R^2-\alpha R+\delta\le0
-\]
-
-이면, 관련 벡터장·미분 상계가 유효한 실제 compact tube 안에서 \(E\le R\)가 유지된다. 경계의 비엄격 부등호도 radial projection과 Gronwall로 증명했다. \(\beta=\alpha-\Gamma R\)의 감쇠를 두 유리함수 envelope로 감싸 Fraction으로 계산한다. 이후 norm 변환과 reset은 \(E_{next}\le\kappa E_{end}+\eta\)로 시간순 합성한다. strict event sign과 transverse crossing은 각각 별도 margin을 요구한다.
-
-PR102의 native scalar-affine certificate는 이 계약의 \(\Gamma=\delta_J=0\) 특수 경우에 재사용할 수 있다. 실제 accepted quartic, Bernstein defect, query rounding 구현이 새로 존재하므로 이를 다시 만들 필요가 없다. 다만 caller가 공급하는 affine source 전제는 실제 nonlinear 물리 provider의 증거가 아니다. [PR102 검토](reviews/PR102_REUSE_REVIEW.md)를 참조한다.
-
-### S: 세 연구 결과의 최종 합성
-
-stage 시스템 \(A_ik_i=b_i(k_{<i})\)의 inverse margin \(\alpha_i\)와 RHS Lipschitz 상계 \(L_{ij}\), 원래 stage residual \(d_i\)가 검증되면
-
-\[
-\eta\le (I+T+\cdots+T^{s-1})D,
-\quad D_i=d_i/\alpha_i,\quad T_{ij}=L_{ij}/\alpha_i\;(j<i).
-\]
-
-엄격 하삼각성 \(T^s=0\)과 stage 귀납으로 증명되므로 추가적인 spectral-radius 가정이 필요 없다. reconstruction의 \(C_0,C_1\)와 원래 field의 \(L_f\)를 통해 defect는 \(\delta_{base}+(C_1+L_fC_0)\|B\|\)로 전달된다. 실제 reconstruction의 원래 잔차를 직접 인증했다면 이 stage 항을 다시 더하지 않는다.
-
-이 잔차를 D의 불변 tube와 시간순 route-word 합성에 넣는다. A1/K1은 값 자체를 바꾸지 않으므로 추가 reset error는 0이다. **방향별 stage 제안 → 원래 잔차 → 연속 구간 인증 → event/route-word → 반환 관측**이라는 이식 계약이 최종 산출물이다. symbolic dynamics의 controller word 동치와 물리 궤적의 event word 인증은 구분했다. 자세한 증명은 [KRYLOV](theory/KRYLOV.md), [ADAPTER](theory/ADAPTER.md), [DEFECT](theory/DEFECT.md), [SYNTHESIS](theory/SYNTHESIS.md)에 있다.
-
-## 3. 실제 검증과 보존한 실패
-
-| 최종 source의 실행 | 결과 |
+| 실제 실행 | 결과 |
 |---|---:|
-| Python exact/research tests |25 PASS: K9, D12, S4; 일부 고정밀 진단 포함 |
-| native library |99 PASS, 1 ignored |
-| facade integration |280 PASS |
-| Krylov integration |115 PASS, 1 FAIL |
-| time-FD contract |2 PASS |
-| facade/Krylov 및 time-FD focused Clippy |PASS |
-| 실패 allocator target 직렬 대조 |같은 source에서 3 PASS |
+| MF-fast structural inline contracts |3 PASS |
+| directional kernel contracts |8 PASS |
+| matrix-free problem contracts |2 PASS |
+| warm-start contracts |4 PASS,2 ignored |
+| time-FD contracts |2 PASS |
+| 독립 Fraction native-bit oracle |88 checks PASS:6 accepted,2 refused |
+| integrator/probe focused Clippy |각 exit0 |
+| raw receipt·manifest·trial·pair 독립 재집계 |37,829 checks PASS; native 추가 실행0 |
 
-Krylov 실패는 process-global LIVE_BYTES를 세 테스트가 병렬로 측정한 경우다. 같은 target을 `--test-threads=1`로 실행한 결과 3/3 통과했다. 최초 FAIL을 PASS로 덮어쓰지 않았다. 다른 CI profile의 Givens 실패도 이번 measurement-profile PASS로 닫지 않는다.
+Rust19 PASS/2 ignored는 이 source의 실제 실행 합계다. 최초 source `cdbee50feb6b7b5d60bd36a278caaf93fa60f665`에서도 수치 tests/oracle은 통과했지만 probe Clippy의 parity 표현 lint2건으로 benchmark 진입을 중단했다. parity 표현3곳을 동치 형태로 교정하고 새 published source에서 검사했다. 최초 실패45.130343208초를 유지하며 Q-LINT의 남은 회차를2/3→3/3으로 사용했다. 수치식·허용오차·대조군·timing 표본을 사후 변경하지 않았다.
 
-첫 실행의 missing token 컴파일 실패와 Decimal80 정상상태 reference의 반올림 오류를 보존했다. 정확 Fraction 경계 및 2^-300 과소상계 mutation으로 테스트를 교정했고 tolerance는 완화하지 않았다. 공유 Cargo target에서 stale baseline과 동일한 candidate binary가 나온 사건도 보존했다. 해당 실행파일은 측정에 사용하지 않고 독립 target에서 재빌드하여 hash와 source binding을 검증했다.
+독립 Fraction oracle는 emitted native rotation kernel bits에서 exact represented original residual과 exact solution error를 재계산한다. 그 유한 kernel records를 전체 ODE stage나 일반 floating 연산자의 rigorous enclosure로 확대하지 않는다.
 
-수정 episode는 보수적으로 초기 이식/검토까지 포함해 **3/3**을 사용했다. 마지막 episode는 allocator 실행 격리와 분석기 수정이다. cold/warm 할당이 같다는 잘못된 가정, 이전 실패 phase 시간을 누락하는 subtotal 문제, 그림 잘림을 고쳤다. raw observations는 바꾸지 않았다. 이 캠페인의 추가 solver 수정은 하지 않는다.
+전체 IVP 측정은 `t∈[0,0.25]`의17개 고정 반환점, ODE tolerance1e-7/1e-10, linear tolerance1e-10/1e-14, 동일 initial state/controller를 사용했다. 양쪽 모두 binary64 analytic grid error1e-5 cap을 만족해야 timing에 포함된다. 경로의 bitwise 동일성을 요구하는 phase1과 달리, 구조적 알고리즘은 다른 adaptive trajectory를 만들 수 있다. 이 비교는 반환 격자의 같은 정확도 목표이며 whole-slab physical enclosure가 아니다. 모든 solve의 최대 반환격자 diagnostic 오차는1.86517468137e-13이었다.
 
-## 4. 같은 반환 정확도에서 측정한 비용
+| Case | n | GMRES 중앙값 µs | 후보 중앙값 µs | GMRES/후보 비 중앙값 [min,max] | 후보가 빠른 blocks |
+|---|---:|---:|---:|---:|---:|
+| rotation | 16 | 247.424 | 76.969 | 3.425328 [2.675085,3.903079] | 7/7 |
+| rotation-large | 4096 | 22745.464 | 11577.926 | 1.972945 [1.930496,2.161135] | 7/7 |
+| damped-rotation | 16 | 241.880 | 76.558 | 3.174434 [2.930166,3.558505] | 7/7 |
+| time-jvp | 16 | 2560.370 | 2227.634 | 1.186286 [1.010904,1.395022] | 7/7 |
+| badcoeff | 16 | 240.494 | 300.547 | 0.803978 [0.746615,0.920267] | 0/7 |
 
-4 fixtures × 2 modes × 3 repeats =24쌍, 별도 ownership 11 fixtures ×3 =33쌍에서 허용한 resource/time 필드를 제외한 반환 관측이 정확히 일치했다. 실패·max-steps·zero-span·dense event·nested RHS도 포함한다. endpoint diagnostic 최대 오차는 4.4617096684e-9로 기존 1e-5 cap 이내다. 이는 binary64 analytic reference이며 rigorous reference enclosure나 모든 interior 궤적의 보증은 아니다.
+시간비는 기존 GMRES/proposal이며1보다 크면 proposal이 빠르다. 7개의 alternating ABBA/BAAB block을 사용하고 child별16회 solve+drop의 중앙값을 합해 각 block 비를 계산했다. 모든 block과 adverse case를 보존했다. min/max 범위는 confidence interval이 아니다. 실제 완료 solve 수는 **2460회: correctness60, warmup160, timed2240**다.
 
-| 경로 | 첫 호출 할당 old→new | 같은 process 후속 호출 old→new | 시간비 old/new 중앙값 [범위] |
-|---|---:|---:|---:|
-| Dense FD |324→315 |68→59 |0.96549 [0.93893,1.03682] |
-| Banded FD |318→314 |62→58 |0.96415 [0.89009,0.98013] |
-| Time JVP |386→358 |129→101 |1.01486 [0.98224,1.11859] |
-| Autonomous JVP |389→361 |133→105 |1.01049 [0.97792,1.03521] |
+회전·감쇠 회전에서는 같은18회 outer attempts를 유지하면서144개 stage proposal을 모두 채택했다. Arnoldi columns와 MGS/QR가0이 되었고 JVP도699→412(큰 차원702→414)로 줄었다. 이는 저장소 할당 감소와 구별되는 실제 알고리즘 작업 감소다.
 
-7개 alternating ABBA/BAAB block, child당16회, 전체1792 timed solves를 모두 재집계했다. 비가 1보다 작으면 후보가 느리다. 특히 banded는 7개 모두 느렸으므로 local 성능 연구의 우선 반례다. 범위는 confidence interval이 아니다. 별도의 시간 기준을 사후 완화하거나 유리한 표본만 선택하지 않았다.
+time-JVP는144개 중18개만 채택하고126개는 fallback했다. JVP는2718→2790, strict integer work는3060→3132로 늘었지만 MGS inner products는39168→34272로 줄어 전체 solve가 측정상 빨라졌다. Baseline은144개 stage마다16 Arnoldi columns를 사용했다. 후보의18개 zero-iteration log는 각8-stage attempt의8번째 위치에 해당하며 다른126개는 fallback했다. 이를 일반 stage의 exact degree2 관계로 해석하지 않는다. 반면 잘못된 계수에서는142회 거절 비용 때문에 JVP가699→1104로 늘고 모든7개 block에서 느려졌다. 이 반례는 모든 문제에 후보를 자동 활성화할 근거가 없음을 보여준다.
 
-clone 경로별 예상 감소9/4/7/16과 unchanged dense-event 대조군은 관측과 맞는다. JVP의 전체 감소28은 출력 소유권과 unused direction pool의 결합 효과다. K1만의 시간 인과 효과로 분리하려면 factorial ablation이 필요하다. WorkCounters와 callback 작업량은 유지된다.
+| Case | JVP old→new | MGS inner products old→new | MGS updates old→new | Arnoldi columns old→new | QR/LS cycles old→new | Proposals accept/refuse | Outer attempts old→new | Grid max error old→new |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| rotation | 699→412 | 858→0 | 1001→0 | 286→0 | 143→0 | 144/0 | 18→18 | 8.50431e-14→8.01581e-14 |
+| rotation-large | 702→414 | 864→0 | 1008→0 | 288→0 | 144→0 | 144/0 | 18→18 | 8.21565e-14→7.9492e-14 |
+| damped-rotation | 699→412 | 858→0 | 1001→0 | 286→0 | 143→0 | 144/0 | 18→18 | 9.9809e-14→9.82547e-14 |
+| time-jvp | 2718→2790 | 39168→34272 | 39312→34398 | 2304→2016 | 144→126 | 18/126 | 18→18 | 1.83409e-13→1.85407e-13 |
+| badcoeff | 699→1104 | 858→852 | 1001→994 | 286→284 | 143→142 | 2/142 | 18→18 | 8.50431e-14→8.52651e-14 |
 
-현재 환경에 perf/Callgrind/heaptrack이 없어 새 profiling은 allocation 및 WorkCounters로 한정했다. 이전 PR101의 MGS24.22%, Arnoldi7.36%, QR5.60% function profile은 원래 source의 근거로만 재사용했다. 이번 binary의 profile로 바꾸지 않았다.
+위 작업량은 previous-start의 한 full-IVP solve이며3회 probe의 counters가 일치한다. 모든 warm/timed solve에서도 같은 작업량을 확인했다. QR/LS 수는 이 ordinary GMRES-into 경로에서 `least_squares_solves=cycles`인 코드 계약에 따라 기록된 cycles로부터 얻었다. 별도의 QR hardware/function counter는 아니다. 후속 우선 연구는 현재 full-restart 이전 prefix 후보를 원래 residual로 인증해 종료하는 규칙과, 그 검사·QR 비용까지 포함한 선택 조건이다. relative residual이 rtol보다 커도 absolute atol이 지배할 수 있으므로 relative 값만으로 통과/실패를 판정하지 않는다.
 
-![Paired timing](figures/paired_timing.png)
+WorkCounters의 dot/axpy는 기존 계측 kernel을 세며 새 일반 vector loop의 총 FLOP 수는 아니다. 전체 wall time은 후보 생성·원래 residual 검사·거절 후 fallback 및 결과/workspace drop을 포함한다. JSON 직렬화와 독립 error audit는 양쪽에서 제외한다. 이 환경에 perf/Callgrind/heaptrack이 없어 이번 새 profile은 실제 callback·Krylov work·CPU/maxRSS와 시간으로 한정했다. PR101의 function Ir 수치는 원래 source evidence로만 재사용한다.
 
-각 점은 한 paired block, 붉은 표식은 중앙값, 가로선은 전체 범위다. 불리한 block도 전부 표시했다.
+![구조적 경로의 전체 IVP 시간과 실제 작업량](figures/structural_performance.png)
 
-![Allocations](figures/allocations.png)
+## 이전 phase와 negative evidence 보존
 
-사각형은 첫 process 호출, 빈 원 둘은 후속 호출이다. process 초기화와 solve 비용을 섞어 평균하지 않았다.
+phase1 source `ef84aa3d6c028b0922bb5c1e66202b95fd88a2fc`에서25 Python 연구 methods,99 library tests(1 ignored),280 facade tests,115 Krylov PASS/1 parallel allocator FAIL,2 time-FD tests가 기록되었다. allocator target은 같은 source에서 직렬3/3 PASS였으며 최초 FAIL을 지우지 않았다. 57쌍의 관측값이 맞고 할당은 감소했지만 dense/banded 시간비 중앙값0.96549/0.96415로 회귀했다. banded는7개 block 모두 느렸다.
 
-## 5. 단일 후보 실행과 남은 gate
+첫 compile/Decimal reference 실패, stale shared-target binary 사건, 누적비용·cold/warm 분석 가정 교정을 보존했다. 기존3/3 correction episodes는 그대로다. 이후 사용자의 명시적 구조적 연구 요청에 따라 K3의 첫 native 이식을 수행해 PR-N01은2/3→3/3이 되었다. 구조적 최초 이식 뒤 추가 numerical repair iteration은 **0(수치 변경·사후 성능 조정 없음; 최초 이식의 비수치 lint 교정은 별도 기록)**이다. 소진된 node의 횟수를 초기화하지 않았다. Q-LINT는 최초 이식의 별도 비수치 lint 교정을 포함해3/3이다.
 
-하나의 source와 기존 selective-JVP ProductionConfig로 `production_from_json`을 실행했다. rate1/1000 모두 PASS, callback/segment accounting 일치; 반환 격자 오차는 각각3.3718316472e-9,1.0654127077e-9다. rate1은8 segments/0 switches, rate1000은11 segments/1 switch다. 실제 물리 client 배포가 아니라 manufactured invocation 검증이다.
+phase1 결과와 원자료는 [RESULTS](RESULTS.json), [RAW_MANIFEST](evidence/RAW_MANIFEST.json)에 남겨 ledger-covered bytes를 보존했다. 구조적 raw170개 trial과35개 paired block을 별도 분석기에서 다시 구성하고 export 값과 정확히 대조했다. 그 분석은 native를 다시 실행하지 않았다. 새로운 구조적 결과는 [STRUCTURAL_RESULTS](STRUCTURAL_RESULTS.json)와 별도 raw manifest가 기준이다. 누적 scientific wall은 **602.900460228/900초**이며 compile preparation과 postprocessing 비용은 별도 receipt에 있다.
 
-실패 최초 실행·직렬 대조까지 포함한 scientific phase wall은491.539초/900초다. 별도 compile 준비 비용과 postprocessing 비용은 각 receipt에 남아 있다. 원자료557파일, build bindings, 실패 및 제외 binary provenance는 [RAW_MANIFEST](evidence/RAW_MANIFEST.json)와 [RAW_EVIDENCE](evidence/RAW_EVIDENCE.tar.gz)에 보존했다. 실행파일 자체는 source·compiler·hash·build receipt로 식별한다.
+## 조사·전달 범위와 production 판정
 
-API breaking fixtures, Givens의 profile 차이, full authority 실패와 Q-LEDGER3/3, 10 interaction, 실제 물리 source/rate/domain/clock 계약, nonlinear outward provider, dense/banded 성능 악화는 열린 의무다. PR102의 conditional native affine 성과는 별도로 재사용한다. main 또는 선행 PR을 수정하거나 merge하지 않았다.
+조사 baseline은 PR101 `bc5ddbe42b24b1a6364bf653c3e2d6d938ca4087`이며, main 확인 pin은 `8d0c79184e09efb5bdadc24a6315c60a71a44264`다. PR90–101 관련 source-bound 연구, PR99/100, 첨부 RVJ/NAG/프로토콜, Exa·SciSpace·Wolfram 원응답을 재사용했다. 뒤늦게 확인한 PR102 delivery8357faa…/code0d722b… 및 그 위 PR103 head1845e1d…도 별도 입력으로 검토했다. 원격 변경·의존성·실패 gate와 관련 native 경로의 조사이며, 모든 역사적 source line이나 사용자 local 파일을 읽었다는 의미는 아니다.
 
-독립 검토는 원로그 hash, executable binding,57관측쌍,1792시간표본,모든 block과 deployment accounting을 재계산했다. [독립 검토](reviews/FINAL_INDEPENDENT_REVIEW.md), [기계 상태](CURRENT_STATE.json), [결과](RESULTS.json), [local Codex handoff](LOCAL_CODEX_HANDOFF_KO.md)를 이어 읽으면 된다.
+기존23-node/34-edge DAG,73 paths,8 suites,10 interactions와 negative evidence를 보존했다. 새 보조 정리와 focused 실행은 core DAG 전체 통과를 뜻하지 않는다. 단일 opt-in MF-fast 후보 lane과 기존 selective-JVP 설정 invocation이 존재하지만, 실제 BASS/REI client 전체 영역의 qualification은 완료하지 않았다.
+
+남은 gate는 Q-API, Givens의 profile별 차이, SUNDIALS/MPI portability, full authority/Q-LEDGER3/3,10 interactions, 실제 source/rate/domain/clock 계약, nonlinear outward provider, 부적합 모델의 선택·총비용 검증이다. main이나 선행 PR을 merge하지 않았다. [local Codex handoff](LOCAL_CODEX_HANDOFF_KO.md)에 기존 구현을 재사용할 후속 연구와 정확한 source/build/benchmark 규칙을 정리했다.
+
+## 현재 process audit
+
+Published native tree `0a2a8eb9`에 대한 lazy-fetch 비활성 read-only authority 검사는 현재 노드에서 missing1/unreachable3(6 diagnostics), 전체에서 missing59/repository-unavailable16/invalid-repository11/unreachable3(178 diagnostics)로 FAIL이었다. missing은 이 checkout의 객체 부재이며 원격 객체의 비존재를 증명하지 않는다. 원본 snapshot의 synthetic merge metadata와 실행하지 않은 준비 source 기록도 보존했다. 앞선 full check의 도구 세션 중단은 결과 미확정으로 남겼고, 실패를 통과로 바꾸지 않았다. PR101 기준 node/append-only 검사는 통과했고 main 기준 기존40 diagnostics는 남았다. 최종 문서 tree의 scoped node 확인은 별도 receipt에 둔다.
+
+최종 이론 합성은 [STRUCTURAL_SYNCHRONIZATION](theory/STRUCTURAL_SYNCHRONIZATION.md), 독립 데이터 감사는 [STRUCTURAL_RESULT_REVIEW](reviews/STRUCTURAL_RESULT_REVIEW.md)를 읽는다. 동일 binary의 baseline에도 phase1 할당·소유권 변경이 이미 들어 있으므로, 이 시간 비교는 quadratic 옵션의 효과를 분리한다.
+
+최종 문서·ledger staging 기준 scoped node 검사는186 rows PASS였다. 이 tree의 authority 재검사는231 citations/64 typed identities에서 missing1/unreachable5, 총9 diagnostics로 FAIL이다. 원자료 실패 식별자를 요약 JSON에도 보존하면서 같은 SHA가 다른 object-kind로 다시 집계된 경우를 포함한다. native tree의 앞선202citations 결과와 구별하며, exact stdout은 `evidence/final_process/authority-node.stdout`에 남겼다.
