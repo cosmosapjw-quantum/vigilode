@@ -1,0 +1,80 @@
+{
+  "unit": "CMODE01",
+  "date": "2026-10-29",
+  "status": "PASS_SCOPED_STANDALONE_PRODUCTION_HOLD",
+  "source_parent_pr106": "c6cba2b62629e819dd163325c7c9fb9bb5e3080c",
+  "prereg_commit": "0a8737e94319829c574fb5d954440b5de5931054",
+  "completed_scoped": 8,
+  "total": 10,
+  "original_vigilode": "7/23 inherited scoped, delta0",
+  "central_rei": "28/88 delta0",
+  "proposed_successor": "0/12 admitted",
+  "native_independent_admission": "0/1",
+  "benchmark_cycles_used": 1,
+  "benchmark_cycles_cap": 3,
+  "source_sha256": "b175eae4ade425923e18deff9acf1cee3c7ccccd31335d230a6614000db475ee",
+  "complete_zip_sha256": "00da49ecb37b0a316a40f35c4d62e3d43590240bcdd6ed07d6244a73ac89144a",
+  "evidence": {
+    "rust_tests_passed": 8,
+    "fraction_inequalities_passed": 560,
+    "analytic_trajectories": 256,
+    "maximum_endpoint_absolute_error": 2.0699365877591136e-8,
+    "bit_identical_scan_cache": true,
+    "paired_blocks_each_dimension": 7,
+    "median_speedup_scan_over_cache_n128": 1.1823386212842142,
+    "median_speedup_scan_over_cache_n512": 1.1787810814184574,
+    "row_evals_ratio": 64
+  },
+  "steps": [
+    {
+      "id": "R1",
+      "description": "source audit/prereg",
+      "state": "pass"
+    },
+    {
+      "id": "R2",
+      "description": "weighted lognorm",
+      "state": "pass"
+    },
+    {
+      "id": "R3",
+      "description": "affine convex cell bound",
+      "state": "pass"
+    },
+    {
+      "id": "R4",
+      "description": "guarded symbolic itinerary",
+      "state": "pass"
+    },
+    {
+      "id": "C1",
+      "description": "Rust standalone implementation",
+      "state": "pass"
+    },
+    {
+      "id": "C2",
+      "description": "tests/lint",
+      "state": "pass"
+    },
+    {
+      "id": "V1",
+      "description": "Fraction/analytic oracle/plots",
+      "state": "pass"
+    },
+    {
+      "id": "B1",
+      "description": "seven-paired block benchmark",
+      "state": "pass"
+    },
+    {
+      "id": "P1",
+      "description": "source GitHub archive exact readback",
+      "state": "pending"
+    },
+    {
+      "id": "P2",
+      "description": "Drive + Dropbox source/plot backup ACK",
+      "state": "pending"
+    }
+  ]
+}
