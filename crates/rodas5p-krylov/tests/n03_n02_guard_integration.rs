@@ -85,7 +85,7 @@ fn n02_opt_in_accepts_only_n03_original_residual_and_error_gate() {
         &mut work,
         &mut |_, candidate, _| {
             let v = stage
-                .commit_if_admitted(&key, || snapshot(), candidate, &mut guard_out, 1e-11, 1e-11)
+                .commit_if_admitted(&key, snapshot, candidate, &mut guard_out, 1e-11, 1e-11)
                 .map_err(CoreError::LinearSolve)?;
             Ok(if v.admitted_within_given_box {
                 GmresMonitorDecision::Accept
