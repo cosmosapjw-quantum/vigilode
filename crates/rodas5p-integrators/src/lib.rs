@@ -84,6 +84,7 @@ mod path_controller;
 mod policy_redesign_v25;
 pub mod polynomial_resolvent;
 mod problem;
+pub mod n01_mass_action_client;
 mod problems;
 mod radau;
 mod raw_stage_target;
