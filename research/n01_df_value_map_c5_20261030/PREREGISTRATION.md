@@ -1,0 +1,10 @@
+# N01 derivative-free C5 chronology and scope (RETROSPECTIVE)
+
+This document was **not** committed before first source implementation or initial Rust experiment. It was created after the working source and local evidence, to satisfy the research-node location contract **without pretending prospective preregistration**. The first durable GitHub note `WORK_CONTRACT.md` was likewise retrospective (commit 99a2b34943e8de9eb567df20de9eded1620cc529). This chronology is a retained process shortcoming, NOT grounds to discard the independently checked physical-stage computations.
+
+Original scientific baseline is PR117 HEAD `0032b7bd7a0d5092eac26ad9408b9a261df2916e`. The new code uses the existing PR91 `RhsOnlyMap`/homotopy. Target is only a nonnegative Robertson, single diagonal implicit RK/BE stage. The exact real source uses represented binary64 rates; source owner binds rate, state, w,p and epoch with an opaque PR115 trial; RHS callback evaluations are read-only. Proved `L>=sup F'(b)`, value-only `G(b)=clip(b-F(b)/L,[0,M_upper])`; outward certificate independently bounds original full stage residual and physical stage root error; both gates before output commit.
+
+Negative tests: wrong candidate must not commit even if operational homotopy residual is small, stale owner trial, source changes, budget failed callback attempts, rejected inputs, zero mass, overflow, explicit certificate error. Native original 8-stage/full-IVP, same-achieved global accuracy, actual BASS source and independent R6/C9 are NOT_RUN. Preserve all past PR115 and original PR91 paths; no default change, N02 or production promotion.
+
+Retroactive evidence: local Rust 1.94.1 interface mirror 10/10, strict Clippy/fmt PASS, 256 binary64 records x 5 independently rational exact checks=1280/1280. CI first research-process failure is documented and not silently relabeled as a full authority PASS.
+Official DAG: VigilODE 7/23, REI 28/88, successor 0/12 admitted; N01 C5 1/1 scoped implementation, native admission 0/1; PRODUCTION HOLD.

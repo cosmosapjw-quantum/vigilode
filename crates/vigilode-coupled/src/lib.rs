@@ -14,6 +14,7 @@ mod fallback;
 mod solver;
 mod switching;
 pub mod rhs_homotopy;
+pub mod n01_derivative_free;
 pub mod structural_mean_field;
 pub mod cyclic_closure;
 pub mod trace_quotient;

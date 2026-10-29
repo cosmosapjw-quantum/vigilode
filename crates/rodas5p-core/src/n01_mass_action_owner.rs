@@ -594,3 +594,28 @@ mod tests {
         assert_eq!(out, [3.0; 3]);
     }
 }
+
+
+/// Source-verified immutable input for a derivative-free, *single-stage*
+/// diagonal-implicit RK/BE auxiliary. The rates, state and both physical
+/// metrics are read from the same owner as RHS and its opaque trial.
+/// The carrier belongs to the owner's frozen physical state and is not a
+/// freely supplied model source. This does not certify a full RODAS5P step.
+impl N01MassActionOwner {
+    /// Refuse stale owner/clock/epoch/state before any value-only evaluation.
+    pub fn check_value_trial(&self, trial: &N01MassActionTrial) -> CoreResult<()> {
+        self.live(trial)
+    }
+
+    /// Return the exact represented model inputs only after matching the
+    /// opaque source-owned trial. This read does NOT call advance() and never
+    /// updates the model-generation epoch for temporary stage evaluations.
+    #[allow(clippy::type_complexity)]
+    pub fn value_only_stage_inputs(
+        &self,
+        trial: &N01MassActionTrial,
+    ) -> CoreResult<([f64; 3], [f64; 3], [f64; 3], [f64; 3])> {
+        self.live(trial)?;
+        Ok((self.rates, self.current, self.w, self.p))
+    }
+}
