@@ -1,0 +1,40 @@
+name: C9 adversarial source binding and exact causal audit
+on:
+  push:
+    branches:
+      - research/n01-c9-adversarial-source-binding-20261030
+    paths:
+      - .github/workflows/n01-c9-adversarial.yml
+      - crates/vigilode-coupled/tests/n01_df_c8_work_precision.rs
+      - research/n01_c9_adversarial_20261030/verify_source_binding_exact.py
+      - research/n01_c9_adversarial_20261030/exact_results.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  c9-scoped-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - name: Exact rational independent source-binding / Neumann / causal transfer audit
+        run: |
+          python3 research/n01_c9_adversarial_20261030/verify_source_binding_exact.py
+          git diff --exit-code -- research/n01_c9_adversarial_20261030/exact_results.json
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: '1.94.1'
+          components: clippy,rustfmt
+      - name: Fetch locked Rust dependencies
+        run: cargo fetch --locked
+      - name: Native C8 original science plus C9 wrong-source negative test
+        run: cargo test --locked --offline -p vigilode-coupled --test n01_df_c8_work_precision -- --nocapture
+      - name: Native C9 strict Clippy
+        run: cargo clippy --locked --offline -p vigilode-coupled --test n01_df_c8_work_precision -- -D warnings
+      - name: Focused Rust format
+        run: rustfmt --check --edition 2024 crates/vigilode-coupled/tests/n01_df_c8_work_precision.rs
+      - name: Source head evidence
+        if: always()
+        run: git rev-parse HEAD
